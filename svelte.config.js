@@ -1,9 +1,9 @@
 import adapter from '@sveltejs/adapter-auto';
 
-const prerenderedCities = ['los-angeles', 'san-francisco', 'san-diego',
-	'houston', 'dallas', 'austin',
-	'new-york-city', 'buffalo', 'rochester'
-];
+// const prerenderedCities = ['los-angeles', 'san-francisco', 'san-diego',
+// 	'houston', 'dallas', 'austin',
+// 	'new-york-city', 'buffalo', 'rochester'
+// ];
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -13,9 +13,9 @@ const config = {
 		// See https://kit.svelte.dev/docs/adapters for more information about adapters.
 		adapter: adapter(),
 		// Add pre rendering here
-		prerender: {
-			entries: prerenderedCities.map(city => `/directory/${city}`),
-		}
+		// prerender: {
+		// 	entries: prerenderedCities.map(city => `/directory/${city}`),
+		// }
 
 	}
 };
