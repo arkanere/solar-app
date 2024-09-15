@@ -7,7 +7,7 @@ const config = {
 	kit: {
 		adapter: adapter(),
 		prerender: {
-			entries: ['/', '/business-listing', ...cities.map(city => `/directory/${city}`)]
+			entries: ['/', '/business-listing', ...cities.map(city => `/solar-panel-installer-directory/${city}`)]
 		}
 	}
 };
