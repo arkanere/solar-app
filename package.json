@@ -6,22 +6,23 @@
 		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
-		"clean": "rm -rf .svelte-kit" ,
+		"clean": "rm -rf .svelte-kit",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch"
 	},
-		"devDependencies": {
-			"@sveltejs/adapter-auto": "^3.0.0",
-			"@sveltejs/kit": "^2.0.0",
-			"@sveltejs/vite-plugin-svelte": "^3.0.0",
-			"svelte": "^4.2.7",
-			"svelte-check": "^3.6.0",
-			"typescript": "^5.0.0",
-			"vite": "^5.0.3"
-		},
+	"devDependencies": {
+		"@sveltejs/adapter-auto": "^3.0.0",
+		"@sveltejs/kit": "^2.0.0",
+		"@sveltejs/vite-plugin-svelte": "^3.0.0",
+		"svelte": "^4.2.7",
+		"svelte-check": "^3.6.0",
+		"typescript": "^5.0.0",
+		"vite": "^5.0.3"
+	},
 	"type": "module",
 	"dependencies": {
 		"@vercel/postgres": "^0.9.0",
-		"dotenv": "^16.4.5"
+		"dotenv": "^16.4.5",
+		"twilio": "^5.3.1"
 	}
 }
