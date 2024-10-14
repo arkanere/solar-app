@@ -1,5 +1,6 @@
 import adapter from '@sveltejs/adapter-vercel';
-import { cities } from './src/lib/entries.js'; // Include .js extension
+import { cities } from './src/lib/cities.js'; // Include .js extension
+import { businesses } from './src/lib/businesses.js'
 
 
 /** @type {import('@sveltejs/kit').Config} */
@@ -7,7 +8,11 @@ const config = {
 	kit: {
 		adapter: adapter(),
 		prerender: {
-			entries: ['/', '/business-listing', ...cities.map(city => `/solar-panel-installer-directory/${city}`)]
+			entries: ['/', '/business-listing',
+				...cities.map(city => `/solar-panel-installer-directory/${city}`),
+				...businesses.map(business => `/solar-panel-installer/${business}`),
+
+			]
 		}
 	}
 };
