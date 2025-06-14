@@ -1,23 +1,22 @@
 {
-    "extends": "./.svelte-kit/tsconfig.json",
-    "compilerOptions": {
-      "types": ["svelte"],
-      "allowJs": true,  // Allow JavaScript in case you have mixed JS/TS files
-      "resolveJsonModule": true,  // If you're importing JSON files
-      "esModuleInterop": true,  // Ensures compatibility with ES modules
-      "forceConsistentCasingInFileNames": true,  // Consistent casing for imports
-      "skipLibCheck": true,  // Skip type checking for third-party libraries
-      "strict": true  // Enable strict type checking
-    },
-    "include": [
-      "src/**/*.ts",
-      "src/**/*.js",  // Include JS files
-      "src/**/*.svelte"
-    ],
-    "exclude": [
-      "node_modules",
-      ".svelte-kit",
-      "dist"  // Exclude dist or other build folders if applicable
-    ]
-  }
-  
+	"extends": "./.svelte-kit/tsconfig.json",
+	"compilerOptions": {
+		"types": ["svelte"],
+		"allowJs": true, // Allow JavaScript in case you have mixed JS/TS files
+		"resolveJsonModule": true, // If you're importing JSON files
+		"esModuleInterop": true, // Ensures compatibility with ES modules
+		"forceConsistentCasingInFileNames": true, // Consistent casing for imports
+		"skipLibCheck": true, // Skip type checking for third-party libraries
+		"strict": true // Enable strict type checking
+	},
+	"include": [
+		"src/**/*.ts",
+		"src/**/*.js", // Include JS files
+		"src/**/*.svelte"
+	],
+	"exclude": [
+		"node_modules",
+		".svelte-kit",
+		"dist" // Exclude dist or other build folders if applicable
+	]
+}

@@ -7,7 +7,6 @@ export default defineConfig({
 	plugins: [sveltekit()]
 });
 
-
 // // vite.config.js
 // import { sveltekit } from "file:///Users/aniruddhakanere/Desktop/microcapindia/svelte/solar-app/node_modules/@sveltejs/kit/src/exports/vite/index.js";
 // import { defineConfig } from "file:///Users/aniruddhakanere/Desktop/microcapindia/svelte/solar-app/node_modules/vite/dist/node/index.js";
