@@ -5,7 +5,11 @@ import { businesses } from './src/lib/businesses.js';
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
 	kit: {
-		adapter: adapter(),
+		adapter: adapter({
+			isr: {
+				expiration: 86400 // 24 hours
+			}
+		}),
 		prerender: {
 			entries: [
 				'/business-listing',
