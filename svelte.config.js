@@ -17,7 +17,7 @@ const config = {
 				// Ignore 405 errors for specific routes that have dynamic behavior
 				if (
 					status === 405 &&
-					(path === '/assessment-tool' || path === '/solar-panel-installer-directory')
+					(path === '/assessment-tool' || path === '/solar-panel-installer-directory'|| path === '/blogs')
 				) {
 					console.warn(`Skipping prerender for ${path} due to 405 error`);
 					return;
