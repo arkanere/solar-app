@@ -7,7 +7,7 @@ const config = {
 	kit: {
 		adapter: adapter({
 			isr: {
-				expiration: 86400 // 24 hours
+				expiration: 1296000 // 15 days 
 			}
 		}),
 	}
