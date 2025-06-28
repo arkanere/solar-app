@@ -23,7 +23,7 @@ vite.config.ts.timestamp-*
 # Ignore SQL backups
 backup.sql
 
-# Android
+# Android - Customer App
 android-customer-app/.gradle/
 android-customer-app/local.properties
 android-customer-app/app/build/
@@ -35,3 +35,16 @@ android-customer-app/.cxx/
 android-customer-app/*.iml
 android-customer-app/*.hprof
 android-customer-app/app/release/
+
+# Android - Business App
+android-business-app/.gradle/
+android-business-app/local.properties
+android-business-app/app/build/
+android-business-app/build/
+android-business-app/.idea/
+android-business-app/captures/
+android-business-app/.externalNativeBuild/
+android-business-app/.cxx/
+android-business-app/*.iml
+android-business-app/*.hprof
+android-business-app/app/release/
