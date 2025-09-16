@@ -1,0 +1,45 @@
+export const prerender = false;
+import { redirect } from '@sveltejs/kit';
+
+export const load = async ({ cookies, params, url }) => {
+	const business_session = cookies.get('business-session');
+	const { business_slug } = params; // Extract business slug from URL params
+
+	// Check if the URL matches claim, login, reset-password, or magic-link routes
+	const isClaimPage = url.pathname === `/${business_slug}/claim`;
+	const isLoginPage = url.pathname === `/${business_slug}/login`;
+	const isResetPasswordPage = url.pathname.startsWith(`/${business_slug}/reset-password`);
+	const isMagicLinkPage = url.pathname.startsWith(`/${business_slug}/signin-link`);
+
+	// If no session and not on an allowed page, redirect to login
+	if (
+		!business_session &&
+		!isLoginPage &&
+		!isClaimPage &&
+		!isResetPasswordPage &&
+		!isMagicLinkPage
+	) {
+		throw redirect(302, '/login');
+	}
+
+	// **Fix: Ensure user is redirected to the correct business if they change the URL**
+	// But skip this validation for magic link pages to avoid conflicts during login
+	if (business_session && !isMagicLinkPage) {
+		try {
+			const sessionData = JSON.parse(business_session);
+
+			// If session's businessSlug does not match the URL, redirect to the correct business  
+			if (sessionData.businessSlug !== business_slug) {
+				throw redirect(302, `/${sessionData.businessSlug}`); // Redirect back to the correct business
+			}
+
+			return { business_session: sessionData };
+		} catch (error) {
+			console.error('Invalid session data:', error);
+			cookies.delete('business-session', { path: '/' }); // Delete corrupt session
+			throw redirect(302, '/'); // Redirect to generic business page
+		}
+	}
+
+	return { business_session };
+};
