@@ -7,7 +7,7 @@
 
 <main class={darkMode ? 'dark' : 'light'}>
 	<h1>Admin Login</h1>
-	<form method="POST" action="/admin/login">
+	<form method="POST" action="/login">
 		<label for="email">Email:</label>
 		<input type="email" id="email" name="email" required />
 
