@@ -1,0 +1,60 @@
+<!-- svelte-ignore a11y-img-redundant-alt -->
+<svelte:head>
+	<!-- Umami Analytics - Layout 2 Business -->
+
+	<script
+		defer
+		src="https://cloud.umami.is/script.js"
+		data-website-id="884dd8c2-35ee-4ed8-9426-9be7df3159bf"
+	></script>
+
+	<!-- Hotjar Tracking Code for Site 5045118 (name missing) -->
+	<script async="" src="https://connect.facebook.net/en_US/fbevents.js"></script><script>
+		(function (h, o, t, j, a, r) {
+			h.hj =
+				h.hj ||
+				function () {
+					(h.hj.q = h.hj.q || []).push(arguments);
+				};
+			h._hjSettings = { hjid: 5045118, hjsv: 6 };
+			a = o.getElementsByTagName('head')[0];
+			r = o.createElement('script');
+			r.async = 1;
+			r.src = t + h._hjSettings.hjid + j + h._hjSettings.hjsv;
+			a.appendChild(r);
+		})(window, document, 'https://static.hotjar.com/c/hotjar-', '.js?sv=');
+	</script><script async="" src="https://static.hotjar.com/c/hotjar-5045118.js?sv=6"></script>
+
+	<!-- Google tag (gtag.js) -->
+	<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-BXXPPJ3LK8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() {
+			dataLayer.push(arguments);
+		}
+		gtag('js', new Date());
+
+		gtag('config', 'G-BXXPPJ3LK8');
+	</script>
+</svelte:head>
+
+<slot></slot>
+
+<style>
+	:global(body) {
+		font-family: 'Georgia', serif;
+		margin: 0;
+		padding: 0;
+		overflow-x: hidden;
+		width: 100%;
+	}
+
+	:global(html) {
+		overflow-x: hidden;
+		width: 100%;
+	}
+
+	:global(*, *::before, *::after) {
+		box-sizing: border-box;
+	}
+</style>
