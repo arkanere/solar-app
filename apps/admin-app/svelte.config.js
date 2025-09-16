@@ -6,12 +6,7 @@ const config = {
 	preprocess: vitePreprocess(),
 
 	kit: {
-		adapter: adapter({
-			runtime: 'nodejs18.x'
-		}),
-		files: {
-			lib: 'src/lib'
-		}
+		adapter: adapter()
 	}
 };
 
