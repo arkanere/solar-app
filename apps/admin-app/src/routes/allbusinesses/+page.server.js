@@ -1,0 +1,24 @@
+// src/routes/admin/businesses/+page.server.js
+export const prerender = false;
+
+import { createPool } from '@vercel/postgres';
+import { POSTGRES_URL } from '$env/static/private';
+
+/** @type {import('./$types').PageServerLoad} */
+export async function load() {
+	const pool = createPool({ connectionString: POSTGRES_URL });
+
+	try {
+		const result = await pool.query(`SELECT id, businessname, phonenumber, gstn, 
+      state, district, tag, notes, isvisible FROM businesses_1 ORDER BY id DESC`);
+
+		if (result.rows.length > 0) {
+			return { businesses: result.rows };
+		} else {
+			return { errorMessage: 'No business data found' };
+		}
+	} catch (error) {
+		console.error('Database query error:', error);
+		return { errorMessage: 'Failed to load business data' };
+	}
+}
