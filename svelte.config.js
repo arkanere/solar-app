@@ -5,7 +5,9 @@ import { businesses } from './src/lib/businesses.js';
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
 	kit: {
-		adapter: adapter(),
+		adapter: adapter({
+			external: ['/in/*'] // Tell SvelteKit to not handle /in routes
+		}),
 	}
 };
 
