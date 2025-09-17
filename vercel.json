@@ -6,11 +6,11 @@
   "rewrites": [
     {
       "source": "/in",
-      "destination": "https://solar-app-in.vercel.app/in"
+      "destination": "https://solar-app-in.vercel.app/"
     },
     {
       "source": "/in/:path*",
-      "destination": "https://solar-app-in.vercel.app/in/:path*"
+      "destination": "https://solar-app-in.vercel.app/:path*"
     }
   ]
 }
