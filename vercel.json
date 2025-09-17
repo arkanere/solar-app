@@ -1,0 +1,15 @@
+{
+  "framework": "sveltekit",
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "rewrites": [
+    {
+      "source": "/in",
+      "destination": "https://solar-app-in.vercel.app/"
+    },
+    {
+      "source": "/in/(.*)",
+      "destination": "https://solar-app-in.vercel.app/$1"
+    }
+  ]
+}
