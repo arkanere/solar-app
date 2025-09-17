@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/in",
+      "destination": "https://in-app-deployment-url.vercel.app/"
+    },
+    {
+      "source": "/in/(.*)",
+      "destination": "https://in-app-deployment-url.vercel.app/$1"
+    }
+  ]
+}
