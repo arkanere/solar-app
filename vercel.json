@@ -1,4 +1,5 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "sveltekit",
   "buildCommand": "npm run build",
   "installCommand": "npm install",
@@ -8,8 +9,8 @@
       "destination": "https://solar-app-in.vercel.app/"
     },
     {
-      "source": "/in/(.*)",
-      "destination": "https://solar-app-in.vercel.app/$1"
+      "source": "/in/:path*",
+      "destination": "https://solar-app-in.vercel.app/:path*"
     }
   ]
 }
