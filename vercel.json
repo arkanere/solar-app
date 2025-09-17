@@ -1,4 +1,7 @@
 {
+  "framework": "sveltekit",
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
   "rewrites": [
     {
       "source": "/in",
