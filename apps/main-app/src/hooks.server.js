@@ -1,6 +1,6 @@
 export async function handle({ event, resolve }) {
 	// REDIRECT: Business paths to business.solarvipani.com
-	if (event.url.pathname.startsWith('/business')) {
+	if (event.url.pathname.startsWith('/business/')) {
 		const targetUrl = 'https://business.solarvipani.com';
 		console.log('🔀 BUSINESS REDIRECT:', {
 			from: event.url.href,
