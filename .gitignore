@@ -51,3 +51,10 @@ android-business-app/.cxx/
 android-business-app/*.iml
 android-business-app/*.hprof
 android-business-app/app/release/
+
+# Apps
+apps/*/node_modules
+apps/*/.svelte-kit
+apps/*/.vercel
+apps/*/build
+apps/*/.output

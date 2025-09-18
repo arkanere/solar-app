@@ -1,5 +1,6 @@
 <script>
     import { goto } from '$app/navigation';
+    import { base } from '$app/paths';
 
     let businessName = '';
     let address = '';
@@ -179,7 +180,7 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    goto('/thank-you-business');
+                    goto(`${base}/thank-you-business`);
                 } else {
                     alert(`Submission failed: ${result.error}`);
                 }
