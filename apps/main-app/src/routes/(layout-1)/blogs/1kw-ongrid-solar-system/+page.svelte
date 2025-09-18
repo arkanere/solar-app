@@ -390,7 +390,7 @@
 		<h2>Conclusion</h2>
 		<p>
 			A 1kW on-grid solar system represents an excellent entry point into solar energy adoption for
-			Indian households. With government subsidies, the effective cost becomes very attractive,
+			Indian household. With government subsidies, the effective cost becomes very attractive,
 			offering a payback period of just 4-6 years. The system is perfect for small homes and
 			apartments with limited rooftop space and modest electricity consumption.
 		</p>
