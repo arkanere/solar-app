@@ -35,6 +35,6 @@
     {
       "source": "/au/:path*",
       "destination": "https://solar-app-au.vercel.app/:path*"
-    },
+    }
   ]
 }
