@@ -35,6 +35,26 @@
     {
       "source": "/au/:path*",
       "destination": "https://solar-app-au.vercel.app/:path*"
+    },
+    {
+      "source": "/_app/:path*",
+      "destination": "https://solar-app-in.vercel.app/_app/:path*",
+      "has": [{"type": "header", "key": "referer", "value": "*/in*"}]
+    },
+    {
+      "source": "/_app/:path*",
+      "destination": "https://solar-app-us.vercel.app/_app/:path*",
+      "has": [{"type": "header", "key": "referer", "value": "*/us*"}]
+    },
+    {
+      "source": "/_app/:path*",
+      "destination": "https://solar-app-uk.vercel.app/_app/:path*",
+      "has": [{"type": "header", "key": "referer", "value": "*/uk*"}]
+    },
+    {
+      "source": "/_app/:path*",
+      "destination": "https://solar-app-au.vercel.app/_app/:path*",
+      "has": [{"type": "header", "key": "referer", "value": "*/au*"}]
     }
   ]
 }
