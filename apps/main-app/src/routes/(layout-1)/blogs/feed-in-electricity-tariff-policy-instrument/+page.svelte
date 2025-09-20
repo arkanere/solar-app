@@ -173,7 +173,7 @@
 			These global experiences underscore the need for dynamic tariff adjustments, robust oversight,
 			and well-planned grid integration. For India, drawing on these international lessons—while
 			tailoring to local contexts—can strengthen the long-term sustainability and affordability of
-			feed-in tariff programs.
+			feedin tariff programs.
 		</p>
 
 		<h2>5. Policy Outlook for India’s Solar Sector</h2>
