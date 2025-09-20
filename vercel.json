@@ -35,27 +35,5 @@
   ],
   "framework": "sveltekit",
   "buildCommand": "npm run build",
-  "installCommand": "npm install",
-  "projects": [
-    {
-      "name": "solar-app",
-      "root": "apps/main-app"
-    },
-    {
-      "name": "solar-app-in",
-      "root": "apps/in-app"
-    },
-    {
-      "name": "solar-app-us",
-      "root": "apps/us-app"
-    },
-    {
-      "name": "solar-app-uk",
-      "root": "apps/uk-app"
-    },
-    {
-      "name": "solar-app-au",
-      "root": "apps/au-app"
-    }
-  ]
+  "installCommand": "npm install"
 }
