@@ -2,11 +2,13 @@
   "$schema": "https://openapi.vercel.sh/microfrontends.json",
   "applications": {
     "solar-app-main-app": {
+      "packageName": "main-app",
       "development": {
         "fallback": "solarvipani.com"
       }
     },
     "solar-app-au": {
+      "packageName": "au-app",
       "routing": [
         {
           "paths": ["/au", "/au/:path*"]
@@ -14,6 +16,7 @@
       ]
     },
     "solar-app-us": {
+      "packageName": "us-app",
       "routing": [
         {
           "paths": ["/us", "/us/:path*"]
