@@ -1,24 +1,22 @@
 {
   "$schema": "https://openapi.vercel.sh/microfrontends.json",
   "applications": {
-    "solar-app": {
+    "solar-app-main-app": {
       "development": {
-        "fallback": "https://solarvipani.com"
+        "fallback": "solarvipani.com"
       }
-    },
-    "solar-app-us": {
-      "routing": [
-        {
-          "group": "united-states",
-          "paths": ["/us", "/us/:path*"]
-        }
-      ]
     },
     "solar-app-au": {
       "routing": [
         {
-          "group": "australia",
           "paths": ["/au", "/au/:path*"]
+        }
+      ]
+    },
+    "solar-app-us": {
+      "routing": [
+        {
+          "paths": ["/us", "/us/:path*"]
         }
       ]
     }
