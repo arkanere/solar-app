@@ -1,8 +1,4 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "sveltekit",
-  "buildCommand": "npm run build",
-  "installCommand": "npm install",
   "rewrites": [
     {
       "source": "/in",
@@ -11,6 +7,55 @@
     {
       "source": "/in/:path*",
       "destination": "https://solar-app-in.vercel.app/:path*"
+    },
+    {
+      "source": "/us",
+      "destination": "https://solar-app-us.vercel.app/"
+    },
+    {
+      "source": "/us/:path*",
+      "destination": "https://solar-app-us.vercel.app/:path*"
+    },
+    {
+      "source": "/uk",
+      "destination": "https://solar-app-uk.vercel.app/"
+    },
+    {
+      "source": "/uk/:path*",
+      "destination": "https://solar-app-uk.vercel.app/:path*"
+    },
+    {
+      "source": "/au",
+      "destination": "https://solar-app-au.vercel.app/"
+    },
+    {
+      "source": "/au/:path*",
+      "destination": "https://solar-app-au.vercel.app/:path*"
+    }
+  ],
+  "framework": "sveltekit",
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "projects": [
+    {
+      "name": "solar-app",
+      "root": "apps/main-app"
+    },
+    {
+      "name": "solar-app-in",
+      "root": "apps/in-app"
+    },
+    {
+      "name": "solar-app-us",
+      "root": "apps/us-app"
+    },
+    {
+      "name": "solar-app-uk",
+      "root": "apps/uk-app"
+    },
+    {
+      "name": "solar-app-au",
+      "root": "apps/au-app"
     }
   ]
 }
