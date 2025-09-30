@@ -3,7 +3,8 @@
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
-		"dev": "vite dev --port 7123",
+		"dev": "VC_MICROFRONTENDS_CONFIG=./microfrontends.json vite dev --port $(microfrontends port)",
+		"proxy": "microfrontends proxy ./microfrontends.json --local-apps solar-app-main-app solar-app-au solar-app-us",
 		"build": "vite build",
 		"preview": "vite preview",
 		"clean": "rm -rf .svelte-kit",
