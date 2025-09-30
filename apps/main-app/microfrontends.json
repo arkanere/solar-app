@@ -4,7 +4,8 @@
     "solar-app-main-app": {
       "packageName": "main-app",
       "development": {
-        "fallback": "solarvipani.com"
+        "fallback": "solarvipani.com",
+        "local": 7123
       }
     },
     "solar-app-au": {
@@ -13,7 +14,10 @@
         {
           "paths": ["/au", "/au/:path*"]
         }
-      ]
+      ],
+      "development": {
+        "local": 7124
+      }
     },
     "solar-app-us": {
       "packageName": "us-app",
@@ -21,7 +25,10 @@
         {
           "paths": ["/us", "/us/:path*"]
         }
-      ]
+      ],
+      "development": {
+        "local": 7125
+      }
     }
   }
 }
