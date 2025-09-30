@@ -1,0 +1,13 @@
+{
+  "name": "solar-app-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "echo 'Run dev from individual app directories'",
+    "build": "echo 'Run build from individual app directories'"
+  },
+  "packageManager": "npm@10.0.0"
+}
