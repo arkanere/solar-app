@@ -3,7 +3,7 @@ node_modules
 # Output
 .output
 .vercel
-/.svelte-kit
+.svelte-kit
 /build
 
 # OS
@@ -18,6 +18,9 @@ Thumbs.db
 
 # Server scripts env files
 scripts/server-scripts/.env
+
+# n8n
+scripts/n8n/.n8n
 
 # Vite
 vite.config.js.timestamp-*
