@@ -132,26 +132,18 @@
 	<ul class="nav-list {mobileMenuOpen ? 'open' : ''}">
 				<li><button on:click={toggleAddLead}>Add Lead</button></li>
 				<li>
-					<button on:click={() => (window.location.href = `/${businessSlug}/crm`)}
-						>CRM</button
-					>
+					<a href="/{businessSlug}/crm">CRM</a>
 				</li>
 				<li>
-					<button on:click={() => (window.location.href = `/${businessSlug}/open-inquiries`)}
-						>Open Inquiries</button
-					>
+					<a href="/{businessSlug}/open-inquiries">Open Inquiries</a>
 				</li>
 				<li><button on:click={togglePostRecentProject}>Post Recent Project</button></li>
 				<li>
-					<button on:click={() => (window.location.href = `/${businessSlug}/project`)}
-						>Manage Project</button
-					>
+					<a href="/{businessSlug}/project">Manage Project</a>
 				</li>
 				<li><button on:click={toggleAddBranch}>Add Branch</button></li>
 				<li>
-					<button on:click={() => (window.location.href = `/${businessSlug}/branch`)}
-						>Manage Branch</button
-					>
+					<a href="/{businessSlug}/branch">Manage Branch</a>
 				</li>
 				<li><button on:click={toggleRankingPolicy}>Policy</button></li>
 				<li><button on:click={toggleSupport}>Support</button></li>
@@ -343,6 +335,26 @@
 		cursor: not-allowed;
 	}
 
+	/* Navigation link styles - styled to match buttons */
+	.nav-list a {
+		background-color: var(--accent-color);
+		color: #fff;
+		border: none;
+		padding: 0.5rem 1rem;
+		border-radius: 5px;
+		cursor: pointer;
+		transition: background-color 0.3s ease;
+		text-decoration: none;
+		display: inline-block;
+		font-size: 1rem;
+		font-family: var(--font-family);
+		white-space: nowrap;
+	}
+
+	.nav-list a:hover {
+		background-color: var(--accent-hover);
+	}
+
 	/* Combined Navigation Styles */
 	.top-nav {
 		display: flex;
@@ -522,6 +534,7 @@
 		}
 
 		.nav-list button,
+		.nav-list a,
 		.nav-list form,
 		.nav-list form button {
 			width: 100%;

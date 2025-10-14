@@ -1,10 +1,26 @@
 <script>
 	import { page } from '$app/stores';
 	import { isDarkMode } from '$lib/themeStore';
+	import ShowSupport from '$lib/ShowSupport.svelte';
 
 	const businessSlug = $page.params.business_slug;
 	$: darkMode = $isDarkMode;
-	$: ({ leads = [] } = $page.data);
+	$: ({ leads = [], business } = $page.data);
+
+	// State variables
+	let showSupport = false;
+	let mobileMenuOpen = false;
+
+	// UI toggle functions
+	const toggleSupport = () => (showSupport = !showSupport);
+	const toggleMobileMenu = () => (mobileMenuOpen = !mobileMenuOpen);
+
+	// Computed business info
+	$: businessInfo = business
+		? {
+				businessname: business.businessname
+			}
+		: {};
 
 	// Function to calculate days ago
 	function getDaysAgo(dateString) {
@@ -36,10 +52,25 @@
 <nav class="top-nav {darkMode ? 'dark' : 'light'}">
 	<div class="nav-brand">
 		<a href="/{businessSlug}">
-			<span class="brand-full">Solar Vipani Business Dashboard - Open Inquiries</span>
-			<span class="brand-mobile">Open Inquiries</span>
+			<span class="brand-full">Solar Vipani Business Dashboard - {businessInfo.businessname || ''}</span>
+			<span class="brand-mobile">{businessInfo.businessname || 'Business Dashboard'}</span>
 		</a>
 	</div>
+
+	<div class="hamburger" on:click={toggleMobileMenu}>
+		<span></span>
+		<span></span>
+		<span></span>
+	</div>
+
+	<ul class="nav-list {mobileMenuOpen ? 'open' : ''}">
+		<li><button on:click={toggleSupport}>Support</button></li>
+		<li>
+			<form method="POST" action={`/${businessSlug}/logout`}>
+				<button type="submit">Logout</button>
+			</form>
+		</li>
+	</ul>
 </nav>
 
 <!-- MAIN CONTENT -->
@@ -105,6 +136,11 @@
 	</div>
 </main>
 
+<!-- Component Modals -->
+{#if showSupport}
+	<ShowSupport show={showSupport} on:close={() => (showSupport = false)} />
+{/if}
+
 <style>
 	/* Reset margins and ensure full width */
 	:global(body) {
@@ -159,13 +195,60 @@
 		color: var(--dark-primary-text-color);
 	}
 
+	/* Hamburger menu */
+	.hamburger {
+		display: none;
+		flex-direction: column;
+		justify-content: space-between;
+		width: 30px;
+		height: 21px;
+		cursor: pointer;
+		margin: 1rem 0;
+	}
+
+	.hamburger span {
+		display: block;
+		height: 3px;
+		width: 100%;
+		background-color: var(--accent-color);
+		border-radius: 3px;
+	}
+
+	/* Button styles */
+	button {
+		background-color: var(--accent-color);
+		color: #fff;
+		border: none;
+		padding: 0.5rem 1rem;
+		border-radius: 5px;
+		cursor: pointer;
+		transition: background-color 0.3s ease;
+		text-decoration: none;
+		display: inline-block;
+		font-size: 1rem;
+		font-family: var(--font-family);
+		white-space: nowrap;
+	}
+
+	button:hover {
+		background-color: var(--accent-hover);
+	}
+
+	button:disabled {
+		background-color: #9ca3af;
+		cursor: not-allowed;
+	}
+
 	/* Navigation */
 	.top-nav {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
 		padding: 1rem;
+		flex-wrap: wrap;
 		transition: background-color 0.3s ease;
+		margin: 0;
+		position: relative;
 		width: 100%;
 	}
 
@@ -186,6 +269,20 @@
 
 	.brand-full {
 		display: inline;
+	}
+
+	.nav-list {
+		list-style-type: none;
+		display: flex;
+		justify-content: center;
+		padding: 0;
+		margin: 0 1rem;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+	}
+
+	.nav-list li {
+		margin: 0;
 	}
 
 	/* Light Mode Nav */
@@ -410,12 +507,60 @@
 
 	/* Mobile responsiveness */
 	@media (max-width: 768px) {
+		.top-nav {
+			flex-wrap: wrap;
+			padding: 0.75rem;
+		}
+
+		.nav-brand {
+			flex: 1;
+			order: 1;
+		}
+
+		.nav-brand a {
+			font-size: 0.85rem;
+		}
+
 		.brand-full {
 			display: none;
 		}
 
 		.brand-mobile {
 			display: inline;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			max-width: 200px;
+		}
+
+		.hamburger {
+			order: 2;
+			display: flex;
+		}
+
+		.nav-list {
+			order: 4;
+			width: 100%;
+			margin: 0.5rem 0 0 0;
+			display: none;
+			flex-direction: column;
+			gap: 0.5rem;
+		}
+
+		.nav-list.open {
+			display: flex;
+		}
+
+		.nav-list li {
+			width: 100%;
+		}
+
+		.nav-list button,
+		.nav-list form,
+		.nav-list form button {
+			width: 100%;
+			text-align: center;
+			white-space: normal;
 		}
 
 		.container {
@@ -463,6 +608,20 @@
 	}
 
 	@media (max-width: 480px) {
+		.container {
+			padding: 0 0.5rem;
+		}
+
+		.brand-mobile {
+			max-width: 140px;
+			font-size: 0.8rem;
+		}
+
+		button {
+			white-space: normal;
+			word-break: break-word;
+		}
+
 		.header-subtitle {
 			font-size: 1rem;
 			padding: 0 1rem;
