@@ -2,6 +2,8 @@
 	import { page } from '$app/stores';
 	import { isDarkMode } from '$lib/themeStore';
 	import CustomerInquiry from '$lib/CustomerInquiry.svelte';
+	import ShowSupport from '$lib/ShowSupport.svelte';
+	import LeadFormModalBusiness from '$lib/LeadFormModalBusiness.svelte';
 
 	// Destructure page data for cleaner access
 	const businessSlug = $page.params.business_slug;
@@ -9,7 +11,10 @@
 	$: darkMode = $isDarkMode;
 
 	// Initialize state variables
+	let showSupport = false;
+	let showAddLead = false;
 	let isClaiming = false;
+	let mobileMenuOpen = false;
 
 	// Computed business info
 	$: businessInfo = business
@@ -23,6 +28,22 @@
 				website: business.website
 			}
 		: {};
+
+	// UI toggle functions
+	const toggleSupport = () => (showSupport = !showSupport);
+	const toggleAddLead = () => (showAddLead = !showAddLead);
+	const toggleMobileMenu = () => (mobileMenuOpen = !mobileMenuOpen);
+
+	function handleLeadAdded(event) {
+		try {
+			const newLead = event.detail;
+			console.log('New lead added:', newLead);
+			showAddLead = false;
+			window.location.reload();
+		} catch (error) {
+			console.error('Error handling lead added:', error);
+		}
+	}
 
 	async function claimLead(leadId, businessId) {
 		if (isClaiming) return;
@@ -60,6 +81,32 @@
 	<meta name="description" content="Customer Relationship Management for {business?.businessname || 'your business'}" />
 </svelte:head>
 
+<!-- TOP NAVIGATION -->
+<nav class="top-nav {darkMode ? 'dark' : 'light'}">
+	<div class="nav-brand">
+		<a href="/{businessSlug}">
+			<span class="brand-full">Solar Vipani Business Dashboard - {businessInfo.businessname || ''}</span>
+			<span class="brand-mobile">{businessInfo.businessname || 'Business Dashboard'}</span>
+		</a>
+	</div>
+
+	<div class="hamburger" on:click={toggleMobileMenu}>
+		<span></span>
+		<span></span>
+		<span></span>
+	</div>
+
+	<ul class="nav-list {mobileMenuOpen ? 'open' : ''}">
+		<li><button on:click={toggleAddLead}>Add Lead</button></li>
+		<li><button on:click={toggleSupport}>Support</button></li>
+		<li>
+			<form method="POST" action={`/${businessSlug}/logout`}>
+				<button type="submit">Logout</button>
+			</form>
+		</li>
+	</ul>
+</nav>
+
 <!-- MAIN CONTENT -->
 <main class={darkMode ? 'dark' : 'light'}>
 	<div class="container">
@@ -81,6 +128,25 @@
 		/>
 	</div>
 </main>
+
+<!-- Component Modals -->
+{#if showAddLead}
+	<div class="modal-overlay">
+		<div class="modal-content">
+			<button class="close-btn" on:click={toggleAddLead}>&times;</button>
+			<h2>Add Lead</h2>
+			<LeadFormModalBusiness
+				businessName={business?.businessname || ''}
+				{businessSlug}
+				on:leadAdded={handleLeadAdded}
+			/>
+		</div>
+	</div>
+{/if}
+
+{#if showSupport}
+	<ShowSupport show={showSupport} on:close={() => (showSupport = false)} />
+{/if}
 
 <style>
 	/* Root variables for light and dark modes */
@@ -135,6 +201,207 @@
 		color: var(--dark-primary-text-color);
 	}
 
+	/* Reset margins and ensure full width */
+	:global(body) {
+		margin: 0;
+		padding: 0;
+	}
+
+	/* Hamburger menu */
+	.hamburger {
+		display: none;
+		flex-direction: column;
+		justify-content: space-between;
+		width: 30px;
+		height: 21px;
+		cursor: pointer;
+		margin: 1rem 0;
+	}
+
+	.hamburger span {
+		display: block;
+		height: 3px;
+		width: 100%;
+		background-color: var(--accent-color);
+		border-radius: 3px;
+	}
+
+	/* Button styles */
+	button {
+		background-color: var(--accent-color);
+		color: #fff;
+		border: none;
+		padding: 0.5rem 1rem;
+		border-radius: 5px;
+		cursor: pointer;
+		transition: background-color 0.3s ease;
+		text-decoration: none;
+		display: inline-block;
+		font-size: 1rem;
+		font-family: var(--font-family);
+		white-space: nowrap;
+	}
+
+	button:hover {
+		background-color: var(--accent-hover);
+	}
+
+	button:disabled {
+		background-color: #9ca3af;
+		cursor: not-allowed;
+	}
+
+	/* Navigation link styles - styled to match buttons */
+	.nav-list a {
+		background-color: var(--accent-color);
+		color: #fff;
+		border: none;
+		padding: 0.5rem 1rem;
+		border-radius: 5px;
+		cursor: pointer;
+		transition: background-color 0.3s ease;
+		text-decoration: none;
+		display: inline-block;
+		font-size: 1rem;
+		font-family: var(--font-family);
+		white-space: nowrap;
+	}
+
+	.nav-list a:hover {
+		background-color: var(--accent-hover);
+	}
+
+	/* Combined Navigation Styles */
+	.top-nav {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 1rem;
+		flex-wrap: wrap;
+		transition: background-color 0.3s ease;
+		margin: 0;
+		position: relative;
+		width: 100%;
+	}
+
+	.nav-brand {
+		flex: 1;
+	}
+
+	.nav-brand a {
+		text-decoration: none;
+		font-size: 1.1rem;
+		font-weight: 500;
+		transition: color 0.3s ease;
+	}
+
+	.brand-mobile {
+		display: none;
+	}
+
+	.brand-full {
+		display: inline;
+	}
+
+	.nav-list {
+		list-style-type: none;
+		display: flex;
+		justify-content: center;
+		padding: 0;
+		margin: 0 1rem;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+	}
+
+	.nav-list li {
+		margin: 0;
+	}
+
+	/* Light Mode Combined Nav */
+	.top-nav.light {
+		background-color: #fafafa;
+		color: #333;
+	}
+
+	.top-nav.light .nav-brand a {
+		color: #333;
+	}
+
+	.top-nav.light .nav-brand a:hover {
+		color: #0077cc;
+	}
+
+	/* Dark Mode Combined Nav */
+	.top-nav.dark {
+		background-color: #1a1a1a;
+		color: #fff;
+	}
+
+	.top-nav.dark .nav-brand a {
+		color: #fff;
+	}
+
+	.top-nav.dark .nav-brand a:hover {
+		color: #66b2ff;
+	}
+
+	/* Modal styles */
+	.modal-overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(0, 0, 0, 0.5);
+		display: flex;
+		justify-content: center;
+		align-items: flex-start;
+		z-index: 1000;
+		overflow-y: auto;
+		padding: 20px 0;
+	}
+
+	.modal-content {
+		position: relative;
+		background: white;
+		padding: 20px;
+		border-radius: 8px;
+		max-width: 500px;
+		width: 100%;
+		margin: auto 20px;
+		max-height: calc(100vh - 40px);
+		overflow-y: auto;
+	}
+
+	.close-btn {
+		position: absolute;
+		top: 10px;
+		right: 10px;
+		background: none;
+		border: none;
+		font-size: 1.5rem;
+		cursor: pointer;
+		color: #666;
+		z-index: 1001;
+	}
+
+	.close-btn:hover {
+		color: #333;
+	}
+
+	.dark .modal-content {
+		background: var(--dark-bg-color);
+		color: var(--dark-primary-text-color);
+	}
+
+	.dark .close-btn {
+		color: #ccc;
+	}
+
+	.dark .close-btn:hover {
+		color: #fff;
+	}
+
 	/* Header */
 	header h1 {
 		font-size: 2rem;
@@ -158,6 +425,63 @@
 
 	/* Media queries for mobile responsiveness */
 	@media (max-width: 768px) {
+		.top-nav {
+			flex-wrap: wrap;
+			padding: 0.75rem;
+		}
+
+		.nav-brand {
+			flex: 1;
+			order: 1;
+		}
+
+		.nav-brand a {
+			font-size: 0.85rem;
+		}
+
+		.brand-full {
+			display: none;
+		}
+
+		.brand-mobile {
+			display: inline;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			max-width: 200px;
+		}
+
+		.hamburger {
+			order: 2;
+			display: flex;
+		}
+
+		.nav-list {
+			order: 4;
+			width: 100%;
+			margin: 0.5rem 0 0 0;
+			display: none;
+			flex-direction: column;
+			gap: 0.5rem;
+		}
+
+		.nav-list.open {
+			display: flex;
+		}
+
+		.nav-list li {
+			width: 100%;
+		}
+
+		.nav-list button,
+		.nav-list a,
+		.nav-list form,
+		.nav-list form button {
+			width: 100%;
+			text-align: center;
+			white-space: normal;
+		}
+
 		.container {
 			padding: 0 0.75rem;
 		}
@@ -172,12 +496,27 @@
 	}
 
 	@media (max-width: 480px) {
+		.container {
+			padding: 0 0.5rem;
+		}
+
+		.brand-mobile {
+			max-width: 140px;
+			font-size: 0.8rem;
+		}
+
 		header h1 {
 			font-size: 1.3rem;
+			word-break: break-word;
 		}
 
 		.subtitle {
 			font-size: 0.9rem;
+		}
+
+		button {
+			white-space: normal;
+			word-break: break-word;
 		}
 	}
 </style>

@@ -8,10 +8,17 @@
 		show = false;
 		dispatch('close');
 	};
+
+	const handleOverlayClick = (event) => {
+		// Only close if clicking directly on the overlay, not on the modal content
+		if (event.target === event.currentTarget) {
+			close();
+		}
+	};
 </script>
 
 {#if show}
-	<div role="dialog" aria-modal="true" aria-labelledby="support-title" class="modal-overlay">
+	<div role="dialog" aria-modal="true" aria-labelledby="support-title" class="modal-overlay" on:click={handleOverlayClick}>
 		<div class="modal">
 			<button class="close-modal" aria-label="Close dialog" on:click={close}>&times;</button>
 			<div class="modal-content">
@@ -23,24 +30,10 @@
 				<button on:click={close}>Close</button>
 			</div>
 		</div>
-		<!-- Use a button with fixed position and full coverage to handle outside clicks -->
-		<button class="modal-backdrop" on:click={close} aria-label="Close dialog"></button>
 	</div>
 {/if}
 
 <style>
-	.modal-backdrop {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: transparent;
-		border: none;
-		cursor: default;
-		z-index: -1;
-	}
-
 	.modal-overlay {
 		position: fixed;
 		top: 0;

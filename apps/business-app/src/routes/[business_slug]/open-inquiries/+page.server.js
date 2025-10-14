@@ -7,14 +7,15 @@ export async function load({ params }) {
 	const businessSlug = params.business_slug;
 
 	try {
-		// First get the business ID from slug
-		const businessResult = await pool.query('SELECT id FROM businesses_1 WHERE slug = $1', [businessSlug]);
-		
+		// First get the business information from slug
+		const businessResult = await pool.query('SELECT id, businessname FROM businesses_1 WHERE slug = $1', [businessSlug]);
+
 		if (businessResult.rows.length === 0) {
 			throw error(404, 'Business not found');
 		}
 
-		const businessId = businessResult.rows[0].id;
+		const business = businessResult.rows[0];
+		const businessId = business.id;
 
 		// Get Non-Exclusive-Available-to-Claim leads with state information
 		const leadsResult = await pool.query(`
@@ -38,6 +39,7 @@ export async function load({ params }) {
 		const leads = leadsResult.rows;
 
 		return {
+			business: business,
 			business_id: businessId,
 			leads: leads
 		};

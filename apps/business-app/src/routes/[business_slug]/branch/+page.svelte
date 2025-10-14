@@ -3,22 +3,38 @@
 	import { isDarkMode } from '$lib/themeStore';
 	import AddBranch from '$lib/AddBranch.svelte';
 	import ShowEditProfile from '$lib/ShowEditProfile.svelte';
+	import ShowSupport from '$lib/ShowSupport.svelte';
 
 	// Access page data
 	const businessSlug = $page.params.business_slug;
 	$: ({ mainBusiness, branches = [], errorMessage } = $page.data);
 	$: darkMode = $isDarkMode;
 
-	// State for add branch modal
-	let showAddBranch = false;
+	// Computed business info
+	$: businessInfo = mainBusiness
+		? {
+				businessname: mainBusiness.businessname
+			}
+		: {};
 
-	// State for edit profile modal
+	// State for modals
+	let showAddBranch = false;
 	let showEditProfile = false;
+	let showSupport = false;
+	let mobileMenuOpen = false;
 	let selectedBranch = null;
 
-	// Function to toggle the add branch modal
+	// Function to toggle modals
 	const toggleAddBranch = () => {
 		showAddBranch = !showAddBranch;
+	};
+
+	const toggleSupport = () => {
+		showSupport = !showSupport;
+	};
+
+	const toggleMobileMenu = () => {
+		mobileMenuOpen = !mobileMenuOpen;
 	};
 
 	// Function to open edit profile modal
@@ -56,16 +72,33 @@
 	}
 </script>
 
+<!-- TOP NAVIGATION -->
+<nav class="top-nav {darkMode ? 'dark' : 'light'}">
+	<div class="nav-brand">
+		<a href="/{businessSlug}">
+			<span class="brand-full">Solar Vipani Business Dashboard - {businessInfo.businessname || ''}</span>
+			<span class="brand-mobile">{businessInfo.businessname || 'Business Dashboard'}</span>
+		</a>
+	</div>
+
+	<div class="hamburger" on:click={toggleMobileMenu}>
+		<span></span>
+		<span></span>
+		<span></span>
+	</div>
+
+	<ul class="nav-list {mobileMenuOpen ? 'open' : ''}">
+		<li><button on:click={toggleAddBranch}>Add Branch</button></li>
+		<li><button on:click={toggleSupport}>Support</button></li>
+		<li>
+			<form method="POST" action={`/${businessSlug}/logout`}>
+				<button type="submit">Logout</button>
+			</form>
+		</li>
+	</ul>
+</nav>
+
 <main class={darkMode ? 'dark' : 'light'}>
-	<!-- Navigation Bar -->
-	<nav>
-		<ul class="nav-list">
-			<li><button on:click={toggleAddBranch}>Add Branch</button></li>
-			<li>
-				<button onclick="window.location.href='/{businessSlug}'">Back to Dashboard</button>
-			</li>
-		</ul>
-	</nav>
 
 	<header>
 		<h1>Branch Offices</h1>
@@ -150,7 +183,7 @@
 	</section>
 </main>
 
-<!-- Add Branch Modal -->
+<!-- Modals -->
 {#if showAddBranch}
 	<AddBranch
 		show={showAddBranch}
@@ -161,7 +194,6 @@
 	/>
 {/if}
 
-<!-- Edit Profile Modal -->
 {#if showEditProfile && selectedBranch}
 	<ShowEditProfile
 		show={showEditProfile}
@@ -170,6 +202,10 @@
 		on:close={() => (showEditProfile = false)}
 		on:updated={handleBranchUpdated}
 	/>
+{/if}
+
+{#if showSupport}
+	<ShowSupport show={showSupport} on:close={() => (showSupport = false)} />
 {/if}
 
 <style>
@@ -202,6 +238,105 @@
 		--edit-btn-border: #ccc;
 	}
 
+	/* Reset margins and ensure full width */
+	:global(body) {
+		margin: 0;
+		padding: 0;
+	}
+
+	/* Hamburger menu */
+	.hamburger {
+		display: none;
+		flex-direction: column;
+		justify-content: space-between;
+		width: 30px;
+		height: 21px;
+		cursor: pointer;
+		margin: 1rem 0;
+	}
+
+	.hamburger span {
+		display: block;
+		height: 3px;
+		width: 100%;
+		background-color: var(--accent-color);
+		border-radius: 3px;
+	}
+
+	/* Top Navigation Styles */
+	.top-nav {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 1rem;
+		flex-wrap: wrap;
+		transition: background-color 0.3s ease;
+		margin: 0;
+		position: relative;
+		width: 100%;
+	}
+
+	.nav-brand {
+		flex: 1;
+	}
+
+	.nav-brand a {
+		text-decoration: none;
+		font-size: 1.1rem;
+		font-weight: 500;
+		transition: color 0.3s ease;
+	}
+
+	.brand-mobile {
+		display: none;
+	}
+
+	.brand-full {
+		display: inline;
+	}
+
+	.nav-list {
+		list-style-type: none;
+		display: flex;
+		justify-content: center;
+		padding: 0;
+		margin: 0 1rem;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+	}
+
+	.nav-list li {
+		margin: 0;
+	}
+
+	/* Light Mode Nav */
+	.top-nav.light {
+		background-color: #fafafa;
+		color: #333;
+	}
+
+	.top-nav.light .nav-brand a {
+		color: #333;
+	}
+
+	.top-nav.light .nav-brand a:hover {
+		color: #0077cc;
+	}
+
+	/* Dark Mode Nav */
+	.top-nav.dark {
+		background-color: #1a1a1a;
+		color: #fff;
+	}
+
+	.top-nav.dark .nav-brand a {
+		color: #fff;
+	}
+
+	.top-nav.dark .nav-brand a:hover {
+		color: #66b2ff;
+	}
+
 	/* Main layout styling */
 	main {
 		display: flex;
@@ -210,7 +345,7 @@
 		justify-content: flex-start;
 		padding: 0rem 1rem;
 		font-family: var(--font-family);
-		min-height: 100vh;
+		min-height: calc(100vh - 70px);
 		transition:
 			background-color 0.3s ease,
 			color 0.3s ease;
@@ -231,16 +366,6 @@
 	.dark {
 		background-color: var(--dark-bg-color);
 		color: var(--dark-primary-text-color);
-	}
-
-	/* Navigation */
-	.nav-list {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 1rem;
-		list-style: none;
-		padding: 0;
-		margin-bottom: 2rem;
 	}
 
 	/* Header */
@@ -495,17 +620,77 @@
 	}
 
 	/* Media queries for mobile responsiveness */
-	@media (max-width: 600px) {
+	@media (max-width: 768px) {
+		.top-nav {
+			flex-wrap: wrap;
+			padding: 0.75rem;
+		}
+
+		.nav-brand {
+			flex: 1;
+			order: 1;
+		}
+
+		.nav-brand a {
+			font-size: 0.85rem;
+		}
+
+		.brand-full {
+			display: none;
+		}
+
+		.brand-mobile {
+			display: inline;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			max-width: 200px;
+		}
+
+		.hamburger {
+			order: 2;
+			display: flex;
+		}
+
 		.nav-list {
-			justify-content: center;
+			order: 4;
+			width: 100%;
+			margin: 0.5rem 0 0 0;
+			display: none;
+			flex-direction: column;
+			gap: 0.5rem;
+		}
+
+		.nav-list.open {
+			display: flex;
 		}
 
 		.nav-list li {
-			margin-bottom: 0.5rem;
+			width: 100%;
+		}
+
+		.nav-list button,
+		.nav-list form,
+		.nav-list form button {
+			width: 100%;
+			text-align: center;
+			white-space: normal;
 		}
 
 		.branches-grid {
 			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (max-width: 480px) {
+		.brand-mobile {
+			max-width: 140px;
+			font-size: 0.8rem;
+		}
+
+		button {
+			white-space: normal;
+			word-break: break-word;
 		}
 	}
 </style>
