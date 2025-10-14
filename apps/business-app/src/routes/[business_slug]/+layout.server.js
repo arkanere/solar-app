@@ -35,9 +35,13 @@ export const load = async ({ cookies, params, url }) => {
 
 			return { business_session: sessionData };
 		} catch (error) {
+			// If it's a redirect, let it through (don't treat it as an error)
+			if (error?.status === 302 || error?.location) {
+				throw error;
+			}
 			console.error('Invalid session data:', error);
 			cookies.delete('business-session', { path: '/' }); // Delete corrupt session
-			throw redirect(302, '/'); // Redirect to generic business page
+			throw redirect(302, '/login'); // Redirect to login page
 		}
 	}
 
