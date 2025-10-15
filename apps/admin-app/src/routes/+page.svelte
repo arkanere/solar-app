@@ -1,110 +1,200 @@
 <script>
-	import { page } from '$app/stores';
-	import { isDarkMode } from '$lib/themeStore'; // Import dark mode state
+	import { goto } from '$app/navigation';
 
-	$: darkMode = $isDarkMode; // Watch for changes in dark mode state
+	async function handleLogout() {
+		try {
+			const response = await fetch('/logout', {
+				method: 'POST'
+			});
+
+			if (response.ok || response.redirected) {
+				window.location.href = '/login';
+			}
+		} catch (error) {
+			console.error('Logout failed:', error);
+			// Fallback to direct navigation
+			window.location.href = '/login';
+		}
+	}
 </script>
 
-<main class={darkMode ? 'dark' : 'light'}>
-	<h1>Admin Panel</h1>
-	{#if $page.data.session}
-		<form method="POST" action="/logout">
-			<button type="submit">Logout</button>
-		</form>
-	{:else}
-		<p>Loading session data...</p>
-	{/if}
-</main>
+<div class="admin-container">
+	<!-- Navigation Bar -->
+	<nav class="navbar">
+		<div class="nav-content">
+			<div class="nav-brand">
+				<h1>Admin Dashboard</h1>
+			</div>
+
+			<div class="nav-links">
+				<a href="/in" class="nav-link">India Portal</a>
+				<a href="/us" class="nav-link">US Portal</a>
+				<button on:click={handleLogout} class="logout-btn">Logout</button>
+			</div>
+		</div>
+	</nav>
+
+	<!-- Main Content -->
+	<main class="main-content">
+		<div class="welcome-section">
+			<h2>Welcome to Admin Dashboard</h2>
+			<p>Select a portal to manage:</p>
+		</div>
+
+		<div class="portal-cards">
+			<a href="/in" class="portal-card">
+				<div class="card-icon">IN</div>
+				<h3>India Portal</h3>
+				<p>Manage Indian operations and businesses</p>
+			</a>
+
+			<a href="/us" class="portal-card">
+				<div class="card-icon">US</div>
+				<h3>US Portal</h3>
+				<p>Manage US operations and businesses</p>
+			</a>
+		</div>
+	</main>
+</div>
 
 <style>
-	/* Root variables for light and dark modes */
-	:root {
-		--light-bg-color: #f8f9fa; /* Light grayish background */
-		--dark-bg-color: #1a1a1a; /* Dark background */
-		--light-primary-text-color: #333; /* Dark text for light mode */
-		--dark-primary-text-color: #f0f0f0; /* Light text for dark mode */
-		--accent-color: #0056b3; /* Blue for links and actions */
-		--hover-color: #003366; /* Darker blue for hover effect */
-		--button-bg-color: #4caf50; /* Green for button */
-		--button-hover-color: #45a049; /* Slightly darker green for button hover */
-		--font-family: 'Helvetica Neue', Arial, sans-serif; /* Clean font family */
-	}
-
-	/* Main layout styling */
-	main {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: 2rem;
-		font-family: var(--font-family);
+	.admin-container {
 		min-height: 100vh;
-		transition:
-			background-color 0.3s ease,
-			color 0.3s ease;
+		background-color: #f5f5f5;
 	}
 
-	/* Light Mode */
-	.light {
-		background-color: var(--light-bg-color);
-		color: var(--light-primary-text-color);
+	.navbar {
+		background-color: #fff;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		padding: 1rem 2rem;
+		position: sticky;
+		top: 0;
+		z-index: 100;
 	}
 
-	/* Dark Mode */
-	.dark {
-		background-color: var(--dark-bg-color);
-		color: var(--dark-primary-text-color);
-	}
-
-	/* Heading styling */
-	h1 {
-		font-size: 2.2rem;
-		margin-bottom: 1.5rem;
-		font-weight: 600;
-	}
-
-	.light h1 {
-		color: var(--light-primary-text-color);
-	}
-
-	.dark h1 {
-		color: var(--dark-primary-text-color);
-	}
-
-	/* Paragraph styling */
-	p {
-		font-size: 1.1rem;
-		margin-bottom: 1.8rem;
-		line-height: 1.6;
-	}
-
-	.light p {
-		color: var(--light-primary-text-color);
-	}
-
-	.dark p {
-		color: var(--dark-primary-text-color);
-	}
-
-	/* Form for logout button */
-	form {
+	.nav-content {
+		max-width: 1200px;
+		margin: 0 auto;
 		display: flex;
-		justify-content: center;
+		justify-content: space-between;
+		align-items: center;
 	}
 
-	/* Button styling */
-	button {
-		padding: 0.75em 1.5em;
-		background-color: var(--button-bg-color);
+	.nav-brand h1 {
+		font-size: 1.5rem;
+		color: #333;
+		margin: 0;
+	}
+
+	.nav-links {
+		display: flex;
+		gap: 1.5rem;
+		align-items: center;
+	}
+
+	.nav-link {
+		text-decoration: none;
+		color: #555;
+		font-weight: 500;
+		padding: 0.5rem 1rem;
+		border-radius: 4px;
+		transition: all 0.2s;
+	}
+
+	.nav-link:hover {
+		background-color: #f0f0f0;
+		color: #000;
+	}
+
+	.logout-btn {
+		background-color: #dc3545;
 		color: white;
 		border: none;
+		padding: 0.5rem 1.25rem;
 		border-radius: 4px;
+		font-weight: 500;
 		cursor: pointer;
-		font-size: 1rem;
-		transition: background-color 0.3s ease;
+		transition: background-color 0.2s;
 	}
 
-	button:hover {
-		background-color: var(--button-hover-color);
+	.logout-btn:hover {
+		background-color: #c82333;
+	}
+
+	.main-content {
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 3rem 2rem;
+	}
+
+	.welcome-section {
+		text-align: center;
+		margin-bottom: 3rem;
+	}
+
+	.welcome-section h2 {
+		font-size: 2rem;
+		color: #333;
+		margin-bottom: 0.5rem;
+	}
+
+	.welcome-section p {
+		font-size: 1.1rem;
+		color: #666;
+	}
+
+	.portal-cards {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+		gap: 2rem;
+		margin-top: 2rem;
+	}
+
+	.portal-card {
+		background: white;
+		border-radius: 8px;
+		padding: 2rem;
+		text-align: center;
+		text-decoration: none;
+		color: inherit;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+		transition: all 0.3s;
+	}
+
+	.portal-card:hover {
+		transform: translateY(-4px);
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+	}
+
+	.card-icon {
+		font-size: 4rem;
+		margin-bottom: 1rem;
+	}
+
+	.portal-card h3 {
+		font-size: 1.5rem;
+		color: #333;
+		margin-bottom: 0.5rem;
+	}
+
+	.portal-card p {
+		color: #666;
+		font-size: 1rem;
+	}
+
+	@media (max-width: 768px) {
+		.nav-content {
+			flex-direction: column;
+			gap: 1rem;
+		}
+
+		.nav-links {
+			flex-wrap: wrap;
+			justify-content: center;
+		}
+
+		.portal-cards {
+			grid-template-columns: 1fr;
+		}
 	}
 </style>
