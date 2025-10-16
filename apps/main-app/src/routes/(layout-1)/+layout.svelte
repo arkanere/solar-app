@@ -212,12 +212,18 @@
 	<!-- Facebook Pixel (kept for immediate tracking) -->
 	<script async="" src="https://connect.facebook.net/en_US/fbevents.js"></script>
 
-	<!-- CallSafe Widget -->
-	<script
-		src="https://callsafe.tech/embed.js"
-		data-handle="25831dee9a0b76f8"
-		data-source-id="solar-vipani"
-	></script>
+	<!-- CallSafe Widget - Lazy loaded after page is fully loaded -->
+	<script>
+		if (typeof window !== 'undefined') {
+			window.addEventListener('load', function() {
+				const callsafeScript = document.createElement('script');
+				callsafeScript.src = 'https://callsafe.tech/embed.js';
+				callsafeScript.setAttribute('data-handle', '25831dee9a0b76f8');
+				callsafeScript.setAttribute('data-source-id', 'solar-vipani');
+				document.head.appendChild(callsafeScript);
+			});
+		}
+	</script>
 
 	<!--src="http://localhost:5173/embed4.js"  -->
 

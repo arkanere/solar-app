@@ -106,8 +106,6 @@
 
 	<!-- Preconnect to external domains for faster resource loading -->
 	<link rel="preconnect" href="https://res.cloudinary.com" />
-	<link rel="preconnect" href="https://fonts.googleapis.com" />
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
 	<!-- JSON-LD Structured Data -->
 	<script type="application/ld+json">
