@@ -38,7 +38,7 @@
 
 		try {
 			// Send the updated lead data to the server
-			const response = await fetch('/api/updateLead', {
+			const response = await fetch('/in/api/updateLead', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -89,7 +89,7 @@
 	// Function to send lead details via email
 	async function shareLeadOnMail(lead, businessSlug) {
 		try {
-			const response = await fetch('/api/sendLeadDetails', {
+			const response = await fetch('/in/api/sendLeadDetails', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'

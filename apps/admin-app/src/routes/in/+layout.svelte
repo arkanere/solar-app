@@ -39,37 +39,37 @@
       <a href="#lead-data">Lead Data</a>
       {#if leadDataDropdownVisible}
         <div class="dropdown-content">
-          <a href="leaddata" target="_blank">View Lead Data</a>
-          <a href="leaddata-nonexclusive" target="_blank">View Nonexclusive Lead Data</a>
-          <a href="lead-claimsdata" target="_blank">View Lead Claims Data</a>
+          <a href="/in/leaddata" target="_blank">View Lead Data</a>
+          <a href="/in/leaddata-nonexclusive" target="_blank">View Nonexclusive Lead Data</a>
+          <a href="/in/lead-claimsdata" target="_blank">View Lead Claims Data</a>
         </div>
       {/if}
     </li>
-    <li><a href="businesses">View Business Data</a></li>
-    <li><a href="queries">View Queries</a></li>
+    <li><a href="/in/businesses">View Business Data</a></li>
+    <li><a href="/in/queries">View Queries</a></li>
     <li
       class="dropdown"
       on:mouseenter={() => (analyticsDropdownVisible = true)}
       on:mouseleave={() => (analyticsDropdownVisible = false)}
     >
-      <a href="analytics">View Analytics</a>
+      <a href="/in/analytics">View Analytics</a>
       {#if analyticsDropdownVisible}
         <div class="dropdown-content">
-          <a href="analytics/business-login" target="_blank">Business Login</a>
-          <a href="analytics/businesses" target="_blank">Businesses</a>
-          <a href="analytics/businesses-branches" target="_blank"
+          <a href="/in/analytics/business-login" target="_blank">Business Login</a>
+          <a href="/in/analytics/businesses" target="_blank">Businesses</a>
+          <a href="/in/analytics/businesses-branches" target="_blank"
             >Businesses Branches</a
           >
-          <a href="analytics/businesses-statewise" target="_blank"
+          <a href="/in/analytics/businesses-statewise" target="_blank"
             >Businesses Statewise</a
           >
-          <a href="analytics/coverage" target="_blank">Coverage</a>
-          <a href="analytics/lead-generation" target="_blank">Lead Generation</a
+          <a href="/in/analytics/coverage" target="_blank">Coverage</a>
+          <a href="/in/analytics/lead-generation" target="_blank">Lead Generation</a
           >
-          <a href="analytics/leads-claimed" target="_blank">Leads Claimed</a>
-          <a href="analytics/recent-projects" target="_blank">Recent Projects</a
+          <a href="/in/analytics/leads-claimed" target="_blank">Leads Claimed</a>
+          <a href="/in/analytics/recent-projects" target="_blank">Recent Projects</a
           >
-          <a href="analytics/spread" target="_blank">Spread</a>
+          <a href="/in/analytics/spread" target="_blank">Spread</a>
         </div>
       {/if}
     </li>
@@ -78,13 +78,13 @@
       on:mouseenter={() => (controlTowerDropdownVisible = true)}
       on:mouseleave={() => (controlTowerDropdownVisible = false)}
     >
-      <a href="/control-tower">Control Tower</a>
+      <a href="/in/control-tower">Control Tower</a>
       {#if controlTowerDropdownVisible}
         <div class="dropdown-content">
-          <a href="control-tower/eligible-businesses" target="_blank"
+          <a href="/in/control-tower/eligible-businesses" target="_blank"
             >Eligible Businesses</a
           >
-          <a href="control-tower/eligible-leads" target="_blank"
+          <a href="/in/control-tower/eligible-leads" target="_blank"
             >Eligible Leads</a
           >
         </div>

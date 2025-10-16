@@ -32,7 +32,7 @@ export async function POST({ request }) {
 		let message;
 		if (magic_link_token) {
 			// Generate the magic link if the token is available
-			const magicLink = `https://solarvipani.com/business/${business_slug}/signin-link/${magic_link_token}`;
+			const magicLink = `https://business.solarvipani.com/in/${business_slug}/signin-link/${magic_link_token}`;
 
 			// Email content with the magic link
 			message = `

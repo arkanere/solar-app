@@ -45,7 +45,7 @@
 
 		try {
 			// Send the updated lead data to the server
-			const response = await fetch('/api/updateLead', {
+			const response = await fetch('/in/api/updateLead', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -106,7 +106,7 @@
 				throw new Error('District value is missing. Cannot share lead.');
 			}
 
-			const response = await fetch('/api/shareMaskedLeadWithDistrictBusinesses', {
+			const response = await fetch('/in/api/shareMaskedLeadWithDistrictBusinesses', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ lead, business_slug: businessSlug })
@@ -138,7 +138,7 @@
 				throw new Error('District value is missing. Cannot share lead.');
 			}
 
-			const response = await fetch('/api/shareMaskedLeadWithUnverifiedBusinesses', {
+			const response = await fetch('/in/api/shareMaskedLeadWithUnverifiedBusinesses', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ lead, business_slug: businessSlug })
@@ -170,7 +170,7 @@
 				throw new Error('District value is missing. Cannot share lead.');
 			}
 
-			const response = await fetch('/api/shareMaskedLeadWithStateBusinesses', {
+			const response = await fetch('/in/api/shareMaskedLeadWithStateBusinesses', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ lead, business_slug: businessSlug })
