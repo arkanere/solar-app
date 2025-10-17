@@ -1,0 +1,14 @@
+{
+	"redirects": [
+		{
+			"source": "/",
+			"destination": "/in",
+			"permanent": true
+		},
+		{
+			"source": "/((?!in|us|au|api|admin|user|business).*)",
+			"destination": "/in/$1",
+			"permanent": true
+		}
+	]
+}

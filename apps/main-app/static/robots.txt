@@ -1,4 +1,5 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Sitemap: https://solarvipani.com/sitemap.xml
+Sitemap: https://solarvipani.com/in/sitemap.xml
 Disallow:
