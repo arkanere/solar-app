@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug /in routing</title>
+</head>
+<body>
+    <h1>Debug /in Routing</h1>
+    <p>Current URL: <span id="currentUrl"></span></p>
+    <p>Original URL: <span id="originalUrl"></span></p>
+    <button onclick="testInRoute()">Test /in route</button>
+    <button onclick="testInBusiness()">Test /in/business-listing</button>
+
+    <div id="logs"></div>
+
+    <script>
+        function log(message) {
+            console.log(message);
+            document.getElementById('logs').innerHTML += '<p>' + new Date().toISOString() + ': ' + message + '</p>';
+        }
+
+        function updateUrls() {
+            document.getElementById('currentUrl').textContent = window.location.href;
+            document.getElementById('originalUrl').textContent = document.referrer || 'none';
+        }
+
+        function testInRoute() {
+            log('Testing /in route...');
+            window.location.href = '/in';
+        }
+
+        function testInBusiness() {
+            log('Testing /in/business-listing route...');
+            window.location.href = '/in/business-listing';
+        }
+
+        // Log initial state
+        updateUrls();
+        log('Page loaded');
+
+        // Monitor URL changes
+        let lastUrl = window.location.href;
+        setInterval(() => {
+            if (window.location.href !== lastUrl) {
+                log('URL changed from ' + lastUrl + ' to ' + window.location.href);
+                lastUrl = window.location.href;
+                updateUrls();
+            }
+        }, 100);
+    </script>
+</body>
+</html>
