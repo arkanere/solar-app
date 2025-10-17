@@ -43,7 +43,7 @@ export async function POST({ request, fetch }) {
                     <h2>Access your Account</h2>
                     <p>To get started, click on the link below:</p>
                     <p>
-                        <a href="https://solarvipani.com/business/${slug}/signin-link/${magic_link_token}" 
+                        <a href="https://business.solarvipani.com/in/${slug}/signin-link/${magic_link_token}" 
                         style="background-color: #2a9d8f; color: #ffffff !important; text-decoration: none !important; 
                                 font-weight: bold; font-size: 1.2em; padding: 12px 20px; border-radius: 5px; 
                                 display: inline-block; text-align: center;">
@@ -80,7 +80,7 @@ export async function POST({ request, fetch }) {
                     </ul>
 
                     <p>
-                        <a href="https://solarvipani.com/solar-panel-installer/${slug}" 
+                        <a href="https://solarvipani.com/in/solar-panel-installer/${slug}" 
                         style="background-color: #2a9d8f; color: #ffffff !important; text-decoration: none !important; 
                                 font-weight: bold; font-size: 1.2em; padding: 12px 20px; border-radius: 5px; 
                                 display: inline-block; text-align: center;">

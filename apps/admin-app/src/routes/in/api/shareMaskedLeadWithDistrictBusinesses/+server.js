@@ -98,7 +98,7 @@ export async function POST({ request }) {
 			const { business_id, login_email, slug, magic_link_token } = business;
 
 			// Generate the magic login link
-			const magicLink = `https://solarvipani.com/business/${slug}/signin-link/${magic_link_token}`;
+			const magicLink = `https://business.solarvipani.com/in/${slug}/signin-link/${magic_link_token}`;
 
 			// Append business details for admin summary
 			businessDetailsForAdmin += `

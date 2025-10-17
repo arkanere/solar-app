@@ -36,7 +36,7 @@ export async function POST({ request }) {
 		const { slug: business_slug } = result.rows[0];
 
 		// Construct the reset link
-		const resetLink = `https://solarvipani.com/business/${business_slug}/reset-password/${token}`;
+		const resetLink = `https://business.solarvipani.com/in/${business_slug}/reset-password/${token}`;
 
 		// Send the password reset email
 		const subject = 'Solar Vipani Business Account Password Reset';
