@@ -1,7 +1,7 @@
 {
 	"redirects": [
 		{
-			"source": "/((?!in|us|au|api|admin|user|business|sitemap\\.xml|robots\\.txt).+)",
+			"source": "/((?!in|us|au|api|admin|user|business|sitemap\\.xml|robots\\.txt|_app).+)",
 			"destination": "/in/$1",
 			"permanent": true
 		}
