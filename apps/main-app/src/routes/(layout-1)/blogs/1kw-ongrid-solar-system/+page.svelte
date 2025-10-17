@@ -489,14 +489,12 @@
 		line-height: 1.6;
 	}
 
-	ul,
-	ol {
+	ul {
 		margin-left: 1.5rem;
 		margin-bottom: 1.5rem;
 	}
 
-	ul li,
-	ol li {
+	ul li {
 		margin-bottom: 0.8rem;
 		line-height: 1.6;
 	}
@@ -600,8 +598,7 @@
 		}
 
 		p,
-		ul li,
-		ol li {
+		ul li {
 			font-size: 1rem;
 		}
 

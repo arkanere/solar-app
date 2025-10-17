@@ -280,7 +280,11 @@
 
 <!-- Translation Instructions Modal -->
 {#if showTranslationModal}
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<div class="modal-backdrop" on:click={closeTranslationModal}>
+		<!-- svelte-ignore a11y-click-events-have-key-events -->
+		<!-- svelte-ignore a11y-no-static-element-interactions -->
 		<div class="modal-content" on:click|stopPropagation>
 			<div class="modal-header">
 				<h3>🌐 How to translate to {selectedLanguage}</h3>
@@ -604,21 +608,12 @@
 		box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 	}
 
-	.dark .modal-content {
-		background: #2a2a2a;
-		color: #fff;
-	}
-
 	.modal-header {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
 		padding: 1.5rem;
 		border-bottom: 1px solid #eee;
-	}
-
-	.dark .modal-header {
-		border-bottom-color: #444;
 	}
 
 	.modal-header h3 {
@@ -643,14 +638,6 @@
 
 	.modal-close:hover {
 		color: #333;
-	}
-
-	.dark .modal-close {
-		color: #ccc;
-	}
-
-	.dark .modal-close:hover {
-		color: #fff;
 	}
 
 	.modal-body {
@@ -693,23 +680,9 @@
 		color: #fff;
 	}
 
-	.step-content p {
-		margin: 0;
-		color: #666;
-		font-size: 0.9rem;
-	}
-
-	.dark .step-content p {
-		color: #ccc;
-	}
-
 	.alternative-method {
 		border-top: 1px solid #eee;
 		padding-top: 1rem;
-	}
-
-	.dark .alternative-method {
-		border-top-color: #444;
 	}
 
 	.alternative-method h4 {
@@ -732,36 +705,6 @@
 		color: #ccc;
 	}
 
-	/* More languages content */
-	.more-languages-content {
-		margin-bottom: 1.5rem;
-		padding-bottom: 1rem;
-		border-bottom: 1px solid #eee;
-	}
-
-	.dark .more-languages-content {
-		border-bottom-color: #444;
-	}
-
-	.language-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-		gap: 0.5rem;
-		margin-top: 1rem;
-	}
-
-	.language-grid span {
-		background: #f5f5f5;
-		padding: 0.5rem;
-		border-radius: 4px;
-		font-size: 0.85rem;
-		text-align: center;
-	}
-
-	.dark .language-grid span {
-		background: #3a3a3a;
-		color: #fff;
-	}
 
 	.instruction-steps h4 {
 		margin: 1rem 0 0.5rem 0;

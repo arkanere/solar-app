@@ -1,5 +1,5 @@
 <script>
-	import { isDarkMode } from '$lib/themeStore'; // If you have a global store for theme
+	import { isDarkMode } from '$lib/in/themeStore'; // If you have a global store for theme
 
 	let darkMode;
 	$: darkMode = $isDarkMode;
@@ -12,7 +12,7 @@
 	const datePublished = '2024-03-10';
 
 	// The final URL of the blog post (canonical URL)
-	const articleUrl = 'https://solarvipani.com/blogs/adoption-of-solar-photovoltaics-in-australia';
+	const articleUrl = 'https://solarvipani.com/in/blogs/adoption-of-solar-photovoltaics-in-australia';
 
 	// Create your JSON-LD object for this article
 	const jsonLdData = {
@@ -194,8 +194,7 @@
 
 	/* Heading styling */
 	h1,
-	h2,
-	h3 {
+	h2 {
 		font-size: 2.2rem;
 		margin-bottom: 1.5rem;
 		font-weight: 600;
@@ -213,23 +212,6 @@
 		line-height: 1.6;
 	}
 
-	/* List styling */
-	ul,
-	ol {
-		margin-left: 1.5rem;
-		margin-bottom: 1.5rem;
-	}
-
-	ul li,
-	ol li {
-		margin-bottom: 1rem;
-		line-height: 1.6;
-	}
-
-	strong {
-		font-weight: 600;
-	}
-
 	/* Responsive styling */
 	@media (max-width: 768px) {
 		main {
@@ -237,14 +219,11 @@
 		}
 
 		h1,
-		h2,
-		h3 {
+		h2 {
 			font-size: 2rem;
 		}
 
-		p,
-		ul li,
-		ol li {
+		p {
 			font-size: 1rem;
 		}
 	}

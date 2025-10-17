@@ -218,8 +218,8 @@
 
 	<!-- Story Viewer Modal -->
 	{#if isViewerOpen && projects[currentStoryIndex]}
-		<div class="story-viewer" on:click={closeStory} role="dialog" aria-modal="true">
-			<div class="story-content" on:click|stopPropagation>
+		<div class="story-viewer" on:click={closeStory} on:keydown={(e) => e.key === 'Escape' && closeStory()} role="dialog" aria-modal="true" tabindex="-1">
+			<div class="story-content" on:click|stopPropagation role="presentation">
 				<!-- Progress Indicators -->
 				<div class="progress-container">
 					{#each projects as _, index}
@@ -589,12 +589,6 @@
 		text-decoration: underline;
 	}
 
-	.installer-details p {
-		color: rgba(255, 255, 255, 0.8);
-		font-size: 0.8rem;
-		margin: 0;
-	}
-
 	.close-btn {
 		width: 32px;
 		height: 32px;
@@ -747,15 +741,6 @@
 
 		h1 {
 			font-size: 2rem;
-		}
-
-		.stories-preview {
-			gap: 1rem;
-		}
-
-		.story-ring {
-			width: 70px;
-			height: 70px;
 		}
 
 		.story-content {

@@ -1,5 +1,5 @@
 <script>
-	import { isDarkMode } from '$lib/themeStore'; // Use your global store for theme if applicable
+	import { isDarkMode } from '$lib/in/themeStore'; // Use your global store for theme if applicable
 
 	let darkMode;
 	$: darkMode = $isDarkMode;
@@ -10,7 +10,7 @@
 	const datePublished = '2024-01-31';
 
 	// Canonical URL of the blog post
-	const articleUrl = 'https://solarvipani.com/blogs/types-of-solar-panel-and-their-characteristics';
+	const articleUrl = 'https://solarvipani.com/in/blogs/types-of-solar-panel-and-their-characteristics';
 
 	// Create your JSON-LD data
 	const jsonLdData = {

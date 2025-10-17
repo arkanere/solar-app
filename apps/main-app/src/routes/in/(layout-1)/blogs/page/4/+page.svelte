@@ -1,7 +1,7 @@
 <script>
 	// Data for blogs list
 
-	import { isDarkMode } from '$lib/themeStore'; // Import from store if globally managed
+	import { isDarkMode } from '$lib/in/themeStore'; // Import from store if globally managed
 
 	// Initialize dark mode state
 	let darkMode;

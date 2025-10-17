@@ -224,20 +224,14 @@
 	}
 
 	/* List styling */
-	ul,
-	ol {
+	ul {
 		margin-left: 1.5rem;
 		margin-bottom: 1.5rem;
 	}
 
-	ul li,
-	ol li {
+	ul li {
 		margin-bottom: 1rem;
 		line-height: 1.6;
-	}
-
-	strong {
-		font-weight: 600;
 	}
 
 	.image {
@@ -258,8 +252,7 @@
 		}
 
 		p,
-		ul li,
-		ol li {
+		ul li {
 			font-size: 1rem;
 		}
 		.image {

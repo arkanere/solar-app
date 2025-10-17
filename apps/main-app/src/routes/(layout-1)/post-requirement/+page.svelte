@@ -155,15 +155,13 @@
 	}
 
 	/* List styling */
-	ul,
-	ol {
+	ul {
 		margin-left: 1.5rem;
 		margin-bottom: 1.5rem;
 		font-size: 1.1rem;
 	}
 
-	ul li,
-	ol li {
+	ul li {
 		margin-bottom: 1rem;
 		line-height: 1.6;
 	}
@@ -208,8 +206,7 @@
 		}
 
 		p,
-		ul li,
-		ol li {
+		ul li {
 			font-size: 1rem;
 		}
 	}
@@ -217,11 +214,6 @@
 	.social-media {
 		margin-top: 1.5rem;
 		text-align: left;
-	}
-
-	.social-media h3 {
-		font-size: 1.5rem;
-		margin-bottom: 0.5rem;
 	}
 
 	.social-media a {

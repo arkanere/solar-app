@@ -523,11 +523,6 @@
       margin: 0 0.25rem;
       padding: 2rem 1rem !important;
     }
-
-    .comparison-section {
-      margin: 0 0.25rem 3rem 0.25rem;
-      padding: 2rem 1rem !important;
-    }
   }
 
   /* Hero Banner */
