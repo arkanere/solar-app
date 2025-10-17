@@ -225,8 +225,7 @@
 
 	/* Heading styling */
 	h1,
-	h2,
-	h3 {
+	h2 {
 		font-size: 2.2rem;
 		margin-bottom: 1.5rem;
 		font-weight: 600;
@@ -244,23 +243,6 @@
 		line-height: 1.6;
 	}
 
-	/* List styling */
-	ul,
-	ol {
-		margin-left: 1.5rem;
-		margin-bottom: 1.5rem;
-	}
-
-	ul li,
-	ol li {
-		margin-bottom: 1rem;
-		line-height: 1.6;
-	}
-
-	strong {
-		font-weight: 600;
-	}
-
 	/* Responsive styling */
 	@media (max-width: 768px) {
 		main {
@@ -268,14 +250,11 @@
 		}
 
 		h1,
-		h2,
-		h3 {
+		h2 {
 			font-size: 2rem;
 		}
 
-		p,
-		ul li,
-		ol li {
+		p {
 			font-size: 1rem;
 		}
 	}

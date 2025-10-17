@@ -428,11 +428,6 @@
 		color: #1f2937;
 	}
 
-	.results-header p {
-		color: #4b5563;
-		margin-top: 0.5rem;
-	}
-
 	.metrics-grid {
 		display: grid;
 		grid-template-columns: 1fr;
@@ -488,30 +483,5 @@
 		font-size: 0.875rem;
 		color: #4b5563;
 		margin-top: 0.25rem;
-	}
-
-	/* Contact form styles */
-	.contact-form {
-		background-color: #f9fafb;
-		padding: 1.5rem;
-		border-radius: 0.5rem;
-	}
-
-	.contact-form h3 {
-		font-size: 1.125rem;
-		font-weight: 600;
-		color: #1f2937;
-	}
-
-	.contact-form > p {
-		margin-top: 0.5rem;
-		color: #4b5563;
-	}
-
-	.form-fields {
-		margin-top: 1rem;
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
 	}
 </style>

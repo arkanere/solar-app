@@ -83,7 +83,9 @@ const blogPaginationPages = ['/blogs', '/blogs/page/2', '/blogs/page/3', '/blogs
 /** @type {import('@sveltejs/kit').Config} */
 const config = withMicrofrontends({
 	kit: {
-		adapter: adapter(),
+		adapter: adapter({
+			runtime: 'nodejs22.x'
+		}),
 		prerender: {
 			entries: [
 				'*', // Prerender all discoverable pages

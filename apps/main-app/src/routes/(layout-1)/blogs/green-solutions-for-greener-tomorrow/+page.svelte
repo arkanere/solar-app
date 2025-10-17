@@ -257,8 +257,7 @@
 
 	/* Heading styling */
 	h1,
-	h2,
-	h3 {
+	h2 {
 		font-size: 2.2rem;
 		margin-bottom: 1.5rem;
 		font-weight: 600;
@@ -277,14 +276,12 @@
 	}
 
 	/* List styling */
-	ul,
-	ol {
+	ul {
 		margin-left: 1.5rem;
 		margin-bottom: 1.5rem;
 	}
 
-	ul li,
-	ol li {
+	ul li {
 		margin-bottom: 1rem;
 		line-height: 1.6;
 	}
@@ -300,14 +297,12 @@
 		}
 
 		h1,
-		h2,
-		h3 {
+		h2 {
 			font-size: 2rem;
 		}
 
 		p,
-		ul li,
-		ol li {
+		ul li {
 			font-size: 1rem;
 		}
 	}

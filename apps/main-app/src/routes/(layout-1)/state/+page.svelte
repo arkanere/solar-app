@@ -306,37 +306,6 @@
 		font-size: 1.1rem;
 	}
 
-	.error-message,
-	.warning-message {
-		padding: 1rem;
-		border-radius: 8px;
-		margin-bottom: 1.5rem;
-	}
-
-	.error-message {
-		background-color: #ffebee;
-		border: 1px solid #f44336;
-		color: #b71c1c;
-	}
-
-	.dark .error-message {
-		background-color: rgba(244, 67, 54, 0.2);
-		border-color: #f44336;
-		color: #ef9a9a;
-	}
-
-	.warning-message {
-		background-color: #fff8e1;
-		border: 1px solid #ffc107;
-		color: #ff6f00;
-	}
-
-	.dark .warning-message {
-		background-color: rgba(255, 193, 7, 0.2);
-		border-color: #ffc107;
-		color: #ffcc80;
-	}
-
 	/* States grid */
 	.states-grid {
 		list-style-type: none;

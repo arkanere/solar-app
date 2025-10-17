@@ -2,14 +2,13 @@
 	import { page } from '$app/stores';
 	import { isDarkMode } from '$lib/themeStore';
 	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
 	import LeadFormBusiness from '$lib/LeadFormBusiness.svelte';
 	import SolarSizeCalculator from '$lib/SolarSizeCalculator.svelte';
 	import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
 	import AboutSolarVipani from '$lib/AboutSolarVipani.svelte';
 
 	// Destructure page data with reactive declaration
-	$: ({ business, errorMessage } = $page.data);
+	$: ({ business, projects = [], errorMessage } = $page.data);
 	$: darkMode = $isDarkMode;
 	$: businessSlug = business?.slug || '';
 	$: showProjects = business?.businessfilled && business?.tier3;
@@ -57,54 +56,6 @@
 		const options = { year: 'numeric', month: 'long', day: 'numeric' };
 		return new Date(dateString).toLocaleDateString('en-IN', options);
 	};
-
-	// Recent Projects state
-	let projects = [];
-	let projectsLoading = true;
-	let projectsError = null;
-
-	// Fetch recent projects
-	async function fetchRecentProjects() {
-		if (!businessSlug) return;
-
-		try {
-			projectsLoading = true;
-			projectsError = null;
-
-			const response = await fetch(
-				`/api/getRecentProjectsByBusiness?business_slug=${businessSlug}`
-			);
-
-			if (!response.ok) {
-				throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
-			}
-
-			const result = await response.json();
-
-			if (result.success) {
-				// Handle both array and single project responses
-				projects = Array.isArray(result.projects)
-					? result.projects
-					: result.projects
-						? [result.projects]
-						: [];
-			} else {
-				projectsError = result.error || 'Failed to fetch projects';
-			}
-		} catch (err) {
-			projectsError = err.message || 'Something went wrong';
-			console.error('Error fetching projects:', err);
-		} finally {
-			projectsLoading = false;
-		}
-	}
-
-	// Load projects on mount if conditions are met
-	onMount(() => {
-		if (showProjects) {
-			fetchRecentProjects();
-		}
-	});
 </script>
 
 <svelte:head>
@@ -344,14 +295,7 @@
 			<section class="recent-projects">
 				<h2>Recent Solar Panel Installation Projects</h2>
 
-				{#if projectsLoading}
-					<div class="loading">Loading recent projects...</div>
-				{:else if projectsError}
-					<div class="error">
-						<p>Error: {projectsError}</p>
-						<button on:click={fetchRecentProjects}>Try Again</button>
-					</div>
-				{:else if projects.length === 0}
+				{#if projects.length === 0}
 					<div class="no-projects">No recent projects found for this business.</div>
 				{:else}
 					<div class="projects-grid">
