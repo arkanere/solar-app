@@ -6,7 +6,7 @@
 			"permanent": true
 		},
 		{
-			"source": "/((?!in|us|au|api|admin|user|business).*)",
+			"source": "/((?!in|us|au|api|admin|user|business|sitemap\\.xml|robots\\.txt).*)",
 			"destination": "/in/$1",
 			"permanent": true
 		}
