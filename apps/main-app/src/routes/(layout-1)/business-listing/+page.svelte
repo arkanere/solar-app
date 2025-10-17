@@ -82,7 +82,7 @@
   $: darkMode = $isDarkMode;
 
   // Navigation function
-  const navigateToBusinessForm = () => goto("/in/business-form");
+  const navigateToBusinessForm = () => goto("/business-form");
 </script>
 
 <svelte:head>
