@@ -11,7 +11,7 @@
 	// Placeholder function for editing a business
 	function editBusiness(businessId) {
 		// Navigate to the edit page for the business with the given ID in a new tab
-		window.open(`/allbusinesses/${businessId}/edit`, '_blank');
+		window.open(`/in/allbusinesses/${businessId}/edit`, '_blank');
 	}
 
 	// Function to determine tier

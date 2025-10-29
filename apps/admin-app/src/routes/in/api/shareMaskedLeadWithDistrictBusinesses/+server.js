@@ -2,6 +2,7 @@ import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
 import { sendEmail } from '$lib/sendEmail'; // Email utility
+import escapeHtml from 'escape-html';
 
 const pool = createPool({ connectionString: POSTGRES_URL });
 
@@ -81,18 +82,18 @@ export async function POST({ request }) {
 
 		// Email content template (same for all businesses)
 		const emailTemplate = `
-        <h2>New Solar Inquiry in ${lead.district}</h2>
-        <p><strong>Customer Name:</strong> ${lead.name}</p>
+        <h2>New Solar Inquiry in ${escapeHtml(lead.district)}</h2>
+        <p><strong>Customer Name:</strong> ${escapeHtml(lead.name)}</p>
         <p><strong>Phone:</strong> ${maskedPhone}</p>
         <p><strong>Email:</strong> ${maskedEmail}</p>
-        <p><strong>Pin Code:</strong> ${lead.pin_code}</p>
-        <p><strong>District:</strong> ${lead.district}</p>
-        <p><strong>Customer Comment:</strong> ${lead.comment}</p>
-        ${lead.sv_comment_for_businesses ? `<p style="margin-top: 0.75rem; font-style: italic; color: #0056b3; background-color: rgba(0, 86, 179, 0.05); padding: 0.5rem; border-radius: 4px; border-left: 3px solid #0056b3;"><strong>Solarvipani.com Comment:</strong> ${lead.sv_comment_for_businesses}</p>` : ''}
+        <p><strong>Pin Code:</strong> ${escapeHtml(lead.pin_code)}</p>
+        <p><strong>District:</strong> ${escapeHtml(lead.district)}</p>
+        <p><strong>Customer Comment:</strong> ${escapeHtml(lead.comment)}</p>
+        ${lead.sv_comment_for_businesses ? `<p style="margin-top: 0.75rem; font-style: italic; color: #0056b3; background-color: rgba(0, 86, 179, 0.05); padding: 0.5rem; border-radius: 4px; border-left: 3px solid #0056b3;"><strong>Solarvipani.com Comment:</strong> ${escapeHtml(lead.sv_comment_for_businesses)}</p>` : ''}
         <p><strong>Created At:</strong> ${createdAtISTString}</p>
         `;
 
-		const subject = `New Solar Lead Inquiry in ${lead.district} - ${lead.name}`;
+		const subject = `New Solar Lead Inquiry in ${escapeHtml(lead.district)} - ${escapeHtml(lead.name)}`;
 
 		for (const business of businesses) {
 			const { business_id, login_email, slug, magic_link_token } = business;

@@ -21,7 +21,7 @@
   // Function to trigger welcome mail
   async function triggerWelcomeMail() {
     try {
-      const response = await fetch("in/api/triggerWelcomeMail", {
+      const response = await fetch("/in/api/triggerWelcomeMail", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -50,7 +50,7 @@
   // Function to trigger password reset
   async function triggerPasswordReset() {
     try {
-      const response = await fetch("in/api/triggerPasswordReset", {
+      const response = await fetch("/in/api/triggerPasswordReset", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -102,28 +102,25 @@
       />
     </div>
 
-    <!-- Trigger Welcome Mail Button -->
+    <!-- Account Management Actions -->
     <div class="form-group">
-      <label>Account Management</label>
-      <button
-        type="button"
-        class="secondary-button"
-        on:click={triggerWelcomeMail}
-      >
-        Trigger Welcome Mail
-      </button>
-    </div>
-
-    <!-- Trigger Password Reset Button -->
-    <div class="form-group">
-      <label>Account Management</label>
-      <button
-        type="button"
-        class="secondary-button"
-        on:click={triggerPasswordReset}
-      >
-        Trigger Password Reset
-      </button>
+      <h3 class="section-heading">Account Management</h3>
+      <div class="button-row">
+        <button
+          type="button"
+          class="secondary-button"
+          on:click={triggerWelcomeMail}
+        >
+          Trigger Welcome Mail
+        </button>
+        <button
+          type="button"
+          class="secondary-button"
+          on:click={triggerPasswordReset}
+        >
+          Trigger Password Reset
+        </button>
+      </div>
     </div>
 
     <!-- Other Fields -->
@@ -363,6 +360,18 @@
   label {
     font-weight: bold;
     margin-bottom: 0.5rem;
+  }
+
+  .section-heading {
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+  }
+
+  .button-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
   }
 
   input,

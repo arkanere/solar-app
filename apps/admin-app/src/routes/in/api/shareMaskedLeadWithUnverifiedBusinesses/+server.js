@@ -2,6 +2,7 @@ import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
 import { sendEmail } from '$lib/sendEmail'; // Email utility
+import escapeHtml from 'escape-html';
 
 const pool = createPool({ connectionString: POSTGRES_URL });
 
@@ -73,12 +74,12 @@ export async function POST({ request }) {
 
 			// Email content
 			const message = `
-        <h2>New Solar Inquiry in ${lead.district}</h2>
-        <p><strong>Customer Name:</strong> ${lead.name}</p>
+        <h2>New Solar Inquiry in ${escapeHtml(lead.district)}</h2>
+        <p><strong>Customer Name:</strong> ${escapeHtml(lead.name)}</p>
         <p><strong>Phone:</strong> ${maskedPhone}</p>
         <p><strong>Email:</strong> ${maskedEmail}</p>
-        <p><strong>Pin Code:</strong> ${lead.pin_code}</p>
-        <p><strong>Customer Comment:</strong> ${lead.comment}</p>
+        <p><strong>Pin Code:</strong> ${escapeHtml(lead.pin_code)}</p>
+        <p><strong>Customer Comment:</strong> ${escapeHtml(lead.comment)}</p>
         <p><strong>Created At:</strong> ${createdAtISTString}</p>
         <p>If you're interested in claiming this lead, get listed on SolarVipani.com using the link below:</p>
         <p style="margin-bottom: 2rem;">
@@ -90,7 +91,7 @@ export async function POST({ request }) {
         <p><strong>Solar Vipani</strong></p>
         `;
 
-			const subject = `New Solar Lead Inquiry in ${lead.district} - Solar Vipani`;
+			const subject = `New Solar Lead Inquiry in ${escapeHtml(lead.district)} - Solar Vipani`;
 
 			try {
 				// Send email
@@ -114,7 +115,7 @@ export async function POST({ request }) {
 		// Send email to admin with business details
 		const adminMessage = `
       <h2>Unverified businesses invited</h2>
-      <p><strong>Lead Name:</strong> ${lead.name}</p>
+      <p><strong>Lead Name:</strong> ${escapeHtml(lead.name)}</p>
       <p><strong>Created At:</strong> ${createdAtISTString}</p>
       <hr>
       <h3>Businesses Invited:</h3>

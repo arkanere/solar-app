@@ -2,6 +2,7 @@ import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
 import { sendEmail } from '$lib/sendEmail'; // Assume you have an email utility to send emails
+import escapeHtml from 'escape-html';
 
 const pool = createPool({ connectionString: POSTGRES_URL });
 
@@ -37,11 +38,11 @@ export async function POST({ request }) {
 			// Email content with the magic link
 			message = `
         <h2>Customer Enquiry</h2>
-        <p><strong>Lead Name:</strong> ${lead.name}</p>
-        <p><strong>Phone:</strong> <a href="tel:${lead.phone}">${lead.phone}</a></p>
-        <p><strong>Pin Code:</strong> ${lead.pin_code}</p>
-        <p><strong>Type:</strong> ${lead.type}</p>
-        <p><strong>Customer Comment:</strong> ${lead.comment}</p>
+        <p><strong>Lead Name:</strong> ${escapeHtml(lead.name)}</p>
+        <p><strong>Phone:</strong> <a href="tel:${escapeHtml(lead.phone)}">${escapeHtml(lead.phone)}</a></p>
+        <p><strong>Pin Code:</strong> ${escapeHtml(lead.pin_code)}</p>
+        <p><strong>Type:</strong> ${escapeHtml(lead.type)}</p>
+        <p><strong>Customer Comment:</strong> ${escapeHtml(lead.comment)}</p>
         <p><strong>Created At:</strong> ${createdAtISTString}</p>
         <p>To access your account and check this lead, click the link below:</p>
         <p style="margin-bottom: 2rem;">
@@ -55,11 +56,11 @@ export async function POST({ request }) {
 			// Fallback message if the magic link is unavailable
 			message = `
         <h2>Customer Enquiry</h2>
-        <p><strong>Lead Name:</strong> ${lead.name}</p>
-        <p><strong>Phone:</strong> <a href="tel:${lead.phone}">${lead.phone}</a></p>
-        <p><strong>Pin Code:</strong> ${lead.pin_code}</p>
-        <p><strong>Type:</strong> ${lead.type}</p>
-        <p><strong>Customer Comment:</strong> ${lead.comment}</p>
+        <p><strong>Lead Name:</strong> ${escapeHtml(lead.name)}</p>
+        <p><strong>Phone:</strong> <a href="tel:${escapeHtml(lead.phone)}">${escapeHtml(lead.phone)}</a></p>
+        <p><strong>Pin Code:</strong> ${escapeHtml(lead.pin_code)}</p>
+        <p><strong>Type:</strong> ${escapeHtml(lead.type)}</p>
+        <p><strong>Customer Comment:</strong> ${escapeHtml(lead.comment)}</p>
         <p><strong>Created At:</strong> ${createdAtISTString}</p>
         <p>Log in to your account at <a href="https://solarvipani.com/business/login">this link</a> to check if there are any leads available.</p>
         <p>If you have any questions or need assistance, call us at <a href="tel:+918983066701"> +91 8983066701 </a></p>
@@ -69,7 +70,7 @@ export async function POST({ request }) {
 		}
 
 		// Email subject
-		const subject = `Customer enquiry through Solar Vipani - ${lead.name} - Created At: ${createdAtISTString}`;
+		const subject = `Customer enquiry through Solar Vipani - ${escapeHtml(lead.name)} - Created At: ${createdAtISTString}`;
 
 		// Send email to both admin and business login_email
 		await sendEmail([adminEmail, businessEmail], subject, message, { isHtml: true });

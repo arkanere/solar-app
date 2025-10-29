@@ -1,12 +1,13 @@
 import { json } from '@sveltejs/kit';
 import { sendEmail } from '$lib/sendEmail.js'; // Brevo email utility to send emails
+import escapeHtml from 'escape-html';
 
 export async function POST({ request, fetch }) {
 	const { login_email, slug, businessname, id } = await request.json(); // Data sent from the client-side
 
 	try {
-		// Call /us/api/createMagicLinkToken to generate a magic link token
-		const magicTokenResponse = await fetch('/us/api/createMagicLinkToken', {
+		// Call /api/createMagicLinkToken to generate a magic link token
+		const magicTokenResponse = await fetch('/in/api/createMagicLinkToken', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ slug, id })
@@ -22,7 +23,7 @@ export async function POST({ request, fetch }) {
 		const adminEmail = 'admin@solarvipani.com';
 
 		// Dynamic HTML email content
-		const subject = `Welcome to Solar Vipani, ${businessname}! LOGIN to your account Now`;
+		const subject = `Welcome to Solar Vipani, ${escapeHtml(businessname)}! LOGIN to your account Now`;
 		const message = `
       <!DOCTYPE html>
         <html lang="en">
@@ -37,15 +38,15 @@ export async function POST({ request, fetch }) {
                     <h1 style="margin: 0; font-size: 24px; color: #2a9d8f;">Welcome to Solar Vipani</h1>
                 </div>
                 <div style="margin: 20px 0;">
-                    <p>Dear ${businessname},</p>
+                    <p>Dear ${escapeHtml(businessname)},</p>
                     <p>Congratulations and welcome to <strong>Solar Vipani</strong>! We’re excited to inform you that your business listing has successfully passed our verification process and is now live on our platform.</p>
                     
                     <h2>Access your Account</h2>
                     <p>To get started, click on the link below:</p>
                     <p>
-                        <a href="https://business.solarvipani.com/us/${slug}/signin-link/${magic_link_token}"
-                        style="background-color: #2a9d8f; color: #ffffff !important; text-decoration: none !important;
-                                font-weight: bold; font-size: 1.2em; padding: 12px 20px; border-radius: 5px;
+                        <a href="https://solarvipani.com/business/${slug}/signin-link/${magic_link_token}" 
+                        style="background-color: #2a9d8f; color: #ffffff !important; text-decoration: none !important; 
+                                font-weight: bold; font-size: 1.2em; padding: 12px 20px; border-radius: 5px; 
                                 display: inline-block; text-align: center;">
                         Solar Vipani Business Portal
                         </a>
