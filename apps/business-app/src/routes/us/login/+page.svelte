@@ -1,5 +1,5 @@
 <script>
-	import { isDarkMode } from '$lib/themeStore'; // Import dark mode state
+	import { isDarkMode } from '$lib/us/themeStore'; // Import dark mode state
 	import { enhance } from '$app/forms';
 	
 	export let form = null;

@@ -1,8 +1,10 @@
 <script>
-	import { goto } from '$app/navigation';
+	import { createEventDispatcher } from 'svelte';
 
 	export let businessName = '';
 	export let businessSlug = '';
+
+	const dispatch = createEventDispatcher();
 
 	let name = '';
 	let phone = '';
@@ -13,6 +15,8 @@
 	let urlParam = '';
 
 	let isSubmitting = false;
+	let submitSuccess = false;
+	let submitMessage = '';
 
 	let errors = {
 		name: '',
@@ -82,14 +86,26 @@
 		return isValid;
 	}
 
+	function resetForm() {
+		name = '';
+		phone = '';
+		pinCode = '';
+		type = '';
+		comment = '';
+		email = '';
+		errors = { name: '', phone: '', pinCode: '', type: '', email: '', comment: '' };
+	}
+
 	async function handleSubmit(event) {
 		event.preventDefault();
 
 		if (validateForm()) {
 			isSubmitting = true;
+			submitSuccess = false;
+			submitMessage = '';
 
 			try {
-				const response = await fetch('/api/submitLead', {
+				const response = await fetch('/in/api/submitLead', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({
@@ -107,11 +123,25 @@
 				const result = await response.json();
 
 				if (result.success) {
-					goto('/thank-you');
+					submitSuccess = true;
+					submitMessage = 'Lead added successfully!';
+					resetForm();
+					
+					// Dispatch event to parent component
+					dispatch('leadAdded', {
+						name,
+						phone,
+						pinCode,
+						type,
+						comment,
+						email
+					});
 				} else {
+					submitMessage = 'Failed to add lead. Please try again.';
 					console.error('Submission failed:', result.error);
 				}
 			} catch (error) {
+				submitMessage = 'An error occurred. Please try again.';
 				console.error('Error submitting form:', error);
 			} finally {
 				isSubmitting = false;
@@ -121,6 +151,13 @@
 </script>
 
 <form on:submit|preventDefault={handleSubmit}>
+	<!-- Success/Error Message -->
+	{#if submitMessage}
+		<div class="message {submitSuccess ? 'success' : 'error'}">
+			{submitMessage}
+		</div>
+	{/if}
+
 	<!-- Name Input -->
 	<div>
 		<label for="name">Name:</label>
@@ -189,8 +226,8 @@
 
 	<!-- Submit Button -->
 	<button type="submit" disabled={isSubmitting}>
-		{#if isSubmitting}Submitting...{/if}
-		{#if !isSubmitting}Submit{/if}
+		{#if isSubmitting}Adding Lead...{/if}
+		{#if !isSubmitting}Add Lead{/if}
 	</button>
 </form>
 
@@ -240,5 +277,25 @@
 	.error {
 		color: red;
 		font-size: 0.9rem;
+	}
+
+	.message {
+		padding: 0.75em;
+		margin-bottom: 1em;
+		border-radius: 4px;
+		text-align: center;
+		font-weight: bold;
+	}
+
+	.message.success {
+		background-color: #d4edda;
+		color: #155724;
+		border: 1px solid #c3e6cb;
+	}
+
+	.message.error {
+		background-color: #f8d7da;
+		color: #721c24;
+		border: 1px solid #f5c6cb;
 	}
 </style>

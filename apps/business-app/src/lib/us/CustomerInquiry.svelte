@@ -1,14 +1,20 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
 	import LeadProgressBar from './LeadProgressBar.svelte';
+	import LeadStageFilter from './LeadStageFilter.svelte';
 
 	export let leads = [];
 	export let businessInfo = {};
-	export let businessSlug = '';
 	export let errorMessage = null;
 	export let isClaiming = false;
 
 	const dispatch = createEventDispatcher();
+
+	// Filter state
+	let selectedCategory = 'all';
+	let selectedStage = 'all';
+	let selectedStatus = 'all';
+	let filteredLeads = [];
 
 	// Delete confirmation state
 	let showDeleteConfirm = false;
@@ -42,12 +48,9 @@
 		comment: 'I want to install 3kW at my home. Please call me!'
 	};
 
-	// Limit leads to 5 for dashboard home
-	$: limitedLeads = leads.slice(0, 5);
-
 	async function updateLead(lead) {
 		try {
-			const response = await fetch('/api/updateLeadByBusiness', {
+			const response = await fetch('/us/api/updateLeadByBusiness', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -151,13 +154,65 @@
 		return null;
 	}
 
+	// Filter function
+	function filterLeads() {
+		filteredLeads = leads.filter(lead => {
+			// Category filter
+			if (selectedCategory !== 'all') {
+				const categoryValue = parseInt(selectedCategory);
+				// Handle exclusive leads (category 3 or null/undefined)
+				if (categoryValue === 3) {
+					if (lead.category !== 3 && lead.category !== null && lead.category !== undefined) {
+						return false;
+					}
+				} else {
+					if (lead.category !== categoryValue) {
+						return false;
+					}
+				}
+			}
+
+			// Stage filter
+			if (selectedStage !== 'all') {
+				const stageValue = parseInt(selectedStage);
+				if (lead.stage !== stageValue) {
+					return false;
+				}
+			}
+
+			// Status filter
+			if (selectedStatus !== 'all') {
+				const statusValue = selectedStatus === 'true';
+				if (lead.status !== statusValue) {
+					return false;
+				}
+			}
+
+			return true;
+		});
+	}
+
+	// Handle filter changes
+	function handleFilterChange(event) {
+		selectedCategory = event.detail.selectedCategory;
+		selectedStage = event.detail.selectedStage;
+		selectedStatus = event.detail.selectedStatus;
+		filterLeads();
+	}
+
+	// Update filtered leads when leads change
+	$: {
+		leads;
+		filterLeads();
+	}
+
 	// Delete lead function
 	async function deleteLead(lead) {
 		if (isDeleting) return;
 		isDeleting = true;
 
 		try {
-			const response = await fetch('/api/deleteLeadByBusiness', {
+			const response = await fetch('/us/api/deleteLeadByBusiness', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -216,9 +271,25 @@
 	{#if errorMessage}
 		<p class="error-message">{errorMessage}</p>
 	{:else}
+		{#if leads.length > 0}
+			<LeadStageFilter 
+				{selectedCategory} 
+				{selectedStage} 
+				{selectedStatus}
+				on:filterChange={handleFilterChange}
+			/>
+			
+			{#if filteredLeads.length === 0}
+				<div class="no-results">
+					<p>No leads match the selected filters.</p>
+					<p><small>Try adjusting your filters or clearing them to see more results.</small></p>
+				</div>
+			{/if}
+		{/if}
+		
 		<ul>
 			{#if leads.length > 0}
-				{#each limitedLeads as lead}
+				{#each filteredLeads as lead}
 					<li>
 						<div class="lead-header">
 							<h3>
@@ -325,11 +396,6 @@
 						</div>
 					</li>
 				{/each}
-				{#if leads.length > 5}
-					<div class="view-more">
-						<p><strong>Showing 5 of {leads.length} leads.</strong> <a href="/{businessSlug}/crm">View all leads in CRM</a></p>
-					</div>
-				{/if}
 			{:else}
 				<!-- Display dummy test lead when no leads exist -->
 				<li class="dummy-lead">
@@ -349,13 +415,6 @@
 				</li>
 			{/if}
 		</ul>
-
-		<!-- Open CRM Button -->
-		<div class="crm-button-container">
-			<a href="/{businessSlug}/crm" class="open-crm-button">
-				Open CRM
-			</a>
-		</div>
 	{/if}
 </section>
 
@@ -571,19 +630,13 @@
 
 	/* Solarvipani.com Comment styling */
 	.sv-comment {
-		margin: 0.75rem 0 !important;
+		margin-top: 0.75rem !important;
 		font-style: italic;
 		color: #0056b3;
-		background-color: rgba(0, 86, 179, 0.08);
-		padding: 0.75rem;
-		border-radius: 6px;
-		border-left: 4px solid #0056b3;
-		position: relative;
-		z-index: 1;
-		clear: both;
-		display: block;
-		width: 100%;
-		box-sizing: border-box;
+		background-color: rgba(0, 86, 179, 0.05);
+		padding: 0.5rem;
+		border-radius: 4px;
+		border-left: 3px solid #0056b3;
 	}
 
 	:global(.dark) .sv-comment {
@@ -705,79 +758,39 @@
 		color: var(--dark-primary-text-color);
 	}
 
-	/* View more styling */
-	.view-more {
+	/* No results styling */
+	.no-results {
 		text-align: center;
-		padding: 1rem;
+		padding: 2rem;
 		margin: 1rem 0;
 		border-radius: 8px;
-		background-color: rgba(0, 86, 179, 0.05);
-		border: 1px solid rgba(0, 86, 179, 0.2);
+		background-color: rgba(108, 117, 125, 0.1);
+		border: 2px dashed rgba(108, 117, 125, 0.3);
 	}
 
-	.view-more p {
-		margin: 0;
-		color: #0056b3;
+	.no-results p {
+		margin: 0.5rem 0;
 	}
 
-	.view-more a {
-		color: #0056b3;
-		text-decoration: underline;
-		font-weight: 600;
-	}
-
-	.view-more a:hover {
-		color: #00449e;
-	}
-
-	:global(.dark) .view-more {
-		background-color: rgba(100, 181, 246, 0.1);
-		border-color: rgba(100, 181, 246, 0.2);
-	}
-
-	:global(.dark) .view-more p,
-	:global(.dark) .view-more a {
-		color: #64b5f6;
-	}
-
-	:global(.dark) .view-more a:hover {
-		color: #42a5f5;
-	}
-
-	/* Open CRM Button styling */
-	.crm-button-container {
-		display: flex;
-		justify-content: center;
-		margin-top: 1.5rem;
-		padding-top: 1rem;
-		border-top: 2px solid rgba(0, 86, 179, 0.1);
-	}
-
-	.open-crm-button {
-		background-color: var(--accent-color);
-		color: white;
-		text-decoration: none;
-		padding: 0.75rem 2rem;
-		border-radius: 8px;
+	.no-results p:first-child {
 		font-weight: 600;
 		font-size: 1.1rem;
-		transition: all 0.3s ease;
-		box-shadow: 0 2px 4px rgba(0, 86, 179, 0.2);
-		border: 2px solid var(--accent-color);
-		display: inline-block;
-		text-align: center;
-		min-width: 120px;
+		color: #6c757d;
 	}
 
-	.open-crm-button:hover {
-		background-color: var(--accent-hover);
-		border-color: var(--accent-hover);
-		box-shadow: 0 4px 8px rgba(0, 86, 179, 0.3);
-		transform: translateY(-1px);
+	.no-results small {
+		color: #6c757d;
+		font-style: italic;
 	}
 
-	:global(.dark) .crm-button-container {
-		border-top-color: rgba(100, 181, 246, 0.2);
+	:global(.dark) .no-results {
+		background-color: rgba(108, 117, 125, 0.15);
+		border-color: rgba(108, 117, 125, 0.4);
+	}
+
+	:global(.dark) .no-results p:first-child,
+	:global(.dark) .no-results small {
+		color: #adb5bd;
 	}
 
 	/* Additional mobile overflow fixes */

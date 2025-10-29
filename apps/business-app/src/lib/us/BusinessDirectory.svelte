@@ -1,7 +1,7 @@
 <!-- BusinessDirectory.svelte -->
 
 <script>
-	import { isDarkMode } from '$lib/themeStore'; // Import the dark mode store
+	import { isDarkMode } from '$lib/us/themeStore'; // Import the dark mode store
 	import { goto } from '$app/navigation';
 
 	// Reactive store for theme mode

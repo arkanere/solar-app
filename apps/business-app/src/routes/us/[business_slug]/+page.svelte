@@ -1,12 +1,12 @@
 <script>
 	import { page } from '$app/stores';
-	import { isDarkMode } from '$lib/themeStore';
-	import ShowSupport from '$lib/ShowSupport.svelte';
-	import ShowRankingPolicy from '$lib/ShowRankingPolicy.svelte';
-	import PostRecentProject from '$lib/PostRecentProject.svelte';
-	import AddBranch from '$lib/AddBranch.svelte';
-	import CustomerInquiryDashboardHome from '$lib/CustomerInquiryDashboardHome.svelte';
-	import LeadFormModalBusiness from '$lib/LeadFormModalBusiness.svelte';
+	import { isDarkMode } from '$lib/us/themeStore';
+	import ShowSupport from '$lib/us/ShowSupport.svelte';
+	import ShowRankingPolicy from '$lib/us/ShowRankingPolicy.svelte';
+	import PostRecentProject from '$lib/us/PostRecentProject.svelte';
+	import AddBranch from '$lib/us/AddBranch.svelte';
+	import CustomerInquiryDashboardHome from '$lib/us/CustomerInquiryDashboardHome.svelte';
+	import LeadFormModalBusiness from '$lib/us/LeadFormModalBusiness.svelte';
 
 	// Destructure page data for cleaner access
 	const businessSlug = $page.params.business_slug;
@@ -87,7 +87,7 @@
 		isClaiming = true;
 
 		try {
-			const response = await fetch('/api/claimLead', {
+			const response = await fetch('/us/api/claimLead', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ lead_id: leadId, business_id: businessId })
@@ -117,13 +117,13 @@
 <!-- TOP NAVIGATION -->
 <nav class="top-nav {darkMode ? 'dark' : 'light'}">
 	<div class="nav-brand">
-		<a href="/{businessSlug}">
+		<a href="/us/{businessSlug}">
 			<span class="brand-full">Solar Vipani Business Dashboard - {businessInfo.businessname || ''}</span>
 			<span class="brand-mobile">{businessInfo.businessname || 'Business Dashboard'}</span>
 		</a>
 	</div>
 	
-	<div class="hamburger" on:click={toggleMobileMenu}>
+	<div class="hamburger" role="button" tabindex="0" on:click={toggleMobileMenu} on:keydown={(e) => e.key === 'Enter' && toggleMobileMenu()}>
 		<span></span>
 		<span></span>
 		<span></span>
@@ -132,18 +132,18 @@
 	<ul class="nav-list {mobileMenuOpen ? 'open' : ''}">
 				<li><button on:click={toggleAddLead}>Add Lead</button></li>
 				<li>
-					<a href="/{businessSlug}/crm">CRM</a>
+					<a href="/us/{businessSlug}/crm">CRM</a>
 				</li>
 				<li>
-					<a href="/{businessSlug}/open-inquiries">Open Inquiries</a>
+					<a href="/us/{businessSlug}/open-inquiries">Open Inquiries</a>
 				</li>
 				<li><button on:click={togglePostRecentProject}>Post Recent Project</button></li>
 				<li>
-					<a href="/{businessSlug}/project">Manage Project</a>
+					<a href="/us/{businessSlug}/project">Manage Project</a>
 				</li>
 				<li><button on:click={toggleAddBranch}>Add Branch</button></li>
 				<li>
-					<a href="/{businessSlug}/branch">Manage Branch</a>
+					<a href="/us/{businessSlug}/branch">Manage Branch</a>
 				</li>
 				<li><button on:click={toggleRankingPolicy}>Policy</button></li>
 				<li><button on:click={toggleSupport}>Support</button></li>

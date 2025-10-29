@@ -1,5 +1,5 @@
 <script>
-	import { isDarkMode } from '$lib/themeStore';
+	import { isDarkMode } from '$lib/in/themeStore';
 	import { onMount } from 'svelte';
 
 	$: darkMode = $isDarkMode;
