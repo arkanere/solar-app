@@ -165,14 +165,11 @@
 		font-weight: 600;
 	}
 
-	/* Loading and error states */
-	.loading, .error {
+	/* Error state */
+	.error {
 		text-align: center;
 		padding: 2rem;
 		font-size: 1.1rem;
-	}
-
-	.error {
 		color: #dc3545;
 	}
 
