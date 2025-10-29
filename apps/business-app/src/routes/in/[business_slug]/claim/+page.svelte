@@ -1,7 +1,7 @@
 <script>
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores'; // Store to access route parameters
-	import { isDarkMode } from '$lib/themeStore'; // Import from store if globally managed
+	import { isDarkMode } from '$lib/in/themeStore'; // Import from store if globally managed
 
 	let name = '';
 	let phone = '';
@@ -64,7 +64,7 @@
 
 		if (validateForm()) {
 			try {
-				const response = await fetch('/api/submitClaim', {
+				const response = await fetch('/in/api/submitClaim', {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json'

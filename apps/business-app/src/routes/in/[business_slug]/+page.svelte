@@ -1,12 +1,12 @@
 <script>
 	import { page } from '$app/stores';
-	import { isDarkMode } from '$lib/themeStore';
-	import ShowSupport from '$lib/ShowSupport.svelte';
-	import ShowRankingPolicy from '$lib/ShowRankingPolicy.svelte';
-	import PostRecentProject from '$lib/PostRecentProject.svelte';
-	import AddBranch from '$lib/AddBranch.svelte';
-	import CustomerInquiryDashboardHome from '$lib/CustomerInquiryDashboardHome.svelte';
-	import LeadFormModalBusiness from '$lib/LeadFormModalBusiness.svelte';
+	import { isDarkMode } from '$lib/in/themeStore';
+	import ShowSupport from '$lib/in/ShowSupport.svelte';
+	import ShowRankingPolicy from '$lib/in/ShowRankingPolicy.svelte';
+	import PostRecentProject from '$lib/in/PostRecentProject.svelte';
+	import AddBranch from '$lib/in/AddBranch.svelte';
+	import CustomerInquiryDashboardHome from '$lib/in/CustomerInquiryDashboardHome.svelte';
+	import LeadFormModalBusiness from '$lib/in/LeadFormModalBusiness.svelte';
 
 	// Destructure page data for cleaner access
 	const businessSlug = $page.params.business_slug;
@@ -123,7 +123,7 @@
 		</a>
 	</div>
 	
-	<div class="hamburger" on:click={toggleMobileMenu}>
+	<div class="hamburger" role="button" tabindex="0" on:click={toggleMobileMenu} on:keydown={(e) => e.key === 'Enter' && toggleMobileMenu()}>
 		<span></span>
 		<span></span>
 		<span></span>

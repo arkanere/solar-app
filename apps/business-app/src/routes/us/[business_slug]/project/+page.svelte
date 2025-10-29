@@ -1,8 +1,8 @@
 <script>
 	import { page } from '$app/stores';
-	import { isDarkMode } from '$lib/themeStore';
-	import PostRecentProject from '$lib/PostRecentProject.svelte';
-	import ShowSupport from '$lib/ShowSupport.svelte';
+	import { isDarkMode } from '$lib/us/themeStore';
+	import PostRecentProject from '$lib/us/PostRecentProject.svelte';
+	import ShowSupport from '$lib/us/ShowSupport.svelte';
 
 	// Access page data
 	const businessSlug = $page.params.business_slug;
@@ -65,7 +65,7 @@
 			isDeleting = true;
 			deletingProject = project.id;
 
-			const response = await fetch('/api/updateRecentProject', {
+			const response = await fetch('/us/api/updateRecentProject', {
 				method: 'DELETE',
 				headers: {
 					'Content-Type': 'application/json'
@@ -98,13 +98,13 @@
 <!-- TOP NAVIGATION -->
 <nav class="top-nav {darkMode ? 'dark' : 'light'}">
 	<div class="nav-brand">
-		<a href="/{businessSlug}">
+		<a href="/us/{businessSlug}">
 			<span class="brand-full">Solar Vipani Business Dashboard - {businessInfo.businessname || ''}</span>
 			<span class="brand-mobile">{businessInfo.businessname || 'Business Dashboard'}</span>
 		</a>
 	</div>
 
-	<div class="hamburger" on:click={toggleMobileMenu}>
+	<div class="hamburger" role="button" tabindex="0" on:click={toggleMobileMenu} on:keydown={(e) => e.key === 'Enter' && toggleMobileMenu()}>
 		<span></span>
 		<span></span>
 		<span></span>

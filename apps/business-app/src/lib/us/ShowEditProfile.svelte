@@ -53,7 +53,7 @@
 
 	const saveProfile = async () => {
 		try {
-			const response = await fetch(`/api/updateBusinessDetails`, {
+			const response = await fetch(`/us/api/updateBusinessDetails`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({

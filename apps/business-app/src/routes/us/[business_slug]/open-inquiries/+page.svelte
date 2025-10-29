@@ -1,7 +1,7 @@
 <script>
 	import { page } from '$app/stores';
-	import { isDarkMode } from '$lib/themeStore';
-	import ShowSupport from '$lib/ShowSupport.svelte';
+	import { isDarkMode } from '$lib/us/themeStore';
+	import ShowSupport from '$lib/us/ShowSupport.svelte';
 
 	const businessSlug = $page.params.business_slug;
 	$: darkMode = $isDarkMode;
@@ -51,13 +51,13 @@
 <!-- TOP NAVIGATION -->
 <nav class="top-nav {darkMode ? 'dark' : 'light'}">
 	<div class="nav-brand">
-		<a href="/{businessSlug}">
+		<a href="/us/{businessSlug}">
 			<span class="brand-full">Solar Vipani Business Dashboard - {businessInfo.businessname || ''}</span>
 			<span class="brand-mobile">{businessInfo.businessname || 'Business Dashboard'}</span>
 		</a>
 	</div>
 
-	<div class="hamburger" on:click={toggleMobileMenu}>
+	<div class="hamburger" role="button" tabindex="0" on:click={toggleMobileMenu} on:keydown={(e) => e.key === 'Enter' && toggleMobileMenu()}>
 		<span></span>
 		<span></span>
 		<span></span>
@@ -129,7 +129,7 @@
 				<div class="no-inquiries-card">
 					<h2>🔍 No Open Inquiries Available</h2>
 					<p>There are currently no inquiries available to claim. New inquiries will appear here as they become available.</p>
-					<p>Check back later or visit your <a href="/{businessSlug}/crm">CRM section</a> to manage your existing leads.</p>
+					<p>Check back later or visit your <a href="/us/{businessSlug}/crm">CRM section</a> to manage your existing leads.</p>
 				</div>
 			</div>
 		{/if}

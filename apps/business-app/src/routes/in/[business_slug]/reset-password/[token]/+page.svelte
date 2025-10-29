@@ -1,7 +1,7 @@
 <script>
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { isDarkMode } from '$lib/themeStore'; // Import dark mode state from your store
+	import { isDarkMode } from '$lib/in/themeStore'; // Import dark mode state from your store
 
 	let newPassword = '';
 	let confirmPassword = '';

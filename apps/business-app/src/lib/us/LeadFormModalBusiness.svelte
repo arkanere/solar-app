@@ -1,34 +1,37 @@
 <script>
-	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { createEventDispatcher } from 'svelte';
+
+	export let businessName = '';
+	export let businessSlug = '';
+
+	const dispatch = createEventDispatcher();
 
 	let name = '';
 	let phone = '';
 	let pinCode = '';
+	let type = '';
 	let comment = '';
 	let email = '';
 	let urlParam = '';
-	
-	// Placeholder text with line break
-	const commentPlaceholder = `Tell us about your requirement.
-Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 
 	let isSubmitting = false;
+	let submitSuccess = false;
+	let submitMessage = '';
 
 	let errors = {
 		name: '',
 		phone: '',
 		pinCode: '',
+		type: '',
 		email: '',
 		comment: ''
 	};
 
-	// ✅ Set the URL dynamically based on the current page
+	// ✅ **Set the urlParam dynamically based on the businessSlug**
 	$: {
-		urlParam = $page.url.pathname;
+		urlParam = `/solar-panel-installer/${businessSlug}`;
 	}
 
-	// ✅ Phone Number Validation (10-16 digits with optional + prefix)
 	function validatePhoneNumber() {
 		if (!/^\+?\d{10,16}$/.test(phone)) {
 			errors.phone = 'Phone number must be between 10 and 16 digits, optionally starting with +';
@@ -39,7 +42,6 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 		}
 	}
 
-	// ✅ Email Validation (Standard Format)
 	function validateEmail() {
 		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
 			errors.email = 'Invalid email address';
@@ -50,7 +52,6 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 		}
 	}
 
-	// ✅ Pin Code Validation (Exactly 6 Digits)
 	function validatePinCode() {
 		if (!/^\d{6}$/.test(pinCode)) {
 			errors.pinCode = 'Pin code must be exactly 6 digits';
@@ -61,9 +62,8 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 		}
 	}
 
-	// ✅ Form Validation
 	function validateForm() {
-		errors = { name: '', phone: '', pinCode: '', email: '', comment: '' };
+		errors = { name: '', phone: '', pinCode: '', type: '', email: '', comment: '' };
 		let isValid = true;
 
 		if (name.trim() === '') {
@@ -72,7 +72,12 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 		}
 		if (!validatePhoneNumber()) isValid = false;
 		if (!validatePinCode()) isValid = false;
+		if (type.trim() === '') {
+			errors.type = 'Type is required';
+			isValid = false;
+		}
 		if (!validateEmail()) isValid = false;
+
 		if (comment.trim() === '') {
 			errors.comment = 'Comment is required';
 			isValid = false;
@@ -81,27 +86,62 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 		return isValid;
 	}
 
+	function resetForm() {
+		name = '';
+		phone = '';
+		pinCode = '';
+		type = '';
+		comment = '';
+		email = '';
+		errors = { name: '', phone: '', pinCode: '', type: '', email: '', comment: '' };
+	}
+
 	async function handleSubmit(event) {
 		event.preventDefault();
 
 		if (validateForm()) {
 			isSubmitting = true;
+			submitSuccess = false;
+			submitMessage = '';
 
 			try {
-				const response = await fetch('/api/submitLead', {
+				const response = await fetch('/us/api/submitLead', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ name, phone, pinCode, comment, email, urlParam })
+					body: JSON.stringify({
+						name,
+						phone,
+						pinCode,
+						type,
+						comment,
+						email,
+						urlParam,
+						businessName
+					})
 				});
 
 				const result = await response.json();
 
 				if (result.success) {
-					goto(`/thank-you?ref=${result.reference_uuid}`);
+					submitSuccess = true;
+					submitMessage = 'Lead added successfully!';
+					resetForm();
+					
+					// Dispatch event to parent component
+					dispatch('leadAdded', {
+						name,
+						phone,
+						pinCode,
+						type,
+						comment,
+						email
+					});
 				} else {
+					submitMessage = 'Failed to add lead. Please try again.';
 					console.error('Submission failed:', result.error);
 				}
 			} catch (error) {
+				submitMessage = 'An error occurred. Please try again.';
 				console.error('Error submitting form:', error);
 			} finally {
 				isSubmitting = false;
@@ -111,6 +151,13 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 </script>
 
 <form on:submit|preventDefault={handleSubmit}>
+	<!-- Success/Error Message -->
+	{#if submitMessage}
+		<div class="message {submitSuccess ? 'success' : 'error'}">
+			{submitMessage}
+		</div>
+	{/if}
+
 	<!-- Name Input -->
 	<div>
 		<label for="name">Name:</label>
@@ -147,6 +194,21 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 		{/if}
 	</div>
 
+	<!-- Type Input -->
+	<div>
+		<label for="type">Type of Consultation:</label>
+		<select id="type" bind:value={type} required>
+			<option value="" disabled selected>Select type of consultation</option>
+			<option value="Residential - Independent Home">Residential - Independent Home</option>
+			<option value="Residential - Apartments/Housing societies"
+				>Residential - Apartments/Housing societies</option
+			>
+			<option value="Business/Commercial">Business/Commercial</option>
+		</select>
+		{#if errors.type}
+			<p class="error">{errors.type}</p>
+		{/if}
+	</div>
 
 	<!-- Comment Input -->
 	<div>
@@ -154,7 +216,7 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 		<textarea
 			id="comment"
 			bind:value={comment}
-			placeholder={commentPlaceholder}
+			placeholder="Tell us more about your requirement"
 			required
 		></textarea>
 		{#if errors.comment}
@@ -164,8 +226,8 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 
 	<!-- Submit Button -->
 	<button type="submit" disabled={isSubmitting}>
-		{#if isSubmitting}Submitting...{/if}
-		{#if !isSubmitting}Submit{/if}
+		{#if isSubmitting}Adding Lead...{/if}
+		{#if !isSubmitting}Add Lead{/if}
 	</button>
 </form>
 
@@ -194,14 +256,9 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 		width: 100%;
 		padding: 0.5em;
 		font-size: 1rem;
-		box-sizing: border-box;
-		border: 1px solid #ccc;
-		border-radius: 4px;
 	}
-
-	textarea {
-		height: 7.5em; /* 1.5x the default height */
-		resize: vertical;
+	h2 {
+		margin-bottom: 1em;
 	}
 
 	button {
@@ -210,9 +267,6 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 		color: white;
 		border: none;
 		cursor: pointer;
-		border-radius: 4px;
-		width: 100%;
-		box-sizing: border-box;
 	}
 
 	button:disabled {
@@ -225,34 +279,23 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 		font-size: 0.9rem;
 	}
 
-	/* Mobile responsive adjustments */
-	@media (max-width: 768px) {
-		form {
-			max-width: 100%;
-			padding: 0;
-		}
-
-		input,
-		select,
-		textarea {
-			font-size: 16px; /* Prevents zoom on iOS */
-		}
+	.message {
+		padding: 0.75em;
+		margin-bottom: 1em;
+		border-radius: 4px;
+		text-align: center;
+		font-weight: bold;
 	}
 
-	@media (max-width: 576px) {
-		div {
-			margin-bottom: 0.75em;
-		}
+	.message.success {
+		background-color: #d4edda;
+		color: #155724;
+		border: 1px solid #c3e6cb;
+	}
 
-		input,
-		select,
-		textarea {
-			padding: 0.6em 0.5em;
-		}
-
-		button {
-			padding: 0.8em;
-			font-size: 1rem;
-		}
+	.message.error {
+		background-color: #f8d7da;
+		color: #721c24;
+		border: 1px solid #f5c6cb;
 	}
 </style>

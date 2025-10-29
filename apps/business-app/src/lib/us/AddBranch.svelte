@@ -71,7 +71,7 @@
 	// Function to fetch districts for a selected state
 	async function updateDistricts(selectedState) {
 		try {
-			const res = await fetch('/api/getDistricts', {
+			const res = await fetch('/us/api/getDistricts', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ state: selectedState })
@@ -89,7 +89,7 @@
 	// Function to fetch cities for a selected district
 	async function updateCities(selectedDistrict) {
 		try {
-			const res = await fetch('/api/getCities', {
+			const res = await fetch('/us/api/getCities', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ district: selectedDistrict })
@@ -115,7 +115,7 @@
 		isSubmitting = true;
 
 		try {
-			const response = await fetch('/api/addBranch', {
+			const response = await fetch('/us/api/addBranch', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({

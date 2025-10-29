@@ -99,7 +99,7 @@ export async function POST({ request, fetch }) {
 
 			// Send lead allotment email (since all successful claims are auto-allocated)
 			try {
-				const response = await fetch('/api/sendLeadAllotmentStatus', {
+				const response = await fetch('/in/api/sendLeadAllotmentStatus', {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json'

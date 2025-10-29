@@ -1,9 +1,9 @@
 <script>
 	import { page } from '$app/stores';
-	import { isDarkMode } from '$lib/themeStore';
-	import CustomerInquiry from '$lib/CustomerInquiry.svelte';
-	import ShowSupport from '$lib/ShowSupport.svelte';
-	import LeadFormModalBusiness from '$lib/LeadFormModalBusiness.svelte';
+	import { isDarkMode } from '$lib/in/themeStore';
+	import CustomerInquiry from '$lib/in/CustomerInquiry.svelte';
+	import ShowSupport from '$lib/in/ShowSupport.svelte';
+	import LeadFormModalBusiness from '$lib/in/LeadFormModalBusiness.svelte';
 
 	// Destructure page data for cleaner access
 	const businessSlug = $page.params.business_slug;
@@ -50,7 +50,7 @@
 		isClaiming = true;
 
 		try {
-			const response = await fetch('/api/claimLead', {
+			const response = await fetch('/in/api/claimLead', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ lead_id: leadId, business_id: businessId })
@@ -84,13 +84,13 @@
 <!-- TOP NAVIGATION -->
 <nav class="top-nav {darkMode ? 'dark' : 'light'}">
 	<div class="nav-brand">
-		<a href="/{businessSlug}">
+		<a href="/in/{businessSlug}">
 			<span class="brand-full">Solar Vipani Business Dashboard - {businessInfo.businessname || ''}</span>
 			<span class="brand-mobile">{businessInfo.businessname || 'Business Dashboard'}</span>
 		</a>
 	</div>
 
-	<div class="hamburger" on:click={toggleMobileMenu}>
+	<div class="hamburger" role="button" tabindex="0" on:click={toggleMobileMenu} on:keydown={(e) => e.key === 'Enter' && toggleMobileMenu()}>
 		<span></span>
 		<span></span>
 		<span></span>

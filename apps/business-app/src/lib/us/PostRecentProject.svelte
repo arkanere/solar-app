@@ -114,7 +114,7 @@
 		isDistrictLoading = true;
 
 		try {
-			const res = await fetch('/api/getDistrictByPincode', {
+			const res = await fetch('/us/api/getDistrictByPincode', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ pincode: pincodeValue })
@@ -149,7 +149,7 @@
 		isCitiesLoading = true;
 
 		try {
-			const res = await fetch('/api/getCities', {
+			const res = await fetch('/us/api/getCities', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ district: districtValue })

@@ -1,6 +1,6 @@
 <script>
 	import { page } from '$app/stores';
-	import { isDarkMode } from '$lib/themeStore';
+	import { isDarkMode } from '$lib/us/themeStore';
 	import LeadFormModal from '$lib/us/LeadFormModal.svelte';
 
 	// State management
