@@ -165,7 +165,11 @@
 
 	<!-- Edit Form Modal -->
 	{#if isEditing && selectedLead}
+		<!-- svelte-ignore a11y-click-events-have-key-events -->
+		<!-- svelte-ignore a11y-no-static-element-interactions -->
 		<div class="modal-overlay" on:click={cancelEdit}>
+			<!-- svelte-ignore a11y-click-events-have-key-events -->
+			<!-- svelte-ignore a11y-no-static-element-interactions -->
 			<div class="modal-content" on:click|stopPropagation>
 				<h2>Edit Lead</h2>
 				<form on:submit|preventDefault={saveChanges}>
@@ -456,11 +460,6 @@
 		box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 	}
 
-	.modal-content.dark {
-		background: #444;
-		color: #f0f0f0;
-	}
-
 	.modal-buttons {
 		margin-top: 1.5rem;
 		display: flex;
@@ -485,12 +484,9 @@
 	/* Label styling */
 	.modal-content form label {
 		display: flex;
-		flex-direction: column; /* put <span> and <input> / <textarea> in one column */
+		flex-direction: column; /* put label text and input / textarea in one column */
 		font-weight: bold;
 		margin-bottom: 0.25rem;
-	}
-	.modal-content form label span {
-		margin-bottom: 0.25rem; /* small gap between label text and input */
 	}
 
 	/* Input/textarea styling */

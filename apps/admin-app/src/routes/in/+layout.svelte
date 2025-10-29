@@ -327,8 +327,8 @@
   }
 
   /* Prevent horizontal scrolling */
-  body,
-  html {
+  :global(body),
+  :global(html) {
     overflow-x: hidden;
   }
 </style>
