@@ -15,7 +15,7 @@ export async function POST({ request }) {
 
 		// ✅ Update `isvisible` to FALSE instead of deleting the record
 		const updateQuery = `
-            UPDATE leaddata
+            UPDATE us_leaddata
             SET isvisible = FALSE
             WHERE id = $1
             RETURNING *;

@@ -25,7 +25,7 @@ export async function POST({ request }) {
 
 		// 1. Fetch the main business data
 		const fetchBusinessQuery = `
-      SELECT * FROM businesses_1 WHERE id = $1
+      SELECT * FROM us_businesses WHERE id = $1
     `;
 		const businessResult = await pool.query(fetchBusinessQuery, [businessId]);
 
@@ -47,10 +47,10 @@ export async function POST({ request }) {
 
 		// 2.2 Next, check if any existing branches are in the same city
 		const checkBranchesQuery = `
-      SELECT b.id 
-      FROM businesses_1 b
-      JOIN branches br ON b.id = br.branch_id
-      WHERE br.main_id = $1 
+      SELECT b.id
+      FROM us_businesses b
+      JOIN us_branches br ON b.id = br.branch_id
+      WHERE br.main_id = $1
       AND LOWER(b.city) = LOWER($2)
       AND b.isvisible = TRUE
     `;
@@ -64,14 +64,14 @@ export async function POST({ request }) {
 			);
 		}
 
-		// 3. If no presence in the city, create a new branch entry in businesses_1
+		// 3. If no presence in the city, create a new branch entry in us_businesses
 		// Generate a unique slug for the branch using main business slug
 		const branchSlug = generateBranchSlug(mainBusiness.slug);
 
 		const insertBranchQuery = `
-      INSERT INTO businesses_1 (
+      INSERT INTO us_businesses (
         rscore, isvisible, pluscode, phonenumber, email, login_email,
-        website, gstn, state, district, tag, slug, notes, city,
+        website, ein, state, county, tag, slug, notes, city,
         businessname, address, login_password, tier3, services, description
       )
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
@@ -87,9 +87,9 @@ export async function POST({ request }) {
 			mainBusiness.email,
 			mainBusiness.login_email,
 			mainBusiness.website,
-			mainBusiness.gstn,
+			mainBusiness.ein,
 			state, // Use the provided state
-			district, // Use the provided district
+			district, // Use the provided county
 			mainBusiness.tag,
 			branchSlug, // Use the generated branch slug
 			`Branch office of ${mainBusiness.businessname}`, // Set notes to indicate it's a branch
@@ -104,9 +104,9 @@ export async function POST({ request }) {
 
 		const branchId = branchResult.rows[0].id;
 
-		// 4. Create an entry in the branches table to establish the relationship
+		// 4. Create an entry in the us_branches table to establish the relationship
 		const insertBranchRelationQuery = `
-      INSERT INTO branches (
+      INSERT INTO us_branches (
         main_id, branch_id, isactive
       )
       VALUES ($1, $2, $3)

@@ -8,95 +8,111 @@
 
 	const dispatch = createEventDispatcher();
 
-	// Define reactive variables for state, district, and city selection
+	// Define reactive variables for state, county, and city selection
 	let state = '';
-	let district = '';
+	let county = '';
 	let city = '';
-	let districts = [];
+	let counties = [];
 	let cities = [];
 	let isSubmitting = false;
 	let errorMessage = '';
 	let successMessage = '';
 
-	// List of states
+	// List of US states
 	const states = [
-		'Andaman and Nicobar Islands',
-		'Andhra Pradesh',
-		'Arunachal Pradesh',
-		'Assam',
-		'Bihar',
-		'Chandigarh',
-		'Chhattisgarh',
-		'Dadra and Nagar Haveli and Daman and Diu',
-		'Delhi',
-		'Goa',
-		'Gujarat',
-		'Haryana',
-		'Himachal Pradesh',
-		'Jammu and Kashmir',
-		'Jharkhand',
-		'Karnataka',
-		'Kerala',
-		'Ladakh',
-		'Lakshadweep',
-		'Madhya Pradesh',
-		'Maharashtra',
-		'Manipur',
-		'Meghalaya',
-		'Mizoram',
-		'Nagaland',
-		'Odisha',
-		'Puducherry',
-		'Punjab',
-		'Rajasthan',
-		'Sikkim',
-		'Tamil Nadu',
-		'Telangana',
-		'Tripura',
-		'Uttar Pradesh',
-		'Uttarakhand',
-		'West Bengal'
+		'Alabama',
+		'Alaska',
+		'Arizona',
+		'Arkansas',
+		'California',
+		'Colorado',
+		'Connecticut',
+		'Delaware',
+		'District of Columbia',
+		'Florida',
+		'Georgia',
+		'Hawaii',
+		'Idaho',
+		'Illinois',
+		'Indiana',
+		'Iowa',
+		'Kansas',
+		'Kentucky',
+		'Louisiana',
+		'Maine',
+		'Maryland',
+		'Massachusetts',
+		'Michigan',
+		'Minnesota',
+		'Mississippi',
+		'Missouri',
+		'Montana',
+		'Nebraska',
+		'Nevada',
+		'New Hampshire',
+		'New Jersey',
+		'New Mexico',
+		'New York',
+		'North Carolina',
+		'North Dakota',
+		'Ohio',
+		'Oklahoma',
+		'Oregon',
+		'Pennsylvania',
+		'Rhode Island',
+		'South Carolina',
+		'South Dakota',
+		'Tennessee',
+		'Texas',
+		'Utah',
+		'Vermont',
+		'Virginia',
+		'Washington',
+		'West Virginia',
+		'Wisconsin',
+		'Wyoming',
+		'Puerto Rico'
 	];
 
-	// Fetch districts dynamically when the state changes
+	// Fetch counties dynamically when the state changes
 	$: if (state) {
-		updateDistricts(state);
+		updateCounties(state);
 	}
 
-	// Fetch cities dynamically when the district changes
-	$: if (district) {
-		updateCities(district);
+	// Fetch cities dynamically when the county changes
+	$: if (county) {
+		updateCities(county);
 	}
 
-	// Function to fetch districts for a selected state
-	async function updateDistricts(selectedState) {
+	// Function to fetch counties for a selected state
+	async function updateCounties(selectedState) {
 		try {
-			const res = await fetch('/us/api/getDistricts', {
+			const res = await fetch('/us/api/getCounties', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ state: selectedState })
 			});
 			const data = await res.json();
-			districts = data.districts || [];
-			district = ''; // Reset district when state changes
+			counties = data.districts || [];
+			county = ''; // Reset county when state changes
 			city = ''; // Reset city when state changes
 			cities = []; // Clear cities list
 		} catch (error) {
-			console.error('Error fetching districts:', error);
+			console.error('Error fetching counties:', error);
 		}
 	}
 
-	// Function to fetch cities for a selected district
-	async function updateCities(selectedDistrict) {
+	// Function to fetch cities for a selected county
+	async function updateCities(selectedCounty) {
 		try {
 			const res = await fetch('/us/api/getCities', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ district: selectedDistrict })
+				body: JSON.stringify({ county: selectedCounty })
 			});
 			const data = await res.json();
 			cities = data.cities || [];
-			city = ''; // Reset city when district changes
+			city = ''; // Reset city when county changes
 		} catch (error) {
 			console.error('Error fetching cities:', error);
 		}
@@ -107,8 +123,8 @@
 		errorMessage = '';
 		successMessage = '';
 
-		if (!state || !district || !city) {
-			errorMessage = 'Please select state, district and city';
+		if (!state || !county || !city) {
+			errorMessage = 'Please select state, county and city';
 			return;
 		}
 
@@ -121,7 +137,7 @@
 				body: JSON.stringify({
 					businessId,
 					state,
-					district,
+					district: county,
 					city
 				})
 			});
@@ -132,7 +148,7 @@
 				successMessage = 'Branch added successfully! Redirecting...';
 				// Reset form
 				state = '';
-				district = '';
+				county = '';
 				city = '';
 
 				// Notify parent component
@@ -140,7 +156,7 @@
 
 				// Redirect to the branch page after a short delay
 				setTimeout(() => {
-					window.location.href = `/business/${businessSlug}/branch`;
+					window.location.href = `/us/${businessSlug}/branch`;
 				}, 2000);
 			} else {
 				errorMessage = result.error || 'Failed to add branch';
@@ -187,18 +203,18 @@
 						</select>
 					</div>
 
-					<!-- District Dropdown -->
+					<!-- County Dropdown -->
 					<div class="form-group">
-						<label for="district">District:</label>
+						<label for="county">County:</label>
 						<select
-							id="district"
-							bind:value={district}
+							id="county"
+							bind:value={county}
 							required
-							disabled={!state || districts.length === 0}
+							disabled={!state || counties.length === 0}
 						>
-							<option value="">Select a district</option>
-							{#each districts as d}
-								<option value={d}>{d}</option>
+							<option value="">Select a county</option>
+							{#each counties as c}
+								<option value={c}>{c}</option>
 							{/each}
 						</select>
 					</div>
@@ -210,7 +226,7 @@
 							id="city"
 							bind:value={city}
 							required
-							disabled={!district || cities.length === 0}
+							disabled={!county || cities.length === 0}
 						>
 							<option value="">Select a city</option>
 							{#each cities as c}

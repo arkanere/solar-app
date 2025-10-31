@@ -129,7 +129,7 @@
 						</div>
 						<div class="branch-actions">
 							<a
-								href="/solar-panel-installer/{mainBusiness.slug}"
+								href="/us/solar-panel-installer/{mainBusiness.slug}"
 								target="_blank"
 								class="btn profile-btn">Profile Page</a
 							>
@@ -160,7 +160,7 @@
 							</div>
 							<div class="branch-actions">
 								<a
-									href="/solar-panel-installer/{branch.slug}"
+									href="/us/solar-panel-installer/{branch.slug}"
 									target="_blank"
 									class="btn profile-btn">Profile Page</a
 								>

@@ -24,8 +24,7 @@
 			<div class="modal-content">
 				<h2 id="support-title">Support</h2>
 				<p>
-					<a href="mailto:admin@solarvipani.com">admin@solarvipani.com</a><br />
-					or call us at <a href="tel:+918983066701">+91 8983066701</a>
+					<a href="mailto:admin@solarvipani.com">admin@solarvipani.com</a>
 				</p>
 				<button on:click={close}>Close</button>
 			</div>

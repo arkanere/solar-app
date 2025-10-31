@@ -15,7 +15,7 @@ export async function POST({ request }) {
 
 		// ✅ Update only `stage` and `status`
 		const updateQuery = `
-            UPDATE leaddata
+            UPDATE us_leaddata
             SET stage = $1, status = $2
             WHERE id = $3
             RETURNING *;

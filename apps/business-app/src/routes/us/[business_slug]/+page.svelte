@@ -134,6 +134,7 @@
 				<li>
 					<a href="/us/{businessSlug}/crm">CRM</a>
 				</li>
+				<!-- Temporarily hidden - will add later
 				<li>
 					<a href="/us/{businessSlug}/open-inquiries">Open Inquiries</a>
 				</li>
@@ -141,11 +142,14 @@
 				<li>
 					<a href="/us/{businessSlug}/project">Manage Project</a>
 				</li>
+				-->
 				<li><button on:click={toggleAddBranch}>Add Branch</button></li>
 				<li>
 					<a href="/us/{businessSlug}/branch">Manage Branch</a>
 				</li>
+				<!-- Temporarily hidden - will add later
 				<li><button on:click={toggleRankingPolicy}>Policy</button></li>
+				-->
 				<li><button on:click={toggleSupport}>Support</button></li>
 				<li>
 					<form method="POST" action={`/us/${businessSlug}/logout`}>

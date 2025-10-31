@@ -21,7 +21,7 @@ export async function load({ params, locals, parent }) {
 	try {
 		// First, get the main business using the slug
 		const mainBusinessQuery = `
-      SELECT * FROM businesses_1 
+      SELECT * FROM us_businesses
       WHERE slug = $1
     `;
 
@@ -38,21 +38,21 @@ export async function load({ params, locals, parent }) {
 
 		// Get all visible projects for this business
 		const projectsQuery = `
-      SELECT 
-        id, 
-        business_slug, 
+      SELECT
+        id,
+        business_slug,
         project_slug,
-        title, 
-        pincode, 
-        district,
-        project_date, 
+        title,
+        pincode,
+        county,
+        project_date,
         created_at,
         image_url,
         cloudinary_public_id,
         image_width,
         image_height,
         image_format
-      FROM projects 
+      FROM us_projects
       WHERE business_slug = $1 AND (isvisible = TRUE OR isvisible IS NULL)
       ORDER BY project_date DESC, created_at DESC
     `;

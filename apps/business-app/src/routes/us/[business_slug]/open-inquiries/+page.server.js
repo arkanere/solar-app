@@ -8,7 +8,7 @@ export async function load({ params }) {
 
 	try {
 		// First get the business information from slug
-		const businessResult = await pool.query('SELECT id, businessname FROM businesses_1 WHERE slug = $1', [businessSlug]);
+		const businessResult = await pool.query('SELECT id, businessname FROM us_businesses WHERE slug = $1', [businessSlug]);
 
 		if (businessResult.rows.length === 0) {
 			throw error(404, 'Business not found');
@@ -22,17 +22,17 @@ export async function load({ params }) {
 			SELECT DISTINCT
 				l.id,
 				l.name,
-				l.district,
+				l.county,
 				l.pin_code,
 				l.created_at,
 				l.claim_count,
 				l.sv_comment_for_businesses,
 				COALESCE(loc.state, 'Unknown') as state
-			FROM leaddata l
-			LEFT JOIN locations loc ON l.district = loc.district
-			WHERE l.category = 1 
-			AND l.claim_count <= 4 
-			AND l.isvisible = true 
+			FROM us_leaddata l
+			LEFT JOIN us_locations loc ON l.county = loc.county
+			WHERE l.category = 1
+			AND l.claim_count <= 4
+			AND l.isvisible = true
 			ORDER BY l.created_at DESC
 		`);
 

@@ -327,7 +327,7 @@
 				{/each}
 				{#if leads.length > 5}
 					<div class="view-more">
-						<p><strong>Showing 5 of {leads.length} leads.</strong> <a href="/{businessSlug}/crm">View all leads in CRM</a></p>
+						<p><strong>Showing 5 of {leads.length} leads.</strong> <a href="/us/{businessSlug}/crm">View all leads in CRM</a></p>
 					</div>
 				{/if}
 			{:else}
@@ -352,7 +352,7 @@
 
 		<!-- Open CRM Button -->
 		<div class="crm-button-container">
-			<a href="/{businessSlug}/crm" class="open-crm-button">
+			<a href="/us/{businessSlug}/crm" class="open-crm-button">
 				Open CRM
 			</a>
 		</div>

@@ -20,9 +20,9 @@ export async function POST({ request }) {
 			business_slug // Assuming you're passing business_slug to identify the business to update
 		} = data;
 
-		// Update query for the businesses_1 table
+		// Update query for the us_businesses table
 		const updateQuery = `
-      UPDATE businesses_1
+      UPDATE us_businesses
       SET businessname = $1, address = $2, phonenumber = $3, whatsapp = $4, email = $5, website = $6, description = $7, instagram_id = $8, google_maps_link = $9
       WHERE slug = $10
       RETURNING id

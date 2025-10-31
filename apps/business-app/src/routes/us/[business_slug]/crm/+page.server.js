@@ -10,7 +10,7 @@ export async function load({ params }) {
 	try {
 		// Query business details
 		const businessResult = await pool.query(
-			'SELECT id, businessname, description, phonenumber, email, address, website, district FROM businesses_1 WHERE slug = $1 LIMIT 1',
+			'SELECT id, businessname, description, phonenumber, email, address, website, county FROM us_businesses WHERE slug = $1 LIMIT 1',
 			[business_slug]
 		);
 
@@ -19,13 +19,13 @@ export async function load({ params }) {
 		}
 
 		const business = businessResult.rows[0];
-		const { district, id: businessId } = business; // Extract district & business ID
+		const { county, id: businessId } = business; // Extract county & business ID
 
 		// ✅ Get all branch business IDs and slugs for this main business
 		const branchesResult = await pool.query(
-			`SELECT b.id, b.slug, b.district 
-			FROM branches br
-			JOIN businesses_1 b ON br.branch_id = b.id
+			`SELECT b.id, b.slug, b.county
+			FROM us_branches br
+			JOIN us_businesses b ON br.branch_id = b.id
 			WHERE br.main_id = $1 AND br.isactive = true`,
 			[businessId]
 		);
@@ -33,24 +33,24 @@ export async function load({ params }) {
 		// Create arrays of all business IDs (main + branches) and slugs for queries
 		const allBusinessIds = [businessId, ...branchesResult.rows.map(branch => branch.id)];
 		const allSlugs = [business_slug, ...branchesResult.rows.map(branch => branch.slug)];
-		const allDistricts = [district, ...branchesResult.rows.map(branch => branch.district)];
-		const uniqueDistricts = [...new Set(allDistricts.filter(d => d))]; // Remove duplicates and nulls
+		const allCounties = [county, ...branchesResult.rows.map(branch => branch.county)];
+		const uniqueCounties = [...new Set(allCounties.filter(d => d))]; // Remove duplicates and nulls
 
 		// ✅ Fetch exclusive leads for main business and all its branches
 		let exclusiveLeadResult = { rows: [] };
 		if (allSlugs.length > 0) {
 			exclusiveLeadResult = await pool.query(
-				`SELECT * FROM leaddata 
-				WHERE isvisible = true 
+				`SELECT * FROM us_leaddata
+				WHERE isvisible = true
 				AND (${allSlugs.map((_, index) => `urlparams LIKE $${index + 1}`).join(' OR ')})
 				ORDER BY id DESC`,
 				allSlugs.map(slug => `/solar-panel-installer/${slug}%`)
 			);
 		}
 
-		// ✅ Fetch claimed leads from `leaddata_claimrequests` for main business and all branches
+		// ✅ Fetch claimed leads from `us_leaddata_claimrequests` for main business and all branches
 		const claimedLeadResult = await pool.query(
-			`SELECT lead_id FROM leaddata_claimrequests 
+			`SELECT lead_id FROM us_leaddata_claimrequests
 			WHERE business_id = ANY($1)`,
 			[allBusinessIds]
 		);
@@ -59,10 +59,10 @@ export async function load({ params }) {
 
 		// ✅ Fetch non-exclusive claimed leads for main business and all branches
 		const nonExclusiveClaimedResult = await pool.query(
-			`SELECT * FROM leaddata 
-			WHERE category = 2 
-			AND business_id = ANY($1) 
-			AND isvisible = true 
+			`SELECT * FROM us_leaddata
+			WHERE category = 2
+			AND business_id = ANY($1)
+			AND isvisible = true
 			ORDER BY id DESC`,
 			[allBusinessIds]
 		);
@@ -72,19 +72,19 @@ export async function load({ params }) {
 			nonExclusiveClaimedResult.rows.map((lead) => lead.original_id)
 		);
 
-		// ✅ Fetch non-exclusive leads from all districts where main business and branches operate
+		// ✅ Fetch non-exclusive leads from all counties where main business and branches operate
 		// Only exclude leads that are unavailable (claim_count > 4) AND older than 60 days
 		let nonExclusiveLeadResult = { rows: [] };
-		if (uniqueDistricts.length > 0) {
+		if (uniqueCounties.length > 0) {
 			nonExclusiveLeadResult = await pool.query(
-				`SELECT *, COALESCE(claim_count, 0) as claim_count 
-				FROM leaddata 
-				WHERE category = 1 
-				AND district = ANY($1)
-				AND isvisible = true 
+				`SELECT *, COALESCE(claim_count, 0) as claim_count
+				FROM us_leaddata
+				WHERE category = 1
+				AND county = ANY($1)
+				AND isvisible = true
 				AND NOT (COALESCE(claim_count, 0) > 4 AND created_at < NOW() - INTERVAL '60 days')
 				ORDER BY id DESC`,
-				[uniqueDistricts]
+				[uniqueCounties]
 			);
 		}
 

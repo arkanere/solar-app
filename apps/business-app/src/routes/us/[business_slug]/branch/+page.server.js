@@ -21,7 +21,7 @@ export async function load({ params, locals, parent }) {
 	try {
 		// First, get the main business using the slug
 		const mainBusinessQuery = `
-      SELECT * FROM businesses_1 
+      SELECT * FROM us_businesses
       WHERE slug = $1
     `;
 
@@ -39,9 +39,9 @@ export async function load({ params, locals, parent }) {
 
 		// Get all branch offices linked to this main business
 		const branchesQuery = `
-      SELECT b.* 
-      FROM branches br
-      JOIN businesses_1 b ON br.branch_id = b.id
+      SELECT b.*
+      FROM us_branches br
+      JOIN us_businesses b ON br.branch_id = b.id
       WHERE br.main_id = $1 AND br.isactive = true
     `;
 
