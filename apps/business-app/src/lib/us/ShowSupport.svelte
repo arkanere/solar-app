@@ -18,6 +18,8 @@
 </script>
 
 {#if show}
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 	<div role="dialog" aria-modal="true" aria-labelledby="support-title" class="modal-overlay" on:click={handleOverlayClick}>
 		<div class="modal">
 			<button class="close-modal" aria-label="Close dialog" on:click={close}>&times;</button>

@@ -49,8 +49,8 @@
 	}
 
 	function validatePinCode() {
-		if (!/^\d{6}$/.test(pinCode)) {
-			errors.pinCode = 'Pin code must be exactly 6 digits';
+		if (!/^\d{5}$/.test(pinCode)) {
+			errors.pinCode = 'Zip code must be exactly 5 digits';
 			return false;
 		} else {
 			errors.pinCode = '';
@@ -141,9 +141,9 @@
 		{/if}
 	</div>
 
-	<!-- Pin Code Input -->
+	<!-- Zip Code Input -->
 	<div>
-		<label for="pinCode">Pin Code:</label>
+		<label for="pinCode">Zip Code:</label>
 		<input id="pinCode" type="text" bind:value={pinCode} required on:blur={validatePinCode} />
 		{#if errors.pinCode}
 			<p class="error">{errors.pinCode}</p>
