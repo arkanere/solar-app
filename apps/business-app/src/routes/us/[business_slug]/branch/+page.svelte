@@ -495,41 +495,6 @@
 		margin: 0.5rem 0;
 	}
 
-	/* Add branch tile */
-	.add-branch-tile {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		border: 2px dashed var(--border-color-light);
-		background-color: var(--light-bg-color);
-		cursor: pointer;
-		min-height: 200px;
-	}
-
-	.dark .add-branch-tile {
-		border: 2px dashed var(--border-color-dark);
-		background-color: #222;
-	}
-
-	.add-branch-content {
-		text-align: center;
-	}
-
-	.add-icon {
-		font-size: 2rem;
-		display: block;
-		margin-bottom: 0.5rem;
-		color: var(--success-color);
-	}
-
-	.add-branch-tile:hover {
-		border-color: var(--success-color);
-	}
-
-	.dark .add-branch-tile:hover {
-		border-color: var(--success-color);
-	}
-
 	/* No branches message */
 	.no-branches {
 		text-align: center;
@@ -552,14 +517,6 @@
 
 	.dark .no-branches p {
 		color: var(--dark-secondary-text-color);
-	}
-
-	.no-branches button {
-		background-color: var(--success-color);
-	}
-
-	.no-branches button:hover {
-		background-color: var(--success-hover);
 	}
 
 	/* Error message */

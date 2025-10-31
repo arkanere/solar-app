@@ -176,7 +176,7 @@
 
 <!-- Component Modals -->
 {#if showAddLead}
-	<div class="modal-overlay">
+	<div class="modal-overlay" class:dark={darkMode}>
 		<div class="modal-content">
 			<button class="close-btn" on:click={toggleAddLead}>&times;</button>
 			<h2>Add Lead</h2>
@@ -304,16 +304,6 @@
 		justify-content: center;
 	}
 
-	/* Header */
-	header h1 {
-		font-size: 2rem;
-		margin-top: 0;
-		margin-bottom: 1.5rem;
-		font-weight: 600;
-		text-align: center;
-		color: var(--accent-color);
-	}
-
 	/* Button styles */
 	button {
 		background-color: var(--accent-color);
@@ -405,15 +395,6 @@
 		margin: 0;
 	}
 
-	.theme-toggle {
-		background: none;
-		border: 1px solid;
-		padding: 0.25rem 0.5rem;
-		font-size: 0.9rem;
-		cursor: pointer;
-		transition: background-color 0.3s ease, color 0.3s ease;
-	}
-
 	/* Light Mode Combined Nav */
 	.top-nav.light {
 		background-color: #fafafa;
@@ -428,16 +409,6 @@
 		color: #0077cc;
 	}
 
-	.top-nav.light .theme-toggle {
-		border-color: #333;
-		color: #333;
-	}
-
-	.top-nav.light .theme-toggle:hover {
-		background-color: #333;
-		color: white;
-	}
-
 	/* Dark Mode Combined Nav */
 	.top-nav.dark {
 		background-color: #1a1a1a;
@@ -450,16 +421,6 @@
 
 	.top-nav.dark .nav-brand a:hover {
 		color: #66b2ff;
-	}
-
-	.top-nav.dark .theme-toggle {
-		border-color: #fff;
-		color: #fff;
-	}
-
-	.top-nav.dark .theme-toggle:hover {
-		background-color: #fff;
-		color: #333;
 	}
 
 	/* Media queries for mobile responsiveness */
@@ -494,15 +455,8 @@
 			order: 2;
 		}
 
-		.theme-toggle {
-			order: 3;
-			margin: 0;
-			padding: 0.25rem 0.5rem;
-			font-size: 0.8rem;
-		}
-
 		.nav-list {
-			order: 4;
+			order: 3;
 			width: 100%;
 			margin: 0.5rem 0 0 0;
 			display: none;
@@ -557,11 +511,6 @@
 			font-size: 0.8rem;
 		}
 
-		header h1 {
-			font-size: 1.5rem;
-			word-break: break-word;
-		}
-
 		button {
 			white-space: normal; /* Allow button text to wrap */
 			word-break: break-word;
@@ -612,16 +561,16 @@
 		color: #333;
 	}
 
-	.dark .modal-content {
-		background: var(--dark-card-bg);
-		color: var(--dark-text-color);
+	.modal-overlay.dark .modal-content {
+		background: var(--dark-bg-color);
+		color: var(--dark-primary-text-color);
 	}
 
-	.dark .close-btn {
+	.modal-overlay.dark .close-btn {
 		color: #ccc;
 	}
 
-	.dark .close-btn:hover {
+	.modal-overlay.dark .close-btn:hover {
 		color: #fff;
 	}
 </style>

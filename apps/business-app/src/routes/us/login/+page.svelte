@@ -42,18 +42,9 @@
 	}
 
 	/* Ensure the entire page has the correct background color */
-	html,
-	body {
+	:global(body) {
 		margin: 0;
 		padding: 0;
-		height: 100%;
-		background-color: var(--light-bg-color); /* Default background */
-		transition: background-color 0.3s ease;
-	}
-
-	.dark html,
-	.dark body {
-		background-color: var(--dark-bg-color); /* Dark mode background */
 	}
 
 	/* Main page layout */
@@ -163,11 +154,6 @@
 	h1 {
 		font-size: 1.8rem;
 		margin-bottom: 1rem;
-	}
-	h2 {
-		margin-top: 2em;
-		font-size: 1.5em;
-		margin-bottom: 1em;
 	}
 
 	.light h1 {

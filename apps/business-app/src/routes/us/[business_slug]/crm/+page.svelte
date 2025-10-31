@@ -131,7 +131,7 @@
 
 <!-- Component Modals -->
 {#if showAddLead}
-	<div class="modal-overlay">
+	<div class="modal-overlay" class:dark={darkMode}>
 		<div class="modal-content">
 			<button class="close-btn" on:click={toggleAddLead}>&times;</button>
 			<h2>Add Lead</h2>
@@ -249,26 +249,6 @@
 	button:disabled {
 		background-color: #9ca3af;
 		cursor: not-allowed;
-	}
-
-	/* Navigation link styles - styled to match buttons */
-	.nav-list a {
-		background-color: var(--accent-color);
-		color: #fff;
-		border: none;
-		padding: 0.5rem 1rem;
-		border-radius: 5px;
-		cursor: pointer;
-		transition: background-color 0.3s ease;
-		text-decoration: none;
-		display: inline-block;
-		font-size: 1rem;
-		font-family: var(--font-family);
-		white-space: nowrap;
-	}
-
-	.nav-list a:hover {
-		background-color: var(--accent-hover);
 	}
 
 	/* Combined Navigation Styles */
@@ -389,16 +369,16 @@
 		color: #333;
 	}
 
-	.dark .modal-content {
+	.modal-overlay.dark .modal-content {
 		background: var(--dark-bg-color);
 		color: var(--dark-primary-text-color);
 	}
 
-	.dark .close-btn {
+	.modal-overlay.dark .close-btn {
 		color: #ccc;
 	}
 
-	.dark .close-btn:hover {
+	.modal-overlay.dark .close-btn:hover {
 		color: #fff;
 	}
 
@@ -474,7 +454,6 @@
 		}
 
 		.nav-list button,
-		.nav-list a,
 		.nav-list form,
 		.nav-list form button {
 			width: 100%;

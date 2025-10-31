@@ -18,6 +18,8 @@
 </script>
 
 {#if show}
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 	<div role="dialog" aria-modal="true" aria-labelledby="ranking-policy-title" class="modal-overlay" on:click={handleOverlayClick}>
 		<div class="modal">
 			<button class="close-modal" aria-label="Close dialog" on:click={close}>&times;</button>
@@ -119,15 +121,6 @@
 	li {
 		margin-bottom: 8px;
 		line-height: 1.5;
-	}
-
-	a {
-		color: #0066cc;
-		text-decoration: none;
-	}
-
-	a:hover {
-		text-decoration: underline;
 	}
 
 	button {

@@ -41,11 +41,11 @@
 	const dummyLead = {
 		name: 'John Doe',
 		received_at: new Date().toISOString(),
-		phone: '+91 0123456789',
+		phone: '+1 (864) 123-4567',
 		email: 'dummy@email.com',
-		pin_code: '110001',
+		pin_code: '29601',
 		type: 'Residential - Independent Home',
-		comment: 'I want to install 3kW at my home. Please call me!'
+		comment: 'I want to install a 6kW solar system at my home. Please call me to discuss pricing and incentives!'
 	};
 
 	async function updateLead(lead) {
@@ -316,7 +316,7 @@
 							{#if lead.email}
 								<p><strong>Email:</strong> {lead.email}</p>
 							{/if}
-							<p><strong>Pin Code:</strong> {lead.pin_code}</p>
+							<p><strong>Zip Code:</strong> {lead.pin_code}</p>
 							<p><strong>Type:</strong> {lead.type}</p>
 							<p><strong>Customer Comment:</strong> {lead.comment}</p>
 							{#if lead.sv_comment_for_businesses}
@@ -408,7 +408,7 @@
 						<p><strong>Received:</strong> <span class="time-stamp {getRelativeTime(dummyLead.received_at).class}">{getRelativeTime(dummyLead.received_at).text}</span></p>
 						<p><strong>Phone:</strong> {dummyLead.phone}</p>
 						<p><strong>Email:</strong> {dummyLead.email}</p>
-						<p><strong>Pin Code:</strong> {dummyLead.pin_code}</p>
+						<p><strong>Zip Code:</strong> {dummyLead.pin_code}</p>
 						<p><strong>Type:</strong> {dummyLead.type}</p>
 						<p><strong>Customer Comment:</strong> {dummyLead.comment}</p>
 					</div>
@@ -867,11 +867,6 @@
 		margin-bottom: 0;
 	}
 
-	.modal-body small {
-		color: #6c757d;
-		font-style: italic;
-	}
-
 	.modal-actions {
 		padding: 1rem 1.5rem 1.5rem;
 		display: flex;
@@ -938,10 +933,6 @@
 
 	:global(.dark) .modal-actions {
 		border-top-color: #444;
-	}
-
-	:global(.dark) .modal-body small {
-		color: #adb5bd;
 	}
 
 	/* Mobile modal responsiveness */
