@@ -9,7 +9,7 @@
 	let formData = {
 		projectTitle: '',
 		pincode: '',
-		district: '',
+		county: '',
 		city: '',
 		projectDate: '',
 		projectImage: null
@@ -21,11 +21,11 @@
 	// Submission state
 	let isSubmitting = false;
 	let errorMessage = '';
-	let isDistrictLoading = false;
+	let isCountyLoading = false;
 	let cities = [];
 	let isCitiesLoading = false;
 	let lastFetchedPincode = '';
-	let lastFetchedDistrict = '';
+	let lastFetchedCounty = '';
 
 	// Suggested project names for consistency
 	const suggestedNames = [
@@ -47,25 +47,25 @@
 		errorMessage = '';
 	}
 
-	// Fetch district automatically when pincode changes
+	// Fetch county automatically when pincode changes
 	$: if (
 		formData.pincode &&
 		formData.pincode.length === 6 &&
 		formData.pincode !== lastFetchedPincode
 	) {
-		fetchDistrictByPincode(formData.pincode);
+		fetchCountyByPincode(formData.pincode);
 	}
 
-	// Fetch cities when district changes
-	$: if (formData.district && formData.district !== lastFetchedDistrict) {
-		fetchCitiesByDistrict(formData.district);
+	// Fetch cities when county changes
+	$: if (formData.county && formData.county !== lastFetchedCounty) {
+		fetchCitiesByCounty(formData.county);
 	}
 
 	function resetForm() {
 		formData = {
 			projectTitle: '',
 			pincode: '',
-			district: '',
+			county: '',
 			city: '',
 			projectDate: formatDate(new Date()),
 			projectImage: null
@@ -73,8 +73,8 @@
 		imagePreview = null;
 		cities = [];
 		lastFetchedPincode = '';
-		lastFetchedDistrict = '';
-		isDistrictLoading = false;
+		lastFetchedCounty = '';
+		isCountyLoading = false;
 		isCitiesLoading = false;
 	}
 
@@ -101,20 +101,20 @@
 		'image/svg+xml'
 	];
 
-	// Function to fetch district by pincode
-	async function fetchDistrictByPincode(pincodeValue) {
+	// Function to fetch county by pincode
+	async function fetchCountyByPincode(pincodeValue) {
 		if (!pincodeValue || pincodeValue.length !== 6) {
-			formData.district = '';
+			formData.county = '';
 			lastFetchedPincode = '';
 			return;
 		}
 
 		// Update last fetched pincode to prevent duplicate calls
 		lastFetchedPincode = pincodeValue;
-		isDistrictLoading = true;
+		isCountyLoading = true;
 
 		try {
-			const res = await fetch('/us/api/getDistrictByPincode', {
+			const res = await fetch('/us/api/getCountyByZipcode', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ pincode: pincodeValue })
@@ -122,51 +122,51 @@
 			const data = await res.json();
 
 			if (data.success) {
-				formData.district = data.district;
+				formData.county = data.county;
 			} else {
-				formData.district = ''; // Clear district if not found
-				console.log('District not found for pincode:', pincodeValue);
+				formData.county = ''; // Clear county if not found
+				console.log('County not found for pincode:', pincodeValue);
 			}
 		} catch (error) {
-			console.error('Error fetching district by pincode:', error);
-			formData.district = ''; // Clear district on error
+			console.error('Error fetching county by pincode:', error);
+			formData.county = ''; // Clear county on error
 		} finally {
-			isDistrictLoading = false;
+			isCountyLoading = false;
 		}
 	}
 
-	// Function to fetch cities by district
-	async function fetchCitiesByDistrict(districtValue) {
-		if (!districtValue) {
+	// Function to fetch cities by county
+	async function fetchCitiesByCounty(countyValue) {
+		if (!countyValue) {
 			cities = [];
 			formData.city = '';
-			lastFetchedDistrict = '';
+			lastFetchedCounty = '';
 			return;
 		}
 
-		// Update last fetched district to prevent duplicate calls
-		lastFetchedDistrict = districtValue;
+		// Update last fetched county to prevent duplicate calls
+		lastFetchedCounty = countyValue;
 		isCitiesLoading = true;
 
 		try {
 			const res = await fetch('/us/api/getCities', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ district: districtValue })
+				body: JSON.stringify({ county: countyValue })
 			});
 			const data = await res.json();
 
 			if (data.cities && data.cities.length > 0) {
 				cities = data.cities;
-				// Reset city selection when district changes
+				// Reset city selection when county changes
 				formData.city = '';
 			} else {
-				console.log('Cities not found for district:', districtValue);
+				console.log('Cities not found for county:', countyValue);
 				cities = [];
 				formData.city = '';
 			}
 		} catch (error) {
-			console.error('Error fetching cities by district:', error);
+			console.error('Error fetching cities by county:', error);
 			cities = [];
 			formData.city = '';
 		} finally {
@@ -224,8 +224,8 @@
 				return;
 			}
 
-			if (!formData.district.trim()) {
-				errorMessage = 'District is required';
+			if (!formData.county.trim()) {
+				errorMessage = 'County is required';
 				isSubmitting = false;
 				return;
 			}
@@ -262,7 +262,7 @@
 			const formDataToSend = new FormData();
 			formDataToSend.append('projectTitle', formData.projectTitle);
 			formDataToSend.append('pincode', formData.pincode);
-			formDataToSend.append('district', formData.district);
+			formDataToSend.append('county', formData.county);
 			formDataToSend.append('city', formData.city);
 			formDataToSend.append('projectDate', formData.projectDate);
 			formDataToSend.append('business_slug', businessSlug);
@@ -359,20 +359,20 @@
 					disabled={isSubmitting}
 				/>
 
-				<label for="district">District (Auto-filled):</label>
-				<div class="district-container">
+				<label for="county">County (Auto-filled):</label>
+				<div class="county-container">
 					<input
-						id="district"
-						bind:value={formData.district}
+						id="county"
+						bind:value={formData.county}
 						readonly
-						placeholder="District will be auto-filled based on pincode"
+						placeholder="County will be auto-filled based on pincode"
 						class="readonly-field"
 						disabled={isSubmitting}
 					/>
-					{#if isDistrictLoading}
-						<small class="loading-text">Loading district...</small>
-					{:else if formData.pincode && formData.pincode.length === 6 && !formData.district}
-						<small class="no-district-text">District not found for this pincode</small>
+					{#if isCountyLoading}
+						<small class="loading-text">Loading county...</small>
+					{:else if formData.pincode && formData.pincode.length === 6 && !formData.county}
+						<small class="no-county-text">County not found for this pincode</small>
 					{/if}
 				</div>
 
@@ -382,7 +382,7 @@
 						id="city"
 						bind:value={formData.city}
 						required
-						disabled={isSubmitting || !formData.district || isCitiesLoading}
+						disabled={isSubmitting || !formData.county || isCitiesLoading}
 					>
 						<option value="">Select a city</option>
 						{#each cities as city}
@@ -392,8 +392,8 @@
 					{#if isCitiesLoading}
 						<small class="loading-text">Loading cities...</small>
 					{/if}
-					{#if formData.district && !isCitiesLoading && cities.length === 0}
-						<small class="no-cities-text">No cities found for this district</small>
+					{#if formData.county && !isCitiesLoading && cities.length === 0}
+						<small class="no-cities-text">No cities found for this county</small>
 					{/if}
 				</div>
 
@@ -541,7 +541,7 @@
 		box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
 	}
 
-	.district-container,
+	.county-container,
 	.city-container {
 		display: flex;
 		flex-direction: column;
@@ -563,7 +563,7 @@
 	}
 
 	.no-cities-text,
-	.no-district-text {
+	.no-county-text {
 		color: #ff6b6b;
 		font-style: italic;
 		font-size: 12px;

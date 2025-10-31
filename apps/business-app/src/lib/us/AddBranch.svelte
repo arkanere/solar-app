@@ -93,7 +93,7 @@
 				body: JSON.stringify({ state: selectedState })
 			});
 			const data = await res.json();
-			counties = data.districts || [];
+			counties = data.counties || [];
 			county = ''; // Reset county when state changes
 			city = ''; // Reset city when state changes
 			cities = []; // Clear cities list
@@ -137,7 +137,7 @@
 				body: JSON.stringify({
 					businessId,
 					state,
-					district: county,
+					county: county,
 					city
 				})
 			});

@@ -60,7 +60,7 @@
 		const parts = [];
 		if (branch.address) parts.push(branch.address);
 		if (branch.city) parts.push(branch.city);
-		if (branch.district) parts.push(branch.district);
+		if (branch.county) parts.push(branch.county);
 		if (branch.state) parts.push(branch.state);
 
 		return parts.join(', ');
@@ -156,7 +156,7 @@
 								{#if branch.email}
 									<p><strong>Email:</strong> {branch.email}</p>
 								{/if}
-								<p><strong>Location:</strong> {branch.city}, {branch.district}, {branch.state}</p>
+								<p><strong>Location:</strong> {branch.city}, {branch.county}, {branch.state}</p>
 							</div>
 							<div class="branch-actions">
 								<a
