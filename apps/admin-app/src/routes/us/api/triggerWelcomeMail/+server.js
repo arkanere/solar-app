@@ -7,7 +7,7 @@ export async function POST({ request, fetch }) {
 
 	try {
 		// Call /api/createMagicLinkToken to generate a magic link token
-		const magicTokenResponse = await fetch('/in/api/createMagicLinkToken', {
+		const magicTokenResponse = await fetch('/us/api/createMagicLinkToken', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ slug, id })
@@ -44,9 +44,9 @@ export async function POST({ request, fetch }) {
                     <h2>Access your Account</h2>
                     <p>To get started, click on the link below:</p>
                     <p>
-                        <a href="https://solarvipani.com/business/${slug}/signin-link/${magic_link_token}" 
-                        style="background-color: #2a9d8f; color: #ffffff !important; text-decoration: none !important; 
-                                font-weight: bold; font-size: 1.2em; padding: 12px 20px; border-radius: 5px; 
+                        <a href="https://business.solarvipani.com/us/${slug}/signin-link/${magic_link_token}"
+                        style="background-color: #2a9d8f; color: #ffffff !important; text-decoration: none !important;
+                                font-weight: bold; font-size: 1.2em; padding: 12px 20px; border-radius: 5px;
                                 display: inline-block; text-align: center;">
                         Solar Vipani Business Portal
                         </a>
@@ -81,9 +81,9 @@ export async function POST({ request, fetch }) {
                     </ul>
 
                     <p>
-                        <a href="https://solarvipani.com/solar-panel-installer/${slug}" 
-                        style="background-color: #2a9d8f; color: #ffffff !important; text-decoration: none !important; 
-                                font-weight: bold; font-size: 1.2em; padding: 12px 20px; border-radius: 5px; 
+                        <a href="https://solarvipani.com/us/solar-panel-installer/${slug}"
+                        style="background-color: #2a9d8f; color: #ffffff !important; text-decoration: none !important;
+                                font-weight: bold; font-size: 1.2em; padding: 12px 20px; border-radius: 5px;
                                 display: inline-block; text-align: center;">
                         View Your Business Listing
                         </a>

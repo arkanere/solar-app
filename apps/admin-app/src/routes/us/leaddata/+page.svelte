@@ -25,12 +25,11 @@
 			name,
 			phone,
 			email,
-			pin_code,
+			zipcode,
 			type,
 			comment,
 			svnotes,
-			sv_comment_for_businesses,
-			district,
+			county,
 			category,
 			stage,
 			status
@@ -38,7 +37,7 @@
 
 		try {
 			// Send the updated lead data to the server
-			const response = await fetch('/api/updateLead', {
+			const response = await fetch('/us/api/updateLead', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -48,12 +47,11 @@
 					name,
 					phone,
 					email,
-					pin_code,
+					zipcode,
 					type,
 					comment,
 					svnotes,
-					sv_comment_for_businesses,
-					district,
+					county,
 					category,
 					stage,
 					status
@@ -89,7 +87,7 @@
 	// Function to send lead details via email
 	async function shareLeadOnMail(lead, businessSlug) {
 		try {
-			const response = await fetch('/api/sendLeadDetails', {
+			const response = await fetch('/us/api/sendLeadDetails', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -132,7 +130,7 @@
 				<li>
 					<h2>{lead.name}</h2>
 					<p>Phone: {lead.phone}</p>
-					<p>Pin Code: {lead.pin_code}</p>
+					<p>Zip Code: {lead.zipcode}</p>
 					<p>Email: {lead.email}</p>
 					<p>Type: {lead.type}</p>
 					<p>Comment: {lead.comment}</p>
@@ -140,14 +138,13 @@
 					<p>Lead ID: {lead.id}</p>
 					<p>Source page: {lead.urlparams}</p>
 					<p>SV Note: {lead.svnotes}</p>
-					<p>SV Comment for Businesses: {lead.sv_comment_for_businesses || 'null'}</p>
-					<p>District: {lead.district}</p>
+					<p>County: {lead.county}</p>
 					<p>Category: {lead.category}</p>
 					<p>Claimed count: {lead.claim_count}</p>
 					<p>Business ID: {lead.business_id}</p>
 					<p>Stage: {getStageLabel(lead.stage)}</p>
 					<p>Status: {lead.status ? 'Active' : 'Inactive'}</p>
-					<p>Email Invites Sent: {lead.email_invite_count || 0}</p>
+					<p>Original ID: {lead.original_id || 'N/A'}</p>
 					<button class="edit-button" on:click={() => editLead(lead.id)}> Edit </button>
 					<button
 						class="share-button"
@@ -178,8 +175,8 @@
 						<input type="text" bind:value={selectedLead.phone} />
 					</label>
 					<label>
-						Pin code:
-						<input type="text" bind:value={selectedLead.pin_code} />
+						Zip code:
+						<input type="text" bind:value={selectedLead.zipcode} />
 					</label>
 					<label>
 						Email:
@@ -198,12 +195,8 @@
 						<textarea bind:value={selectedLead.svnotes}></textarea>
 					</label>
 					<label>
-						SV Comment for Businesses:
-						<textarea bind:value={selectedLead.sv_comment_for_businesses}></textarea>
-					</label>
-					<label>
-						District:
-						<input type="text" bind:value={selectedLead.district} />
+						County:
+						<input type="text" bind:value={selectedLead.county} />
 					</label>
 					<label>
 						Category:

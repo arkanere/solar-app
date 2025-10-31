@@ -36,7 +36,7 @@
 		selectedClaim.isresolved = true; // Set isResolved to true
 
 		try {
-			const response = await fetch('/api/updateLeadClaim', {
+			const response = await fetch('/us/api/updateLeadClaim', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({

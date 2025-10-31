@@ -32,12 +32,11 @@
 			name,
 			phone,
 			email,
-			pin_code,
+			zipcode,
 			type,
 			comment,
 			svnotes,
-			sv_comment_for_businesses,
-			district,
+			county,
 			category,
 			stage,
 			status
@@ -45,7 +44,7 @@
 
 		try {
 			// Send the updated lead data to the server
-			const response = await fetch('/api/updateLead', {
+			const response = await fetch('/us/api/updateLead', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -55,12 +54,11 @@
 					name,
 					phone,
 					email,
-					pin_code,
+					zipcode,
 					type,
 					comment,
 					svnotes,
-					sv_comment_for_businesses,
-					district,
+					county,
 					category,
 					stage,
 					status
@@ -101,12 +99,12 @@
 				throw new Error('This lead is not a non-exclusive lead (category must be 1). Cannot share lead.');
 			}
 
-			// Ensure the lead has a valid district
-			if (!lead.district || lead.district.trim() === '') {
-				throw new Error('District value is missing. Cannot share lead.');
+			// Ensure the lead has a valid county
+			if (!lead.county || lead.county.trim() === '') {
+				throw new Error('County value is missing. Cannot share lead.');
 			}
 
-			const response = await fetch('/api/shareMaskedLeadWithDistrictBusinesses', {
+			const response = await fetch('/us/api/shareMaskedLeadWithDistrictBusinesses', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ lead, business_slug: businessSlug })
@@ -133,12 +131,12 @@
 				throw new Error('This lead is not a non-exclusive lead (category must be 1). Cannot share lead.');
 			}
 
-			// Ensure the lead has a valid district
-			if (!lead.district || lead.district.trim() === '') {
-				throw new Error('District value is missing. Cannot share lead.');
+			// Ensure the lead has a valid county
+			if (!lead.county || lead.county.trim() === '') {
+				throw new Error('County value is missing. Cannot share lead.');
 			}
 
-			const response = await fetch('/api/shareMaskedLeadWithUnverifiedBusinesses', {
+			const response = await fetch('/us/api/shareMaskedLeadWithUnverifiedBusinesses', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ lead, business_slug: businessSlug })
@@ -165,12 +163,12 @@
 				throw new Error('This lead is not a non-exclusive lead (category must be 1). Cannot share lead.');
 			}
 
-			// Ensure the lead has a valid district
-			if (!lead.district || lead.district.trim() === '') {
-				throw new Error('District value is missing. Cannot share lead.');
+			// Ensure the lead has a valid county
+			if (!lead.county || lead.county.trim() === '') {
+				throw new Error('County value is missing. Cannot share lead.');
 			}
 
-			const response = await fetch('/api/shareMaskedLeadWithStateBusinesses', {
+			const response = await fetch('/us/api/shareMaskedLeadWithStateBusinesses', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ lead, business_slug: businessSlug })
@@ -246,8 +244,8 @@
 	// Get confirmation message based on action type
 	function getConfirmationMessage(actionType, lead) {
 		const messages = {
-			'district-verified': `Share masked lead details with all verified businesses in ${lead.district} district?`,
-			'district-unverified': `Share masked lead details with all unverified businesses in ${lead.district} district?`,
+			'district-verified': `Share masked lead details with all verified businesses in ${lead.county} county?`,
+			'district-unverified': `Share masked lead details with all unverified businesses in ${lead.county} county?`,
 			'state-verified': `Share masked lead details with all verified businesses in the state?`
 		};
 		return messages[actionType] || 'Are you sure you want to proceed?';
@@ -266,33 +264,32 @@
 					<h2>{lead.name}</h2>
 					<p>Lead Id: {lead.id}</p>
 					<p>Phone: {lead.phone}</p>
-					<p>Pin Code: {lead.pin_code}</p>
+					<p>Zip Code: {lead.zipcode}</p>
 					<p>Email: {lead.email}</p>
 					<p>Type: {lead.type}</p>
 					<p>Comment: {lead.comment}</p>
 					<p>Source page: {lead.urlparams}</p>
 					<p>SV Note: {lead.svnotes}</p>
-					<p>SV Comment for Businesses: {lead.sv_comment_for_businesses || 'null'}</p>
 					<p>Created At: {new Date(lead.created_at).toLocaleString()}</p>
-					<p>District: {lead.district}</p>
+					<p>County: {lead.county}</p>
 					<p>Category: {lead.category}</p>
 					<p>Claimed count: {lead.claim_count}</p>
 					<p>Business ID: {lead.business_id}</p>
 					<p>Stage: {getStageLabel(lead.stage)}</p>
 					<p>Status: {lead.status ? 'Active' : 'Inactive'}</p>
-					<p>Email Invites Sent: {lead.email_invite_count || 0}</p>
+					<p>Original ID: {lead.original_id || 'N/A'}</p>
 					<button class="edit-button" on:click={() => editLead(lead.id)}> Edit </button>
 					<button
 						class="share-masked-lead-button"
 						on:click={() => confirmDistrictVerified(lead)}
 					>
-						Share masked details with Verified Businesses in the district
+						Share masked details with Verified Businesses in the county
 					</button>
 					<button
 						class="share-masked-lead-button"
 						on:click={() => confirmDistrictUnverified(lead)}
 					>
-						Share masked details with Unverified Businesses in the district
+						Share masked details with Unverified Businesses in the county
 					</button>
 					<button
 						class="share-masked-lead-button"
@@ -322,8 +319,8 @@
 						<input type="text" bind:value={selectedLead.phone} />
 					</label>
 					<label>
-						Pin code:
-						<input type="text" bind:value={selectedLead.pin_code} />
+						Zip code:
+						<input type="text" bind:value={selectedLead.zipcode} />
 					</label>
 					<label>
 						Email:
@@ -342,12 +339,8 @@
 						<textarea bind:value={selectedLead.svnotes}></textarea>
 					</label>
 					<label>
-						SV Comment for Businesses:
-						<textarea bind:value={selectedLead.sv_comment_for_businesses}></textarea>
-					</label>
-					<label>
-						District:
-						<input type="text" bind:value={selectedLead.district} />
+						County:
+						<input type="text" bind:value={selectedLead.county} />
 					</label>
 					<label>
 						Category:
@@ -386,7 +379,7 @@
 						<p>{getConfirmationMessage(confirmActionType, confirmLead)}</p>
 						<div class="lead-info">
 							<strong>Lead:</strong> {confirmLead.name} (ID: {confirmLead.id})<br>
-							<strong>District:</strong> {confirmLead.district}
+							<strong>County:</strong> {confirmLead.county}
 						</div>
 						<p class="warning-text">This will send emails to businesses. Make sure this is intended.</p>
 					</div>

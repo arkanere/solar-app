@@ -11,7 +11,7 @@ export async function load() {
 
 	try {
 		const result = await pool.query(
-			'SELECT *, sv_comment_for_businesses FROM us_leaddata where isvisible = true ORDER by id DESC'
+			'SELECT * FROM us_leaddata where isvisible = true ORDER by id DESC'
 		);
 
 		if (result.rows.length > 0) {

@@ -8,7 +8,7 @@ export async function load() {
 	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
-		const result = await pool.query('SELECT * FROM leaddata_claimrequests ORDER BY id DESC');
+		const result = await pool.query('SELECT * FROM us_leaddata_claimrequests ORDER BY id DESC');
 
 		if (result.rows.length > 0) {
 			return { leadClaims: result.rows };
