@@ -11,22 +11,22 @@ export async function POST({ request, fetch }) {
 		const data = await request.json();
 		const { name, phone, pinCode, type, comment, urlParam, email } = data;
 
-		// Get district from pincode mapping
-		let district = null;
+		// Get county from pincode mapping
+		let county = null;
 		if (pinCode) {
 			try {
-				const districtQuery = `
-					SELECT district FROM pincode_mapping 
-					WHERE pincode = $1 
+				const countyQuery = `
+					SELECT district FROM pincode_mapping
+					WHERE pincode = $1
 					LIMIT 1
 				`;
-				const districtResult = await pool.query(districtQuery, [pinCode]);
-				if (districtResult.rows.length > 0) {
-					district = districtResult.rows[0].district;
+				const countyResult = await pool.query(countyQuery, [pinCode]);
+				if (countyResult.rows.length > 0) {
+					county = countyResult.rows[0].district;
 				}
-			} catch (districtError) {
-				console.log('District lookup failed for pincode:', pinCode, districtError);
-				// Continue with null district if lookup fails
+			} catch (countyError) {
+				console.log('County lookup failed for pincode:', pinCode, countyError);
+				// Continue with null county if lookup fails
 			}
 		}
 
@@ -44,7 +44,7 @@ export async function POST({ request, fetch }) {
 			comment,
 			urlParam,
 			email || null,
-			district
+			county
 		]);
 
 		const leadId = result.rows[0].id;

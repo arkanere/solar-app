@@ -40,7 +40,7 @@
 
 	// Function to show instructions for getting the inquiry
 	function showInquiryInstructions(lead) {
-		alert(`To get this inquiry in ${lead.district}, ${lead.state}:\n\n1. Add a branch in any city within ${lead.district} district\n2. Once the branch is added, the lead will appear in your business dashboard home page. From there you can claim it\n\nClick on "Add Branch" in the navigation menu to get started.`);
+		alert(`To get this inquiry in ${lead.county}, ${lead.state}:\n\n1. Add a branch in any city within ${lead.county} county\n2. Once the branch is added, the lead will appear in your business dashboard home page. From there you can claim it\n\nClick on "Add Branch" in the navigation menu to get started.`);
 	}
 </script>
 
@@ -88,7 +88,7 @@
 						<tr>
 							<th>Sr No.</th>
 							<th>Name</th>
-							<th>District</th>
+							<th>County</th>
 							<th>State</th>
 							<th>Received</th>
 							<th>Action</th>
@@ -108,7 +108,7 @@
 										{/if}
 									</div>
 								</td>
-								<td>{lead.district}</td>
+								<td>{lead.county}</td>
 								<td>{lead.state}</td>
 								<td class="received-cell">{getDaysAgo(lead.created_at)}</td>
 								<td class="action-cell">

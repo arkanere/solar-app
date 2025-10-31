@@ -19,7 +19,7 @@ export async function POST({ request }) {
 		const {
 			businessId, // ID of the main business
 			state,
-			district,
+			county,
 			city
 		} = data;
 
@@ -89,7 +89,7 @@ export async function POST({ request }) {
 			mainBusiness.website,
 			mainBusiness.ein,
 			state, // Use the provided state
-			district, // Use the provided county
+			county, // Use the provided county
 			mainBusiness.tag,
 			branchSlug, // Use the generated branch slug
 			`Branch office of ${mainBusiness.businessname}`, // Set notes to indicate it's a branch
@@ -125,7 +125,7 @@ export async function POST({ request }) {
 			branch: {
 				id: branchId,
 				state,
-				district,
+				county,
 				city
 			}
 		});
