@@ -222,22 +222,22 @@ export async function POST({ request }) {
 
 		const client = await pool.connect();
 		try {
-			// Look up district using pincode
-			let district = 'Unknown'; // Default value
+			// Look up county using pincode
+			let county = 'Unknown'; // Default value
 			try {
-				const districtResult = await client.query(
+				const countyResult = await client.query(
 					'SELECT district FROM pincode_mapping WHERE pincode = $1',
 					[pincode]
 				);
 
-				if (districtResult.rows.length > 0) {
-					district = districtResult.rows[0].district;
-					console.log('Found district for pincode', pincode, ':', district);
+				if (countyResult.rows.length > 0) {
+					county = countyResult.rows[0].district;
+					console.log('Found county for pincode', pincode, ':', county);
 				} else {
-					console.log('No district found for pincode', pincode, ', using "Unknown"');
+					console.log('No county found for pincode', pincode, ', using "Unknown"');
 				}
-			} catch (districtError) {
-				console.error('Error looking up district for pincode', pincode, ':', districtError);
+			} catch (countyError) {
+				console.error('Error looking up county for pincode', pincode, ':', countyError);
 				// Continue with 'Unknown' as default
 			}
 
@@ -246,11 +246,11 @@ export async function POST({ request }) {
 
 			// Build the query dynamically based on available data
 			let queryFields =
-				'business_slug, title, project_slug, pincode, district, project_date';
+				'business_slug, title, project_slug, pincode, county, project_date';
 			let queryValues = '$1, $2, $3, $4, $5, $6';
-			let queryParams = [business_slug, projectTitle, projectSlug, pincode, district, projectDate];
+			let queryParams = [business_slug, projectTitle, projectSlug, pincode, county, projectDate];
 			let returnFields =
-				'id, business_slug, title, project_slug, pincode, district, project_date, created_at';
+				'id, business_slug, title, project_slug, pincode, county, project_date, created_at';
 			let index = 7;
 
 			// Add image data if available
