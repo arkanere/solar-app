@@ -31,7 +31,7 @@ export async function POST({ request, fetch }) {
 		}
 
 		const insertQuery = `
-            INSERT INTO LeadData (name, phone, pin_code, type, comment, urlparams, email, district)
+            INSERT INTO us_leaddata (name, phone, pin_code, type, comment, urlparams, email, county)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING id, reference_uuid
         `;

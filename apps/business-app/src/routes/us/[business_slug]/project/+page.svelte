@@ -111,7 +111,9 @@
 	</div>
 
 	<ul class="nav-list {mobileMenuOpen ? 'open' : ''}">
+		<!-- Temporarily hidden - will add later
 		<li><button on:click={toggleAddProject}>Post Recent Project</button></li>
+		-->
 		<li><button on:click={toggleSupport}>Support</button></li>
 		<li>
 			<form method="POST" action={`/us/${businessSlug}/logout`}>

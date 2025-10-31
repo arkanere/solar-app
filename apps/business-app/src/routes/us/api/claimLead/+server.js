@@ -22,7 +22,7 @@ export async function POST({ request, fetch }) {
 
 			// Lock the row to prevent race conditions & fetch claim count
 			const claimCountResult = await client.query(
-				'SELECT claim_count FROM leaddata WHERE id = $1 FOR UPDATE',
+				'SELECT claim_count FROM us_leaddata WHERE id = $1 FOR UPDATE',
 				[lead_id]
 			);
 
@@ -41,16 +41,16 @@ export async function POST({ request, fetch }) {
 				);
 			}
 
-			// Insert into leaddata_claimrequests
+			// Insert into us_leaddata_claimrequests
 			const insertResult = await client.query(
-				'INSERT INTO leaddata_claimrequests (lead_id, claim_id, business_id) VALUES ($1, $2, $3) RETURNING id',
+				'INSERT INTO us_leaddata_claimrequests (lead_id, claim_id, business_id) VALUES ($1, $2, $3) RETURNING id',
 				[lead_id, claim_id, business_id]
 			);
 
 			const claimRequestId = insertResult.rows[0].id;
 
-			// Increment claim_count in leaddata
-			await client.query('UPDATE leaddata SET claim_count = claim_count + 1 WHERE id = $1', [
+			// Increment claim_count in us_leaddata
+			await client.query('UPDATE us_leaddata SET claim_count = claim_count + 1 WHERE id = $1', [
 				lead_id
 			]);
 
@@ -60,21 +60,21 @@ export async function POST({ request, fetch }) {
 
 			// Set this claim as allotted
 			await client.query(
-				'UPDATE leaddata_claimrequests SET isallotted = true, isresolved = true WHERE id = $1',
+				'UPDATE us_leaddata_claimrequests SET isallotted = true, isresolved = true WHERE id = $1',
 				[claimRequestId]
 			);
 
 			// Fetch original lead data to create allocated lead
-			const leadDataResult = await client.query('SELECT * FROM leaddata WHERE id = $1', [lead_id]);
+			const leadDataResult = await client.query('SELECT * FROM us_leaddata WHERE id = $1', [lead_id]);
 
 			if (leadDataResult.rows.length > 0) {
 				const originalLead = leadDataResult.rows[0];
 
 				// Create new lead entry for the allocated business
 				await client.query(
-					`INSERT INTO leaddata 
-                      (name, phone, email, pin_code, type, comment, created_at, svnotes, sv_comment_for_businesses, urlparams, isvisible, category, district, stage, status, claim_count, original_id, business_id)
-                     VALUES 
+					`INSERT INTO us_leaddata
+                      (name, phone, email, pin_code, type, comment, created_at, svnotes, sv_comment_for_businesses, urlparams, isvisible, category, county, stage, status, claim_count, original_id, business_id)
+                     VALUES
                       ($1, $2, $3, $4, $5, $6, NOW(), $7, $8, $9, true, 2, $10, 0, true, 0, $11, $12)`,
 					[
 						originalLead.name,
@@ -86,7 +86,7 @@ export async function POST({ request, fetch }) {
 						originalLead.svnotes,
 						originalLead.sv_comment_for_businesses,
 						originalLead.urlparams,
-						originalLead.district,
+						originalLead.county,
 						originalLead.id, // Set original_id to the original lead's ID
 						business_id // Set business_id from claim request
 					]
