@@ -219,22 +219,22 @@ export async function PUT({ request }) {
 			const existingProject = existingProjectResult.rows[0];
 			console.log('Existing project:', existingProject);
 
-			// Look up district using pincode
-			let district = 'Unknown'; // Default value
+			// Look up county using pincode
+			let county = 'Unknown'; // Default value
 			try {
-				const districtResult = await client.query(
+				const countyResult = await client.query(
 					'SELECT district FROM pincode_mapping WHERE pincode = $1',
 					[pincode]
 				);
 
-				if (districtResult.rows.length > 0) {
-					district = districtResult.rows[0].district;
-					console.log('Found district for pincode', pincode, ':', district);
+				if (countyResult.rows.length > 0) {
+					county = countyResult.rows[0].district;
+					console.log('Found county for pincode', pincode, ':', county);
 				} else {
-					console.log('No district found for pincode', pincode, ', using "Unknown"');
+					console.log('No county found for pincode', pincode, ', using "Unknown"');
 				}
-			} catch (districtError) {
-				console.error('Error looking up district for pincode', pincode, ':', districtError);
+			} catch (countyError) {
+				console.error('Error looking up county for pincode', pincode, ':', countyError);
 				// Continue with 'Unknown' as default
 			}
 
@@ -248,13 +248,13 @@ export async function PUT({ request }) {
 			// Build the update query dynamically
 			let updateFields = [
 				'title = $2',
-				'project_slug = $3', 
+				'project_slug = $3',
 				'pincode = $4',
-				'district = $5',
+				'county = $5',
 				'project_date = $6'
 			];
-			let queryParams = [projectId, projectTitle, projectSlug, pincode, district, projectDate];
-			let returnFields = 'id, business_slug, title, project_slug, pincode, district, project_date, created_at';
+			let queryParams = [projectId, projectTitle, projectSlug, pincode, county, projectDate];
+			let returnFields = 'id, business_slug, title, project_slug, pincode, county, project_date, created_at';
 			let index = 7;
 
 			// Handle image updates
