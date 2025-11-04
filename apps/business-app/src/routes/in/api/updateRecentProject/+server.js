@@ -110,10 +110,19 @@ async function deleteFromCloudinary(publicId) {
 	}
 }
 
-export async function PUT({ request }) {
+export async function PUT({ request, cookies }) {
 	console.log('Received project update request');
 
 	try {
+		// Validate session and authorization first
+		const { BusinessAuthService } = await import('$lib/in/auth/business/index.js');
+		const authService = new BusinessAuthService();
+		const sessionResult = authService.validateSession(cookies);
+
+		if (!sessionResult.success) {
+			return json({ success: false, error: 'Unauthorized - Please login' }, { status: 401 });
+		}
+
 		// Check if the request is multipart form data
 		const contentType = request.headers.get('content-type') || '';
 
@@ -197,6 +206,14 @@ export async function PUT({ request }) {
 		}
 
 		console.log('All validations passed');
+
+		// Verify the logged-in business owns the resource
+		if (sessionResult.session.businessSlug !== business_slug) {
+			return json(
+				{ success: false, error: 'Forbidden - You can only update your own projects' },
+				{ status: 403 }
+			);
+		}
 
 		const client = await pool.connect();
 		try {
@@ -303,10 +320,14 @@ export async function PUT({ request }) {
 				}
 			}
 
+			// Add business_slug as a parameter to prevent SQL injection
+			queryParams.push(business_slug);
+			const businessSlugParamIndex = queryParams.length;
+
 			const result = await client.query(
-				`UPDATE projects 
+				`UPDATE projects
 				 SET ${updateFields.join(', ')}
-				 WHERE id = $1 AND business_slug = '${business_slug}'
+				 WHERE id = $1 AND business_slug = $${businessSlugParamIndex}
 				 RETURNING ${returnFields}`,
 				queryParams
 			);
@@ -342,10 +363,19 @@ export async function PUT({ request }) {
 	}
 }
 
-export async function DELETE({ request }) {
+export async function DELETE({ request, cookies }) {
 	console.log('Received project delete request');
 
 	try {
+		// Validate session and authorization
+		const { BusinessAuthService } = await import('$lib/in/auth/business/index.js');
+		const authService = new BusinessAuthService();
+		const sessionResult = authService.validateSession(cookies);
+
+		if (!sessionResult.success) {
+			return json({ success: false, error: 'Unauthorized - Please login' }, { status: 401 });
+		}
+
 		const requestBody = await request.json();
 		const { projectId, business_slug } = requestBody;
 
@@ -357,6 +387,14 @@ export async function DELETE({ request }) {
 					error: 'Project ID and business slug are required'
 				},
 				{ status: 400 }
+			);
+		}
+
+		// Verify the logged-in business owns the resource
+		if (sessionResult.session.businessSlug !== business_slug) {
+			return json(
+				{ success: false, error: 'Forbidden - You can only delete your own projects' },
+				{ status: 403 }
 			);
 		}
 

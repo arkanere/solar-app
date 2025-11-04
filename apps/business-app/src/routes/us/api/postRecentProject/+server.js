@@ -131,12 +131,21 @@ async function uploadBase64ToCloudinary(base64Data, mimetype, filename) {
 	}
 }
 
-export async function POST({ request }) {
+export async function POST({ request, cookies }) {
 	console.log('Received project submission request');
 
 	try {
+		// Validate session and authorization
+		const { BusinessAuthService } = await import('$lib/us/auth/business/index.js');
+		const authService = new BusinessAuthService();
+		const sessionResult = authService.validateSession(cookies);
+
+		if (!sessionResult.success) {
+			return json({ success: false, error: 'Unauthorized - Please login' }, { status: 401 });
+		}
+
 		const contentType = request.headers.get('content-type') || '';
-		
+
 		let projectTitle, pincode, projectDate, business_slug;
 		let imageData = null;
 
@@ -215,6 +224,14 @@ export async function POST({ request }) {
 		}
 
 		console.log('All validations passed');
+
+		// Verify the logged-in business is posting for themselves
+		if (sessionResult.session.businessSlug !== business_slug) {
+			return json(
+				{ success: false, error: 'Forbidden - You can only create projects for your own business' },
+				{ status: 403 }
+			);
+		}
 
 		// Generate project slug
 		const projectSlug = generateProjectSlug(projectTitle);

@@ -3,6 +3,7 @@ import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
 import { randomBytes } from 'crypto';
+import { BusinessAuthService } from '$lib/in/auth/business/index.js';
 
 // Function to generate branch slug using main business slug
 function generateBranchSlug(mainBusinessSlug) {
@@ -11,10 +12,18 @@ function generateBranchSlug(mainBusinessSlug) {
 	return `${mainBusinessSlug}-branch-${randomString}`;
 }
 
-export async function POST({ request }) {
+export async function POST({ request, cookies }) {
 	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
+		// Validate session and authorization
+		const authService = new BusinessAuthService();
+		const sessionResult = authService.validateSession(cookies);
+
+		if (!sessionResult.success) {
+			return json({ success: false, error: 'Unauthorized - Please login' }, { status: 401 });
+		}
+
 		const data = await request.json();
 		const {
 			businessId, // ID of the main business
@@ -22,6 +31,14 @@ export async function POST({ request }) {
 			district,
 			city
 		} = data;
+
+		// Verify the logged-in business is creating branch for themselves
+		if (sessionResult.session.businessId !== businessId) {
+			return json(
+				{ success: false, error: 'Forbidden - You can only add branches to your own business' },
+				{ status: 403 }
+			);
+		}
 
 		// 1. Fetch the main business data
 		const fetchBusinessQuery = `
