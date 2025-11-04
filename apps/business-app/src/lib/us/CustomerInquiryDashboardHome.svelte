@@ -15,6 +15,15 @@
 	let leadToDelete = null;
 	let isDeleting = false;
 
+	// Function to make call
+	function makeCall(phoneNumber, leadName, leadId) {
+		// Track Umami event after hydration
+		if (typeof window !== 'undefined' && window.umami) {
+			window.umami.track(`us-dashboard-home-call-now-button-${leadId}`);
+		}
+		window.location.href = `tel:${phoneNumber}`;
+	}
+
 	// Lead stage mapping
 	const STAGES = {
 		0: 'New Inquiry',
@@ -241,7 +250,33 @@
 
 						<div class="lead-details">
 							<p><strong>Received:</strong> <span class="time-stamp {getRelativeTime(lead.created_at).class}">{getRelativeTime(lead.created_at).text}</span></p>
-							<p><strong>Phone:</strong> {lead.phone}</p>
+							<div class="phone-section">
+								<p><strong>Phone:</strong> {lead.phone}</p>
+								<button
+									class="call-now-button"
+									on:click={() => makeCall(lead.phone, lead.name, lead.id)}
+									title="Call {lead.name}"
+								>
+									<span class="button-icon">
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											width="16"
+											height="16"
+											viewBox="0 0 24 24"
+											fill="none"
+											stroke="currentColor"
+											stroke-width="2"
+											stroke-linecap="round"
+											stroke-linejoin="round"
+										>
+											<path
+												d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
+											></path>
+										</svg>
+									</span>
+									<span>CALL NOW</span>
+								</button>
+							</div>
 							{#if lead.email}
 								<p><strong>Email:</strong> {lead.email}</p>
 							{/if}
@@ -340,7 +375,33 @@
 					</div>
 					<div class="lead-details">
 						<p><strong>Received:</strong> <span class="time-stamp {getRelativeTime(dummyLead.received_at).class}">{getRelativeTime(dummyLead.received_at).text}</span></p>
-						<p><strong>Phone:</strong> {dummyLead.phone}</p>
+						<div class="phone-section">
+							<p><strong>Phone:</strong> {dummyLead.phone}</p>
+							<button
+								class="call-now-button"
+								disabled
+								title="Test lead - calling disabled"
+							>
+								<span class="button-icon">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="16"
+										height="16"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									>
+										<path
+											d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
+										></path>
+									</svg>
+								</span>
+								<span>CALL NOW</span>
+							</button>
+						</div>
 						<p><strong>Email:</strong> {dummyLead.email}</p>
 						<p><strong>Zip Code:</strong> {dummyLead.pin_code}</p>
 						<p><strong>Type:</strong> {dummyLead.type}</p>
@@ -460,6 +521,112 @@
 
 	.lead-details p {
 		margin: 0.25rem 0;
+	}
+
+	/* Phone section with call button */
+	.phone-section {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		margin: 0.25rem 0;
+		flex-wrap: wrap;
+	}
+
+	.phone-section p {
+		margin: 0;
+	}
+
+	/* Call Now button styling */
+	.call-now-button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.5rem 1rem;
+		font-size: 0.85rem;
+		font-weight: 700;
+		border: none;
+		border-radius: 6px;
+		cursor: pointer;
+		transition:
+			background 0.2s ease,
+			transform 0.2s ease,
+			box-shadow 0.2s ease;
+		text-transform: uppercase;
+		letter-spacing: 0.8px;
+		gap: 0.5rem;
+		min-height: 40px;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+		background: linear-gradient(135deg, #ff6b35, #f94449);
+		color: white;
+		position: relative;
+		overflow: hidden;
+		box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+		border: 2px solid transparent;
+	}
+
+	.call-now-button::after {
+		content: "";
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		top: 0;
+		left: 0;
+		background-color: rgba(255, 255, 255, 0);
+		transition: background-color 0.2s ease;
+	}
+
+	.call-now-button:hover {
+		background: linear-gradient(135deg, #f94449, #ff6b35);
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+	}
+
+	.call-now-button:active {
+		transform: translateY(0);
+	}
+
+	.call-now-button:hover::after {
+		background-color: rgba(255, 255, 255, 0.1);
+	}
+
+	.call-now-button:disabled {
+		background: #9ca3af;
+		cursor: not-allowed;
+		box-shadow: none;
+		opacity: 0.6;
+	}
+
+	.call-now-button:disabled:hover {
+		transform: none;
+		box-shadow: none;
+	}
+
+	.call-now-button .button-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 20px;
+		height: 20px;
+		position: relative;
+		z-index: 1;
+	}
+
+	.call-now-button span {
+		position: relative;
+		z-index: 1;
+	}
+
+	@media (max-width: 480px) {
+		.phone-section {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 0.5rem;
+		}
+
+		.call-now-button {
+			width: 100%;
+			padding: 0.6rem 1rem;
+		}
 	}
 
 	.error-message {
