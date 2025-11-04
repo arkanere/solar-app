@@ -62,7 +62,7 @@ export async function POST({ request }) {
         <p><strong>Type:</strong> ${escapeHtml(lead.type)}</p>
         <p><strong>Customer Comment:</strong> ${escapeHtml(lead.comment)}</p>
         <p><strong>Created At:</strong> ${createdAtISTString}</p>
-        <p>Log in to your account at <a href="https://solarvipani.com/business/login">this link</a> to check if there are any leads available.</p>
+        <p>Log in to your account at <a href="https://business.solarvipani.com/in/login">this link</a> to check if there are any leads available.</p>
         <p>If you have any questions or need assistance, call us at <a href="tel:+918983066701"> +91 8983066701 </a></p>
         <p>Team</p>
         <p><strong>Solar Vipani</strong></p>

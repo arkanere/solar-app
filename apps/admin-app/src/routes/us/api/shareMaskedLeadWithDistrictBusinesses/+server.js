@@ -117,7 +117,6 @@ export async function POST({ request }) {
         <a href="${magicLink}" style="color: blue; text-decoration: underline;">Claim the Lead</a>
         </p>
         <p> Few more businesses are invited to show interest. Therefore, the allotment is subject to certain conditions. </p>
-        <p>For assistance, call us at <a href="tel:+918983066701">+91 8983066701</a></p>
         <p>Team</p>
         <p><strong>Solar Vipani</strong></p>
         `;
@@ -147,7 +146,6 @@ export async function POST({ request }) {
         <p><strong>Admin Note:</strong> This is a copy of the email sent to ${emailsSentCount} businesses in ${lead.county}.</p>
         <p>If you need to access any business account, use the magic links in the admin summary email.</p>
         <p> Few more businesses are invited to show interest. Therefore, the allotment is subject to certain conditions. </p>
-        <p>For assistance, call us at <a href="tel:+918983066701">+91 8983066701</a></p>
         <p>Team</p>
         <p><strong>Solar Vipani</strong></p>
         `;
