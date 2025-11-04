@@ -10,28 +10,28 @@ export async function POST({ request }) {
 	try {
 		const { lead } = await request.json();
 
-		if (!lead.district || lead.district.trim() === '') {
+		if (!lead.county || lead.county.trim() === '') {
 			return json(
-				{ success: false, error: 'District value is missing. Cannot share lead.' },
+				{ success: false, error: 'County value is missing. Cannot share lead.' },
 				{ status: 400 }
 			);
 		}
 
-		// Fetch businesses from the same district with magic_link_token
+		// Fetch businesses from the same county with magic_link_token
 		const businessesResult = await pool.query(
-			`SELECT id AS business_id, login_email, slug, magic_link_token 
-       FROM businesses_1 
-       WHERE district = $1 
+			`SELECT id AS business_id, login_email, slug, magic_link_token
+       FROM us_businesses
+       WHERE county = $1 
          AND isvisible = true 
          AND login_email <> 'businessadminz@solar.com'
          AND businessfilled = false
          AND tier3 = false`,
-			[lead.district]
+			[lead.county]
 		);
 
 		if (businessesResult.rows.length === 0) {
 			return json(
-				{ success: false, error: 'No businesses found in this district.' },
+				{ success: false, error: 'No businesses found in this county.' },
 				{ status: 404 }
 			);
 		}
@@ -60,7 +60,7 @@ export async function POST({ request }) {
 			const { business_id, login_email, slug, magic_link_token } = business;
 
 			// Generate the magic login link
-			const magicLink = `https://solarvipani.com/business/${slug}/signin-link/${magic_link_token}`;
+			const magicLink = `https://business.solarvipani.com/us/${slug}/signin-link/${magic_link_token}`;
 			const businessListingLink = `https://solarvipani.com/business-listing?utm_source=email&utm_medium=invitation`;
 
 			// Append business details for admin summary
@@ -74,7 +74,7 @@ export async function POST({ request }) {
 
 			// Email content
 			const message = `
-        <h2>New Solar Inquiry in ${escapeHtml(lead.district)}</h2>
+        <h2>New Solar Inquiry in ${escapeHtml(lead.county)}</h2>
         <p><strong>Customer Name:</strong> ${escapeHtml(lead.name)}</p>
         <p><strong>Phone:</strong> ${maskedPhone}</p>
         <p><strong>Email:</strong> ${maskedEmail}</p>
@@ -91,7 +91,7 @@ export async function POST({ request }) {
         <p><strong>Solar Vipani</strong></p>
         `;
 
-			const subject = `New Solar Lead Inquiry in ${escapeHtml(lead.district)} - Solar Vipani`;
+			const subject = `New Solar Lead Inquiry in ${escapeHtml(lead.county)} - Solar Vipani`;
 
 			try {
 				// Send email
@@ -134,7 +134,7 @@ export async function POST({ request }) {
 		if (emailsSentCount > 0) {
 			try {
 				await pool.query(
-					'UPDATE leaddata SET email_invite_count = email_invite_count + 1 WHERE id = $1',
+					'UPDATE us_leaddata SET email_invite_count = email_invite_count + 1 WHERE id = $1',
 					[lead.id]
 				);
 				console.log(`✅ Updated email_invite_count for lead ID: ${lead.id}`);

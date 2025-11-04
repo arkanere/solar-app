@@ -12,7 +12,7 @@ export async function POST({ request }) {
 	try {
 		// Query the business's login_email and magic_link_token using the business_slug
 		const result = await pool.query(
-			'SELECT login_email, magic_link_token FROM businesses_1 WHERE slug = $1 LIMIT 1',
+			'SELECT login_email, magic_link_token FROM us_businesses WHERE slug = $1 LIMIT 1',
 			[business_slug]
 		);
 
@@ -33,7 +33,7 @@ export async function POST({ request }) {
 		let message;
 		if (magic_link_token) {
 			// Generate the magic link if the token is available
-			const magicLink = `https://solarvipani.com/business/${business_slug}/signin-link/${magic_link_token}`;
+			const magicLink = `https://business.solarvipani.com/us/${business_slug}/signin-link/${magic_link_token}`;
 
 			// Email content with the magic link
 			message = `
@@ -62,7 +62,7 @@ export async function POST({ request }) {
         <p><strong>Type:</strong> ${escapeHtml(lead.type)}</p>
         <p><strong>Customer Comment:</strong> ${escapeHtml(lead.comment)}</p>
         <p><strong>Created At:</strong> ${createdAtISTString}</p>
-        <p>Log in to your account at <a href="https://solarvipani.com/business/login">this link</a> to check if there are any leads available.</p>
+        <p>Log in to your account at <a href="https://business.solarvipani.com/us/login">this link</a> to check if there are any leads available.</p>
         <p>If you have any questions or need assistance, call us at <a href="tel:+918983066701"> +91 8983066701 </a></p>
         <p>Team</p>
         <p><strong>Solar Vipani</strong></p>
@@ -78,7 +78,7 @@ export async function POST({ request }) {
 		// Increment email_invite_count for the lead after successful email send
 		try {
 			await pool.query(
-				'UPDATE leaddata SET email_invite_count = email_invite_count + 1 WHERE id = $1',
+				'UPDATE us_leaddata SET email_invite_count = email_invite_count + 1 WHERE id = $1',
 				[lead.id]
 			);
 		} catch (updateError) {

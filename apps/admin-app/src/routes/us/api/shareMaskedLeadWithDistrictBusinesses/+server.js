@@ -10,14 +10,14 @@ export async function POST({ request }) {
 	try {
 		const { lead } = await request.json();
 
-		if (!lead.district || lead.district.trim() === '') {
+		if (!lead.county || lead.county.trim() === '') {
 			return json(
-				{ success: false, error: 'District value is missing. Cannot share lead.' },
+				{ success: false, error: 'County value is missing. Cannot share lead.' },
 				{ status: 400 }
 			);
 		}
 
-		// Fetch businesses from the same district, including branch offices with main business magic links
+		// Fetch businesses from the same county, including branch offices with main business magic links
 		const businessesResult = await pool.query(
 			`SELECT DISTINCT
 				b.id AS business_id,
@@ -36,13 +36,13 @@ export async function POST({ request }) {
 					WHEN b.slug LIKE '%-branch-%' THEN true
 					ELSE false
 				END AS is_branch
-			FROM businesses_1 b
-			LEFT JOIN businesses_1 main_b ON (
+			FROM us_businesses b
+			LEFT JOIN us_businesses main_b ON (
 				b.slug LIKE '%-branch-%'
 				AND main_b.slug = SPLIT_PART(b.slug, '-branch-', 1)
 				AND main_b.isvisible = true
 			)
-			WHERE b.district = $1
+			WHERE b.county = $1
 				AND b.isvisible = true
 				AND b.login_email <> 'businessadminz@solar.com'
 				AND (
@@ -50,12 +50,12 @@ export async function POST({ request }) {
 					OR
 					(b.slug LIKE '%-branch-%' AND main_b.magic_link_token IS NOT NULL AND main_b.magic_link_token <> '')
 				)`,
-			[lead.district]
+			[lead.county]
 		);
 
 		if (businessesResult.rows.length === 0) {
 			return json(
-				{ success: false, error: 'No businesses found in this district.' },
+				{ success: false, error: 'No businesses found in this county.' },
 				{ status: 404 }
 			);
 		}
@@ -82,24 +82,24 @@ export async function POST({ request }) {
 
 		// Email content template (same for all businesses)
 		const emailTemplate = `
-        <h2>New Solar Inquiry in ${escapeHtml(lead.district)}</h2>
+        <h2>New Solar Inquiry in ${escapeHtml(lead.county)}</h2>
         <p><strong>Customer Name:</strong> ${escapeHtml(lead.name)}</p>
         <p><strong>Phone:</strong> ${maskedPhone}</p>
         <p><strong>Email:</strong> ${maskedEmail}</p>
         <p><strong>Pin Code:</strong> ${escapeHtml(lead.pin_code)}</p>
-        <p><strong>District:</strong> ${escapeHtml(lead.district)}</p>
+        <p><strong>County:</strong> ${escapeHtml(lead.county)}</p>
         <p><strong>Customer Comment:</strong> ${escapeHtml(lead.comment)}</p>
         ${lead.sv_comment_for_businesses ? `<p style="margin-top: 0.75rem; font-style: italic; color: #0056b3; background-color: rgba(0, 86, 179, 0.05); padding: 0.5rem; border-radius: 4px; border-left: 3px solid #0056b3;"><strong>Solarvipani.com Comment:</strong> ${escapeHtml(lead.sv_comment_for_businesses)}</p>` : ''}
         <p><strong>Created At:</strong> ${createdAtISTString}</p>
         `;
 
-		const subject = `New Solar Lead Inquiry in ${escapeHtml(lead.district)} - ${escapeHtml(lead.name)}`;
+		const subject = `New Solar Lead Inquiry in ${escapeHtml(lead.county)} - ${escapeHtml(lead.name)}`;
 
 		for (const business of businesses) {
 			const { business_id, login_email, slug, magic_link_token } = business;
 
 			// Generate the magic login link
-			const magicLink = `https://solarvipani.com/business/${slug}/signin-link/${magic_link_token}`;
+			const magicLink = `https://business.solarvipani.com/us/${slug}/signin-link/${magic_link_token}`;
 
 			// Append business details for admin summary
 			businessDetailsForAdmin += `
@@ -144,7 +144,7 @@ export async function POST({ request }) {
 		if (emailsSentCount > 0) {
 			try {
 				const adminCopyMessage = emailTemplate + `
-        <p><strong>Admin Note:</strong> This is a copy of the email sent to ${emailsSentCount} businesses in ${lead.district}.</p>
+        <p><strong>Admin Note:</strong> This is a copy of the email sent to ${emailsSentCount} businesses in ${lead.county}.</p>
         <p>If you need to access any business account, use the magic links in the admin summary email.</p>
         <p> Few more businesses are invited to show interest. Therefore, the allotment is subject to certain conditions. </p>
         <p>For assistance, call us at <a href="tel:+918983066701">+91 8983066701</a></p>
@@ -178,7 +178,7 @@ export async function POST({ request }) {
 		if (emailsSentCount > 0) {
 			try {
 				await pool.query(
-					'UPDATE leaddata SET email_invite_count = email_invite_count + 1 WHERE id = $1',
+					'UPDATE us_leaddata SET email_invite_count = email_invite_count + 1 WHERE id = $1',
 					[lead.id]
 				);
 				console.log(`✅ Updated email_invite_count for lead ID: ${lead.id}`);

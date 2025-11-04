@@ -10,33 +10,33 @@ export async function POST({ request }) {
 	try {
 		const { lead } = await request.json();
 
-		if (!lead.district || lead.district.trim() === '') {
+		if (!lead.county || lead.county.trim() === '') {
 			return json(
-				{ success: false, error: 'District value is missing. Cannot share lead.' },
+				{ success: false, error: 'County value is missing. Cannot share lead.' },
 				{ status: 400 }
 			);
 		}
 
-		// First, get the state from the locations table using district
+		// First, get the state from the us_locations table using county
 		const stateResult = await pool.query(
-			`SELECT state FROM locations WHERE district = $1 LIMIT 1`,
-			[lead.district]
+			`SELECT state FROM us_locations WHERE county = $1 LIMIT 1`,
+			[lead.county]
 		);
 
 		if (stateResult.rows.length === 0) {
 			return json(
-				{ success: false, error: 'State not found for the given district.' },
+				{ success: false, error: 'State not found for the given county.' },
 				{ status: 404 }
 			);
 		}
 
 		const state = stateResult.rows[0].state;
-		console.log(`Lead state determined: ${state} (from district: ${lead.district})`);
+		console.log(`Lead state determined: ${state} (from county: ${lead.county})`);
 
 		// Fetch businesses from the same state with magic_link_token
 		const businessesResult = await pool.query(
-			`SELECT id AS business_id, login_email, slug, magic_link_token, district 
-       FROM businesses_1 
+			`SELECT id AS business_id, login_email, slug, magic_link_token, county
+       FROM us_businesses 
        WHERE state = $1 
          AND isvisible = true 
          AND magic_link_token IS NOT NULL 
@@ -81,28 +81,28 @@ export async function POST({ request }) {
         <p><strong>Phone:</strong> ${maskedPhone}</p>
         <p><strong>Email:</strong> ${maskedEmail}</p>
         <p><strong>Pin Code:</strong> ${escapeHtml(lead.pin_code)}</p>
-        <p><strong>District:</strong> ${escapeHtml(lead.district)}</p>
+        <p><strong>County:</strong> ${escapeHtml(lead.county)}</p>
         <p><strong>Customer Comment:</strong> ${escapeHtml(lead.comment)}</p>
         ${lead.sv_comment_for_businesses ? `<p style="margin-top: 0.75rem; font-style: italic; color: #0056b3; background-color: rgba(0, 86, 179, 0.05); padding: 0.5rem; border-radius: 4px; border-left: 3px solid #0056b3;"><strong>Solarvipani.com Comment:</strong> ${escapeHtml(lead.sv_comment_for_businesses)}</p>` : ''}
         <p><strong>Created At:</strong> ${createdAtISTString}</p>
-        
-        <p><strong>Important:</strong> Businesses that have either main branch or branch office in <a href="https://solarvipani.com/solar-panel-installer-directory/${lead.district.toLowerCase().replace(/\s+/g, '-')}" style="font-weight: bold;">${escapeHtml(lead.district)}</a> district can claim this lead by logging into their account.</p>
+
+        <p><strong>Important:</strong> Businesses that have either main branch or branch office in <a href="https://solarvipani.com/us/solar-panel-installer-directory/${lead.county.toLowerCase().replace(/\s+/g, '-')}" style="font-weight: bold;">${escapeHtml(lead.county)}</a> county can claim this lead by logging into their account.</p>
         `;
 
-		const subject = `New Solar Lead Inquiry in  ${escapeHtml(district)}, ${escapeHtml(state)} - ${escapeHtml(lead.name)}`;
+		const subject = `New Solar Lead Inquiry in  ${escapeHtml(lead.county)}, ${escapeHtml(state)} - ${escapeHtml(lead.name)}`;
 
 		for (const business of businesses) {
-			const { business_id, login_email, slug, magic_link_token, district } = business;
+			const { business_id, login_email, slug, magic_link_token, county } = business;
 
 			// Generate the magic login link
-			const magicLink = `https://solarvipani.com/business/business/${slug}/signin-link/${magic_link_token}`;
+			const magicLink = `https://business.solarvipani.com/us/${slug}/signin-link/${magic_link_token}`;
 
 			// Append business details for admin summary
 			businessDetailsForAdmin += `
           <p><strong>Business ID:</strong> ${business_id}</p>
           <p><strong>Login Email:</strong> ${login_email}</p>
           <p><strong>Business Slug:</strong> ${slug}</p>
-          <p><strong>District:</strong> ${district}</p>
+          <p><strong>County:</strong> ${county}</p>
           <p><strong>Magic Link:</strong> <a href="${magicLink}">${magicLink}</a></p>
           <hr>
         `;
@@ -196,7 +196,7 @@ export async function POST({ request }) {
 		if (emailsSentCount > 0) {
 			try {
 				await pool.query(
-					'UPDATE leaddata SET email_invite_count = email_invite_count + 1 WHERE id = $1',
+					'UPDATE us_leaddata SET email_invite_count = email_invite_count + 1 WHERE id = $1',
 					[lead.id]
 				);
 				console.log(`✅ Updated email_invite_count for lead ID: ${lead.id}`);
