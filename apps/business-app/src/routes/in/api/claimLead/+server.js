@@ -1,11 +1,20 @@
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
+import { BusinessAuthService } from '$lib/in/auth/business/index.js';
 
-export async function POST({ request, fetch }) {
+export async function POST({ request, fetch, cookies }) {
 	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
+		// Validate session and authorization
+		const authService = new BusinessAuthService();
+		const sessionResult = authService.validateSession(cookies);
+
+		if (!sessionResult.success) {
+			return json({ success: false, error: 'Unauthorized - Please login' }, { status: 401 });
+		}
+
 		const { lead_id, business_id } = await request.json(); // Capture business_id
 
 		if (!lead_id || !business_id) {
@@ -15,8 +24,18 @@ export async function POST({ request, fetch }) {
 			);
 		}
 
+		// Verify the logged-in business is claiming for themselves
+		if (sessionResult.session.businessId !== business_id) {
+			return json(
+				{ success: false, error: 'Forbidden - You can only claim leads for your own business' },
+				{ status: 403 }
+			);
+		}
+
 		// Start a transaction
 		const client = await pool.connect();
+		let emailData = null; // Store email data to send after transaction
+
 		try {
 			await client.query('BEGIN');
 
@@ -41,11 +60,32 @@ export async function POST({ request, fetch }) {
 				);
 			}
 
+			// **Check if this business already claimed this lead (duplicate prevention)**
+			const duplicateCheck = await client.query(
+				'SELECT id FROM leaddata_claimrequests WHERE lead_id = $1 AND business_id = $2',
+				[lead_id, business_id]
+			);
+
+			if (duplicateCheck.rows.length > 0) {
+				await client.query('ROLLBACK');
+				return json(
+					{ success: false, error: 'You have already claimed this lead' },
+					{ status: 400 }
+				);
+			}
+
 			// Insert into leaddata_claimrequests
+			// Note: UNIQUE constraint on (lead_id, business_id) provides additional protection
 			const insertResult = await client.query(
 				'INSERT INTO leaddata_claimrequests (lead_id, claim_id, business_id) VALUES ($1, $2, $3) RETURNING id',
 				[lead_id, claim_id, business_id]
-			);
+			).catch(error => {
+				// Handle unique constraint violation (PostgreSQL error code 23505)
+				if (error.code === '23505') {
+					throw new Error('You have already claimed this lead');
+				}
+				throw error;
+			});
 
 			const claimRequestId = insertResult.rows[0].id;
 
@@ -95,16 +135,27 @@ export async function POST({ request, fetch }) {
 				isAutoAllocated = true;
 			}
 
-			await client.query('COMMIT');
+			// Prepare email data but don't send yet (move outside transaction)
+			emailData = { business_id, isallotted: true };
 
-			// Send lead allotment email (since all successful claims are auto-allocated)
+			await client.query('COMMIT');
+		} catch (error) {
+			await client.query('ROLLBACK');
+			console.error('Error claiming lead:', error);
+			return json({ success: false, error: error.message }, { status: 500 });
+		} finally {
+			client.release();
+		}
+
+		// Send email AFTER transaction commits (outside transaction for better performance)
+		if (emailData) {
 			try {
 				const response = await fetch('/in/api/sendLeadAllotmentStatus', {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json'
 					},
-					body: JSON.stringify({ business_id, isallotted: true })
+					body: JSON.stringify(emailData)
 				});
 
 				const emailResult = await response.json();
@@ -114,17 +165,11 @@ export async function POST({ request, fetch }) {
 				}
 			} catch (emailError) {
 				console.error('Error sending lead allotment email:', emailError);
-				// Continue despite email error - the claim itself was successful
+				// Don't fail the whole request if email fails - claim was successful
 			}
-
-			return json({ success: true });
-		} catch (error) {
-			await client.query('ROLLBACK');
-			console.error('Error claiming lead:', error);
-			return json({ success: false, error: error.message }, { status: 500 });
-		} finally {
-			client.release();
 		}
+
+		return json({ success: true });
 	} catch (error) {
 		console.error('Database connection error:', error);
 		return json({ success: false, error: 'Failed to claim lead' }, { status: 500 });

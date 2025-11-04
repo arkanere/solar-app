@@ -1,11 +1,20 @@
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
+import { BusinessAuthService } from '$lib/us/auth/business/index.js';
 
-export async function POST({ request }) {
+export async function POST({ request, cookies }) {
 	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
+		// Validate session and authorization
+		const authService = new BusinessAuthService();
+		const sessionResult = authService.validateSession(cookies);
+
+		if (!sessionResult.success) {
+			return json({ success: false, error: 'Unauthorized - Please login' }, { status: 401 });
+		}
+
 		const data = await request.json();
 		const {
 			businessname,
@@ -19,6 +28,14 @@ export async function POST({ request }) {
 			google_maps_link,
 			business_slug // Assuming you're passing business_slug to identify the business to update
 		} = data;
+
+		// Verify the logged-in business owns the resource
+		if (sessionResult.session.businessSlug !== business_slug) {
+			return json(
+				{ success: false, error: 'Forbidden - You can only update your own business' },
+				{ status: 403 }
+			);
+		}
 
 		// Update query for the us_businesses table
 		const updateQuery = `
