@@ -44,7 +44,6 @@ export async function POST({ request }) {
         <a href="${magicLink}" style="color: blue; text-decoration: underline;">Access Your Business Account</a>
     </p>
 
-    <p>If you have any questions, feel free to contact us at <a href="tel:+918983066701">+91 8983066701</a>.</p>
     <p>Best Regards,</p>
     <p><strong>Solar Vipani Team</strong></p>
     `;
