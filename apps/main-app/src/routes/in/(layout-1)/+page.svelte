@@ -1,17 +1,23 @@
 <script>
   import { onMount } from "svelte";
   import BusinessDirectory from "$lib/in/BusinessDirectory.svelte";
-
+  import RecentProjectsHome from "$lib/in/RecentProjectsHome.svelte";
   import LeadFormBusiness from "$lib/in/LeadFormBusiness.svelte";
   import SolarComparisonTable from "$lib/in/SolarComparisonTable.svelte";
   import { isDarkMode } from "$lib/in/themeStore"; // Import from store if globally managed
 
+  // Receive data from server
+  export let data;
+
   // Initialize dark mode state
   let darkMode;
-  let ChatBotBox;
   let AboutSolarVipani;
-  let shouldLoadChatBot = false;
+  let ChatbotPopup;
   let shouldLoadAbout = false;
+  let shouldLoadChatbot = false;
+
+  // Extract recent projects from data
+  $: recentProjects = data?.recentProjects || [];
 
   // Use the global theme store
   $: darkMode = $isDarkMode;
@@ -31,17 +37,38 @@
       { rootMargin: "200px" },
     );
 
+    // Show chatbot popup when user reaches bottom of page
+    let chatbotTimer = null;
+    const chatbotObserver = new IntersectionObserver(
+      async (entries) => {
+        if (entries[0].isIntersecting) {
+          // About section is 100% visible (user at bottom) - wait 1 second then show chatbot
+          if (!chatbotTimer) {
+            chatbotTimer = setTimeout(async () => {
+              if (!ChatbotPopup) {
+                const module = await import("$lib/in/ChatbotPopup.svelte");
+                ChatbotPopup = module.default;
+              }
+              shouldLoadChatbot = true;
+            }, 1000);
+          }
+        } else {
+          // User scrolled back up - hide chatbot and clear timer
+          if (chatbotTimer) {
+            clearTimeout(chatbotTimer);
+            chatbotTimer = null;
+          }
+          shouldLoadChatbot = false;
+        }
+      },
+      { rootMargin: "0px", threshold: 1.0 },
+    );
+
     const aboutSection = document.querySelector("#about-section");
     if (aboutSection) {
       aboutObserver.observe(aboutSection);
+      chatbotObserver.observe(aboutSection);
     }
-
-    // Delay chatbot loading to improve initial page performance
-    setTimeout(async () => {
-      const module = await import("$lib/ChatBotBox.svelte");
-      ChatBotBox = module.default;
-      shouldLoadChatBot = true;
-    }, 2000); // Load after 2 seconds to allow critical content to load first
   });
 </script>
 
@@ -228,26 +255,18 @@
     <div class="overlay"></div>
     <div class="hero-content">
       <h1>
-        India's #1 Solar Panel Installation Quotation Service - 450+ Verifed
-        Solar Panel Installers
+        Get 2-3 Free Quotes from Verified Installers in Your Area
       </h1>
       <h2>
-        Get Started Instantly with Quotations from 2-3 Verified Solar Installers
-        Near You
+        Compare prices and save 50-80% on electricity bills with PM Surya Ghar Yojana subsidies.
       </h2>
-      <p>
-        Quotation Service for Smart Customers. Get free quotes, compare prices,
-        and save up to 95% on electricity bills with government subsidy under PM
-        Surya Ghar Yojana.
-      </p>
       <p class="hero-social-proof">
-        Join 2000+ households and businesses who have started their solar
-        installation journey with Solarvipani.com
+        2,000+ homeowners have begun their switch to solar through our platform.
       </p>
       <div class="hero-features">
-        <span>✓ 450+ Verified Installers</span>
-        <span>✓ Free Consultation</span>
-        <span>✓ Government Subsidy Support</span>
+        <span>✓ 450+ Pre-Vetted Installers</span>
+        <span>✓ Zero Cost Consultation</span>
+        <span>✓ Full Subsidy Guidance</span>
       </div>
     </div>
   </div>
@@ -256,46 +275,44 @@
     <!-- Benefits Section -->
     <section class="benefits-section">
       <div class="section-header">
-        <h2>Why Choose Solar Panel Installation in India?</h2>
+        <h2>Why Now is the Right Time to Install Solar in India</h2>
         <div class="section-divider">
           <span class="divider-accent"></span>
         </div>
         <p class="section-subtitle">
-          Discover the amazing benefits of switching to solar power with
-          government support and verified installers
+          Take advantage of record subsidies, rising electricity costs, and our network of verified installers
         </p>
       </div>
 
       <div class="benefits-grid">
         <div class="benefit-card highlight-card">
           <div class="benefit-icon">
-            <span class="icon-emoji">⚡</span>
+            <span class="icon-emoji">💰</span>
           </div>
-          <div class="benefit-stat">Up to 95%</div>
-          <h3>Electricity Bill Reduction</h3>
+          <div class="benefit-stat">Up to ₹78,000</div>
+          <h3>Government Subsidy</h3>
           <p>
-            Dramatically reduce your monthly electricity costs with solar power
+            Get up to ₹78,000 in direct subsidy under PM Surya Ghar Yojana - available for limited time
           </p>
         </div>
 
         <div class="benefit-card highlight-card">
           <div class="benefit-icon">
-            <span class="icon-emoji">🌞</span>
+            <span class="icon-emoji">🏦</span>
           </div>
-          <div class="benefit-stat">Up to ₹78,000</div>
-          <h3>Subsidy Available</h3>
-          <p>Get substantial government subsidy under PM Surya Ghar Yojana</p>
+          <div class="benefit-stat">0% Interest</div>
+          <h3>Easy Financing Options</h3>
+          <p>Zero-cost EMI and attractive loan schemes from leading banks and NBFCs make solar affordable</p>
         </div>
 
         <div class="benefit-card highlight-card">
           <div class="benefit-icon">
-            <span class="icon-emoji">🌱</span>
+            <span class="icon-emoji">⚡</span>
           </div>
-          <div class="benefit-stat">Zero</div>
-          <h3>Carbon Emissions</h3>
+          <div class="benefit-stat">50-80%</div>
+          <h3>Electricity Bill Savings</h3>
           <p>
-            Reduce your carbon footprint and contribute to a cleaner, greener
-            India
+            Save up to 80% on rising electricity costs with net metering and reduce dependency on the grid
           </p>
         </div>
       </div>
@@ -304,12 +321,56 @@
     <!-- Solar Comparison Section -->
     <SolarComparisonTable />
 
-    <!-- ChatBot Section (Lazy Loaded) -->
-    <div id="chatbotbox">
-      {#if shouldLoadChatBot && ChatBotBox}
-        <svelte:component this={ChatBotBox} />
-      {/if}
-    </div>
+    <!-- How It Works Section -->
+    <section class="how-it-works-section">
+      <div class="section-header">
+        <h2>How Solar Vipani Works</h2>
+        <div class="section-divider">
+          <span class="divider-accent"></span>
+        </div>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-number">1</div>
+          <h3>Fill the Inquiry Form</h3>
+          <p>
+            Share your basic details and energy requirements to help us understand your needs.
+          </p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">2</div>
+          <h3>Connect with Experts</h3>
+          <p>
+            Reach out to vetted, local solar providers who understand your
+            unique needs.
+          </p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">3</div>
+          <h3>Receive Competitive Quotes</h3>
+          <p>
+            Review quotes from 2-3 solar companies, comparing costs,
+            equipment, and terms to find the perfect match.
+          </p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">4</div>
+          <h3>Make an Informed Choice</h3>
+          <p>
+            Select a provider with complete confidence, backed by transparent,
+            verified information.
+          </p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">5</div>
+          <h3>Share Your Success</h3>
+          <p>
+            Join our community of solar adopters by sharing your experience,
+            helping others on their journey to clean energy.
+          </p>
+        </div>
+      </div>
+    </section>
 
     <!-- Lead Form Section -->
     <section id="lead-form-sv" class="lead-form-section">
@@ -414,6 +475,9 @@
       </div>
     </section>
 
+    <!-- Recent Projects Section -->
+    <RecentProjectsHome projects={recentProjects} />
+
     <!-- About Section (Lazy Loaded) -->
     <div id="about-section">
       {#if shouldLoadAbout && AboutSolarVipani}
@@ -422,6 +486,11 @@
     </div>
   </div>
 </main>
+
+<!-- Chatbot Popup (Lazy Loaded) -->
+{#if shouldLoadChatbot && ChatbotPopup}
+  <svelte:component this={ChatbotPopup} />
+{/if}
 
 <style>
   /* Root variables using custom properties from business page */
@@ -569,18 +638,18 @@
   .hero-content h1 {
     font-size: 2.5rem;
     font-weight: 700;
-    margin-bottom: 0.4rem;
+    margin-bottom: 1.5rem;
     letter-spacing: 0.5px;
-    line-height: 1.1;
+    line-height: 1.3;
   }
 
   .hero-content h2 {
     font-size: 1.5rem;
     font-weight: 500;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
     color: var(--accent-color);
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    line-height: 1.2;
+    line-height: 1.5;
   }
 
   .hero-content p {
@@ -590,18 +659,18 @@
     max-width: 700px;
     margin-left: auto;
     margin-right: auto;
-    line-height: 1.4;
+    line-height: 1.6;
   }
 
   .hero-social-proof {
     font-size: 1rem !important;
-    margin-bottom: 1rem !important;
+    margin-bottom: 1.5rem !important;
     opacity: 0.95 !important;
     font-weight: 500;
     color: var(--accent-color) !important;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     font-style: italic;
-    line-height: 1.3 !important;
+    line-height: 1.5 !important;
   }
 
   .hero-features {
@@ -609,7 +678,7 @@
     justify-content: center;
     gap: 2rem;
     flex-wrap: wrap;
-    margin-top: 1.5rem;
+    margin-top: 2rem;
   }
 
   .hero-features span {
@@ -777,6 +846,78 @@
     color: #cbd5e0;
   }
 
+  /* How It Works Section */
+  .how-it-works-section {
+    background-color: var(--light-card-bg);
+  }
+
+  .dark .how-it-works-section {
+    background-color: var(--dark-card-bg);
+  }
+
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--grid-gap);
+  }
+
+  .step-card {
+    padding: 2rem 1.5rem;
+    border-radius: var(--border-radius-md);
+    background-color: var(--light-bg-color);
+    border: 1px solid #e2e8f0;
+    transition:
+      transform var(--transition-medium),
+      box-shadow var(--transition-medium);
+    text-align: center;
+    position: relative;
+  }
+
+  .step-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .dark .step-card {
+    background-color: rgba(255, 255, 255, 0.03);
+    border-color: #4a5568;
+  }
+
+  .step-number {
+    width: 50px;
+    height: 50px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 auto 1rem;
+  }
+
+  .step-card h3 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+  }
+
+  .dark .step-card h3 {
+    color: var(--primary-light);
+  }
+
+  .step-card p {
+    color: var(--text-medium);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .dark .step-card p {
+    color: #a0aec0;
+  }
+
   /* Directory Section */
   .directory-section {
     background-color: #f8f9fa;
@@ -813,10 +954,6 @@
 
   .form-card .divider-accent {
     background: var(--accent-color);
-  }
-
-  #chatbotbox {
-    margin-bottom: 3rem;
   }
 
   /* Blogs Section */

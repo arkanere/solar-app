@@ -20,6 +20,11 @@
 					"nextFlow": "contactRequest"
 				},
 				{
+					"id": "solarBrands",
+					"label": "Solar Brands",
+					"nextFlow": "solarBrandsFlow"
+				},
+				{
 					"id": "freeformChat",
 					"label": "Let me type",
 					"nextFlow": "welcome"
@@ -94,12 +99,6 @@
 					"placeholder": "Enter hours",
 					"unit": "hours/day",
 					"nextFlow": "residentialBatteryNeed"
-				},
-				{
-					"id": "NopowerCuts",
-					"type": "button",
-					"label": "No Power Cut",
-					"nextFlow": "noResidentialBatteryNeeded"
 				}
 			]
 		},
@@ -113,11 +112,6 @@
 					"nextFlow": "residentialResultOnGrid"
 				},
 				{
-					"id": "reconsiderBattery",
-					"label": "Actually, I'd like to consider battery backup",
-					"nextFlow": "batteryInfo"
-				},
-				{
 					"id": "getQuoteNow",
 					"label": "Get quote for On-Grid system",
 					"nextFlow": "contactRequest"
@@ -125,7 +119,7 @@
 			]
 		},
 		"residentialResultOnGrid": {
-			"message": "<h4>Your Complete On-Grid Solar Solution</h4><div class='result-overview'><p>Here's your personalized <b>{systemSize}kW on-grid solar system</b> recommendation:</p></div><div class='system-specs'><h5>System Specifications</h5><ul><li><b>Recommended capacity:</b> {systemSize}kW</li><li><b>Required roof area:</b> {requiredArea} sq.ft (shadow-free)</li><li><b>Expected system life:</b> 25+ years</li><li><b>System type:</b> On-Grid (no battery backup)</li></ul></div><div class='cost-section'><h5>Complete Investment Details</h5><table class='cost-table'><tr><td><b>Solar system cost:</b></td><td>Rs. {systemCost}</td></tr><tr><td><b>PM Surya Ghar subsidy:</b></td><td>Rs. {subsidyAmount}</td></tr><tr><td><b>Your total investment:</b></td><td class='highlight'>Rs. {netCost}</td></tr></table></div><div class='grid-benefits'><h5>On-Grid System Advantages</h5><ul><li><b>Net Metering:</b> Sell excess power back to grid</li><li><b>Lower Investment:</b> No battery costs</li><li><b>Higher Efficiency:</b> Direct power utilization</li><li><b>Minimal Maintenance:</b> Fewer system components</li></ul></div><div class='benefits-section'><h5>Lifetime Benefits</h5><ul><li><b>Annual energy generation:</b> {energyGeneration} units (kWh)</li><li><b>Annual bill savings:</b> Rs. {yearlySavings}</li><li><b>Total 25-year savings:</b> Rs. {lifetimeSavings}</li><li><b>Carbon footprint reduction:</b> ~{carbonOffset} tons CO₂/year</li><li><b>Equivalent to planting:</b> ~{treesEquivalent} trees annually</li></ul></div><div class='roi-section'><h5>Return on Investment</h5><table class='roi-table'><tr><td><b>Payback period:</b></td><td>{paybackPeriod} years</td></tr><tr><td><b>Net profit over 25 years:</b></td><td>Rs. {netProfit}</td></tr><tr><td><b>Return on investment:</b></td><td>{roi}%</td></tr></table></div><div class='next-steps'><p>Ready to start saving with clean energy?</p></div>",
+			"message": "<h4>Your Complete On-Grid Solar Solution</h4><div class='result-overview'><p>Here's your personalized <b>{systemSize}kW on-grid solar system</b> recommendation:</p></div><div class='system-specs'><h5>System Specifications</h5><ul><li><b>Recommended capacity:</b> {systemSize}kW</li><li><b>Required roof area:</b> {requiredArea} sq.ft (shadow-free)</li><li><b>Expected system life:</b> 25+ years</li><li><b>System type:</b> On-Grid (no battery backup)</li></ul></div><div class='cost-section'><h5>Complete Investment Details</h5><table class='cost-table'><tr><td><b>Solar system cost:</b></td><td>Rs. {systemCost}</td></tr><tr><td><b>PM Surya Ghar subsidy:</b></td><td>Rs. {subsidyAmount}</td></tr><tr><td><b>Your total investment:</b></td><td class='highlight'>Rs. {netCost}</td></tr></table></div><div class='grid-benefits'><h5>On-Grid System Advantages</h5><ul><li><b>Net Metering:</b> Sell excess power back to grid</li><li><b>Lower Investment:</b> No battery costs</li><li><b>Higher Efficiency:</b> Direct power utilization</li><li><b>Minimal Maintenance:</b> Fewer system components</li></ul></div><div class='benefits-section'><h5>Lifetime Benefits</h5><ul><li><b>Annual energy generation:</b> {energyGeneration} units (kWh)</li><li><b>Annual bill savings:</b> Rs. {yearlySavings}</li><li><b>Total 25-year savings:</b> Rs. {lifetimeSavings}</li><li><b>Carbon footprint reduction:</b> ~{carbonOffset} tons CO\u2082/year</li><li><b>Equivalent to planting:</b> ~{treesEquivalent} trees annually</li></ul></div><div class='roi-section'><h5>Return on Investment</h5><table class='roi-table'><tr><td><b>Payback period:</b></td><td>{paybackPeriod} years</td></tr><tr><td><b>Net profit over 25 years:</b></td><td>Rs. {netProfit}</td></tr><tr><td><b>Return on investment:</b></td><td>{roi}%</td></tr></table></div><div class='next-steps'><p>Ready to start saving with clean energy?</p></div>",
 			"systemSize": "Math.ceil({monthlyConsumption} / 100)",
 			"systemCost": "{systemSize} <= 1 ? {systemSize} * 74500 : {systemSize} <= 2 ? {systemSize} * 75500 : {systemSize} <= 3 ? {systemSize} * 76000 : {systemSize} <= 4 ? {systemSize} * 70500 : {systemSize} <= 5 ? {systemSize} * 70600 : {systemSize} * 62500",
 			"subsidyAmount": "{systemSize} <= 1 ? {systemSize} * 30000 : {systemSize} <= 2 ? 60000 : {systemSize} <= 2.5 ? 69000 : {systemSize} <= 3 ? 78000 : 78000",
@@ -181,7 +175,7 @@
 			]
 		},
 		"residentialResultHybrid": {
-			"message": "<h4>Your Complete Hybrid Solar Solution</h4><div class='result-overview'><p>Here's your personalized <b>{systemSize}kW hybrid solar system</b> with battery backup:</p></div><div class='system-specs'><h5>System Specifications</h5><ul><li><b>Solar capacity:</b> {systemSize}kW</li><li><b>Battery backup:</b> {batteryCapacity}kWh lithium-ion</li><li><b>Required roof area:</b> {requiredArea} sq.ft (shadow-free)</li><li><b>Expected system life:</b> 25+ years (Solar), 8-10 years (Battery)</li><li><b>System type:</b> Hybrid (Solar + Battery + Grid)</li></ul></div><div class='cost-section'><h5>Complete Investment Details</h5><table class='cost-table'><tr><td><b>Solar system cost:</b></td><td>Rs. {systemCost}</td></tr><tr><td><b>Battery backup cost:</b></td><td>Rs. {batteryCost}</td></tr><tr><td><b>Total system cost:</b></td><td>Rs. {totalSystemCost}</td></tr><tr><td><b>PM Surya Ghar subsidy:</b></td><td>Rs. {subsidyAmount}</td></tr><tr><td><b>Your total investment:</b></td><td class='highlight'>Rs. {totalCost}</td></tr></table></div><div class='hybrid-benefits'><h5>Hybrid System Advantages</h5><ul><li><b>Energy Independence:</b> Power during grid outages</li><li><b>Maximum Solar Utilization:</b> Store excess energy for later use</li><li><b>Net Metering Benefits:</b> Still connected to grid for credits</li><li><b>Load Management:</b> Automatic switching between solar, battery, and grid</li><li><b>Backup Security:</b> Essential appliances powered during outages</li></ul></div><div class='battery-details'><h5>Battery Performance</h5><ul><li><b>Backup duration:</b> {backupHours} hours for essential loads</li><li><b>Daily cycles:</b> Optimized for daily charge/discharge</li><li><b>Warranty:</b> 8-10 years or 6000+ cycles</li><li><b>Efficiency:</b> 95%+ round-trip efficiency</li></ul></div><div class='benefits-section'><h5>Lifetime Benefits</h5><ul><li><b>Annual energy generation:</b> {energyGeneration} units (kWh)</li><li><b>Annual bill savings:</b> Rs. {yearlySavings}</li><li><b>Total 25-year savings:</b> Rs. {lifetimeSavings}</li><li><b>Carbon footprint reduction:</b> ~{carbonOffset} tons CO₂/year</li><li><b>Equivalent to planting:</b> ~{treesEquivalent} trees annually</li></ul></div><div class='roi-section'><h5>Return on Investment</h5><table class='roi-table'><tr><td><b>Payback period:</b></td><td>{paybackPeriod} years</td></tr><tr><td><b>Net profit over 25 years:</b></td><td>Rs. {netProfit}</td></tr><tr><td><b>Return on investment:</b></td><td>{roi}%</td></tr></table></div><div class='next-steps'><p>Ready to achieve energy independence with backup security?</p></div>",
+			"message": "<h4>Your Complete Hybrid Solar Solution</h4><div class='result-overview'><p>Here's your personalized <b>{systemSize}kW hybrid solar system</b> with battery backup:</p></div><div class='system-specs'><h5>System Specifications</h5><ul><li><b>Solar capacity:</b> {systemSize}kW</li><li><b>Battery backup:</b> {batteryCapacity}kWh lithium-ion</li><li><b>Required roof area:</b> {requiredArea} sq.ft (shadow-free)</li><li><b>Expected system life:</b> 25+ years (Solar), 8-10 years (Battery)</li><li><b>System type:</b> Hybrid (Solar + Battery + Grid)</li></ul></div><div class='cost-section'><h5>Complete Investment Details</h5><table class='cost-table'><tr><td><b>Solar system cost:</b></td><td>Rs. {systemCost}</td></tr><tr><td><b>Battery backup cost:</b></td><td>Rs. {batteryCost}</td></tr><tr><td><b>Total system cost:</b></td><td>Rs. {totalSystemCost}</td></tr><tr><td><b>PM Surya Ghar subsidy:</b></td><td>Rs. {subsidyAmount}</td></tr><tr><td><b>Your total investment:</b></td><td class='highlight'>Rs. {totalCost}</td></tr></table></div><div class='hybrid-benefits'><h5>Hybrid System Advantages</h5><ul><li><b>Energy Independence:</b> Power during grid outages</li><li><b>Maximum Solar Utilization:</b> Store excess energy for later use</li><li><b>Net Metering Benefits:</b> Still connected to grid for credits</li><li><b>Load Management:</b> Automatic switching between solar, battery, and grid</li><li><b>Backup Security:</b> Essential appliances powered during outages</li></ul></div><div class='battery-details'><h5>Battery Performance</h5><ul><li><b>Backup duration:</b> {backupHours} hours for essential loads</li><li><b>Daily cycles:</b> Optimized for daily charge/discharge</li><li><b>Warranty:</b> 8-10 years or 6000+ cycles</li><li><b>Efficiency:</b> 95%+ round-trip efficiency</li></ul></div><div class='benefits-section'><h5>Lifetime Benefits</h5><ul><li><b>Annual energy generation:</b> {energyGeneration} units (kWh)</li><li><b>Annual bill savings:</b> Rs. {yearlySavings}</li><li><b>Total 25-year savings:</b> Rs. {lifetimeSavings}</li><li><b>Carbon footprint reduction:</b> ~{carbonOffset} tons CO\u2082/year</li><li><b>Equivalent to planting:</b> ~{treesEquivalent} trees annually</li></ul></div><div class='roi-section'><h5>Return on Investment</h5><table class='roi-table'><tr><td><b>Payback period:</b></td><td>{paybackPeriod} years</td></tr><tr><td><b>Net profit over 25 years:</b></td><td>Rs. {netProfit}</td></tr><tr><td><b>Return on investment:</b></td><td>{roi}%</td></tr></table></div><div class='next-steps'><p>Ready to achieve energy independence with backup security?</p></div>",
 			"systemSize": "Math.ceil({monthlyConsumption} / 100)",
 			"systemCost": "{systemSize} <= 1 ? {systemSize} * 74500 : {systemSize} <= 2 ? {systemSize} * 75500 : {systemSize} <= 3 ? {systemSize} * 76000 : {systemSize} <= 4 ? {systemSize} * 70500 : {systemSize} <= 5 ? {systemSize} * 70600 : {systemSize} * 62500",
 			"batteryCost": "Math.round({systemCost} * 0.35)",
@@ -336,7 +330,7 @@
 			]
 		},
 		"societyResult": {
-			"message": "<h4>Your Society's Solar Solution</h4><p>Based on your monthly bill, we recommend a <b>{societySystemSize}kW</b> solar system for common areas.</p><div class='result-box'><ul><li><b>Estimated cost:</b> Rs. {societySystemCost}</li><li><b>After subsidies:</b> Rs. {societyNetCost}</li><li><b>Annual savings:</b> Rs. {societyYearlySavings}</li><li><b>Payback period:</b> {societyPayback} years</li><li><b>Carbon reduction:</b> {carbonReduction} tons CO₂/year</li></ul></div><p>Would you like a detailed assessment?</p>",
+			"message": "<h4>Your Society's Solar Solution</h4><p>Based on your monthly bill, we recommend a <b>{societySystemSize}kW</b> solar system for common areas.</p><div class='result-box'><ul><li><b>Estimated cost:</b> Rs. {societySystemCost}</li><li><b>After subsidies:</b> Rs. {societyNetCost}</li><li><b>Annual savings:</b> Rs. {societyYearlySavings}</li><li><b>Payback period:</b> {societyPayback} years</li><li><b>Carbon reduction:</b> {carbonReduction} tons CO\u2082/year</li></ul></div><p>Would you like a detailed assessment?</p>",
 			"societySystemSize": "{monthlyConsumptionSociety} / 100",
 			"societySystemCost": "{societySystemSize} * 65000",
 			"societyNetCost": "{societySystemCost} * 0.65",
@@ -469,6 +463,22 @@
 				{
 					"id": "directContact",
 					"label": "Contact me directly",
+					"nextFlow": "contactRequest"
+				}
+			]
+		},
+		"solarBrandsFlow": {
+			"message": "<div class=\"coming-soon-box\"><h4>Solar Brands</h4><p><b>Coming Soon</b></p><p>We are currently compiling detailed information about various solar panel brands, inverters, and battery manufacturers.</p><p>This section will include:</p><ul><li>Brand comparisons and reviews</li><li>Technical specifications</li><li>Warranty information</li><li>Price ranges</li><li>Performance ratings</li></ul><p>Check back soon for comprehensive brand information\\!</p></div>",
+			"flowType": "options",
+			"options": [
+				{
+					"id": "backToMain",
+					"label": "Back to Main Menu",
+					"nextFlow": "initial"
+				},
+				{
+					"id": "getQuoteInstead",
+					"label": "Get a Quote Instead",
 					"nextFlow": "contactRequest"
 				}
 			]

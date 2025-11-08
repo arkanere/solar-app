@@ -4,6 +4,17 @@
 	// Reactive statement for dark mode
 	$: darkMode = $isDarkMode;
 
+	// Scroll to lead form function
+	function scrollToLeadForm() {
+		const leadFormSection = document.getElementById('lead-form-sv');
+		if (leadFormSection) {
+			leadFormSection.scrollIntoView({
+				behavior: 'smooth',
+				block: 'start'
+			});
+		}
+	}
+
 	const socialLinks = [
 		{
 			label: 'Facebook',
@@ -54,6 +65,7 @@
 			</p>
 			<p>
 				Our platform is designed for smart homeowners and businesses ready to go solar but unsure where to start.
+				<button class="cta-link" on:click={scrollToLeadForm}>Get 2-3 free quotes from verified installers in your area</button> and compare prices to find the best solution for your needs.
 			</p>
 		</div>
 	</div>
@@ -196,6 +208,29 @@
 	}
 
 	.dark .about-text strong {
+		color: #90caf9;
+	}
+
+	/* CTA Link Button - styled to match strong text */
+	.cta-link {
+		background: none;
+		border: none;
+		color: var(--primary-color);
+		font-weight: 600;
+		font-size: inherit;
+		font-family: inherit;
+		cursor: pointer;
+		padding: 0;
+		margin: 0;
+		text-decoration: none;
+		display: inline;
+	}
+
+	.cta-link:hover {
+		text-decoration: underline;
+	}
+
+	.dark .cta-link {
 		color: #90caf9;
 	}
 

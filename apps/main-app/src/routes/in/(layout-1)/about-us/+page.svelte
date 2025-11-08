@@ -199,58 +199,6 @@
       </div>
     </section>
 
-    <!-- How It Works Section -->
-    <section class="how-it-works-section">
-      <div class="section-header">
-        <h2>How Solar Vipani Works</h2>
-        <div class="section-divider">
-          <span class="divider-accent"></span>
-        </div>
-      </div>
-      <div class="steps-grid">
-        <div class="step-card">
-          <div class="step-number">1</div>
-          <h3>Assess Your Needs</h3>
-          <p>
-            Use our intuitive Solar System Calculator to estimate the best
-            system size for your energy consumption.
-          </p>
-        </div>
-        <div class="step-card">
-          <div class="step-number">2</div>
-          <h3>Connect with Experts</h3>
-          <p>
-            Reach out to vetted, local solar providers who understand your
-            unique needs.
-          </p>
-        </div>
-        <div class="step-card">
-          <div class="step-number">3</div>
-          <h3>Receive Competitive Quotes</h3>
-          <p>
-            Review quotes from 3 to 5 solar companies, comparing costs,
-            equipment, and terms to find the perfect match.
-          </p>
-        </div>
-        <div class="step-card">
-          <div class="step-number">4</div>
-          <h3>Make an Informed Choice</h3>
-          <p>
-            Select a provider with complete confidence, backed by transparent,
-            verified information.
-          </p>
-        </div>
-        <div class="step-card">
-          <div class="step-number">5</div>
-          <h3>Share Your Success</h3>
-          <p>
-            Join our community of solar adopters by sharing your experience,
-            helping others on their journey to clean energy.
-          </p>
-        </div>
-      </div>
-    </section>
-
     <!-- Call to Action Section -->
     <section class="cta-section">
       <div class="section-header">
@@ -645,70 +593,6 @@
   }
 
   .dark .feature-card p {
-    color: #a0aec0;
-  }
-
-  /* Steps Grid */
-  .steps-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: var(--grid-gap);
-  }
-
-  .step-card {
-    padding: 2rem 1.5rem;
-    border-radius: var(--border-radius-md);
-    background-color: var(--light-bg-color);
-    border: 1px solid #e2e8f0;
-    transition:
-      transform var(--transition-medium),
-      box-shadow var(--transition-medium);
-    text-align: center;
-    position: relative;
-  }
-
-  .step-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-lg);
-  }
-
-  .dark .step-card {
-    background-color: rgba(255, 255, 255, 0.03);
-    border-color: #4a5568;
-  }
-
-  .step-number {
-    width: 50px;
-    height: 50px;
-    background: var(--primary-color);
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin: 0 auto 1rem;
-  }
-
-  .step-card h3 {
-    font-size: 1.3rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: var(--primary-color);
-  }
-
-  .dark .step-card h3 {
-    color: var(--primary-light);
-  }
-
-  .step-card p {
-    color: var(--text-medium);
-    line-height: 1.6;
-    margin: 0;
-  }
-
-  .dark .step-card p {
     color: #a0aec0;
   }
 

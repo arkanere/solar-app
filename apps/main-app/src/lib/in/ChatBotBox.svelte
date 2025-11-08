@@ -9,6 +9,9 @@
   // Store to maintain message history
   export let messages = writable([]);
 
+  // Optional close callback
+  export let onClose = null;
+
   // Chat state
   let userInput = "";
   let isLoading = false;
@@ -298,6 +301,11 @@
     // Stop background animation on user interaction
     stopBackgroundAnimation();
 
+    // Track guided flow start in Umami
+    if (typeof window !== "undefined" && window.umami) {
+      window.umami.track("chatbot-guided-flow-started");
+    }
+
     console.log("Starting guided flow transition to: guidedAssessmentStart");
     console.log("Available flows:", Object.keys(conversationFlows.flows));
 
@@ -358,6 +366,13 @@
 
     // Stop background animation on user interaction
     stopBackgroundAnimation();
+
+    // Track freeform message in Umami
+    if (typeof window !== "undefined" && window.umami) {
+      window.umami.track("chatbot-freeform-message", {
+        flow: currentFlowId,
+      });
+    }
 
     // Add the user's message to the message history
     messages.update((m) => [...m, { role: "user", content: userInput }]);
@@ -454,6 +469,12 @@
     hasAttemptedSubmit = true;
 
     if (!validateForm()) {
+      // Track validation failure
+      if (typeof window !== "undefined" && window.umami) {
+        window.umami.track("chatbot-form-validation-failed", {
+          flow: currentFlowId,
+        });
+      }
       return; // Don't submit if validation fails
     }
 
@@ -465,6 +486,13 @@
 
     // Set submitting state
     isSubmittingForm = true;
+
+    // Track form submission attempt
+    if (typeof window !== "undefined" && window.umami) {
+      window.umami.track("chatbot-form-submitted", {
+        flow: currentFlowId,
+      });
+    }
 
     try {
       // Update lead profile with form values
@@ -583,6 +611,14 @@
     // Stop background animation on user interaction
     stopBackgroundAnimation();
 
+    // Track event in Umami
+    if (typeof window !== "undefined" && window.umami) {
+      window.umami.track("chatbot-option-selected", {
+        flow: currentFlowId,
+        option: optionId,
+      });
+    }
+
     // Add to user journey tracking
     addToUserJourney("option", optionId);
 
@@ -646,6 +682,14 @@
   async function submitInput(inputId, value) {
     // Stop background animation on user interaction
     stopBackgroundAnimation();
+
+    // Track event in Umami (without sensitive values)
+    if (typeof window !== "undefined" && window.umami) {
+      window.umami.track("chatbot-input-submitted", {
+        flow: currentFlowId,
+        inputId: inputId,
+      });
+    }
 
     // Add to user journey tracking (with value for non-form inputs)
     addToUserJourney("input", `${inputId} = ${value}`);
@@ -922,6 +966,11 @@
 
   // Function to clear chat and reset to initial state
   async function resetChat() {
+    // Track chat reset in Umami
+    if (typeof window !== "undefined" && window.umami) {
+      window.umami.track("chatbot-reset");
+    }
+
     messages.set([]);
     currentFlowId = "initial"; // Start with freeform initial
     inputValues = {};
@@ -1061,13 +1110,11 @@
 <div class="chatbot-container {$isDarkMode ? 'dark-theme' : 'light-theme'}">
   <div class="chatbot-header">
     <h3>Calculate Price and Savings</h3>
-  </div>
-
-  <div class="disclaimer-banner">
-    <p>
-      Disclaimer: This chatbot is still in development phase. Responses may be
-      incorrect.
-    </p>
+    {#if onClose}
+      <button class="header-close-button" on:click={onClose} aria-label="Close chatbot">
+        ×
+      </button>
+    {/if}
   </div>
 
   <!-- Chat history -->
@@ -1331,8 +1378,33 @@
     color: white;
     border-radius: var(--border-radius-md, 8px) var(--border-radius-md, 8px) 0 0;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
+    position: relative;
+  }
+
+  .header-close-button {
+    position: absolute;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    color: white;
+    font-size: 1.5rem;
+    line-height: 1;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .header-close-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
   }
 
   .chatbot-header h3 {

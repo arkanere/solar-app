@@ -48,7 +48,7 @@
       .join(", ") || "";
 
   const navigateToLogin = () => {
-    goto(`/in/business/login`);
+    window.location.href = 'https://business.solarvipani.com/in';
   };
   const navigateToClaim = () =>
     businessSlug && goto(`/in/business/${businessSlug}/claim`);
