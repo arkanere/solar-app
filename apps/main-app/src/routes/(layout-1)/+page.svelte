@@ -52,9 +52,10 @@
   <!-- Hero Section -->
   <section class="hero">
     <div class="hero-content">
+      <img src="/logo.webp" alt="Solar Vipani Logo" class="hero-logo" width="200" height="100" />
       <h1>Solar Vipani</h1>
       <p class="hero-subtitle">
-        Find Verified Solar Installers for your Homes and Businesses
+        Get 2-3 Free Quotes from Verified Installers in Your Area
       </p>
       <p class="hero-description">
         Connect with trusted solar professionals in your region
@@ -125,24 +126,32 @@
   .hero {
     background: linear-gradient(135deg, var(--primary-color) 0%, #0a4b9e 100%);
     color: white;
-    padding: 4rem 2rem;
+    padding: 2rem 2rem;
     text-align: center;
   }
 
+  .hero-logo {
+    margin-bottom: 0.75rem;
+    max-width: 150px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+  }
+
   .hero-content h1 {
-    font-size: 3rem;
+    font-size: 2rem;
     font-weight: 700;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
   }
 
   .hero-subtitle {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     margin-bottom: 0.5rem;
     color: var(--accent-color);
   }
 
   .hero-description {
-    font-size: 1.1rem;
+    font-size: 1rem;
     opacity: 0.9;
   }
 
@@ -150,13 +159,13 @@
   .country-selector {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 4rem 2rem;
+    padding: 2rem 2rem;
   }
 
   .country-selector h2 {
     text-align: center;
-    font-size: 2.5rem;
-    margin-bottom: 3rem;
+    font-size: 2rem;
+    margin-bottom: 2rem;
     color: var(--primary-color);
   }
 
