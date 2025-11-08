@@ -37,37 +37,50 @@
       { rootMargin: "200px" },
     );
 
-    // Show chatbot popup when user reaches bottom of page
+    // Show chatbot popup when user reaches bottom of About section
     let chatbotTimer = null;
-    const chatbotObserver = new IntersectionObserver(
-      async (entries) => {
-        if (entries[0].isIntersecting) {
-          // About section is 100% visible (user at bottom) - wait 1 second then show chatbot
-          if (!chatbotTimer) {
-            chatbotTimer = setTimeout(async () => {
-              if (!ChatbotPopup) {
-                const module = await import("$lib/in/ChatbotPopup.svelte");
-                ChatbotPopup = module.default;
-              }
-              shouldLoadChatbot = true;
-            }, 1000);
-          }
-        } else {
-          // User scrolled back up - hide chatbot and clear timer
-          if (chatbotTimer) {
-            clearTimeout(chatbotTimer);
-            chatbotTimer = null;
-          }
-          shouldLoadChatbot = false;
-        }
-      },
-      { rootMargin: "0px", threshold: 1.0 },
-    );
 
     const aboutSection = document.querySelector("#about-section");
     if (aboutSection) {
       aboutObserver.observe(aboutSection);
-      chatbotObserver.observe(aboutSection);
+
+      // Create a sentinel element at the bottom of the about section
+      const bottomSentinel = document.createElement('div');
+      bottomSentinel.style.position = 'absolute';
+      bottomSentinel.style.bottom = '0';
+      bottomSentinel.style.height = '1px';
+      bottomSentinel.style.width = '100%';
+      bottomSentinel.style.pointerEvents = 'none';
+      aboutSection.style.position = 'relative';
+      aboutSection.appendChild(bottomSentinel);
+
+      // Observer for the bottom sentinel
+      const chatbotObserver = new IntersectionObserver(
+        async (entries) => {
+          if (entries[0].isIntersecting) {
+            // Bottom of About section is visible - wait 1 second then show chatbot
+            if (!chatbotTimer) {
+              chatbotTimer = setTimeout(async () => {
+                if (!ChatbotPopup) {
+                  const module = await import("$lib/in/ChatbotPopup.svelte");
+                  ChatbotPopup = module.default;
+                }
+                shouldLoadChatbot = true;
+              }, 1000);
+            }
+          } else {
+            // User scrolled back up - hide chatbot and clear timer
+            if (chatbotTimer) {
+              clearTimeout(chatbotTimer);
+              chatbotTimer = null;
+            }
+            shouldLoadChatbot = false;
+          }
+        },
+        { rootMargin: "0px", threshold: 0 },
+      );
+
+      chatbotObserver.observe(bottomSentinel);
     }
   });
 </script>
