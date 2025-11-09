@@ -740,8 +740,7 @@
     }
 
     .stats-grid,
-    .features-grid,
-    .steps-grid {
+    .features-grid {
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     }
   }
@@ -756,15 +755,13 @@
     }
 
     .stats-grid,
-    .features-grid,
-    .steps-grid {
+    .features-grid {
       grid-template-columns: 1fr;
       gap: 1rem;
     }
 
     .stat-card,
-    .feature-card,
-    .step-card {
+    .feature-card {
       padding: 1.5rem 1rem;
     }
 
@@ -789,12 +786,6 @@
 
     .feature-icon {
       font-size: 2rem;
-    }
-
-    .step-number {
-      width: 40px;
-      height: 40px;
-      font-size: 1.2rem;
     }
   }
 </style>

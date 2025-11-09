@@ -52,13 +52,20 @@
   <!-- Hero Section -->
   <section class="hero">
     <div class="hero-content">
-      <img src="/logo.webp" alt="Solar Vipani Logo" class="hero-logo" width="200" height="100" />
+      <img
+        src="/logo.webp"
+        alt="Solar Vipani Logo"
+        class="hero-logo"
+        width="200"
+        height="100"
+      />
       <h1>Solar Vipani</h1>
       <p class="hero-subtitle">
         Get 2-3 Free Quotes from Verified Installers in Your Area
       </p>
       <p class="hero-description">
-        Connect with trusted solar professionals in your region
+        Join 2,000+ homeowners and businesses who have begun their switch to
+        solar through our platform.
       </p>
     </div>
   </section>
