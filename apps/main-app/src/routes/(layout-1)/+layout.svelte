@@ -377,40 +377,16 @@
     gap: 2rem;
   }
 
-  nav a {
-    text-decoration: none;
-    font-size: 1.1rem;
-    font-weight: 500;
-    transition: color 0.3s ease;
-    white-space: nowrap;
-  }
-
   /* Light Mode */
   .light {
     background-color: #fafafa;
     color: #333;
   }
 
-  .light a {
-    color: #333;
-  }
-
-  .light a:hover {
-    color: #0077cc;
-  }
-
   /* Dark Mode */
   .dark {
     background-color: #1a1a1a;
     color: #fff;
-  }
-
-  .dark a {
-    color: #fff;
-  }
-
-  .dark a:hover {
-    color: #66b2ff;
   }
 
   /* Button style */
@@ -427,38 +403,6 @@
     border-radius: 4px;
   }
 
-  /* Stories navigation button - special styling */
-  .stories-nav-btn {
-    background: linear-gradient(
-      45deg,
-      #f09433 0%,
-      #e6683c 25%,
-      #dc2743 50%,
-      #cc2366 75%,
-      #bc1888 100%
-    );
-    border: none;
-    color: white;
-    font-weight: 600;
-    border-radius: 20px;
-    padding: 0.6rem 1.2rem;
-    font-size: 0.95rem;
-    margin-left: 0;
-  }
-
-  .stories-nav-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    background: linear-gradient(
-      45deg,
-      #f09433 0%,
-      #e6683c 25%,
-      #dc2743 50%,
-      #cc2366 75%,
-      #bc1888 100%
-    );
-    filter: brightness(1.1);
-  }
 
   /* Theme toggle button and translate container - move to right */
   .translate-container {
@@ -485,18 +429,6 @@
     color: #333;
   }
 
-  /* Translate button - different hover effect */
-  .light .translate-btn:hover {
-    background-color: #f0f8ff;
-    color: #0077cc;
-    border-color: #0077cc;
-  }
-
-  .dark .translate-btn:hover {
-    background-color: #1a2332;
-    color: #66b2ff;
-    border-color: #66b2ff;
-  }
 
   /* Stories Modal Loading State */
   .stories-loading-backdrop {
@@ -548,19 +480,6 @@
   .translate-container {
     position: relative;
     display: inline-block;
-  }
-
-  .translate-btn {
-    background: none;
-    border: 1px solid;
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition:
-      background-color 0.3s ease,
-      color 0.3s ease;
-    white-space: nowrap;
-    border-radius: 4px;
   }
 
   .translate-dropdown {
@@ -755,24 +674,10 @@
       gap: 1rem;
     }
 
-    nav a {
-      font-size: 0.9rem;
-    }
-
     button {
       padding: 0.25rem 0.5rem;
       font-size: 0.8rem;
       margin-left: 0;
-    }
-
-    .stories-nav-btn {
-      padding: 0.4rem 0.8rem;
-      font-size: 0.85rem;
-    }
-
-    .translate-btn {
-      padding: 0.4rem 0.8rem;
-      font-size: 0.8rem;
     }
 
     .translate-dropdown {
