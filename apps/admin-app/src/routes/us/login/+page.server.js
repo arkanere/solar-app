@@ -1,16 +1,19 @@
 export const prerender = false;
 import { fail, redirect } from '@sveltejs/kit';
 import bcrypt from 'bcrypt';
-import {
-	ADMIN_EMAIL_1,
-	ADMIN_PASSWORD_HASH_1,
-	ADMIN_EMAIL_2,
-	ADMIN_PASSWORD_HASH_2
-} from '$env/static/private';
+import { env } from '$env/dynamic/private';
+
+// Decode base64 hashes (stored as base64 to avoid $ symbol issues in .env files)
+const hash1 = env.ADMIN_PASSWORD_HASH_1_BASE64
+	? Buffer.from(env.ADMIN_PASSWORD_HASH_1_BASE64, 'base64').toString('utf-8')
+	: '';
+const hash2 = env.ADMIN_PASSWORD_HASH_2_BASE64
+	? Buffer.from(env.ADMIN_PASSWORD_HASH_2_BASE64, 'base64').toString('utf-8')
+	: '';
 
 const validUsers = [
-	{ email: ADMIN_EMAIL_1, passwordHash: ADMIN_PASSWORD_HASH_1 },
-	{ email: ADMIN_EMAIL_2, passwordHash: ADMIN_PASSWORD_HASH_2 }
+	{ email: env.ADMIN_EMAIL_1, passwordHash: hash1 },
+	{ email: env.ADMIN_EMAIL_2, passwordHash: hash2 }
 ];
 
 export const actions = {
