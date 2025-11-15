@@ -6,7 +6,7 @@ export async function load({ params }) {
 	const page = parseInt(params.page);
 
 	if (isNaN(page) || page < 1) {
-		throw redirect(302, '/in/blogs2/page/1');
+		throw redirect(302, '/in/blogs/page/1');
 	}
 
 	try {
@@ -25,7 +25,7 @@ export async function load({ params }) {
 
 		// Redirect if page is out of range
 		if (page > totalPages && totalPages > 0) {
-			throw redirect(302, `/in/blogs2/page/${totalPages}`);
+			throw redirect(302, `/in/blogs/page/${totalPages}`);
 		}
 
 		// Fetch blogs for current page

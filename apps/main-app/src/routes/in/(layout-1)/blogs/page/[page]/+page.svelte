@@ -30,7 +30,7 @@
     content="Explore comprehensive guides on solar panel systems, financing options, and installation tips. Learn about solar systems, zero-cost EMI schemes, and more."
   />
   <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://solarvipani.com/in/blogs2" />
+  <link rel="canonical" href="https://solarvipani.com/in/blogs" />
 </svelte:head>
 
 <main class={darkMode ? "dark" : "light"}>
@@ -49,7 +49,7 @@
       <ul>
         {#each blogs as blog}
           <li class="blog-item">
-            <a href="/in/blogs2/{blog.slug}">
+            <a href="/in/blogs/{blog.slug}">
               {#if getFeaturedImageUrl(blog.featured_image)}
                 <div class="blog-image">
                   <img
@@ -84,7 +84,7 @@
       {#if pagination && pagination.totalPages > 1}
         <div class="pagination">
           {#if pagination.page > 1}
-            <a href="/in/blogs2/page/{pagination.page - 1}" class="pagination-btn">
+            <a href="/in/blogs/page/{pagination.page - 1}" class="pagination-btn">
               ← Previous
             </a>
           {/if}
@@ -94,7 +94,7 @@
               {#if i + 1 === pagination.page}
                 <span class="page-number active">{i + 1}</span>
               {:else if Math.abs(i + 1 - pagination.page) <= 2 || i === 0 || i === pagination.totalPages - 1}
-                <a href="/in/blogs2/page/{i + 1}" class="page-number">
+                <a href="/in/blogs/page/{i + 1}" class="page-number">
                   {i + 1}
                 </a>
               {:else if Math.abs(i + 1 - pagination.page) === 3}
@@ -104,7 +104,7 @@
           </div>
 
           {#if pagination.page < pagination.totalPages}
-            <a href="/in/blogs2/page/{pagination.page + 1}" class="pagination-btn">
+            <a href="/in/blogs/page/{pagination.page + 1}" class="pagination-btn">
               Next →
             </a>
           {/if}
