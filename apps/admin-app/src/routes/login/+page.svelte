@@ -1,5 +1,9 @@
 <script>
-	export let errors = {};
+	// SvelteKit automatically provides these props to pages
+	export let data = undefined;
+	export let form = undefined;
+	export let params = {};
+
 	import { isDarkMode } from '$lib/themeStore'; // Import dark mode state
 
 	$: darkMode = $isDarkMode; // Watch for changes in dark mode state
@@ -14,8 +18,8 @@
 		<label for="password">Password:</label>
 		<input type="password" id="password" name="password" required />
 
-		{#if errors.message}
-			<p>{errors.message}</p>
+		{#if form?.message}
+			<p>{form.message}</p>
 		{/if}
 
 		<button type="submit">Login</button>

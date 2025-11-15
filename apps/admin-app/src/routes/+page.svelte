@@ -1,4 +1,8 @@
 <script>
+	// SvelteKit automatically provides these props to pages
+	export let data = undefined;
+	export let params = {};
+
 	import { goto } from '$app/navigation';
 
 	async function handleLogout() {

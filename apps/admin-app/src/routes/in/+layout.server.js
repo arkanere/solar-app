@@ -6,7 +6,7 @@ export const load = async ({ cookies, url }) => {
 
 	// Allow the user to access the login page without redirecting
 	if (url.pathname === '/login' && !session) {
-		return { session: null }; // Return session as null if not authenticated
+		return { session: null };
 	}
 
 	// If the user is not authenticated and tries to access protected routes

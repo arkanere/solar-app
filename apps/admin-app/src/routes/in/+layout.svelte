@@ -2,6 +2,10 @@
   import { isDarkMode, toggleTheme, initializeTheme } from "$lib/themeStore";
   import { onMount } from "svelte";
 
+  // SvelteKit automatically provides these props to layouts
+  export let data;
+  export let params = {};
+
   // Initialize the theme when the component is mounted
   onMount(() => {
     initializeTheme();
@@ -47,6 +51,7 @@
     </li>
     <li><a href="/in/businesses">View Business Data</a></li>
     <li><a href="/in/queries">View Queries</a></li>
+    <li><a href="/in/blogs">Blogs</a></li>
     <li
       class="dropdown"
       on:mouseenter={() => (analyticsDropdownVisible = true)}
