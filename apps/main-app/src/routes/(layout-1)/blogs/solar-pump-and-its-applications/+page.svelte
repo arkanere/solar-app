@@ -5,9 +5,9 @@
 	$: darkMode = $isDarkMode;
 
 	// Example demonstration dates
-	const lastUpdated = '2024-06-31';
-	const lastUpdatedDisplay = 'June 31, 2024';
-	const datePublished = '2024-06-31';
+	const lastUpdated = '2024-06-30';
+	const lastUpdatedDisplay = 'June 30, 2024';
+	const datePublished = '2024-06-30';
 
 	// The canonical URL of the blog post
 	const articleUrl = 'https://solarvipani.com/blogs/solar-pump-and-its-applications';
