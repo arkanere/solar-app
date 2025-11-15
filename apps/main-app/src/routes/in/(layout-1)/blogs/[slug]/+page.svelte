@@ -28,7 +28,7 @@
 		return typeof featuredImage === 'string' ? blog.title : featuredImage.alt || blog.title;
 	}
 
-	$: articleUrl = `https://solarvipani.com/in/blogs2/${blog.slug}`;
+	$: articleUrl = `https://solarvipani.com/in/blogs/${blog.slug}`;
 
 	$: jsonLdData = {
 		'@context': 'https://schema.org',
