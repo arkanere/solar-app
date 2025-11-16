@@ -16,6 +16,14 @@
 		selectedDistrict = selectedDistrict === districtName ? null : districtName;
 	}
 
+	// Keyboard event handler for accessibility
+	function handleKeydown(event, districtName) {
+		if (event.key === 'Enter' || event.key === ' ') {
+			event.preventDefault();
+			toggleDistrictLeads(districtName);
+		}
+	}
+
 	// Format date for display
 	function formatDate(dateString) {
 		return new Date(dateString).toLocaleDateString('en-US', {
@@ -78,7 +86,7 @@
 							{#each analytics.top20Districts as district, index}
 								<tr class:selected={selectedDistrict === district.district}>
 									<td class="district-name">{district.district}</td>
-									<td class="lead-count clickable" on:click={() => toggleDistrictLeads(district.district)} role="button" tabindex="0">
+									<td class="lead-count clickable" on:click={() => toggleDistrictLeads(district.district)} on:keydown={(e) => handleKeydown(e, district.district)} role="button" tabindex="0">
 										{district.lead_count}
 										<span class="expand-icon">{selectedDistrict === district.district ? '▼' : '▶'}</span>
 									</td>

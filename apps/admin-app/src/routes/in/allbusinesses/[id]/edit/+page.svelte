@@ -179,6 +179,15 @@
     </div>
 
     <div class="form-group">
+      <label for="whatsapp">WhatsApp Number</label>
+      <input
+        id="whatsapp"
+        name="whatsapp"
+        bind:value={updatedBusiness.whatsapp}
+      />
+    </div>
+
+    <div class="form-group">
       <label for="email">Business Email</label>
       <input
         id="email"
@@ -201,6 +210,24 @@
     <div class="form-group">
       <label for="website">Website</label>
       <input id="website" name="website" bind:value={updatedBusiness.website} />
+    </div>
+
+    <div class="form-group">
+      <label for="instagram_id">Instagram ID</label>
+      <input
+        id="instagram_id"
+        name="instagram_id"
+        bind:value={updatedBusiness.instagram_id}
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="google_maps_link">Google Maps Link</label>
+      <input
+        id="google_maps_link"
+        name="google_maps_link"
+        bind:value={updatedBusiness.google_maps_link}
+      />
     </div>
 
     <div class="form-group">
@@ -231,6 +258,16 @@
     <div class="form-group">
       <label for="city">City</label>
       <input id="city" name="city" bind:value={updatedBusiness.city} required />
+    </div>
+
+    <div class="form-group">
+      <label for="pincode">Pincode</label>
+      <input
+        id="pincode"
+        name="pincode"
+        maxlength="6"
+        bind:value={updatedBusiness.pincode}
+      />
     </div>
 
     <div class="form-group">

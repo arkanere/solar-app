@@ -47,15 +47,20 @@ export const actions = {
 			address: data.get('address'),
 			pluscode: data.get('pluscode'),
 			phonenumber: data.get('phonenumber'),
+			whatsapp: data.get('whatsapp'),
 			email: data.get('email'),
 			login_email: data.get('login_email'),
 			website: data.get('website'),
+			instagram_id: data.get('instagram_id'),
+			google_maps_link: data.get('google_maps_link'),
+			ein: data.get('ein'),
 			state: data.get('state'),
 			county: data.get('county'),
 			tag: data.get('tag'),
 			slug: data.get('slug'),
 			notes: data.get('notes'),
 			city: data.get('city'),
+			zipcode: data.get('zipcode'),
 			rscore: parseInt(data.get('rscore'), 10), // Convert rscore to integer
 			isvisible: data.get('isvisible') === 'true', // Convert isvisible to boolean
 			businessfilled: data.get('businessfilled') === 'true', // Convert businessfilled to boolean
@@ -66,9 +71,10 @@ export const actions = {
 			const updateQuery = `
         UPDATE us_businesses
         SET businessname = $1, description = $2, services = $3::integer[], address = $4, pluscode = $5, phonenumber = $6,
-            email = $7, login_email = $8, website = $9, state = $10, county = $11,
-            tag = $12, slug = $13, notes = $14, city = $15, rscore = $16, isvisible = $17, businessfilled = $18, tier3 = $19
-        WHERE id = $20
+            whatsapp = $7, email = $8, login_email = $9, website = $10, instagram_id = $11, google_maps_link = $12,
+            ein = $13, state = $14, county = $15, tag = $16, slug = $17, notes = $18, city = $19, zipcode = $20,
+            rscore = $21, isvisible = $22, businessfilled = $23, tier3 = $24
+        WHERE id = $25
       `;
 
 			const values = [
@@ -78,15 +84,20 @@ export const actions = {
 				updatedBusiness.address,
 				updatedBusiness.pluscode,
 				updatedBusiness.phonenumber,
+				updatedBusiness.whatsapp,
 				updatedBusiness.email,
 				updatedBusiness.login_email,
 				updatedBusiness.website,
+				updatedBusiness.instagram_id,
+				updatedBusiness.google_maps_link,
+				updatedBusiness.ein,
 				updatedBusiness.state,
 				updatedBusiness.county,
 				updatedBusiness.tag,
 				updatedBusiness.slug,
 				updatedBusiness.notes,
 				updatedBusiness.city,
+				updatedBusiness.zipcode,
 				updatedBusiness.rscore,
 				updatedBusiness.isvisible,
 				updatedBusiness.businessfilled,

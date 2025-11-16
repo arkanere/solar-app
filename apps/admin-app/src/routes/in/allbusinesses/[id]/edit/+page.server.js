@@ -47,9 +47,12 @@ export const actions = {
 			address: data.get('address'),
 			pluscode: data.get('pluscode'),
 			phonenumber: data.get('phonenumber'),
+			whatsapp: data.get('whatsapp'),
 			email: data.get('email'),
 			login_email: data.get('login_email'),
 			website: data.get('website'),
+			instagram_id: data.get('instagram_id'),
+			google_maps_link: data.get('google_maps_link'),
 			gstn: data.get('gstn'),
 			state: data.get('state'),
 			district: data.get('district'),
@@ -57,6 +60,7 @@ export const actions = {
 			slug: data.get('slug'),
 			notes: data.get('notes'),
 			city: data.get('city'),
+			pincode: data.get('pincode'),
 			rscore: parseInt(data.get('rscore'), 10), // Convert rscore to integer
 			isvisible: data.get('isvisible') === 'true', // Convert isvisible to boolean
 			businessfilled: data.get('businessfilled') === 'true', // Convert businessfilled to boolean
@@ -67,9 +71,10 @@ export const actions = {
 			const updateQuery = `
         UPDATE businesses_1
         SET businessname = $1, description = $2, services = $3::integer[], address = $4, pluscode = $5, phonenumber = $6,
-            email = $7, login_email = $8, website = $9, gstn = $10, state = $11, district = $12, 
-            tag = $13, slug = $14, notes = $15, city = $16, rscore = $17, isvisible = $18, businessfilled = $19, tier3 = $20
-        WHERE id = $21
+            whatsapp = $7, email = $8, login_email = $9, website = $10, instagram_id = $11, google_maps_link = $12,
+            gstn = $13, state = $14, district = $15, tag = $16, slug = $17, notes = $18, city = $19, pincode = $20,
+            rscore = $21, isvisible = $22, businessfilled = $23, tier3 = $24
+        WHERE id = $25
       `;
 
 			const values = [
@@ -79,9 +84,12 @@ export const actions = {
 				updatedBusiness.address,
 				updatedBusiness.pluscode,
 				updatedBusiness.phonenumber,
+				updatedBusiness.whatsapp,
 				updatedBusiness.email,
 				updatedBusiness.login_email,
 				updatedBusiness.website,
+				updatedBusiness.instagram_id,
+				updatedBusiness.google_maps_link,
 				updatedBusiness.gstn,
 				updatedBusiness.state,
 				updatedBusiness.district,
@@ -89,6 +97,7 @@ export const actions = {
 				updatedBusiness.slug,
 				updatedBusiness.notes,
 				updatedBusiness.city,
+				updatedBusiness.pincode,
 				updatedBusiness.rscore,
 				updatedBusiness.isvisible,
 				updatedBusiness.businessfilled,

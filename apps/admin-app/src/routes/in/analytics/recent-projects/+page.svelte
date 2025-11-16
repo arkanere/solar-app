@@ -16,6 +16,14 @@
 		selectedCategory = selectedCategory === category ? null : category;
 	}
 
+	// Keyboard event handler for accessibility
+	function handleKeydown(event, category) {
+		if (event.key === 'Enter' || event.key === ' ') {
+			event.preventDefault();
+			toggleBusinessList(category);
+		}
+	}
+
 	// Format date for display
 	function formatDate(dateString) {
 		return new Date(dateString).toLocaleDateString('en-US', {
@@ -81,7 +89,7 @@
 			<div class="breakdown-section">
 				<h3>Project Count Distribution</h3>
 				<div class="project-grid">
-					<div class="project-card zero-projects clickable" class:selected={selectedCategory === 'zeroProjects'} on:click={() => toggleBusinessList('zeroProjects')} role="button" tabindex="0">
+					<div class="project-card zero-projects clickable" class:selected={selectedCategory === 'zeroProjects'} on:click={() => toggleBusinessList('zeroProjects')} on:keydown={(e) => handleKeydown(e, 'zeroProjects')} role="button" tabindex="0">
 						<div class="project-header">
 							<h4>0 Projects</h4>
 							<span class="project-description">No projects posted</span>
@@ -93,7 +101,7 @@
 						<div class="project-label">businesses</div>
 					</div>
 
-					<div class="project-card one-project clickable" class:selected={selectedCategory === 'oneProject'} on:click={() => toggleBusinessList('oneProject')} role="button" tabindex="0">
+					<div class="project-card one-project clickable" class:selected={selectedCategory === 'oneProject'} on:click={() => toggleBusinessList('oneProject')} on:keydown={(e) => handleKeydown(e, 'oneProject')} role="button" tabindex="0">
 						<div class="project-header">
 							<h4>1 Project</h4>
 							<span class="project-description">Single project showcase</span>
@@ -105,7 +113,7 @@
 						<div class="project-label">businesses</div>
 					</div>
 
-					<div class="project-card two-projects clickable" class:selected={selectedCategory === 'twoProjects'} on:click={() => toggleBusinessList('twoProjects')} role="button" tabindex="0">
+					<div class="project-card two-projects clickable" class:selected={selectedCategory === 'twoProjects'} on:click={() => toggleBusinessList('twoProjects')} on:keydown={(e) => handleKeydown(e, 'twoProjects')} role="button" tabindex="0">
 						<div class="project-header">
 							<h4>2 Projects</h4>
 							<span class="project-description">Two project showcases</span>
@@ -117,7 +125,7 @@
 						<div class="project-label">businesses</div>
 					</div>
 
-					<div class="project-card three-projects clickable" class:selected={selectedCategory === 'threeProjects'} on:click={() => toggleBusinessList('threeProjects')} role="button" tabindex="0">
+					<div class="project-card three-projects clickable" class:selected={selectedCategory === 'threeProjects'} on:click={() => toggleBusinessList('threeProjects')} on:keydown={(e) => handleKeydown(e, 'threeProjects')} role="button" tabindex="0">
 						<div class="project-header">
 							<h4>3 Projects</h4>
 							<span class="project-description">Three project showcases</span>
@@ -129,7 +137,7 @@
 						<div class="project-label">businesses</div>
 					</div>
 
-					<div class="project-card four-projects clickable" class:selected={selectedCategory === 'fourProjects'} on:click={() => toggleBusinessList('fourProjects')} role="button" tabindex="0">
+					<div class="project-card four-projects clickable" class:selected={selectedCategory === 'fourProjects'} on:click={() => toggleBusinessList('fourProjects')} on:keydown={(e) => handleKeydown(e, 'fourProjects')} role="button" tabindex="0">
 						<div class="project-header">
 							<h4>4 Projects</h4>
 							<span class="project-description">Four project showcases</span>
@@ -141,7 +149,7 @@
 						<div class="project-label">businesses</div>
 					</div>
 
-					<div class="project-card five-projects clickable" class:selected={selectedCategory === 'fiveProjects'} on:click={() => toggleBusinessList('fiveProjects')} role="button" tabindex="0">
+					<div class="project-card five-projects clickable" class:selected={selectedCategory === 'fiveProjects'} on:click={() => toggleBusinessList('fiveProjects')} on:keydown={(e) => handleKeydown(e, 'fiveProjects')} role="button" tabindex="0">
 						<div class="project-header">
 							<h4>5 Projects</h4>
 							<span class="project-description">Five project showcases</span>
@@ -153,7 +161,7 @@
 						<div class="project-label">businesses</div>
 					</div>
 
-					<div class="project-card many-projects clickable" class:selected={selectedCategory === 'moreThanFiveProjects'} on:click={() => toggleBusinessList('moreThanFiveProjects')} role="button" tabindex="0">
+					<div class="project-card many-projects clickable" class:selected={selectedCategory === 'moreThanFiveProjects'} on:click={() => toggleBusinessList('moreThanFiveProjects')} on:keydown={(e) => handleKeydown(e, 'moreThanFiveProjects')} role="button" tabindex="0">
 						<div class="project-header">
 							<h4>5+ Projects</h4>
 							<span class="project-description">Highly active businesses</span>

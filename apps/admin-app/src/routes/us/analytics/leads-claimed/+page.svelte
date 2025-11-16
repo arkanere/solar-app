@@ -16,6 +16,14 @@
 		expandedCategory = expandedCategory === category ? null : category;
 	}
 
+	// Keyboard event handler for accessibility
+	function handleKeydown(event, category) {
+		if (event.key === 'Enter' || event.key === ' ') {
+			event.preventDefault();
+			toggleCategory(category);
+		}
+	}
+
 	// Format date for display
 	function formatDate(dateString) {
 		return new Date(dateString).toLocaleDateString('en-US', {
@@ -65,7 +73,7 @@
 			<div class="breakdown-section">
 				<h3>Lead Distribution by Number of Claims</h3>
 				<div class="claim-grid">
-					<div class="claim-card unclaimed clickable" class:expanded={expandedCategory === 'zeroClaims'} on:click={() => toggleCategory('zeroClaims')} role="button" tabindex="0">
+					<div class="claim-card unclaimed clickable" class:expanded={expandedCategory === 'zeroClaims'} on:click={() => toggleCategory('zeroClaims')} on:keydown={(e) => handleKeydown(e, 'zeroClaims')} role="button" tabindex="0">
 						<div class="claim-header">
 							<h4>0 Claims</h4>
 							<span class="claim-description">Unclaimed leads</span>
@@ -75,7 +83,7 @@
 						<div class="expand-icon">{expandedCategory === 'zeroClaims' ? '▼' : '▶'}</div>
 					</div>
 
-					<div class="claim-card one-claim clickable" class:expanded={expandedCategory === 'oneClaim'} on:click={() => toggleCategory('oneClaim')} role="button" tabindex="0">
+					<div class="claim-card one-claim clickable" class:expanded={expandedCategory === 'oneClaim'} on:click={() => toggleCategory('oneClaim')} on:keydown={(e) => handleKeydown(e, 'oneClaim')} role="button" tabindex="0">
 						<div class="claim-header">
 							<h4>1 Claim</h4>
 							<span class="claim-description">Claimed by 1 business</span>
@@ -85,7 +93,7 @@
 						<div class="expand-icon">{expandedCategory === 'oneClaim' ? '▼' : '▶'}</div>
 					</div>
 
-					<div class="claim-card two-claims clickable" class:expanded={expandedCategory === 'twoClaims'} on:click={() => toggleCategory('twoClaims')} role="button" tabindex="0">
+					<div class="claim-card two-claims clickable" class:expanded={expandedCategory === 'twoClaims'} on:click={() => toggleCategory('twoClaims')} on:keydown={(e) => handleKeydown(e, 'twoClaims')} role="button" tabindex="0">
 						<div class="claim-header">
 							<h4>2 Claims</h4>
 							<span class="claim-description">Claimed by 2 businesses</span>
@@ -95,7 +103,7 @@
 						<div class="expand-icon">{expandedCategory === 'twoClaims' ? '▼' : '▶'}</div>
 					</div>
 
-					<div class="claim-card three-claims clickable" class:expanded={expandedCategory === 'threeClaims'} on:click={() => toggleCategory('threeClaims')} role="button" tabindex="0">
+					<div class="claim-card three-claims clickable" class:expanded={expandedCategory === 'threeClaims'} on:click={() => toggleCategory('threeClaims')} on:keydown={(e) => handleKeydown(e, 'threeClaims')} role="button" tabindex="0">
 						<div class="claim-header">
 							<h4>3 Claims</h4>
 							<span class="claim-description">Claimed by 3 businesses</span>
@@ -105,7 +113,7 @@
 						<div class="expand-icon">{expandedCategory === 'threeClaims' ? '▼' : '▶'}</div>
 					</div>
 
-					<div class="claim-card four-claims clickable" class:expanded={expandedCategory === 'fourClaims'} on:click={() => toggleCategory('fourClaims')} role="button" tabindex="0">
+					<div class="claim-card four-claims clickable" class:expanded={expandedCategory === 'fourClaims'} on:click={() => toggleCategory('fourClaims')} on:keydown={(e) => handleKeydown(e, 'fourClaims')} role="button" tabindex="0">
 						<div class="claim-header">
 							<h4>4 Claims</h4>
 							<span class="claim-description">Claimed by 4 businesses</span>
@@ -115,7 +123,7 @@
 						<div class="expand-icon">{expandedCategory === 'fourClaims' ? '▼' : '▶'}</div>
 					</div>
 
-					<div class="claim-card many-claims clickable" class:expanded={expandedCategory === 'fiveOrMoreClaims'} on:click={() => toggleCategory('fiveOrMoreClaims')} role="button" tabindex="0">
+					<div class="claim-card many-claims clickable" class:expanded={expandedCategory === 'fiveOrMoreClaims'} on:click={() => toggleCategory('fiveOrMoreClaims')} on:keydown={(e) => handleKeydown(e, 'fiveOrMoreClaims')} role="button" tabindex="0">
 						<div class="claim-header">
 							<h4>5+ Claims</h4>
 							<span class="claim-description">High-demand leads</span>

@@ -90,6 +90,14 @@
 	function triggerFileInput() {
 		fileInput.click();
 	}
+
+	// Keyboard event handler for accessibility
+	function handleKeydown(event) {
+		if (event.key === 'Enter' || event.key === ' ') {
+			event.preventDefault();
+			triggerFileInput();
+		}
+	}
 </script>
 
 <div class="image-uploader-wrapper" class:dark={darkMode}>
@@ -100,7 +108,7 @@
 
 	{#if !imageData}
 		<!-- Upload UI -->
-		<div class="upload-area" on:click={triggerFileInput} role="button" tabindex="0">
+		<div class="upload-area" on:click={triggerFileInput} on:keydown={handleKeydown} role="button" tabindex="0">
 			<input
 				type="file"
 				bind:this={fileInput}
