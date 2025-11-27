@@ -114,8 +114,9 @@
 
 	<!-- Modal Form -->
 	{#if isProcessing && selectedClaim}
-		<div class="modal-overlay" on:click={closeProcessModal}>
-			<div class="modal-content" on:click|stopPropagation>
+		<div class="modal-overlay" on:click={closeProcessModal} on:keydown={(e) => e.key === 'Escape' && closeProcessModal()} role="button" tabindex="0">
+			<!-- svelte-ignore a11y-no-static-element-interactions -->
+			<div class="modal-content" on:click|stopPropagation on:keydown|stopPropagation>
 				<h2>Process Lead Claim</h2>
 				<p><strong>Lead Claim ID:</strong> {selectedClaim.id}</p>
 				<p><strong>Lead ID:</strong> {selectedClaim.lead_id}</p>

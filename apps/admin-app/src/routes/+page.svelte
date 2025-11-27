@@ -1,7 +1,7 @@
 <script>
 	// SvelteKit automatically provides these props to pages
-	export let data = undefined;
-	export let params = {};
+	export const data = undefined;
+	export const params = {};
 
 	import { goto } from '$app/navigation';
 

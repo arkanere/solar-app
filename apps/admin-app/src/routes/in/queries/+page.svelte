@@ -85,8 +85,9 @@
 
 	<!-- Edit Form Modal -->
 	{#if isEditing && selectedQuery}
-		<div class="modal-overlay" on:click={cancelEdit}>
-			<div class="modal-content" on:click|stopPropagation>
+		<div class="modal-overlay" on:click={cancelEdit} on:keydown={(e) => e.key === 'Escape' && cancelEdit()} role="button" tabindex="0">
+			<!-- svelte-ignore a11y-no-static-element-interactions -->
+			<div class="modal-content" on:click|stopPropagation on:keydown|stopPropagation>
 				<h2>Edit Query</h2>
 				<form on:submit|preventDefault={saveChanges}>
 					<label>

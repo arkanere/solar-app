@@ -1,7 +1,8 @@
 <script>
   // SvelteKit automatically provides these props to layouts
-  export let data = undefined;
-  export let params = {};
+  // Using export const to indicate these are for external reference only
+  export const data = undefined;
+  export const params = {};
 </script>
 
 <slot />

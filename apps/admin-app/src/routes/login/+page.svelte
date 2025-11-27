@@ -1,8 +1,8 @@
 <script>
 	// SvelteKit automatically provides these props to pages
-	export let data = undefined;
+	export const data = undefined;
 	export let form = undefined;
-	export let params = {};
+	export const params = {};
 
 	import { isDarkMode } from '$lib/themeStore'; // Import dark mode state
 

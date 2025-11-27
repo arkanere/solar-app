@@ -3,8 +3,8 @@
   import { onMount } from "svelte";
 
   // SvelteKit automatically provides these props to layouts
-  export let data;
-  export let params = {};
+  export const data = undefined;
+  export const params = {};
 
   // Initialize the theme when the component is mounted
   onMount(() => {
