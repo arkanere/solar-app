@@ -1,5 +1,7 @@
 export const prerender = false;
 import { redirect } from '@sveltejs/kit';
+import { createPool } from '@vercel/postgres';
+import { POSTGRES_URL } from '$env/static/private';
 
 export const load = async ({ cookies, params, url }) => {
 	const business_session = cookies.get('business-session');
@@ -31,6 +33,24 @@ export const load = async ({ cookies, params, url }) => {
 			// If session's businessSlug does not match the URL, redirect to the correct business
 			if (sessionData.businessSlug !== business_slug) {
 				throw redirect(302, `/in/${sessionData.businessSlug}`); // Redirect back to the correct business
+			}
+
+			// Load basic business info for sidebar
+			const pool = createPool({ connectionString: POSTGRES_URL });
+			try {
+				const businessResult = await pool.query(
+					'SELECT id, businessname, slug FROM businesses_1 WHERE slug = $1 LIMIT 1',
+					[business_slug]
+				);
+
+				if (businessResult.rows.length > 0) {
+					return {
+						business_session: sessionData,
+						business: businessResult.rows[0]
+					};
+				}
+			} catch (dbError) {
+				console.error('Database error loading business:', dbError);
 			}
 
 			return { business_session: sessionData };

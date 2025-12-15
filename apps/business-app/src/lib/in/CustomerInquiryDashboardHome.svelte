@@ -1021,11 +1021,6 @@
 		margin-bottom: 0;
 	}
 
-	.modal-body small {
-		color: #6c757d;
-		font-style: italic;
-	}
-
 	.modal-actions {
 		padding: 1rem 1.5rem 1.5rem;
 		display: flex;
@@ -1092,10 +1087,6 @@
 
 	:global(.dark) .modal-actions {
 		border-top-color: #444;
-	}
-
-	:global(.dark) .modal-body small {
-		color: #adb5bd;
 	}
 
 	/* Mobile modal responsiveness */
