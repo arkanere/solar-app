@@ -257,9 +257,6 @@
 		padding: 0.5em;
 		font-size: 1rem;
 	}
-	h2 {
-		margin-bottom: 1em;
-	}
 
 	button {
 		padding: 0.75em;
