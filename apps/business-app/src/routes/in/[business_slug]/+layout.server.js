@@ -39,7 +39,7 @@ export const load = async ({ cookies, params, url }) => {
 			const pool = createPool({ connectionString: POSTGRES_URL });
 			try {
 				const businessResult = await pool.query(
-					'SELECT id, businessname, slug FROM businesses_1 WHERE slug = $1 LIMIT 1',
+					'SELECT id, businessname, slug, email FROM businesses_1 WHERE slug = $1 LIMIT 1',
 					[business_slug]
 				);
 

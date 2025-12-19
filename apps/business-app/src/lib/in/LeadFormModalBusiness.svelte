@@ -9,10 +9,13 @@
 	let name = '';
 	let phone = '';
 	let pinCode = '';
-	let type = '';
 	let comment = '';
 	let email = '';
 	let urlParam = '';
+
+	// Placeholder text with line break
+	const commentPlaceholder = `Tell us about your requirement.
+Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 
 	let isSubmitting = false;
 	let submitSuccess = false;
@@ -22,7 +25,6 @@
 		name: '',
 		phone: '',
 		pinCode: '',
-		type: '',
 		email: '',
 		comment: ''
 	};
@@ -63,7 +65,7 @@
 	}
 
 	function validateForm() {
-		errors = { name: '', phone: '', pinCode: '', type: '', email: '', comment: '' };
+		errors = { name: '', phone: '', pinCode: '', email: '', comment: '' };
 		let isValid = true;
 
 		if (name.trim() === '') {
@@ -72,12 +74,7 @@
 		}
 		if (!validatePhoneNumber()) isValid = false;
 		if (!validatePinCode()) isValid = false;
-		if (type.trim() === '') {
-			errors.type = 'Type is required';
-			isValid = false;
-		}
 		if (!validateEmail()) isValid = false;
-
 		if (comment.trim() === '') {
 			errors.comment = 'Comment is required';
 			isValid = false;
@@ -90,10 +87,9 @@
 		name = '';
 		phone = '';
 		pinCode = '';
-		type = '';
 		comment = '';
 		email = '';
-		errors = { name: '', phone: '', pinCode: '', type: '', email: '', comment: '' };
+		errors = { name: '', phone: '', pinCode: '', email: '', comment: '' };
 	}
 
 	async function handleSubmit(event) {
@@ -112,7 +108,6 @@
 						name,
 						phone,
 						pinCode,
-						type,
 						comment,
 						email,
 						urlParam,
@@ -132,7 +127,6 @@
 						name,
 						phone,
 						pinCode,
-						type,
 						comment,
 						email
 					});
@@ -194,29 +188,13 @@
 		{/if}
 	</div>
 
-	<!-- Type Input -->
-	<div>
-		<label for="type">Type of Consultation:</label>
-		<select id="type" bind:value={type} required>
-			<option value="" disabled selected>Select type of consultation</option>
-			<option value="Residential - Independent Home">Residential - Independent Home</option>
-			<option value="Residential - Apartments/Housing societies"
-				>Residential - Apartments/Housing societies</option
-			>
-			<option value="Business/Commercial">Business/Commercial</option>
-		</select>
-		{#if errors.type}
-			<p class="error">{errors.type}</p>
-		{/if}
-	</div>
-
 	<!-- Comment Input -->
 	<div>
 		<label for="comment">Comment :</label>
 		<textarea
 			id="comment"
 			bind:value={comment}
-			placeholder="Tell us more about your requirement"
+			placeholder={commentPlaceholder}
 			required
 		></textarea>
 		{#if errors.comment}
@@ -256,6 +234,14 @@
 		width: 100%;
 		padding: 0.5em;
 		font-size: 1rem;
+		box-sizing: border-box;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+	}
+
+	textarea {
+		height: 7.5em;
+		resize: vertical;
 	}
 
 	button {
@@ -264,6 +250,9 @@
 		color: white;
 		border: none;
 		cursor: pointer;
+		border-radius: 4px;
+		width: 100%;
+		box-sizing: border-box;
 	}
 
 	button:disabled {
@@ -294,5 +283,36 @@
 		background-color: #f8d7da;
 		color: #721c24;
 		border: 1px solid #f5c6cb;
+	}
+
+	/* Mobile responsive adjustments */
+	@media (max-width: 768px) {
+		form {
+			max-width: 100%;
+			padding: 0;
+		}
+
+		input,
+		select,
+		textarea {
+			font-size: 16px; /* Prevents zoom on iOS */
+		}
+	}
+
+	@media (max-width: 576px) {
+		div {
+			margin-bottom: 0.75em;
+		}
+
+		input,
+		select,
+		textarea {
+			padding: 0.6em 0.5em;
+		}
+
+		button {
+			padding: 0.8em;
+			font-size: 1rem;
+		}
 	}
 </style>

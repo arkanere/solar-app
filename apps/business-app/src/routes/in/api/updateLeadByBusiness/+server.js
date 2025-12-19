@@ -16,7 +16,7 @@ export async function POST({ request, cookies }) {
 			return json({ success: false, error: 'Unauthorized - Please login' }, { status: 401 });
 		}
 
-		const { id, stage, status } = await request.json();
+		const { id, stage, status, business_notes } = await request.json();
 
 		if (!id) {
 			return json({ success: false, error: 'Lead ID is required' }, { status: 400 });
@@ -41,15 +41,37 @@ export async function POST({ request, cookies }) {
 			);
 		}
 
-		// ✅ Update only `stage` and `status`
+		// ✅ Build dynamic update query based on provided fields
+		const updates = [];
+		const values = [];
+		let paramIndex = 1;
+
+		if (stage !== undefined) {
+			updates.push(`stage = $${paramIndex++}`);
+			values.push(stage);
+		}
+		if (status !== undefined) {
+			updates.push(`status = $${paramIndex++}`);
+			values.push(status);
+		}
+		if (business_notes !== undefined) {
+			updates.push(`business_notes = $${paramIndex++}`);
+			values.push(business_notes);
+		}
+
+		if (updates.length === 0) {
+			return json({ success: false, error: 'No fields to update' }, { status: 400 });
+		}
+
+		values.push(id); // Add id as the last parameter
 		const updateQuery = `
             UPDATE leaddata
-            SET stage = $1, status = $2
-            WHERE id = $3
+            SET ${updates.join(', ')}
+            WHERE id = $${paramIndex}
             RETURNING *;
         `;
 
-		const result = await pool.query(updateQuery, [stage, status, id]);
+		const result = await pool.query(updateQuery, values);
 
 		if (result.rows.length === 0) {
 			return json({ success: false, error: 'Lead not found' }, { status: 404 });

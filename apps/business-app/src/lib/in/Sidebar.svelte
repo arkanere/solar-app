@@ -6,6 +6,7 @@
 
 	export let businessSlug = '';
 	export let businessName = '';
+	export let businessEmail = '';
 
 	const dispatch = createEventDispatcher();
 
@@ -139,7 +140,9 @@
 
 <!-- Mobile Backdrop -->
 {#if mobileOpen}
-	<div class="mobile-backdrop" on:click={closeMobileMenu} on:keydown={(e) => e.key === 'Escape' && closeMobileMenu()} role="button" tabindex="0"></div>
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<div class="mobile-backdrop" on:click={closeMobileMenu}></div>
 {/if}
 
 <!-- Sidebar -->
@@ -149,7 +152,12 @@
 		<div class="brand">
 			<img src="/solar-vipani-logo.png" alt="Solar Vipani" class="brand-logo" />
 			{#if expanded}
-				<p class="business-name">{businessName || 'Business Portal'}</p>
+				<div class="business-info">
+					<p class="business-name">{businessName || 'Business Portal'}</p>
+					{#if businessEmail}
+						<p class="business-email">{businessEmail}</p>
+					{/if}
+				</div>
 			{/if}
 		</div>
 		<button class="toggle-btn desktop-only" on:click={toggleSidebar} aria-label="Toggle sidebar">
@@ -321,20 +329,34 @@
 		height: 36px;
 	}
 
-	.business-name {
-		margin: 0;
-		font-size: 0.75rem;
-		font-weight: 500;
-		opacity: 0.8;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
+	.business-info {
 		width: 100%;
 		text-align: center;
 		padding: 0 0.5rem;
 	}
 
-	.collapsed .business-name {
+	.business-name {
+		margin: 0;
+		font-size: 0.75rem;
+		font-weight: 600;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		width: 100%;
+	}
+
+	.business-email {
+		margin: 0.25rem 0 0 0;
+		font-size: 0.65rem;
+		opacity: 0.7;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		width: 100%;
+		font-weight: 400;
+	}
+
+	.collapsed .business-info {
 		display: none;
 	}
 
@@ -514,20 +536,20 @@
 		width: 6px;
 	}
 
-	.light .sidebar::-webkit-scrollbar-track {
+	.sidebar.light::-webkit-scrollbar-track {
 		background: #f9fafb;
 	}
 
-	.dark .sidebar::-webkit-scrollbar-track {
+	.sidebar.dark::-webkit-scrollbar-track {
 		background: #1a1a1a;
 	}
 
-	.light .sidebar::-webkit-scrollbar-thumb {
+	.sidebar.light::-webkit-scrollbar-thumb {
 		background: #d1d5db;
 		border-radius: 3px;
 	}
 
-	.dark .sidebar::-webkit-scrollbar-thumb {
+	.sidebar.dark::-webkit-scrollbar-thumb {
 		background: #4b5563;
 		border-radius: 3px;
 	}
