@@ -57,7 +57,7 @@
 		comment: 'I want to install 3kW at my home. Please call me!'
 	};
 
-	async function updateLead(lead) {
+	async function updateLead(lead, updateFields = {}) {
 		try {
 			const response = await fetch('/in/api/updateLeadByBusiness', {
 				method: 'POST',
@@ -66,8 +66,9 @@
 				},
 				body: JSON.stringify({
 					id: lead.id,
-					stage: Number(lead.stage),
-					status: lead.status
+					stage: updateFields.stage !== undefined ? Number(updateFields.stage) : Number(lead.stage),
+					status: updateFields.status !== undefined ? updateFields.status : lead.status,
+					business_notes: updateFields.business_notes !== undefined ? updateFields.business_notes : lead.business_notes
 				})
 			});
 
@@ -76,7 +77,7 @@
 			}
 
 			const result = await response.json();
-			
+
 			if (result.success) {
 				// Update the lead in the local array
 				leads = leads.map((l) => (l.id === lead.id ? { ...l, ...result.lead } : l));
@@ -87,6 +88,31 @@
 			console.error('Update Lead Error:', error);
 			alert('An error occurred while updating the lead.');
 		}
+	}
+
+	// State for tracking save status per lead
+	let savingNotes = new Set();
+	let savedNotes = new Set();
+
+	// Function to save business notes
+	async function saveBusinessNotes(lead) {
+		savingNotes.add(lead.id);
+		savingNotes = savingNotes; // Trigger reactivity
+
+		await updateLead(lead, { business_notes: lead.business_notes });
+
+		savingNotes.delete(lead.id);
+		savingNotes = savingNotes; // Trigger reactivity
+
+		// Show saved status
+		savedNotes.add(lead.id);
+		savedNotes = savedNotes; // Trigger reactivity
+
+		// Hide saved status after 3 seconds
+		setTimeout(() => {
+			savedNotes.delete(lead.id);
+			savedNotes = savedNotes; // Trigger reactivity
+		}, 3000);
 	}
 
 	async function claimLead(leadId, businessId) {
@@ -359,13 +385,43 @@
 							{/if}
 
 							{#if lead.category !== 1}
+								<!-- Business Notes Section -->
+								<div class="business-notes-section">
+									<label for="business-notes-{lead.id}"><strong>Your Notes:</strong></label>
+									<textarea
+										id="business-notes-{lead.id}"
+										bind:value={lead.business_notes}
+										placeholder="Add your private notes about this lead..."
+										rows="3"
+										disabled={savingNotes.has(lead.id)}
+									></textarea>
+									<div class="notes-actions">
+										<button
+											class="save-notes-button"
+											on:click={() => saveBusinessNotes(lead)}
+											disabled={savingNotes.has(lead.id)}
+										>
+											{#if savingNotes.has(lead.id)}
+												Saving...
+											{:else}
+												Save Notes
+											{/if}
+										</button>
+										{#if savedNotes.has(lead.id)}
+											<span class="save-success">✓ Saved!</span>
+										{/if}
+									</div>
+								</div>
+							{/if}
+
+							{#if lead.category !== 1}
 								<div class="stage-update-section">
 									<div class="stage-controls">
 										<label for="stage-{lead.id}"><strong>Stage:</strong></label>
-										<select 
-											id="stage-{lead.id}" 
+										<select
+											id="stage-{lead.id}"
 											bind:value={lead.stage}
-											on:change={() => updateLead(lead)}
+											on:change={() => updateLead(lead, { stage: lead.stage })}
 										>
 											{#if lead.category === 2}
 												{#each Object.entries(NON_EXCLUSIVE_CLAIMED_STAGES) as [value, label]}
@@ -381,10 +437,10 @@
 									
 									<div class="status-controls">
 										<label for="status-{lead.id}"><strong>Status:</strong></label>
-										<select 
-											id="status-{lead.id}" 
+										<select
+											id="status-{lead.id}"
 											bind:value={lead.status}
-											on:change={() => updateLead(lead)}
+											on:change={() => updateLead(lead, { status: lead.status })}
 										>
 											<option value={true}>Active</option>
 											<option value={false}>Inactive</option>
@@ -812,6 +868,116 @@
 		border-left-color: #64b5f6;
 	}
 
+	/* Business Notes Section */
+	.business-notes-section {
+		margin: 1rem 0;
+		padding: 1rem;
+		background-color: rgba(76, 175, 80, 0.05);
+		border: 1px solid rgba(76, 175, 80, 0.2);
+		border-left: 4px solid #4caf50;
+		border-radius: 6px;
+	}
+
+	.business-notes-section label {
+		display: block;
+		margin-bottom: 0.5rem;
+		font-weight: 600;
+		color: #4caf50;
+	}
+
+	.business-notes-section textarea {
+		width: 100%;
+		padding: 0.75rem;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		font-size: 0.95rem;
+		font-family: inherit;
+		resize: vertical;
+		min-height: 80px;
+		margin-bottom: 0.5rem;
+		box-sizing: border-box;
+	}
+
+	.business-notes-section textarea:focus {
+		outline: none;
+		border-color: #4caf50;
+		box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+	}
+
+	:global(.dark) .business-notes-section {
+		background-color: rgba(76, 175, 80, 0.1);
+		border-left-color: #66bb6a;
+	}
+
+	:global(.dark) .business-notes-section label {
+		color: #66bb6a;
+	}
+
+	:global(.dark) .business-notes-section textarea {
+		background-color: #2a2a2a;
+		border-color: #444;
+		color: var(--dark-primary-text-color);
+	}
+
+	:global(.dark) .business-notes-section textarea:focus {
+		border-color: #66bb6a;
+		box-shadow: 0 0 0 2px rgba(102, 187, 106, 0.2);
+	}
+
+	.notes-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.save-notes-button {
+		background-color: #4caf50;
+		color: white;
+		border: none;
+		padding: 0.5rem 1rem;
+		border-radius: 4px;
+		cursor: pointer;
+		font-weight: 600;
+		font-size: 0.9rem;
+		transition: background-color 0.3s ease;
+	}
+
+	.save-notes-button:hover {
+		background-color: #45a049;
+	}
+
+	.save-notes-button:active {
+		background-color: #3d8b40;
+	}
+
+	.save-notes-button:disabled {
+		background-color: #9ca3af;
+		cursor: not-allowed;
+		opacity: 0.6;
+	}
+
+	.save-success {
+		color: #4caf50;
+		font-weight: 600;
+		font-size: 0.9rem;
+		animation: fadeIn 0.3s ease;
+	}
+
+	:global(.dark) .save-success {
+		color: #66bb6a;
+	}
+
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+			transform: translateX(-10px);
+		}
+		to {
+			opacity: 1;
+			transform: translateX(0);
+		}
+	}
+
 	/* Stage update section styling */
 	.stage-update-section {
 		display: flex;
@@ -1034,11 +1200,6 @@
 		margin-bottom: 0;
 	}
 
-	.modal-body small {
-		color: #6c757d;
-		font-style: italic;
-	}
-
 	.modal-actions {
 		padding: 1rem 1.5rem 1.5rem;
 		display: flex;
@@ -1105,10 +1266,6 @@
 
 	:global(.dark) .modal-actions {
 		border-top-color: #444;
-	}
-
-	:global(.dark) .modal-body small {
-		color: #adb5bd;
 	}
 
 	/* Mobile modal responsiveness */

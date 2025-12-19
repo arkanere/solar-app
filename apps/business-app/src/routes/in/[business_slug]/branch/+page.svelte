@@ -66,6 +66,7 @@
 							{#if mainBusiness.email}
 								<p><strong>Email:</strong> {mainBusiness.email}</p>
 							{/if}
+							<p><strong>Location:</strong> {mainBusiness.city}, {mainBusiness.district}, {mainBusiness.state}</p>
 						</div>
 						<div class="branch-actions">
 							<a

@@ -40,6 +40,8 @@
 			}
 		: {};
 
+	$: businessEmail = business?.email || '';
+
 	// Handle sidebar events
 	function handleSidebarAction(event) {
 		const action = event.type;
@@ -97,6 +99,7 @@
 <Sidebar
 	{businessSlug}
 	businessName={businessInfo.businessname || ''}
+	{businessEmail}
 	on:addLead={handleSidebarAction}
 	on:addBranch={handleSidebarAction}
 	on:postProject={handleSidebarAction}
@@ -113,8 +116,17 @@
 
 <!-- Modals -->
 {#if showAddLead}
-	<div class="modal-overlay" on:click={() => (showAddLead = false)} on:keydown={(e) => e.key === 'Escape' && (showAddLead = false)} role="button" tabindex="0">
-		<div class="modal-content" on:click={(e) => e.stopPropagation()} on:keydown={(e) => e.stopPropagation()} role="dialog" tabindex="0">
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<div
+		class="modal-overlay"
+		on:click={(e) => {
+			if (e.target === e.currentTarget) {
+				showAddLead = false;
+			}
+		}}
+	>
+		<div class="modal-content" role="dialog" aria-modal="true">
 			<button class="close-btn" on:click={() => (showAddLead = false)}>&times;</button>
 			<h2>Add Lead</h2>
 			<LeadFormModalBusiness
