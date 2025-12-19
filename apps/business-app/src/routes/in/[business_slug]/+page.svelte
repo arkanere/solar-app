@@ -76,6 +76,12 @@
 		--light-primary-text-color: #333;
 		--dark-primary-text-color: #f0f0f0;
 		--font-family: 'Helvetica Neue', Arial, sans-serif;
+		--accent-color: #0056b3;
+		--accent-hover: #00449e;
+		--border-color-light: #dee2e6;
+		--border-color-dark: #444;
+		--success-color: #28a745;
+		--success-hover: #218838;
 	}
 
 	/* Page Content */
