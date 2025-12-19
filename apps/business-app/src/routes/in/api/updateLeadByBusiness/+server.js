@@ -77,7 +77,54 @@ export async function POST({ request, cookies }) {
 			return json({ success: false, error: 'Lead not found' }, { status: 404 });
 		}
 
-		return json({ success: true, lead: result.rows[0] });
+		const updatedLead = result.rows[0];
+
+		// ✅ If lead is marked as "Won" (stage 3), automatically create a proposal
+		if (stage === 3) {
+			try {
+				// Check if proposal already exists for this lead
+				const existingProposal = await pool.query(
+					'SELECT id FROM proposals WHERE lead_id = $1',
+					[id]
+				);
+
+				if (existingProposal.rows.length === 0) {
+					// Create proposal with available lead data
+					const proposalQuery = `
+						INSERT INTO proposals (
+							lead_id,
+							customer_name,
+							phone_number,
+							address,
+							email,
+							system_capacity_kw,
+							notes,
+							created_at,
+							updated_at
+						) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
+						RETURNING id
+					`;
+
+					const proposalValues = [
+						id, // lead_id
+						updatedLead.name || 'Customer',
+						updatedLead.phone || null,
+						updatedLead.address || null,
+						updatedLead.email || null,
+						0, // default system capacity
+						null // notes
+					];
+
+					const proposalResult = await pool.query(proposalQuery, proposalValues);
+					console.log(`Proposal created automatically for lead ${id}, proposal ID: ${proposalResult.rows[0].id}`);
+				}
+			} catch (proposalError) {
+				console.error('Error creating proposal automatically:', proposalError);
+				// Don't fail the lead update if proposal creation fails
+			}
+		}
+
+		return json({ success: true, lead: updatedLead });
 	} catch (error) {
 		console.error('Error updating lead data:', error);
 		return json({ success: false, error: 'Failed to update lead' }, { status: 500 });

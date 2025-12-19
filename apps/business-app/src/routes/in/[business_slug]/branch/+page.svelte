@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 	import { isDarkMode } from '$lib/in/themeStore';
 	import ShowEditProfile from '$lib/in/ShowEditProfile.svelte';
+	import AddBranch from '$lib/in/AddBranch.svelte';
 
 	// Access page data
 	const businessSlug = $page.params.business_slug;
@@ -12,6 +13,9 @@
 	let showEditProfile = false;
 	let selectedBranch = null;
 
+	// State for add branch modal
+	let showAddBranch = false;
+
 	// Function to open edit profile modal
 	const openEditProfile = (branch) => {
 		selectedBranch = branch;
@@ -20,6 +24,12 @@
 
 	// Handle branch updated event
 	function handleBranchUpdated(event) {
+		window.location.reload();
+	}
+
+	// Handle branch added event
+	function handleBranchAdded(event) {
+		showAddBranch = false;
 		window.location.reload();
 	}
 
@@ -41,8 +51,15 @@
 
 <div class="page-content {darkMode ? 'dark' : 'light'}">
 	<header>
-		<h1>Branch Offices</h1>
-		<p>Manage your business branches across different locations</p>
+		<div class="header-content">
+			<div>
+				<h1>Branch Offices</h1>
+				<p>Manage your business branches across different locations</p>
+			</div>
+			<button class="btn add-branch-btn" on:click={() => (showAddBranch = true)}>
+				➕ Add Branch
+			</button>
+		</div>
 	</header>
 
 	<!-- Branches Section -->
@@ -135,6 +152,17 @@
 	/>
 {/if}
 
+<!-- Add Branch Modal -->
+{#if showAddBranch && mainBusiness}
+	<AddBranch
+		show={showAddBranch}
+		businessId={mainBusiness.id}
+		{businessSlug}
+		on:close={() => (showAddBranch = false)}
+		on:branchAdded={handleBranchAdded}
+	/>
+{/if}
+
 <style>
 	/* Root variables */
 	:root {
@@ -173,8 +201,23 @@
 
 	/* Header */
 	header {
-		text-align: center;
 		margin-bottom: 2rem;
+	}
+
+	.header-content {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 2rem;
+		flex-wrap: wrap;
+	}
+
+	.header-content > div:first-child {
+		flex: 1;
+	}
+
+	.header-content > button {
+		flex: 0 0 auto;
 	}
 
 	header h1 {
@@ -190,6 +233,30 @@
 	header p {
 		font-size: 1rem;
 		opacity: 0.8;
+	}
+
+	.add-branch-btn {
+		background: var(--accent-color);
+		color: white;
+		white-space: nowrap;
+		padding: 0.5rem 1rem;
+		font-weight: 500;
+		font-size: 0.9rem;
+		flex-shrink: 0;
+		width: auto;
+	}
+
+	.add-branch-btn:hover {
+		background: var(--accent-hover);
+	}
+
+	.dark .add-branch-btn {
+		background: #66b2ff;
+		color: #1a1a1a;
+	}
+
+	.dark .add-branch-btn:hover {
+		background: #5aa3ff;
 	}
 
 	/* Branches Grid */
@@ -360,6 +427,15 @@
 
 		header h1 {
 			font-size: 1.5rem;
+		}
+
+		.header-content {
+			flex-direction: column;
+			align-items: stretch;
+		}
+
+		.add-branch-btn {
+			width: 100%;
 		}
 
 		.branch-actions {
