@@ -1,361 +1,134 @@
 <script>
 	import { page } from '$app/stores';
 	import { isDarkMode } from '$lib/in/themeStore';
-	import { jsPDF } from 'jspdf';
+	import ProposalFormModal from '$lib/in/ProposalFormModal.svelte';
 
 	// Access page data
 	const businessSlug = $page.params.business_slug;
 	$: ({ business } = $page.data);
 	$: darkMode = $isDarkMode;
 
-	// Form state
-	let formData = {
-		// Customer Information
-		customerName: '',
-		customerAddress: '',
-		customerPhone: '',
-		customerEmail: '',
+	// Modal state
+	let showProposalModal = false;
+	let selectedProposal = null;
 
-		// System Specifications
-		systemCapacity: '',
-		panelType: '',
-		numberOfPanels: '',
-		inverterType: '',
+	// Get proposals from page data
+	$: ({ proposals = [] } = $page.data);
 
-		// Additional Notes
-		additionalNotes: ''
-	};
-
-	let isGenerating = false;
-
-	// Form validation - reactive
-	$: isFormValid = formData.customerName.trim() !== '' && formData.systemCapacity.trim() !== '';
-
-	// Reset form
-	function resetForm() {
-		formData = {
-			customerName: '',
-			customerAddress: '',
-			customerPhone: '',
-			customerEmail: '',
-			systemCapacity: '',
-			panelType: '',
-			numberOfPanels: '',
-			inverterType: '',
-			additionalNotes: ''
-		};
+	// Open modal to update proposal
+	function openUpdateProposal(proposal) {
+		selectedProposal = proposal;
+		showProposalModal = true;
 	}
 
-	// Generate PDF
-	async function generatePDF() {
-		try {
-			isGenerating = true;
+	// Handle proposal generated
+	function handleProposalGenerated() {
+		showProposalModal = false;
+		selectedProposal = null;
+		// Refresh the page to show the updated proposal
+		window.location.reload();
+	}
 
-			const doc = new jsPDF();
-			const pageWidth = doc.internal.pageSize.getWidth();
-			const pageHeight = doc.internal.pageSize.getHeight();
-			const margin = 20;
-			let yPos = 20;
+	// Format date for display
+	function formatDate(dateString) {
+		const date = new Date(dateString);
+		return date.toLocaleDateString('en-IN', {
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric'
+		});
+	}
 
-			// Header - Business Name
-			doc.setFontSize(20);
-			doc.setTextColor(0, 86, 179);
-			doc.text(business?.businessname || 'Solar Panel Installation', margin, yPos);
-			yPos += 10;
+	// Format time ago
+	function getTimeAgo(dateString) {
+		const now = new Date();
+		const date = new Date(dateString);
+		const diffInMs = now - date;
+		const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 
-			// Title
-			doc.setFontSize(16);
-			doc.setTextColor(0, 0, 0);
-			doc.text('Solar Installation Proposal', margin, yPos);
-			yPos += 5;
-
-			// Line separator
-			doc.setLineWidth(0.5);
-			doc.setDrawColor(0, 86, 179);
-			doc.line(margin, yPos, pageWidth - margin, yPos);
-			yPos += 10;
-
-			// Date
-			doc.setFontSize(10);
-			doc.setTextColor(100, 100, 100);
-			const today = new Date().toLocaleDateString('en-IN', {
-				year: 'numeric',
-				month: 'long',
-				day: 'numeric'
-			});
-			doc.text(`Date: ${today}`, margin, yPos);
-			yPos += 15;
-
-			// Customer Information Section
-			doc.setFontSize(14);
-			doc.setTextColor(0, 86, 179);
-			doc.text('Customer Information', margin, yPos);
-			yPos += 8;
-
-			doc.setFontSize(11);
-			doc.setTextColor(0, 0, 0);
-
-			if (formData.customerName) {
-				doc.text(`Name: ${formData.customerName}`, margin + 5, yPos);
-				yPos += 7;
-			}
-
-			if (formData.customerAddress) {
-				const addressLines = doc.splitTextToSize(`Address: ${formData.customerAddress}`, pageWidth - margin * 2 - 10);
-				doc.text(addressLines, margin + 5, yPos);
-				yPos += addressLines.length * 7;
-			}
-
-			if (formData.customerPhone) {
-				doc.text(`Phone: ${formData.customerPhone}`, margin + 5, yPos);
-				yPos += 7;
-			}
-
-			if (formData.customerEmail) {
-				doc.text(`Email: ${formData.customerEmail}`, margin + 5, yPos);
-				yPos += 7;
-			}
-
-			yPos += 5;
-
-			// System Specifications Section
-			doc.setFontSize(14);
-			doc.setTextColor(0, 86, 179);
-			doc.text('System Specifications', margin, yPos);
-			yPos += 8;
-
-			doc.setFontSize(11);
-			doc.setTextColor(0, 0, 0);
-
-			if (formData.systemCapacity) {
-				doc.text(`System Capacity: ${formData.systemCapacity} kW`, margin + 5, yPos);
-				yPos += 7;
-			}
-
-			if (formData.panelType) {
-				doc.text(`Panel Type: ${formData.panelType}`, margin + 5, yPos);
-				yPos += 7;
-			}
-
-			if (formData.numberOfPanels) {
-				doc.text(`Number of Panels: ${formData.numberOfPanels}`, margin + 5, yPos);
-				yPos += 7;
-			}
-
-			if (formData.inverterType) {
-				doc.text(`Inverter Type: ${formData.inverterType}`, margin + 5, yPos);
-				yPos += 7;
-			}
-
-			yPos += 5;
-
-			// Additional Notes Section
-			if (formData.additionalNotes) {
-				// Check if we need a new page
-				if (yPos > pageHeight - 60) {
-					doc.addPage();
-					yPos = 20;
-				}
-
-				doc.setFontSize(14);
-				doc.setTextColor(0, 86, 179);
-				doc.text('Additional Notes', margin, yPos);
-				yPos += 8;
-
-				doc.setFontSize(11);
-				doc.setTextColor(0, 0, 0);
-				const notesLines = doc.splitTextToSize(formData.additionalNotes, pageWidth - margin * 2 - 10);
-				doc.text(notesLines, margin + 5, yPos);
-				yPos += notesLines.length * 7;
-			}
-
-			// Footer
-			const footerY = pageHeight - 20;
-			doc.setFontSize(9);
-			doc.setTextColor(100, 100, 100);
-			doc.text('Generated by Solar Vipani', pageWidth / 2, footerY, { align: 'center' });
-
-			if (business?.phonenumber || business?.email) {
-				let contactInfo = [];
-				if (business?.phonenumber) contactInfo.push(`Phone: ${business.phonenumber}`);
-				if (business?.email) contactInfo.push(`Email: ${business.email}`);
-				doc.text(contactInfo.join(' | '), pageWidth / 2, footerY + 5, { align: 'center' });
-			}
-
-			// Generate filename
-			const customerNameSlug = formData.customerName
-				? formData.customerName.replace(/\s+/g, '_').toLowerCase()
-				: 'customer';
-			const filename = `solar_proposal_${customerNameSlug}_${Date.now()}.pdf`;
-
-			// Save PDF
-			doc.save(filename);
-
-			isGenerating = false;
-		} catch (error) {
-			console.error('Error generating PDF:', error);
-			alert('Error generating PDF. Please try again.');
-			isGenerating = false;
+		if (diffInDays === 0) {
+			return 'Today';
+		} else if (diffInDays === 1) {
+			return '1 day ago';
+		} else if (diffInDays < 7) {
+			return `${diffInDays} days ago`;
+		} else if (diffInDays < 30) {
+			const weeks = Math.floor(diffInDays / 7);
+			return `${weeks} week${weeks === 1 ? '' : 's'} ago`;
+		} else {
+			return formatDate(dateString);
 		}
 	}
 </script>
 
 <div class="page-content {darkMode ? 'dark' : 'light'}">
 	<header>
-		<h1>Create Proposal</h1>
-		<p>Generate professional solar installation proposals for your customers</p>
+		<h1>Proposals</h1>
+		<p>Create, Update and Download Proposals</p>
 	</header>
 
-	<div class="proposal-container">
-		<form on:submit|preventDefault={generatePDF}>
-			<!-- Customer Information Section -->
-			<section class="form-section">
-				<h2>Customer Information</h2>
-				<div class="form-grid">
-					<div class="form-group">
-						<label for="customerName">Customer Name *</label>
-						<input
-							type="text"
-							id="customerName"
-							bind:value={formData.customerName}
-							placeholder="Enter customer name"
-							required
-						/>
-					</div>
-
-					<div class="form-group">
-						<label for="customerPhone">Phone Number</label>
-						<input
-							type="tel"
-							id="customerPhone"
-							bind:value={formData.customerPhone}
-							placeholder="Enter phone number"
-						/>
-					</div>
-
-					<div class="form-group full-width">
-						<label for="customerAddress">Address</label>
-						<input
-							type="text"
-							id="customerAddress"
-							bind:value={formData.customerAddress}
-							placeholder="Enter customer address"
-						/>
-					</div>
-
-					<div class="form-group full-width">
-						<label for="customerEmail">Email</label>
-						<input
-							type="email"
-							id="customerEmail"
-							bind:value={formData.customerEmail}
-							placeholder="Enter email address"
-						/>
-					</div>
-				</div>
-			</section>
-
-			<!-- System Specifications Section -->
-			<section class="form-section">
-				<h2>System Specifications</h2>
-				<div class="form-grid">
-					<div class="form-group">
-						<label for="systemCapacity">System Capacity (kW) *</label>
-						<input
-							type="text"
-							id="systemCapacity"
-							bind:value={formData.systemCapacity}
-							placeholder="e.g., 5 kW"
-							required
-						/>
-					</div>
-
-					<div class="form-group">
-						<label for="numberOfPanels">Number of Panels</label>
-						<input
-							type="text"
-							id="numberOfPanels"
-							bind:value={formData.numberOfPanels}
-							placeholder="e.g., 15"
-						/>
-					</div>
-
-					<div class="form-group full-width">
-						<label for="panelType">Panel Type</label>
-						<input
-							type="text"
-							id="panelType"
-							bind:value={formData.panelType}
-							placeholder="e.g., Monocrystalline, Polycrystalline"
-						/>
-					</div>
-
-					<div class="form-group full-width">
-						<label for="inverterType">Inverter Type</label>
-						<input
-							type="text"
-							id="inverterType"
-							bind:value={formData.inverterType}
-							placeholder="e.g., String Inverter, Micro Inverter"
-						/>
-					</div>
-				</div>
-			</section>
-
-			<!-- Additional Notes Section -->
-			<section class="form-section">
-				<h2>Additional Notes</h2>
-				<div class="form-group">
-					<label for="additionalNotes">Notes</label>
-					<textarea
-						id="additionalNotes"
-						bind:value={formData.additionalNotes}
-						placeholder="Enter any additional information, terms, or special requirements..."
-						rows="6"
-					></textarea>
-				</div>
-			</section>
-
-			<!-- Action Buttons -->
-			<div class="action-buttons">
-				<button
-					type="button"
-					class="btn btn-secondary"
-					on:click={resetForm}
-				>
-					Reset Form
-				</button>
-				<button
-					type="submit"
-					class="btn btn-primary"
-					disabled={!isFormValid || isGenerating}
-				>
-					{isGenerating ? 'Generating PDF...' : 'Generate & Download PDF'}
-				</button>
+	<section id="proposals-section">
+		{#if proposals.length === 0}
+			<div class="no-proposals">
+				<p>No proposals found.</p>
+				<p class="hint">Proposals will appear here once created.</p>
 			</div>
-		</form>
-	</div>
+		{:else}
+			<div class="table-container">
+				<table class="proposals-table">
+					<thead>
+						<tr>
+							<th>Customer Name</th>
+							<th>System Size</th>
+							<th>Action</th>
+						</tr>
+					</thead>
+					<tbody>
+						{#each proposals as proposal}
+							<tr>
+								<td>{proposal.customer_name}</td>
+								<td>{proposal.system_capacity_kw} kW</td>
+								<td>
+									<button
+										class="btn update-btn"
+										on:click={() => openUpdateProposal(proposal)}
+									>
+										Update Proposal
+									</button>
+								</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
+		{/if}
+	</section>
 </div>
 
+<!-- Proposal Form Modal -->
+{#if showProposalModal}
+	<ProposalFormModal
+		show={showProposalModal}
+		{business}
+		proposal={selectedProposal}
+		on:close={() => {
+			showProposalModal = false;
+			selectedProposal = null;
+		}}
+		on:generated={handleProposalGenerated}
+	/>
+{/if}
+
 <style>
-	/* Root variables */
 	:root {
 		--light-bg-color: #f8f9fa;
 		--dark-bg-color: #1a1a1a;
 		--light-primary-text-color: #333;
 		--dark-primary-text-color: #f0f0f0;
-		--light-secondary-text-color: #666;
-		--dark-secondary-text-color: #ccc;
 		--accent-color: #0056b3;
-		--accent-hover: #00449e;
-		--border-color-light: #ddd;
-		--border-color-dark: #444;
 		--font-family: 'Helvetica Neue', Arial, sans-serif;
-		--success-color: #28a745;
-		--success-hover: #218838;
 	}
 
-	/* Page Content */
 	.page-content {
 		min-height: 100vh;
 		font-family: var(--font-family);
@@ -373,7 +146,6 @@
 		color: var(--dark-primary-text-color);
 	}
 
-	/* Header */
 	header {
 		text-align: center;
 		margin-bottom: 2rem;
@@ -390,179 +162,127 @@
 	}
 
 	header p {
-		font-size: 1rem;
 		opacity: 0.8;
 	}
 
-	/* Proposal Container */
-	.proposal-container {
-		max-width: 900px;
-		margin: 0 auto;
+	.no-proposals {
+		text-align: center;
+		padding: 3rem;
 		background: white;
 		border-radius: 8px;
-		padding: 2rem;
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 	}
 
-	.dark .proposal-container {
+	.dark .no-proposals {
 		background: #2a2a2a;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 	}
 
-	/* Form Sections */
-	.form-section {
-		margin-bottom: 2rem;
-		padding-bottom: 2rem;
-		border-bottom: 1px solid;
+	.hint {
+		margin-top: 0.5rem;
+		font-size: 0.9rem;
+		opacity: 0.7;
 	}
 
-	.light .form-section {
-		border-bottom-color: var(--border-color-light);
-	}
-
-	.dark .form-section {
-		border-bottom-color: var(--border-color-dark);
-	}
-
-	.form-section:last-of-type {
-		border-bottom: none;
-	}
-
-	.form-section h2 {
-		font-size: 1.5rem;
-		margin-bottom: 1.5rem;
-		color: var(--accent-color);
-	}
-
-	.dark .form-section h2 {
-		color: #66b2ff;
-	}
-
-	/* Form Grid */
-	.form-grid {
-		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		gap: 1.5rem;
-	}
-
-	/* Form Group */
-	.form-group {
-		display: flex;
-		flex-direction: column;
-	}
-
-	.form-group.full-width {
-		grid-column: 1 / -1;
-	}
-
-	.form-group label {
-		font-weight: 500;
-		margin-bottom: 0.5rem;
-		font-size: 0.95rem;
-	}
-
-	.form-group input,
-	.form-group textarea {
-		padding: 0.75rem;
-		border: 1px solid;
-		border-radius: 5px;
-		font-size: 1rem;
-		font-family: var(--font-family);
-		transition: border-color 0.3s ease;
-	}
-
-	.light .form-group input,
-	.light .form-group textarea {
-		border-color: var(--border-color-light);
+	.table-container {
 		background: white;
-		color: var(--light-primary-text-color);
+		border-radius: 8px;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+		overflow-x: auto;
 	}
 
-	.dark .form-group input,
-	.dark .form-group textarea {
-		border-color: var(--border-color-dark);
-		background: #1a1a1a;
-		color: var(--dark-primary-text-color);
+	.dark .table-container {
+		background: #2a2a2a;
 	}
 
-	.form-group input:focus,
-	.form-group textarea:focus {
-		outline: none;
-		border-color: var(--accent-color);
+	.proposals-table {
+		width: 100%;
+		border-collapse: collapse;
 	}
 
-	.form-group textarea {
-		resize: vertical;
-		min-height: 100px;
+	.proposals-table thead {
+		background: #f8f9fa;
 	}
 
-	/* Action Buttons */
-	.action-buttons {
-		display: flex;
-		gap: 1rem;
-		justify-content: flex-end;
-		margin-top: 2rem;
+	.dark .proposals-table thead {
+		background: #333;
 	}
 
-	.btn {
-		padding: 0.75rem 1.5rem;
+	.proposals-table th {
+		padding: 1rem;
+		text-align: left;
+		font-weight: 600;
+		border-bottom: 2px solid #dee2e6;
+		white-space: nowrap;
+	}
+
+	.dark .proposals-table th {
+		border-bottom-color: #444;
+	}
+
+	.proposals-table td {
+		padding: 1rem;
+		border-bottom: 1px solid #dee2e6;
+	}
+
+	.dark .proposals-table td {
+		border-bottom-color: #444;
+	}
+
+	.proposals-table tbody tr:hover {
+		background: #f8f9fa;
+	}
+
+	.dark .proposals-table tbody tr:hover {
+		background: #333;
+	}
+
+	.update-btn {
+		background: var(--accent-color);
+		color: white;
+		padding: 0.5rem 1rem;
 		border-radius: 5px;
 		border: none;
 		cursor: pointer;
-		font-size: 1rem;
+		font-size: 0.9rem;
 		font-weight: 500;
 		transition: background-color 0.3s ease;
-		display: inline-block;
-		text-align: center;
+		white-space: nowrap;
 	}
 
-	.btn:disabled {
-		opacity: 0.6;
-		cursor: not-allowed;
+	.update-btn:hover {
+		background: #004494;
 	}
 
-	.btn-primary {
-		background: var(--accent-color);
-		color: white;
+	.dark .update-btn {
+		background: #66b2ff;
+		color: #1a1a1a;
 	}
 
-	.btn-primary:hover:not(:disabled) {
-		background: var(--accent-hover);
+	.dark .update-btn:hover {
+		background: #5aa3ff;
 	}
 
-	.btn-secondary {
-		background: #6c757d;
-		color: white;
-	}
-
-	.btn-secondary:hover {
-		background: #5a6268;
-	}
-
-	/* Responsive */
 	@media (max-width: 768px) {
 		.page-content {
 			padding: 1rem;
 		}
 
-		.proposal-container {
-			padding: 1.5rem;
-		}
-
-		.form-grid {
-			grid-template-columns: 1fr;
-		}
-
-		.action-buttons {
-			flex-direction: column-reverse;
-		}
-
-		.btn {
-			width: 100%;
-		}
-
 		header h1 {
 			font-size: 1.5rem;
+		}
+
+		.proposals-table {
+			font-size: 0.9rem;
+		}
+
+		.proposals-table th,
+		.proposals-table td {
+			padding: 0.75rem 0.5rem;
+		}
+
+		.update-btn {
+			padding: 0.4rem 0.75rem;
+			font-size: 0.85rem;
 		}
 	}
 </style>

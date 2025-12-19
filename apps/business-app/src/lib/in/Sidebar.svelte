@@ -55,12 +55,6 @@
 			title: 'BRANCH MANAGEMENT',
 			items: [
 				{
-					label: 'Add Branch',
-					icon: '➕',
-					action: 'addBranch',
-					type: 'modal'
-				},
-				{
 					label: 'Manage Branches',
 					icon: '🏪',
 					href: `/in/${businessSlug}/branch`,
@@ -72,15 +66,21 @@
 			title: 'PROJECTS',
 			items: [
 				{
-					label: 'Post Project',
-					icon: '✨',
-					action: 'postProject',
-					type: 'modal'
+					label: 'Manage Recent Projects',
+					icon: '📝',
+					href: `/in/${businessSlug}/recent-projects`,
+					type: 'link'
 				},
 				{
-					label: 'Manage Projects',
-					icon: '📝',
-					href: `/in/${businessSlug}/project`,
+					label: 'Project Management',
+					icon: '📋',
+					href: `/in/${businessSlug}/project-management`,
+					type: 'link'
+				},
+				{
+					label: 'Proposals',
+					icon: '📄',
+					href: `/in/${businessSlug}/proposal`,
 					type: 'link'
 				}
 			]

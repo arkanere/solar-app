@@ -229,7 +229,6 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 	}
 
 	input,
-	select,
 	textarea {
 		width: 100%;
 		padding: 0.5em;
@@ -293,7 +292,6 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 		}
 
 		input,
-		select,
 		textarea {
 			font-size: 16px; /* Prevents zoom on iOS */
 		}
@@ -305,7 +303,6 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 		}
 
 		input,
-		select,
 		textarea {
 			padding: 0.6em 0.5em;
 		}

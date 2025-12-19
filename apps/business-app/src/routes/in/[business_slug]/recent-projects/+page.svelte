@@ -1,6 +1,7 @@
 <script>
 	import { page } from '$app/stores';
 	import { isDarkMode } from '$lib/in/themeStore';
+	import PostRecentProject from '$lib/in/PostRecentProject.svelte';
 
 	// Access page data
 	const businessSlug = $page.params.business_slug;
@@ -19,6 +20,15 @@
 
 	// State for delete
 	let isDeleting = false;
+
+	// State for post project modal
+	let showPostRecentProject = false;
+
+	// Handle project posted
+	function handleProjectPosted(event) {
+		showPostRecentProject = false;
+		window.location.reload();
+	}
 
 	// Handle project deletion
 	async function handleDeleteProject(project) {
@@ -60,8 +70,15 @@
 
 <div class="page-content {darkMode ? 'dark' : 'light'}">
 	<header>
-		<h1>Project Portfolio</h1>
-		<p>Manage your completed solar installation projects</p>
+		<div class="header-content">
+			<div>
+				<h1>Project Portfolio</h1>
+				<p>Manage your completed solar installation projects</p>
+			</div>
+			<button class="btn post-btn" on:click={() => (showPostRecentProject = true)}>
+				✨ Post Recent Project
+			</button>
+		</div>
 	</header>
 
 	<section id="projects-section">
@@ -70,7 +87,7 @@
 		{:else if projects.length === 0}
 			<div class="no-projects">
 				<p>You haven't posted any projects yet.</p>
-				<p class="hint">Use the "Post Project" button in the sidebar to add your first project!</p>
+				<p class="hint">Click the "Post Recent Project" button above to add your first project!</p>
 			</div>
 		{:else}
 			<div class="projects-grid">
@@ -114,6 +131,16 @@
 	</section>
 </div>
 
+<!-- Post Recent Project Modal -->
+{#if showPostRecentProject}
+	<PostRecentProject
+		show={showPostRecentProject}
+		{businessSlug}
+		on:close={() => (showPostRecentProject = false)}
+		on:posted={handleProjectPosted}
+	/>
+{/if}
+
 <style>
 	:root {
 		--light-bg-color: #f8f9fa;
@@ -143,8 +170,15 @@
 	}
 
 	header {
-		text-align: center;
 		margin-bottom: 2rem;
+	}
+
+	.header-content {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 2rem;
+		flex-wrap: wrap;
 	}
 
 	header h1 {
@@ -159,6 +193,25 @@
 
 	header p {
 		opacity: 0.8;
+	}
+
+	.post-btn {
+		background: var(--accent-color);
+		color: white;
+		white-space: nowrap;
+	}
+
+	.post-btn:hover {
+		background: #004494;
+	}
+
+	.dark .post-btn {
+		background: #66b2ff;
+		color: #1a1a1a;
+	}
+
+	.dark .post-btn:hover {
+		background: #5aa3ff;
 	}
 
 	.projects-grid {
