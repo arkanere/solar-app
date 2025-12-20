@@ -1,12 +1,16 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
 	import { jsPDF } from 'jspdf';
+	import DrawingModal from './DrawingModal.svelte';
 
 	export let show = false;
 	export let business = {};
 	export let proposal = null;
 
 	const dispatch = createEventDispatcher();
+
+	// Drawing modal state
+	let showDrawingModal = false;
 
 	// Form state - initialize with proposal data if editing
 	let formData = {
@@ -68,6 +72,16 @@
 	// Close modal
 	function closeModal() {
 		dispatch('close');
+	}
+
+	// Open drawing modal
+	function openDrawingModal() {
+		showDrawingModal = true;
+	}
+
+	// Close drawing modal
+	function closeDrawingModal() {
+		showDrawingModal = false;
 	}
 
 	// Save/Update proposal to database
@@ -408,6 +422,14 @@
 						</button>
 						<button
 							type="button"
+							class="btn btn-info"
+							on:click={openDrawingModal}
+							disabled={!isFormValid}
+						>
+							Create Drawing
+						</button>
+						<button
+							type="button"
 							class="btn btn-success"
 							on:click={saveProposal}
 							disabled={!isFormValid || isSaving}
@@ -415,7 +437,7 @@
 							{isSaving ? 'Saving...' : (proposal?.id ? 'Update Proposal' : 'Save Proposal')}
 						</button>
 						<button type="submit" class="btn btn-primary" disabled={!isFormValid || isGenerating}>
-							{isGenerating ? 'Generating PDF...' : 'Generate PDF'}
+							{isGenerating ? 'Downloading PDF...' : 'Download PDF'}
 						</button>
 					</div>
 				</form>
@@ -423,6 +445,17 @@
 		</div>
 	</div>
 {/if}
+
+<!-- Drawing Modal -->
+<DrawingModal
+	show={showDrawingModal}
+	proposalData={{
+		customer_name: formData.customerName,
+		system_capacity_kw: formData.systemCapacity,
+		number_of_panels: formData.numberOfPanels || 15
+	}}
+	on:close={closeDrawingModal}
+/>
 
 <style>
 	.modal-overlay {
@@ -587,6 +620,15 @@
 
 	.btn-secondary:hover {
 		background: #5a6268;
+	}
+
+	.btn-info {
+		background: #17a2b8;
+		color: white;
+	}
+
+	.btn-info:hover:not(:disabled) {
+		background: #138496;
 	}
 
 	.btn-success {
