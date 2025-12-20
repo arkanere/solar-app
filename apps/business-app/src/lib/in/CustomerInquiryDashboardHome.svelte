@@ -1,6 +1,7 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
 	import LeadProgressBar from './LeadProgressBar.svelte';
+	import ProposalFormModal from './ProposalFormModal.svelte';
 
 	export let leads = [];
 	export let businessInfo = {};
@@ -14,6 +15,10 @@
 	let showDeleteConfirm = false;
 	let leadToDelete = null;
 	let isDeleting = false;
+
+	// Proposal modal state
+	let showProposalModal = false;
+	let selectedLeadForProposal = null;
 
 	// Function to make call
 	function makeCall(phoneNumber, leadName, leadId) {
@@ -243,6 +248,30 @@
 			deleteLead(leadToDelete);
 		}
 	}
+
+	// Open proposal modal
+	function openProposalModal(lead) {
+		selectedLeadForProposal = {
+			customer_name: lead.name,
+			phone_number: lead.phone,
+			email: lead.email,
+			address: lead.address || '',
+			lead_id: lead.id
+		};
+		showProposalModal = true;
+	}
+
+	// Close proposal modal
+	function closeProposalModal() {
+		showProposalModal = false;
+		selectedLeadForProposal = null;
+	}
+
+	// Handle proposal generated/updated
+	function handleProposalGenerated() {
+		// Optionally refresh leads or show success message
+		closeProposalModal();
+	}
 </script>
 
 <!-- LEAD DATA SECTION -->
@@ -403,6 +432,14 @@
 									>
 										{isClaiming ? 'Claiming...' : 'Claim Now (Free)'}
 									</button>
+								{:else if lead.category !== 1 && lead.stage === 1 && lead.status}
+									<!-- Generate Proposal button for stage 1 (Contacted) active leads -->
+									<button
+										class="proposal-button"
+										on:click={() => openProposalModal(lead)}
+									>
+										Generate Proposal
+									</button>
 								{:else if lead.category !== 1 && !lead.status}
 									<!-- Delete button for inactive leads -->
 									<button
@@ -494,6 +531,17 @@
 			</div>
 		</div>
 	</div>
+{/if}
+
+<!-- Proposal Modal -->
+{#if showProposalModal}
+	<ProposalFormModal
+		show={showProposalModal}
+		business={businessInfo}
+		proposal={selectedLeadForProposal}
+		on:close={closeProposalModal}
+		on:generated={handleProposalGenerated}
+	/>
 {/if}
 
 <style>
@@ -765,6 +813,25 @@
 		border-color: #9ca3af;
 		box-shadow: none;
 		cursor: not-allowed;
+	}
+
+	.proposal-button {
+		background-color: #0056b3;
+		color: white;
+		font-weight: 600;
+		border: 2px solid #0056b3;
+		box-shadow: 0 2px 4px rgba(0, 86, 179, 0.2);
+		padding: 0.575rem 1.15rem;
+		font-size: 1.05rem;
+		border-radius: 5px;
+		cursor: pointer;
+		transition: all 0.3s ease;
+	}
+
+	.proposal-button:hover {
+		background-color: #004494;
+		border-color: #004494;
+		box-shadow: 0 2px 6px rgba(0, 86, 179, 0.3);
 	}
 
 	.delete-button {

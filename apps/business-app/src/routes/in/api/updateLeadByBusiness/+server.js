@@ -79,48 +79,36 @@ export async function POST({ request, cookies }) {
 
 		const updatedLead = result.rows[0];
 
-		// ✅ If lead is marked as "Won" (stage 3), automatically create a proposal
+		// ✅ If lead is marked as "Won" (stage 3), automatically create a project in project management
 		if (stage === 3) {
 			try {
-				// Check if proposal already exists for this lead
-				const existingProposal = await pool.query(
-					'SELECT id FROM proposals WHERE lead_id = $1',
+				// Check if project already exists for this lead
+				const existingProject = await pool.query(
+					'SELECT id FROM project_management WHERE lead_id = $1',
 					[id]
 				);
 
-				if (existingProposal.rows.length === 0) {
-					// Create proposal with available lead data
-					const proposalQuery = `
-						INSERT INTO proposals (
+				if (existingProject.rows.length === 0) {
+					// Create project in project management system
+					const projectQuery = `
+						INSERT INTO project_management (
 							lead_id,
-							customer_name,
-							phone_number,
-							address,
-							email,
-							system_capacity_kw,
-							notes,
-							created_at,
-							updated_at
-						) VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
+							stage
+						) VALUES ($1, $2)
 						RETURNING id
 					`;
 
-					const proposalValues = [
+					const projectValues = [
 						id, // lead_id
-						updatedLead.name || 'Customer',
-						updatedLead.phone || null,
-						updatedLead.address || null,
-						updatedLead.email || null,
-						0, // default system capacity
-						null // notes
+						3 // stage 3 = Won
 					];
 
-					const proposalResult = await pool.query(proposalQuery, proposalValues);
-					console.log(`Proposal created automatically for lead ${id}, proposal ID: ${proposalResult.rows[0].id}`);
+					const projectResult = await pool.query(projectQuery, projectValues);
+					console.log(`Project created automatically for lead ${id}, project ID: ${projectResult.rows[0].id}`);
 				}
-			} catch (proposalError) {
-				console.error('Error creating proposal automatically:', proposalError);
-				// Don't fail the lead update if proposal creation fails
+			} catch (projectError) {
+				console.error('Error creating project automatically:', projectError);
+				// Don't fail the lead update if project creation fails
 			}
 		}
 
