@@ -30,7 +30,7 @@ export async function load({ params }) {
 				l.phone,
 				l.district,
 				l.pin_code
-			FROM projectmanagement pm
+			FROM project_management pm
 			INNER JOIN leaddata l ON pm.lead_id = l.id
 			WHERE l.business_id = $1
 			ORDER BY pm.last_updated DESC

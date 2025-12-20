@@ -18,7 +18,7 @@ export async function load({ params }) {
 		const businessId = business.id;
 
 		// Get Non-Exclusive-Available-to-Claim leads with state information
-		// Only show leads that are at least 10 days old
+		// Only show leads that are at least 10 days old and within the last 90 days
 		const leadsResult = await pool.query(`
 			SELECT DISTINCT
 				l.id,
@@ -27,6 +27,7 @@ export async function load({ params }) {
 				l.pin_code,
 				l.created_at,
 				l.claim_count,
+				l.comment,
 				l.sv_comment_for_businesses,
 				COALESCE(loc.state, 'Unknown') as state
 			FROM leaddata l
@@ -35,6 +36,7 @@ export async function load({ params }) {
 			AND l.claim_count <= 4
 			AND l.isvisible = true
 			AND l.created_at <= NOW() - INTERVAL '10 days'
+			AND l.created_at >= NOW() - INTERVAL '90 days'
 			ORDER BY l.created_at DESC
 		`);
 

@@ -11,20 +11,38 @@
 	// Form state - initialize with proposal data if editing
 	let formData = {
 		// Customer Information
-		customerName: proposal?.customer_name || '',
-		customerAddress: proposal?.address || '',
-		customerPhone: proposal?.phone_number || '',
-		customerEmail: proposal?.email || '',
+		customerName: '',
+		customerAddress: '',
+		customerPhone: '',
+		customerEmail: '',
 
 		// System Specifications
-		systemCapacity: proposal?.system_capacity_kw || '',
-		panelType: proposal?.panels_brand_model || '',
-		numberOfPanels: proposal?.number_of_panels || '',
-		inverterType: proposal?.inverter_brand_model || '',
+		systemCapacity: '',
+		panelType: '',
+		numberOfPanels: '',
+		inverterType: '',
 
 		// Additional Notes
-		additionalNotes: proposal?.notes || ''
+		additionalNotes: ''
 	};
+
+	let previousProposal = null;
+
+	// Update form data when proposal changes (only when it's a different proposal)
+	$: if (proposal && proposal !== previousProposal) {
+		previousProposal = proposal;
+		formData = {
+			customerName: proposal.customer_name || '',
+			customerAddress: proposal.address || '',
+			customerPhone: proposal.phone_number || '',
+			customerEmail: proposal.email || '',
+			systemCapacity: proposal.system_capacity_kw || '',
+			panelType: proposal.panels_brand_model || '',
+			numberOfPanels: proposal.number_of_panels || '',
+			inverterType: proposal.inverter_brand_model || '',
+			additionalNotes: proposal.notes || ''
+		};
+	}
 
 	let isGenerating = false;
 	let isSaving = false;
@@ -61,6 +79,7 @@
 
 			const proposalData = {
 				id: proposal?.id,
+				lead_id: proposal?.lead_id,
 				customer_name: formData.customerName,
 				phone_number: formData.customerPhone,
 				address: formData.customerAddress,
@@ -72,7 +91,7 @@
 				notes: formData.additionalNotes
 			};
 
-			const response = await fetch('/in/api/updateProposal', {
+			const response = await fetch('/in/api/saveProposal', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(proposalData)
@@ -81,7 +100,7 @@
 			const result = await response.json();
 
 			if (result.success) {
-				alert('Proposal updated successfully!');
+				alert(proposal?.id ? 'Proposal updated successfully!' : 'Proposal created successfully!');
 				dispatch('generated');
 				closeModal();
 			} else {
@@ -393,7 +412,7 @@
 							on:click={saveProposal}
 							disabled={!isFormValid || isSaving}
 						>
-							{isSaving ? 'Saving...' : 'Update Proposal'}
+							{isSaving ? 'Saving...' : (proposal?.id ? 'Update Proposal' : 'Save Proposal')}
 						</button>
 						<button type="submit" class="btn btn-primary" disabled={!isFormValid || isGenerating}>
 							{isGenerating ? 'Generating PDF...' : 'Generate PDF'}

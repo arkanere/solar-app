@@ -55,26 +55,22 @@
 							<span class="date-badge">{getDaysAgo(lead.created_at)}</span>
 						</div>
 						<div class="inquiry-content">
-							<div class="info-row">
-								<span class="label">Type:</span>
-								<span class="value">{lead.type || 'Not specified'}</span>
-							</div>
-							{#if lead.capacity}
-								<div class="info-row">
-									<span class="label">Capacity:</span>
-									<span class="value">{lead.capacity}</span>
-								</div>
-							{/if}
-							{#if lead.pincode}
+							{#if lead.pin_code}
 								<div class="info-row">
 									<span class="label">Pin Code:</span>
-									<span class="value">{lead.pincode}</span>
+									<span class="value">{lead.pin_code}</span>
 								</div>
 							{/if}
 							{#if lead.comment}
 								<div class="info-row comment">
 									<span class="label">Comment:</span>
 									<span class="value">{lead.comment}</span>
+								</div>
+							{/if}
+							{#if lead.sv_comment_for_businesses}
+								<div class="info-row comment">
+									<span class="label">SV Note:</span>
+									<span class="value">{lead.sv_comment_for_businesses}</span>
 								</div>
 							{/if}
 						</div>
