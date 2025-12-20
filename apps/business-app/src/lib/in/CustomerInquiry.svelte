@@ -354,101 +354,93 @@
 		<ul>
 			{#if leads.length > 0}
 				{#each filteredLeads as lead}
+					{@const collapsedNotes = lead.collapsedNotes !== false}
 					<li>
+						<!-- HEADER SECTION - Identity & Status -->
 						<div class="lead-header">
-							<h3>
-								{lead.name}
-								<span
-									class="tag {lead.category === 1
-										? 'non-exclusive'
-										: lead.category === 2
-											? 'non-exclusive-claimed'
-											: 'exclusive'}"
-								>
-									{lead.category === 1
-										? 'Non-Exclusive-Available-to-Claim'
-										: lead.category === 2
-											? 'Non-Exclusive-Claimed'
-											: 'Exclusive'}
-								</span>
-							</h3>
+							<h3>{lead.name}</h3>
+							<span
+								class="status-badge status-{lead.category === 1
+									? 'available'
+									: lead.category === 2
+										? 'claimed'
+										: 'exclusive'}"
+							>
+								<span class="status-dot"></span>
+								{lead.category === 1
+									? 'Non-Exclusive'
+									: lead.category === 2
+										? 'Non-Exclusive-Claimed'
+										: 'Exclusive'}
+							</span>
+						</div>
+						<p class="received-time">Received {getRelativeTime(lead.created_at).text}</p>
+
+						<!-- CONTACT ACTION BAR -->
+						<div class="contact-action-bar">
+							<div class="contact-info-row">
+								<div class="contact-item">
+									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+									</svg>
+									<span class="contact-value">{lead.phone}</span>
+								</div>
+								{#if lead.email}
+									<div class="contact-item">
+										<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+											<polyline points="22,6 12,13 2,6"></polyline>
+										</svg>
+										<a href="mailto:{lead.email}" class="contact-value email-link">{lead.email}</a>
+									</div>
+								{/if}
+							</div>
+							<button
+								class="call-now-button"
+								on:click={() => makeCall(lead.phone, lead.name, lead.id)}
+								title="Call {lead.name}"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+								</svg>
+								Call Now
+							</button>
 						</div>
 
-						<div class="lead-details">
-							<p><strong>Received:</strong> <span class="time-stamp {getRelativeTime(lead.created_at).class}">{getRelativeTime(lead.created_at).text}</span></p>
-							<div class="phone-section">
-								<p><strong>Phone:</strong> {lead.phone}</p>
-								<button
-									class="call-now-button"
-									on:click={() => makeCall(lead.phone, lead.name, lead.id)}
-									title="Call {lead.name}"
-								>
-									<span class="button-icon">
-										<svg
-											xmlns="http://www.w3.org/2000/svg"
-											width="16"
-											height="16"
-											viewBox="0 0 24 24"
-											fill="none"
-											stroke="currentColor"
-											stroke-width="2"
-											stroke-linecap="round"
-											stroke-linejoin="round"
-										>
-											<path
-												d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
-											></path>
-										</svg>
-									</span>
-									<span>CALL NOW</span>
-								</button>
+						<!-- LEAD INFORMATION SECTION -->
+						<div class="lead-info-section">
+							<h4 class="section-header">Lead Information</h4>
+							<div class="info-grid">
+								<div class="info-item">
+									<span class="info-label">Property Type</span>
+									<span class="info-value">{lead.type}</span>
+								</div>
+								<div class="info-item">
+									<span class="info-label">Location</span>
+									<span class="info-value">{lead.pin_code}</span>
+								</div>
+								<div class="info-item info-item-full">
+									<span class="info-label">System Size</span>
+									<span class="info-value">{lead.comment}</span>
+								</div>
 							</div>
-							{#if lead.email}
-								<p><strong>Email:</strong> {lead.email}</p>
-							{/if}
-							<p><strong>Pin Code:</strong> {lead.pin_code}</p>
-							<p><strong>Type:</strong> {lead.type}</p>
-							<p><strong>Customer Comment:</strong> {lead.comment}</p>
 							{#if lead.sv_comment_for_businesses}
-								<p class="sv-comment"><strong>Solarvipani.com Comment:</strong> {lead.sv_comment_for_businesses}</p>
-							{/if}
-
-							{#if lead.category !== 1}
-								<!-- Business Notes Section -->
-								<div class="business-notes-section">
-									<label for="business-notes-{lead.id}"><strong>Your Notes:</strong></label>
-									<textarea
-										id="business-notes-{lead.id}"
-										bind:value={lead.business_notes}
-										placeholder="Add your private notes about this lead..."
-										rows="3"
-										disabled={savingNotes.has(lead.id)}
-									></textarea>
-									<div class="notes-actions">
-										<button
-											class="save-notes-button"
-											on:click={() => saveBusinessNotes(lead)}
-											disabled={savingNotes.has(lead.id)}
-										>
-											{#if savingNotes.has(lead.id)}
-												Saving...
-											{:else}
-												Save Notes
-											{/if}
-										</button>
-										{#if savedNotes.has(lead.id)}
-											<span class="save-success">✓ Saved!</span>
-										{/if}
-									</div>
+								<div class="sv-comment">
+									<strong>Solar Vipani Note:</strong> {lead.sv_comment_for_businesses}
 								</div>
 							{/if}
+						</div>
 
-							{#if lead.category !== 1}
-								<div class="stage-update-section">
-									<div class="stage-controls">
-										<label for="stage-{lead.id}"><strong>Stage:</strong></label>
+						{#if lead.category !== 1}
+							<!-- WORKFLOW SECTION - Progress & Stage -->
+							<div class="workflow-section">
+								<h4 class="section-header">Workflow</h4>
+								<div class="stage-status-controls">
+									<div class="control-group">
+										<label for="stage-{lead.id}" class="control-label">Current Stage</label>
 										<select
 											id="stage-{lead.id}"
+											class="control-select"
 											bind:value={lead.stage}
 											on:change={() => updateLead(lead, { stage: lead.stage })}
 										>
@@ -463,11 +455,12 @@
 											{/if}
 										</select>
 									</div>
-									
-									<div class="status-controls">
-										<label for="status-{lead.id}"><strong>Status:</strong></label>
+
+									<div class="control-group">
+										<label for="status-{lead.id}" class="control-label">Lead Status</label>
 										<select
 											id="status-{lead.id}"
+											class="control-select"
 											bind:value={lead.status}
 											on:change={() => updateLead(lead, { status: lead.status })}
 										>
@@ -476,26 +469,99 @@
 										</select>
 									</div>
 								</div>
-								
-								<LeadProgressBar 
-									currentStage={lead.stage} 
+
+								<LeadProgressBar
+									currentStage={lead.stage}
 									leadCategory={lead.category}
 									isActive={lead.status}
 								/>
-								
-								<!-- Next Action Section -->
-								{@const nextAction = getNextAction(lead.stage, lead.category, lead.status)}
-								{#if nextAction}
-									<div class="next-action">
-										<strong>Next Action:</strong> <span class="action-text">{nextAction}</span>
+							</div>
+
+							<!-- NOTES SECTION -->
+							<div class="notes-section">
+								<button
+									class="notes-header"
+									on:click={() => lead.collapsedNotes = !collapsedNotes}
+									type="button"
+								>
+									<svg class="collapse-icon {collapsedNotes ? '' : 'expanded'}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<polyline points="9 18 15 12 9 6"></polyline>
+									</svg>
+									<span>Internal Notes</span>
+									{#if lead.business_notes}
+										<span class="notes-indicator">•</span>
+									{/if}
+								</button>
+								{#if !collapsedNotes}
+									<div class="notes-content">
+										<textarea
+											id="business-notes-{lead.id}"
+											bind:value={lead.business_notes}
+											placeholder="Add your private notes about this lead..."
+											rows="3"
+											disabled={savingNotes.has(lead.id)}
+										></textarea>
+										<div class="notes-actions">
+											<button
+												class="save-button"
+												on:click={() => saveBusinessNotes(lead)}
+												disabled={savingNotes.has(lead.id)}
+											>
+												{#if savingNotes.has(lead.id)}
+													Saving...
+												{:else}
+													Save
+												{/if}
+											</button>
+											{#if savedNotes.has(lead.id)}
+												<span class="save-success">✓ Saved</span>
+											{/if}
+										</div>
 									</div>
 								{/if}
-							{/if}
+							</div>
 
-							<div class="button-container">
-								{#if lead.category === 1 && lead.claim_count > 4}
+							<!-- NEXT ACTION FOOTER -->
+							{@const nextAction = getNextAction(lead.stage, lead.category, lead.status)}
+							{#if nextAction}
+								<div class="action-footer">
+									<div class="action-hint">
+										<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<circle cx="12" cy="12" r="10"></circle>
+											<line x1="12" y1="16" x2="12" y2="12"></line>
+											<line x1="12" y1="8" x2="12.01" y2="8"></line>
+										</svg>
+										<span class="action-text"><strong>Next Step:</strong> {nextAction}</span>
+									</div>
+									{#if lead.stage === 1 && lead.status}
+										<button
+											class="primary-action-button"
+											on:click={() => openProposalModal(lead)}
+										>
+											Generate Proposal
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+												<line x1="5" y1="12" x2="19" y2="12"></line>
+												<polyline points="12 5 19 12 12 19"></polyline>
+											</svg>
+										</button>
+									{/if}
+								</div>
+							{:else if lead.category !== 1 && !lead.status}
+								<div class="action-footer">
+									<button
+										class="delete-button"
+										on:click={() => showDeleteConfirmation(lead)}
+									>
+										Delete Lead
+									</button>
+								</div>
+							{/if}
+						{:else}
+							<!-- CLAIM BUTTON FOR NON-EXCLUSIVE AVAILABLE LEADS -->
+							<div class="action-footer">
+								{#if lead.claim_count > 4}
 									<p class="claimed-text">Not Available. Claimed by Other Business</p>
-								{:else if lead.category === 1}
+								{:else}
 									<button
 										class="claim-button"
 										on:click={() => claimLead(lead.id, businessInfo.id)}
@@ -503,25 +569,9 @@
 									>
 										{isClaiming ? 'Claiming...' : 'Claim Now (Free)'}
 									</button>
-								{:else if lead.category !== 1 && lead.stage === 1 && lead.status}
-									<!-- Generate Proposal button for stage 1 (Contacted) active leads -->
-									<button
-										class="proposal-button"
-										on:click={() => openProposalModal(lead)}
-									>
-										Generate Proposal
-									</button>
-								{:else if lead.category !== 1 && !lead.status}
-									<!-- Delete button for inactive leads -->
-									<button
-										class="delete-button"
-										on:click={() => showDeleteConfirmation(lead)}
-									>
-										Delete Lead
-									</button>
 								{/if}
 							</div>
-						</div>
+						{/if}
 					</li>
 				{/each}
 			{:else}
@@ -533,7 +583,13 @@
 						</h3>
 					</div>
 					<div class="lead-details">
-						<p><strong>Received:</strong> <span class="time-stamp {getRelativeTime(dummyLead.received_at).class}">{getRelativeTime(dummyLead.received_at).text}</span></p>
+						<p class="received-info">
+							<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="clock-icon">
+								<circle cx="12" cy="12" r="10"></circle>
+								<polyline points="12 6 12 12 16 14"></polyline>
+							</svg>
+							<span class="received-label">Received:</span> <span class="time-stamp {getRelativeTime(dummyLead.received_at).class}">{getRelativeTime(dummyLead.received_at).text}</span>
+						</p>
 						<div class="phone-section">
 							<p><strong>Phone:</strong> {dummyLead.phone}</p>
 							<button
@@ -561,10 +617,12 @@
 								<span>CALL NOW</span>
 							</button>
 						</div>
-						<p><strong>Email:</strong> {dummyLead.email}</p>
-						<p><strong>Pin Code:</strong> {dummyLead.pin_code}</p>
-						<p><strong>Type:</strong> {dummyLead.type}</p>
-						<p><strong>Customer Comment:</strong> {dummyLead.comment}</p>
+						<div class="contact-grid">
+							<p><strong>Email:</strong> {dummyLead.email}</p>
+							<p><strong>Pin Code:</strong> {dummyLead.pin_code}</p>
+							<p><strong>Type:</strong> {dummyLead.type}</p>
+							<p><strong>Customer Comment:</strong> {dummyLead.comment}</p>
+						</div>
 					</div>
 				</li>
 			{/if}
@@ -604,7 +662,52 @@
 {/if}
 
 <style>
-	/* Lead data section */
+	/* ========================================
+	   DESIGN SYSTEM - SEMANTIC COLORS
+	   ======================================== */
+	:root {
+		/* Primary Actions */
+		--color-primary: #2563EB;
+		--color-primary-hover: #1D4ED8;
+		--color-primary-active: #1E40AF;
+
+		/* Success/Active */
+		--color-success: #059669;
+		--color-success-hover: #047857;
+		--color-success-bg: #F0FDF4;
+
+		/* Warning */
+		--color-warning: #D97706;
+		--color-warning-bg: #FEF3C7;
+
+		/* Danger */
+		--color-danger: #DC2626;
+		--color-danger-hover: #B91C1C;
+
+		/* Neutral */
+		--color-gray-50: #F9FAFB;
+		--color-gray-100: #F3F4F6;
+		--color-gray-200: #E5E7EB;
+		--color-gray-300: #D1D5DB;
+		--color-gray-400: #9CA3AF;
+		--color-gray-500: #6B7280;
+		--color-gray-600: #475569;
+		--color-gray-700: #374151;
+		--color-gray-800: #1F2937;
+		--color-gray-900: #111827;
+
+		/* Spacing (8px base) */
+		--spacing-1: 8px;
+		--spacing-2: 12px;
+		--spacing-3: 16px;
+		--spacing-4: 20px;
+		--spacing-5: 24px;
+		--spacing-6: 32px;
+	}
+
+	/* ========================================
+	   LEAD CARD CONTAINER
+	   ======================================== */
 	#lead-data h2 {
 		font-size: 1.5rem;
 		margin-bottom: 1rem;
@@ -620,17 +723,23 @@
 	}
 
 	#lead-data li {
-		margin-bottom: 1.5rem;
-		padding: 1.5rem;
-		border-radius: 8px;
-		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+		margin-bottom: var(--spacing-5);
+		padding: 0;
+		border-radius: 12px;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
 		word-wrap: break-word;
 		overflow-wrap: break-word;
+		transition: box-shadow 0.2s ease;
+		overflow: hidden;
+	}
+
+	#lead-data li:hover {
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
 	}
 
 	:global(.light) #lead-data li {
-		background-color: #fff;
-		border: 1px solid var(--border-color-light);
+		background-color: #FFFFFF;
+		border: 1px solid var(--color-gray-200);
 	}
 
 	:global(.dark) #lead-data li {
@@ -638,194 +747,613 @@
 		border: 1px solid var(--border-color-dark);
 	}
 
+	/* ========================================
+	   HEADER SECTION - Identity & Status
+	   ======================================== */
+	.lead-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: var(--spacing-5) var(--spacing-5) var(--spacing-2);
+		border-bottom: 1px solid var(--color-gray-200);
+	}
+
+	:global(.dark) .lead-header {
+		border-bottom-color: #444;
+	}
+
 	.lead-header h3 {
 		margin: 0;
-		font-size: 1.2rem;
-		font-weight: 600;
+		font-size: 18px;
+		font-weight: 700;
+		color: var(--color-gray-900);
+		line-height: 1.3;
 	}
 
-	/* Time stamp styling */
-	.time-stamp {
-		font-weight: 600;
-		padding: 0.2rem 0.5rem;
-		border-radius: 4px;
-		font-size: 0.85rem;
+	:global(.dark) .lead-header h3 {
+		color: var(--dark-primary-text-color);
 	}
 
-	.time-stamp.time-fresh {
-		color: #2e7d32;
-		background-color: rgba(46, 125, 50, 0.1);
-	}
-
-	.time-stamp.time-recent {
-		color: #f57c00;
-		background-color: rgba(245, 124, 0, 0.1);
-	}
-
-	.time-stamp.time-old {
-		color: #d32f2f;
-		background-color: rgba(211, 47, 47, 0.1);
-	}
-
-	:global(.dark) .time-stamp.time-fresh {
-		color: #66bb6a;
-		background-color: rgba(102, 187, 106, 0.15);
-	}
-
-	:global(.dark) .time-stamp.time-recent {
-		color: #ffb74d;
-		background-color: rgba(255, 183, 77, 0.15);
-	}
-
-	:global(.dark) .time-stamp.time-old {
-		color: #ef5350;
-		background-color: rgba(239, 83, 80, 0.15);
-	}
-
-	.lead-details p {
-		margin: 0.25rem 0;
-	}
-
-	/* Phone section with call button */
-	.phone-section {
-		display: flex;
+	.status-badge {
+		display: inline-flex;
 		align-items: center;
-		gap: 1rem;
-		margin: 0.25rem 0;
+		gap: 6px;
+		font-size: 12px;
+		font-weight: 600;
+		padding: 6px 12px;
+		border-radius: 6px;
+		white-space: nowrap;
+	}
+
+	.status-dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+	}
+
+	.status-exclusive {
+		background-color: #ECFDF5;
+		color: var(--color-success);
+		border: 1px solid #A7F3D0;
+	}
+
+	.status-exclusive .status-dot {
+		background-color: var(--color-success);
+	}
+
+	.status-claimed {
+		background-color: #EFF6FF;
+		color: var(--color-primary);
+		border: 1px solid #BFDBFE;
+	}
+
+	.status-claimed .status-dot {
+		background-color: var(--color-primary);
+	}
+
+	.status-available {
+		background-color: #FEF3C7;
+		color: var(--color-warning);
+		border: 1px solid #FDE68A;
+	}
+
+	.status-available .status-dot {
+		background-color: var(--color-warning);
+	}
+
+	.received-time {
+		padding: 0 var(--spacing-5) var(--spacing-3);
+		margin: 0;
+		font-size: 12px;
+		color: var(--color-gray-500);
+	}
+
+	:global(.dark) .received-time {
+		color: #9ca3af;
+	}
+
+	/* ========================================
+	   CONTACT ACTION BAR
+	   ======================================== */
+	.contact-action-bar {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: var(--spacing-3);
+		padding: var(--spacing-3) var(--spacing-5);
+		background-color: var(--color-gray-50);
+		border-bottom: 1px solid var(--color-gray-200);
 		flex-wrap: wrap;
 	}
 
-	.phone-section p {
-		margin: 0;
+	:global(.dark) .contact-action-bar {
+		background-color: #2a2a2a;
+		border-bottom-color: #444;
 	}
 
-	/* Call Now button styling */
+	.contact-info-row {
+		display: flex;
+		gap: var(--spacing-4);
+		flex-wrap: wrap;
+		flex: 1;
+	}
+
+	.contact-item {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		font-size: 14px;
+		color: var(--color-gray-700);
+	}
+
+	:global(.dark) .contact-item {
+		color: var(--dark-primary-text-color);
+	}
+
+	.contact-item svg {
+		color: var(--color-gray-500);
+		flex-shrink: 0;
+	}
+
+	:global(.dark) .contact-item svg {
+		color: #9ca3af;
+	}
+
+	.contact-value {
+		font-weight: 500;
+		color: var(--color-gray-900);
+	}
+
+	:global(.dark) .contact-value {
+		color: var(--dark-primary-text-color);
+	}
+
+	.email-link {
+		color: var(--color-primary);
+		text-decoration: none;
+	}
+
+	.email-link:hover {
+		text-decoration: underline;
+	}
+
 	.call-now-button {
 		display: inline-flex;
 		align-items: center;
-		justify-content: center;
-		padding: 0.5rem 1rem;
-		font-size: 0.85rem;
-		font-weight: 700;
+		gap: 8px;
+		padding: 10px 20px;
+		font-size: 14px;
+		font-weight: 600;
 		border: none;
 		border-radius: 6px;
 		cursor: pointer;
-		transition:
-			background 0.2s ease,
-			transform 0.2s ease,
-			box-shadow 0.2s ease;
-		text-transform: uppercase;
-		letter-spacing: 0.8px;
-		gap: 0.5rem;
-		min-height: 40px;
-		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-		background: linear-gradient(135deg, #ff6b35, #f94449);
+		transition: all 0.2s ease;
+		background-color: var(--color-primary);
 		color: white;
-		position: relative;
-		overflow: hidden;
-		box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
-		border: 2px solid transparent;
-	}
-
-	.call-now-button::after {
-		content: "";
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		top: 0;
-		left: 0;
-		background-color: rgba(255, 255, 255, 0);
-		transition: background-color 0.2s ease;
+		box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);
 	}
 
 	.call-now-button:hover {
-		background: linear-gradient(135deg, #f94449, #ff6b35);
-		transform: translateY(-2px);
-		box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+		background-color: var(--color-primary-hover);
+		box-shadow: 0 4px 6px rgba(37, 99, 235, 0.4);
+		transform: translateY(-1px);
 	}
 
 	.call-now-button:active {
 		transform: translateY(0);
 	}
 
-	.call-now-button:hover::after {
-		background-color: rgba(255, 255, 255, 0.1);
+	.call-now-button svg {
+		width: 16px;
+		height: 16px;
 	}
 
-	.call-now-button:disabled {
-		background: #9ca3af;
-		cursor: not-allowed;
-		box-shadow: none;
-		opacity: 0.6;
-	}
-
-	.call-now-button:disabled:hover {
-		transform: none;
-		box-shadow: none;
-	}
-
-	.call-now-button .button-icon {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 20px;
-		height: 20px;
-		position: relative;
-		z-index: 1;
-	}
-
-	.call-now-button span {
-		position: relative;
-		z-index: 1;
-	}
-
-	@media (max-width: 480px) {
-		.phone-section {
+	@media (max-width: 640px) {
+		.contact-action-bar {
 			flex-direction: column;
-			align-items: flex-start;
-			gap: 0.5rem;
+			align-items: stretch;
+		}
+
+		.contact-info-row {
+			flex-direction: column;
+			gap: var(--spacing-2);
 		}
 
 		.call-now-button {
 			width: 100%;
-			padding: 0.6rem 1rem;
+			justify-content: center;
 		}
 	}
 
-	.error-message {
-		color: red;
-		font-weight: bold;
+	/* ========================================
+	   LEAD INFORMATION SECTION
+	   ======================================== */
+	.lead-info-section {
+		padding: var(--spacing-4) var(--spacing-5);
+		border-bottom: 1px solid var(--color-gray-200);
 	}
 
-	/* Tags */
-	.tag,
-	.tag-dummy {
+	:global(.dark) .lead-info-section {
+		border-bottom-color: #444;
+	}
+
+	.section-header {
+		margin: 0 0 var(--spacing-2) 0;
+		font-size: 14px;
+		font-weight: 600;
+		color: var(--color-gray-700);
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+	}
+
+	:global(.dark) .section-header {
+		color: #d1d5db;
+	}
+
+	.info-grid {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: var(--spacing-3);
+		margin-top: var(--spacing-3);
+	}
+
+	.info-item {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	.info-item-full {
+		grid-column: 1 / -1;
+	}
+
+	.info-label {
+		font-size: 12px;
+		font-weight: 500;
+		color: var(--color-gray-500);
+	}
+
+	:global(.dark) .info-label {
+		color: #9ca3af;
+	}
+
+	.info-value {
+		font-size: 14px;
+		font-weight: 600;
+		color: var(--color-gray-900);
+	}
+
+	:global(.dark) .info-value {
+		color: var(--dark-primary-text-color);
+	}
+
+	.sv-comment {
+		margin-top: var(--spacing-3);
+		padding: var(--spacing-2);
+		background-color: #EFF6FF;
+		border-left: 3px solid var(--color-primary);
+		border-radius: 4px;
+		font-size: 13px;
+		color: var(--color-gray-700);
+	}
+
+	:global(.dark) .sv-comment {
+		background-color: rgba(59, 130, 246, 0.1);
+		color: #d1d5db;
+	}
+
+	@media (max-width: 640px) {
+		.info-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.info-item-full {
+			grid-column: 1;
+		}
+	}
+
+	/* ========================================
+	   WORKFLOW SECTION - Progress & Stage
+	   ======================================== */
+	.workflow-section {
+		padding: var(--spacing-4) var(--spacing-5);
+		border-bottom: 1px solid var(--color-gray-200);
+	}
+
+	:global(.dark) .workflow-section {
+		border-bottom-color: #444;
+	}
+
+	.stage-status-controls {
+		display: flex;
+		gap: var(--spacing-3);
+		margin-top: var(--spacing-3);
+		margin-bottom: var(--spacing-4);
+		flex-wrap: wrap;
+	}
+
+	.control-group {
+		flex: 1;
+		min-width: 140px;
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	.control-label {
+		font-size: 12px;
+		font-weight: 600;
+		color: var(--color-gray-700);
+	}
+
+	:global(.dark) .control-label {
+		color: #d1d5db;
+	}
+
+	.control-select {
+		padding: 10px 12px;
+		border: 1px solid var(--color-gray-300);
+		border-radius: 6px;
+		background-color: white;
+		font-size: 14px;
+		font-weight: 500;
+		color: var(--color-gray-900);
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.control-select:focus {
+		outline: none;
+		border-color: var(--color-primary);
+		box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+	}
+
+	:global(.dark) .control-select {
+		background-color: #2a2a2a;
+		border-color: #444;
+		color: var(--dark-primary-text-color);
+	}
+
+	@media (max-width: 640px) {
+		.stage-status-controls {
+			flex-direction: column;
+		}
+
+		.control-group {
+			min-width: 100%;
+		}
+	}
+
+	/* ========================================
+	   NOTES SECTION - Collapsible
+	   ======================================== */
+	.notes-section {
+		border-bottom: 1px solid var(--color-gray-200);
+	}
+
+	:global(.dark) .notes-section {
+		border-bottom-color: #444;
+	}
+
+	.notes-header {
+		width: 100%;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: var(--spacing-3) var(--spacing-5);
+		background: none;
+		border: none;
+		cursor: pointer;
+		font-size: 14px;
+		font-weight: 600;
+		color: var(--color-gray-700);
+		text-align: left;
+		transition: background-color 0.2s ease;
+	}
+
+	.notes-header:hover {
+		background-color: var(--color-gray-50);
+	}
+
+	:global(.dark) .notes-header {
+		color: #d1d5db;
+	}
+
+	:global(.dark) .notes-header:hover {
+		background-color: #2a2a2a;
+	}
+
+	.collapse-icon {
+		transition: transform 0.2s ease;
+		color: var(--color-gray-500);
+	}
+
+	.collapse-icon.expanded {
+		transform: rotate(90deg);
+	}
+
+	.notes-indicator {
+		margin-left: auto;
+		color: var(--color-primary);
+		font-size: 18px;
+	}
+
+	.notes-content {
+		padding: 0 var(--spacing-5) var(--spacing-3);
+	}
+
+	.notes-content textarea {
+		width: 100%;
+		padding: var(--spacing-2);
+		border: 1px solid var(--color-gray-300);
+		border-radius: 6px;
+		font-size: 14px;
+		font-family: inherit;
+		resize: vertical;
+		min-height: 80px;
+		box-sizing: border-box;
+		transition: border-color 0.2s ease;
+	}
+
+	.notes-content textarea:focus {
+		outline: none;
+		border-color: var(--color-primary);
+		box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+	}
+
+	:global(.dark) .notes-content textarea {
+		background-color: #2a2a2a;
+		border-color: #444;
+		color: var(--dark-primary-text-color);
+	}
+
+	.notes-actions {
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-2);
+		margin-top: var(--spacing-2);
+	}
+
+	.save-button {
+		background-color: var(--color-gray-600);
 		color: white;
-		font-size: 0.8rem;
-		padding: 0.2rem 0.5rem;
-		border-radius: 5px;
-		margin-left: 0.5rem;
-		font-weight: bold;
+		border: none;
+		padding: 8px 16px;
+		border-radius: 6px;
+		cursor: pointer;
+		font-weight: 600;
+		font-size: 13px;
+		transition: all 0.2s ease;
 	}
 
-	.exclusive {
-		background-color: #008000;
+	.save-button:hover {
+		background-color: var(--color-gray-700);
 	}
 
-	.non-exclusive {
-		background-color: #ff9800;
+	.save-button:disabled {
+		background-color: var(--color-gray-400);
+		cursor: not-allowed;
 	}
 
-	.non-exclusive-claimed {
-		background-color: #007bff;
+	.save-success {
+		color: var(--color-success);
+		font-weight: 600;
+		font-size: 13px;
 	}
 
-	.tag-dummy {
-		background-color: #ffcc80;
-		color: #333;
+	/* ========================================
+	   ACTION FOOTER - Next Steps & Buttons
+	   ======================================== */
+	.action-footer {
+		padding: var(--spacing-4) var(--spacing-5);
+		background-color: var(--color-gray-50);
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: var(--spacing-3);
+		flex-wrap: wrap;
 	}
 
-	/* Dummy lead styling */
+	:global(.dark) .action-footer {
+		background-color: #2a2a2a;
+	}
+
+	.action-hint {
+		display: flex;
+		align-items: flex-start;
+		gap: 10px;
+		flex: 1;
+		font-size: 13px;
+		color: var(--color-gray-700);
+	}
+
+	:global(.dark) .action-hint {
+		color: #d1d5db;
+	}
+
+	.action-hint svg {
+		color: var(--color-primary);
+		flex-shrink: 0;
+		margin-top: 2px;
+	}
+
+	.action-text {
+		line-height: 1.5;
+	}
+
+	.primary-action-button {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		padding: 12px 24px;
+		font-size: 14px;
+		font-weight: 600;
+		border: none;
+		border-radius: 6px;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		background-color: var(--color-primary);
+		color: white;
+		box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+	}
+
+	.primary-action-button:hover {
+		background-color: var(--color-primary-hover);
+		box-shadow: 0 4px 6px rgba(37, 99, 235, 0.4);
+		transform: translateY(-1px);
+	}
+
+	.primary-action-button:active {
+		transform: translateY(0);
+	}
+
+	.claim-button {
+		background-color: var(--color-success);
+		color: white;
+		font-weight: 600;
+		border: none;
+		box-shadow: 0 2px 4px rgba(5, 150, 105, 0.3);
+		padding: 12px 24px;
+		font-size: 14px;
+		border-radius: 6px;
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.claim-button:hover {
+		background-color: var(--color-success-hover);
+		box-shadow: 0 4px 6px rgba(5, 150, 105, 0.4);
+		transform: translateY(-1px);
+	}
+
+	.claim-button:disabled {
+		background-color: var(--color-gray-400);
+		cursor: not-allowed;
+		box-shadow: none;
+		transform: none;
+	}
+
+	.delete-button {
+		background-color: var(--color-danger);
+		color: white;
+		font-weight: 600;
+		border: none;
+		box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+		padding: 10px 20px;
+		font-size: 14px;
+		border-radius: 6px;
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.delete-button:hover {
+		background-color: var(--color-danger-hover);
+		box-shadow: 0 4px 6px rgba(220, 38, 38, 0.4);
+	}
+
+	.claimed-text {
+		font-weight: 600;
+		color: var(--color-gray-600);
+		font-size: 14px;
+	}
+
+	@media (max-width: 640px) {
+		.action-footer {
+			flex-direction: column;
+			align-items: stretch;
+		}
+
+		.primary-action-button,
+		.claim-button,
+		.delete-button {
+			width: 100%;
+			justify-content: center;
+		}
+	}
+
+	/* ========================================
+	   DUMMY LEAD & UTILITY STYLES
+	   ======================================== */
 	.dummy-lead {
 		opacity: 0.7;
 		border: 2px dashed var(--border-color-light);
@@ -835,328 +1363,12 @@
 		border: 2px dashed var(--border-color-dark);
 	}
 
-	/* Button container and buttons */
-	.button-container {
-		display: flex;
-		justify-content: flex-end;
-		margin-top: 10px;
-	}
-
-	.update-button {
-		background-color: var(--accent-color);
-		color: white;
-	}
-
-	.update-button:hover {
-		background-color: var(--accent-hover);
-	}
-
-	.claim-button {
-		background-color: var(--success-color);
-		color: white;
+	.error-message {
+		color: var(--color-danger);
 		font-weight: 600;
-		border: 2px solid var(--success-color);
-		box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
-		padding: 0.575rem 1.15rem;
-		font-size: 1.05rem;
+		padding: var(--spacing-3);
 	}
 
-	.claim-button:hover {
-		background-color: var(--success-hover);
-		border-color: var(--success-hover);
-		box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
-	}
-
-	.claim-button:disabled {
-		background-color: #9ca3af;
-		border-color: #9ca3af;
-		box-shadow: none;
-		cursor: not-allowed;
-	}
-
-	.proposal-button {
-		background-color: #0056b3;
-		color: white;
-		font-weight: 600;
-		border: 2px solid #0056b3;
-		box-shadow: 0 2px 4px rgba(0, 86, 179, 0.2);
-		padding: 0.575rem 1.15rem;
-		font-size: 1.05rem;
-		border-radius: 5px;
-		cursor: pointer;
-		transition: all 0.3s ease;
-	}
-
-	.proposal-button:hover {
-		background-color: #004494;
-		border-color: #004494;
-		box-shadow: 0 2px 6px rgba(0, 86, 179, 0.3);
-	}
-
-	.delete-button {
-		background-color: #dc3545;
-		color: white;
-		font-weight: 600;
-		border: 2px solid #dc3545;
-		box-shadow: 0 2px 4px rgba(220, 53, 69, 0.2);
-		padding: 0.575rem 1.15rem;
-		font-size: 1.05rem;
-		border-radius: 5px;
-		cursor: pointer;
-		transition: all 0.3s ease;
-	}
-
-	.delete-button:hover {
-		background-color: #c82333;
-		border-color: #c82333;
-		box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
-	}
-
-	.claimed-text {
-		font-weight: bold;
-		color: var(--success-color);
-		padding: 5px;
-	}
-
-	/* Solarvipani.com Comment styling */
-	.sv-comment {
-		margin-top: 0.75rem !important;
-		font-style: italic;
-		color: #0056b3;
-		background-color: rgba(0, 86, 179, 0.05);
-		padding: 0.5rem;
-		border-radius: 4px;
-		border-left: 3px solid #0056b3;
-	}
-
-	:global(.dark) .sv-comment {
-		color: #64b5f6;
-		background-color: rgba(100, 181, 246, 0.1);
-		border-left-color: #64b5f6;
-	}
-
-	/* Business Notes Section */
-	.business-notes-section {
-		margin: 1rem 0;
-		padding: 1rem;
-		background-color: rgba(76, 175, 80, 0.05);
-		border: 1px solid rgba(76, 175, 80, 0.2);
-		border-left: 4px solid #4caf50;
-		border-radius: 6px;
-	}
-
-	.business-notes-section label {
-		display: block;
-		margin-bottom: 0.5rem;
-		font-weight: 600;
-		color: #4caf50;
-	}
-
-	.business-notes-section textarea {
-		width: 100%;
-		padding: 0.75rem;
-		border: 1px solid #ddd;
-		border-radius: 4px;
-		font-size: 0.95rem;
-		font-family: inherit;
-		resize: vertical;
-		min-height: 80px;
-		margin-bottom: 0.5rem;
-		box-sizing: border-box;
-	}
-
-	.business-notes-section textarea:focus {
-		outline: none;
-		border-color: #4caf50;
-		box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
-	}
-
-	:global(.dark) .business-notes-section {
-		background-color: rgba(76, 175, 80, 0.1);
-		border-left-color: #66bb6a;
-	}
-
-	:global(.dark) .business-notes-section label {
-		color: #66bb6a;
-	}
-
-	:global(.dark) .business-notes-section textarea {
-		background-color: #2a2a2a;
-		border-color: #444;
-		color: var(--dark-primary-text-color);
-	}
-
-	:global(.dark) .business-notes-section textarea:focus {
-		border-color: #66bb6a;
-		box-shadow: 0 0 0 2px rgba(102, 187, 106, 0.2);
-	}
-
-	.notes-actions {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-	}
-
-	.save-notes-button {
-		background-color: #4caf50;
-		color: white;
-		border: none;
-		padding: 0.5rem 1rem;
-		border-radius: 4px;
-		cursor: pointer;
-		font-weight: 600;
-		font-size: 0.9rem;
-		transition: background-color 0.3s ease;
-	}
-
-	.save-notes-button:hover {
-		background-color: #45a049;
-	}
-
-	.save-notes-button:active {
-		background-color: #3d8b40;
-	}
-
-	.save-notes-button:disabled {
-		background-color: #9ca3af;
-		cursor: not-allowed;
-		opacity: 0.6;
-	}
-
-	.save-success {
-		color: #4caf50;
-		font-weight: 600;
-		font-size: 0.9rem;
-		animation: fadeIn 0.3s ease;
-	}
-
-	:global(.dark) .save-success {
-		color: #66bb6a;
-	}
-
-	@keyframes fadeIn {
-		from {
-			opacity: 0;
-			transform: translateX(-10px);
-		}
-		to {
-			opacity: 1;
-			transform: translateX(0);
-		}
-	}
-
-	/* Stage update section styling */
-	.stage-update-section {
-		display: flex;
-		gap: 1rem;
-		margin: 1rem 0;
-		align-items: center;
-		flex-wrap: wrap;
-	}
-
-	.stage-controls,
-	.status-controls {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-	}
-
-	.stage-controls label,
-	.status-controls label {
-		font-weight: 600;
-		white-space: nowrap;
-	}
-
-	.stage-controls select,
-	.status-controls select {
-		padding: 0.4rem 0.8rem;
-		border: 1px solid var(--border-color-light);
-		border-radius: 4px;
-		background-color: #fff;
-		font-size: 0.9rem;
-		min-width: 120px;
-		width: 100%;
-		max-width: 200px;
-	}
-
-	:global(.dark) .stage-controls select,
-	:global(.dark) .status-controls select {
-		background-color: #333;
-		border-color: var(--border-color-dark);
-		color: var(--dark-primary-text-color);
-	}
-
-	@media (max-width: 768px) {
-		.stage-update-section {
-			flex-direction: column;
-			align-items: stretch;
-			gap: 0.5rem;
-		}
-
-		.stage-controls,
-		.status-controls {
-			justify-content: space-between;
-		}
-
-		.stage-controls select,
-		.status-controls select {
-			min-width: 0;
-			flex: 1;
-			max-width: none;
-		}
-	}
-
-	@media (max-width: 480px) {
-		.stage-controls label,
-		.status-controls label {
-			white-space: normal;
-			word-break: break-word;
-		}
-
-		.stage-controls select,
-		.status-controls select {
-			padding: 0.3rem 0.5rem;
-			font-size: 0.85rem;
-		}
-	}
-
-	/* Next Action styling */
-	.next-action {
-		margin: 1rem 0;
-		padding: 1rem;
-		background-color: rgba(0, 86, 179, 0.08);
-		border: 1px solid rgba(0, 86, 179, 0.2);
-		border-left: 4px solid #0056b3;
-		border-radius: 6px;
-		font-size: 0.95rem;
-		display: block;
-		width: 100%;
-		box-sizing: border-box;
-	}
-
-	.next-action strong {
-		color: #0056b3;
-		font-weight: 600;
-	}
-
-	.action-text {
-		color: #333;
-		font-style: italic;
-		line-height: 1.4;
-	}
-
-	:global(.dark) .next-action {
-		background-color: rgba(100, 181, 246, 0.1);
-		border-left-color: #64b5f6;
-	}
-
-	:global(.dark) .next-action strong {
-		color: #64b5f6;
-	}
-
-	:global(.dark) .action-text {
-		color: var(--dark-primary-text-color);
-	}
 
 	/* No results styling */
 	.no-results {
@@ -1195,25 +1407,14 @@
 
 	/* Additional mobile overflow fixes */
 	@media (max-width: 480px) {
-		#lead-data li {
-			padding: 1rem;
-			margin-bottom: 1rem;
+		.lead-header {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: var(--spacing-2);
 		}
 
-		.lead-details p {
-			word-break: break-all;
-		}
-
-		.claim-button,
-		.update-button {
-			white-space: normal;
-			word-break: break-word;
-			min-width: 0;
-		}
-
-		.next-action {
-			padding: 0.75rem;
-			font-size: 0.9rem;
+		.status-badge {
+			align-self: flex-start;
 		}
 	}
 
