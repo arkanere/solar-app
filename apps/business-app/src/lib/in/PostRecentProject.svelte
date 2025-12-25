@@ -274,7 +274,7 @@
 
 			console.log('Submitting project data with image');
 
-			const response = await fetch(`/api/postRecentProject`, {
+			const response = await fetch(`/in/api/postRecentProject`, {
 				method: 'POST',
 				body: formDataToSend // Using FormData instead of JSON.stringify
 			});
@@ -290,9 +290,9 @@
 					alert('Project posted successfully! Redirecting...');
 					isSubmitting = false;
 					show = false; // Close the modal after alerting
-					// Redirect to the project management page after a short delay
+					// Redirect to the recent projects page after a short delay
 					setTimeout(() => {
-						window.location.href = `/business/${businessSlug}/project`;
+						window.location.href = `/in/${businessSlug}/recent-projects`;
 					}, 1500);
 				}, 100);
 			} else {

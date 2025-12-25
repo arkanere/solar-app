@@ -59,6 +59,12 @@
 					icon: '🏪',
 					href: `/in/${businessSlug}/branch`,
 					type: 'link'
+				},
+				{
+					label: 'Referrers',
+					icon: '🤝',
+					href: `/in/${businessSlug}/referral`,
+					type: 'link'
 				}
 			]
 		},
