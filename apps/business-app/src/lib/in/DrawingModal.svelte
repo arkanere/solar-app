@@ -286,7 +286,13 @@
 </script>
 
 {#if show}
-	<div class="modal-overlay" on:click={(e) => e.target === e.currentTarget && closeModal()}>
+	<div
+		class="modal-overlay"
+		role="button"
+		tabindex="0"
+		on:click={(e) => e.target === e.currentTarget && closeModal()}
+		on:keydown={(e) => (e.key === 'Escape' || e.key === 'Enter') && closeModal()}
+	>
 		<div class="modal-content">
 			<div class="modal-header">
 				<h2>Create Solar System Drawing</h2>

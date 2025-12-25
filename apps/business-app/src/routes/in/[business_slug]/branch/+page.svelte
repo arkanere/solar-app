@@ -87,7 +87,7 @@
 						</div>
 						<div class="branch-actions">
 							<a
-								href="/solar-panel-installer/{mainBusiness.slug}"
+								href="https://solarvipani.com/in/solar-panel-installer/{mainBusiness.slug}"
 								target="_blank"
 								class="btn profile-btn">Profile Page</a
 							>
@@ -118,7 +118,7 @@
 							</div>
 							<div class="branch-actions">
 								<a
-									href="/solar-panel-installer/{branch.slug}"
+									href="https://solarvipani.com/in/solar-panel-installer/{branch.slug}"
 									target="_blank"
 									class="btn profile-btn">Profile Page</a
 								>

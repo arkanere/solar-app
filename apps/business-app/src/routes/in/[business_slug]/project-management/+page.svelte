@@ -294,7 +294,6 @@
 	}
 
 	.customer-contact,
-	.location-secondary,
 	.update-secondary {
 		font-size: 0.85rem;
 		opacity: 0.7;

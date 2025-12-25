@@ -18,8 +18,8 @@
 		});
 	}
 
-	// State for delete
-	let isDeleting = false;
+	// State for delete - track which project is being deleted
+	let deletingProjectId = null;
 
 	// State for post project modal
 	let showPostRecentProject = false;
@@ -32,17 +32,17 @@
 
 	// Handle project deletion
 	async function handleDeleteProject(project) {
-		if (isDeleting) return;
+		if (deletingProjectId !== null) return;
 
 		const confirmed = confirm(
-			`Are you sure you want to hide "${project.title}"? This will remove it from public view.`
+			`Are you sure you want to delete "${project.title}"? This action cannot be undone.`
 		);
 		if (!confirmed) return;
 
 		try {
-			isDeleting = true;
+			deletingProjectId = project.id;
 
-			const response = await fetch('/in/api/updateRecentProject', {
+			const response = await fetch('/in/api/deleteRecentProject', {
 				method: 'DELETE',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
@@ -54,16 +54,16 @@
 			const result = await response.json();
 
 			if (result.success) {
-				alert('Project hidden successfully');
+				alert('Project deleted successfully');
 				window.location.reload();
 			} else {
 				alert(`Error: ${result.error}`);
 			}
 		} catch (error) {
 			console.error('Delete Project Error:', error);
-			alert('An error occurred while hiding the project.');
+			alert('An error occurred while deleting the project.');
 		} finally {
-			isDeleting = false;
+			deletingProjectId = null;
 		}
 	}
 </script>
@@ -118,9 +118,9 @@
 								<button
 									class="btn delete-btn"
 									on:click={() => handleDeleteProject(project)}
-									disabled={isDeleting}
+									disabled={deletingProjectId === project.id}
 								>
-									{isDeleting ? 'Hiding...' : 'Hide Project'}
+									{deletingProjectId === project.id ? 'Deleting...' : 'Delete Project'}
 								</button>
 							</div>
 						</div>
