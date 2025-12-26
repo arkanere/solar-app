@@ -9,6 +9,7 @@
 
 	// Form fields
 	let name = '';
+	let slug = '';
 	let email = '';
 	let phone = '';
 	let notes = '';
@@ -21,8 +22,15 @@
 		errorMessage = '';
 		successMessage = '';
 
-		if (!name || !phone) {
-			errorMessage = 'Please enter name and phone number';
+		if (!name || !slug || !phone) {
+			errorMessage = 'Please enter name, slug, and phone number';
+			return;
+		}
+
+		// Validate slug format (alphanumeric and hyphens only)
+		const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+		if (!slugRegex.test(slug)) {
+			errorMessage = 'Slug must be lowercase alphanumeric characters and hyphens only (e.g., john-doe)';
 			return;
 		}
 
@@ -51,6 +59,7 @@
 				body: JSON.stringify({
 					businessId,
 					name,
+					slug,
 					email,
 					phone,
 					notes
@@ -63,6 +72,7 @@
 				successMessage = 'Referrer added successfully!';
 				// Reset form
 				name = '';
+				slug = '';
 				email = '';
 				phone = '';
 				notes = '';
@@ -89,6 +99,7 @@
 	function closeModal() {
 		// Reset form
 		name = '';
+		slug = '';
 		email = '';
 		phone = '';
 		notes = '';
@@ -132,6 +143,20 @@
 							placeholder="Enter referrer name"
 							required
 						/>
+					</div>
+
+					<!-- Slug Field -->
+					<div class="form-group">
+						<label for="slug">Slug <span class="required">*</span></label>
+						<input
+							type="text"
+							id="slug"
+							bind:value={slug}
+							placeholder="e.g., john-doe or agent-123"
+							pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
+							required
+						/>
+						<small class="help-text">Lowercase letters, numbers, and hyphens only. This will be used in the referrer URL.</small>
 					</div>
 
 					<!-- Phone Field -->
@@ -332,6 +357,14 @@
 		background-color: #e8f5e9;
 		border-radius: 5px;
 		font-size: 0.9rem;
+	}
+
+	.help-text {
+		display: block;
+		margin-top: 0.25rem;
+		font-size: 0.85rem;
+		color: #666;
+		font-style: italic;
 	}
 
 	@media (max-width: 768px) {

@@ -1,8 +1,9 @@
 <script>
 	import { page } from '$app/stores';
 	import { isDarkMode } from '$lib/in/themeStore';
-	import { isSidebarExpanded, isMobileMenuOpen } from '$lib/in/sidebarStore';
-	import { createEventDispatcher } from 'svelte';
+	import { isSidebarExpanded, isMobileMenuOpen, expandedSections } from '$lib/in/sidebarStore';
+	import { createEventDispatcher, onMount } from 'svelte';
+	import { slide } from 'svelte/transition';
 
 	export let businessSlug = '';
 	export let businessName = '';
@@ -14,22 +15,25 @@
 	$: currentPath = $page.url.pathname;
 	$: expanded = $isSidebarExpanded;
 	$: mobileOpen = $isMobileMenuOpen;
+	$: sections = $expandedSections;
 
-	// Navigation items configuration
+	// Navigation items configuration - 6 logical groups
 	const navSections = [
+		// Group 1: Dashboard (standalone)
 		{
-			title: 'Dashboard',
-			items: [
-				{
-					label: 'Dashboard',
-					icon: '📊',
-					href: `/in/${businessSlug}`,
-					type: 'link'
-				}
-			]
+			type: 'standalone',
+			label: 'Dashboard',
+			icon: '📊',
+			href: `/in/${businessSlug}`,
+			itemType: 'link'
 		},
+
+		// Group 2: Leads (collapsible)
 		{
-			title: 'LEADS & CRM',
+			type: 'collapsible',
+			id: 'leads',
+			title: 'Leads',
+			icon: '👥',
 			items: [
 				{
 					label: 'Add Lead',
@@ -51,8 +55,13 @@
 				}
 			]
 		},
+
+		// Group 3: Branches (collapsible)
 		{
-			title: 'BRANCH MANAGEMENT',
+			type: 'collapsible',
+			id: 'branches',
+			title: 'Branches',
+			icon: '🏪',
 			items: [
 				{
 					label: 'Manage Branches',
@@ -68,8 +77,13 @@
 				}
 			]
 		},
+
+		// Group 4: Projects (collapsible)
 		{
-			title: 'PROJECTS',
+			type: 'collapsible',
+			id: 'projects',
+			title: 'Projects',
+			icon: '📋',
 			items: [
 				{
 					label: 'Manage Recent Projects',
@@ -82,28 +96,36 @@
 					icon: '📋',
 					href: `/in/${businessSlug}/project-management`,
 					type: 'link'
-				},
-				{
-					label: 'Proposals',
-					icon: '📄',
-					href: `/in/${businessSlug}/proposal`,
-					type: 'link'
 				}
 			]
 		},
+
+		// Group 5: Proposals (standalone)
 		{
-			title: 'SETTINGS',
+			type: 'standalone',
+			label: 'Proposals',
+			icon: '📄',
+			href: `/in/${businessSlug}/proposal`,
+			itemType: 'link'
+		},
+
+		// Group 6: Settings (collapsible)
+		{
+			type: 'collapsible',
+			id: 'settings',
+			title: 'Settings',
+			icon: '⚙️',
 			items: [
-				{
-					label: 'Policy',
-					icon: '📜',
-					action: 'policy',
-					type: 'modal'
-				},
 				{
 					label: 'Support',
 					icon: '💬',
 					action: 'support',
+					type: 'modal'
+				},
+				{
+					label: 'Policy',
+					icon: '📜',
+					action: 'policy',
 					type: 'modal'
 				}
 			]
@@ -142,6 +164,22 @@
 		if (!href) return false;
 		return currentPath === href || currentPath.startsWith(href + '/');
 	}
+
+	function toggleSection(sectionId) {
+		expandedSections.toggle(sectionId);
+	}
+
+	// Auto-expand sections containing active routes
+	onMount(() => {
+		navSections.forEach((section) => {
+			if (section.type === 'collapsible') {
+				const hasActiveItem = section.items.some((item) => item.href && isActive(item.href));
+				if (hasActiveItem && !sections[section.id]) {
+					expandedSections.toggle(section.id);
+				}
+			}
+		});
+	});
 </script>
 
 <!-- Mobile Backdrop -->
@@ -177,40 +215,85 @@
 	<!-- Navigation -->
 	<nav class="sidebar-nav">
 		{#each navSections as section}
-			<div class="nav-section">
-				{#if expanded}
-					<div class="section-title">{section.title}</div>
-				{/if}
-				<ul class="nav-items">
-					{#each section.items as item}
+			{#if section.type === 'standalone'}
+				<!-- Standalone Items (Dashboard, Proposals) -->
+				<div class="nav-section standalone-section">
+					<ul class="nav-items">
 						<li>
-							{#if item.type === 'link'}
+							{#if section.itemType === 'link'}
 								<a
-									href={item.href}
-									class="nav-item {isActive(item.href) ? 'active' : ''}"
-									title={expanded ? '' : item.label}
+									href={section.href}
+									class="nav-item {isActive(section.href) ? 'active' : ''}"
+									title={expanded ? '' : section.label}
 								>
-									<span class="nav-icon">{item.icon}</span>
+									<span class="nav-icon">{section.icon}</span>
 									{#if expanded}
-										<span class="nav-label">{item.label}</span>
+										<span class="nav-label">{section.label}</span>
 									{/if}
 								</a>
-							{:else if item.type === 'modal'}
+							{:else if section.itemType === 'modal'}
 								<button
 									class="nav-item"
-									on:click={() => handleItemClick(item)}
-									title={expanded ? '' : item.label}
+									on:click={() => handleItemClick(section)}
+									title={expanded ? '' : section.label}
 								>
-									<span class="nav-icon">{item.icon}</span>
+									<span class="nav-icon">{section.icon}</span>
 									{#if expanded}
-										<span class="nav-label">{item.label}</span>
+										<span class="nav-label">{section.label}</span>
 									{/if}
 								</button>
 							{/if}
 						</li>
-					{/each}
-				</ul>
-			</div>
+					</ul>
+				</div>
+			{:else if section.type === 'collapsible'}
+				<!-- Collapsible Groups (Leads, Branches, Projects, Settings) -->
+				<div class="nav-section collapsible-section">
+					<button
+						class="collapsible-header"
+						on:click={() => toggleSection(section.id)}
+						disabled={!expanded}
+						aria-expanded={sections[section.id] ? 'true' : 'false'}
+						title={expanded ? '' : section.title}
+					>
+						<span class="nav-icon">{section.icon}</span>
+						{#if expanded}
+							<span class="nav-label">{section.title}</span>
+							<span class="chevron {sections[section.id] ? 'expanded' : ''}">▼</span>
+						{/if}
+					</button>
+
+					{#if expanded && sections[section.id]}
+						<div class="collapsible-content" transition:slide={{ duration: 200 }}>
+							<ul class="nav-items">
+								{#each section.items as item}
+									<li>
+										{#if item.type === 'link'}
+											<a
+												href={item.href}
+												class="nav-item nested-item {isActive(item.href) ? 'active' : ''}"
+												title={item.label}
+											>
+												<span class="nav-icon">{item.icon}</span>
+												<span class="nav-label">{item.label}</span>
+											</a>
+										{:else if item.type === 'modal'}
+											<button
+												class="nav-item nested-item"
+												on:click={() => handleItemClick(item)}
+												title={item.label}
+											>
+												<span class="nav-icon">{item.icon}</span>
+												<span class="nav-label">{item.label}</span>
+											</button>
+										{/if}
+									</li>
+								{/each}
+							</ul>
+						</div>
+					{/if}
+				</div>
+			{/if}
 		{/each}
 	</nav>
 
@@ -433,6 +516,91 @@
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
 		opacity: 0.6;
+	}
+
+	/* Standalone Section */
+	.standalone-section {
+		margin-bottom: 0.25rem;
+	}
+
+	/* Collapsible Section */
+	.collapsible-section {
+		margin-bottom: 0.25rem;
+	}
+
+	/* Collapsible Header Button */
+	.collapsible-header {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.75rem 1rem;
+		margin: 0.125rem 0.5rem;
+		border-radius: 6px;
+		border: none;
+		background: none;
+		cursor: pointer;
+		transition: background-color 0.2s;
+		width: calc(100% - 1rem);
+		text-align: left;
+		font-size: 0.875rem;
+		font-weight: 500;
+		opacity: 0.8;
+		color: inherit;
+	}
+
+	.collapsible-header:disabled {
+		cursor: default;
+	}
+
+	.collapsed .collapsible-header {
+		justify-content: center;
+		padding: 0.75rem;
+	}
+
+	.light .collapsible-header:hover:not(:disabled) {
+		background-color: #f3f4f6;
+	}
+
+	.dark .collapsible-header:hover:not(:disabled) {
+		background-color: #2a2a2a;
+	}
+
+	/* Chevron Icon */
+	.chevron {
+		margin-left: auto;
+		font-size: 0.625rem;
+		transition: transform 0.2s ease;
+		transform: rotate(-90deg);
+	}
+
+	.chevron.expanded {
+		transform: rotate(0deg);
+	}
+
+	/* Collapsible Content */
+	.collapsible-content {
+		overflow: hidden;
+	}
+
+	/* Nested Items */
+	.nested-item {
+		font-size: 0.875rem;
+		padding-left: 2.5rem;
+		opacity: 0.9;
+	}
+
+	.nested-item .nav-icon {
+		font-size: 1rem;
+	}
+
+	/* Hide collapsible elements when sidebar is collapsed */
+	.collapsed .collapsible-header .nav-label,
+	.collapsed .collapsible-header .chevron {
+		display: none;
+	}
+
+	.collapsed .collapsible-content {
+		display: none;
 	}
 
 	.nav-items {

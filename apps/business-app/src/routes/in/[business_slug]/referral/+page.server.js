@@ -34,6 +34,7 @@ export async function load({ params, parent }) {
 				id,
 				business_id,
 				name,
+				slug,
 				phone,
 				email,
 				notes,

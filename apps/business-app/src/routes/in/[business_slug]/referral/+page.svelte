@@ -18,14 +18,48 @@
 	}
 
 	// Function to get referrer link
-	function getReferrerLink(referrerId) {
-		return `https://solarvipani.com/in/solar-panel-installer/${businessSlug}/referrer/${referrerId}`;
+	function getReferrerLink(referrerSlug) {
+		return `https://solarvipani.com/in/solar-panel-installer/${businessSlug}/referrer/${referrerSlug}`;
 	}
 
-	// Function to open referrer link
-	function openReferrerLink(referrerId) {
-		const link = getReferrerLink(referrerId);
-		window.open(link, '_blank');
+	// Function to copy link to clipboard
+	function copyReferrerLink(referrerSlug) {
+		const link = getReferrerLink(referrerSlug);
+		navigator.clipboard.writeText(link).then(() => {
+			alert('Link copied to clipboard!');
+		}).catch(err => {
+			console.error('Failed to copy link:', err);
+		});
+	}
+
+	// Function to delete referrer
+	async function deleteReferrer(referrerId, referrerName) {
+		if (!confirm(`Are you sure you want to delete referrer "${referrerName}"? This action cannot be undone.`)) {
+			return;
+		}
+
+		try {
+			const response = await fetch('/in/api/deleteReferrer', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					referrerId: referrerId,
+					businessId: business.id
+				})
+			});
+
+			const result = await response.json();
+
+			if (result.success) {
+				alert('Referrer deleted successfully!');
+				window.location.reload();
+			} else {
+				alert(`Error: ${result.error}`);
+			}
+		} catch (error) {
+			console.error('Error deleting referrer:', error);
+			alert('An error occurred while deleting the referrer');
+		}
 	}
 </script>
 
@@ -58,10 +92,11 @@
 					<thead>
 						<tr>
 							<th>Name</th>
+							<th>Slug</th>
 							<th>Phone</th>
 							<th>Email</th>
 							<th>Notes</th>
-							<th>Action</th>
+							<th>Actions</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -69,6 +104,9 @@
 							<tr>
 								<td>
 									<div class="referrer-name">{referrer.name}</div>
+								</td>
+								<td>
+									<code class="slug-code">{referrer.slug}</code>
 								</td>
 								<td>{referrer.phone || 'N/A'}</td>
 								<td>{referrer.email || 'N/A'}</td>
@@ -78,9 +116,14 @@
 									</div>
 								</td>
 								<td>
-									<button class="link-btn" on:click={() => openReferrerLink(referrer.id)}>
-										🔗 Link
-									</button>
+									<div class="action-buttons">
+										<button class="copy-btn" on:click={() => copyReferrerLink(referrer.slug)} title="Copy link to clipboard">
+											📋 Copy
+										</button>
+										<button class="delete-btn" on:click={() => deleteReferrer(referrer.id, referrer.name)} title="Delete referrer">
+											🗑️ Delete
+										</button>
+									</div>
 								</td>
 							</tr>
 						{/each}
@@ -279,30 +322,71 @@
 		white-space: nowrap;
 	}
 
-	.link-btn {
-		background: var(--accent-color);
-		color: white;
-		padding: 0.5rem 1rem;
+	.slug-code {
+		background-color: #f0f0f0;
+		padding: 0.25rem 0.5rem;
+		border-radius: 4px;
+		font-family: 'Courier New', monospace;
+		font-size: 0.85rem;
+		color: #333;
+	}
+
+	.dark .slug-code {
+		background-color: #444;
+		color: #f0f0f0;
+	}
+
+	.action-buttons {
+		display: flex;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+	}
+
+	.copy-btn,
+	.delete-btn {
+		padding: 0.4rem 0.8rem;
 		border-radius: 5px;
 		border: none;
 		cursor: pointer;
-		font-size: 0.9rem;
+		font-size: 0.85rem;
 		font-weight: 500;
 		transition: background-color 0.3s ease;
 		white-space: nowrap;
+		color: white;
 	}
 
-	.link-btn:hover {
-		background: #004494;
+	.copy-btn {
+		background: #28a745;
 	}
 
-	.dark .link-btn {
-		background: #66b2ff;
-		color: #1a1a1a;
+	.copy-btn:hover {
+		background: #218838;
 	}
 
-	.dark .link-btn:hover {
-		background: #5aa3ff;
+	.delete-btn {
+		background: #dc3545;
+	}
+
+	.delete-btn:hover {
+		background: #c82333;
+	}
+
+	.dark .copy-btn {
+		background: #28a745;
+		color: white;
+	}
+
+	.dark .copy-btn:hover {
+		background: #218838;
+	}
+
+	.dark .delete-btn {
+		background: #dc3545;
+		color: white;
+	}
+
+	.dark .delete-btn:hover {
+		background: #c82333;
 	}
 
 	@media (max-width: 768px) {

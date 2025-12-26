@@ -16,7 +16,7 @@ export async function POST({ request, cookies }) {
 		}
 
 		const data = await request.json();
-		const { businessId, name, email, phone, notes } = data;
+		const { businessId, name, slug, email, phone, notes } = data;
 
 		// Verify the logged-in business is adding referrer for themselves
 		if (sessionResult.session.businessId !== businessId) {
@@ -27,8 +27,17 @@ export async function POST({ request, cookies }) {
 		}
 
 		// Validate required fields
-		if (!name || !phone) {
-			return json({ success: false, error: 'Name and phone are required' }, { status: 400 });
+		if (!name || !slug || !phone) {
+			return json({ success: false, error: 'Name, slug, and phone are required' }, { status: 400 });
+		}
+
+		// Validate slug format (lowercase alphanumeric and hyphens only)
+		const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+		if (!slugRegex.test(slug)) {
+			return json(
+				{ success: false, error: 'Slug must be lowercase alphanumeric characters and hyphens only' },
+				{ status: 400 }
+			);
 		}
 
 		// Validate phone number format (10 digits)
@@ -46,15 +55,29 @@ export async function POST({ request, cookies }) {
 		}
 
 		// Check if referrer with same phone already exists for this business
-		const checkQuery = `
+		const checkPhoneQuery = `
 			SELECT id FROM referrers_in
 			WHERE business_id = $1 AND phone = $2
 		`;
-		const checkResult = await pool.query(checkQuery, [businessId, phone]);
+		const checkPhoneResult = await pool.query(checkPhoneQuery, [businessId, phone]);
 
-		if (checkResult.rows.length > 0) {
+		if (checkPhoneResult.rows.length > 0) {
 			return json(
 				{ success: false, error: 'A referrer with this phone number already exists' },
+				{ status: 400 }
+			);
+		}
+
+		// Check if referrer with same slug already exists for this business
+		const checkSlugQuery = `
+			SELECT id FROM referrers_in
+			WHERE business_id = $1 AND slug = $2
+		`;
+		const checkSlugResult = await pool.query(checkSlugQuery, [businessId, slug]);
+
+		if (checkSlugResult.rows.length > 0) {
+			return json(
+				{ success: false, error: 'A referrer with this slug already exists. Please choose a different slug.' },
 				{ status: 400 }
 			);
 		}
@@ -64,17 +87,19 @@ export async function POST({ request, cookies }) {
 			INSERT INTO referrers_in (
 				business_id,
 				name,
+				slug,
 				phone,
 				email,
 				notes
 			)
-			VALUES ($1, $2, $3, $4, $5)
-			RETURNING id, business_id, name, phone, email, notes, created_at, updated_at
+			VALUES ($1, $2, $3, $4, $5, $6)
+			RETURNING id, business_id, name, slug, phone, email, notes, created_at, updated_at
 		`;
 
 		const insertResult = await pool.query(insertQuery, [
 			businessId,
 			name,
+			slug,
 			phone,
 			email || null,
 			notes || null
