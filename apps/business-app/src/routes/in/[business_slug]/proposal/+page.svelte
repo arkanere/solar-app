@@ -59,6 +59,35 @@
 			return formatDate(dateString);
 		}
 	}
+
+	// Function to delete proposal
+	async function deleteProposal(proposalId, customerName) {
+		if (!confirm(`Are you sure you want to delete proposal for "${customerName}"? This action cannot be undone.`)) {
+			return;
+		}
+
+		try {
+			const response = await fetch('/in/api/deleteProposal', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					proposalId: proposalId
+				})
+			});
+
+			const result = await response.json();
+
+			if (result.success) {
+				alert('Proposal deleted successfully!');
+				window.location.reload();
+			} else {
+				alert(`Error: ${result.error}`);
+			}
+		} catch (error) {
+			console.error('Error deleting proposal:', error);
+			alert('An error occurred while deleting the proposal');
+		}
+	}
 </script>
 
 <div class="page-content {darkMode ? 'dark' : 'light'}">
@@ -89,12 +118,20 @@
 								<td>{proposal.customer_name}</td>
 								<td>{proposal.system_capacity_kw} kW</td>
 								<td>
-									<button
-										class="btn update-btn"
-										on:click={() => openUpdateProposal(proposal)}
-									>
-										Update Proposal
-									</button>
+									<div class="action-buttons">
+										<button
+											class="btn update-btn"
+											on:click={() => openUpdateProposal(proposal)}
+										>
+											Update Proposal
+										</button>
+										<button
+											class="btn delete-btn"
+											on:click={() => deleteProposal(proposal.id, proposal.customer_name)}
+										>
+											Delete
+										</button>
+									</div>
 								</td>
 							</tr>
 						{/each}
@@ -236,6 +273,12 @@
 		background: #333;
 	}
 
+	.action-buttons {
+		display: flex;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+	}
+
 	.update-btn {
 		background: var(--accent-color);
 		color: white;
@@ -262,6 +305,32 @@
 		background: #5aa3ff;
 	}
 
+	.delete-btn {
+		background: #dc3545;
+		color: white;
+		padding: 0.5rem 1rem;
+		border-radius: 5px;
+		border: none;
+		cursor: pointer;
+		font-size: 0.9rem;
+		font-weight: 500;
+		transition: background-color 0.3s ease;
+		white-space: nowrap;
+	}
+
+	.delete-btn:hover {
+		background: #c82333;
+	}
+
+	.dark .delete-btn {
+		background: #dc3545;
+		color: white;
+	}
+
+	.dark .delete-btn:hover {
+		background: #c82333;
+	}
+
 	@media (max-width: 768px) {
 		.page-content {
 			padding: 1rem;
@@ -280,9 +349,15 @@
 			padding: 0.75rem 0.5rem;
 		}
 
-		.update-btn {
+		.update-btn,
+		.delete-btn {
 			padding: 0.4rem 0.75rem;
 			font-size: 0.85rem;
+		}
+
+		.action-buttons {
+			flex-direction: column;
+			gap: 0.25rem;
 		}
 	}
 </style>

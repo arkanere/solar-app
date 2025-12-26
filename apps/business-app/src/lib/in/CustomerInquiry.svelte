@@ -3,6 +3,7 @@
 	import LeadProgressBar from './LeadProgressBar.svelte';
 	import LeadStageFilter from './LeadStageFilter.svelte';
 	import ProposalFormModal from './ProposalFormModal.svelte';
+	import LeadTile from './LeadTile.svelte';
 
 	export let leads = [];
 	export let businessInfo = {};
@@ -98,6 +99,9 @@
 	// State for tracking save status per lead
 	let savingNotes = new Set();
 	let savedNotes = new Set();
+
+	// State for tracking expanded/collapsed leads (compact view)
+	let expandedLeads = new Set();
 
 	// Function to save business notes
 	async function saveBusinessNotes(lead) {
@@ -327,6 +331,16 @@
 		// Optionally refresh leads or show success message
 		closeProposalModal();
 	}
+
+	// Toggle lead details expand/collapse
+	function toggleLeadDetails(leadId) {
+		if (expandedLeads.has(leadId)) {
+			expandedLeads.delete(leadId);
+		} else {
+			expandedLeads.add(leadId);
+		}
+		expandedLeads = expandedLeads; // Trigger reactivity
+	}
 </script>
 
 <!-- LEAD DATA SECTION -->
@@ -354,225 +368,25 @@
 		<ul>
 			{#if leads.length > 0}
 				{#each filteredLeads as lead}
-					{@const collapsedNotes = lead.collapsedNotes !== false}
-					<li>
-						<!-- HEADER SECTION - Identity & Status -->
-						<div class="lead-header">
-							<h3>{lead.name}</h3>
-							<span
-								class="status-badge status-{lead.category === 1
-									? 'available'
-									: lead.category === 2
-										? 'claimed'
-										: 'exclusive'}"
-							>
-								<span class="status-dot"></span>
-								{lead.category === 1
-									? 'Non-Exclusive'
-									: lead.category === 2
-										? 'Non-Exclusive-Claimed'
-										: 'Exclusive'}
-							</span>
-						</div>
-						<p class="received-time">Received {getRelativeTime(lead.created_at).text}</p>
-
-						<!-- CONTACT ACTION BAR -->
-						<div class="contact-action-bar">
-							<div class="contact-info-row">
-								<div class="contact-item">
-									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-										<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-									</svg>
-									<span class="contact-value">{lead.phone}</span>
-								</div>
-								{#if lead.email}
-									<div class="contact-item">
-										<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-											<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-											<polyline points="22,6 12,13 2,6"></polyline>
-										</svg>
-										<a href="mailto:{lead.email}" class="contact-value email-link">{lead.email}</a>
-									</div>
-								{/if}
-							</div>
-							<button
-								class="call-now-button"
-								on:click={() => makeCall(lead.phone, lead.name, lead.id)}
-								title="Call {lead.name}"
-							>
-								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-									<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-								</svg>
-								Call Now
-							</button>
-						</div>
-
-						<!-- LEAD INFORMATION SECTION -->
-						<div class="lead-info-section">
-							<h4 class="section-header">Lead Information</h4>
-							<div class="info-grid">
-								<div class="info-item">
-									<span class="info-label">Property Type</span>
-									<span class="info-value">{lead.type}</span>
-								</div>
-								<div class="info-item">
-									<span class="info-label">Location</span>
-									<span class="info-value">{lead.pin_code}</span>
-								</div>
-								<div class="info-item info-item-full">
-									<span class="info-label">System Size</span>
-									<span class="info-value">{lead.comment}</span>
-								</div>
-							</div>
-							{#if lead.sv_comment_for_businesses}
-								<div class="sv-comment">
-									<strong>Solar Vipani Note:</strong> {lead.sv_comment_for_businesses}
-								</div>
-							{/if}
-						</div>
-
-						{#if lead.category !== 1}
-							<!-- WORKFLOW SECTION - Progress & Stage -->
-							<div class="workflow-section">
-								<h4 class="section-header">Workflow</h4>
-								<div class="stage-status-controls">
-									<div class="control-group">
-										<label for="stage-{lead.id}" class="control-label">Current Stage</label>
-										<select
-											id="stage-{lead.id}"
-											class="control-select"
-											bind:value={lead.stage}
-											on:change={() => updateLead(lead, { stage: lead.stage })}
-										>
-											{#if lead.category === 2}
-												{#each Object.entries(NON_EXCLUSIVE_CLAIMED_STAGES) as [value, label]}
-													<option value={Number(value)}>{label}</option>
-												{/each}
-											{:else}
-												{#each Object.entries(STAGES) as [value, label]}
-													<option value={Number(value)}>{label}</option>
-												{/each}
-											{/if}
-										</select>
-									</div>
-
-									<div class="control-group">
-										<label for="status-{lead.id}" class="control-label">Lead Status</label>
-										<select
-											id="status-{lead.id}"
-											class="control-select"
-											bind:value={lead.status}
-											on:change={() => updateLead(lead, { status: lead.status })}
-										>
-											<option value={true}>Active</option>
-											<option value={false}>Inactive</option>
-										</select>
-									</div>
-								</div>
-
-								<LeadProgressBar
-									currentStage={lead.stage}
-									leadCategory={lead.category}
-									isActive={lead.status}
-								/>
-							</div>
-
-							<!-- NOTES SECTION -->
-							<div class="notes-section">
-								<button
-									class="notes-header"
-									on:click={() => lead.collapsedNotes = !collapsedNotes}
-									type="button"
-								>
-									<svg class="collapse-icon {collapsedNotes ? '' : 'expanded'}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-										<polyline points="9 18 15 12 9 6"></polyline>
-									</svg>
-									<span>Internal Notes</span>
-									{#if lead.business_notes}
-										<span class="notes-indicator">•</span>
-									{/if}
-								</button>
-								{#if !collapsedNotes}
-									<div class="notes-content">
-										<textarea
-											id="business-notes-{lead.id}"
-											bind:value={lead.business_notes}
-											placeholder="Add your private notes about this lead..."
-											rows="3"
-											disabled={savingNotes.has(lead.id)}
-										></textarea>
-										<div class="notes-actions">
-											<button
-												class="save-button"
-												on:click={() => saveBusinessNotes(lead)}
-												disabled={savingNotes.has(lead.id)}
-											>
-												{#if savingNotes.has(lead.id)}
-													Saving...
-												{:else}
-													Save
-												{/if}
-											</button>
-											{#if savedNotes.has(lead.id)}
-												<span class="save-success">✓ Saved</span>
-											{/if}
-										</div>
-									</div>
-								{/if}
-							</div>
-
-							<!-- NEXT ACTION FOOTER -->
-							{@const nextAction = getNextAction(lead.stage, lead.category, lead.status)}
-							{#if nextAction}
-								<div class="action-footer">
-									<div class="action-hint">
-										<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-											<circle cx="12" cy="12" r="10"></circle>
-											<line x1="12" y1="16" x2="12" y2="12"></line>
-											<line x1="12" y1="8" x2="12.01" y2="8"></line>
-										</svg>
-										<span class="action-text"><strong>Next Step:</strong> {nextAction}</span>
-									</div>
-									{#if lead.stage === 1 && lead.status}
-										<button
-											class="primary-action-button"
-											on:click={() => openProposalModal(lead)}
-										>
-											Generate Proposal
-											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-												<line x1="5" y1="12" x2="19" y2="12"></line>
-												<polyline points="12 5 19 12 12 19"></polyline>
-											</svg>
-										</button>
-									{/if}
-								</div>
-							{:else if lead.category !== 1 && !lead.status}
-								<div class="action-footer">
-									<button
-										class="delete-button"
-										on:click={() => showDeleteConfirmation(lead)}
-									>
-										Delete Lead
-									</button>
-								</div>
-							{/if}
-						{:else}
-							<!-- CLAIM BUTTON FOR NON-EXCLUSIVE AVAILABLE LEADS -->
-							<div class="action-footer">
-								{#if lead.claim_count > 4}
-									<p class="claimed-text">Not Available. Claimed by Other Business</p>
-								{:else}
-									<button
-										class="claim-button"
-										on:click={() => claimLead(lead.id, businessInfo.id)}
-										disabled={isClaiming}
-									>
-										{isClaiming ? 'Claiming...' : 'Claim Now (Free)'}
-									</button>
-								{/if}
-							</div>
-						{/if}
-					</li>
+					<LeadTile
+						{lead}
+						{businessInfo}
+						{isClaiming}
+						{savingNotes}
+						{savedNotes}
+						{expandedLeads}
+						{STAGES}
+						{NON_EXCLUSIVE_CLAIMED_STAGES}
+						{makeCall}
+						{saveBusinessNotes}
+						{updateLead}
+						{getRelativeTime}
+						{getNextAction}
+						{openProposalModal}
+						{showDeleteConfirmation}
+						{claimLead}
+						on:toggleDetails={(e) => toggleLeadDetails(e.detail.leadId)}
+					/>
 				{/each}
 			{:else}
 				<!-- Display dummy test lead when no leads exist -->
@@ -720,16 +534,18 @@
 		list-style-type: none;
 		padding: 0;
 		width: 100%;
+		max-width: 900px;
+		margin: 0 auto;
 	}
 
 	#lead-data li {
-		margin-bottom: var(--spacing-5);
+		margin-bottom: var(--spacing-6);
 		padding: 0;
 		border-radius: 12px;
 		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
 		word-wrap: break-word;
 		overflow-wrap: break-word;
-		transition: box-shadow 0.2s ease;
+		transition: all 0.2s ease;
 		overflow: hidden;
 	}
 
@@ -739,12 +555,12 @@
 
 	:global(.light) #lead-data li {
 		background-color: #FFFFFF;
-		border: 1px solid var(--color-gray-200);
+		border: 2px solid #000000;
 	}
 
 	:global(.dark) #lead-data li {
 		background-color: #333;
-		border: 1px solid var(--border-color-dark);
+		border: 2px solid #000000;
 	}
 
 	/* ========================================
@@ -943,6 +759,264 @@
 			width: 100%;
 			justify-content: center;
 		}
+	}
+
+	/* ========================================
+	   COMPACT INFO GRID - New Simplified Layout
+	   ======================================== */
+	.compact-info-grid {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		gap: var(--spacing-2);
+		padding: var(--spacing-3) var(--spacing-5);
+		background-color: var(--color-gray-50);
+		border-bottom: 1px solid var(--color-gray-200);
+	}
+
+	:global(.dark) .compact-info-grid {
+		background-color: #2a2a2a;
+		border-bottom-color: #444;
+	}
+
+	.compact-info-item {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		font-size: 13px;
+		color: var(--color-gray-700);
+	}
+
+	:global(.dark) .compact-info-item {
+		color: var(--dark-primary-text-color);
+	}
+
+	.compact-info-item.phone-item {
+		grid-column: 1;
+		font-weight: 500;
+	}
+
+	.compact-info-item svg {
+		color: var(--color-gray-500);
+		flex-shrink: 0;
+	}
+
+	:global(.dark) .compact-info-item svg {
+		color: #9ca3af;
+	}
+
+	.compact-info-label {
+		font-weight: 600;
+		color: var(--color-gray-600);
+	}
+
+	:global(.dark) .compact-info-label {
+		color: #9ca3af;
+	}
+
+	.compact-info-value {
+		font-weight: 500;
+		color: var(--color-gray-900);
+	}
+
+	:global(.dark) .compact-info-value {
+		color: var(--dark-primary-text-color);
+	}
+
+	.call-now-button-compact {
+		grid-column: 2;
+		grid-row: 1 / span 3;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 6px;
+		padding: 10px 16px;
+		font-size: 13px;
+		font-weight: 600;
+		border: none;
+		border-radius: 6px;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		background-color: var(--color-primary);
+		color: white;
+		box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);
+		white-space: nowrap;
+	}
+
+	.call-now-button-compact:hover {
+		background-color: var(--color-primary-hover);
+		box-shadow: 0 4px 6px rgba(37, 99, 235, 0.4);
+		transform: translateY(-1px);
+	}
+
+	.call-now-button-compact:active {
+		transform: translateY(0);
+	}
+
+	.call-now-button-compact svg {
+		width: 16px;
+		height: 16px;
+	}
+
+	@media (max-width: 640px) {
+		.compact-info-grid {
+			grid-template-columns: 1fr;
+			gap: var(--spacing-2);
+		}
+
+		.compact-info-item.phone-item {
+			grid-column: 1;
+		}
+
+		.call-now-button-compact {
+			grid-column: 1;
+			grid-row: auto;
+			width: 100%;
+		}
+	}
+
+	/* ========================================
+	   TOGGLE DETAILS BUTTON
+	   ======================================== */
+	.toggle-details-button {
+		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		padding: var(--spacing-2) var(--spacing-3);
+		background: none;
+		border: none;
+		border-top: 1px solid var(--color-gray-200);
+		border-bottom: 1px solid var(--color-gray-200);
+		cursor: pointer;
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--color-gray-600);
+		transition: all 0.2s ease;
+	}
+
+	.toggle-details-button:hover {
+		background-color: var(--color-gray-50);
+		color: var(--color-gray-800);
+	}
+
+	:global(.dark) .toggle-details-button {
+		border-top-color: #444;
+		border-bottom-color: #444;
+		color: #9ca3af;
+	}
+
+	:global(.dark) .toggle-details-button:hover {
+		background-color: #2a2a2a;
+		color: #d1d5db;
+	}
+
+	.toggle-icon {
+		transition: transform 0.2s ease;
+		color: var(--color-gray-500);
+	}
+
+	.toggle-icon.expanded {
+		transform: rotate(180deg);
+	}
+
+	/* ========================================
+	   EXPANDABLE DETAILS SECTION
+	   ======================================== */
+	.details-section {
+		padding: var(--spacing-4) var(--spacing-5);
+		background-color: #FAFBFC;
+		border-bottom: 1px solid var(--color-gray-200);
+		animation: expandDetails 0.3s ease;
+	}
+
+	:global(.dark) .details-section {
+		background-color: #252525;
+		border-bottom-color: #444;
+	}
+
+	@keyframes expandDetails {
+		from {
+			opacity: 0;
+			max-height: 0;
+		}
+		to {
+			opacity: 1;
+			max-height: 1000px;
+		}
+	}
+
+	.detail-item {
+		display: flex;
+		align-items: flex-start;
+		gap: 8px;
+		margin-bottom: var(--spacing-2);
+		font-size: 13px;
+	}
+
+	.detail-item.email-detail {
+		align-items: center;
+		padding: var(--spacing-2);
+		background-color: white;
+		border-radius: 6px;
+		border: 1px solid var(--color-gray-200);
+	}
+
+	:global(.dark) .detail-item.email-detail {
+		background-color: #2a2a2a;
+		border-color: #444;
+	}
+
+	.detail-item svg {
+		color: var(--color-gray-500);
+		flex-shrink: 0;
+		margin-top: 2px;
+	}
+
+	:global(.dark) .detail-item svg {
+		color: #9ca3af;
+	}
+
+	.detail-label {
+		font-weight: 600;
+		color: var(--color-gray-600);
+	}
+
+	:global(.dark) .detail-label {
+		color: #9ca3af;
+	}
+
+	.detail-value {
+		font-weight: 500;
+		color: var(--color-gray-900);
+	}
+
+	:global(.dark) .detail-value {
+		color: var(--dark-primary-text-color);
+	}
+
+	.next-step-hint {
+		display: flex;
+		align-items: flex-start;
+		gap: 10px;
+		padding: var(--spacing-3);
+		margin-top: var(--spacing-3);
+		background-color: #EFF6FF;
+		border-left: 3px solid var(--color-primary);
+		border-radius: 4px;
+		font-size: 13px;
+		color: var(--color-gray-700);
+	}
+
+	:global(.dark) .next-step-hint {
+		background-color: rgba(59, 130, 246, 0.1);
+		color: #d1d5db;
+	}
+
+	.next-step-hint svg {
+		color: var(--color-primary);
+		flex-shrink: 0;
+		margin-top: 2px;
 	}
 
 	/* ========================================
