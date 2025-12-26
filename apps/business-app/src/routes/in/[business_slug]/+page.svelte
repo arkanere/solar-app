@@ -2,14 +2,18 @@
 	import { page } from '$app/stores';
 	import { isDarkMode } from '$lib/in/themeStore';
 	import CustomerInquiryDashboardHome from '$lib/in/CustomerInquiryDashboardHome.svelte';
+	import SetupProgressCard from '$lib/in/SetupProgressCard.svelte';
+	import ShowEditProfile from '$lib/in/ShowEditProfile.svelte';
 
 	// Destructure page data
 	const businessSlug = $page.params.business_slug;
-	$: ({ business, branches = [], leads = [], leadClaims = [], errorMessage } = $page.data);
+	$: ({ business, branches = [], leads = [], leadClaims = [], projectsCount = 0, referrersCount = 0, proposalsCount = 0, errorMessage } = $page.data);
 	$: darkMode = $isDarkMode;
+	$: claimedLeadsCount = leadClaims?.length || 0;
 
 	// Local state
 	let isClaiming = false;
+	let showEditProfile = false;
 
 	// Computed business info
 	$: businessInfo = business
@@ -52,11 +56,36 @@
 			isClaiming = false;
 		}
 	}
+
+	// Function to open edit profile modal
+	function openEditProfile() {
+		console.log('Opening edit profile with business data:', business);
+		console.log('Phone number:', business?.phonenumber);
+		showEditProfile = true;
+	}
+
+	// Handle profile updated event
+	function handleProfileUpdated() {
+		showEditProfile = false;
+		window.location.reload();
+	}
 </script>
 
 <!-- Main Content -->
 <div class="page-content {darkMode ? 'dark' : 'light'}">
 	<div class="container">
+		<!-- Setup Progress Card -->
+		<SetupProgressCard
+			{business}
+			{businessSlug}
+			{projectsCount}
+			{referrersCount}
+			{proposalsCount}
+			{claimedLeadsCount}
+			on:openEditProfile={openEditProfile}
+		/>
+
+		<!-- Customer Inquiry Dashboard -->
 		<CustomerInquiryDashboardHome
 			{leads}
 			{businessInfo}
@@ -67,6 +96,17 @@
 		/>
 	</div>
 </div>
+
+<!-- Edit Profile Modal -->
+{#if showEditProfile && business}
+	<ShowEditProfile
+		show={showEditProfile}
+		businessInfo={business}
+		{businessSlug}
+		on:close={() => (showEditProfile = false)}
+		on:updated={handleProfileUpdated}
+	/>
+{/if}
 
 <style>
 	/* Root variables */
