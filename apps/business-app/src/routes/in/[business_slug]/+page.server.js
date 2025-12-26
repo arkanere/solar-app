@@ -8,9 +8,9 @@ export async function load({ params }) {
 	const { business_slug } = params;
 
 	try {
-		// Query business details
+		// Query business details - select all fields to support edit profile modal
 		const businessResult = await pool.query(
-			'SELECT id, businessname, description, phonenumber, email, address, website, district FROM businesses_1 WHERE slug = $1 LIMIT 1',
+			'SELECT * FROM businesses_1 WHERE slug = $1 LIMIT 1',
 			[business_slug]
 		);
 
@@ -112,11 +112,32 @@ export async function load({ params }) {
 			return dateB - dateA;
 		});
 
+		// ✅ Query projects count for setup progress
+		const projectsResult = await pool.query(
+			'SELECT COUNT(*) as count FROM projects WHERE business_slug = $1 AND isvisible = true',
+			[business_slug]
+		);
+
+		// ✅ Query referrers count for setup progress
+		const referrersResult = await pool.query(
+			'SELECT COUNT(*) as count FROM referrers_in WHERE business_id = $1',
+			[businessId]
+		);
+
+		// ✅ Query proposals count for setup progress
+		const proposalsResult = await pool.query(
+			'SELECT COUNT(*) as count FROM proposals',
+			[]
+		);
+
 		return {
 			business,
 			branches: branchesResult.rows, // Include branch information for debugging/UI
 			leads: allLeads.length > 0 ? allLeads : [],
-			leadClaims: Array.from(claimedLeadIds) // ✅ Export leadClaims as an array of claimed lead IDs
+			leadClaims: Array.from(claimedLeadIds), // ✅ Export leadClaims as an array of claimed lead IDs
+			projectsCount: parseInt(projectsResult.rows[0]?.count || 0),
+			referrersCount: parseInt(referrersResult.rows[0]?.count || 0),
+			proposalsCount: parseInt(proposalsResult.rows[0]?.count || 0)
 		};
 	} catch (error) {
 		console.error('Database query error:', error);
