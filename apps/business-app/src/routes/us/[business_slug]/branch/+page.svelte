@@ -1,6 +1,6 @@
 <script>
 	import { page } from '$app/stores';
-	import { isDarkMode } from '$lib/us/themeStore';
+	import { isDarkMode } from '$lib/stores/theme.js';
 	import AddBranch from '$lib/us/AddBranch.svelte';
 	import ShowEditProfile from '$lib/us/ShowEditProfile.svelte';
 	import ShowSupport from '$lib/us/ShowSupport.svelte';

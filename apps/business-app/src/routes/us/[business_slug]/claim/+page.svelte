@@ -1,7 +1,7 @@
 <script>
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores'; // Store to access route parameters
-	import { isDarkMode } from '$lib/us/themeStore'; // Import from store if globally managed
+	import { isDarkMode } from '$lib/stores/theme.js';
 
 	let name = '';
 	let phone = '';

@@ -1,6 +1,7 @@
 <script>
 	import { page } from '$app/stores';
-	import { isDarkMode } from '$lib/us/themeStore';
+	import { toast } from 'svelte-sonner';
+	import { isDarkMode } from '$lib/stores/theme.js';
 	import ShowSupport from '$lib/us/ShowSupport.svelte';
 
 	const businessSlug = $page.params.business_slug;
@@ -40,7 +41,10 @@
 
 	// Function to show instructions for getting the inquiry
 	function showInquiryInstructions(lead) {
-		alert(`To get this inquiry in ${lead.county}, ${lead.state}:\n\n1. Add a branch in any city within ${lead.county} county\n2. Once the branch is added, the lead will appear in your business dashboard home page. From there you can claim it\n\nClick on "Add Branch" in the navigation menu to get started.`);
+		toast.info(`How to get inquiry in ${lead.county}`, {
+			description: `1. Add a branch in any city within ${lead.county} county\n2. Once added, the lead will appear in your dashboard home page\n3. Click "Add Branch" in the navigation menu to get started`,
+			duration: 10000
+		});
 	}
 </script>
 

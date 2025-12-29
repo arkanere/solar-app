@@ -1,31 +1,39 @@
 <script>
-	export let show = false;
-	export let businessSlug = '';
+	import { toast } from 'svelte-sonner';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import { Textarea } from '$lib/components/ui/textarea';
 
-	import { createEventDispatcher } from 'svelte';
-	const dispatch = createEventDispatcher();
+	let {
+		show = $bindable(false),
+		businessSlug = '',
+		onClose = () => {},
+		onPosted = () => {}
+	} = $props();
 
 	// Form data
-	let formData = {
+	let formData = $state({
 		projectTitle: '',
 		pincode: '',
 		district: '',
 		city: '',
 		projectDate: '',
 		projectImage: null
-	};
+	});
 
 	// Image preview
-	let imagePreview = null;
+	let imagePreview = $state(null);
 
 	// Submission state
-	let isSubmitting = false;
-	let errorMessage = '';
-	let isDistrictLoading = false;
-	let cities = [];
-	let isCitiesLoading = false;
-	let lastFetchedPincode = '';
-	let lastFetchedDistrict = '';
+	let isSubmitting = $state(false);
+	let errorMessage = $state('');
+	let isDistrictLoading = $state(false);
+	let cities = $state([]);
+	let isCitiesLoading = $state(false);
+	let lastFetchedPincode = $state('');
+	let lastFetchedDistrict = $state('');
 
 	// Suggested project names for consistency
 	const suggestedNames = [
@@ -41,25 +49,31 @@
 	}
 
 	// Reset form data when modal is shown
-	$: if (show) {
-		resetForm();
-		isSubmitting = false;
-		errorMessage = '';
-	}
+	$effect(() => {
+		if (show) {
+			resetForm();
+			isSubmitting = false;
+			errorMessage = '';
+		}
+	});
 
 	// Fetch district automatically when pincode changes
-	$: if (
-		formData.pincode &&
-		formData.pincode.length === 6 &&
-		formData.pincode !== lastFetchedPincode
-	) {
-		fetchDistrictByPincode(formData.pincode);
-	}
+	$effect(() => {
+		if (
+			formData.pincode &&
+			formData.pincode.length === 6 &&
+			formData.pincode !== lastFetchedPincode
+		) {
+			fetchDistrictByPincode(formData.pincode);
+		}
+	});
 
 	// Fetch cities when district changes
-	$: if (formData.district && formData.district !== lastFetchedDistrict) {
-		fetchCitiesByDistrict(formData.district);
-	}
+	$effect(() => {
+		if (formData.district && formData.district !== lastFetchedDistrict) {
+			fetchCitiesByDistrict(formData.district);
+		}
+	});
 
 	function resetForm() {
 		formData = {
@@ -86,8 +100,15 @@
 	const close = () => {
 		if (isSubmitting) return; // Prevent closing during submission
 		show = false;
-		dispatch('close');
+		onClose();
 	};
+
+	function handleOpenChange(open) {
+		if (!open && !isSubmitting) {
+			show = false;
+			onClose();
+		}
+	}
 
 	// Allowed image formats
 	const allowedImageTypes = [
@@ -180,7 +201,7 @@
 		if (file) {
 			// Validate file type
 			if (!allowedImageTypes.includes(file.type)) {
-				alert('Please upload a valid image file (JPG, PNG, WebP, GIF, BMP, TIFF, SVG)');
+				toast.error('Please upload a valid image file (JPG, PNG, WebP, GIF, BMP, TIFF, SVG)');
 				event.target.value = ''; // Clear the input
 				return;
 			}
@@ -188,7 +209,7 @@
 			// Validate file size (limit to 10MB)
 			const maxSize = 10 * 1024 * 1024; // 10MB in bytes
 			if (file.size > maxSize) {
-				alert('Image file size must be less than 10MB');
+				toast.error('Image file size must be less than 10MB');
 				event.target.value = ''; // Clear the input
 				return;
 			}
@@ -284,12 +305,12 @@
 			console.log('Response data:', result);
 
 			if (result.success) {
-				dispatch('posted', result.project);
+				onPosted(result.project);
 				// Use a timeout to prevent race conditions
 				setTimeout(() => {
-					alert('Project posted successfully! Redirecting...');
+					toast.success('Project posted successfully!');
 					isSubmitting = false;
-					show = false; // Close the modal after alerting
+					show = false; // Close the modal after toast
 					// Redirect to the recent projects page after a short delay
 					setTimeout(() => {
 						window.location.href = `/in/${businessSlug}/recent-projects`;
@@ -297,59 +318,62 @@
 				}, 100);
 			} else {
 				errorMessage = result.error || 'Failed to post project';
-				alert(`Error: ${errorMessage}`);
+				toast.error(errorMessage);
 				isSubmitting = false;
 			}
 		} catch (error) {
 			console.error('Error posting project:', error);
 			errorMessage = error.message || 'An error occurred while posting the project';
-			alert(errorMessage);
+			toast.error(errorMessage);
 			isSubmitting = false;
 		}
 	};
 </script>
 
-{#if show}
-	<div role="dialog" aria-modal="true" aria-labelledby="post-project-title" class="modal-overlay">
-		<div class="modal">
-			<button class="close-modal" aria-label="Close dialog" on:click={close} disabled={isSubmitting}
-				>&times;</button
-			>
-			<form class="modal-content" on:submit|preventDefault={saveProject}>
-				<h2 id="post-project-title">Post Recent Project</h2>
+<Dialog.Root open={show} onOpenChange={handleOpenChange}>
+	<Dialog.Content class="max-w-[500px] max-h-[90vh] overflow-y-auto">
+		<Dialog.Header>
+			<Dialog.Title class="text-accent">Post Recent Project</Dialog.Title>
+		</Dialog.Header>
 
-				{#if errorMessage}
-					<div class="error-message">{errorMessage}</div>
-				{/if}
+		<form class="flex flex-col gap-4" onsubmit={(e) => { e.preventDefault(); saveProject(); }}>
+			{#if errorMessage}
+				<div class="bg-destructive-muted text-destructive p-3 rounded border-l-4 border-destructive text-sm">
+					{errorMessage}
+				</div>
+			{/if}
 
-				<label for="projectTitle">Project Title:</label>
-				<textarea
+			<div class="flex flex-col gap-2">
+				<Label for="projectTitle">Project Title:</Label>
+				<Textarea
 					id="projectTitle"
 					bind:value={formData.projectTitle}
 					required
 					disabled={isSubmitting}
-					rows="3"
+					rows={3}
 					placeholder="Enter a project title..."
-				></textarea>
+				/>
+			</div>
 
-				<div class="suggestions-container">
-					<p class="suggestions-label">Suggested project titles:</p>
-					<div class="suggestions-grid">
-						{#each suggestedNames as suggestion}
-							<button
-								type="button"
-								class="suggestion-btn"
-								on:click={() => useSuggestedName(suggestion)}
-								disabled={isSubmitting}
-							>
-								{suggestion}
-							</button>
-						{/each}
-					</div>
+			<div class="p-4 bg-background-secondary rounded-lg border border-border">
+				<p class="font-semibold text-sm text-foreground-secondary mb-3">Suggested project titles:</p>
+				<div class="flex flex-col gap-2 max-h-[200px] overflow-y-auto">
+					{#each suggestedNames as suggestion}
+						<button
+							type="button"
+							class="bg-card border border-border p-2 rounded text-sm text-left text-foreground-secondary hover:bg-accent-muted hover:border-accent hover:text-accent transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+							onclick={() => useSuggestedName(suggestion)}
+							disabled={isSubmitting}
+						>
+							{suggestion}
+						</button>
+					{/each}
 				</div>
+			</div>
 
-				<label for="pincode">Pincode:</label>
-				<input
+			<div class="flex flex-col gap-2">
+				<Label for="pincode">Pincode:</Label>
+				<Input
 					id="pincode"
 					bind:value={formData.pincode}
 					required
@@ -358,342 +382,89 @@
 					maxlength="6"
 					disabled={isSubmitting}
 				/>
+			</div>
 
-				<label for="district">District (Auto-filled):</label>
-				<div class="district-container">
-					<input
-						id="district"
-						bind:value={formData.district}
-						readonly
-						placeholder="District will be auto-filled based on pincode"
-						class="readonly-field"
-						disabled={isSubmitting}
-					/>
-					{#if isDistrictLoading}
-						<small class="loading-text">Loading district...</small>
-					{:else if formData.pincode && formData.pincode.length === 6 && !formData.district}
-						<small class="no-district-text">District not found for this pincode</small>
-					{/if}
-				</div>
+			<div class="flex flex-col gap-2">
+				<Label for="district">District (Auto-filled):</Label>
+				<Input
+					id="district"
+					bind:value={formData.district}
+					readonly
+					placeholder="District will be auto-filled based on pincode"
+					class="bg-background-secondary text-foreground-muted cursor-not-allowed"
+					disabled={isSubmitting}
+				/>
+				{#if isDistrictLoading}
+					<small class="text-foreground-muted italic text-xs">Loading district...</small>
+				{:else if formData.pincode && formData.pincode.length === 6 && !formData.district}
+					<small class="text-destructive italic text-xs">District not found for this pincode</small>
+				{/if}
+			</div>
 
-				<label for="city">City:</label>
-				<div class="city-container">
-					<select
-						id="city"
-						bind:value={formData.city}
-						required
-						disabled={isSubmitting || !formData.district || isCitiesLoading}
-					>
-						<option value="">Select a city</option>
-						{#each cities as city}
-							<option value={city}>{city}</option>
-						{/each}
-					</select>
-					{#if isCitiesLoading}
-						<small class="loading-text">Loading cities...</small>
-					{/if}
-					{#if formData.district && !isCitiesLoading && cities.length === 0}
-						<small class="no-cities-text">No cities found for this district</small>
-					{/if}
-				</div>
+			<div class="flex flex-col gap-2">
+				<Label for="city">City:</Label>
+				<select
+					id="city"
+					bind:value={formData.city}
+					required
+					disabled={isSubmitting || !formData.district || isCitiesLoading}
+					class="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+				>
+					<option value="">Select a city</option>
+					{#each cities as city}
+						<option value={city}>{city}</option>
+					{/each}
+				</select>
+				{#if isCitiesLoading}
+					<small class="text-foreground-muted italic text-xs">Loading cities...</small>
+				{/if}
+				{#if formData.district && !isCitiesLoading && cities.length === 0}
+					<small class="text-destructive italic text-xs">No cities found for this district</small>
+				{/if}
+			</div>
 
-				<label for="projectDate">Project Date:</label>
-				<input
+			<div class="flex flex-col gap-2">
+				<Label for="projectDate">Project Date:</Label>
+				<Input
 					id="projectDate"
 					type="date"
 					bind:value={formData.projectDate}
 					required
 					disabled={isSubmitting}
 				/>
+			</div>
 
-				<label for="projectImage">Project Image:</label>
-				<div class="file-upload-container">
-					<input
-						id="projectImage"
-						type="file"
-						accept=".jpg,.jpeg,.png,.webp,.gif,.bmp,.tiff,.svg,image/*"
-						on:change={handleImageChange}
-						disabled={isSubmitting}
-					/>
-					<small class="file-help-text">
-						Accepted formats: JPG, PNG, WebP, GIF, BMP, TIFF, SVG (Max: 10MB)
-					</small>
-					{#if imagePreview}
-						<div class="image-preview">
-							<img src={imagePreview} alt="Project preview" loading="lazy" />
-						</div>
-					{/if}
-				</div>
+			<div class="flex flex-col gap-2">
+				<Label for="projectImage">Project Image:</Label>
+				<input
+					id="projectImage"
+					type="file"
+					accept=".jpg,.jpeg,.png,.webp,.gif,.bmp,.tiff,.svg,image/*"
+					onchange={handleImageChange}
+					disabled={isSubmitting}
+					class="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50"
+				/>
+				<small class="text-foreground-muted italic text-xs">
+					Accepted formats: JPG, PNG, WebP, GIF, BMP, TIFF, SVG (Max: 10MB)
+				</small>
+				{#if imagePreview}
+					<div class="mt-2 border border-dashed border-border p-2 rounded">
+						<img src={imagePreview} alt="Project preview" loading="lazy" class="max-w-full max-h-[200px] object-contain" />
+					</div>
+				{/if}
+			</div>
 
-				<div class="modal-buttons">
-					<button type="submit" disabled={isSubmitting}>
-						{isSubmitting ? 'Posting...' : 'Post Project'}
-					</button>
-					<button type="button" on:click={close} disabled={isSubmitting}>Cancel</button>
-				</div>
-			</form>
-		</div>
-		<button
-			class="modal-backdrop"
-			on:click={close}
-			aria-label="Close dialog"
-			disabled={isSubmitting}
-		></button>
-	</div>
-{/if}
+			<Dialog.Footer class="mt-4 max-sm:flex-col">
+				<Dialog.Close asChild let:builder>
+					<Button builders={[builder]} variant="secondary" disabled={isSubmitting} class="max-sm:w-full">
+						Cancel
+					</Button>
+				</Dialog.Close>
+				<Button type="submit" disabled={isSubmitting} class="bg-success text-success-foreground hover:bg-success/90 max-sm:w-full">
+					{isSubmitting ? 'Posting...' : 'Post Project'}
+				</Button>
+			</Dialog.Footer>
+		</form>
+	</Dialog.Content>
+</Dialog.Root>
 
-<style>
-	.modal-backdrop {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: transparent;
-		border: none;
-		cursor: default;
-		z-index: -1;
-	}
-
-	.modal-overlay {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: rgba(0, 0, 0, 0.5);
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		z-index: 1000;
-	}
-
-	.modal {
-		position: relative;
-		z-index: 1001;
-		background: white;
-		padding: 20px;
-		border-radius: 5px;
-		max-width: 500px;
-		width: 100%;
-		max-height: 90vh;
-		overflow-y: auto;
-	}
-
-	.close-modal {
-		position: absolute;
-		top: 10px;
-		right: 10px;
-		background: none;
-		border: none;
-		font-size: 1.5rem;
-		cursor: pointer;
-	}
-
-	.close-modal:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
-
-	.modal-content {
-		display: flex;
-		flex-direction: column;
-		gap: 10px;
-	}
-
-	.error-message {
-		background-color: #ffebee;
-		color: #c62828;
-		padding: 10px;
-		border-radius: 4px;
-		border-left: 4px solid #c62828;
-		margin-bottom: 10px;
-	}
-
-	label {
-		font-weight: bold;
-	}
-
-	input,
-	textarea {
-		padding: 8px;
-		border: 1px solid #ccc;
-		border-radius: 4px;
-		font-family: inherit;
-		font-size: inherit;
-	}
-
-	input:disabled,
-	textarea:disabled {
-		background-color: #f5f5f5;
-		cursor: not-allowed;
-	}
-
-	textarea {
-		resize: vertical;
-		min-height: 60px;
-		line-height: 1.4;
-	}
-
-	textarea:focus {
-		outline: none;
-		border-color: #4caf50;
-		box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
-	}
-
-	.district-container,
-	.city-container {
-		display: flex;
-		flex-direction: column;
-		gap: 5px;
-	}
-
-	.readonly-field {
-		background-color: #f9f9f9;
-		color: #666;
-		cursor: not-allowed;
-		border-color: #ddd;
-	}
-
-	.loading-text {
-		color: #666;
-		font-style: italic;
-		font-size: 12px;
-		margin-top: 2px;
-	}
-
-	.no-cities-text,
-	.no-district-text {
-		color: #ff6b6b;
-		font-style: italic;
-		font-size: 12px;
-		margin-top: 2px;
-	}
-
-	select {
-		padding: 8px;
-		border: 1px solid #ccc;
-		border-radius: 4px;
-		font-size: 1rem;
-	}
-
-	select:disabled {
-		background-color: #f5f5f5;
-		cursor: not-allowed;
-		color: #999;
-	}
-
-	.file-upload-container {
-		display: flex;
-		flex-direction: column;
-		gap: 10px;
-	}
-
-	.file-help-text {
-		color: #666;
-		font-size: 12px;
-		margin-top: 4px;
-		font-style: italic;
-	}
-
-	.image-preview {
-		margin-top: 8px;
-		border: 1px dashed #ccc;
-		padding: 8px;
-		border-radius: 4px;
-		max-width: 100%;
-	}
-
-	.image-preview img {
-		max-width: 100%;
-		max-height: 200px;
-		object-fit: contain;
-	}
-
-	.modal-buttons {
-		display: flex;
-		gap: 10px;
-		justify-content: flex-end;
-		margin-top: 20px;
-	}
-
-	button {
-		padding: 8px 16px;
-		border-radius: 4px;
-		cursor: pointer;
-	}
-
-	button:disabled {
-		opacity: 0.7;
-		cursor: not-allowed;
-	}
-
-	button[type='submit'] {
-		background-color: #4caf50;
-		color: white;
-		border: none;
-	}
-
-	button[type='button'] {
-		background-color: #f1f1f1;
-		border: 1px solid #ccc;
-	}
-
-	.suggestions-container {
-		margin: 10px 0;
-		padding: 15px;
-		background-color: #f8f9fa;
-		border-radius: 6px;
-		border: 1px solid #e9ecef;
-	}
-
-	.suggestions-label {
-		margin: 0 0 10px 0;
-		font-weight: 600;
-		font-size: 14px;
-		color: #495057;
-	}
-
-	.suggestions-grid {
-		display: grid;
-		grid-template-columns: 1fr;
-		gap: 8px;
-		max-height: 200px;
-		overflow-y: auto;
-	}
-
-	.suggestion-btn {
-		background-color: white;
-		border: 1px solid #dee2e6;
-		padding: 8px 12px;
-		border-radius: 4px;
-		font-size: 13px;
-		text-align: left;
-		cursor: pointer;
-		transition: all 0.2s ease;
-		color: #495057;
-		line-height: 1.3;
-	}
-
-	.suggestion-btn:hover:not(:disabled) {
-		background-color: #e3f2fd;
-		border-color: #2196f3;
-		color: #1976d2;
-	}
-
-	.suggestion-btn:disabled {
-		opacity: 0.6;
-		cursor: not-allowed;
-	}
-
-	@media (max-width: 600px) {
-		.suggestion-btn {
-			font-size: 12px;
-			padding: 6px 10px;
-		}
-
-		.suggestions-grid {
-			max-height: 150px;
-		}
-	}
-</style>

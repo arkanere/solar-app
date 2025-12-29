@@ -3,6 +3,7 @@
 	export let businessSlug = '';
 
 	import { createEventDispatcher } from 'svelte';
+	import { toast } from 'svelte-sonner';
 	const dispatch = createEventDispatcher();
 
 	// Form data
@@ -180,7 +181,7 @@
 		if (file) {
 			// Validate file type
 			if (!allowedImageTypes.includes(file.type)) {
-				alert('Please upload a valid image file (JPG, PNG, WebP, GIF, BMP, TIFF, SVG)');
+				toast.error('Please upload a valid image file (JPG, PNG, WebP, GIF, BMP, TIFF, SVG)');
 				event.target.value = ''; // Clear the input
 				return;
 			}
@@ -188,7 +189,7 @@
 			// Validate file size (limit to 10MB)
 			const maxSize = 10 * 1024 * 1024; // 10MB in bytes
 			if (file.size > maxSize) {
-				alert('Image file size must be less than 10MB');
+				toast.error('Image file size must be less than 10MB');
 				event.target.value = ''; // Clear the input
 				return;
 			}
@@ -287,9 +288,9 @@
 				dispatch('posted', result.project);
 				// Use a timeout to prevent race conditions
 				setTimeout(() => {
-					alert('Project posted successfully! Redirecting...');
+					toast.success('Project posted successfully! Redirecting...');
 					isSubmitting = false;
-					show = false; // Close the modal after alerting
+					show = false; // Close the modal after toast
 					// Redirect to the project management page after a short delay
 					setTimeout(() => {
 						window.location.href = `/business/${businessSlug}/project`;
@@ -297,13 +298,13 @@
 				}, 100);
 			} else {
 				errorMessage = result.error || 'Failed to post project';
-				alert(`Error: ${errorMessage}`);
+				toast.error(errorMessage);
 				isSubmitting = false;
 			}
 		} catch (error) {
 			console.error('Error posting project:', error);
 			errorMessage = error.message || 'An error occurred while posting the project';
-			alert(errorMessage);
+			toast.error(errorMessage);
 			isSubmitting = false;
 		}
 	};

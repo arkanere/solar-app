@@ -1,7 +1,11 @@
 <script>
-	export let currentStage = 0;
-	export let leadCategory = 3; // 2 = Non-Exclusive-Claimed, 3 = Exclusive
-	export let isActive = true; // New prop to track if lead is active
+	import { cn } from '$lib/utils';
+
+	let {
+		currentStage = 0,
+		leadCategory = 3, // 2 = Non-Exclusive-Claimed, 3 = Exclusive
+		isActive = true // Prop to track if lead is active
+	} = $props();
 
 	// Define stages for different lead categories
 	const exclusiveStages = [
@@ -27,216 +31,62 @@
 		'Won'
 	];
 
-	$: stages = leadCategory === 2 ? nonExclusiveClaimedDisplayStages : exclusiveStages;
+	let stages = $derived(leadCategory === 2 ? nonExclusiveClaimedDisplayStages : exclusiveStages);
 	// For non-exclusive claimed leads, adjust progress calculation to account for the extra display stage
-	$: progressPercentage = leadCategory === 2 
+	let progressPercentage = $derived(leadCategory === 2
 		? ((currentStage + 1) / (stages.length - 1)) * 100
-		: (currentStage / (stages.length - 1)) * 100;
-	$: progressColor = isActive ? 'active' : 'inactive';
+		: (currentStage / (stages.length - 1)) * 100);
+	let progressColor = $derived(isActive ? 'active' : 'inactive');
 </script>
 
-<div class="progress-container">
-	<div class="progress-bar">
-		<div class="progress-fill {progressColor}" style="width: {progressPercentage}%"></div>
+<div class="w-full my-4 p-2">
+	<!-- Progress Bar Track -->
+	<div class="w-full h-1 bg-border rounded mb-4 relative overflow-hidden">
+		<div
+			class={cn(
+				"h-full rounded transition-[width] duration-400 ease-out",
+				isActive
+					? "bg-gradient-to-r from-success to-success/80 shadow-[0_0_8px_rgba(16,185,129,0.4)]"
+					: "bg-gradient-to-r from-destructive to-destructive/80 shadow-[0_0_8px_rgba(239,68,68,0.4)]"
+			)}
+			style="width: {progressPercentage}%"
+		></div>
 	</div>
-	<div class="progress-stages">
+
+	<!-- Stage Circles -->
+	<div class="flex justify-between items-start relative max-[480px]:flex-nowrap max-[480px]:overflow-x-auto">
 		{#each stages as stage, index}
-			{@const adjustedIndex = leadCategory === 2 ? index - 1 : index}
 			{@const isCompleted = leadCategory === 2 ? index <= currentStage : index < currentStage}
 			{@const isCurrent = leadCategory === 2 ? index === currentStage + 1 : index === currentStage}
-			{@const isFuture = leadCategory === 2 ? index > currentStage + 1 : index > currentStage}
-			
-			<div class="stage-item {isCompleted ? progressColor : isCurrent ? progressColor : 'future'}">
-				<div class="stage-circle">
-					{#if isCompleted && !isCurrent}
-						<span class="checkmark">{index + 1}</span>
-					{:else if isCurrent}
-						<span class="current-stage">{index + 1}</span>
-					{:else}
-						<span class="future-stage">{index + 1}</span>
-					{/if}
+			{@const stageState = isCompleted || isCurrent ? (isActive ? 'active' : 'inactive') : 'future'}
+
+			<div class="flex flex-col items-center flex-1 text-center relative max-[480px]:flex-[0_0_auto] max-[480px]:min-w-[70px]">
+				<!-- Circle -->
+				<div class={cn(
+					"w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm mb-2 transition-all duration-300 border-[3px]",
+					"max-md:w-9 max-md:h-9 max-md:text-[0.813rem] max-[480px]:w-8 max-[480px]:h-8 max-[480px]:text-xs",
+					stageState === 'active' && "bg-success border-success text-white shadow-[0_2px_8px_rgba(16,185,129,0.3)]",
+					stageState === 'inactive' && "bg-destructive border-destructive text-white shadow-[0_2px_8px_rgba(239,68,68,0.3)]",
+					stageState === 'future' && "bg-background-secondary border-border text-muted-foreground"
+				)}>
+					<span class="font-bold font-mono">{index + 1}</span>
 				</div>
-				<div class="stage-label">{stage}</div>
+
+				<!-- Label -->
+				<div class={cn(
+					"text-xs font-medium leading-tight mt-1.5 max-w-[85px] break-words hyphens-auto",
+					"max-md:text-[0.688rem] max-md:max-w-[70px] max-[480px]:text-[0.625rem] max-[480px]:max-w-[65px] max-[480px]:leading-[1.2]",
+					stageState === 'active' && "text-success font-semibold",
+					stageState === 'inactive' && "text-destructive font-semibold",
+					stageState === 'future' && "text-muted-foreground"
+				)}>
+					{stage}
+				</div>
 			</div>
 		{/each}
 	</div>
 </div>
 
 <style>
-	.progress-container {
-		width: 100%;
-		margin: 1rem 0;
-		padding: 0.5rem;
-	}
-
-	.progress-bar {
-		width: 100%;
-		height: 4px;
-		background-color: #e5e7eb;
-		border-radius: 2px;
-		margin-bottom: 1rem;
-		position: relative;
-		overflow: hidden;
-	}
-
-	.progress-fill {
-		height: 100%;
-		border-radius: 2px;
-		transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-	}
-
-	.progress-fill.active {
-		background: linear-gradient(90deg, #10b981 0%, #059669 100%);
-		box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
-	}
-
-	.progress-fill.inactive {
-		background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
-		box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
-	}
-
-	.progress-stages {
-		display: flex;
-		justify-content: space-between;
-		align-items: flex-start;
-		position: relative;
-	}
-
-	.stage-item {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		flex: 1;
-		text-align: center;
-		position: relative;
-	}
-
-	.stage-circle {
-		width: 40px;
-		height: 40px;
-		border-radius: 50%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-weight: 600;
-		font-size: 0.875rem;
-		margin-bottom: 0.5rem;
-		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-		border: 3px solid;
-	}
-
-	.stage-item.active .stage-circle {
-		background-color: #10b981;
-		border-color: #10b981;
-		color: white;
-		box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
-	}
-
-	.stage-item.inactive .stage-circle {
-		background-color: #ef4444;
-		border-color: #ef4444;
-		color: white;
-		box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
-	}
-
-	.stage-item.future .stage-circle {
-		background-color: #f9fafb;
-		border-color: #d1d5db;
-		color: #9ca3af;
-	}
-
-	.checkmark {
-		font-size: 0.8rem;
-		font-weight: bold;
-		font-family: monospace;
-	}
-
-	.current-stage {
-		font-weight: bold;
-		font-family: monospace;
-	}
-
-	.future-stage {
-		color: #999;
-		font-family: monospace;
-	}
-
-	.stage-label {
-		font-size: 0.75rem;
-		font-weight: 500;
-		line-height: 1.3;
-		margin-top: 0.375rem;
-		max-width: 85px;
-		word-wrap: break-word;
-		hyphens: auto;
-		color: #6b7280;
-	}
-
-	.stage-item.active .stage-label {
-		color: #059669;
-		font-weight: 600;
-	}
-
-	.stage-item.inactive .stage-label {
-		color: #dc2626;
-		font-weight: 600;
-	}
-
-	.stage-item.future .stage-label {
-		color: #9ca3af;
-	}
-
-	/* Dark mode support */
-	:global(.dark) .progress-bar {
-		background-color: #444;
-	}
-
-	:global(.dark) .stage-item.future .stage-circle {
-		background-color: #333;
-		border-color: #555;
-		color: #ccc;
-	}
-
-	:global(.dark) .stage-item.future .stage-label {
-		color: #ccc;
-	}
-
-	/* Responsive design */
-	@media (max-width: 768px) {
-		.stage-label {
-			font-size: 0.688rem;
-			max-width: 70px;
-		}
-
-		.stage-circle {
-			width: 36px;
-			height: 36px;
-			font-size: 0.813rem;
-		}
-	}
-
-	@media (max-width: 480px) {
-		.progress-stages {
-			flex-wrap: nowrap;
-			overflow-x: auto;
-		}
-
-		.stage-item {
-			flex: 0 0 auto;
-			min-width: 70px;
-			margin-bottom: 0;
-		}
-
-		.stage-label {
-			font-size: 0.625rem;
-			max-width: 65px;
-			line-height: 1.2;
-		}
-
-		.stage-circle {
-			width: 32px;
-			height: 32px;
-			font-size: 0.75rem;
-		}
-	}
+	/* No component-specific styles needed - all styles are now in Tailwind */
 </style>

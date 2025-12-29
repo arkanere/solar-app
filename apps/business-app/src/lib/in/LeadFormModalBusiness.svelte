@@ -1,38 +1,39 @@
 <script>
-	import { createEventDispatcher } from 'svelte';
+	import { cn } from '$lib/utils';
+	import { Input } from '$lib/components/ui/input';
+	import { Textarea } from '$lib/components/ui/textarea';
+	import { Label } from '$lib/components/ui/label';
 
-	export let businessName = '';
-	export let businessSlug = '';
+	let {
+		businessName = '',
+		businessSlug = '',
+		onLeadAdded = () => {}
+	} = $props();
 
-	const dispatch = createEventDispatcher();
-
-	let name = '';
-	let phone = '';
-	let pinCode = '';
-	let comment = '';
-	let email = '';
-	let urlParam = '';
+	let name = $state('');
+	let phone = $state('');
+	let pinCode = $state('');
+	let comment = $state('');
+	let email = $state('');
 
 	// Placeholder text with line break
 	const commentPlaceholder = `Tell us about your requirement.
 Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 
-	let isSubmitting = false;
-	let submitSuccess = false;
-	let submitMessage = '';
+	let isSubmitting = $state(false);
+	let submitSuccess = $state(false);
+	let submitMessage = $state('');
 
-	let errors = {
+	let errors = $state({
 		name: '',
 		phone: '',
 		pinCode: '',
 		email: '',
 		comment: ''
-	};
+	});
 
-	// ✅ **Set the urlParam dynamically based on the businessSlug**
-	$: {
-		urlParam = `/solar-panel-installer/${businessSlug}`;
-	}
+	// Set the urlParam dynamically based on the businessSlug
+	let urlParam = $derived(`/solar-panel-installer/${businessSlug}`);
 
 	function validatePhoneNumber() {
 		if (!/^\+?\d{10,16}$/.test(phone)) {
@@ -121,9 +122,9 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 					submitSuccess = true;
 					submitMessage = 'Lead added successfully!';
 					resetForm();
-					
-					// Dispatch event to parent component
-					dispatch('leadAdded', {
+
+					// Notify parent component
+					onLeadAdded({
 						name,
 						phone,
 						pinCode,
@@ -144,172 +145,84 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 	}
 </script>
 
-<form on:submit|preventDefault={handleSubmit}>
+<form onsubmit={handleSubmit} class="flex flex-col max-w-[400px] mx-auto pt-4 max-md:max-w-full max-md:p-0">
 	<!-- Success/Error Message -->
 	{#if submitMessage}
-		<div class="message {submitSuccess ? 'success' : 'error'}">
+		<div class={cn(
+			"py-3 px-3 mb-4 rounded text-center font-bold",
+			submitSuccess ? "bg-success-muted text-success border border-success/30" : "bg-destructive-muted text-destructive border border-destructive/30"
+		)}>
 			{submitMessage}
 		</div>
 	{/if}
 
 	<!-- Name Input -->
-	<div>
-		<label for="name">Name:</label>
-		<input id="name" type="text" bind:value={name} required />
+	<div class="mb-4 max-[576px]:mb-3">
+		<Label for="name" class="block mb-2 font-bold text-left">Name:</Label>
+		<Input id="name" type="text" bind:value={name} required class="w-full" />
 		{#if errors.name}
-			<p class="error">{errors.name}</p>
+			<p class="text-destructive text-sm mt-1">{errors.name}</p>
 		{/if}
 	</div>
 
 	<!-- Phone Number Input -->
-	<div>
-		<label for="phone">Phone Number:</label>
-		<input id="phone" type="text" bind:value={phone} required on:blur={validatePhoneNumber} />
+	<div class="mb-4 max-[576px]:mb-3">
+		<Label for="phone" class="block mb-2 font-bold text-left">Phone Number:</Label>
+		<Input id="phone" type="text" bind:value={phone} required onblur={validatePhoneNumber} class="w-full" />
 		{#if errors.phone}
-			<p class="error">{errors.phone}</p>
+			<p class="text-destructive text-sm mt-1">{errors.phone}</p>
 		{/if}
 	</div>
 
 	<!-- Pin Code Input -->
-	<div>
-		<label for="pinCode">Pin Code:</label>
-		<input id="pinCode" type="text" bind:value={pinCode} required on:blur={validatePinCode} />
+	<div class="mb-4 max-[576px]:mb-3">
+		<Label for="pinCode" class="block mb-2 font-bold text-left">Pin Code:</Label>
+		<Input id="pinCode" type="text" bind:value={pinCode} required onblur={validatePinCode} class="w-full" />
 		{#if errors.pinCode}
-			<p class="error">{errors.pinCode}</p>
+			<p class="text-destructive text-sm mt-1">{errors.pinCode}</p>
 		{/if}
 	</div>
 
 	<!-- Email Input -->
-	<div>
-		<label for="email">Email:</label>
-		<input id="email" type="email" bind:value={email} required on:blur={validateEmail} />
+	<div class="mb-4 max-[576px]:mb-3">
+		<Label for="email" class="block mb-2 font-bold text-left">Email:</Label>
+		<Input id="email" type="email" bind:value={email} required onblur={validateEmail} class="w-full" />
 		{#if errors.email}
-			<p class="error">{errors.email}</p>
+			<p class="text-destructive text-sm mt-1">{errors.email}</p>
 		{/if}
 	</div>
 
 	<!-- Comment Input -->
-	<div>
-		<label for="comment">Comment :</label>
-		<textarea
+	<div class="mb-4 max-[576px]:mb-3">
+		<Label for="comment" class="block mb-2 font-bold text-left">Comment:</Label>
+		<Textarea
 			id="comment"
 			bind:value={comment}
 			placeholder={commentPlaceholder}
 			required
-		></textarea>
+			class="w-full h-[7.5em]"
+		/>
 		{#if errors.comment}
-			<p class="error">{errors.comment}</p>
+			<p class="text-destructive text-sm mt-1">{errors.comment}</p>
 		{/if}
 	</div>
 
 	<!-- Submit Button -->
-	<button type="submit" disabled={isSubmitting}>
+	<button
+		type="submit"
+		disabled={isSubmitting}
+		class={cn(
+			"w-full py-3 px-4 border-none rounded cursor-pointer text-base transition-colors",
+			"bg-success text-success-foreground hover:bg-success/90",
+			isSubmitting && "bg-muted text-muted-foreground cursor-not-allowed",
+			"max-[576px]:py-3 max-[576px]:text-base"
+		)}
+	>
 		{#if isSubmitting}Adding Lead...{/if}
 		{#if !isSubmitting}Add Lead{/if}
 	</button>
 </form>
 
 <style>
-	form {
-		display: flex;
-		flex-direction: column;
-		max-width: 400px;
-		margin: auto;
-		padding-top: 1em;
-	}
-
-	div {
-		margin-bottom: 1em;
-	}
-	label {
-		display: block;
-		margin-bottom: 0.5em;
-		font-weight: bold;
-		text-align: left;
-	}
-
-	input,
-	textarea {
-		width: 100%;
-		padding: 0.5em;
-		font-size: 1rem;
-		box-sizing: border-box;
-		border: 1px solid #ccc;
-		border-radius: 4px;
-	}
-
-	textarea {
-		height: 7.5em;
-		resize: vertical;
-	}
-
-	button {
-		padding: 0.75em;
-		background-color: #4caf50;
-		color: white;
-		border: none;
-		cursor: pointer;
-		border-radius: 4px;
-		width: 100%;
-		box-sizing: border-box;
-	}
-
-	button:disabled {
-		background-color: #9ca3af;
-		cursor: not-allowed;
-	}
-
-	.error {
-		color: red;
-		font-size: 0.9rem;
-	}
-
-	.message {
-		padding: 0.75em;
-		margin-bottom: 1em;
-		border-radius: 4px;
-		text-align: center;
-		font-weight: bold;
-	}
-
-	.message.success {
-		background-color: #d4edda;
-		color: #155724;
-		border: 1px solid #c3e6cb;
-	}
-
-	.message.error {
-		background-color: #f8d7da;
-		color: #721c24;
-		border: 1px solid #f5c6cb;
-	}
-
-	/* Mobile responsive adjustments */
-	@media (max-width: 768px) {
-		form {
-			max-width: 100%;
-			padding: 0;
-		}
-
-		input,
-		textarea {
-			font-size: 16px; /* Prevents zoom on iOS */
-		}
-	}
-
-	@media (max-width: 576px) {
-		div {
-			margin-bottom: 0.75em;
-		}
-
-		input,
-		textarea {
-			padding: 0.6em 0.5em;
-		}
-
-		button {
-			padding: 0.8em;
-			font-size: 1rem;
-		}
-	}
+	/* No component-specific styles needed - all styles are now in Tailwind */
 </style>

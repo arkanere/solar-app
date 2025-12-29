@@ -1,5 +1,6 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
+	import { toast } from 'svelte-sonner';
 	import LeadProgressBar from './LeadProgressBar.svelte';
 
 	export let leads = [];
@@ -78,11 +79,11 @@
 				// Update the lead in the local array
 				leads = leads.map((l) => (l.id === lead.id ? { ...l, ...result.lead } : l));
 			} else {
-				alert(`Error: ${result.error}`);
+				toast.error(result.error);
 			}
 		} catch (error) {
 			console.error('Update Lead Error:', error);
-			alert('An error occurred while updating the lead.');
+			toast.error('An error occurred while updating the lead.');
 		}
 	}
 
@@ -188,11 +189,11 @@
 				showDeleteConfirm = false;
 				leadToDelete = null;
 			} else {
-				alert(`Error: ${result.error}`);
+				toast.error(result.error);
 			}
 		} catch (error) {
 			console.error('Delete Lead Error:', error);
-			alert('An error occurred while deleting the lead.');
+			toast.error('An error occurred while deleting the lead.');
 		} finally {
 			isDeleting = false;
 		}

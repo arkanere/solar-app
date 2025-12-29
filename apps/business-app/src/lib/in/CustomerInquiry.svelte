@@ -1,26 +1,30 @@
 <script>
-	import { createEventDispatcher } from 'svelte';
+	import { toast } from 'svelte-sonner';
 	import LeadProgressBar from './LeadProgressBar.svelte';
 	import LeadStageFilter from './LeadStageFilter.svelte';
 	import ProposalFormModal from './ProposalFormModal.svelte';
 	import LeadTile from './LeadTile.svelte';
+	import { Button } from '$lib/components/ui/button';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { cn } from '$lib/utils';
 
-	export let leads = [];
-	export let businessInfo = {};
-	export let errorMessage = null;
-	export let isClaiming = false;
-
-	const dispatch = createEventDispatcher();
+	let {
+		leads = $bindable([]),
+		businessInfo = {},
+		errorMessage = null,
+		isClaiming = false,
+		onClaimLead = () => {}
+	} = $props();
 
 	// Proposal modal state
-	let showProposalModal = false;
-	let selectedLeadForProposal = null;
+	let showProposalModal = $state(false);
+	let selectedLeadForProposal = $state(null);
 
 	// Filter state
-	let selectedCategory = 'all';
-	let selectedStage = 'all';
-	let selectedStatus = 'all';
-	let filteredLeads = [];
+	let selectedCategory = $state('all');
+	let selectedStage = $state('all');
+	let selectedStatus = $state('all');
+	let filteredLeads = $state([]);
 
 	// Function to make call
 	function makeCall(phoneNumber, leadName, leadId) {
@@ -32,9 +36,9 @@
 	}
 
 	// Delete confirmation state
-	let showDeleteConfirm = false;
-	let leadToDelete = null;
-	let isDeleting = false;
+	let showDeleteConfirm = $state(false);
+	let leadToDelete = $state(null);
+	let isDeleting = $state(false);
 
 	// Lead stage mapping
 	const STAGES = {
@@ -88,46 +92,50 @@
 				// Update the lead in the local array
 				leads = leads.map((l) => (l.id === lead.id ? { ...l, ...result.lead } : l));
 			} else {
-				alert(`Error: ${result.error}`);
+				toast.error(result.error);
 			}
 		} catch (error) {
 			console.error('Update Lead Error:', error);
-			alert('An error occurred while updating the lead.');
+			toast.error('An error occurred while updating the lead');
 		}
 	}
 
 	// State for tracking save status per lead
-	let savingNotes = new Set();
-	let savedNotes = new Set();
+	let savingNotes = $state(new Set());
+	let savedNotes = $state(new Set());
 
 	// State for tracking expanded/collapsed leads (compact view)
-	let expandedLeads = new Set();
+	let expandedLeads = $state(new Set());
 
 	// Function to save business notes
 	async function saveBusinessNotes(lead) {
-		savingNotes.add(lead.id);
-		savingNotes = savingNotes; // Trigger reactivity
+		const newSavingSet = new Set(savingNotes);
+		newSavingSet.add(lead.id);
+		savingNotes = newSavingSet; // Create new Set instance for Svelte 5 reactivity
 
 		await updateLead(lead, { business_notes: lead.business_notes });
 
-		savingNotes.delete(lead.id);
-		savingNotes = savingNotes; // Trigger reactivity
+		const updatedSavingSet = new Set(savingNotes);
+		updatedSavingSet.delete(lead.id);
+		savingNotes = updatedSavingSet; // Create new Set instance for Svelte 5 reactivity
 
 		// Show saved status
-		savedNotes.add(lead.id);
-		savedNotes = savedNotes; // Trigger reactivity
+		const newSavedSet = new Set(savedNotes);
+		newSavedSet.add(lead.id);
+		savedNotes = newSavedSet; // Create new Set instance for Svelte 5 reactivity
 
 		// Hide saved status after 3 seconds
 		setTimeout(() => {
-			savedNotes.delete(lead.id);
-			savedNotes = savedNotes; // Trigger reactivity
+			const updatedSavedSet = new Set(savedNotes);
+			updatedSavedSet.delete(lead.id);
+			savedNotes = updatedSavedSet; // Create new Set instance for Svelte 5 reactivity
 		}, 3000);
 	}
 
 	async function claimLead(leadId, businessId) {
 		if (isClaiming) return;
 
-		dispatch('claimLead', { leadId, businessId });
+		onClaimLead({ leadId, businessId });
 	}
 
 	function getRelativeTime(dateString) {
@@ -245,10 +253,10 @@
 	}
 
 	// Update filtered leads when leads change
-	$: {
+	$effect(() => {
 		leads;
 		filterLeads();
-	}
+	});
 
 	// Delete lead function
 	async function deleteLead(lead) {
@@ -278,11 +286,11 @@
 				showDeleteConfirm = false;
 				leadToDelete = null;
 			} else {
-				alert(`Error: ${result.error}`);
+				toast.error(result.error);
 			}
 		} catch (error) {
 			console.error('Delete Lead Error:', error);
-			alert('An error occurred while deleting the lead.');
+			toast.error('An error occurred while deleting the lead');
 		} finally {
 			isDeleting = false;
 		}
@@ -334,38 +342,39 @@
 
 	// Toggle lead details expand/collapse
 	function toggleLeadDetails(leadId) {
-		if (expandedLeads.has(leadId)) {
-			expandedLeads.delete(leadId);
+		const newSet = new Set(expandedLeads);
+		if (newSet.has(leadId)) {
+			newSet.delete(leadId);
 		} else {
-			expandedLeads.add(leadId);
+			newSet.add(leadId);
 		}
-		expandedLeads = expandedLeads; // Trigger reactivity
+		expandedLeads = newSet; // Create new Set instance for Svelte 5 reactivity
 	}
 </script>
 
 <!-- LEAD DATA SECTION -->
 <section id="lead-data">
-	<h2>Customer Inquiry</h2>
+	<h2 class="text-2xl font-semibold text-left text-accent mb-4">Customer Inquiry</h2>
 	{#if errorMessage}
-		<p class="error-message">{errorMessage}</p>
+		<p class="text-destructive font-semibold p-4">{errorMessage}</p>
 	{:else}
 		{#if leads.length > 0}
-			<LeadStageFilter 
-				{selectedCategory} 
-				{selectedStage} 
-				{selectedStatus}
-				on:filterChange={handleFilterChange}
+			<LeadStageFilter
+				bind:selectedCategory
+				bind:selectedStage
+				bind:selectedStatus
+				onFilterChange={handleFilterChange}
 			/>
-			
+
 			{#if filteredLeads.length === 0}
-				<div class="no-results">
-					<p>No leads match the selected filters.</p>
-					<p><small>Try adjusting your filters or clearing them to see more results.</small></p>
+				<div class="text-center p-8 my-4 rounded-lg bg-muted/30 border-2 border-dashed border-muted-foreground/30">
+					<p class="font-semibold text-lg text-muted-foreground m-2">No leads match the selected filters.</p>
+					<p class="text-muted-foreground italic m-2"><small>Try adjusting your filters or clearing them to see more results.</small></p>
 				</div>
 			{/if}
 		{/if}
-		
-		<ul>
+
+		<ul class="list-none p-0 w-full max-w-[900px] mx-auto">
 			{#if leads.length > 0}
 				{#each filteredLeads as lead}
 					<LeadTile
@@ -385,57 +394,61 @@
 						{openProposalModal}
 						{showDeleteConfirmation}
 						{claimLead}
-						on:toggleDetails={(e) => toggleLeadDetails(e.detail.leadId)}
+						onToggleDetails={(e) => toggleLeadDetails(e.leadId)}
 					/>
 				{/each}
 			{:else}
 				<!-- Display dummy test lead when no leads exist -->
-				<li class="dummy-lead">
-					<div class="lead-header">
-						<h3>
-							{dummyLead.name} <span class="tag-dummy">Test Lead</span>
+				<li class="mb-8 rounded-xl shadow-sm border-2 border-dashed border-border overflow-hidden opacity-70 bg-card dark:bg-card">
+					<div class="flex justify-between items-center py-5 px-5 border-b border-border">
+						<h3 class="m-0 text-lg font-bold text-foreground">
+							{dummyLead.name} <span class="ml-2 text-xs font-semibold px-2 py-1 rounded bg-warning-muted text-warning">Test Lead</span>
 						</h3>
 					</div>
-					<div class="lead-details">
-						<p class="received-info">
-							<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="clock-icon">
+					<div class="p-5">
+						<p class="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+							<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
 								<circle cx="12" cy="12" r="10"></circle>
 								<polyline points="12 6 12 12 16 14"></polyline>
 							</svg>
-							<span class="received-label">Received:</span> <span class="time-stamp {getRelativeTime(dummyLead.received_at).class}">{getRelativeTime(dummyLead.received_at).text}</span>
+							<span class="font-medium">Received:</span>
+							<span class={cn(
+								"font-medium",
+								getRelativeTime(dummyLead.received_at).class === 'time-fresh' && "text-success",
+								getRelativeTime(dummyLead.received_at).class === 'time-recent' && "text-warning",
+								getRelativeTime(dummyLead.received_at).class === 'time-old' && "text-muted-foreground"
+							)}>{getRelativeTime(dummyLead.received_at).text}</span>
 						</p>
-						<div class="phone-section">
-							<p><strong>Phone:</strong> {dummyLead.phone}</p>
+						<div class="flex items-center justify-between gap-4 mb-4 flex-wrap">
+							<p class="text-foreground m-0"><strong>Phone:</strong> {dummyLead.phone}</p>
 							<button
-								class="call-now-button"
+								class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-md bg-accent text-accent-foreground opacity-50 cursor-not-allowed shadow-sm"
 								disabled
 								title="Test lead - calling disabled"
 							>
-								<span class="button-icon">
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="16"
-										height="16"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										stroke-width="2"
-										stroke-linecap="round"
-										stroke-linejoin="round"
-									>
-										<path
-											d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
-										></path>
-									</svg>
-								</span>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="16"
+									height="16"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								>
+									<path
+										d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
+									></path>
+								</svg>
 								<span>CALL NOW</span>
 							</button>
 						</div>
-						<div class="contact-grid">
-							<p><strong>Email:</strong> {dummyLead.email}</p>
-							<p><strong>Pin Code:</strong> {dummyLead.pin_code}</p>
-							<p><strong>Type:</strong> {dummyLead.type}</p>
-							<p><strong>Customer Comment:</strong> {dummyLead.comment}</p>
+						<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+							<p class="text-foreground m-0"><strong class="text-foreground-secondary">Email:</strong> {dummyLead.email}</p>
+							<p class="text-foreground m-0"><strong class="text-foreground-secondary">Pin Code:</strong> {dummyLead.pin_code}</p>
+							<p class="text-foreground m-0"><strong class="text-foreground-secondary">Type:</strong> {dummyLead.type}</p>
+							<p class="text-foreground m-0 sm:col-span-2"><strong class="text-foreground-secondary">Customer Comment:</strong> {dummyLead.comment}</p>
 						</div>
 					</div>
 				</li>
@@ -445,1190 +458,38 @@
 </section>
 
 <!-- Delete Confirmation Modal -->
-{#if showDeleteConfirm && leadToDelete}
-	<div class="modal-overlay">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h3>Confirm Delete</h3>
-			</div>
-			<div class="modal-body">
-				<p>Are you sure you want to delete the lead for <strong>{leadToDelete.name}</strong>?</p>
-			</div>
-			<div class="modal-actions">
-				<button class="cancel-button" on:click={cancelDelete} disabled={isDeleting}>Cancel</button>
-				<button class="confirm-delete-button" on:click={confirmDelete} disabled={isDeleting}>
-					{isDeleting ? 'Deleting...' : 'Delete Lead'}
-				</button>
-			</div>
-		</div>
-	</div>
-{/if}
+<Dialog.Root bind:open={showDeleteConfirm}>
+	<Dialog.Content class="max-w-[400px]">
+		<Dialog.Header>
+			<Dialog.Title>Confirm Delete</Dialog.Title>
+		</Dialog.Header>
+		{#if leadToDelete}
+			<p class="m-0 leading-relaxed text-foreground">Are you sure you want to delete the lead for <strong>{leadToDelete.name}</strong>?</p>
+		{/if}
+		<Dialog.Footer class="max-sm:flex-col">
+			<Dialog.Close asChild let:builder>
+				<Button builders={[builder]} variant="secondary" disabled={isDeleting} class="max-sm:w-full">
+					Cancel
+				</Button>
+			</Dialog.Close>
+			<Button variant="destructive" onclick={confirmDelete} disabled={isDeleting} class="max-sm:w-full">
+				{isDeleting ? 'Deleting...' : 'Delete Lead'}
+			</Button>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>
 
 <!-- Proposal Modal -->
 {#if showProposalModal}
 	<ProposalFormModal
-		show={showProposalModal}
+		bind:show={showProposalModal}
 		business={businessInfo}
 		proposal={selectedLeadForProposal}
-		on:close={closeProposalModal}
-		on:generated={handleProposalGenerated}
+		onClose={closeProposalModal}
+		onGenerated={handleProposalGenerated}
 	/>
 {/if}
 
 <style>
-	/* ========================================
-	   DESIGN SYSTEM - SEMANTIC COLORS
-	   ======================================== */
-	:root {
-		/* Primary Actions */
-		--color-primary: #2563EB;
-		--color-primary-hover: #1D4ED8;
-		--color-primary-active: #1E40AF;
-
-		/* Success/Active */
-		--color-success: #059669;
-		--color-success-hover: #047857;
-		--color-success-bg: #F0FDF4;
-
-		/* Warning */
-		--color-warning: #D97706;
-		--color-warning-bg: #FEF3C7;
-
-		/* Danger */
-		--color-danger: #DC2626;
-		--color-danger-hover: #B91C1C;
-
-		/* Neutral */
-		--color-gray-50: #F9FAFB;
-		--color-gray-100: #F3F4F6;
-		--color-gray-200: #E5E7EB;
-		--color-gray-300: #D1D5DB;
-		--color-gray-400: #9CA3AF;
-		--color-gray-500: #6B7280;
-		--color-gray-600: #475569;
-		--color-gray-700: #374151;
-		--color-gray-800: #1F2937;
-		--color-gray-900: #111827;
-
-		/* Spacing (8px base) */
-		--spacing-1: 8px;
-		--spacing-2: 12px;
-		--spacing-3: 16px;
-		--spacing-4: 20px;
-		--spacing-5: 24px;
-		--spacing-6: 32px;
-	}
-
-	/* ========================================
-	   LEAD CARD CONTAINER
-	   ======================================== */
-	#lead-data h2 {
-		font-size: 1.5rem;
-		margin-bottom: 1rem;
-		font-weight: 600;
-		text-align: left;
-		color: var(--accent-color);
-	}
-
-	#lead-data ul {
-		list-style-type: none;
-		padding: 0;
-		width: 100%;
-		max-width: 900px;
-		margin: 0 auto;
-	}
-
-	#lead-data li {
-		margin-bottom: var(--spacing-6);
-		padding: 0;
-		border-radius: 12px;
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
-		word-wrap: break-word;
-		overflow-wrap: break-word;
-		transition: all 0.2s ease;
-		overflow: hidden;
-	}
-
-	#lead-data li:hover {
-		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
-	}
-
-	:global(.light) #lead-data li {
-		background-color: #FFFFFF;
-		border: 2px solid #000000;
-	}
-
-	:global(.dark) #lead-data li {
-		background-color: #333;
-		border: 2px solid #000000;
-	}
-
-	/* ========================================
-	   HEADER SECTION - Identity & Status
-	   ======================================== */
-	.lead-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: var(--spacing-5) var(--spacing-5) var(--spacing-2);
-		border-bottom: 1px solid var(--color-gray-200);
-	}
-
-	:global(.dark) .lead-header {
-		border-bottom-color: #444;
-	}
-
-	.lead-header h3 {
-		margin: 0;
-		font-size: 18px;
-		font-weight: 700;
-		color: var(--color-gray-900);
-		line-height: 1.3;
-	}
-
-	:global(.dark) .lead-header h3 {
-		color: var(--dark-primary-text-color);
-	}
-
-	.status-badge {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		font-size: 12px;
-		font-weight: 600;
-		padding: 6px 12px;
-		border-radius: 6px;
-		white-space: nowrap;
-	}
-
-	.status-dot {
-		width: 6px;
-		height: 6px;
-		border-radius: 50%;
-	}
-
-	.status-exclusive {
-		background-color: #ECFDF5;
-		color: var(--color-success);
-		border: 1px solid #A7F3D0;
-	}
-
-	.status-exclusive .status-dot {
-		background-color: var(--color-success);
-	}
-
-	.status-claimed {
-		background-color: #EFF6FF;
-		color: var(--color-primary);
-		border: 1px solid #BFDBFE;
-	}
-
-	.status-claimed .status-dot {
-		background-color: var(--color-primary);
-	}
-
-	.status-available {
-		background-color: #FEF3C7;
-		color: var(--color-warning);
-		border: 1px solid #FDE68A;
-	}
-
-	.status-available .status-dot {
-		background-color: var(--color-warning);
-	}
-
-	.received-time {
-		padding: 0 var(--spacing-5) var(--spacing-3);
-		margin: 0;
-		font-size: 12px;
-		color: var(--color-gray-500);
-	}
-
-	:global(.dark) .received-time {
-		color: #9ca3af;
-	}
-
-	/* ========================================
-	   CONTACT ACTION BAR
-	   ======================================== */
-	.contact-action-bar {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		gap: var(--spacing-3);
-		padding: var(--spacing-3) var(--spacing-5);
-		background-color: var(--color-gray-50);
-		border-bottom: 1px solid var(--color-gray-200);
-		flex-wrap: wrap;
-	}
-
-	:global(.dark) .contact-action-bar {
-		background-color: #2a2a2a;
-		border-bottom-color: #444;
-	}
-
-	.contact-info-row {
-		display: flex;
-		gap: var(--spacing-4);
-		flex-wrap: wrap;
-		flex: 1;
-	}
-
-	.contact-item {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		font-size: 14px;
-		color: var(--color-gray-700);
-	}
-
-	:global(.dark) .contact-item {
-		color: var(--dark-primary-text-color);
-	}
-
-	.contact-item svg {
-		color: var(--color-gray-500);
-		flex-shrink: 0;
-	}
-
-	:global(.dark) .contact-item svg {
-		color: #9ca3af;
-	}
-
-	.contact-value {
-		font-weight: 500;
-		color: var(--color-gray-900);
-	}
-
-	:global(.dark) .contact-value {
-		color: var(--dark-primary-text-color);
-	}
-
-	.email-link {
-		color: var(--color-primary);
-		text-decoration: none;
-	}
-
-	.email-link:hover {
-		text-decoration: underline;
-	}
-
-	.call-now-button {
-		display: inline-flex;
-		align-items: center;
-		gap: 8px;
-		padding: 10px 20px;
-		font-size: 14px;
-		font-weight: 600;
-		border: none;
-		border-radius: 6px;
-		cursor: pointer;
-		transition: all 0.2s ease;
-		background-color: var(--color-primary);
-		color: white;
-		box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);
-	}
-
-	.call-now-button:hover {
-		background-color: var(--color-primary-hover);
-		box-shadow: 0 4px 6px rgba(37, 99, 235, 0.4);
-		transform: translateY(-1px);
-	}
-
-	.call-now-button:active {
-		transform: translateY(0);
-	}
-
-	.call-now-button svg {
-		width: 16px;
-		height: 16px;
-	}
-
-	@media (max-width: 640px) {
-		.contact-action-bar {
-			flex-direction: column;
-			align-items: stretch;
-		}
-
-		.contact-info-row {
-			flex-direction: column;
-			gap: var(--spacing-2);
-		}
-
-		.call-now-button {
-			width: 100%;
-			justify-content: center;
-		}
-	}
-
-	/* ========================================
-	   COMPACT INFO GRID - New Simplified Layout
-	   ======================================== */
-	.compact-info-grid {
-		display: grid;
-		grid-template-columns: 1fr auto;
-		gap: var(--spacing-2);
-		padding: var(--spacing-3) var(--spacing-5);
-		background-color: var(--color-gray-50);
-		border-bottom: 1px solid var(--color-gray-200);
-	}
-
-	:global(.dark) .compact-info-grid {
-		background-color: #2a2a2a;
-		border-bottom-color: #444;
-	}
-
-	.compact-info-item {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		font-size: 13px;
-		color: var(--color-gray-700);
-	}
-
-	:global(.dark) .compact-info-item {
-		color: var(--dark-primary-text-color);
-	}
-
-	.compact-info-item.phone-item {
-		grid-column: 1;
-		font-weight: 500;
-	}
-
-	.compact-info-item svg {
-		color: var(--color-gray-500);
-		flex-shrink: 0;
-	}
-
-	:global(.dark) .compact-info-item svg {
-		color: #9ca3af;
-	}
-
-	.compact-info-label {
-		font-weight: 600;
-		color: var(--color-gray-600);
-	}
-
-	:global(.dark) .compact-info-label {
-		color: #9ca3af;
-	}
-
-	.compact-info-value {
-		font-weight: 500;
-		color: var(--color-gray-900);
-	}
-
-	:global(.dark) .compact-info-value {
-		color: var(--dark-primary-text-color);
-	}
-
-	.call-now-button-compact {
-		grid-column: 2;
-		grid-row: 1 / span 3;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		gap: 6px;
-		padding: 10px 16px;
-		font-size: 13px;
-		font-weight: 600;
-		border: none;
-		border-radius: 6px;
-		cursor: pointer;
-		transition: all 0.2s ease;
-		background-color: var(--color-primary);
-		color: white;
-		box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);
-		white-space: nowrap;
-	}
-
-	.call-now-button-compact:hover {
-		background-color: var(--color-primary-hover);
-		box-shadow: 0 4px 6px rgba(37, 99, 235, 0.4);
-		transform: translateY(-1px);
-	}
-
-	.call-now-button-compact:active {
-		transform: translateY(0);
-	}
-
-	.call-now-button-compact svg {
-		width: 16px;
-		height: 16px;
-	}
-
-	@media (max-width: 640px) {
-		.compact-info-grid {
-			grid-template-columns: 1fr;
-			gap: var(--spacing-2);
-		}
-
-		.compact-info-item.phone-item {
-			grid-column: 1;
-		}
-
-		.call-now-button-compact {
-			grid-column: 1;
-			grid-row: auto;
-			width: 100%;
-		}
-	}
-
-	/* ========================================
-	   TOGGLE DETAILS BUTTON
-	   ======================================== */
-	.toggle-details-button {
-		width: 100%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 8px;
-		padding: var(--spacing-2) var(--spacing-3);
-		background: none;
-		border: none;
-		border-top: 1px solid var(--color-gray-200);
-		border-bottom: 1px solid var(--color-gray-200);
-		cursor: pointer;
-		font-size: 13px;
-		font-weight: 600;
-		color: var(--color-gray-600);
-		transition: all 0.2s ease;
-	}
-
-	.toggle-details-button:hover {
-		background-color: var(--color-gray-50);
-		color: var(--color-gray-800);
-	}
-
-	:global(.dark) .toggle-details-button {
-		border-top-color: #444;
-		border-bottom-color: #444;
-		color: #9ca3af;
-	}
-
-	:global(.dark) .toggle-details-button:hover {
-		background-color: #2a2a2a;
-		color: #d1d5db;
-	}
-
-	.toggle-icon {
-		transition: transform 0.2s ease;
-		color: var(--color-gray-500);
-	}
-
-	.toggle-icon.expanded {
-		transform: rotate(180deg);
-	}
-
-	/* ========================================
-	   EXPANDABLE DETAILS SECTION
-	   ======================================== */
-	.details-section {
-		padding: var(--spacing-4) var(--spacing-5);
-		background-color: #FAFBFC;
-		border-bottom: 1px solid var(--color-gray-200);
-		animation: expandDetails 0.3s ease;
-	}
-
-	:global(.dark) .details-section {
-		background-color: #252525;
-		border-bottom-color: #444;
-	}
-
-	@keyframes expandDetails {
-		from {
-			opacity: 0;
-			max-height: 0;
-		}
-		to {
-			opacity: 1;
-			max-height: 1000px;
-		}
-	}
-
-	.detail-item {
-		display: flex;
-		align-items: flex-start;
-		gap: 8px;
-		margin-bottom: var(--spacing-2);
-		font-size: 13px;
-	}
-
-	.detail-item.email-detail {
-		align-items: center;
-		padding: var(--spacing-2);
-		background-color: white;
-		border-radius: 6px;
-		border: 1px solid var(--color-gray-200);
-	}
-
-	:global(.dark) .detail-item.email-detail {
-		background-color: #2a2a2a;
-		border-color: #444;
-	}
-
-	.detail-item svg {
-		color: var(--color-gray-500);
-		flex-shrink: 0;
-		margin-top: 2px;
-	}
-
-	:global(.dark) .detail-item svg {
-		color: #9ca3af;
-	}
-
-	.detail-label {
-		font-weight: 600;
-		color: var(--color-gray-600);
-	}
-
-	:global(.dark) .detail-label {
-		color: #9ca3af;
-	}
-
-	.detail-value {
-		font-weight: 500;
-		color: var(--color-gray-900);
-	}
-
-	:global(.dark) .detail-value {
-		color: var(--dark-primary-text-color);
-	}
-
-	.next-step-hint {
-		display: flex;
-		align-items: flex-start;
-		gap: 10px;
-		padding: var(--spacing-3);
-		margin-top: var(--spacing-3);
-		background-color: #EFF6FF;
-		border-left: 3px solid var(--color-primary);
-		border-radius: 4px;
-		font-size: 13px;
-		color: var(--color-gray-700);
-	}
-
-	:global(.dark) .next-step-hint {
-		background-color: rgba(59, 130, 246, 0.1);
-		color: #d1d5db;
-	}
-
-	.next-step-hint svg {
-		color: var(--color-primary);
-		flex-shrink: 0;
-		margin-top: 2px;
-	}
-
-	/* ========================================
-	   LEAD INFORMATION SECTION
-	   ======================================== */
-	.lead-info-section {
-		padding: var(--spacing-4) var(--spacing-5);
-		border-bottom: 1px solid var(--color-gray-200);
-	}
-
-	:global(.dark) .lead-info-section {
-		border-bottom-color: #444;
-	}
-
-	.section-header {
-		margin: 0 0 var(--spacing-2) 0;
-		font-size: 14px;
-		font-weight: 600;
-		color: var(--color-gray-700);
-		text-transform: uppercase;
-		letter-spacing: 0.5px;
-	}
-
-	:global(.dark) .section-header {
-		color: #d1d5db;
-	}
-
-	.info-grid {
-		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		gap: var(--spacing-3);
-		margin-top: var(--spacing-3);
-	}
-
-	.info-item {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-	}
-
-	.info-item-full {
-		grid-column: 1 / -1;
-	}
-
-	.info-label {
-		font-size: 12px;
-		font-weight: 500;
-		color: var(--color-gray-500);
-	}
-
-	:global(.dark) .info-label {
-		color: #9ca3af;
-	}
-
-	.info-value {
-		font-size: 14px;
-		font-weight: 600;
-		color: var(--color-gray-900);
-	}
-
-	:global(.dark) .info-value {
-		color: var(--dark-primary-text-color);
-	}
-
-	.sv-comment {
-		margin-top: var(--spacing-3);
-		padding: var(--spacing-2);
-		background-color: #EFF6FF;
-		border-left: 3px solid var(--color-primary);
-		border-radius: 4px;
-		font-size: 13px;
-		color: var(--color-gray-700);
-	}
-
-	:global(.dark) .sv-comment {
-		background-color: rgba(59, 130, 246, 0.1);
-		color: #d1d5db;
-	}
-
-	@media (max-width: 640px) {
-		.info-grid {
-			grid-template-columns: 1fr;
-		}
-
-		.info-item-full {
-			grid-column: 1;
-		}
-	}
-
-	/* ========================================
-	   WORKFLOW SECTION - Progress & Stage
-	   ======================================== */
-	.workflow-section {
-		padding: var(--spacing-4) var(--spacing-5);
-		border-bottom: 1px solid var(--color-gray-200);
-	}
-
-	:global(.dark) .workflow-section {
-		border-bottom-color: #444;
-	}
-
-	.stage-status-controls {
-		display: flex;
-		gap: var(--spacing-3);
-		margin-top: var(--spacing-3);
-		margin-bottom: var(--spacing-4);
-		flex-wrap: wrap;
-	}
-
-	.control-group {
-		flex: 1;
-		min-width: 140px;
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-	}
-
-	.control-label {
-		font-size: 12px;
-		font-weight: 600;
-		color: var(--color-gray-700);
-	}
-
-	:global(.dark) .control-label {
-		color: #d1d5db;
-	}
-
-	.control-select {
-		padding: 10px 12px;
-		border: 1px solid var(--color-gray-300);
-		border-radius: 6px;
-		background-color: white;
-		font-size: 14px;
-		font-weight: 500;
-		color: var(--color-gray-900);
-		cursor: pointer;
-		transition: all 0.2s ease;
-	}
-
-	.control-select:focus {
-		outline: none;
-		border-color: var(--color-primary);
-		box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-	}
-
-	:global(.dark) .control-select {
-		background-color: #2a2a2a;
-		border-color: #444;
-		color: var(--dark-primary-text-color);
-	}
-
-	@media (max-width: 640px) {
-		.stage-status-controls {
-			flex-direction: column;
-		}
-
-		.control-group {
-			min-width: 100%;
-		}
-	}
-
-	/* ========================================
-	   NOTES SECTION - Collapsible
-	   ======================================== */
-	.notes-section {
-		border-bottom: 1px solid var(--color-gray-200);
-	}
-
-	:global(.dark) .notes-section {
-		border-bottom-color: #444;
-	}
-
-	.notes-header {
-		width: 100%;
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		padding: var(--spacing-3) var(--spacing-5);
-		background: none;
-		border: none;
-		cursor: pointer;
-		font-size: 14px;
-		font-weight: 600;
-		color: var(--color-gray-700);
-		text-align: left;
-		transition: background-color 0.2s ease;
-	}
-
-	.notes-header:hover {
-		background-color: var(--color-gray-50);
-	}
-
-	:global(.dark) .notes-header {
-		color: #d1d5db;
-	}
-
-	:global(.dark) .notes-header:hover {
-		background-color: #2a2a2a;
-	}
-
-	.collapse-icon {
-		transition: transform 0.2s ease;
-		color: var(--color-gray-500);
-	}
-
-	.collapse-icon.expanded {
-		transform: rotate(90deg);
-	}
-
-	.notes-indicator {
-		margin-left: auto;
-		color: var(--color-primary);
-		font-size: 18px;
-	}
-
-	.notes-content {
-		padding: 0 var(--spacing-5) var(--spacing-3);
-	}
-
-	.notes-content textarea {
-		width: 100%;
-		padding: var(--spacing-2);
-		border: 1px solid var(--color-gray-300);
-		border-radius: 6px;
-		font-size: 14px;
-		font-family: inherit;
-		resize: vertical;
-		min-height: 80px;
-		box-sizing: border-box;
-		transition: border-color 0.2s ease;
-	}
-
-	.notes-content textarea:focus {
-		outline: none;
-		border-color: var(--color-primary);
-		box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-	}
-
-	:global(.dark) .notes-content textarea {
-		background-color: #2a2a2a;
-		border-color: #444;
-		color: var(--dark-primary-text-color);
-	}
-
-	.notes-actions {
-		display: flex;
-		align-items: center;
-		gap: var(--spacing-2);
-		margin-top: var(--spacing-2);
-	}
-
-	.save-button {
-		background-color: var(--color-gray-600);
-		color: white;
-		border: none;
-		padding: 8px 16px;
-		border-radius: 6px;
-		cursor: pointer;
-		font-weight: 600;
-		font-size: 13px;
-		transition: all 0.2s ease;
-	}
-
-	.save-button:hover {
-		background-color: var(--color-gray-700);
-	}
-
-	.save-button:disabled {
-		background-color: var(--color-gray-400);
-		cursor: not-allowed;
-	}
-
-	.save-success {
-		color: var(--color-success);
-		font-weight: 600;
-		font-size: 13px;
-	}
-
-	/* ========================================
-	   ACTION FOOTER - Next Steps & Buttons
-	   ======================================== */
-	.action-footer {
-		padding: var(--spacing-4) var(--spacing-5);
-		background-color: var(--color-gray-50);
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		gap: var(--spacing-3);
-		flex-wrap: wrap;
-	}
-
-	:global(.dark) .action-footer {
-		background-color: #2a2a2a;
-	}
-
-	.action-hint {
-		display: flex;
-		align-items: flex-start;
-		gap: 10px;
-		flex: 1;
-		font-size: 13px;
-		color: var(--color-gray-700);
-	}
-
-	:global(.dark) .action-hint {
-		color: #d1d5db;
-	}
-
-	.action-hint svg {
-		color: var(--color-primary);
-		flex-shrink: 0;
-		margin-top: 2px;
-	}
-
-	.action-text {
-		line-height: 1.5;
-	}
-
-	.primary-action-button {
-		display: inline-flex;
-		align-items: center;
-		gap: 8px;
-		padding: 12px 24px;
-		font-size: 14px;
-		font-weight: 600;
-		border: none;
-		border-radius: 6px;
-		cursor: pointer;
-		transition: all 0.2s ease;
-		background-color: var(--color-primary);
-		color: white;
-		box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
-	}
-
-	.primary-action-button:hover {
-		background-color: var(--color-primary-hover);
-		box-shadow: 0 4px 6px rgba(37, 99, 235, 0.4);
-		transform: translateY(-1px);
-	}
-
-	.primary-action-button:active {
-		transform: translateY(0);
-	}
-
-	.claim-button {
-		background-color: var(--color-success);
-		color: white;
-		font-weight: 600;
-		border: none;
-		box-shadow: 0 2px 4px rgba(5, 150, 105, 0.3);
-		padding: 12px 24px;
-		font-size: 14px;
-		border-radius: 6px;
-		cursor: pointer;
-		transition: all 0.2s ease;
-	}
-
-	.claim-button:hover {
-		background-color: var(--color-success-hover);
-		box-shadow: 0 4px 6px rgba(5, 150, 105, 0.4);
-		transform: translateY(-1px);
-	}
-
-	.claim-button:disabled {
-		background-color: var(--color-gray-400);
-		cursor: not-allowed;
-		box-shadow: none;
-		transform: none;
-	}
-
-	.delete-button {
-		background-color: var(--color-danger);
-		color: white;
-		font-weight: 600;
-		border: none;
-		box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
-		padding: 10px 20px;
-		font-size: 14px;
-		border-radius: 6px;
-		cursor: pointer;
-		transition: all 0.2s ease;
-	}
-
-	.delete-button:hover {
-		background-color: var(--color-danger-hover);
-		box-shadow: 0 4px 6px rgba(220, 38, 38, 0.4);
-	}
-
-	.claimed-text {
-		font-weight: 600;
-		color: var(--color-gray-600);
-		font-size: 14px;
-	}
-
-	@media (max-width: 640px) {
-		.action-footer {
-			flex-direction: column;
-			align-items: stretch;
-		}
-
-		.primary-action-button,
-		.claim-button,
-		.delete-button {
-			width: 100%;
-			justify-content: center;
-		}
-	}
-
-	/* ========================================
-	   DUMMY LEAD & UTILITY STYLES
-	   ======================================== */
-	.dummy-lead {
-		opacity: 0.7;
-		border: 2px dashed var(--border-color-light);
-	}
-
-	:global(.dark) .dummy-lead {
-		border: 2px dashed var(--border-color-dark);
-	}
-
-	.error-message {
-		color: var(--color-danger);
-		font-weight: 600;
-		padding: var(--spacing-3);
-	}
-
-
-	/* No results styling */
-	.no-results {
-		text-align: center;
-		padding: 2rem;
-		margin: 1rem 0;
-		border-radius: 8px;
-		background-color: rgba(108, 117, 125, 0.1);
-		border: 2px dashed rgba(108, 117, 125, 0.3);
-	}
-
-	.no-results p {
-		margin: 0.5rem 0;
-	}
-
-	.no-results p:first-child {
-		font-weight: 600;
-		font-size: 1.1rem;
-		color: #6c757d;
-	}
-
-	.no-results small {
-		color: #6c757d;
-		font-style: italic;
-	}
-
-	:global(.dark) .no-results {
-		background-color: rgba(108, 117, 125, 0.15);
-		border-color: rgba(108, 117, 125, 0.4);
-	}
-
-	:global(.dark) .no-results p:first-child,
-	:global(.dark) .no-results small {
-		color: #adb5bd;
-	}
-
-	/* Additional mobile overflow fixes */
-	@media (max-width: 480px) {
-		.lead-header {
-			flex-direction: column;
-			align-items: flex-start;
-			gap: var(--spacing-2);
-		}
-
-		.status-badge {
-			align-self: flex-start;
-		}
-	}
-
-	/* Modal styles */
-	.modal-overlay {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background-color: rgba(0, 0, 0, 0.5);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 1000;
-		padding: 1rem;
-	}
-
-	.modal-content {
-		background: white;
-		border-radius: 8px;
-		box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-		max-width: 400px;
-		width: 100%;
-		max-height: 90vh;
-		overflow-y: auto;
-	}
-
-	.modal-header {
-		padding: 1.5rem 1.5rem 1rem;
-		border-bottom: 1px solid #e9ecef;
-	}
-
-	.modal-header h3 {
-		margin: 0;
-		color: #333;
-		font-size: 1.25rem;
-		font-weight: 600;
-	}
-
-	.modal-body {
-		padding: 1rem 1.5rem;
-	}
-
-	.modal-body p {
-		margin: 0 0 1rem;
-		line-height: 1.5;
-	}
-
-	.modal-body p:last-child {
-		margin-bottom: 0;
-	}
-
-	.modal-actions {
-		padding: 1rem 1.5rem 1.5rem;
-		display: flex;
-		gap: 0.75rem;
-		justify-content: flex-end;
-		border-top: 1px solid #e9ecef;
-	}
-
-	.cancel-button {
-		background-color: #6c757d;
-		color: white;
-		border: none;
-		padding: 0.5rem 1rem;
-		border-radius: 4px;
-		cursor: pointer;
-		font-weight: 500;
-		transition: background-color 0.3s ease;
-	}
-
-	.cancel-button:hover {
-		background-color: #5a6268;
-	}
-
-	.confirm-delete-button {
-		background-color: #dc3545;
-		color: white;
-		border: none;
-		padding: 0.5rem 1rem;
-		border-radius: 4px;
-		cursor: pointer;
-		font-weight: 600;
-		transition: background-color 0.3s ease;
-	}
-
-	.confirm-delete-button:hover {
-		background-color: #c82333;
-	}
-
-	.confirm-delete-button:disabled,
-	.cancel-button:disabled {
-		background-color: #9ca3af;
-		cursor: not-allowed;
-		opacity: 0.6;
-	}
-
-	.confirm-delete-button:disabled:hover,
-	.cancel-button:disabled:hover {
-		background-color: #9ca3af;
-	}
-
-	/* Dark mode modal styles */
-	:global(.dark) .modal-content {
-		background: #333;
-		color: var(--dark-primary-text-color);
-	}
-
-	:global(.dark) .modal-header {
-		border-bottom-color: #444;
-	}
-
-	:global(.dark) .modal-header h3 {
-		color: var(--dark-primary-text-color);
-	}
-
-	:global(.dark) .modal-actions {
-		border-top-color: #444;
-	}
-
-	/* Mobile modal responsiveness */
-	@media (max-width: 480px) {
-		.modal-content {
-			margin: 1rem;
-		}
-
-		.modal-header,
-		.modal-body,
-		.modal-actions {
-			padding-left: 1rem;
-			padding-right: 1rem;
-		}
-
-		.modal-actions {
-			flex-direction: column;
-		}
-
-		.modal-actions button {
-			width: 100%;
-		}
-	}
+	/* No component-specific styles needed - all styles are now in Tailwind */
 </style>

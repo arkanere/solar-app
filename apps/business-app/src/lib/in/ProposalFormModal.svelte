@@ -1,19 +1,26 @@
 <script>
-	import { createEventDispatcher } from 'svelte';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import { Textarea } from '$lib/components/ui/textarea';
+	import { Label } from '$lib/components/ui/label';
+	import { toast } from 'svelte-sonner';
 	import { jsPDF } from 'jspdf';
 	import DrawingModal from './DrawingModal.svelte';
 
-	export let show = false;
-	export let business = {};
-	export let proposal = null;
-
-	const dispatch = createEventDispatcher();
+	let {
+		show = $bindable(false),
+		business = {},
+		proposal = null,
+		onClose = () => {},
+		onGenerated = () => {}
+	} = $props();
 
 	// Drawing modal state
-	let showDrawingModal = false;
+	let showDrawingModal = $state(false);
 
 	// Form state - initialize with proposal data if editing
-	let formData = {
+	let formData = $state({
 		// Customer Information
 		customerName: '',
 		customerAddress: '',
@@ -28,31 +35,39 @@
 
 		// Additional Notes
 		additionalNotes: ''
-	};
+	});
 
-	let previousProposal = null;
+	let previousProposal = $state(null);
 
 	// Update form data when proposal changes (only when it's a different proposal)
-	$: if (proposal && proposal !== previousProposal) {
-		previousProposal = proposal;
-		formData = {
-			customerName: proposal.customer_name || '',
-			customerAddress: proposal.address || '',
-			customerPhone: proposal.phone_number || '',
-			customerEmail: proposal.email || '',
-			systemCapacity: proposal.system_capacity_kw || '',
-			panelType: proposal.panels_brand_model || '',
-			numberOfPanels: proposal.number_of_panels || '',
-			inverterType: proposal.inverter_brand_model || '',
-			additionalNotes: proposal.notes || ''
-		};
-	}
+	$effect(() => {
+		if (proposal && proposal !== previousProposal) {
+			previousProposal = proposal;
+			formData = {
+				customerName: proposal.customer_name || '',
+				customerAddress: proposal.address || '',
+				customerPhone: proposal.phone_number || '',
+				customerEmail: proposal.email || '',
+				systemCapacity: proposal.system_capacity_kw || '',
+				panelType: proposal.panels_brand_model || '',
+				numberOfPanels: proposal.number_of_panels || '',
+				inverterType: proposal.inverter_brand_model || '',
+				additionalNotes: proposal.notes || ''
+			};
+		}
+	});
 
-	let isGenerating = false;
-	let isSaving = false;
+	let isGenerating = $state(false);
+	let isSaving = $state(false);
 
 	// Form validation - reactive
-	$: isFormValid = formData.customerName.trim() !== '' && formData.systemCapacity.trim() !== '';
+	let isFormValid = $derived(formData.customerName.trim() !== '' && formData.systemCapacity.trim() !== '');
+
+	function handleOpenChange(open) {
+		if (!open) {
+			onClose();
+		}
+	}
 
 	// Reset form
 	function resetForm() {
@@ -71,7 +86,7 @@
 
 	// Close modal
 	function closeModal() {
-		dispatch('close');
+		onClose();
 	}
 
 	// Open drawing modal
@@ -114,15 +129,15 @@
 			const result = await response.json();
 
 			if (result.success) {
-				alert(proposal?.id ? 'Proposal updated successfully!' : 'Proposal created successfully!');
-				dispatch('generated');
+				toast.success(proposal?.id ? 'Proposal updated successfully!' : 'Proposal created successfully!');
+				onGenerated();
 				closeModal();
 			} else {
-				alert(`Error: ${result.error}`);
+				toast.error(result.error);
 			}
 		} catch (error) {
 			console.error('Error saving proposal:', error);
-			alert('Failed to save proposal. Please try again.');
+			toast.error('Failed to save proposal. Please try again.');
 		} finally {
 			isSaving = false;
 		}
@@ -281,383 +296,172 @@
 
 			isGenerating = false;
 
-			// Dispatch success event
-			dispatch('generated');
+			// Notify success
+			onGenerated();
 
 			// Reset form and close modal
 			resetForm();
 			closeModal();
 		} catch (error) {
 			console.error('Error generating PDF:', error);
-			alert('Error generating PDF. Please try again.');
+			toast.error('Error generating PDF. Please try again.');
 			isGenerating = false;
 		}
 	}
 </script>
 
-{#if show}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
-	<div class="modal-overlay" on:click={(e) => e.target === e.currentTarget && closeModal()}>
-		<div class="modal-content">
-			<div class="modal-header">
-				<h2>{proposal ? 'Update Proposal' : 'Create Proposal'}</h2>
-				<button class="close-btn" on:click={closeModal}>&times;</button>
-			</div>
+<Dialog.Root open={show} onOpenChange={handleOpenChange}>
+	<Dialog.Content class="max-w-[800px] max-h-[90vh] overflow-y-auto">
+		<Dialog.Header>
+			<Dialog.Title class="text-accent">{proposal ? 'Update Proposal' : 'Create Proposal'}</Dialog.Title>
+		</Dialog.Header>
 
-			<div class="modal-body">
-				<form on:submit|preventDefault={generatePDF}>
-					<!-- Customer Information Section -->
-					<section class="form-section">
-						<h3>Customer Information</h3>
-						<div class="form-grid">
-							<div class="form-group full-width">
-								<label for="customerName">Customer Name *</label>
-								<input
-									type="text"
-									id="customerName"
-									bind:value={formData.customerName}
-									placeholder="Enter customer name"
-									required
-								/>
-							</div>
-
-							<div class="form-group full-width">
-								<label for="customerPhone">Phone Number</label>
-								<input
-									type="tel"
-									id="customerPhone"
-									bind:value={formData.customerPhone}
-									placeholder="Enter phone number"
-								/>
-							</div>
-
-							<div class="form-group full-width">
-								<label for="customerAddress">Address</label>
-								<input
-									type="text"
-									id="customerAddress"
-									bind:value={formData.customerAddress}
-									placeholder="Enter customer address"
-								/>
-							</div>
-
-							<div class="form-group full-width">
-								<label for="customerEmail">Email</label>
-								<input
-									type="email"
-									id="customerEmail"
-									bind:value={formData.customerEmail}
-									placeholder="Enter email address"
-								/>
-							</div>
-						</div>
-					</section>
-
-					<!-- System Specifications Section -->
-					<section class="form-section">
-						<h3>System Specifications</h3>
-						<div class="form-grid">
-							<div class="form-group full-width">
-								<label for="systemCapacity">System Capacity (kW) *</label>
-								<input
-									type="text"
-									id="systemCapacity"
-									bind:value={formData.systemCapacity}
-									placeholder="e.g., 5 kW"
-									required
-								/>
-							</div>
-
-							<div class="form-group full-width">
-								<label for="panelType">Panels</label>
-								<input
-									type="text"
-									id="panelType"
-									bind:value={formData.panelType}
-									placeholder="Brand and Model"
-								/>
-							</div>
-
-							<div class="form-group full-width">
-								<label for="numberOfPanels">Number of Panels</label>
-								<input
-									type="text"
-									id="numberOfPanels"
-									bind:value={formData.numberOfPanels}
-									placeholder="e.g., 15"
-								/>
-							</div>
-
-							<div class="form-group full-width">
-								<label for="inverterType">Inverter</label>
-								<input
-									type="text"
-									id="inverterType"
-									bind:value={formData.inverterType}
-									placeholder="Brand and Model"
-								/>
-							</div>
-						</div>
-					</section>
-
-					<!-- Additional Notes Section -->
-					<section class="form-section">
-						<h3>Additional Notes</h3>
-						<div class="form-group">
-							<label for="additionalNotes">Notes</label>
-							<textarea
-								id="additionalNotes"
-								bind:value={formData.additionalNotes}
-								placeholder="Enter any additional information, terms, or special requirements..."
-								rows="4"
-							></textarea>
-						</div>
-					</section>
-
-					<!-- Action Buttons -->
-					<div class="action-buttons">
-						<button type="button" class="btn btn-secondary" on:click={resetForm}>
-							Reset Form
-						</button>
-						<button
-							type="button"
-							class="btn btn-info"
-							on:click={openDrawingModal}
-							disabled={!isFormValid}
-						>
-							Create Drawing
-						</button>
-						<button
-							type="button"
-							class="btn btn-success"
-							on:click={saveProposal}
-							disabled={!isFormValid || isSaving}
-						>
-							{isSaving ? 'Saving...' : (proposal?.id ? 'Update Proposal' : 'Save Proposal')}
-						</button>
-						<button type="submit" class="btn btn-primary" disabled={!isFormValid || isGenerating}>
-							{isGenerating ? 'Downloading PDF...' : 'Download PDF'}
-						</button>
+		<form onsubmit={(e) => { e.preventDefault(); generatePDF(); }}>
+			<!-- Customer Information Section -->
+			<section class="mb-6 pb-6 border-b border-border">
+				<h3 class="text-lg font-semibold mb-4 text-accent">Customer Information</h3>
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+					<div class="flex flex-col sm:col-span-2">
+						<Label for="customerName" class="mb-2">Customer Name <span class="text-destructive">*</span></Label>
+						<Input
+							type="text"
+							id="customerName"
+							bind:value={formData.customerName}
+							placeholder="Enter customer name"
+							required
+						/>
 					</div>
-				</form>
-			</div>
-		</div>
-	</div>
-{/if}
+
+					<div class="flex flex-col sm:col-span-2">
+						<Label for="customerPhone" class="mb-2">Phone Number</Label>
+						<Input
+							type="tel"
+							id="customerPhone"
+							bind:value={formData.customerPhone}
+							placeholder="Enter phone number"
+						/>
+					</div>
+
+					<div class="flex flex-col sm:col-span-2">
+						<Label for="customerAddress" class="mb-2">Address</Label>
+						<Input
+							type="text"
+							id="customerAddress"
+							bind:value={formData.customerAddress}
+							placeholder="Enter customer address"
+						/>
+					</div>
+
+					<div class="flex flex-col sm:col-span-2">
+						<Label for="customerEmail" class="mb-2">Email</Label>
+						<Input
+							type="email"
+							id="customerEmail"
+							bind:value={formData.customerEmail}
+							placeholder="Enter email address"
+						/>
+					</div>
+				</div>
+			</section>
+
+			<!-- System Specifications Section -->
+			<section class="mb-6 pb-6 border-b border-border">
+				<h3 class="text-lg font-semibold mb-4 text-accent">System Specifications</h3>
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+					<div class="flex flex-col sm:col-span-2">
+						<Label for="systemCapacity" class="mb-2">System Capacity (kW) <span class="text-destructive">*</span></Label>
+						<Input
+							type="text"
+							id="systemCapacity"
+							bind:value={formData.systemCapacity}
+							placeholder="e.g., 5 kW"
+							required
+						/>
+					</div>
+
+					<div class="flex flex-col sm:col-span-2">
+						<Label for="panelType" class="mb-2">Panels</Label>
+						<Input
+							type="text"
+							id="panelType"
+							bind:value={formData.panelType}
+							placeholder="Brand and Model"
+						/>
+					</div>
+
+					<div class="flex flex-col sm:col-span-2">
+						<Label for="numberOfPanels" class="mb-2">Number of Panels</Label>
+						<Input
+							type="text"
+							id="numberOfPanels"
+							bind:value={formData.numberOfPanels}
+							placeholder="e.g., 15"
+						/>
+					</div>
+
+					<div class="flex flex-col sm:col-span-2">
+						<Label for="inverterType" class="mb-2">Inverter</Label>
+						<Input
+							type="text"
+							id="inverterType"
+							bind:value={formData.inverterType}
+							placeholder="Brand and Model"
+						/>
+					</div>
+				</div>
+			</section>
+
+			<!-- Additional Notes Section -->
+			<section class="mb-6">
+				<h3 class="text-lg font-semibold mb-4 text-accent">Additional Notes</h3>
+				<div class="flex flex-col">
+					<Label for="additionalNotes" class="mb-2">Notes</Label>
+					<Textarea
+						id="additionalNotes"
+						bind:value={formData.additionalNotes}
+						placeholder="Enter any additional information, terms, or special requirements..."
+						rows={4}
+					/>
+				</div>
+			</section>
+
+			<!-- Action Buttons -->
+			<Dialog.Footer class="max-sm:flex-col gap-2">
+				<Button type="button" variant="secondary" onclick={resetForm} class="max-sm:w-full">
+					Reset Form
+				</Button>
+				<Button
+					type="button"
+					variant="outline"
+					onclick={openDrawingModal}
+					disabled={!isFormValid}
+					class="max-sm:w-full"
+				>
+					Create Drawing
+				</Button>
+				<Button
+					type="button"
+					class="bg-success text-success-foreground hover:bg-success/90 max-sm:w-full"
+					onclick={saveProposal}
+					disabled={!isFormValid || isSaving}
+				>
+					{isSaving ? 'Saving...' : (proposal?.id ? 'Update Proposal' : 'Save Proposal')}
+				</Button>
+				<Button type="submit" disabled={!isFormValid || isGenerating} class="max-sm:w-full">
+					{isGenerating ? 'Downloading PDF...' : 'Download PDF'}
+				</Button>
+			</Dialog.Footer>
+		</form>
+	</Dialog.Content>
+</Dialog.Root>
 
 <!-- Drawing Modal -->
 <DrawingModal
-	show={showDrawingModal}
+	bind:show={showDrawingModal}
 	proposalData={{
 		customer_name: formData.customerName,
 		system_capacity_kw: formData.systemCapacity,
 		number_of_panels: formData.numberOfPanels || 15
 	}}
-	on:close={closeDrawingModal}
+	onClose={closeDrawingModal}
 />
-
-<style>
-	.modal-overlay {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: rgba(0, 0, 0, 0.7);
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		z-index: 2000;
-		padding: 1rem;
-		overflow-y: auto;
-	}
-
-	.modal-content {
-		background: white;
-		border-radius: 8px;
-		width: 100%;
-		max-width: 800px;
-		max-height: 90vh;
-		display: flex;
-		flex-direction: column;
-		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-	}
-
-	.modal-header {
-		padding: 1.5rem;
-		border-bottom: 1px solid #e5e7eb;
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-	}
-
-	.modal-header h2 {
-		margin: 0;
-		font-size: 1.5rem;
-		color: #0056b3;
-	}
-
-	.close-btn {
-		background: none;
-		border: none;
-		font-size: 2rem;
-		cursor: pointer;
-		color: #666;
-		line-height: 1;
-		padding: 0;
-		width: 32px;
-		height: 32px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.close-btn:hover {
-		color: #333;
-	}
-
-	.modal-body {
-		padding: 1.5rem;
-		overflow-y: auto;
-		flex: 1;
-	}
-
-	.form-section {
-		margin-bottom: 1.5rem;
-		padding-bottom: 1.5rem;
-		border-bottom: 1px solid #e5e7eb;
-	}
-
-	.form-section:last-of-type {
-		border-bottom: none;
-	}
-
-	.form-section h3 {
-		font-size: 1.25rem;
-		margin-bottom: 1rem;
-		color: #0056b3;
-	}
-
-	.form-grid {
-		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		gap: 1rem;
-	}
-
-	.form-group {
-		display: flex;
-		flex-direction: column;
-	}
-
-	.form-group.full-width {
-		grid-column: 1 / -1;
-	}
-
-	.form-group label {
-		font-weight: 500;
-		margin-bottom: 0.5rem;
-		font-size: 0.9rem;
-		color: #333;
-	}
-
-	.form-group input,
-	.form-group textarea {
-		padding: 0.65rem;
-		border: 1px solid #ddd;
-		border-radius: 5px;
-		font-size: 0.95rem;
-		font-family: inherit;
-		transition: border-color 0.3s ease;
-	}
-
-	.form-group input:focus,
-	.form-group textarea:focus {
-		outline: none;
-		border-color: #0056b3;
-	}
-
-	.form-group textarea {
-		resize: vertical;
-		min-height: 80px;
-	}
-
-	.action-buttons {
-		display: flex;
-		gap: 1rem;
-		justify-content: flex-end;
-		margin-top: 1.5rem;
-	}
-
-	.btn {
-		padding: 0.65rem 1.25rem;
-		border-radius: 5px;
-		border: none;
-		cursor: pointer;
-		font-size: 0.95rem;
-		font-weight: 500;
-		transition: background-color 0.3s ease;
-	}
-
-	.btn:disabled {
-		opacity: 0.6;
-		cursor: not-allowed;
-	}
-
-	.btn-primary {
-		background: #0056b3;
-		color: white;
-	}
-
-	.btn-primary:hover:not(:disabled) {
-		background: #00449e;
-	}
-
-	.btn-secondary {
-		background: #6c757d;
-		color: white;
-	}
-
-	.btn-secondary:hover {
-		background: #5a6268;
-	}
-
-	.btn-info {
-		background: #17a2b8;
-		color: white;
-	}
-
-	.btn-info:hover:not(:disabled) {
-		background: #138496;
-	}
-
-	.btn-success {
-		background: #28a745;
-		color: white;
-	}
-
-	.btn-success:hover:not(:disabled) {
-		background: #218838;
-	}
-
-	@media (max-width: 768px) {
-		.modal-content {
-			max-width: 100%;
-			max-height: 100vh;
-			border-radius: 0;
-		}
-
-		.form-grid {
-			grid-template-columns: 1fr;
-		}
-
-		.action-buttons {
-			flex-direction: column;
-			gap: 0.5rem;
-		}
-
-		.btn {
-			width: 100%;
-		}
-	}
-</style>

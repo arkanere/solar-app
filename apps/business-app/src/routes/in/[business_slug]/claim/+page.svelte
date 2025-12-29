@@ -1,26 +1,25 @@
 <script>
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores'; // Store to access route parameters
-	import { isDarkMode } from '$lib/in/themeStore'; // Import from store if globally managed
+	import { page } from '$app/stores';
+	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import { Textarea } from '$lib/components/ui/textarea';
+	import { Label } from '$lib/components/ui/label';
 
-	let name = '';
-	let phone = '';
-	let email = '';
-	let message = '';
+	let name = $state('');
+	let phone = $state('');
+	let email = $state('');
+	let message = $state('');
 
-	let errors = {
+	let errors = $state({
 		name: '',
 		phone: '',
 		email: '',
 		message: ''
-	};
+	});
 
 	// Get the business_slug from the URL
-	let business_slug = $page.params.business_slug;
-
-	// Initialize dark mode state
-	let darkMode;
-	$: darkMode = $isDarkMode;
+	let business_slug = $derived($page.params.business_slug);
 
 	function validateForm() {
 		errors = {
@@ -94,186 +93,57 @@
 	/>
 </svelte:head>
 
-<main class={darkMode ? 'dark' : 'light'}>
-	<div class="benefits">
-		<h1>Claim Your Business</h1>
-		<h2>Benefits:</h2>
-		<p>Listing is FREE</p>
-		<p>Add phone number on the profile page so that customer can call directly</p>
-		<p>Get 'Verified Business' tag, rank above non-tagged businesses</p>
-		<p>Add Recent Projects</p>
-		<p>Update business details such as phone number, email, website address when they change</p>
+<main class="flex flex-col items-center justify-center p-12 md:p-6 bg-background text-foreground transition-colors duration-300">
+	<div class="mb-8 text-center max-w-xl">
+		<h1 class="text-3xl md:text-2xl font-semibold mb-6">Claim Your Business</h1>
+		<h2 class="text-xl font-medium mb-4 text-accent">Benefits:</h2>
+		<div class="space-y-2 text-foreground-secondary">
+			<p>Listing is FREE</p>
+			<p>Add phone number on the profile page so that customer can call directly</p>
+			<p>Get 'Verified Business' tag, rank above non-tagged businesses</p>
+			<p>Add Recent Projects</p>
+			<p>Update business details such as phone number, email, website address when they change</p>
+		</div>
 	</div>
 
-	<form on:submit|preventDefault={handleSubmit}>
+	<form onsubmit={(e) => { e.preventDefault(); handleSubmit(e); }} class="w-full max-w-[600px] bg-card p-8 md:p-6 rounded-lg border border-border shadow-md transition-colors">
 		<!-- Name Input -->
-		<div class="form-group">
-			<label for="name">Name:</label>
-			<input id="name" type="text" bind:value={name} placeholder="Your Name" />
+		<div class="mb-6 text-left">
+			<Label for="name" class="block mb-2 font-bold">Name:</Label>
+			<Input id="name" type="text" bind:value={name} placeholder="Your Name" />
 			{#if errors.name}
-				<p class="error">{errors.name}</p>
+				<p class="text-destructive text-sm mt-2">{errors.name}</p>
 			{/if}
 		</div>
 
 		<!-- Phone Number Input -->
-		<div class="form-group">
-			<label for="phone">Phone Number:</label>
-			<input id="phone" type="text" bind:value={phone} placeholder="Phone Number" />
+		<div class="mb-6 text-left">
+			<Label for="phone" class="block mb-2 font-bold">Phone Number:</Label>
+			<Input id="phone" type="text" bind:value={phone} placeholder="Phone Number" />
 			{#if errors.phone}
-				<p class="error">{errors.phone}</p>
+				<p class="text-destructive text-sm mt-2">{errors.phone}</p>
 			{/if}
 		</div>
 
 		<!-- Login Email Input -->
-		<div class="form-group">
-			<label for="email">Login Email:</label>
-			<input id="email" type="email" bind:value={email} placeholder="Your Login Email" />
+		<div class="mb-6 text-left">
+			<Label for="email" class="block mb-2 font-bold">Login Email:</Label>
+			<Input id="email" type="email" bind:value={email} placeholder="Your Login Email" />
 			{#if errors.email}
-				<p class="error">{errors.email}</p>
+				<p class="text-destructive text-sm mt-2">{errors.email}</p>
 			{/if}
 		</div>
 
 		<!-- Message Input -->
-		<div class="form-group">
-			<label for="message">Message:</label>
-			<textarea id="message" bind:value={message} placeholder="Your message here"></textarea>
+		<div class="mb-6 text-left">
+			<Label for="message" class="block mb-2 font-bold">Message:</Label>
+			<Textarea id="message" bind:value={message} placeholder="Your message here" class="min-h-[100px]" />
 			{#if errors.message}
-				<p class="error">{errors.message}</p>
+				<p class="text-destructive text-sm mt-2">{errors.message}</p>
 			{/if}
 		</div>
 
 		<!-- Submit Button -->
-		<button type="submit">Submit</button>
+		<Button type="submit" class="w-full mt-4">Submit</Button>
 	</form>
 </main>
-
-<style>
-	/* Root variables for light and dark modes */
-	:root {
-		--light-bg-color: #f8f9fa; /* Soft light background */
-		--dark-bg-color: #1a1a1a; /* Dark background */
-		--light-primary-text-color: #333; /* Dark text for light mode */
-		--dark-primary-text-color: #f0f0f0; /* Light text for dark mode */
-		--accent-color: #0056b3; /* Accent color similar to your home page */
-		--font-family: 'Helvetica Neue', Arial, sans-serif;
-		--light-form-bg: white; /* Form background in light mode */
-		--dark-form-bg: #333; /* Form background in dark mode */
-		--box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-	}
-
-	/* Main layout styling */
-	main {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: 3rem 1rem;
-		font-family: var(--font-family);
-		transition:
-			background-color 0.3s ease,
-			color 0.3s ease;
-	}
-
-	.light {
-		background-color: var(--light-bg-color);
-		color: var(--light-primary-text-color);
-	}
-
-	.dark {
-		background-color: var(--dark-bg-color);
-		color: var(--dark-primary-text-color);
-	}
-
-	h1 {
-		font-size: 2.2rem;
-		margin-bottom: 2rem;
-		font-weight: 600;
-		text-align: center;
-	}
-
-	form {
-		width: 100%;
-		max-width: 600px;
-		background-color: var(--light-form-bg);
-		padding: 2rem;
-		border-radius: 8px;
-		box-shadow: var(--box-shadow);
-		transition: background-color 0.3s ease;
-	}
-
-	.dark form {
-		background-color: var(--dark-form-bg);
-	}
-
-	.form-group {
-		margin-bottom: 1.5rem;
-		text-align: left;
-	}
-
-	label {
-		display: block;
-		margin-bottom: 0.5rem;
-		font-weight: bold;
-	}
-
-	input,
-	textarea {
-		width: 100%;
-		padding: 0.75rem;
-		font-size: 1rem;
-		border: 1px solid #ccc;
-		border-radius: 5px;
-		font-family: var(--font-family);
-	}
-
-	.dark input,
-	.dark textarea {
-		background-color: #2a2a2a;
-		color: var(--dark-primary-text-color);
-		border: 1px solid #555;
-	}
-
-	input::placeholder,
-	textarea::placeholder {
-		color: #aaa;
-	}
-
-	.dark input::placeholder,
-	.dark textarea::placeholder {
-		color: #777;
-	}
-
-	button {
-		width: 100%;
-		padding: 0.75rem;
-		font-size: 1.1rem;
-		background-color: var(--accent-color);
-		color: #fff;
-		border: none;
-		border-radius: 5px;
-		cursor: pointer;
-		font-weight: bold;
-		margin-top: 1rem;
-		transition: background-color 0.3s ease;
-	}
-
-	button:hover {
-		background-color: #00449e; /* Darker shade of accent color */
-	}
-
-	.error {
-		color: red;
-		font-size: 0.9rem;
-		margin-top: 0.5rem;
-	}
-
-	/* Responsive styling for mobile */
-	@media (max-width: 768px) {
-		form {
-			padding: 1.5rem;
-		}
-	}
-	.benefits {
-		margin-bottom: 1rem;
-	}
-</style>

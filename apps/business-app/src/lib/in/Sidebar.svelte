@@ -1,21 +1,28 @@
 <script>
 	import { page } from '$app/stores';
-	import { isDarkMode } from '$lib/in/themeStore';
+	import { isDarkMode } from '$lib/stores/theme.svelte.js';
 	import { isSidebarExpanded, isMobileMenuOpen, expandedSections } from '$lib/in/sidebarStore';
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
+	import { Button } from '$lib/components/ui/button';
+	import { cn } from '$lib/utils';
 
-	export let businessSlug = '';
-	export let businessName = '';
-	export let businessEmail = '';
+	let {
+		businessSlug = '',
+		businessName = '',
+		businessEmail = '',
+		onAddLead = () => {},
+		onAddBranch = () => {},
+		onPostProject = () => {},
+		onPolicy = () => {},
+		onSupport = () => {}
+	} = $props();
 
-	const dispatch = createEventDispatcher();
-
-	$: darkMode = $isDarkMode;
-	$: currentPath = $page.url.pathname;
-	$: expanded = $isSidebarExpanded;
-	$: mobileOpen = $isMobileMenuOpen;
-	$: sections = $expandedSections;
+	let darkMode = $derived($isDarkMode);
+	let currentPath = $derived($page.url.pathname);
+	let expanded = $derived($isSidebarExpanded);
+	let mobileOpen = $derived($isMobileMenuOpen);
+	let sections = $derived($expandedSections);
 
 	// Navigation items configuration - 6 logical groups
 	const navSections = [
@@ -134,7 +141,15 @@
 
 	function handleItemClick(item) {
 		if (item.type === 'modal') {
-			dispatch(item.action);
+			// Call the appropriate callback based on action
+			const callbacks = {
+				addLead: onAddLead,
+				addBranch: onAddBranch,
+				postProject: onPostProject,
+				policy: onPolicy,
+				support: onSupport
+			};
+			callbacks[item.action]?.();
 			// Close mobile menu after action
 			if (window.innerWidth < 768) {
 				isMobileMenuOpen.set(false);
@@ -184,62 +199,96 @@
 
 <!-- Mobile Backdrop -->
 {#if mobileOpen}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
-	<div class="mobile-backdrop" on:click={closeMobileMenu}></div>
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div
+		class="fixed inset-0 bg-black/50 z-[999] md:hidden"
+		onclick={closeMobileMenu}
+	></div>
 {/if}
 
 <!-- Sidebar -->
-<aside class="sidebar {darkMode ? 'dark' : 'light'} {expanded ? 'expanded' : 'collapsed'} {mobileOpen ? 'mobile-open' : ''}">
+<aside class={cn(
+	"fixed top-0 left-0 h-screen flex flex-col z-[1000] overflow-x-hidden overflow-y-auto transition-all duration-300 ease-out",
+	"bg-card border-r border-border shadow-md",
+	expanded ? "w-[250px]" : "w-[60px]",
+	"max-md:w-[280px] max-md:-translate-x-full max-md:transition-transform",
+	mobileOpen && "max-md:translate-x-0"
+)}>
 	<!-- Brand Header -->
-	<div class="sidebar-header">
-		<div class="brand">
-			<img src="/solar-vipani-logo.png" alt="Solar Vipani" class="brand-logo" />
+	<div class="p-4 flex items-center justify-between border-b border-border min-h-[70px]">
+		<div class="flex flex-col items-center gap-2 overflow-hidden flex-1">
+			<img
+				src="/solar-vipani-logo.png"
+				alt="Solar Vipani"
+				class={cn("h-[45px] w-auto shrink-0 object-contain", !expanded && "h-9")}
+			/>
 			{#if expanded}
-				<div class="business-info">
-					<p class="business-name">{businessName || 'Business Portal'}</p>
+				<div class="w-full text-center px-2">
+					<p class="m-0 text-xs font-semibold truncate w-full">{businessName || 'Business Portal'}</p>
 					{#if businessEmail}
-						<p class="business-email">{businessEmail}</p>
+						<p class="mt-1 mb-0 text-[0.65rem] opacity-70 truncate w-full font-normal">{businessEmail}</p>
 					{/if}
 				</div>
 			{/if}
 		</div>
-		<button class="toggle-btn desktop-only" on:click={toggleSidebar} aria-label="Toggle sidebar">
-			<span class="toggle-icon">{expanded ? '◀' : '▶'}</span>
-		</button>
-		<button class="close-btn mobile-only" on:click={closeMobileMenu} aria-label="Close menu">
+		<Button
+			variant="ghost"
+			size="icon-sm"
+			class="hidden md:flex shrink-0"
+			onclick={toggleSidebar}
+			aria-label="Toggle sidebar"
+		>
+			<span class="text-sm">{expanded ? '◀' : '▶'}</span>
+		</Button>
+		<Button
+			variant="ghost"
+			size="icon"
+			class="flex md:hidden text-2xl"
+			onclick={closeMobileMenu}
+			aria-label="Close menu"
+		>
 			✕
-		</button>
+		</Button>
 	</div>
 
 	<!-- Navigation -->
-	<nav class="sidebar-nav">
+	<nav class="flex-1 overflow-y-auto overflow-x-hidden py-2">
 		{#each navSections as section}
 			{#if section.type === 'standalone'}
 				<!-- Standalone Items (Dashboard, Proposals) -->
-				<div class="nav-section standalone-section">
-					<ul class="nav-items">
+				<div class="mb-1">
+					<ul class="list-none m-0 p-0">
 						<li>
 							{#if section.itemType === 'link'}
 								<a
 									href={section.href}
-									class="nav-item {isActive(section.href) ? 'active' : ''}"
+									class={cn(
+										"flex items-center gap-3 py-3 px-4 mx-2 rounded-md no-underline transition-colors",
+										"text-foreground hover:bg-muted",
+										!expanded && "justify-center px-3",
+										isActive(section.href) && "bg-accent/10 text-accent dark:bg-accent/20"
+									)}
 									title={expanded ? '' : section.label}
 								>
-									<span class="nav-icon">{section.icon}</span>
+									<span class="text-xl shrink-0 w-6 text-center">{section.icon}</span>
 									{#if expanded}
-										<span class="nav-label">{section.label}</span>
+										<span class="truncate">{section.label}</span>
 									{/if}
 								</a>
 							{:else if section.itemType === 'modal'}
 								<button
-									class="nav-item"
-									on:click={() => handleItemClick(section)}
+									class={cn(
+										"flex items-center gap-3 py-3 px-4 mx-2 rounded-md transition-colors w-[calc(100%-1rem)] text-left",
+										"text-foreground bg-transparent border-none cursor-pointer hover:bg-muted",
+										!expanded && "justify-center px-3"
+									)}
+									onclick={() => handleItemClick(section)}
 									title={expanded ? '' : section.label}
 								>
-									<span class="nav-icon">{section.icon}</span>
+									<span class="text-xl shrink-0 w-6 text-center">{section.icon}</span>
 									{#if expanded}
-										<span class="nav-label">{section.label}</span>
+										<span class="truncate">{section.label}</span>
 									{/if}
 								</button>
 							{/if}
@@ -248,43 +297,58 @@
 				</div>
 			{:else if section.type === 'collapsible'}
 				<!-- Collapsible Groups (Leads, Branches, Projects, Settings) -->
-				<div class="nav-section collapsible-section">
+				<div class="mb-1">
 					<button
-						class="collapsible-header"
-						on:click={() => toggleSection(section.id)}
+						class={cn(
+							"flex items-center gap-3 py-3 px-4 mx-2 rounded-md transition-colors w-[calc(100%-1rem)] text-left",
+							"text-foreground/80 bg-transparent border-none cursor-pointer hover:bg-muted text-sm font-medium",
+							!expanded && "justify-center px-3",
+							"disabled:cursor-default"
+						)}
+						onclick={() => toggleSection(section.id)}
 						disabled={!expanded}
 						aria-expanded={sections[section.id] ? 'true' : 'false'}
 						title={expanded ? '' : section.title}
 					>
-						<span class="nav-icon">{section.icon}</span>
+						<span class="text-xl shrink-0 w-6 text-center">{section.icon}</span>
 						{#if expanded}
-							<span class="nav-label">{section.title}</span>
-							<span class="chevron {sections[section.id] ? 'expanded' : ''}">▼</span>
+							<span class="truncate">{section.title}</span>
+							<span class={cn(
+								"ml-auto text-[0.625rem] transition-transform duration-200",
+								sections[section.id] ? "rotate-0" : "-rotate-90"
+							)}>▼</span>
 						{/if}
 					</button>
 
 					{#if expanded && sections[section.id]}
-						<div class="collapsible-content" transition:slide={{ duration: 200 }}>
-							<ul class="nav-items">
+						<div class="overflow-hidden" transition:slide={{ duration: 200 }}>
+							<ul class="list-none m-0 p-0">
 								{#each section.items as item}
 									<li>
 										{#if item.type === 'link'}
 											<a
 												href={item.href}
-												class="nav-item nested-item {isActive(item.href) ? 'active' : ''}"
+												class={cn(
+													"flex items-center gap-3 py-3 pr-4 pl-10 mx-2 rounded-md no-underline transition-colors text-sm opacity-90",
+													"text-foreground hover:bg-muted",
+													isActive(item.href) && "bg-accent/10 text-accent dark:bg-accent/20"
+												)}
 												title={item.label}
 											>
-												<span class="nav-icon">{item.icon}</span>
-												<span class="nav-label">{item.label}</span>
+												<span class="text-base shrink-0 w-6 text-center">{item.icon}</span>
+												<span class="truncate">{item.label}</span>
 											</a>
 										{:else if item.type === 'modal'}
 											<button
-												class="nav-item nested-item"
-												on:click={() => handleItemClick(item)}
+												class={cn(
+													"flex items-center gap-3 py-3 pr-4 pl-10 mx-2 rounded-md transition-colors w-[calc(100%-1rem)] text-left text-sm opacity-90",
+													"text-foreground bg-transparent border-none cursor-pointer hover:bg-muted"
+												)}
+												onclick={() => handleItemClick(item)}
 												title={item.label}
 											>
-												<span class="nav-icon">{item.icon}</span>
-												<span class="nav-label">{item.label}</span>
+												<span class="text-base shrink-0 w-6 text-center">{item.icon}</span>
+												<span class="truncate">{item.label}</span>
 											</button>
 										{/if}
 									</li>
@@ -298,12 +362,21 @@
 	</nav>
 
 	<!-- Logout Button -->
-	<div class="sidebar-footer">
-		<form method="POST" action={`/in/${businessSlug}/logout`} on:submit={handleLogout}>
-			<button type="submit" class="nav-item logout-btn" title={expanded ? '' : 'Logout'}>
-				<span class="nav-icon">🚪</span>
+	<div class="p-4 border-t border-border">
+		<form method="POST" action={`/in/${businessSlug}/logout`} onsubmit={handleLogout} class="m-0">
+			<button
+				type="submit"
+				class={cn(
+					"flex items-center gap-3 py-3 px-4 rounded-md transition-colors w-full text-left",
+					"text-foreground bg-transparent border-none cursor-pointer",
+					"hover:bg-destructive-muted hover:text-destructive",
+					!expanded && "justify-center px-3"
+				)}
+				title={expanded ? '' : 'Logout'}
+			>
+				<span class="text-xl shrink-0 w-6 text-center">🚪</span>
 				{#if expanded}
-					<span class="nav-label">Logout</span>
+					<span class="truncate">Logout</span>
 				{/if}
 			</button>
 		</form>
@@ -311,420 +384,18 @@
 </aside>
 
 <style>
-	/* CSS Variables */
-	:root {
-		--sidebar-width-expanded: 250px;
-		--sidebar-width-collapsed: 60px;
-		--sidebar-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-	}
-
-	/* Sidebar Container */
-	.sidebar {
-		position: fixed;
-		top: 0;
-		left: 0;
-		height: 100vh;
-		width: var(--sidebar-width-expanded);
-		display: flex;
-		flex-direction: column;
-		transition: width var(--sidebar-transition);
-		z-index: 1000;
-		overflow-x: hidden;
-		overflow-y: auto;
-		box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
-	}
-
-	.sidebar.collapsed {
-		width: var(--sidebar-width-collapsed);
-	}
-
-	/* Light Mode */
-	.sidebar.light {
-		background-color: #ffffff;
-		color: #333;
-		border-right: 1px solid #e5e7eb;
-	}
-
-	/* Dark Mode */
-	.sidebar.dark {
-		background-color: #1a1a1a;
-		color: #f0f0f0;
-		border-right: 1px solid #333;
-	}
-
-	/* Mobile Backdrop */
-	.mobile-backdrop {
-		display: none;
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: rgba(0, 0, 0, 0.5);
-		z-index: 999;
-	}
-
-	@media (max-width: 767px) {
-		.sidebar {
-			width: 280px;
-			transform: translateX(-100%);
-			transition: transform var(--sidebar-transition);
-		}
-
-		.sidebar.mobile-open {
-			transform: translateX(0);
-		}
-
-		.mobile-backdrop {
-			display: block;
-		}
-	}
-
-	/* Sidebar Header */
-	.sidebar-header {
-		padding: 1.25rem 1rem;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		border-bottom: 1px solid;
-		min-height: 70px;
-	}
-
-	.light .sidebar-header {
-		border-bottom-color: #e5e7eb;
-	}
-
-	.dark .sidebar-header {
-		border-bottom-color: #333;
-	}
-
-	.brand {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.5rem;
-		overflow: hidden;
-		flex: 1;
-	}
-
-	.brand-logo {
-		height: 45px;
-		width: auto;
-		flex-shrink: 0;
-		object-fit: contain;
-	}
-
-	.collapsed .brand-logo {
-		height: 36px;
-	}
-
-	.business-info {
-		width: 100%;
-		text-align: center;
-		padding: 0 0.5rem;
-	}
-
-	.business-name {
-		margin: 0;
-		font-size: 0.75rem;
-		font-weight: 600;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		width: 100%;
-	}
-
-	.business-email {
-		margin: 0.25rem 0 0 0;
-		font-size: 0.65rem;
-		opacity: 0.7;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		width: 100%;
-		font-weight: 400;
-	}
-
-	.collapsed .business-info {
-		display: none;
-	}
-
-	/* Toggle Button */
-	.toggle-btn,
-	.close-btn {
-		background: none;
-		border: none;
-		cursor: pointer;
-		padding: 0.5rem;
-		border-radius: 4px;
-		transition: background-color 0.2s;
-		flex-shrink: 0;
-	}
-
-	.light .toggle-btn:hover,
-	.light .close-btn:hover {
-		background-color: #f3f4f6;
-	}
-
-	.dark .toggle-btn:hover,
-	.dark .close-btn:hover {
-		background-color: #333;
-	}
-
-	.toggle-icon {
-		font-size: 0.875rem;
-	}
-
-	.close-btn {
-		font-size: 1.5rem;
-		display: none;
-	}
-
-	.desktop-only {
-		display: block;
-	}
-
-	.mobile-only {
-		display: none;
-	}
-
-	@media (max-width: 767px) {
-		.desktop-only {
-			display: none;
-		}
-		.mobile-only {
-			display: block;
-		}
-	}
-
-	/* Navigation */
-	.sidebar-nav {
-		flex: 1;
-		overflow-y: auto;
-		overflow-x: hidden;
-		padding: 0.5rem 0;
-	}
-
-	.nav-section {
-		margin-bottom: 1.5rem;
-	}
-
-	.section-title {
-		padding: 0.5rem 1rem;
-		font-size: 0.75rem;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-		opacity: 0.6;
-	}
-
-	/* Standalone Section */
-	.standalone-section {
-		margin-bottom: 0.25rem;
-	}
-
-	/* Collapsible Section */
-	.collapsible-section {
-		margin-bottom: 0.25rem;
-	}
-
-	/* Collapsible Header Button */
-	.collapsible-header {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		padding: 0.75rem 1rem;
-		margin: 0.125rem 0.5rem;
-		border-radius: 6px;
-		border: none;
-		background: none;
-		cursor: pointer;
-		transition: background-color 0.2s;
-		width: calc(100% - 1rem);
-		text-align: left;
-		font-size: 0.875rem;
-		font-weight: 500;
-		opacity: 0.8;
-		color: inherit;
-	}
-
-	.collapsible-header:disabled {
-		cursor: default;
-	}
-
-	.collapsed .collapsible-header {
-		justify-content: center;
-		padding: 0.75rem;
-	}
-
-	.light .collapsible-header:hover:not(:disabled) {
-		background-color: #f3f4f6;
-	}
-
-	.dark .collapsible-header:hover:not(:disabled) {
-		background-color: #2a2a2a;
-	}
-
-	/* Chevron Icon */
-	.chevron {
-		margin-left: auto;
-		font-size: 0.625rem;
-		transition: transform 0.2s ease;
-		transform: rotate(-90deg);
-	}
-
-	.chevron.expanded {
-		transform: rotate(0deg);
-	}
-
-	/* Collapsible Content */
-	.collapsible-content {
-		overflow: hidden;
-	}
-
-	/* Nested Items */
-	.nested-item {
-		font-size: 0.875rem;
-		padding-left: 2.5rem;
-		opacity: 0.9;
-	}
-
-	.nested-item .nav-icon {
-		font-size: 1rem;
-	}
-
-	/* Hide collapsible elements when sidebar is collapsed */
-	.collapsed .collapsible-header .nav-label,
-	.collapsed .collapsible-header .chevron {
-		display: none;
-	}
-
-	.collapsed .collapsible-content {
-		display: none;
-	}
-
-	.nav-items {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-	}
-
-	.nav-items li {
-		margin: 0;
-	}
-
-	/* Nav Item (both links and buttons) */
-	.nav-item {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		padding: 0.75rem 1rem;
-		margin: 0.125rem 0.5rem;
-		border-radius: 6px;
-		text-decoration: none;
-		color: inherit;
-		border: none;
-		background: none;
-		cursor: pointer;
-		transition: background-color 0.2s;
-		width: calc(100% - 1rem);
-		text-align: left;
-		font-size: 0.9375rem;
-	}
-
-	.collapsed .nav-item {
-		justify-content: center;
-		padding: 0.75rem;
-	}
-
-	.light .nav-item:hover {
-		background-color: #f3f4f6;
-	}
-
-	.dark .nav-item:hover {
-		background-color: #2a2a2a;
-	}
-
-	.light .nav-item.active {
-		background-color: #dbeafe;
-		color: #1e40af;
-	}
-
-	.dark .nav-item.active {
-		background-color: #1e3a8a;
-		color: #bfdbfe;
-	}
-
-	.nav-icon {
-		font-size: 1.25rem;
-		flex-shrink: 0;
-		width: 1.5rem;
-		text-align: center;
-	}
-
-	.nav-label {
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.collapsed .nav-label {
-		display: none;
-	}
-
-	/* Sidebar Footer */
-	.sidebar-footer {
-		padding: 1rem;
-		border-top: 1px solid;
-	}
-
-	.light .sidebar-footer {
-		border-top-color: #e5e7eb;
-	}
-
-	.dark .sidebar-footer {
-		border-top-color: #333;
-	}
-
-	.sidebar-footer form {
-		margin: 0;
-	}
-
-	.logout-btn {
-		width: 100%;
-		margin: 0;
-	}
-
-	.light .logout-btn:hover {
-		background-color: #fee2e2;
-		color: #b91c1c;
-	}
-
-	.dark .logout-btn:hover {
-		background-color: #7f1d1d;
-		color: #fecaca;
-	}
-
-	/* Scrollbar Styling */
-	.sidebar::-webkit-scrollbar {
+	/* Minimal custom scrollbar styling - Tailwind doesn't have built-in scrollbar utilities */
+	aside::-webkit-scrollbar {
 		width: 6px;
 	}
-
-	.sidebar.light::-webkit-scrollbar-track {
-		background: #f9fafb;
+	aside::-webkit-scrollbar-track {
+		background: transparent;
 	}
-
-	.sidebar.dark::-webkit-scrollbar-track {
-		background: #1a1a1a;
-	}
-
-	.sidebar.light::-webkit-scrollbar-thumb {
-		background: #d1d5db;
+	aside::-webkit-scrollbar-thumb {
+		background: hsl(var(--border));
 		border-radius: 3px;
 	}
-
-	.sidebar.dark::-webkit-scrollbar-thumb {
-		background: #4b5563;
-		border-radius: 3px;
+	aside::-webkit-scrollbar-thumb:hover {
+		background: hsl(var(--border-hover));
 	}
 </style>

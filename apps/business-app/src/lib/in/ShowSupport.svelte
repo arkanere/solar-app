@@ -1,106 +1,37 @@
 <script>
-	export let show = false;
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { Button } from '$lib/components/ui/button';
 
-	import { createEventDispatcher } from 'svelte';
-	const dispatch = createEventDispatcher();
+	let {
+		show = $bindable(false),
+		onClose = () => {}
+	} = $props();
 
-	const close = () => {
-		show = false;
-		dispatch('close');
-	};
-
-	const handleOverlayClick = (event) => {
-		// Only close if clicking directly on the overlay, not on the modal content
-		if (event.target === event.currentTarget) {
-			close();
+	function handleOpenChange(open) {
+		if (!open) {
+			show = false;
+			onClose();
 		}
-	};
+	}
 </script>
 
-{#if show}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
-	<div class="modal-overlay" on:click={handleOverlayClick}>
-		<div class="modal" role="dialog" aria-modal="true" aria-labelledby="support-title">
-			<button class="close-modal" aria-label="Close dialog" on:click={close}>&times;</button>
-			<div class="modal-content">
-				<h2 id="support-title">Support</h2>
-				<p>
-					<a href="mailto:admin@solarvipani.com">admin@solarvipani.com</a><br />
-					or call us at <a href="tel:+918983066701">+91 8983066701</a>
-				</p>
-				<button on:click={close}>Close</button>
-			</div>
+<Dialog.Root open={show} onOpenChange={handleOpenChange}>
+	<Dialog.Content class="max-w-[500px]">
+		<Dialog.Header class="text-center sm:text-center">
+			<Dialog.Title>Support</Dialog.Title>
+		</Dialog.Header>
+
+		<div class="flex flex-col gap-2.5 text-center py-4">
+			<p class="leading-relaxed text-foreground">
+				<a href="mailto:admin@solarvipani.com" class="text-accent no-underline hover:underline">admin@solarvipani.com</a><br />
+				or call us at <a href="tel:+918983066701" class="text-accent no-underline hover:underline">+91 8983066701</a>
+			</p>
 		</div>
-	</div>
-{/if}
 
-<style>
-	.modal-overlay {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: rgba(0, 0, 0, 0.5);
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		z-index: 1000;
-	}
-
-	.modal {
-		position: relative;
-		z-index: 1001;
-		background: white;
-		padding: 20px;
-		border-radius: 5px;
-		max-width: 500px;
-		width: 100%;
-	}
-
-	.close-modal {
-		position: absolute;
-		top: 10px;
-		right: 10px;
-		background: none;
-		border: none;
-		font-size: 1.5rem;
-		cursor: pointer;
-	}
-
-	.modal-content {
-		display: flex;
-		flex-direction: column;
-		gap: 10px;
-		text-align: center;
-	}
-
-	h2 {
-		margin-bottom: 16px;
-	}
-
-	p {
-		margin-bottom: 20px;
-		line-height: 1.6;
-	}
-
-	a {
-		color: #0066cc;
-		text-decoration: none;
-	}
-
-	a:hover {
-		text-decoration: underline;
-	}
-
-	button {
-		padding: 8px 16px;
-		background-color: #f1f1f1;
-		border: 1px solid #ccc;
-		border-radius: 4px;
-		cursor: pointer;
-		margin: 0 auto;
-		width: fit-content;
-	}
-</style>
+		<Dialog.Footer class="sm:justify-center">
+			<Dialog.Close asChild let:builder>
+				<Button builders={[builder]} variant="outline">Close</Button>
+			</Dialog.Close>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>

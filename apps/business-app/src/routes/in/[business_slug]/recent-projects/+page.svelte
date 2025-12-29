@@ -1,12 +1,17 @@
 <script>
 	import { page } from '$app/stores';
-	import { isDarkMode } from '$lib/in/themeStore';
 	import PostRecentProject from '$lib/in/PostRecentProject.svelte';
+	import { Button } from '$lib/components/ui/button';
+	import { Badge } from '$lib/components/ui/badge';
+	import { EmptyState } from '$lib/components/ui/empty-state';
+	import { PageHeader } from '$lib/components/ui/page-header';
+	import { toast } from 'svelte-sonner';
 
 	// Access page data
-	const businessSlug = $page.params.business_slug;
-	$: ({ mainBusiness, projects = [], errorMessage } = $page.data);
-	$: darkMode = $isDarkMode;
+	let businessSlug = $derived($page.params.business_slug);
+	let mainBusiness = $derived($page.data.mainBusiness);
+	let projects = $derived($page.data.projects || []);
+	let errorMessage = $derived($page.data.errorMessage);
 
 	// Format date for display
 	function formatDate(dateString) {
@@ -19,10 +24,10 @@
 	}
 
 	// State for delete - track which project is being deleted
-	let deletingProjectId = null;
+	let deletingProjectId = $state(null);
 
 	// State for post project modal
-	let showPostRecentProject = false;
+	let showPostRecentProject = $state(false);
 
 	// Handle project posted
 	function handleProjectPosted(event) {
@@ -54,74 +59,75 @@
 			const result = await response.json();
 
 			if (result.success) {
-				alert('Project deleted successfully');
+				toast.success('Project deleted successfully');
 				window.location.reload();
 			} else {
-				alert(`Error: ${result.error}`);
+				toast.error(result.error);
 			}
 		} catch (error) {
 			console.error('Delete Project Error:', error);
-			alert('An error occurred while deleting the project.');
+			toast.error('An error occurred while deleting the project');
 		} finally {
 			deletingProjectId = null;
 		}
 	}
 </script>
 
-<div class="page-content {darkMode ? 'dark' : 'light'}">
-	<header>
-		<div class="header-content">
-			<div>
-				<h1>Project Portfolio</h1>
-				<p>Manage your completed solar installation projects</p>
-			</div>
-			<button class="btn post-btn" on:click={() => (showPostRecentProject = true)}>
-				✨ Post Recent Project
-			</button>
-		</div>
-	</header>
+<div class="min-h-screen p-8 md:p-4 transition-colors duration-300 bg-background text-foreground">
+	<PageHeader
+		title="Project Portfolio"
+		description="Manage your completed solar installation projects"
+	>
+		<Button onclick={() => (showPostRecentProject = true)} class="whitespace-nowrap md:w-full">
+			Post Recent Project
+		</Button>
+	</PageHeader>
 
-	<section id="projects-section">
+	<section>
 		{#if errorMessage}
-			<p class="error-message">{errorMessage}</p>
-		{:else if projects.length === 0}
-			<div class="no-projects">
-				<p>You haven't posted any projects yet.</p>
-				<p class="hint">Click the "Post Recent Project" button above to add your first project!</p>
+			<div class="bg-destructive-muted text-destructive p-4 rounded-md mb-4 text-center font-semibold">
+				{errorMessage}
 			</div>
+		{:else if projects.length === 0}
+			<EmptyState
+				title="You haven't posted any projects yet."
+				description="Click the &quot;Post Recent Project&quot; button above to add your first project!"
+			/>
 		{:else}
-			<div class="projects-grid">
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 				{#each projects as project}
-					<div class="project-card">
+					<div class="bg-card rounded-lg overflow-hidden border border-border shadow-card hover:shadow-card-hover transition-shadow duration-300">
 						{#if project.image_url}
-							<div class="project-image">
-								<img src={project.image_url} alt={project.title} />
+							<div class="w-full h-[200px] overflow-hidden">
+								<img src={project.image_url} alt={project.title} class="w-full h-full object-cover" />
 							</div>
 						{/if}
-						<div class="project-content">
-							<h3>{project.title}</h3>
+						<div class="p-6">
+							<h3 class="text-xl font-semibold mb-2">{project.title}</h3>
 							{#if project.description}
-								<p class="description">{project.description}</p>
+								<p class="text-sm text-foreground-secondary mb-4 leading-relaxed">{project.description}</p>
 							{/if}
-							<div class="project-meta">
+							<div class="flex flex-wrap gap-3 mb-4">
 								{#if project.capacity}
-									<span class="meta-item">📊 {project.capacity} kW</span>
+									<Badge variant="secondary" class="text-xs">{project.capacity} kW</Badge>
 								{/if}
 								{#if project.location}
-									<span class="meta-item">📍 {project.location}</span>
+									<Badge variant="secondary" class="text-xs">{project.location}</Badge>
 								{/if}
 								{#if project.installation_date}
-									<span class="meta-item">📅 {formatDate(project.installation_date)}</span>
+									<Badge variant="secondary" class="text-xs">{formatDate(project.installation_date)}</Badge>
 								{/if}
 							</div>
-							<div class="project-actions">
-								<button
-									class="btn delete-btn"
-									on:click={() => handleDeleteProject(project)}
+							<div class="flex gap-2">
+								<Button
+									variant="destructive"
+									size="sm"
+									class="w-full"
+									onclick={() => handleDeleteProject(project)}
 									disabled={deletingProjectId === project.id}
 								>
 									{deletingProjectId === project.id ? 'Deleting...' : 'Delete Project'}
-								</button>
+								</Button>
 							</div>
 						</div>
 					</div>
@@ -134,219 +140,9 @@
 <!-- Post Recent Project Modal -->
 {#if showPostRecentProject}
 	<PostRecentProject
-		show={showPostRecentProject}
+		bind:show={showPostRecentProject}
 		{businessSlug}
-		on:close={() => (showPostRecentProject = false)}
-		on:posted={handleProjectPosted}
+		onClose={() => (showPostRecentProject = false)}
+		onPosted={handleProjectPosted}
 	/>
 {/if}
-
-<style>
-	:root {
-		--light-bg-color: #f8f9fa;
-		--dark-bg-color: #1a1a1a;
-		--light-primary-text-color: #333;
-		--dark-primary-text-color: #f0f0f0;
-		--accent-color: #0056b3;
-		--font-family: 'Helvetica Neue', Arial, sans-serif;
-		--danger-color: #dc3545;
-	}
-
-	.page-content {
-		min-height: 100vh;
-		font-family: var(--font-family);
-		padding: 2rem;
-		transition: background-color 0.3s ease, color 0.3s ease;
-	}
-
-	.page-content.light {
-		background-color: var(--light-bg-color);
-		color: var(--light-primary-text-color);
-	}
-
-	.page-content.dark {
-		background-color: var(--dark-bg-color);
-		color: var(--dark-primary-text-color);
-	}
-
-	header {
-		margin-bottom: 2rem;
-	}
-
-	.header-content {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		gap: 2rem;
-		flex-wrap: wrap;
-	}
-
-	header h1 {
-		font-size: 2rem;
-		margin-bottom: 0.5rem;
-		color: var(--accent-color);
-	}
-
-	.dark header h1 {
-		color: #66b2ff;
-	}
-
-	header p {
-		opacity: 0.8;
-	}
-
-	.post-btn {
-		background: var(--accent-color);
-		color: white;
-		white-space: nowrap;
-	}
-
-	.post-btn:hover {
-		background: #004494;
-	}
-
-	.dark .post-btn {
-		background: #66b2ff;
-		color: #1a1a1a;
-	}
-
-	.dark .post-btn:hover {
-		background: #5aa3ff;
-	}
-
-	.projects-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-		gap: 1.5rem;
-	}
-
-	.project-card {
-		background: white;
-		border-radius: 8px;
-		overflow: hidden;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-		transition: box-shadow 0.3s ease;
-	}
-
-	.project-card:hover {
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-	}
-
-	.dark .project-card {
-		background: #2a2a2a;
-	}
-
-	.project-image {
-		width: 100%;
-		height: 200px;
-		overflow: hidden;
-	}
-
-	.project-image img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-	}
-
-	.project-content {
-		padding: 1.5rem;
-	}
-
-	.project-content h3 {
-		margin: 0 0 0.5rem 0;
-		font-size: 1.25rem;
-	}
-
-	.description {
-		font-size: 0.9rem;
-		opacity: 0.8;
-		margin: 0.5rem 0 1rem 0;
-		line-height: 1.5;
-	}
-
-	.project-meta {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.75rem;
-		margin-bottom: 1rem;
-	}
-
-	.meta-item {
-		font-size: 0.85rem;
-		opacity: 0.8;
-	}
-
-	.project-actions {
-		display: flex;
-		gap: 0.5rem;
-	}
-
-	.btn {
-		padding: 0.5rem 1rem;
-		border-radius: 5px;
-		border: none;
-		cursor: pointer;
-		font-size: 0.9rem;
-		transition: background-color 0.3s ease;
-	}
-
-	.delete-btn {
-		background: var(--danger-color);
-		color: white;
-	}
-
-	.delete-btn:hover:not(:disabled) {
-		background: #c82333;
-	}
-
-	.delete-btn:disabled {
-		opacity: 0.6;
-		cursor: not-allowed;
-	}
-
-	.no-projects {
-		text-align: center;
-		padding: 3rem;
-		background: white;
-		border-radius: 8px;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-	}
-
-	.dark .no-projects {
-		background: #2a2a2a;
-	}
-
-	.hint {
-		margin-top: 0.5rem;
-		font-size: 0.9rem;
-		opacity: 0.7;
-	}
-
-	.error-message {
-		color: red;
-		font-weight: bold;
-		padding: 1rem;
-		background: #ffebee;
-		border-radius: 4px;
-		text-align: center;
-	}
-
-	.dark .error-message {
-		background: #541e1e;
-		color: #ef9a9a;
-	}
-
-	@media (max-width: 768px) {
-		.page-content {
-			padding: 1rem;
-		}
-
-		.projects-grid {
-			grid-template-columns: 1fr;
-		}
-
-		header h1 {
-			font-size: 1.5rem;
-		}
-	}
-</style>
