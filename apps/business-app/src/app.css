@@ -32,11 +32,12 @@
   --z-dropdown: 50;
   --z-sticky: 100;
   --z-fixed: 200;
-  --z-modal-backdrop: 300;
-  --z-modal: 400;
-  --z-popover: 500;
-  --z-tooltip: 600;
-  --z-toast: 700;
+  --z-sidebar: 1000;
+  --z-modal-backdrop: 1100;
+  --z-modal: 1100;
+  --z-popover: 1200;
+  --z-tooltip: 1300;
+  --z-toast: 1400;
 
   /* Focus Ring Tokens */
   --ring-width: 2px;
@@ -101,6 +102,44 @@
   --color-accent-foreground: hsl(var(--accent-foreground));
   --color-accent-muted: hsl(var(--accent-muted));
 
+  /* Secondary (Solar Amber) */
+  --color-secondary-hover: hsl(var(--secondary-hover));
+  --color-secondary-muted: hsl(var(--secondary-muted));
+
+  /* Lead Category Colors */
+  --color-lead-available: hsl(var(--lead-available));
+  --color-lead-available-muted: hsl(var(--lead-available-muted));
+  --color-lead-claimed: hsl(var(--lead-claimed));
+  --color-lead-claimed-muted: hsl(var(--lead-claimed-muted));
+  --color-lead-exclusive: hsl(var(--lead-exclusive));
+  --color-lead-exclusive-muted: hsl(var(--lead-exclusive-muted));
+
+  /* Pipeline Stage Colors */
+  --color-stage-new: hsl(var(--stage-new));
+  --color-stage-contacted: hsl(var(--stage-contacted));
+  --color-stage-proposal: hsl(var(--stage-proposal));
+  --color-stage-won: hsl(var(--stage-won));
+  --color-stage-lost: hsl(var(--stage-lost));
+
+  /* Project Status Colors */
+  --color-project-planning: hsl(var(--project-planning));
+  --color-project-active: hsl(var(--project-active));
+  --color-project-done: hsl(var(--project-done));
+  --color-project-hold: hsl(var(--project-hold));
+
+  /* Priority Colors */
+  --color-priority-high: hsl(var(--priority-high));
+  --color-priority-medium: hsl(var(--priority-medium));
+  --color-priority-low: hsl(var(--priority-low));
+
+  /* Chart Colors */
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+  --color-chart-6: hsl(var(--chart-6));
+
   /* Card */
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
@@ -143,11 +182,17 @@
   --border: 0 0% 90%;               /* #E5E5E5 - Default borders */
   --border-hover: 0 0% 83%;         /* #D4D4D4 - Hover state borders */
 
-  /* Accent - Linear's purple-blue */
-  --accent: 242 75% 63%;            /* #5E5CE6 - Primary accent */
-  --accent-hover: 242 60% 54%;      /* #4B49C8 - Accent hover */
+  /* Accent - Trust Blue (professional, sky, clean energy) */
+  --accent: 221 83% 53%;            /* #3B82F6 - Primary accent */
+  --accent-hover: 221 83% 45%;      /* #2563EB - Accent hover */
   --accent-foreground: 0 0% 100%;   /* White text on accent */
-  --accent-muted: 242 70% 95%;      /* #E8E8FC - Light accent bg */
+  --accent-muted: 214 95% 93%;      /* #DBEAFE - Light accent bg */
+
+  /* Secondary - Solar Amber (sun, warmth, energy) */
+  --secondary: 38 92% 50%;          /* #F59E0B - Secondary accent */
+  --secondary-hover: 32 95% 44%;    /* #D97706 - Secondary hover */
+  --secondary-foreground: 0 0% 100%;/* White text on secondary */
+  --secondary-muted: 48 96% 89%;    /* #FEF3C7 - Light secondary bg */
 
   /* Semantic - Success (green) */
   --success: 142 71% 45%;           /* #22C55E */
@@ -174,13 +219,47 @@
 
   /* Form elements */
   --input: 0 0% 90%;                /* Input borders */
-  --ring: 242 75% 63%;              /* Focus ring color */
+  --ring: 221 83% 53%;              /* Focus ring color - Trust Blue */
 
-  /* Primary/Secondary (shadcn compatibility) */
-  --primary: 242 75% 63%;
+  /* Primary (shadcn compatibility - same as accent) */
+  --primary: 221 83% 53%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 0 0% 96%;
-  --secondary-foreground: 0 0% 9%;
+
+  /* ===== CRM STATUS COLOURS ===== */
+
+  /* Lead Categories */
+  --lead-available: 217 91% 60%;     /* #60A5FA - Non-Exclusive */
+  --lead-available-muted: 214 95% 93%;
+  --lead-claimed: 262 83% 58%;       /* #8B5CF6 - Non-Exclusive-Claimed */
+  --lead-claimed-muted: 263 90% 95%;
+  --lead-exclusive: 38 92% 50%;      /* #F59E0B - Exclusive */
+  --lead-exclusive-muted: 48 96% 89%;
+
+  /* Pipeline Stages */
+  --stage-new: 217 91% 60%;          /* #60A5FA - Fresh inquiry */
+  --stage-contacted: 262 83% 58%;    /* #8B5CF6 - In conversation */
+  --stage-proposal: 38 92% 50%;      /* #F59E0B - Awaiting decision */
+  --stage-won: 142 71% 45%;          /* #22C55E - Converted */
+  --stage-lost: 0 0% 45%;            /* #737373 - Did not convert */
+
+  /* Project Status */
+  --project-planning: 217 91% 60%;   /* #60A5FA - Initial phase */
+  --project-active: 38 92% 50%;      /* #F59E0B - Active work */
+  --project-done: 142 71% 45%;       /* #22C55E - Completed */
+  --project-hold: 0 0% 45%;          /* #737373 - Paused */
+
+  /* Priority Levels */
+  --priority-high: 0 84% 60%;        /* #EF4444 - Urgent */
+  --priority-medium: 38 92% 50%;     /* #F59E0B - Important */
+  --priority-low: 142 71% 45%;       /* #22C55E - Can wait */
+
+  /* Chart Colours (data visualization) */
+  --chart-1: 221 83% 53%;            /* #3B82F6 - Trust Blue */
+  --chart-2: 38 92% 50%;             /* #F59E0B - Solar Amber */
+  --chart-3: 142 71% 45%;            /* #22C55E - Eco Green */
+  --chart-4: 262 83% 58%;            /* #8B5CF6 - Violet */
+  --chart-5: 172 66% 50%;            /* #2DD4BF - Teal */
+  --chart-6: 0 84% 60%;              /* #EF4444 - Coral Red */
 }
 
 .dark {
@@ -200,11 +279,17 @@
   --border: 0 0% 18%;               /* #2E2E2E - Default borders */
   --border-hover: 0 0% 25%;         /* #404040 - Hover borders */
 
-  /* Accent - Slightly brighter in dark mode */
-  --accent: 242 75% 67%;            /* Brighter purple-blue */
-  --accent-hover: 242 70% 60%;
+  /* Accent - Trust Blue (brighter in dark mode) */
+  --accent: 217 91% 60%;            /* #60A5FA - Brighter blue */
+  --accent-hover: 217 91% 55%;
   --accent-foreground: 0 0% 100%;
-  --accent-muted: 242 40% 20%;      /* Dark accent bg */
+  --accent-muted: 221 47% 25%;      /* #1E3A5F - Dark accent bg */
+
+  /* Secondary - Solar Amber (brighter in dark mode) */
+  --secondary: 38 92% 55%;          /* #FBBF24 - Brighter amber */
+  --secondary-hover: 38 92% 50%;
+  --secondary-foreground: 0 0% 100%;
+  --secondary-muted: 38 50% 20%;    /* #4D3B1A - Dark secondary bg */
 
   /* Semantic colors - Adjusted for dark */
   --success: 142 71% 45%;
@@ -229,13 +314,46 @@
 
   /* Form elements */
   --input: 0 0% 18%;
-  --ring: 242 75% 67%;
+  --ring: 217 91% 60%;              /* Trust Blue */
 
-  /* Primary/Secondary */
-  --primary: 242 75% 67%;
+  /* Primary (shadcn compatibility) */
+  --primary: 217 91% 60%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 0 0% 15%;
-  --secondary-foreground: 0 0% 98%;
+
+  /* ===== CRM STATUS COLOURS (Dark Mode) ===== */
+  /* Lead Categories - slightly brighter for dark mode */
+  --lead-available: 217 91% 65%;
+  --lead-available-muted: 217 47% 20%;
+  --lead-claimed: 262 83% 65%;
+  --lead-claimed-muted: 262 40% 20%;
+  --lead-exclusive: 38 92% 55%;
+  --lead-exclusive-muted: 38 50% 20%;
+
+  /* Pipeline Stages */
+  --stage-new: 217 91% 65%;
+  --stage-contacted: 262 83% 65%;
+  --stage-proposal: 38 92% 55%;
+  --stage-won: 142 71% 50%;
+  --stage-lost: 0 0% 55%;
+
+  /* Project Status */
+  --project-planning: 217 91% 65%;
+  --project-active: 38 92% 55%;
+  --project-done: 142 71% 50%;
+  --project-hold: 0 0% 55%;
+
+  /* Priority Levels */
+  --priority-high: 0 84% 65%;
+  --priority-medium: 38 92% 55%;
+  --priority-low: 142 71% 50%;
+
+  /* Chart Colours (data visualization) */
+  --chart-1: 217 91% 60%;
+  --chart-2: 38 92% 55%;
+  --chart-3: 142 71% 50%;
+  --chart-4: 262 83% 65%;
+  --chart-5: 172 66% 55%;
+  --chart-6: 0 84% 65%;
 }
 
 /* ===== BASE STYLES ===== */

@@ -6,6 +6,21 @@
 	import { Label } from '$lib/components/ui/label';
 	import { toast } from 'svelte-sonner';
 
+	// SVG Drawing Colours (aligned with design system)
+	const SVG_COLORS = {
+		background: '#f8f9fa',          // Light background
+		title: '#3B82F6',               // Trust Blue (primary accent)
+		text: '#171717',                // Foreground
+		textMuted: '#737373',           // Muted foreground
+		textSecondary: '#525252',       // Secondary foreground
+		divider: '#E5E5E5',             // Border
+		panel: '#2c3e50',               // Solar panel (dark slate - represents actual panels)
+		panelBorder: '#34495e',         // Panel grid lines
+		annotation: '#F59E0B',          // Solar Amber (secondary accent - highlights)
+		support: '#6c757d',             // Support lines (grey)
+		footer: '#A3A3A3'               // Footer text
+	};
+
 	let {
 		show = $bindable(false),
 		proposalData = {},
@@ -81,20 +96,20 @@
 			let svg = `<svg viewBox="0 0 ${svgWidth} ${svgHeight}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">`;
 
 			// Background
-			svg += `<rect width="${svgWidth}" height="${svgHeight}" fill="#f8f9fa"/>`;
+			svg += `<rect width="${svgWidth}" height="${svgHeight}" fill="${SVG_COLORS.background}"/>`;
 
 			// Title
-			svg += `<text x="${svgWidth/2}" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#0056b3">Solar Panel Layout</text>`;
+			svg += `<text x="${svgWidth/2}" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="${SVG_COLORS.title}">Solar Panel Layout</text>`;
 
 			// System info
-			svg += `<text x="${svgWidth/2}" y="55" text-anchor="middle" font-size="14" fill="#333">System: ${systemCapacity} kW | Panels: ${numberOfPanels} | ${roofType === 'flat' ? 'Flat' : 'Sloped'} Roof | Tilt: ${tiltAngle}°</text>`;
+			svg += `<text x="${svgWidth/2}" y="55" text-anchor="middle" font-size="14" fill="${SVG_COLORS.text}">System: ${systemCapacity} kW | Panels: ${numberOfPanels} | ${roofType === 'flat' ? 'Flat' : 'Sloped'} Roof | Tilt: ${tiltAngle}°</text>`;
 
 			// View labels
-			svg += `<text x="${viewWidth/2}" y="90" text-anchor="middle" font-size="16" font-weight="bold" fill="#0056b3">Top View</text>`;
-			svg += `<text x="${viewWidth + viewWidth/2}" y="90" text-anchor="middle" font-size="16" font-weight="bold" fill="#0056b3">Side View</text>`;
+			svg += `<text x="${viewWidth/2}" y="90" text-anchor="middle" font-size="16" font-weight="bold" fill="${SVG_COLORS.title}">Top View</text>`;
+			svg += `<text x="${viewWidth + viewWidth/2}" y="90" text-anchor="middle" font-size="16" font-weight="bold" fill="${SVG_COLORS.title}">Side View</text>`;
 
 			// Divider line between views
-			svg += `<line x1="${viewWidth}" y1="100" x2="${viewWidth}" y2="${svgHeight - 50}" stroke="#ccc" stroke-width="2" stroke-dasharray="5,5"/>`;
+			svg += `<line x1="${viewWidth}" y1="100" x2="${viewWidth}" y2="${svgHeight - 50}" stroke="${SVG_COLORS.divider}" stroke-width="2" stroke-dasharray="5,5"/>`;
 
 			// TOP VIEW - Draw panels
 			let panelCount = 0;
@@ -106,18 +121,18 @@
 					const y = topViewStartY + row * (panelHeight + spacing);
 
 					// Panel rectangle
-					svg += `<rect x="${x}" y="${y}" width="${panelWidth}" height="${panelHeight}" fill="#2c3e50" stroke="#34495e" stroke-width="1.5" rx="2"/>`;
+					svg += `<rect x="${x}" y="${y}" width="${panelWidth}" height="${panelHeight}" fill="${SVG_COLORS.panel}" stroke="${SVG_COLORS.panelBorder}" stroke-width="1.5" rx="2"/>`;
 
 					// Panel grid lines (to show solar cells)
 					const cellRows = 3;
 					const cellCols = 4;
 					for (let i = 1; i < cellRows; i++) {
 						const lineY = y + (panelHeight / cellRows) * i;
-						svg += `<line x1="${x}" y1="${lineY}" x2="${x + panelWidth}" y2="${lineY}" stroke="#34495e" stroke-width="0.5"/>`;
+						svg += `<line x1="${x}" y1="${lineY}" x2="${x + panelWidth}" y2="${lineY}" stroke="${SVG_COLORS.panelBorder}" stroke-width="0.5"/>`;
 					}
 					for (let i = 1; i < cellCols; i++) {
 						const lineX = x + (panelWidth / cellCols) * i;
-						svg += `<line x1="${lineX}" y1="${y}" x2="${lineX}" y2="${y + panelHeight}" stroke="#34495e" stroke-width="0.5"/>`;
+						svg += `<line x1="${lineX}" y1="${y}" x2="${lineX}" y2="${y + panelHeight}" stroke="${SVG_COLORS.panelBorder}" stroke-width="0.5"/>`;
 					}
 
 					panelCount++;
@@ -127,9 +142,9 @@
 			// TOP VIEW - North arrow (pointing upward)
 			const arrowX = topViewStartX + gridWidth + 30;
 			const arrowY = topViewStartY + 40;
-			svg += `<text x="${arrowX}" y="${arrowY - 20}" text-anchor="middle" font-size="12" font-weight="bold" fill="#dc3545">N</text>`;
-			svg += `<line x1="${arrowX}" y1="${arrowY}" x2="${arrowX}" y2="${arrowY - 15}" stroke="#dc3545" stroke-width="2" marker-end="url(#arrowhead)"/>`;
-			svg += `<defs><marker id="arrowhead" markerWidth="10" markerHeight="10" refX="5" refY="3" orient="auto"><polygon points="0 0, 5 3, 0 6" fill="#dc3545"/></marker></defs>`;
+			svg += `<text x="${arrowX}" y="${arrowY - 20}" text-anchor="middle" font-size="12" font-weight="bold" fill="${SVG_COLORS.annotation}">N</text>`;
+			svg += `<line x1="${arrowX}" y1="${arrowY}" x2="${arrowX}" y2="${arrowY - 15}" stroke="${SVG_COLORS.annotation}" stroke-width="2" marker-end="url(#arrowhead)"/>`;
+			svg += `<defs><marker id="arrowhead" markerWidth="10" markerHeight="10" refX="5" refY="3" orient="auto"><polygon points="0 0, 5 3, 0 6" fill="${SVG_COLORS.annotation}"/></marker></defs>`;
 
 			// SIDE VIEW - Draw tilted panels
 			const sideViewCenterX = viewWidth + viewWidth / 2;
@@ -161,20 +176,20 @@
 				const y4 = y1 + sidePanelThickness * Math.cos(tiltRad);
 
 				// Draw tilted panel as polygon
-				svg += `<polygon points="${x1},${y1} ${x2},${y2} ${x3},${y3} ${x4},${y4}" fill="#2c3e50" stroke="#34495e" stroke-width="1.5"/>`;
+				svg += `<polygon points="${x1},${y1} ${x2},${y2} ${x3},${y3} ${x4},${y4}" fill="${SVG_COLORS.panel}" stroke="${SVG_COLORS.panelBorder}" stroke-width="1.5"/>`;
 
 				// Add support line
-				svg += `<line x1="${x1}" y1="${y1}" x2="${x1}" y2="${baseY + 30}" stroke="#6c757d" stroke-width="2"/>`;
+				svg += `<line x1="${x1}" y1="${y1}" x2="${x1}" y2="${baseY + 30}" stroke="${SVG_COLORS.support}" stroke-width="2"/>`;
 			}
 
 			// Ground line for side view
 			const groundY = sideViewCenterY + 30;
-			svg += `<line x1="${sideViewCenterX - 200}" y1="${groundY}" x2="${sideViewCenterX + 200}" y2="${groundY}" stroke="#333" stroke-width="3"/>`;
+			svg += `<line x1="${sideViewCenterX - 200}" y1="${groundY}" x2="${sideViewCenterX + 200}" y2="${groundY}" stroke="${SVG_COLORS.text}" stroke-width="3"/>`;
 
 			// Tilt angle annotation
 			const annotationX = sideViewCenterX - 150;
 			const annotationY = sideViewCenterY;
-			svg += `<text x="${annotationX}" y="${annotationY - 60}" font-size="12" fill="#dc3545" font-weight="bold">Tilt: ${tiltAngle}°</text>`;
+			svg += `<text x="${annotationX}" y="${annotationY - 60}" font-size="12" fill="${SVG_COLORS.annotation}" font-weight="bold">Tilt: ${tiltAngle}°</text>`;
 
 			// Draw angle arc
 			const arcRadius = 40;
@@ -182,18 +197,18 @@
 			const arcStartY = annotationY;
 			const arcEndX = annotationX + arcRadius * Math.cos(tiltRad);
 			const arcEndY = annotationY - arcRadius * Math.sin(tiltRad);
-			svg += `<path d="M ${arcStartX} ${arcStartY} A ${arcRadius} ${arcRadius} 0 0 1 ${arcEndX} ${arcEndY}" stroke="#dc3545" stroke-width="2" fill="none"/>`;
-			svg += `<line x1="${annotationX}" y1="${annotationY}" x2="${arcStartX}" y2="${arcStartY}" stroke="#dc3545" stroke-width="1.5"/>`;
-			svg += `<line x1="${annotationX}" y1="${annotationY}" x2="${arcEndX}" y2="${arcEndY}" stroke="#dc3545" stroke-width="1.5"/>`;
+			svg += `<path d="M ${arcStartX} ${arcStartY} A ${arcRadius} ${arcRadius} 0 0 1 ${arcEndX} ${arcEndY}" stroke="${SVG_COLORS.annotation}" stroke-width="2" fill="none"/>`;
+			svg += `<line x1="${annotationX}" y1="${annotationY}" x2="${arcStartX}" y2="${arcStartY}" stroke="${SVG_COLORS.annotation}" stroke-width="1.5"/>`;
+			svg += `<line x1="${annotationX}" y1="${annotationY}" x2="${arcEndX}" y2="${arcEndY}" stroke="${SVG_COLORS.annotation}" stroke-width="1.5"/>`;
 
 			// Legend
 			const legendY = svgHeight - 40;
-			svg += `<text x="20" y="${legendY}" font-size="11" fill="#666">Legend:</text>`;
-			svg += `<rect x="70" y="${legendY - 10}" width="15" height="12" fill="#2c3e50" stroke="#34495e"/>`;
-			svg += `<text x="90" y="${legendY}" font-size="10" fill="#666">Solar Panel</text>`;
+			svg += `<text x="20" y="${legendY}" font-size="11" fill="${SVG_COLORS.textMuted}">Legend:</text>`;
+			svg += `<rect x="70" y="${legendY - 10}" width="15" height="12" fill="${SVG_COLORS.panel}" stroke="${SVG_COLORS.panelBorder}"/>`;
+			svg += `<text x="90" y="${legendY}" font-size="10" fill="${SVG_COLORS.textMuted}">Solar Panel</text>`;
 
 			// Footer
-			svg += `<text x="${svgWidth/2}" y="${svgHeight - 10}" text-anchor="middle" font-size="9" fill="#999">Generated on Solarvipani.com</text>`;
+			svg += `<text x="${svgWidth/2}" y="${svgHeight - 10}" text-anchor="middle" font-size="9" fill="${SVG_COLORS.footer}">Generated on Solarvipani.com</text>`;
 
 			svg += '</svg>';
 
@@ -298,7 +313,7 @@
 </script>
 
 <Dialog.Root open={show} onOpenChange={handleOpenChange}>
-	<Dialog.Content class="max-w-[900px] max-h-[95vh] overflow-y-auto">
+	<Dialog.Content class="sm:max-w-[1000px] max-h-[95vh] overflow-y-auto">
 		<Dialog.Header>
 			<Dialog.Title class="text-accent">Create Solar System Drawing</Dialog.Title>
 		</Dialog.Header>
@@ -356,7 +371,7 @@
 
 				<Dialog.Footer class="max-sm:flex-col">
 					<Button variant="secondary" onclick={resetDrawing} class="max-sm:w-full">Edit Parameters</Button>
-					<Button class="bg-success text-success-foreground hover:bg-success/90 max-sm:w-full" onclick={downloadPNG} disabled={isDownloading}>
+					<Button variant="success" class="max-sm:w-full" onclick={downloadPNG} disabled={isDownloading}>
 						{isDownloading ? 'Downloading...' : 'Download PNG'}
 					</Button>
 				</Dialog.Footer>

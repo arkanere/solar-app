@@ -6,6 +6,7 @@
 	import { Select } from '$lib/components/ui/select';
 	import { Label } from '$lib/components/ui/label';
 	import { cn } from '$lib/utils';
+	import { Check } from '@lucide/svelte';
 
 	let {
 		lead,
@@ -44,16 +45,16 @@
 		<span
 			class={cn(
 				"inline-flex items-center gap-1.5 text-xs font-semibold py-1.5 px-3 rounded-md whitespace-nowrap max-[480px]:self-start",
-				lead.category === 1 && "bg-warning-muted text-warning border border-warning/30",
-				lead.category === 2 && "bg-accent-muted text-accent border border-accent/30",
-				(lead.category === 3 || lead.category === null) && "bg-success-muted text-success border border-success/30"
+				lead.category === 1 && "bg-lead-available-muted text-lead-available border border-lead-available/30",
+				lead.category === 2 && "bg-lead-claimed-muted text-lead-claimed border border-lead-claimed/30",
+				(lead.category === 3 || lead.category === null) && "bg-lead-exclusive-muted text-lead-exclusive border border-lead-exclusive/30"
 			)}
 		>
 			<span class={cn(
 				"w-1.5 h-1.5 rounded-full",
-				lead.category === 1 && "bg-warning",
-				lead.category === 2 && "bg-accent",
-				(lead.category === 3 || lead.category === null) && "bg-success"
+				lead.category === 1 && "bg-lead-available",
+				lead.category === 2 && "bg-lead-claimed",
+				(lead.category === 3 || lead.category === null) && "bg-lead-exclusive"
 			)}></span>
 			{lead.category === 1
 				? 'Non-Exclusive'
@@ -228,7 +229,10 @@
 							{/if}
 						</Button>
 						{#if savedNotes.has(lead.id)}
-							<span class="text-success font-semibold text-sm">✓ Saved</span>
+							<span class="text-success font-semibold text-sm flex items-center gap-1">
+								<Check size={16} strokeWidth={2.5} />
+								Saved
+							</span>
 						{/if}
 					</div>
 				</div>

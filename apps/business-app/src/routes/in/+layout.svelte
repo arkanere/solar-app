@@ -56,8 +56,5 @@
 
 <style>
 	/* Font and base styles are now handled by app.css (Tailwind) */
-	:global(html) {
-		overflow-x: hidden;
-		width: 100%;
-	}
+	/* Note: overflow-x: hidden moved to .layout-container to avoid breaking fixed-position modals */
 </style>
