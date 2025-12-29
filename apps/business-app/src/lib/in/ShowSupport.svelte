@@ -13,6 +13,11 @@
 			onClose();
 		}
 	}
+
+	function close() {
+		show = false;
+		onClose();
+	}
 </script>
 
 <Dialog.Root open={show} onOpenChange={handleOpenChange}>
@@ -29,9 +34,7 @@
 		</div>
 
 		<Dialog.Footer class="sm:justify-center">
-			<Dialog.Close asChild let:builder>
-				<Button builders={[builder]} variant="outline">Close</Button>
-			</Dialog.Close>
+			<Button variant="outline" onclick={close}>Close</Button>
 		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>

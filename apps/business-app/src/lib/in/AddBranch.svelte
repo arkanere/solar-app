@@ -119,6 +119,12 @@
 		}
 	}
 
+	function close() {
+		if (isSubmitting) return; // Prevent closing during submission
+		show = false;
+		onClose();
+	}
+
 	// Handle form submission
 	async function handleSubmit(event) {
 		event.preventDefault();
@@ -233,11 +239,9 @@
 			</div>
 
 			<Dialog.Footer>
-				<Dialog.Close asChild let:builder>
-					<Button builders={[builder]} variant="secondary" disabled={isSubmitting}>
-						Cancel
-					</Button>
-				</Dialog.Close>
+				<Button variant="secondary" disabled={isSubmitting} onclick={close}>
+					Cancel
+				</Button>
 				<Button
 					type="submit"
 					class="bg-success text-success-foreground hover:bg-success/90"

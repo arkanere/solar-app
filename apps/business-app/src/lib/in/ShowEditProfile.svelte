@@ -42,6 +42,11 @@
 		}
 	});
 
+	function close() {
+		show = false;
+		onClose();
+	}
+
 	function resetForm() {
 		// Create a fresh copy of the business info
 		formData = {
@@ -128,9 +133,7 @@
 
 			<Dialog.Footer class="mt-5">
 				<Button type="submit" class="bg-success text-success-foreground hover:bg-success/90">Update</Button>
-				<Dialog.Close asChild let:builder>
-					<Button builders={[builder]} variant="outline">Cancel</Button>
-				</Dialog.Close>
+				<Button variant="outline" onclick={close}>Cancel</Button>
 			</Dialog.Footer>
 		</form>
 	</Dialog.Content>
