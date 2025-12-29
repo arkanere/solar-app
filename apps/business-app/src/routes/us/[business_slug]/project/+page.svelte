@@ -1,6 +1,7 @@
 <script>
 	import { page } from '$app/stores';
-	import { isDarkMode } from '$lib/us/themeStore';
+	import { toast } from 'svelte-sonner';
+	import { isDarkMode } from '$lib/stores/theme.js';
 	import PostRecentProject from '$lib/us/PostRecentProject.svelte';
 	import ShowSupport from '$lib/us/ShowSupport.svelte';
 
@@ -79,15 +80,15 @@
 			const result = await response.json();
 
 			if (result.success) {
-				alert('Project hidden successfully!');
+				toast.success('Project hidden successfully!');
 				// Refresh the page to show updated list
 				window.location.reload();
 			} else {
-				alert(`Error: ${result.error || 'Failed to hide project'}`);
+				toast.error(result.error || 'Failed to hide project');
 			}
 		} catch (error) {
 			console.error('Error hiding project:', error);
-			alert('An error occurred while hiding the project');
+			toast.error('An error occurred while hiding the project');
 		} finally {
 			isDeleting = false;
 			deletingProject = null;

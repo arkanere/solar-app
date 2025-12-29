@@ -1,21 +1,35 @@
 <script>
-	import { createEventDispatcher } from 'svelte';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import { Select } from '$lib/components/ui/select';
+	import { Label } from '$lib/components/ui/label';
+	import { toast } from 'svelte-sonner';
 
-	export let show = false;
-	export let proposalData = {};
-
-	const dispatch = createEventDispatcher();
+	let {
+		show = $bindable(false),
+		proposalData = {},
+		onClose = () => {}
+	} = $props();
 
 	// Form inputs
-	let roofType = 'flat';
-	let panelOrientation = 'landscape';
-	let tiltAngle = 45; // degrees
+	let roofType = $state('flat');
+	let panelOrientation = $state('landscape');
+	let tiltAngle = $state(45); // degrees
 
 	// Drawing state
-	let drawingGenerated = false;
-	let svgContent = '';
-	let isGenerating = false;
-	let isDownloading = false;
+	let drawingGenerated = $state(false);
+	let svgContent = $state('');
+	let isGenerating = $state(false);
+	let isDownloading = $state(false);
+
+	function handleOpenChange(open) {
+		if (!open) {
+			drawingGenerated = false;
+			svgContent = '';
+			onClose();
+		}
+	}
 
 	// Calculate panel arrangement
 	function calculateLayout(numberOfPanels) {
@@ -182,7 +196,7 @@
 			drawingGenerated = true;
 		} catch (error) {
 			console.error('Error generating drawing:', error);
-			alert('Failed to generate drawing. Please try again.');
+			toast.error('Failed to generate drawing. Please try again.');
 		} finally {
 			isGenerating = false;
 		}
@@ -265,17 +279,10 @@
 			document.body.removeChild(tempDiv);
 		} catch (error) {
 			console.error('Error generating PNG:', error);
-			alert('Failed to generate PNG. Please try again.');
+			toast.error('Failed to generate PNG. Please try again.');
 		} finally {
 			isDownloading = false;
 		}
-	}
-
-	// Close modal
-	function closeModal() {
-		drawingGenerated = false;
-		svgContent = '';
-		dispatch('close');
 	}
 
 	// Reset drawing
@@ -285,291 +292,80 @@
 	}
 </script>
 
-{#if show}
-	<div
-		class="modal-overlay"
-		role="button"
-		tabindex="0"
-		on:click={(e) => e.target === e.currentTarget && closeModal()}
-		on:keydown={(e) => (e.key === 'Escape' || e.key === 'Enter') && closeModal()}
-	>
-		<div class="modal-content">
-			<div class="modal-header">
-				<h2>Create Solar System Drawing</h2>
-				<button class="close-btn" on:click={closeModal}>&times;</button>
-			</div>
+<Dialog.Root open={show} onOpenChange={handleOpenChange}>
+	<Dialog.Content class="max-w-[900px] max-h-[95vh] overflow-y-auto">
+		<Dialog.Header>
+			<Dialog.Title class="text-accent">Create Solar System Drawing</Dialog.Title>
+		</Dialog.Header>
 
-			<div class="modal-body">
-				{#if !drawingGenerated}
-					<!-- Input Form -->
-					<div class="form-section">
-						<h3>Drawing Parameters</h3>
-						<p class="form-hint">Provide basic information to generate the layout diagram</p>
+		{#if !drawingGenerated}
+			<!-- Input Form -->
+			<div>
+				<h3 class="text-lg font-semibold text-accent mb-2">Drawing Parameters</h3>
+				<p class="text-muted-foreground text-sm mb-6">Provide basic information to generate the layout diagram</p>
 
-						<div class="form-grid">
-							<div class="form-group">
-								<label for="roofType">Roof Type</label>
-								<select id="roofType" bind:value={roofType}>
-									<option value="flat">Flat Roof</option>
-									<option value="sloped">Sloped Roof</option>
-								</select>
-							</div>
-
-							<div class="form-group">
-								<label for="panelOrientation">Panel Orientation</label>
-								<select id="panelOrientation" bind:value={panelOrientation}>
-									<option value="landscape">Landscape</option>
-									<option value="portrait">Portrait</option>
-								</select>
-							</div>
-
-							<div class="form-group">
-								<label for="tiltAngle">Panel Tilt Angle (degrees)</label>
-								<input type="number" id="tiltAngle" bind:value={tiltAngle} min="0" max="90" />
-							</div>
-						</div>
-
-						<div class="info-box">
-							<strong>System Info:</strong><br>
-							Capacity: {proposalData.system_capacity_kw || 'N/A'} kW<br>
-							Panels: {proposalData.number_of_panels || 'N/A'}<br>
-							Customer: {proposalData.customer_name || 'N/A'}
-						</div>
-
-						<div class="action-buttons">
-							<button class="btn btn-secondary" on:click={closeModal}>Cancel</button>
-							<button class="btn btn-primary" on:click={generateDrawing} disabled={isGenerating}>
-								{isGenerating ? 'Generating...' : 'Generate Drawing'}
-							</button>
-						</div>
+				<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+					<div class="flex flex-col">
+						<Label for="roofType" class="mb-2">Roof Type</Label>
+						<Select id="roofType" bind:value={roofType}>
+							<option value="flat">Flat Roof</option>
+							<option value="sloped">Sloped Roof</option>
+						</Select>
 					</div>
-				{:else}
-					<!-- Drawing Preview -->
-					<div class="preview-section">
-						<h3>Preview</h3>
-						<div class="svg-preview">
-							{@html svgContent}
-						</div>
 
-						<div class="action-buttons">
-							<button class="btn btn-secondary" on:click={resetDrawing}>Edit Parameters</button>
-							<button class="btn btn-success" on:click={downloadPNG} disabled={isDownloading}>
-								{isDownloading ? 'Downloading...' : 'Download PNG'}
-							</button>
-						</div>
+					<div class="flex flex-col">
+						<Label for="panelOrientation" class="mb-2">Panel Orientation</Label>
+						<Select id="panelOrientation" bind:value={panelOrientation}>
+							<option value="landscape">Landscape</option>
+							<option value="portrait">Portrait</option>
+						</Select>
 					</div>
-				{/if}
+
+					<div class="flex flex-col">
+						<Label for="tiltAngle" class="mb-2">Panel Tilt Angle (degrees)</Label>
+						<Input type="number" id="tiltAngle" bind:value={tiltAngle} min="0" max="90" />
+					</div>
+				</div>
+
+				<div class="bg-accent-muted border-l-4 border-accent p-4 mb-6 rounded text-sm leading-relaxed">
+					<strong>System Info:</strong><br>
+					Capacity: {proposalData.system_capacity_kw || 'N/A'} kW<br>
+					Panels: {proposalData.number_of_panels || 'N/A'}<br>
+					Customer: {proposalData.customer_name || 'N/A'}
+				</div>
+
+				<Dialog.Footer class="max-sm:flex-col">
+					<Dialog.Close asChild let:builder>
+						<Button builders={[builder]} variant="secondary" class="max-sm:w-full">Cancel</Button>
+					</Dialog.Close>
+					<Button onclick={generateDrawing} disabled={isGenerating} class="max-sm:w-full">
+						{isGenerating ? 'Generating...' : 'Generate Drawing'}
+					</Button>
+				</Dialog.Footer>
 			</div>
-		</div>
-	</div>
-{/if}
+		{:else}
+			<!-- Drawing Preview -->
+			<div>
+				<h3 class="text-lg font-semibold text-accent mb-4">Preview</h3>
+				<div class="border-2 border-border rounded-lg p-4 bg-card mb-6 flex justify-center items-center overflow-hidden svg-preview">
+					{@html svgContent}
+				</div>
+
+				<Dialog.Footer class="max-sm:flex-col">
+					<Button variant="secondary" onclick={resetDrawing} class="max-sm:w-full">Edit Parameters</Button>
+					<Button class="bg-success text-success-foreground hover:bg-success/90 max-sm:w-full" onclick={downloadPNG} disabled={isDownloading}>
+						{isDownloading ? 'Downloading...' : 'Download PNG'}
+					</Button>
+				</Dialog.Footer>
+			</div>
+		{/if}
+	</Dialog.Content>
+</Dialog.Root>
 
 <style>
-	.modal-overlay {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: rgba(0, 0, 0, 0.7);
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		z-index: 3000;
-		padding: 1rem;
-		overflow-y: auto;
-	}
-
-	.modal-content {
-		background: white;
-		border-radius: 8px;
-		width: 100%;
-		max-width: 900px;
-		max-height: 95vh;
-		display: flex;
-		flex-direction: column;
-		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-	}
-
-	.modal-header {
-		padding: 1.5rem;
-		border-bottom: 1px solid #e5e7eb;
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-	}
-
-	.modal-header h2 {
-		margin: 0;
-		font-size: 1.5rem;
-		color: #0056b3;
-	}
-
-	.close-btn {
-		background: none;
-		border: none;
-		font-size: 2rem;
-		cursor: pointer;
-		color: #666;
-		line-height: 1;
-		padding: 0;
-		width: 32px;
-		height: 32px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.close-btn:hover {
-		color: #333;
-	}
-
-	.modal-body {
-		padding: 1.5rem;
-		overflow-y: auto;
-		flex: 1;
-	}
-
-	.form-section h3,
-	.preview-section h3 {
-		font-size: 1.25rem;
-		margin-bottom: 0.5rem;
-		color: #0056b3;
-	}
-
-	.form-hint {
-		color: #666;
-		font-size: 0.9rem;
-		margin-bottom: 1.5rem;
-	}
-
-	.form-grid {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 1rem;
-		margin-bottom: 1.5rem;
-	}
-
-	.form-group {
-		display: flex;
-		flex-direction: column;
-	}
-
-	.form-group label {
-		font-weight: 500;
-		margin-bottom: 0.5rem;
-		font-size: 0.9rem;
-		color: #333;
-	}
-
-	.form-group input,
-	.form-group select {
-		padding: 0.65rem;
-		border: 1px solid #ddd;
-		border-radius: 5px;
-		font-size: 0.95rem;
-		font-family: inherit;
-	}
-
-	.form-group input:focus,
-	.form-group select:focus {
-		outline: none;
-		border-color: #0056b3;
-	}
-
-	.info-box {
-		background: #e7f3ff;
-		border-left: 4px solid #0056b3;
-		padding: 1rem;
-		margin-bottom: 1.5rem;
-		border-radius: 4px;
-		font-size: 0.9rem;
-		line-height: 1.6;
-	}
-
-	.svg-preview {
-		border: 2px solid #e5e7eb;
-		border-radius: 8px;
-		padding: 1rem;
-		background: white;
-		margin-bottom: 1.5rem;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		overflow: hidden;
-	}
-
 	.svg-preview :global(svg) {
 		width: 100%;
 		height: auto;
 		max-width: 100%;
-	}
-
-	.action-buttons {
-		display: flex;
-		gap: 1rem;
-		justify-content: flex-end;
-	}
-
-	.btn {
-		padding: 0.65rem 1.25rem;
-		border-radius: 5px;
-		border: none;
-		cursor: pointer;
-		font-size: 0.95rem;
-		font-weight: 500;
-		transition: background-color 0.3s ease;
-	}
-
-	.btn:disabled {
-		opacity: 0.6;
-		cursor: not-allowed;
-	}
-
-	.btn-primary {
-		background: #0056b3;
-		color: white;
-	}
-
-	.btn-primary:hover:not(:disabled) {
-		background: #00449e;
-	}
-
-	.btn-secondary {
-		background: #6c757d;
-		color: white;
-	}
-
-	.btn-secondary:hover {
-		background: #5a6268;
-	}
-
-	.btn-success {
-		background: #28a745;
-		color: white;
-	}
-
-	.btn-success:hover:not(:disabled) {
-		background: #218838;
-	}
-
-	@media (max-width: 768px) {
-		.modal-content {
-			max-width: 100%;
-			max-height: 100vh;
-			border-radius: 0;
-		}
-
-		.form-grid {
-			grid-template-columns: 1fr;
-		}
-
-		.action-buttons {
-			flex-direction: column;
-		}
-
-		.btn {
-			width: 100%;
-		}
 	}
 </style>

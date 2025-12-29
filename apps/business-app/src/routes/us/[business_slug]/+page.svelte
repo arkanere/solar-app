@@ -1,6 +1,7 @@
 <script>
 	import { page } from '$app/stores';
-	import { isDarkMode } from '$lib/us/themeStore';
+	import { toast } from 'svelte-sonner';
+	import { isDarkMode } from '$lib/stores/theme.js';
 	import ShowSupport from '$lib/us/ShowSupport.svelte';
 	import ShowRankingPolicy from '$lib/us/ShowRankingPolicy.svelte';
 	import PostRecentProject from '$lib/us/PostRecentProject.svelte';
@@ -98,15 +99,15 @@
 			if (result.success) {
 				// Remove the claimed lead from the non-exclusive list since it's now allocated
 				leads = leads.filter((lead) => lead.id !== leadId);
-				alert('Lead claimed and allocated successfully! Check your allocated leads section.');
+				toast.success('Lead claimed and allocated successfully! Check your allocated leads section.');
 				// Optionally refresh the page to show the new allocated lead
 				window.location.reload();
 			} else {
-				alert(`Error: ${result.error}`);
+				toast.error(result.error);
 			}
 		} catch (error) {
 			console.error('Claim Lead Error:', error);
-			alert('An error occurred while claiming the lead.');
+			toast.error('An error occurred while claiming the lead');
 		} finally {
 			isClaiming = false;
 		}

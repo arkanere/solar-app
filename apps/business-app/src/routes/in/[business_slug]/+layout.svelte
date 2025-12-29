@@ -1,6 +1,5 @@
 <script>
 	import { page } from '$app/stores';
-	import { isDarkMode } from '$lib/in/themeStore';
 	import { isSidebarExpanded, isMobileMenuOpen } from '$lib/in/sidebarStore';
 	import Sidebar from '$lib/in/Sidebar.svelte';
 	import PostRecentProject from '$lib/in/PostRecentProject.svelte';
@@ -10,25 +9,24 @@
 	import LeadFormModalBusiness from '$lib/in/LeadFormModalBusiness.svelte';
 
 	// Get data from layout load
-	export let data;
-	$: ({ business } = data);
+	let { data, children } = $props();
+	let business = $derived(data.business);
 
 	// Destructure page params
-	const businessSlug = $page.params.business_slug;
+	let businessSlug = $derived($page.params.business_slug);
 
-	// Theme
-	$: darkMode = $isDarkMode;
-	$: expanded = $isSidebarExpanded;
+	// Sidebar state
+	let expanded = $derived($isSidebarExpanded);
 
 	// Modal states (lifted from individual pages)
-	let showSupport = false;
-	let showRankingPolicy = false;
-	let showPostRecentProject = false;
-	let showAddBranch = false;
-	let showAddLead = false;
+	let showSupport = $state(false);
+	let showRankingPolicy = $state(false);
+	let showPostRecentProject = $state(false);
+	let showAddBranch = $state(false);
+	let showAddLead = $state(false);
 
 	// Computed business info
-	$: businessInfo = business
+	let businessInfo = $derived(business
 		? {
 				id: business.id,
 				businessname: business.businessname,
@@ -38,30 +36,29 @@
 				address: business.address,
 				website: business.website
 			}
-		: {};
+		: {});
 
-	$: businessEmail = business?.email || '';
+	let businessEmail = $derived(business?.email || '');
 
-	// Handle sidebar events
-	function handleSidebarAction(event) {
-		const action = event.type;
-		switch (action) {
-			case 'addLead':
-				showAddLead = true;
-				break;
-			case 'addBranch':
-				showAddBranch = true;
-				break;
-			case 'postProject':
-				showPostRecentProject = true;
-				break;
-			case 'policy':
-				showRankingPolicy = true;
-				break;
-			case 'support':
-				showSupport = true;
-				break;
-		}
+	// Sidebar action handlers
+	function handleAddLead() {
+		showAddLead = true;
+	}
+
+	function handleAddBranch() {
+		showAddBranch = true;
+	}
+
+	function handlePostProject() {
+		showPostRecentProject = true;
+	}
+
+	function handlePolicy() {
+		showRankingPolicy = true;
+	}
+
+	function handleSupport() {
+		showSupport = true;
 	}
 
 	// Handle events from modals
@@ -86,13 +83,13 @@
 
 <!-- Hamburger Menu Button (Mobile Only) -->
 <button
-	class="mobile-menu-toggle {darkMode ? 'dark' : 'light'}"
-	on:click={toggleMobileMenu}
+	class="mobile-menu-toggle"
+	onclick={toggleMobileMenu}
 	aria-label="Toggle menu"
 >
-	<span></span>
-	<span></span>
-	<span></span>
+	<span class="bg-accent"></span>
+	<span class="bg-accent"></span>
+	<span class="bg-accent"></span>
 </button>
 
 <!-- Sidebar -->
@@ -100,39 +97,39 @@
 	{businessSlug}
 	businessName={businessInfo.businessname || ''}
 	{businessEmail}
-	on:addLead={handleSidebarAction}
-	on:addBranch={handleSidebarAction}
-	on:postProject={handleSidebarAction}
-	on:policy={handleSidebarAction}
-	on:support={handleSidebarAction}
+	onAddLead={handleAddLead}
+	onAddBranch={handleAddBranch}
+	onPostProject={handlePostProject}
+	onPolicy={handlePolicy}
+	onSupport={handleSupport}
 />
 
 <!-- Main Content Area -->
 <div class="layout-container {expanded ? 'sidebar-expanded' : 'sidebar-collapsed'}">
-	<main class={darkMode ? 'dark' : 'light'}>
-		<slot />
+	<main class="min-h-screen bg-background text-foreground transition-colors duration-300">
+		{@render children?.()}
 	</main>
 </div>
 
 <!-- Modals -->
 {#if showAddLead}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		class="modal-overlay"
-		on:click={(e) => {
+		onclick={(e) => {
 			if (e.target === e.currentTarget) {
 				showAddLead = false;
 			}
 		}}
 	>
-		<div class="modal-content" role="dialog" aria-modal="true">
-			<button class="close-btn" on:click={() => (showAddLead = false)}>&times;</button>
-			<h2>Add Lead</h2>
+		<div class="modal-content bg-card text-card-foreground" role="dialog" aria-modal="true">
+			<button class="close-btn text-foreground-muted hover:text-foreground" onclick={() => (showAddLead = false)}>&times;</button>
+			<h2 class="text-accent">Add Lead</h2>
 			<LeadFormModalBusiness
 				businessName={business?.businessname || ''}
 				{businessSlug}
-				on:leadAdded={handleLeadAdded}
+				onLeadAdded={handleLeadAdded}
 			/>
 		</div>
 	</div>
@@ -140,28 +137,28 @@
 
 {#if showPostRecentProject}
 	<PostRecentProject
-		show={showPostRecentProject}
+		bind:show={showPostRecentProject}
 		{businessSlug}
-		on:close={() => (showPostRecentProject = false)}
-		on:posted={handleProjectPosted}
+		onClose={() => (showPostRecentProject = false)}
+		onPosted={handleProjectPosted}
 	/>
 {/if}
 
 {#if showSupport}
-	<ShowSupport show={showSupport} on:close={() => (showSupport = false)} />
+	<ShowSupport bind:show={showSupport} onClose={() => (showSupport = false)} />
 {/if}
 
 {#if showRankingPolicy}
-	<ShowRankingPolicy show={showRankingPolicy} on:close={() => (showRankingPolicy = false)} />
+	<ShowRankingPolicy bind:show={showRankingPolicy} onClose={() => (showRankingPolicy = false)} />
 {/if}
 
 {#if showAddBranch}
 	<AddBranch
-		show={showAddBranch}
+		bind:show={showAddBranch}
 		businessId={businessInfo.id}
 		{businessSlug}
-		on:close={() => (showAddBranch = false)}
-		on:branchAdded={handleBranchAdded}
+		onClose={() => (showAddBranch = false)}
+		onBranchAdded={handleBranchAdded}
 	/>
 {/if}
 
@@ -187,13 +184,8 @@
 		display: block;
 		height: 3px;
 		width: 100%;
-		background-color: #0056b3;
 		border-radius: 3px;
 		transition: all 0.3s;
-	}
-
-	.mobile-menu-toggle.dark span {
-		background-color: #66b2ff;
 	}
 
 	@media (max-width: 767px) {
@@ -220,25 +212,6 @@
 		}
 	}
 
-	/* Main Content */
-	main {
-		min-height: 100vh;
-		transition: background-color 0.3s ease, color 0.3s ease;
-		padding: 0;
-		margin: 0;
-		width: 100%;
-	}
-
-	main.light {
-		background-color: #f8f9fa;
-		color: #333;
-	}
-
-	main.dark {
-		background-color: #1a1a1a;
-		color: #f0f0f0;
-	}
-
 	/* Modal Styles */
 	.modal-overlay {
 		position: fixed;
@@ -246,7 +219,7 @@
 		left: 0;
 		width: 100%;
 		height: 100%;
-		background: rgba(0, 0, 0, 0.5);
+		background: hsl(var(--foreground) / 0.5);
 		display: flex;
 		justify-content: center;
 		align-items: flex-start;
@@ -257,14 +230,15 @@
 
 	.modal-content {
 		position: relative;
-		background: white;
 		padding: 20px;
-		border-radius: 8px;
+		border-radius: var(--radius-lg);
 		max-width: 500px;
 		width: 100%;
 		margin: auto 20px;
 		max-height: calc(100vh - 40px);
 		overflow-y: auto;
+		border: 1px solid hsl(var(--border));
+		box-shadow: var(--shadow-lg);
 	}
 
 	.close-btn {
@@ -275,17 +249,12 @@
 		border: none;
 		font-size: 1.5rem;
 		cursor: pointer;
-		color: #666;
 		z-index: 1001;
-	}
-
-	.close-btn:hover {
-		color: #333;
+		transition: color 0.15s ease;
 	}
 
 	h2 {
 		margin-top: 0;
 		margin-bottom: 1rem;
-		color: #0056b3;
 	}
 </style>

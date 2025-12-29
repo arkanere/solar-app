@@ -1,3 +1,16 @@
+<script>
+	import { onMount } from 'svelte';
+	import { theme } from '$lib/stores/theme.svelte.js';
+	import { Toaster } from '$lib/components/ui/sonner';
+	import '../../app.css';
+
+	let { children } = $props();
+
+	onMount(() => {
+		theme.initialize();
+	});
+</script>
+
 <!-- svelte-ignore a11y-img-redundant-alt -->
 <svelte:head>
 	<!-- Umami Analytics - Layout 2 Business -->
@@ -38,23 +51,13 @@
 	</script>
 </svelte:head>
 
-<slot></slot>
+<Toaster richColors position="top-right" />
+{@render children?.()}
 
 <style>
-	:global(body) {
-		font-family: 'Georgia', serif;
-		margin: 0;
-		padding: 0;
-		overflow-x: hidden;
-		width: 100%;
-	}
-
+	/* Font and base styles are now handled by app.css (Tailwind) */
 	:global(html) {
 		overflow-x: hidden;
 		width: 100%;
-	}
-
-	:global(*, *::before, *::after) {
-		box-sizing: border-box;
 	}
 </style>

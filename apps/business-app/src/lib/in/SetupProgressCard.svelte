@@ -1,21 +1,25 @@
 <script>
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
-	import { isDarkMode } from '$lib/in/themeStore';
+	import { isDarkMode } from '$lib/stores/theme.svelte.js';
+	import { Button } from '$lib/components/ui/button';
+	import * as Card from '$lib/components/ui/card';
+	import { cn } from '$lib/utils';
 
-	export let business = {};
-	export let businessSlug = '';
-	export let projectsCount = 0;
-	export let referrersCount = 0;
-	export let proposalsCount = 0;
-	export let claimedLeadsCount = 0;
+	let {
+		business = {},
+		businessSlug = '',
+		projectsCount = 0,
+		referrersCount = 0,
+		proposalsCount = 0,
+		claimedLeadsCount = 0,
+		onOpenEditProfile = () => {}
+	} = $props();
 
-	const dispatch = createEventDispatcher();
-
-	$: darkMode = $isDarkMode;
+	let darkMode = $derived($isDarkMode);
 
 	// State for expand/collapse
-	let isExpanded = true;
+	let isExpanded = $state(true);
 
 	// Load expanded state from localStorage
 	onMount(() => {
@@ -36,7 +40,7 @@
 	}
 
 	// Define tasks with completion logic
-	$: tasks = [
+	let tasks = $derived([
 		{
 			id: 'profile-created',
 			title: 'Business Profile Created',
@@ -85,19 +89,19 @@
 			action: `/in/${businessSlug}/proposal`,
 			actionLabel: 'Create Proposal'
 		}
-	];
+	]);
 
 	// Calculate progress
-	$: completedCount = tasks.filter(t => t.completed).length;
-	$: totalCount = tasks.length;
-	$: progressPercent = Math.round((completedCount / totalCount) * 100);
+	let completedCount = $derived(tasks.filter(t => t.completed).length);
+	let totalCount = $derived(tasks.length);
+	let progressPercent = $derived(Math.round((completedCount / totalCount) * 100));
 
 	// Handle action clicks
 	function handleAction(task) {
 		if (!task.action) return;
 
 		if (task.action === 'openEditProfile') {
-			dispatch('openEditProfile');
+			onOpenEditProfile();
 		} else {
 			// Navigate to URL
 			window.location.href = task.action;
@@ -105,354 +109,83 @@
 	}
 </script>
 
-<div class="setup-progress-card {darkMode ? 'dark' : 'light'}">
+<Card.Root class="mb-8 overflow-hidden transition-shadow hover:shadow-md">
 	<!-- Card Header -->
-	<button class="card-header" on:click={toggleExpanded}>
-		<div class="header-content">
-			<span class="header-icon">🎯</span>
-			<div class="header-text">
-				<h3>Setup Your Business Account</h3>
-				{#if !isExpanded}
-					<p class="progress-summary">Progress: {completedCount} of {totalCount} complete ({progressPercent}%)</p>
-				{/if}
+	<Card.Header class="p-0 border-b">
+		<Button
+			variant="ghost"
+			class="flex justify-between items-center p-6 rounded-none w-full text-left h-auto"
+			onclick={toggleExpanded}
+			aria-expanded={isExpanded}
+		>
+			<div class="flex items-center gap-4 flex-1">
+				<span class="text-2xl">🎯</span>
+				<div>
+					<Card.Title class="text-xl font-bold text-accent max-sm:text-lg">Setup Your Business Account</Card.Title>
+					{#if !isExpanded}
+						<Card.Description class="mt-1">Progress: {completedCount} of {totalCount} complete ({progressPercent}%)</Card.Description>
+					{/if}
+				</div>
 			</div>
-		</div>
-		<button class="toggle-btn" aria-label={isExpanded ? 'Collapse' : 'Expand'}>
-			{isExpanded ? '─' : '+'}
-		</button>
-	</button>
+			<span class="w-8 h-8 flex items-center justify-center rounded bg-muted text-foreground text-xl font-bold shrink-0 transition-colors hover:bg-muted/80">
+				{isExpanded ? '─' : '+'}
+			</span>
+		</Button>
+	</Card.Header>
 
 	<!-- Collapsed: Show only progress bar -->
 	{#if !isExpanded}
-		<div class="progress-bar-container collapsed">
-			<div class="progress-bar">
-				<div class="progress-fill" style="width: {progressPercent}%"></div>
+		<Card.Content class="pb-6 pt-0">
+			<div class="h-2.5 bg-border rounded-md overflow-hidden">
+				<div class="h-full rounded-md transition-[width] duration-300 bg-gradient-to-r from-accent to-accent/80" style="width: {progressPercent}%"></div>
 			</div>
-		</div>
+		</Card.Content>
 	{/if}
 
 	<!-- Expanded: Show full checklist -->
 	{#if isExpanded}
-		<div class="card-body">
+		<Card.Content>
 			<!-- Progress Info -->
-			<div class="progress-info">
-				<p class="progress-text">Progress: {completedCount} of {totalCount} complete ({progressPercent}%)</p>
-				<div class="progress-bar">
-					<div class="progress-fill" style="width: {progressPercent}%"></div>
+			<div class="mb-6">
+				<p class="m-0 mb-2 text-sm font-semibold text-foreground">Progress: {completedCount} of {totalCount} complete ({progressPercent}%)</p>
+				<div class="h-2.5 bg-border rounded-md overflow-hidden">
+					<div class="h-full rounded-md transition-[width] duration-300 bg-gradient-to-r from-accent to-accent/80" style="width: {progressPercent}%"></div>
 				</div>
 			</div>
 
 			<!-- Task List -->
-			<ul class="task-list">
+			<ul class="list-none p-0 m-0">
 				{#each tasks as task}
-					<li class="task-item {task.completed ? 'completed' : 'incomplete'}">
-						<div class="task-header">
-							<span class="task-icon">
+					<li class={cn(
+						"flex justify-between items-start gap-4 p-4 mb-3 rounded-lg transition-colors",
+						"max-sm:flex-col max-sm:items-stretch",
+						task.completed
+							? "bg-success-muted border-l-[3px] border-l-success"
+							: "bg-warning-muted border-l-[3px] border-l-warning"
+					)}>
+						<div class="flex items-start gap-3 flex-1">
+							<span class="text-xl shrink-0">
 								{task.completed ? '✅' : '⚠️'}
 							</span>
-							<div class="task-info">
-								<h4 class="task-title">{task.title}</h4>
+							<div class="flex-1">
+								<h4 class="m-0 mb-1 text-base font-semibold text-foreground">{task.title}</h4>
 								{#if task.description}
-									<p class="task-description">{task.description}</p>
+									<p class="m-0 text-sm text-muted-foreground leading-relaxed">{task.description}</p>
 								{/if}
 							</div>
 						</div>
 						{#if !task.completed && task.action}
-							<button class="task-action-btn" on:click={() => handleAction(task)}>
+							<Button
+								size="sm"
+								class="shrink-0 max-sm:w-full"
+								onclick={() => handleAction(task)}
+							>
 								{task.actionLabel} →
-							</button>
+							</Button>
 						{/if}
 					</li>
 				{/each}
 			</ul>
-		</div>
+		</Card.Content>
 	{/if}
-</div>
-
-<style>
-	.setup-progress-card {
-		border-radius: 12px;
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
-		margin-bottom: 2rem;
-		overflow: hidden;
-		transition: box-shadow 0.2s ease;
-	}
-
-	.setup-progress-card:hover {
-		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
-	}
-
-	.setup-progress-card.light {
-		background-color: #ffffff;
-		border: 1px solid #e5e7eb;
-	}
-
-	.setup-progress-card.dark {
-		background-color: #333;
-		border: 1px solid #444;
-	}
-
-	/* Card Header */
-	.card-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: 1.5rem;
-		background: none;
-		border: none;
-		border-bottom: 1px solid #e5e7eb;
-		cursor: pointer;
-		width: 100%;
-		text-align: left;
-		transition: background-color 0.2s ease;
-	}
-
-	.dark .card-header {
-		border-bottom-color: #444;
-	}
-
-	.card-header:hover {
-		background-color: #f9fafb;
-	}
-
-	.dark .card-header:hover {
-		background-color: #2a2a2a;
-	}
-
-	.header-content {
-		display: flex;
-		align-items: center;
-		gap: 1rem;
-		flex: 1;
-	}
-
-	.header-icon {
-		font-size: 1.5rem;
-	}
-
-	.header-text h3 {
-		margin: 0;
-		font-size: 1.25rem;
-		font-weight: 700;
-		color: #0056b3;
-	}
-
-	.dark .header-text h3 {
-		color: #66b2ff;
-	}
-
-	.progress-summary {
-		margin: 0.25rem 0 0 0;
-		font-size: 0.875rem;
-		color: #6b7280;
-	}
-
-	.dark .progress-summary {
-		color: #9ca3af;
-	}
-
-	.toggle-btn {
-		background: #e5e7eb;
-		border: none;
-		border-radius: 4px;
-		width: 32px;
-		height: 32px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		cursor: pointer;
-		font-size: 1.25rem;
-		font-weight: bold;
-		transition: background-color 0.2s ease;
-		flex-shrink: 0;
-	}
-
-	.toggle-btn:hover {
-		background: #d1d5db;
-	}
-
-	.dark .toggle-btn {
-		background: #444;
-		color: #f0f0f0;
-	}
-
-	.dark .toggle-btn:hover {
-		background: #555;
-	}
-
-	/* Card Body */
-	.card-body {
-		padding: 1.5rem;
-	}
-
-	/* Progress Info */
-	.progress-info {
-		margin-bottom: 1.5rem;
-	}
-
-	.progress-text {
-		margin: 0 0 0.5rem 0;
-		font-size: 0.875rem;
-		font-weight: 600;
-		color: #374151;
-	}
-
-	.dark .progress-text {
-		color: #d1d5db;
-	}
-
-	.progress-bar-container {
-		padding: 0 1.5rem 1rem;
-	}
-
-	.progress-bar-container.collapsed {
-		padding: 0 1.5rem 1.5rem;
-	}
-
-	.progress-bar {
-		height: 10px;
-		background-color: #e5e7eb;
-		border-radius: 5px;
-		overflow: hidden;
-	}
-
-	.dark .progress-bar {
-		background-color: #444;
-	}
-
-	.progress-fill {
-		height: 100%;
-		background: linear-gradient(90deg, #0056b3, #0077cc);
-		border-radius: 5px;
-		transition: width 0.3s ease;
-	}
-
-	.dark .progress-fill {
-		background: linear-gradient(90deg, #66b2ff, #42a5f5);
-	}
-
-	/* Task List */
-	.task-list {
-		list-style: none;
-		padding: 0;
-		margin: 0;
-	}
-
-	.task-item {
-		display: flex;
-		justify-content: space-between;
-		align-items: flex-start;
-		gap: 1rem;
-		padding: 1rem;
-		margin-bottom: 0.75rem;
-		border-radius: 8px;
-		background-color: #f9fafb;
-		transition: background-color 0.2s ease;
-	}
-
-	.dark .task-item {
-		background-color: #2a2a2a;
-	}
-
-	.task-item.completed {
-		background-color: #f0fdf4;
-		border-left: 3px solid #059669;
-	}
-
-	.dark .task-item.completed {
-		background-color: rgba(5, 150, 105, 0.1);
-		border-left-color: #10b981;
-	}
-
-	.task-item.incomplete {
-		background-color: #fef3c7;
-		border-left: 3px solid #d97706;
-	}
-
-	.dark .task-item.incomplete {
-		background-color: rgba(217, 119, 6, 0.1);
-		border-left-color: #f59e0b;
-	}
-
-	.task-header {
-		display: flex;
-		align-items: flex-start;
-		gap: 0.75rem;
-		flex: 1;
-	}
-
-	.task-icon {
-		font-size: 1.25rem;
-		flex-shrink: 0;
-	}
-
-	.task-info {
-		flex: 1;
-	}
-
-	.task-title {
-		margin: 0 0 0.25rem 0;
-		font-size: 1rem;
-		font-weight: 600;
-		color: #111827;
-	}
-
-	.dark .task-title {
-		color: #f0f0f0;
-	}
-
-	.task-description {
-		margin: 0;
-		font-size: 0.875rem;
-		color: #6b7280;
-		line-height: 1.4;
-	}
-
-	.dark .task-description {
-		color: #9ca3af;
-	}
-
-	.task-action-btn {
-		background: #0056b3;
-		color: white;
-		padding: 0.5rem 1rem;
-		border-radius: 6px;
-		border: none;
-		cursor: pointer;
-		font-size: 0.875rem;
-		font-weight: 600;
-		white-space: nowrap;
-		transition: background-color 0.2s ease;
-		flex-shrink: 0;
-	}
-
-	.task-action-btn:hover {
-		background: #004494;
-	}
-
-	.dark .task-action-btn {
-		background: #66b2ff;
-		color: #1a1a1a;
-	}
-
-	.dark .task-action-btn:hover {
-		background: #5aa3ff;
-	}
-
-	/* Mobile Responsive */
-	@media (max-width: 640px) {
-		.task-item {
-			flex-direction: column;
-			align-items: stretch;
-		}
-
-		.task-action-btn {
-			width: 100%;
-			text-align: center;
-		}
-
-		.header-text h3 {
-			font-size: 1.1rem;
-		}
-	}
-</style>
+</Card.Root>

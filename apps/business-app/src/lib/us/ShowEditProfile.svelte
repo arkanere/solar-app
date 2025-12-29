@@ -4,6 +4,7 @@
 	export let businessSlug = '';
 
 	import { createEventDispatcher, onMount, afterUpdate } from 'svelte';
+	import { toast } from 'svelte-sonner';
 	const dispatch = createEventDispatcher();
 
 	// Create a local copy of the business info that we can modify
@@ -64,14 +65,14 @@
 
 			const result = await response.json();
 			if (result.success) {
-				alert('Profile updated successfully!');
+				toast.success('Profile updated successfully!');
 				dispatch('updated', formData);
 			} else {
 				throw new Error('Failed to update profile');
 			}
 		} catch (error) {
 			console.error('Error updating profile:', error);
-			alert('An error occurred while updating the profile');
+			toast.error('An error occurred while updating the profile');
 		} finally {
 			close();
 		}

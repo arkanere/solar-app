@@ -1,7 +1,8 @@
 <script>
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { isDarkMode } from '$lib/us/themeStore'; // Import dark mode state from your store
+	import { toast } from 'svelte-sonner';
+	import { isDarkMode } from '$lib/stores/theme.js';
 
 	let newPassword = '';
 	let confirmPassword = '';
@@ -40,7 +41,7 @@
 			const result = await response.json();
 
 			if (response.ok && result.success) {
-				alert('Password has been reset successfully');
+				toast.success('Password has been reset successfully');
 				goto(`/us/login`); // Redirect after successful reset
 			} else {
 				errorMessage = result.error || 'Failed to reset password. Please try again.';

@@ -1,22 +1,28 @@
 <!-- AddBranch.svelte -->
 <script>
-	import { createEventDispatcher } from 'svelte';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { Button } from '$lib/components/ui/button';
+	import { Select } from '$lib/components/ui/select';
+	import { Label } from '$lib/components/ui/label';
+	import { cn } from '$lib/utils';
 
-	export let show = false;
-	export let businessId;
-	export let businessSlug; // Added business slug for redirection
-
-	const dispatch = createEventDispatcher();
+	let {
+		show = $bindable(false),
+		businessId,
+		businessSlug, // Added business slug for redirection
+		onClose = () => {},
+		onBranchAdded = () => {}
+	} = $props();
 
 	// Define reactive variables for state, district, and city selection
-	let state = '';
-	let district = '';
-	let city = '';
-	let districts = [];
-	let cities = [];
-	let isSubmitting = false;
-	let errorMessage = '';
-	let successMessage = '';
+	let state = $state('');
+	let district = $state('');
+	let city = $state('');
+	let districts = $state([]);
+	let cities = $state([]);
+	let isSubmitting = $state(false);
+	let errorMessage = $state('');
+	let successMessage = $state('');
 
 	// List of states
 	const states = [
@@ -59,14 +65,18 @@
 	];
 
 	// Fetch districts dynamically when the state changes
-	$: if (state) {
-		updateDistricts(state);
-	}
+	$effect(() => {
+		if (state) {
+			updateDistricts(state);
+		}
+	});
 
 	// Fetch cities dynamically when the district changes
-	$: if (district) {
-		updateCities(district);
-	}
+	$effect(() => {
+		if (district) {
+			updateCities(district);
+		}
+	});
 
 	// Function to fetch districts for a selected state
 	async function updateDistricts(selectedState) {
@@ -102,8 +112,16 @@
 		}
 	}
 
+	function handleOpenChange(open) {
+		if (!open) {
+			show = false;
+			onClose();
+		}
+	}
+
 	// Handle form submission
-	async function handleSubmit() {
+	async function handleSubmit(event) {
+		event.preventDefault();
 		errorMessage = '';
 		successMessage = '';
 
@@ -136,7 +154,7 @@
 				city = '';
 
 				// Notify parent component
-				dispatch('branchAdded', result.branch);
+				onBranchAdded(result.branch);
 
 				// Redirect to the branch page after a short delay
 				setTimeout(() => {
@@ -152,188 +170,82 @@
 			isSubmitting = false;
 		}
 	}
-
-	function closeModal() {
-		dispatch('close');
-	}
 </script>
 
-{#if show}
-	<div class="modal-backdrop">
-		<div class="modal">
-			<div class="modal-header">
-				<h2>Add New Branch</h2>
-				<button class="close-btn" on:click={closeModal}>×</button>
+<Dialog.Root open={show} onOpenChange={handleOpenChange}>
+	<Dialog.Content class="max-w-[500px]">
+		<Dialog.Header>
+			<Dialog.Title>Add New Branch</Dialog.Title>
+		</Dialog.Header>
+
+		{#if errorMessage}
+			<div class="text-destructive mb-4 p-2 bg-destructive-muted rounded">{errorMessage}</div>
+		{/if}
+
+		{#if successMessage}
+			<div class="text-success mb-4 p-2 bg-success-muted rounded">{successMessage}</div>
+		{/if}
+
+		<form onsubmit={handleSubmit}>
+			<!-- State Dropdown -->
+			<div class="mb-4">
+				<Label for="state" class="block mb-2 font-bold">State:</Label>
+				<Select id="state" bind:value={state} required class="w-full">
+					<option value="">Select a state</option>
+					{#each states as s}
+						<option value={s}>{s}</option>
+					{/each}
+				</Select>
 			</div>
 
-			<div class="modal-body">
-				{#if errorMessage}
-					<div class="error-message">{errorMessage}</div>
-				{/if}
-
-				{#if successMessage}
-					<div class="success-message">{successMessage}</div>
-				{/if}
-
-				<form on:submit|preventDefault={handleSubmit}>
-					<!-- State Dropdown -->
-					<div class="form-group">
-						<label for="state">State:</label>
-						<select id="state" bind:value={state} required>
-							<option value="">Select a state</option>
-							{#each states as s}
-								<option value={s}>{s}</option>
-							{/each}
-						</select>
-					</div>
-
-					<!-- District Dropdown -->
-					<div class="form-group">
-						<label for="district">District:</label>
-						<select
-							id="district"
-							bind:value={district}
-							required
-							disabled={!state || districts.length === 0}
-						>
-							<option value="">Select a district</option>
-							{#each districts as d}
-								<option value={d}>{d}</option>
-							{/each}
-						</select>
-					</div>
-
-					<!-- City Dropdown -->
-					<div class="form-group">
-						<label for="city">City:</label>
-						<select
-							id="city"
-							bind:value={city}
-							required
-							disabled={!district || cities.length === 0}
-						>
-							<option value="">Select a city</option>
-							{#each cities as c}
-								<option value={c}>{c}</option>
-							{/each}
-						</select>
-					</div>
-
-					<div class="form-actions">
-						<button type="button" on:click={closeModal} disabled={isSubmitting}>Cancel</button>
-						<button type="submit" disabled={isSubmitting}>
-							{isSubmitting ? 'Adding...' : 'Add Branch'}
-						</button>
-					</div>
-				</form>
+			<!-- District Dropdown -->
+			<div class="mb-4">
+				<Label for="district" class="block mb-2 font-bold">District:</Label>
+				<Select
+					id="district"
+					bind:value={district}
+					required
+					disabled={!state || districts.length === 0}
+					class="w-full"
+				>
+					<option value="">Select a district</option>
+					{#each districts as d}
+						<option value={d}>{d}</option>
+					{/each}
+				</Select>
 			</div>
-		</div>
-	</div>
-{/if}
 
-<style>
-	.modal-backdrop {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background-color: rgba(0, 0, 0, 0.5);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 1000;
-	}
+			<!-- City Dropdown -->
+			<div class="mb-4">
+				<Label for="city" class="block mb-2 font-bold">City:</Label>
+				<Select
+					id="city"
+					bind:value={city}
+					required
+					disabled={!district || cities.length === 0}
+					class="w-full"
+				>
+					<option value="">Select a city</option>
+					{#each cities as c}
+						<option value={c}>{c}</option>
+					{/each}
+				</Select>
+			</div>
 
-	.modal {
-		background-color: white;
-		border-radius: 4px;
-		width: 90%;
-		max-width: 500px;
-		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-	}
-
-	.modal-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: 1rem;
-		border-bottom: 1px solid #eee;
-	}
-
-	.modal-header h2 {
-		margin: 0;
-	}
-
-	.close-btn {
-		background: none;
-		border: none;
-		font-size: 1.5rem;
-		cursor: pointer;
-	}
-
-	.modal-body {
-		padding: 1rem;
-	}
-
-	.form-group {
-		margin-bottom: 1rem;
-	}
-
-	.form-group label {
-		display: block;
-		margin-bottom: 0.5rem;
-		font-weight: bold;
-	}
-
-	.form-group select {
-		width: 100%;
-		padding: 0.5rem;
-		border: 1px solid #ccc;
-		border-radius: 4px;
-	}
-
-	.form-actions {
-		display: flex;
-		justify-content: flex-end;
-		gap: 0.5rem;
-		margin-top: 1rem;
-	}
-
-	button {
-		padding: 0.5rem 1rem;
-		border: none;
-		border-radius: 4px;
-		cursor: pointer;
-	}
-
-	button[type='button'] {
-		background-color: #f3f3f3;
-	}
-
-	button[type='submit'] {
-		background-color: #4caf50;
-		color: white;
-	}
-
-	button:disabled {
-		opacity: 0.7;
-		cursor: not-allowed;
-	}
-
-	.error-message {
-		color: #d32f2f;
-		margin-bottom: 1rem;
-		padding: 0.5rem;
-		background-color: #ffebee;
-		border-radius: 4px;
-	}
-
-	.success-message {
-		color: #2e7d32;
-		margin-bottom: 1rem;
-		padding: 0.5rem;
-		background-color: #e8f5e9;
-		border-radius: 4px;
-	}
-</style>
+			<Dialog.Footer>
+				<Dialog.Close asChild let:builder>
+					<Button builders={[builder]} variant="secondary" disabled={isSubmitting}>
+						Cancel
+					</Button>
+				</Dialog.Close>
+				<Button
+					type="submit"
+					class="bg-success text-success-foreground hover:bg-success/90"
+					disabled={isSubmitting}
+				>
+					{isSubmitting ? 'Adding...' : 'Add Branch'}
+				</Button>
+			</Dialog.Footer>
+		</form>
+	</Dialog.Content>
+</Dialog.Root>
