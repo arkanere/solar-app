@@ -136,8 +136,8 @@
 	<!-- Collapsed: Show only progress bar -->
 	{#if !isExpanded}
 		<Card.Content class="pb-6 pt-0">
-			<div class="h-2.5 bg-border rounded-md overflow-hidden">
-				<div class="h-full rounded-md transition-[width] duration-300 bg-gradient-to-r from-accent to-accent/80" style="width: {progressPercent}%"></div>
+			<div class="h-2.5 bg-muted rounded-md overflow-hidden">
+				<div class="h-full rounded-md transition-[width] duration-300 bg-accent" style="width: {progressPercent}%"></div>
 			</div>
 		</Card.Content>
 	{/if}
@@ -148,8 +148,8 @@
 			<!-- Progress Info -->
 			<div class="mb-6">
 				<p class="m-0 mb-2 text-sm font-semibold text-foreground">Progress: {completedCount} of {totalCount} complete ({progressPercent}%)</p>
-				<div class="h-2.5 bg-border rounded-md overflow-hidden">
-					<div class="h-full rounded-md transition-[width] duration-300 bg-gradient-to-r from-accent to-accent/80" style="width: {progressPercent}%"></div>
+				<div class="h-2.5 bg-muted rounded-md overflow-hidden">
+					<div class="h-full rounded-md transition-[width] duration-300 bg-accent" style="width: {progressPercent}%"></div>
 				</div>
 			</div>
 

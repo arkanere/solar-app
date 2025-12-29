@@ -29,6 +29,12 @@
 		}
 	}
 
+	function close() {
+		if (isSubmitting) return; // Prevent closing during submission
+		show = false;
+		onClose();
+	}
+
 	function resetForm() {
 		name = '';
 		slug = '';
@@ -205,11 +211,9 @@
 			</div>
 
 			<Dialog.Footer class="max-sm:flex-col">
-				<Dialog.Close asChild let:builder>
-					<Button builders={[builder]} variant="secondary" disabled={isSubmitting} class="max-sm:w-full">
-						Cancel
-					</Button>
-				</Dialog.Close>
+				<Button variant="secondary" disabled={isSubmitting} onclick={close} class="max-sm:w-full">
+					Cancel
+				</Button>
 				<Button type="submit" disabled={isSubmitting} class="max-sm:w-full">
 					{isSubmitting ? 'Adding...' : 'Add Referrer'}
 				</Button>

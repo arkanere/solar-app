@@ -31,6 +31,11 @@
 		}
 	}
 
+	function close() {
+		show = false;
+		onClose();
+	}
+
 	// Calculate panel arrangement
 	function calculateLayout(numberOfPanels) {
 		// Find best rows x columns arrangement
@@ -335,9 +340,7 @@
 				</div>
 
 				<Dialog.Footer class="max-sm:flex-col">
-					<Dialog.Close asChild let:builder>
-						<Button builders={[builder]} variant="secondary" class="max-sm:w-full">Cancel</Button>
-					</Dialog.Close>
+					<Button variant="secondary" onclick={close} class="max-sm:w-full">Cancel</Button>
 					<Button onclick={generateDrawing} disabled={isGenerating} class="max-sm:w-full">
 						{isGenerating ? 'Generating...' : 'Generate Drawing'}
 					</Button>

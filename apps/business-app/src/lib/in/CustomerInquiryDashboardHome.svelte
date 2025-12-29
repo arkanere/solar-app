@@ -401,11 +401,9 @@
 			<p class="m-0 leading-relaxed text-foreground">Are you sure you want to delete the lead for <strong>{leadToDelete.name}</strong>?</p>
 		{/if}
 		<Dialog.Footer class="max-[480px]:flex-col">
-			<Dialog.Close asChild let:builder>
-				<Button builders={[builder]} variant="secondary" disabled={isDeleting} class="max-[480px]:w-full">
-					Cancel
-				</Button>
-			</Dialog.Close>
+			<Button variant="secondary" onclick={cancelDelete} disabled={isDeleting} class="max-[480px]:w-full">
+				Cancel
+			</Button>
 			<Button variant="destructive" onclick={confirmDelete} disabled={isDeleting} class="max-[480px]:w-full">
 				{isDeleting ? 'Deleting...' : 'Delete Lead'}
 			</Button>
