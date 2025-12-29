@@ -311,12 +311,12 @@
 </script>
 
 <Dialog.Root open={show} onOpenChange={handleOpenChange}>
-	<Dialog.Content class="max-w-[800px] max-h-[90vh] overflow-y-auto">
-		<Dialog.Header>
+	<Dialog.Content class="max-w-[800px] max-h-[90vh] flex flex-col overflow-hidden">
+		<Dialog.Header class="shrink-0">
 			<Dialog.Title class="text-accent">{proposal ? 'Update Proposal' : 'Create Proposal'}</Dialog.Title>
 		</Dialog.Header>
 
-		<form onsubmit={(e) => { e.preventDefault(); generatePDF(); }}>
+		<form onsubmit={(e) => { e.preventDefault(); generatePDF(); }} class="flex-1 overflow-y-auto min-h-0 px-1">
 			<!-- Customer Information Section -->
 			<section class="mb-6 pb-6 border-b border-border">
 				<h3 class="text-lg font-semibold mb-4 text-accent">Customer Information</h3>
@@ -424,34 +424,35 @@
 					/>
 				</div>
 			</section>
-
-			<!-- Action Buttons -->
-			<Dialog.Footer class="max-sm:flex-col gap-2">
-				<Button type="button" variant="secondary" onclick={resetForm} class="max-sm:w-full">
-					Reset Form
-				</Button>
-				<Button
-					type="button"
-					variant="outline"
-					onclick={openDrawingModal}
-					disabled={!isFormValid}
-					class="max-sm:w-full"
-				>
-					Create Drawing
-				</Button>
-				<Button
-					type="button"
-					class="bg-success text-success-foreground hover:bg-success/90 max-sm:w-full"
-					onclick={saveProposal}
-					disabled={!isFormValid || isSaving}
-				>
-					{isSaving ? 'Saving...' : (proposal?.id ? 'Update Proposal' : 'Save Proposal')}
-				</Button>
-				<Button type="submit" disabled={!isFormValid || isGenerating} class="max-sm:w-full">
-					{isGenerating ? 'Downloading PDF...' : 'Download PDF'}
-				</Button>
-			</Dialog.Footer>
 		</form>
+
+		<!-- Action Buttons - Outside scrollable area -->
+		<Dialog.Footer class="shrink-0 flex-wrap gap-2 border-t border-border pt-4 mt-auto">
+			<Button type="button" variant="secondary" onclick={resetForm} class="max-sm:w-full">
+				Reset Form
+			</Button>
+			<Button
+				type="button"
+				variant="outline"
+				onclick={openDrawingModal}
+				disabled={!isFormValid}
+				class="max-sm:w-full"
+			>
+				Create Drawing
+			</Button>
+			<Button
+				type="button"
+				variant="success"
+				class="max-sm:w-full"
+				onclick={saveProposal}
+				disabled={!isFormValid || isSaving}
+			>
+				{isSaving ? 'Saving...' : (proposal?.id ? 'Update Proposal' : 'Save Proposal')}
+			</Button>
+			<Button type="button" onclick={generatePDF} disabled={!isFormValid || isGenerating} class="max-sm:w-full">
+				{isGenerating ? 'Downloading PDF...' : 'Download PDF'}
+			</Button>
+		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>
 

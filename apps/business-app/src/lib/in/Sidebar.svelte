@@ -6,6 +6,22 @@
 	import { slide } from 'svelte/transition';
 	import { Button } from '$lib/components/ui/button';
 	import { cn } from '$lib/utils';
+	// Import Lucide icons
+	import {
+		LayoutDashboard,
+		Users,
+		UserPlus,
+		Inbox,
+		Building2,
+		Handshake,
+		FolderKanban,
+		FileText,
+		Settings,
+		MessageCircle,
+		ScrollText,
+		LogOut,
+		X
+	} from '@lucide/svelte';
 
 	let {
 		businessSlug = '',
@@ -30,7 +46,7 @@
 		{
 			type: 'standalone',
 			label: 'Dashboard',
-			icon: '📊',
+			icon: LayoutDashboard,
 			href: `/in/${businessSlug}`,
 			itemType: 'link'
 		},
@@ -40,23 +56,23 @@
 			type: 'collapsible',
 			id: 'leads',
 			title: 'Leads',
-			icon: '👥',
+			icon: Users,
 			items: [
 				{
 					label: 'Add Lead',
-					icon: '➕',
+					icon: UserPlus,
 					action: 'addLead',
 					type: 'modal'
 				},
 				{
 					label: 'CRM',
-					icon: '👥',
+					icon: Users,
 					href: `/in/${businessSlug}/crm`,
 					type: 'link'
 				},
 				{
 					label: 'Open Inquiries',
-					icon: '📬',
+					icon: Inbox,
 					href: `/in/${businessSlug}/open-inquiries`,
 					type: 'link'
 				}
@@ -68,17 +84,17 @@
 			type: 'collapsible',
 			id: 'branches',
 			title: 'Branches',
-			icon: '🏪',
+			icon: Building2,
 			items: [
 				{
 					label: 'Manage Branches',
-					icon: '🏪',
+					icon: Building2,
 					href: `/in/${businessSlug}/branch`,
 					type: 'link'
 				},
 				{
 					label: 'Referrers',
-					icon: '🤝',
+					icon: Handshake,
 					href: `/in/${businessSlug}/referral`,
 					type: 'link'
 				}
@@ -90,17 +106,17 @@
 			type: 'collapsible',
 			id: 'projects',
 			title: 'Projects',
-			icon: '📋',
+			icon: FolderKanban,
 			items: [
 				{
 					label: 'Manage Recent Projects',
-					icon: '📝',
+					icon: FileText,
 					href: `/in/${businessSlug}/recent-projects`,
 					type: 'link'
 				},
 				{
 					label: 'Project Management',
-					icon: '📋',
+					icon: FolderKanban,
 					href: `/in/${businessSlug}/project-management`,
 					type: 'link'
 				}
@@ -111,7 +127,7 @@
 		{
 			type: 'standalone',
 			label: 'Proposals',
-			icon: '📄',
+			icon: FileText,
 			href: `/in/${businessSlug}/proposal`,
 			itemType: 'link'
 		},
@@ -121,17 +137,17 @@
 			type: 'collapsible',
 			id: 'settings',
 			title: 'Settings',
-			icon: '⚙️',
+			icon: Settings,
 			items: [
 				{
 					label: 'Support',
-					icon: '💬',
+					icon: MessageCircle,
 					action: 'support',
 					type: 'modal'
 				},
 				{
 					label: 'Policy',
-					icon: '📜',
+					icon: ScrollText,
 					action: 'policy',
 					type: 'modal'
 				}
@@ -218,11 +234,6 @@
 	<!-- Brand Header -->
 	<div class="p-4 flex items-center justify-between border-b border-border min-h-[70px]">
 		<div class="flex flex-col items-center gap-2 overflow-hidden flex-1">
-			<img
-				src="/solar-vipani-logo.png"
-				alt="Solar Vipani"
-				class={cn("h-[45px] w-auto shrink-0 object-contain", !expanded && "h-9")}
-			/>
 			{#if expanded}
 				<div class="w-full text-center px-2">
 					<p class="m-0 text-xs font-semibold truncate w-full">{businessName || 'Business Portal'}</p>
@@ -244,11 +255,11 @@
 		<Button
 			variant="ghost"
 			size="icon"
-			class="flex md:hidden text-2xl"
+			class="flex md:hidden"
 			onclick={closeMobileMenu}
 			aria-label="Close menu"
 		>
-			✕
+			<X size={24} strokeWidth={2} />
 		</Button>
 	</div>
 
@@ -271,7 +282,7 @@
 									)}
 									title={expanded ? '' : section.label}
 								>
-									<span class="text-xl shrink-0 w-6 text-center">{section.icon}</span>
+									<svelte:component this={section.icon} class="shrink-0" size={20} strokeWidth={2} />
 									{#if expanded}
 										<span class="truncate">{section.label}</span>
 									{/if}
@@ -286,7 +297,7 @@
 									onclick={() => handleItemClick(section)}
 									title={expanded ? '' : section.label}
 								>
-									<span class="text-xl shrink-0 w-6 text-center">{section.icon}</span>
+									<svelte:component this={section.icon} class="shrink-0" size={20} strokeWidth={2} />
 									{#if expanded}
 										<span class="truncate">{section.label}</span>
 									{/if}
@@ -310,7 +321,7 @@
 						aria-expanded={sections[section.id] ? 'true' : 'false'}
 						title={expanded ? '' : section.title}
 					>
-						<span class="text-xl shrink-0 w-6 text-center">{section.icon}</span>
+						<svelte:component this={section.icon} class="shrink-0" size={20} strokeWidth={2} />
 						{#if expanded}
 							<span class="truncate">{section.title}</span>
 							<span class={cn(
@@ -335,7 +346,7 @@
 												)}
 												title={item.label}
 											>
-												<span class="text-base shrink-0 w-6 text-center">{item.icon}</span>
+												<svelte:component this={item.icon} class="shrink-0" size={18} strokeWidth={2} />
 												<span class="truncate">{item.label}</span>
 											</a>
 										{:else if item.type === 'modal'}
@@ -347,7 +358,7 @@
 												onclick={() => handleItemClick(item)}
 												title={item.label}
 											>
-												<span class="text-base shrink-0 w-6 text-center">{item.icon}</span>
+												<svelte:component this={item.icon} class="shrink-0" size={18} strokeWidth={2} />
 												<span class="truncate">{item.label}</span>
 											</button>
 										{/if}
@@ -374,7 +385,7 @@
 				)}
 				title={expanded ? '' : 'Logout'}
 			>
-				<span class="text-xl shrink-0 w-6 text-center">🚪</span>
+				<LogOut class="shrink-0" size={20} strokeWidth={2} />
 				{#if expanded}
 					<span class="truncate">Logout</span>
 				{/if}

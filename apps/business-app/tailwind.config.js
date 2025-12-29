@@ -4,7 +4,7 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
-      // Linear-style color palette (monochromatic with subtle accents)
+      // Solar Vipani color palette - Trust Blue + Solar Amber
       colors: {
         // Background colors
         background: {
@@ -23,7 +23,7 @@ export default {
           DEFAULT: 'hsl(var(--border))',
           hover: 'hsl(var(--border-hover))'
         },
-        // Primary accent (Linear uses a subtle purple-blue)
+        // Primary accent - Trust Blue (professional, sky, clean energy)
         accent: {
           DEFAULT: 'hsl(var(--accent))',
           hover: 'hsl(var(--accent-hover))',
@@ -64,15 +64,53 @@ export default {
         // Input styling
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
-        // Primary and secondary (for shadcn compatibility)
+        // Primary (for shadcn compatibility)
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))'
         },
+        // Secondary - Solar Amber
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
-          foreground: 'hsl(var(--secondary-foreground))'
-        }
+          hover: 'hsl(var(--secondary-hover))',
+          foreground: 'hsl(var(--secondary-foreground))',
+          muted: 'hsl(var(--secondary-muted))'
+        },
+        // Lead Category Colors
+        'lead-available': {
+          DEFAULT: 'hsl(var(--lead-available))',
+          muted: 'hsl(var(--lead-available-muted))'
+        },
+        'lead-claimed': {
+          DEFAULT: 'hsl(var(--lead-claimed))',
+          muted: 'hsl(var(--lead-claimed-muted))'
+        },
+        'lead-exclusive': {
+          DEFAULT: 'hsl(var(--lead-exclusive))',
+          muted: 'hsl(var(--lead-exclusive-muted))'
+        },
+        // Pipeline Stage Colors
+        'stage-new': 'hsl(var(--stage-new))',
+        'stage-contacted': 'hsl(var(--stage-contacted))',
+        'stage-proposal': 'hsl(var(--stage-proposal))',
+        'stage-won': 'hsl(var(--stage-won))',
+        'stage-lost': 'hsl(var(--stage-lost))',
+        // Project Status Colors
+        'project-planning': 'hsl(var(--project-planning))',
+        'project-active': 'hsl(var(--project-active))',
+        'project-done': 'hsl(var(--project-done))',
+        'project-hold': 'hsl(var(--project-hold))',
+        // Priority Colors
+        'priority-high': 'hsl(var(--priority-high))',
+        'priority-medium': 'hsl(var(--priority-medium))',
+        'priority-low': 'hsl(var(--priority-low))',
+        // Chart Colors (for data visualization)
+        'chart-1': 'hsl(var(--chart-1))',
+        'chart-2': 'hsl(var(--chart-2))',
+        'chart-3': 'hsl(var(--chart-3))',
+        'chart-4': 'hsl(var(--chart-4))',
+        'chart-5': 'hsl(var(--chart-5))',
+        'chart-6': 'hsl(var(--chart-6))'
       },
       // Typography (Inter font stack)
       fontFamily: {
@@ -187,5 +225,5 @@ export default {
       }
     }
   },
-  plugins: []
+  plugins: [require('tailwindcss-animate')]
 };

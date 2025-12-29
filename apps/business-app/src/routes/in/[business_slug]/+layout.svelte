@@ -199,6 +199,7 @@
 		margin-left: 250px;
 		transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 		min-height: 100vh;
+		overflow-x: hidden; /* Prevents horizontal scroll without breaking fixed-position modals */
 	}
 
 	.layout-container.sidebar-collapsed {

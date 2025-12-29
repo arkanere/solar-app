@@ -5,6 +5,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import { cn } from '$lib/utils';
+	import { Target, CheckCircle2, AlertCircle } from '@lucide/svelte';
 
 	let {
 		business = {},
@@ -119,7 +120,7 @@
 			aria-expanded={isExpanded}
 		>
 			<div class="flex items-center gap-4 flex-1">
-				<span class="text-2xl">🎯</span>
+				<Target class="shrink-0 text-accent" size={28} strokeWidth={2} />
 				<div>
 					<Card.Title class="text-xl font-bold text-accent max-sm:text-lg">Setup Your Business Account</Card.Title>
 					{#if !isExpanded}
@@ -164,9 +165,13 @@
 							: "bg-warning-muted border-l-[3px] border-l-warning"
 					)}>
 						<div class="flex items-start gap-3 flex-1">
-							<span class="text-xl shrink-0">
-								{task.completed ? '✅' : '⚠️'}
-							</span>
+							<div class="shrink-0">
+								{#if task.completed}
+									<CheckCircle2 size={20} strokeWidth={2} class="text-success" />
+								{:else}
+									<AlertCircle size={20} strokeWidth={2} class="text-warning" />
+								{/if}
+							</div>
 							<div class="flex-1">
 								<h4 class="m-0 mb-1 text-base font-semibold text-foreground">{task.title}</h4>
 								{#if task.description}
