@@ -455,11 +455,9 @@
 			</div>
 
 			<Dialog.Footer class="mt-4 max-sm:flex-col">
-				<Dialog.Close asChild let:builder>
-					<Button builders={[builder]} variant="secondary" disabled={isSubmitting} class="max-sm:w-full">
-						Cancel
-					</Button>
-				</Dialog.Close>
+				<Button variant="secondary" disabled={isSubmitting} onclick={close} class="max-sm:w-full">
+					Cancel
+				</Button>
 				<Button type="submit" disabled={isSubmitting} class="bg-success text-success-foreground hover:bg-success/90 max-sm:w-full">
 					{isSubmitting ? 'Posting...' : 'Post Project'}
 				</Button>
