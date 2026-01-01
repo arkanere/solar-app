@@ -1,12 +1,18 @@
-<script>
+<script lang="ts">
 	import LeadProgressBar from './LeadProgressBar.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Select } from '$lib/components/ui/select';
 	import { Label } from '$lib/components/ui/label';
+	import { LeadStatusBadge } from '$lib/components/ui/lead-status-badge';
 	import { cn } from '$lib/utils';
 	import { Check } from '@lucide/svelte';
+	import {
+		STAGES_MAP,
+		NON_EXCLUSIVE_CLAIMED_STAGES_MAP,
+		getStagesMapForCategory
+	} from '$lib/constants/lead';
 
 	let {
 		lead,
@@ -15,8 +21,6 @@
 		savingNotes = new Set(),
 		savedNotes = new Set(),
 		expandedLeads = new Set(),
-		STAGES = {},
-		NON_EXCLUSIVE_CLAIMED_STAGES = {},
 		// Functions
 		makeCall = () => {},
 		saveBusinessNotes = () => {},
@@ -28,6 +32,9 @@
 		claimLead = () => {},
 		onToggleDetails = () => {}
 	} = $props();
+
+	// Get appropriate stages based on lead category
+	let stagesMap = $derived(getStagesMapForCategory(lead.category));
 
 	let collapsedNotes = $derived(lead.collapsedNotes !== false);
 	let isExpanded = $derived(expandedLeads.has(lead.id));
@@ -42,26 +49,7 @@
 	<!-- HEADER SECTION - Identity & Status -->
 	<Card.Header class="flex-row justify-between items-center py-5 pb-2 border-b max-[480px]:flex-col max-[480px]:items-start max-[480px]:gap-3">
 		<Card.Title class="text-lg font-bold text-foreground leading-tight">{lead.name}</Card.Title>
-		<span
-			class={cn(
-				"inline-flex items-center gap-1.5 text-xs font-semibold py-1.5 px-3 rounded-md whitespace-nowrap max-[480px]:self-start",
-				lead.category === 1 && "bg-lead-available-muted text-lead-available border border-lead-available/30",
-				lead.category === 2 && "bg-lead-claimed-muted text-lead-claimed border border-lead-claimed/30",
-				(lead.category === 3 || lead.category === null) && "bg-lead-exclusive-muted text-lead-exclusive border border-lead-exclusive/30"
-			)}
-		>
-			<span class={cn(
-				"w-1.5 h-1.5 rounded-full",
-				lead.category === 1 && "bg-lead-available",
-				lead.category === 2 && "bg-lead-claimed",
-				(lead.category === 3 || lead.category === null) && "bg-lead-exclusive"
-			)}></span>
-			{lead.category === 1
-				? 'Non-Exclusive'
-				: lead.category === 2
-					? 'Non-Exclusive-Claimed'
-					: 'Exclusive'}
-		</span>
+		<LeadStatusBadge category={lead.category} class="max-[480px]:self-start" />
 	</Card.Header>
 	<p class="px-6 pb-4 pt-0 m-0 text-xs text-muted-foreground">Received {getRelativeTime(lead.created_at).text}</p>
 
@@ -98,7 +86,7 @@
 			<div class="flex items-center gap-1.5 text-sm text-foreground-secondary">
 				<span class="font-semibold text-muted-foreground">Stage:</span>
 				<span class="font-medium text-foreground">
-					{lead.category === 2 ? NON_EXCLUSIVE_CLAIMED_STAGES[lead.stage] : STAGES[lead.stage]}
+					{stagesMap[lead.stage]}
 				</span>
 			</div>
 		{/if}
@@ -159,15 +147,9 @@
 						bind:value={lead.stage}
 						onchange={() => updateLead(lead, { stage: lead.stage })}
 					>
-						{#if lead.category === 2}
-							{#each Object.entries(NON_EXCLUSIVE_CLAIMED_STAGES) as [value, label]}
-								<option value={Number(value)}>{label}</option>
-							{/each}
-						{:else}
-							{#each Object.entries(STAGES) as [value, label]}
-								<option value={Number(value)}>{label}</option>
-							{/each}
-						{/if}
+						{#each Object.entries(stagesMap).filter(([key]) => key !== 'all') as [value, label]}
+							<option value={Number(value)}>{label}</option>
+						{/each}
 					</Select>
 				</div>
 

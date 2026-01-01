@@ -1,50 +1,28 @@
-<script>
+<script lang="ts">
 	import { Button } from '$lib/components/ui/button';
-	import { Select } from '$lib/components/ui/select';
 	import { Label } from '$lib/components/ui/label';
+	import {
+		LEAD_CATEGORIES_WITH_ALL,
+		STAGES_MAP,
+		NON_EXCLUSIVE_CLAIMED_STAGES_MAP,
+		STATUS_OPTIONS,
+		getStagesMapForCategory
+	} from '$lib/constants/lead';
 
 	let {
 		selectedCategory = $bindable('all'),
 		selectedStage = $bindable('all'),
 		selectedStatus = $bindable('all'),
 		onFilterChange = () => {}
+	}: {
+		selectedCategory?: string;
+		selectedStage?: string;
+		selectedStatus?: string;
+		onFilterChange?: (filters: { selectedCategory: string; selectedStage: string; selectedStatus: string }) => void;
 	} = $props();
 
-	// Lead categories
-	const CATEGORIES = {
-		all: 'All Categories',
-		1: 'Non-Exclusive-Available',
-		2: 'Non-Exclusive-Claimed',
-		3: 'Exclusive'
-	};
-
-	// Lead stages (regular)
-	const STAGES = {
-		all: 'All Stages',
-		0: 'New Inquiry',
-		1: 'Contacted',
-		2: 'Proposal/Quotation Sent',
-		3: 'Won'
-	};
-
-	// Lead stages for Non-Exclusive-Claimed
-	const NON_EXCLUSIVE_CLAIMED_STAGES = {
-		all: 'All Stages',
-		0: 'Claimed',
-		1: 'Contacted',
-		2: 'Proposal/Quotation Sent',
-		3: 'Won'
-	};
-
-	// Status options
-	const STATUS_OPTIONS = {
-		all: 'All Status',
-		true: 'Active',
-		false: 'Inactive'
-	};
-
 	// Get appropriate stages based on selected category
-	let currentStages = $derived(selectedCategory === '2' ? NON_EXCLUSIVE_CLAIMED_STAGES : STAGES);
+	let currentStages = $derived(getStagesMapForCategory(selectedCategory));
 
 	function handleCategoryChange() {
 		// Reset stage filter when category changes
@@ -86,44 +64,44 @@
 	<div class="flex gap-6 items-end flex-wrap max-md:flex-col max-md:gap-4 max-[480px]:gap-3">
 		<div class="flex flex-col gap-2 flex-1 max-w-[200px] max-md:max-w-full max-md:flex-none">
 			<Label for="category-filter" class="font-semibold">Category:</Label>
-			<Select
+			<select
 				id="category-filter"
 				bind:value={selectedCategory}
 				onchange={handleCategoryChange}
-				class="w-full"
+				class="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs focus:outline-none focus:ring-2 focus:ring-ring"
 			>
-				{#each Object.entries(CATEGORIES) as [value, label]}
+				{#each Object.entries(LEAD_CATEGORIES_WITH_ALL) as [value, label]}
 					<option value={value}>{label}</option>
 				{/each}
-			</Select>
+			</select>
 		</div>
 
 		<div class="flex flex-col gap-2 flex-1 max-w-[200px] max-md:max-w-full max-md:flex-none">
 			<Label for="stage-filter" class="font-semibold">Stage:</Label>
-			<Select
+			<select
 				id="stage-filter"
 				bind:value={selectedStage}
 				onchange={handleStageChange}
-				class="w-full"
+				class="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs focus:outline-none focus:ring-2 focus:ring-ring"
 			>
 				{#each Object.entries(currentStages) as [value, label]}
 					<option value={value}>{label}</option>
 				{/each}
-			</Select>
+			</select>
 		</div>
 
 		<div class="flex flex-col gap-2 flex-1 max-w-[200px] max-md:max-w-full max-md:flex-none">
 			<Label for="status-filter" class="font-semibold">Status:</Label>
-			<Select
+			<select
 				id="status-filter"
 				bind:value={selectedStatus}
 				onchange={handleStatusChange}
-				class="w-full"
+				class="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs focus:outline-none focus:ring-2 focus:ring-ring"
 			>
 				{#each Object.entries(STATUS_OPTIONS) as [value, label]}
 					<option value={value}>{label}</option>
 				{/each}
-			</Select>
+			</select>
 		</div>
 	</div>
 </div>

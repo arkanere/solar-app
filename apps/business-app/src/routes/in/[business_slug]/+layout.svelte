@@ -168,7 +168,7 @@
 		position: fixed;
 		top: 1rem;
 		left: 1rem;
-		z-index: 1001;
+		z-index: calc(var(--z-sidebar) + 1);
 		display: none;
 		flex-direction: column;
 		justify-content: space-between;
@@ -220,13 +220,14 @@
 		left: 0;
 		width: 100%;
 		height: 100%;
-		background: hsl(var(--foreground) / 0.5);
+		background: color-mix(in oklch, var(--color-modal-backdrop) 50%, transparent);
 		display: flex;
 		justify-content: center;
 		align-items: flex-start;
-		z-index: 1000;
+		z-index: var(--z-modal-backdrop);
 		overflow-y: auto;
 		padding: 20px 0;
+		pointer-events: none;
 	}
 
 	.modal-content {
@@ -238,8 +239,9 @@
 		margin: auto 20px;
 		max-height: calc(100vh - 40px);
 		overflow-y: auto;
-		border: 1px solid hsl(var(--border));
+		border: 1px solid var(--color-border);
 		box-shadow: var(--shadow-lg);
+		pointer-events: auto;
 	}
 
 	.close-btn {
@@ -250,7 +252,7 @@
 		border: none;
 		font-size: 1.5rem;
 		cursor: pointer;
-		z-index: 1001;
+		z-index: var(--z-modal);
 		transition: color 0.15s ease;
 	}
 

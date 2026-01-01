@@ -14,7 +14,7 @@
 	bind:ref
 	data-slot="dialog-overlay"
 	class={cn(
-		"fixed inset-0 z-[1100]",
+		"fixed inset-0 z-modal-backdrop",
 		className
 	)}
 	style="background-color: rgba(0, 0, 0, 0.5);"
