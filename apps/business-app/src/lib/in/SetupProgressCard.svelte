@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { isDarkMode } from '$lib/stores/theme.svelte.js';
@@ -6,6 +6,15 @@
 	import * as Card from '$lib/components/ui/card';
 	import { cn } from '$lib/utils';
 	import { Target, CheckCircle2, AlertCircle } from '@lucide/svelte';
+
+	type Task = {
+		id: string;
+		title: string;
+		description: string;
+		completed: boolean;
+		action: string | null;
+		actionLabel: string;
+	};
 
 	let {
 		business = {},
@@ -15,6 +24,14 @@
 		proposalsCount = 0,
 		claimedLeadsCount = 0,
 		onOpenEditProfile = () => {}
+	}: {
+		business?: { description?: string; website?: string };
+		businessSlug?: string;
+		projectsCount?: number;
+		referrersCount?: number;
+		proposalsCount?: number;
+		claimedLeadsCount?: number;
+		onOpenEditProfile?: () => void;
 	} = $props();
 
 	let darkMode = $derived($isDarkMode);
@@ -98,7 +115,7 @@
 	let progressPercent = $derived(Math.round((completedCount / totalCount) * 100));
 
 	// Handle action clicks
-	function handleAction(task) {
+	function handleAction(task: Task) {
 		if (!task.action) return;
 
 		if (task.action === 'openEditProfile') {

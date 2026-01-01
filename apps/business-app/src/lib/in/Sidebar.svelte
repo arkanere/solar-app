@@ -218,14 +218,14 @@
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
-		class="fixed inset-0 bg-black/50 z-[999] md:hidden"
+		class="fixed inset-0 bg-black/50 z-[calc(var(--z-sidebar)-1)] md:hidden"
 		onclick={closeMobileMenu}
 	></div>
 {/if}
 
 <!-- Sidebar -->
 <aside class={cn(
-	"fixed top-0 left-0 h-screen flex flex-col z-[1000] overflow-x-hidden overflow-y-auto transition-all duration-300 ease-out",
+	"fixed top-0 left-0 h-screen flex flex-col z-sidebar overflow-x-hidden overflow-y-auto transition-all duration-300 ease-out",
 	"bg-card border-r border-border shadow-md",
 	expanded ? "w-[250px]" : "w-[60px]",
 	"max-md:w-[280px] max-md:-translate-x-full max-md:transition-transform",
@@ -403,10 +403,10 @@
 		background: transparent;
 	}
 	aside::-webkit-scrollbar-thumb {
-		background: hsl(var(--border));
+		background: var(--color-border);
 		border-radius: 3px;
 	}
 	aside::-webkit-scrollbar-thumb:hover {
-		background: hsl(var(--border-hover));
+		background: var(--color-border-hover);
 	}
 </style>

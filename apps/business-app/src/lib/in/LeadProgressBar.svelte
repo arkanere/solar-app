@@ -1,42 +1,30 @@
-<script>
+<script lang="ts">
 	import { cn } from '$lib/utils';
+	import {
+		type LeadCategory,
+		type LeadStage,
+		EXCLUSIVE_STAGES,
+		NON_EXCLUSIVE_CLAIMED_DISPLAY_STAGES,
+		getDisplayStagesForCategory
+	} from '$lib/constants/lead';
 
 	let {
 		currentStage = 0,
 		leadCategory = 3, // 2 = Non-Exclusive-Claimed, 3 = Exclusive
 		isActive = true // Prop to track if lead is active
+	}: {
+		currentStage?: LeadStage;
+		leadCategory?: LeadCategory;
+		isActive?: boolean;
 	} = $props();
 
-	// Define stages for different lead categories
-	const exclusiveStages = [
-		'New Inquiry',
-		'Contacted',
-		'Proposal/Quotation Sent',
-		'Won'
-	];
+	// Get stages based on category using shared constants
+	let stages = $derived(getDisplayStagesForCategory(leadCategory));
 
-	const nonExclusiveClaimedStages = [
-		'Claimed',
-		'Contacted',
-		'Proposal/Quotation Sent',
-		'Won'
-	];
-
-	// For display purposes, add "Qualified by Solar Vipani" before the actual stages for non-exclusive claimed leads
-	const nonExclusiveClaimedDisplayStages = [
-		'Qualified by Solar Vipani',
-		'Claimed',
-		'Contacted',
-		'Proposal/Quotation Sent',
-		'Won'
-	];
-
-	let stages = $derived(leadCategory === 2 ? nonExclusiveClaimedDisplayStages : exclusiveStages);
 	// For non-exclusive claimed leads, adjust progress calculation to account for the extra display stage
 	let progressPercentage = $derived(leadCategory === 2
 		? ((currentStage + 1) / (stages.length - 1)) * 100
 		: (currentStage / (stages.length - 1)) * 100);
-	let progressColor = $derived(isActive ? 'active' : 'inactive');
 </script>
 
 <div class="w-full my-4 p-2">
@@ -46,8 +34,8 @@
 			class={cn(
 				"h-full rounded transition-[width] duration-400 ease-out",
 				isActive
-					? "bg-gradient-to-r from-success to-success/80 shadow-[0_0_8px_rgba(16,185,129,0.4)]"
-					: "bg-gradient-to-r from-destructive to-destructive/80 shadow-[0_0_8px_rgba(239,68,68,0.4)]"
+					? "bg-gradient-to-r from-success to-success/80 shadow-success-glow"
+					: "bg-gradient-to-r from-destructive to-destructive/80 shadow-destructive-glow"
 			)}
 			style="width: {progressPercentage}%"
 		></div>
@@ -65,8 +53,8 @@
 				<div class={cn(
 					"w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm mb-2 transition-all duration-300 border-[3px]",
 					"max-md:w-9 max-md:h-9 max-md:text-[0.813rem] max-[480px]:w-8 max-[480px]:h-8 max-[480px]:text-xs",
-					stageState === 'active' && "bg-success border-success text-white shadow-[0_2px_8px_rgba(16,185,129,0.3)]",
-					stageState === 'inactive' && "bg-destructive border-destructive text-white shadow-[0_2px_8px_rgba(239,68,68,0.3)]",
+					stageState === 'active' && "bg-success border-success text-white shadow-success-sm",
+					stageState === 'inactive' && "bg-destructive border-destructive text-white shadow-destructive-sm",
 					stageState === 'future' && "bg-background-secondary border-border text-muted-foreground"
 				)}>
 					<span class="font-bold font-mono">{index + 1}</span>

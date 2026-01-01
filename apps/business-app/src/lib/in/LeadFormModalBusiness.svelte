@@ -3,6 +3,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Label } from '$lib/components/ui/label';
+	import { Button } from '$lib/components/ui/button';
 
 	let {
 		businessName = '',
@@ -208,19 +209,14 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 	</div>
 
 	<!-- Submit Button -->
-	<button
+	<Button
 		type="submit"
 		disabled={isSubmitting}
-		class={cn(
-			"w-full py-3 px-4 border-none rounded cursor-pointer text-base transition-colors",
-			"bg-success text-success-foreground hover:bg-success/90",
-			isSubmitting && "bg-muted text-muted-foreground cursor-not-allowed",
-			"max-[576px]:py-3 max-[576px]:text-base"
-		)}
+		class="w-full bg-success hover:bg-success/90 focus:outline-none focus:ring-2 focus:ring-success focus:ring-offset-2 active:bg-success/80 text-success-foreground transition-colors"
 	>
 		{#if isSubmitting}Adding Lead...{/if}
 		{#if !isSubmitting}Add Lead{/if}
-	</button>
+	</Button>
 </form>
 
 <style>
