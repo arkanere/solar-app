@@ -1,23 +1,17 @@
-<script lang="ts" module>
-	import type { Accordion as AccordionPrimitive } from 'bits-ui';
-
-	export type AccordionItemProps = AccordionPrimitive.ItemProps;
-</script>
-
 <script lang="ts">
-	import { Accordion as AccordionPrimitive } from 'bits-ui';
-	import { cn } from '$lib/utils';
+	import { Accordion as AccordionPrimitive } from "bits-ui";
+	import { cn } from "$lib/utils.js";
 
 	let {
 		ref = $bindable(null),
 		class: className,
 		...restProps
-	}: AccordionItemProps = $props();
+	}: AccordionPrimitive.ItemProps = $props();
 </script>
 
 <AccordionPrimitive.Item
 	bind:ref
 	data-slot="accordion-item"
-	class={cn('border-b border-border', className)}
+	class={cn("border-b last:border-b-0", className)}
 	{...restProps}
 />

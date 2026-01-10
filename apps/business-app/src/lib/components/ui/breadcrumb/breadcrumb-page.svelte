@@ -1,22 +1,13 @@
-<script lang="ts" module>
-	import type { HTMLSpanAttributes } from 'svelte/elements';
-	import type { Snippet } from 'svelte';
-
-	export type BreadcrumbPageProps = HTMLSpanAttributes & {
-		children: Snippet;
-		ref?: HTMLSpanElement | null;
-	};
-</script>
-
 <script lang="ts">
-	import { cn } from '$lib/utils';
+	import type { HTMLAttributes } from "svelte/elements";
+	import { cn, type WithElementRef } from "$lib/utils.js";
 
 	let {
 		ref = $bindable(null),
 		class: className,
 		children,
 		...restProps
-	}: BreadcrumbPageProps = $props();
+	}: WithElementRef<HTMLAttributes<HTMLSpanElement>> = $props();
 </script>
 
 <span
@@ -25,7 +16,7 @@
 	role="link"
 	aria-disabled="true"
 	aria-current="page"
-	class={cn('font-normal text-foreground', className)}
+	class={cn("text-foreground font-normal", className)}
 	{...restProps}
 >
 	{@render children?.()}

@@ -1,19 +1,13 @@
-<script lang="ts" module>
-	import type { Switch as SwitchPrimitive } from 'bits-ui';
-
-	export type SwitchProps = SwitchPrimitive.RootProps;
-</script>
-
 <script lang="ts">
-	import { Switch as SwitchPrimitive } from 'bits-ui';
-	import { cn } from '$lib/utils';
+	import { Switch as SwitchPrimitive } from "bits-ui";
+	import { cn, type WithoutChildrenOrChild } from "$lib/utils.js";
 
 	let {
 		ref = $bindable(null),
-		checked = $bindable(false),
 		class: className,
+		checked = $bindable(false),
 		...restProps
-	}: SwitchProps = $props();
+	}: WithoutChildrenOrChild<SwitchPrimitive.RootProps> = $props();
 </script>
 
 <SwitchPrimitive.Root
@@ -21,22 +15,15 @@
 	bind:checked
 	data-slot="switch"
 	class={cn(
-		'peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent shadow-xs',
-		'transition-colors duration-200',
-		'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-		'disabled:cursor-not-allowed disabled:opacity-50',
-		'data-[state=unchecked]:bg-input',
-		'data-[state=checked]:bg-primary',
+		"data-[state=checked]:bg-primary data-[state=unchecked]:bg-input focus-visible:border-ring focus-visible:ring-ring/50 dark:data-[state=unchecked]:bg-input/80 peer inline-flex h-[1.15rem] w-8 shrink-0 items-center rounded-full border border-transparent shadow-xs transition-all outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50",
 		className
 	)}
 	{...restProps}
 >
 	<SwitchPrimitive.Thumb
+		data-slot="switch-thumb"
 		class={cn(
-			'pointer-events-none block size-4 rounded-full bg-background shadow-lg ring-0',
-			'transition-transform duration-200',
-			'data-[state=unchecked]:translate-x-0',
-			'data-[state=checked]:translate-x-4'
+			"bg-background dark:data-[state=unchecked]:bg-foreground dark:data-[state=checked]:bg-primary-foreground pointer-events-none block size-4 rounded-full ring-0 transition-transform data-[state=checked]:translate-x-[calc(100%-2px)] data-[state=unchecked]:translate-x-0"
 		)}
 	/>
 </SwitchPrimitive.Root>

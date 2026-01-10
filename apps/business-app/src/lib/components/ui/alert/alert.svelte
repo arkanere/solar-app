@@ -1,40 +1,44 @@
 <script lang="ts" module>
-	import type { Snippet } from 'svelte';
-	import type { HTMLAttributes } from 'svelte/elements';
-	import { cn } from '$lib/utils';
-	import { tv, type VariantProps } from 'tailwind-variants';
+	import { type VariantProps, tv } from "tailwind-variants";
 
-	const alertVariants = tv({
-		base: 'relative w-full rounded-lg border p-4',
+	export const alertVariants = tv({
+		base: "relative grid w-full grid-cols-[0_1fr] items-start gap-y-0.5 rounded-lg border px-4 py-3 text-sm has-[>svg]:grid-cols-[calc(var(--spacing)*4)_1fr] has-[>svg]:gap-x-3 [&>svg]:size-4 [&>svg]:translate-y-0.5 [&>svg]:text-current",
 		variants: {
 			variant: {
-				default: 'bg-background text-foreground border-border',
-				destructive: 'bg-destructive/10 text-destructive border-destructive/50',
-				success: 'bg-success/10 text-success border-success/50',
-				warning: 'bg-warning/10 text-warning border-warning/50'
-			}
+				default: "bg-card text-card-foreground",
+				destructive:
+					"text-destructive bg-card *:data-[slot=alert-description]:text-destructive/90 [&>svg]:text-current",
+			},
 		},
 		defaultVariants: {
-			variant: 'default'
-		}
+			variant: "default",
+		},
 	});
 
-	export type AlertVariant = VariantProps<typeof alertVariants>['variant'];
-	export type AlertProps = HTMLAttributes<HTMLDivElement> &
-		VariantProps<typeof alertVariants> & {
-			children: Snippet;
-		};
+	export type AlertVariant = VariantProps<typeof alertVariants>["variant"];
 </script>
 
 <script lang="ts">
-	let { variant = 'default', class: className, children, ...restProps }: AlertProps = $props();
+	import type { HTMLAttributes } from "svelte/elements";
+	import { cn, type WithElementRef } from "$lib/utils.js";
+
+	let {
+		ref = $bindable(null),
+		class: className,
+		variant = "default",
+		children,
+		...restProps
+	}: WithElementRef<HTMLAttributes<HTMLDivElement>> & {
+		variant?: AlertVariant;
+	} = $props();
 </script>
 
 <div
-	role="alert"
+	bind:this={ref}
 	data-slot="alert"
 	class={cn(alertVariants({ variant }), className)}
 	{...restProps}
+	role="alert"
 >
-	{@render children()}
+	{@render children?.()}
 </div>

@@ -1,22 +1,34 @@
 <script lang="ts">
-	import { Toaster as SonnerToaster, type ToasterProps } from 'svelte-sonner';
+	import CircleCheckIcon from "@lucide/svelte/icons/circle-check";
+	import InfoIcon from "@lucide/svelte/icons/info";
+	import Loader2Icon from "@lucide/svelte/icons/loader-2";
+	import OctagonXIcon from "@lucide/svelte/icons/octagon-x";
+	import TriangleAlertIcon from "@lucide/svelte/icons/triangle-alert";
 
-	let { ...props }: ToasterProps = $props();
+	import { Toaster as Sonner, type ToasterProps as SonnerProps } from "svelte-sonner";
+	import { mode } from "mode-watcher";
+
+	let { ...restProps }: SonnerProps = $props();
 </script>
 
-<SonnerToaster
+<Sonner
+	theme={mode.current}
 	class="toaster group"
-	toastOptions={{
-		classes: {
-			toast: 'group toast bg-card text-foreground border-border shadow-lg',
-			title: 'text-foreground font-semibold',
-			description: 'text-foreground-muted',
-			success: 'bg-success text-success-foreground border-success',
-			error: 'bg-destructive text-destructive-foreground border-destructive',
-			warning: 'bg-warning text-warning-foreground border-warning',
-			actionButton: 'bg-primary text-primary-foreground',
-			cancelButton: 'bg-muted text-foreground-muted'
-		}
-	}}
-	{...props}
-/>
+	style="--normal-bg: var(--color-popover); --normal-text: var(--color-popover-foreground); --normal-border: var(--color-border);"
+	{...restProps}
+	>{#snippet loadingIcon()}
+		<Loader2Icon class="size-4 animate-spin" />
+	{/snippet}
+	{#snippet successIcon()}
+		<CircleCheckIcon class="size-4" />
+	{/snippet}
+	{#snippet errorIcon()}
+		<OctagonXIcon class="size-4" />
+	{/snippet}
+	{#snippet infoIcon()}
+		<InfoIcon class="size-4" />
+	{/snippet}
+	{#snippet warningIcon()}
+		<TriangleAlertIcon class="size-4" />
+	{/snippet}
+</Sonner>

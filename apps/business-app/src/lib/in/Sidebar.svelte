@@ -1,7 +1,7 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/stores';
-	import { isDarkMode } from '$lib/stores/theme.svelte.js';
-	import { isSidebarExpanded, isMobileMenuOpen, expandedSections } from '$lib/in/sidebarStore';
+	import { isDarkMode } from '$lib/stores/theme.svelte';
+	import { isSidebarExpanded, isMobileMenuOpen, expandedSections } from '$lib/in/sidebarStore.svelte';
 	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import { Button } from '$lib/components/ui/button';
@@ -23,6 +23,17 @@
 		X
 	} from '@lucide/svelte';
 
+	export type SidebarProps = {
+		businessSlug?: string;
+		businessName?: string;
+		businessEmail?: string;
+		onAddLead?: () => void;
+		onAddBranch?: () => void;
+		onPostProject?: () => void;
+		onPolicy?: () => void;
+		onSupport?: () => void;
+	};
+
 	let {
 		businessSlug = '',
 		businessName = '',
@@ -32,16 +43,16 @@
 		onPostProject = () => {},
 		onPolicy = () => {},
 		onSupport = () => {}
-	} = $props();
+	}: SidebarProps = $props();
 
 	let darkMode = $derived($isDarkMode);
 	let currentPath = $derived($page.url.pathname);
-	let expanded = $derived($isSidebarExpanded);
-	let mobileOpen = $derived($isMobileMenuOpen);
-	let sections = $derived($expandedSections);
+	let expanded = $derived(isSidebarExpanded.isExpanded);
+	let mobileOpen = $derived(isMobileMenuOpen.isOpen);
+	let sections = $derived(expandedSections.sections);
 
 	// Navigation items configuration - 6 logical groups
-	const navSections = [
+	let navSections = $derived([
 		// Group 1: Dashboard (standalone)
 		{
 			type: 'standalone',
@@ -153,7 +164,7 @@
 				}
 			]
 		}
-	];
+	]);
 
 	function handleItemClick(item) {
 		if (item.type === 'modal') {
@@ -224,21 +235,27 @@
 {/if}
 
 <!-- Sidebar -->
-<aside class={cn(
-	"fixed top-0 left-0 h-screen flex flex-col z-sidebar overflow-x-hidden overflow-y-auto transition-all duration-300 ease-out",
-	"bg-card border-r border-border shadow-md",
-	expanded ? "w-[250px]" : "w-[60px]",
-	"max-md:w-[280px] max-md:-translate-x-full max-md:transition-transform",
-	mobileOpen && "max-md:translate-x-0"
-)}>
+<aside
+	class={cn(
+		'fixed top-0 left-0 h-screen flex flex-col z-sidebar overflow-x-hidden overflow-y-auto transition-all duration-300 ease-out',
+		'bg-card border-r border-border shadow-md',
+		expanded ? 'w-[250px]' : 'w-[60px]',
+		'max-md:w-[280px] max-md:-translate-x-full max-md:transition-transform',
+		mobileOpen && 'max-md:translate-x-0'
+	)}
+>
 	<!-- Brand Header -->
 	<div class="p-4 flex items-center justify-between border-b border-border min-h-[70px]">
 		<div class="flex flex-col items-center gap-2 overflow-hidden flex-1">
 			{#if expanded}
 				<div class="w-full text-center px-2">
-					<p class="m-0 text-xs font-semibold truncate w-full">{businessName || 'Business Portal'}</p>
+					<p class="m-0 text-xs font-semibold truncate w-full">
+						{businessName || 'Business Portal'}
+					</p>
 					{#if businessEmail}
-						<p class="mt-1 mb-0 text-[0.65rem] opacity-70 truncate w-full font-normal">{businessEmail}</p>
+						<p class="mt-1 mb-0 text-[0.65rem] opacity-70 truncate w-full font-normal">
+							{businessEmail}
+						</p>
 					{/if}
 				</div>
 			{/if}
@@ -275,14 +292,18 @@
 								<a
 									href={section.href}
 									class={cn(
-										"flex items-center gap-3 py-3 px-4 mx-2 rounded-md no-underline transition-colors",
-										"text-foreground hover:bg-muted",
-										!expanded && "justify-center px-3",
-										isActive(section.href) && "bg-accent/10 text-accent dark:bg-accent/20"
+										'flex items-center gap-3 py-3 px-4 mx-2 rounded-md no-underline transition-colors',
+										'text-foreground hover:bg-muted',
+										!expanded && 'justify-center px-3',
+										isActive(section.href) && 'bg-accent/10 text-accent dark:bg-accent/20'
 									)}
 									title={expanded ? '' : section.label}
 								>
-									<svelte:component this={section.icon} class="shrink-0" size={20} strokeWidth={2} />
+									<section.icon
+										class="shrink-0"
+										size={20}
+										strokeWidth={2}
+									/>
 									{#if expanded}
 										<span class="truncate">{section.label}</span>
 									{/if}
@@ -290,14 +311,18 @@
 							{:else if section.itemType === 'modal'}
 								<button
 									class={cn(
-										"flex items-center gap-3 py-3 px-4 mx-2 rounded-md transition-colors w-[calc(100%-1rem)] text-left",
-										"text-foreground bg-transparent border-none cursor-pointer hover:bg-muted",
-										!expanded && "justify-center px-3"
+										'flex items-center gap-3 py-3 px-4 mx-2 rounded-md transition-colors w-[calc(100%-1rem)] text-left',
+										'text-foreground bg-transparent border-none cursor-pointer hover:bg-muted',
+										!expanded && 'justify-center px-3'
 									)}
 									onclick={() => handleItemClick(section)}
 									title={expanded ? '' : section.label}
 								>
-									<svelte:component this={section.icon} class="shrink-0" size={20} strokeWidth={2} />
+									<section.icon
+										class="shrink-0"
+										size={20}
+										strokeWidth={2}
+									/>
 									{#if expanded}
 										<span class="truncate">{section.label}</span>
 									{/if}
@@ -311,23 +336,25 @@
 				<div class="mb-1">
 					<button
 						class={cn(
-							"flex items-center gap-3 py-3 px-4 mx-2 rounded-md transition-colors w-[calc(100%-1rem)] text-left",
-							"text-foreground/80 bg-transparent border-none cursor-pointer hover:bg-muted text-sm font-medium",
-							!expanded && "justify-center px-3",
-							"disabled:cursor-default"
+							'flex items-center gap-3 py-3 px-4 mx-2 rounded-md transition-colors w-[calc(100%-1rem)] text-left',
+							'text-foreground/80 bg-transparent border-none cursor-pointer hover:bg-muted text-sm font-medium',
+							!expanded && 'justify-center px-3',
+							'disabled:cursor-default'
 						)}
 						onclick={() => toggleSection(section.id)}
 						disabled={!expanded}
 						aria-expanded={sections[section.id] ? 'true' : 'false'}
 						title={expanded ? '' : section.title}
 					>
-						<svelte:component this={section.icon} class="shrink-0" size={20} strokeWidth={2} />
+						<section.icon class="shrink-0" size={20} strokeWidth={2} />
 						{#if expanded}
 							<span class="truncate">{section.title}</span>
-							<span class={cn(
-								"ml-auto text-[0.625rem] transition-transform duration-200",
-								sections[section.id] ? "rotate-0" : "-rotate-90"
-							)}>▼</span>
+							<span
+								class={cn(
+									'ml-auto text-[0.625rem] transition-transform duration-200',
+									sections[section.id] ? 'rotate-0' : '-rotate-90'
+								)}>▼</span
+							>
 						{/if}
 					</button>
 
@@ -340,25 +367,33 @@
 											<a
 												href={item.href}
 												class={cn(
-													"flex items-center gap-3 py-3 pr-4 pl-10 mx-2 rounded-md no-underline transition-colors text-sm opacity-90",
-													"text-foreground hover:bg-muted",
-													isActive(item.href) && "bg-accent/10 text-accent dark:bg-accent/20"
+													'flex items-center gap-3 py-3 pr-4 pl-10 mx-2 rounded-md no-underline transition-colors text-sm opacity-90',
+													'text-foreground hover:bg-muted',
+													isActive(item.href) && 'bg-accent/10 text-accent dark:bg-accent/20'
 												)}
 												title={item.label}
 											>
-												<svelte:component this={item.icon} class="shrink-0" size={18} strokeWidth={2} />
+												<item.icon
+													class="shrink-0"
+													size={18}
+													strokeWidth={2}
+												/>
 												<span class="truncate">{item.label}</span>
 											</a>
 										{:else if item.type === 'modal'}
 											<button
 												class={cn(
-													"flex items-center gap-3 py-3 pr-4 pl-10 mx-2 rounded-md transition-colors w-[calc(100%-1rem)] text-left text-sm opacity-90",
-													"text-foreground bg-transparent border-none cursor-pointer hover:bg-muted"
+													'flex items-center gap-3 py-3 pr-4 pl-10 mx-2 rounded-md transition-colors w-[calc(100%-1rem)] text-left text-sm opacity-90',
+													'text-foreground bg-transparent border-none cursor-pointer hover:bg-muted'
 												)}
 												onclick={() => handleItemClick(item)}
 												title={item.label}
 											>
-												<svelte:component this={item.icon} class="shrink-0" size={18} strokeWidth={2} />
+												<item.icon
+													class="shrink-0"
+													size={18}
+													strokeWidth={2}
+												/>
 												<span class="truncate">{item.label}</span>
 											</button>
 										{/if}
@@ -378,10 +413,10 @@
 			<button
 				type="submit"
 				class={cn(
-					"flex items-center gap-3 py-3 px-4 rounded-md transition-colors w-full text-left",
-					"text-foreground bg-transparent border-none cursor-pointer",
-					"hover:bg-destructive-muted hover:text-destructive",
-					!expanded && "justify-center px-3"
+					'flex items-center gap-3 py-3 px-4 rounded-md transition-colors w-full text-left',
+					'text-foreground bg-transparent border-none cursor-pointer',
+					'hover:bg-destructive-muted hover:text-destructive',
+					!expanded && 'justify-center px-3'
 				)}
 				title={expanded ? '' : 'Logout'}
 			>

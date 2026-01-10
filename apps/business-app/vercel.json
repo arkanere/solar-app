@@ -1,4 +1,4 @@
 {
-  "framework": "sveltekit",
-  "buildCommand": "npm run build"
+	"framework": "sveltekit",
+	"buildCommand": "npm run build"
 }

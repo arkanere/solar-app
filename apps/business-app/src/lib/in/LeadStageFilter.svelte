@@ -9,17 +9,23 @@
 		getStagesMapForCategory
 	} from '$lib/constants/lead';
 
+	export type LeadStageFilterProps = {
+		selectedCategory?: string;
+		selectedStage?: string;
+		selectedStatus?: string;
+		onFilterChange?: (filters: {
+			selectedCategory: string;
+			selectedStage: string;
+			selectedStatus: string;
+		}) => void;
+	};
+
 	let {
 		selectedCategory = $bindable('all'),
 		selectedStage = $bindable('all'),
 		selectedStatus = $bindable('all'),
 		onFilterChange = () => {}
-	}: {
-		selectedCategory?: string;
-		selectedStage?: string;
-		selectedStatus?: string;
-		onFilterChange?: (filters: { selectedCategory: string; selectedStage: string; selectedStatus: string }) => void;
-	} = $props();
+	}: LeadStageFilterProps = $props();
 
 	// Get appropriate stages based on selected category
 	let currentStages = $derived(getStagesMapForCategory(selectedCategory));
@@ -48,7 +54,9 @@
 
 <div class="mb-8 p-6 rounded-lg shadow-sm bg-card border border-border max-[480px]:p-4">
 	<!-- Header -->
-	<div class="flex justify-between items-center mb-4 max-md:flex-col max-md:items-stretch max-md:gap-4">
+	<div
+		class="flex justify-between items-center mb-4 max-md:flex-col max-md:items-stretch max-md:gap-4"
+	>
 		<h3 class="m-0 text-xl font-semibold text-accent">Filter Customer Inquiries</h3>
 		<Button
 			variant="secondary"
@@ -71,7 +79,7 @@
 				class="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs focus:outline-none focus:ring-2 focus:ring-ring"
 			>
 				{#each Object.entries(LEAD_CATEGORIES_WITH_ALL) as [value, label]}
-					<option value={value}>{label}</option>
+					<option {value}>{label}</option>
 				{/each}
 			</select>
 		</div>
@@ -85,7 +93,7 @@
 				class="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs focus:outline-none focus:ring-2 focus:ring-ring"
 			>
 				{#each Object.entries(currentStages) as [value, label]}
-					<option value={value}>{label}</option>
+					<option {value}>{label}</option>
 				{/each}
 			</select>
 		</div>
@@ -99,7 +107,7 @@
 				class="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs focus:outline-none focus:ring-2 focus:ring-ring"
 			>
 				{#each Object.entries(STATUS_OPTIONS) as [value, label]}
-					<option value={value}>{label}</option>
+					<option {value}>{label}</option>
 				{/each}
 			</select>
 		</div>

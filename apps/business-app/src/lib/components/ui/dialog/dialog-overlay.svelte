@@ -9,14 +9,12 @@
 	}: DialogPrimitive.OverlayProps = $props();
 </script>
 
-<!-- Note: Using inline style because Tailwind v4's bg-black/50 opacity syntax isn't generating correctly -->
 <DialogPrimitive.Overlay
 	bind:ref
 	data-slot="dialog-overlay"
 	class={cn(
-		"fixed inset-0 z-modal-backdrop",
+		"data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50",
 		className
 	)}
-	style="background-color: rgba(0, 0, 0, 0.5);"
 	{...restProps}
 />

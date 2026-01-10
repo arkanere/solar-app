@@ -1,21 +1,26 @@
-<script>
+<script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import LeadProgressBar from './LeadProgressBar.svelte';
 	import LeadStageFilter from './LeadStageFilter.svelte';
+	import { STAGES_MAP, NON_EXCLUSIVE_CLAIMED_STAGES_MAP } from '$lib/constants/lead';
 
-	export let leads = [];
-	export let businessInfo = {};
-	export let errorMessage = null;
-	export let isClaiming = false;
+	export type CustomerInquiryProps = {
+		leads?: any[];
+		businessInfo?: Record<string, any>;
+		errorMessage?: string | null;
+		isClaiming?: boolean;
+	};
+
+	let { leads = [], businessInfo = {}, errorMessage = null, isClaiming = false }: CustomerInquiryProps = $props();
 
 	const dispatch = createEventDispatcher();
 
 	// Filter state
-	let selectedCategory = 'all';
-	let selectedStage = 'all';
-	let selectedStatus = 'all';
-	let filteredLeads = [];
+	let selectedCategory = $state('all');
+	let selectedStage = $state('all');
+	let selectedStatus = $state('all');
+	let filteredLeads = $state([]);
 
 	// Function to make call
 	function makeCall(phoneNumber, leadName, leadId) {
@@ -27,25 +32,9 @@
 	}
 
 	// Delete confirmation state
-	let showDeleteConfirm = false;
-	let leadToDelete = null;
-	let isDeleting = false;
-
-	// Lead stage mapping
-	const STAGES = {
-		0: 'New Inquiry',
-		1: 'Contacted',
-		2: 'Proposal/Quotation Sent',
-		3: 'Won'
-	};
-
-	// Stage mapping for Non-Exclusive-Claimed leads (category 2)
-	const NON_EXCLUSIVE_CLAIMED_STAGES = {
-		0: 'Claimed',
-		1: 'Contacted',
-		2: 'Proposal/Quotation Sent',
-		3: 'Won'
-	};
+	let showDeleteConfirm = $state(false);
+	let leadToDelete = $state(null);
+	let isDeleting = $state(false);
 
 	// Dummy test lead for new users
 	const dummyLead = {
@@ -55,7 +44,8 @@
 		email: 'dummy@email.com',
 		pin_code: '29601',
 		type: 'Residential - Independent Home',
-		comment: 'I want to install a 6kW solar system at my home. Please call me to discuss pricing and incentives!'
+		comment:
+			'I want to install a 6kW solar system at my home. Please call me to discuss pricing and incentives!'
 	};
 
 	async function updateLead(lead) {
@@ -77,7 +67,7 @@
 			}
 
 			const result = await response.json();
-			
+
 			if (result.success) {
 				// Update the lead in the local array
 				leads = leads.map((l) => (l.id === lead.id ? { ...l, ...result.lead } : l));
@@ -137,11 +127,11 @@
 		if (category === 2) {
 			switch (stage) {
 				case 0: // Claimed
-					return "Call the customer";
+					return 'Call the customer';
 				case 1: // Contacted
-					return "Send proposal/quotation if customer is interested, else make the inquiry inactive";
+					return 'Send proposal/quotation if customer is interested, else make the inquiry inactive';
 				case 2: // Proposal/Quotation Sent
-					return "Win the sale";
+					return 'Win the sale';
 				default:
 					return null;
 			}
@@ -151,11 +141,11 @@
 		if (category === 3 || category === null) {
 			switch (stage) {
 				case 0: // New Inquiry
-					return "Call the customer";
+					return 'Call the customer';
 				case 1: // Contacted
-					return "Send proposal/quotation if customer is interested, else make the inquiry inactive";
+					return 'Send proposal/quotation if customer is interested, else make the inquiry inactive';
 				case 2: // Proposal/Quotation Sent
-					return "Win the sale";
+					return 'Win the sale';
 				default:
 					return null;
 			}
@@ -166,7 +156,7 @@
 
 	// Filter function
 	function filterLeads() {
-		filteredLeads = leads.filter(lead => {
+		filteredLeads = leads.filter((lead) => {
 			// Category filter
 			if (selectedCategory !== 'all') {
 				const categoryValue = parseInt(selectedCategory);
@@ -203,18 +193,21 @@
 	}
 
 	// Handle filter changes
-	function handleFilterChange(event) {
-		selectedCategory = event.detail.selectedCategory;
-		selectedStage = event.detail.selectedStage;
-		selectedStatus = event.detail.selectedStatus;
+	function handleFilterChange(filters: {
+		selectedCategory: string;
+		selectedStage: string;
+		selectedStatus: string;
+	}) {
+		selectedCategory = filters.selectedCategory;
+		selectedStage = filters.selectedStage;
+		selectedStatus = filters.selectedStatus;
 		filterLeads();
 	}
 
-	// Update filtered leads when leads change
-	$: {
-		leads;
+	// Update filtered leads when leads or filter state changes
+	$effect(() => {
 		filterLeads();
-	}
+	});
 
 	// Delete lead function
 	async function deleteLead(lead) {
@@ -237,7 +230,7 @@
 			}
 
 			const result = await response.json();
-			
+
 			if (result.success) {
 				// Remove the lead from the local array
 				leads = leads.filter((l) => l.id !== lead.id);
@@ -282,13 +275,13 @@
 		<p class="error-message">{errorMessage}</p>
 	{:else}
 		{#if leads.length > 0}
-			<LeadStageFilter 
-				{selectedCategory} 
-				{selectedStage} 
-				{selectedStatus}
-				on:filterChange={handleFilterChange}
+			<LeadStageFilter
+				bind:selectedCategory
+				bind:selectedStage
+				bind:selectedStatus
+				onFilterChange={handleFilterChange}
 			/>
-			
+
 			{#if filteredLeads.length === 0}
 				<div class="no-results">
 					<p>No leads match the selected filters.</p>
@@ -296,7 +289,7 @@
 				</div>
 			{/if}
 		{/if}
-		
+
 		<ul>
 			{#if leads.length > 0}
 				{#each filteredLeads as lead}
@@ -321,12 +314,17 @@
 						</div>
 
 						<div class="lead-details">
-							<p><strong>Received:</strong> <span class="time-stamp {getRelativeTime(lead.created_at).class}">{getRelativeTime(lead.created_at).text}</span></p>
+							<p>
+								<strong>Received:</strong>
+								<span class="time-stamp {getRelativeTime(lead.created_at).class}"
+									>{getRelativeTime(lead.created_at).text}</span
+								>
+							</p>
 							<div class="phone-section">
 								<p><strong>Phone:</strong> {lead.phone}</p>
 								<button
 									class="call-now-button"
-									on:click={() => makeCall(lead.phone, lead.name, lead.id)}
+									onclick={() => makeCall(lead.phone, lead.name, lead.id)}
 									title="Call {lead.name}"
 								>
 									<span class="button-icon">
@@ -356,49 +354,52 @@
 							<p><strong>Type:</strong> {lead.type}</p>
 							<p><strong>Customer Comment:</strong> {lead.comment}</p>
 							{#if lead.sv_comment_for_businesses}
-								<p class="sv-comment"><strong>Solarvipani.com Comment:</strong> {lead.sv_comment_for_businesses}</p>
+								<p class="sv-comment">
+									<strong>Solarvipani.com Comment:</strong>
+									{lead.sv_comment_for_businesses}
+								</p>
 							{/if}
 
 							{#if lead.category !== 1}
 								<div class="stage-update-section">
 									<div class="stage-controls">
 										<label for="stage-{lead.id}"><strong>Stage:</strong></label>
-										<select 
-											id="stage-{lead.id}" 
+										<select
+											id="stage-{lead.id}"
 											bind:value={lead.stage}
-											on:change={() => updateLead(lead)}
+											onchange={() => updateLead(lead)}
 										>
 											{#if lead.category === 2}
-												{#each Object.entries(NON_EXCLUSIVE_CLAIMED_STAGES) as [value, label]}
+												{#each Object.entries(NON_EXCLUSIVE_CLAIMED_STAGES_MAP).filter(([k]) => k !== 'all') as [value, label]}
 													<option value={Number(value)}>{label}</option>
 												{/each}
 											{:else}
-												{#each Object.entries(STAGES) as [value, label]}
+												{#each Object.entries(STAGES_MAP).filter(([k]) => k !== 'all') as [value, label]}
 													<option value={Number(value)}>{label}</option>
 												{/each}
 											{/if}
 										</select>
 									</div>
-									
+
 									<div class="status-controls">
 										<label for="status-{lead.id}"><strong>Status:</strong></label>
-										<select 
-											id="status-{lead.id}" 
+										<select
+											id="status-{lead.id}"
 											bind:value={lead.status}
-											on:change={() => updateLead(lead)}
+											onchange={() => updateLead(lead)}
 										>
 											<option value={true}>Active</option>
 											<option value={false}>Inactive</option>
 										</select>
 									</div>
 								</div>
-								
-								<LeadProgressBar 
-									currentStage={lead.stage} 
+
+								<LeadProgressBar
+									currentStage={lead.stage}
 									leadCategory={lead.category}
 									isActive={lead.status}
 								/>
-								
+
 								<!-- Next Action Section -->
 								{@const nextAction = getNextAction(lead.stage, lead.category, lead.status)}
 								{#if nextAction}
@@ -414,17 +415,14 @@
 								{:else if lead.category === 1}
 									<button
 										class="claim-button"
-										on:click={() => claimLead(lead.id, businessInfo.id)}
+										onclick={() => claimLead(lead.id, businessInfo.id)}
 										disabled={isClaiming}
 									>
 										{isClaiming ? 'Claiming...' : 'Claim Now (Free)'}
 									</button>
 								{:else if lead.category !== 1 && !lead.status}
 									<!-- Delete button for inactive leads -->
-									<button
-										class="delete-button"
-										on:click={() => showDeleteConfirmation(lead)}
-									>
+									<button class="delete-button" onclick={() => showDeleteConfirmation(lead)}>
 										Delete Lead
 									</button>
 								{/if}
@@ -441,14 +439,15 @@
 						</h3>
 					</div>
 					<div class="lead-details">
-						<p><strong>Received:</strong> <span class="time-stamp {getRelativeTime(dummyLead.received_at).class}">{getRelativeTime(dummyLead.received_at).text}</span></p>
+						<p>
+							<strong>Received:</strong>
+							<span class="time-stamp {getRelativeTime(dummyLead.received_at).class}"
+								>{getRelativeTime(dummyLead.received_at).text}</span
+							>
+						</p>
 						<div class="phone-section">
 							<p><strong>Phone:</strong> {dummyLead.phone}</p>
-							<button
-								class="call-now-button"
-								disabled
-								title="Test lead - calling disabled"
-							>
+							<button class="call-now-button" disabled title="Test lead - calling disabled">
 								<span class="button-icon">
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
@@ -491,8 +490,8 @@
 				<p>Are you sure you want to delete the lead for <strong>{leadToDelete.name}</strong>?</p>
 			</div>
 			<div class="modal-actions">
-				<button class="cancel-button" on:click={cancelDelete} disabled={isDeleting}>Cancel</button>
-				<button class="confirm-delete-button" on:click={confirmDelete} disabled={isDeleting}>
+				<button class="cancel-button" onclick={cancelDelete} disabled={isDeleting}>Cancel</button>
+				<button class="confirm-delete-button" onclick={confirmDelete} disabled={isDeleting}>
 					{isDeleting ? 'Deleting...' : 'Delete Lead'}
 				</button>
 			</div>
@@ -625,7 +624,7 @@
 	}
 
 	.call-now-button::after {
-		content: "";
+		content: '';
 		position: absolute;
 		width: 100%;
 		height: 100%;

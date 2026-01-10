@@ -1,100 +1,79 @@
-<script>
-	import { createEventDispatcher } from 'svelte';
+<script lang="ts">
+	import {
+		LEAD_CATEGORIES_WITH_ALL,
+		STATUS_OPTIONS,
+		getStagesMapForCategory
+	} from '$lib/constants/lead';
 
-	const dispatch = createEventDispatcher();
-
-	export let selectedCategory = 'all';
-	export let selectedStage = 'all';
-	export let selectedStatus = 'all';
-
-	// Lead categories
-	const CATEGORIES = {
-		all: 'All Categories',
-		1: 'Non-Exclusive-Available',
-		2: 'Non-Exclusive-Claimed', 
-		3: 'Exclusive'
+	export type LeadStageFilterProps = {
+		selectedCategory?: string | number;
+		selectedStage?: string | number;
+		selectedStatus?: string;
+		onFilterChange?: () => void;
 	};
 
-	// Lead stages (regular)
-	const STAGES = {
-		all: 'All Stages',
-		0: 'New Inquiry',
-		1: 'Contacted',
-		2: 'Proposal/Quotation Sent',
-		3: 'Won'
-	};
-
-	// Lead stages for Non-Exclusive-Claimed
-	const NON_EXCLUSIVE_CLAIMED_STAGES = {
-		all: 'All Stages',
-		0: 'Claimed',
-		1: 'Contacted',
-		2: 'Proposal/Quotation Sent',
-		3: 'Won'
-	};
-
-	// Status options
-	const STATUS_OPTIONS = {
-		all: 'All Status',
-		true: 'Active',
-		false: 'Inactive'
-	};
+	let {
+		selectedCategory = $bindable('all'),
+		selectedStage = $bindable('all'),
+		selectedStatus = $bindable('all'),
+		onFilterChange
+	}: LeadStageFilterProps = $props();
 
 	// Get appropriate stages based on selected category
-	$: currentStages = selectedCategory === '2' ? NON_EXCLUSIVE_CLAIMED_STAGES : STAGES;
+	let currentStages = $derived(getStagesMapForCategory(selectedCategory));
 
 	function handleCategoryChange() {
 		// Reset stage filter when category changes
 		selectedStage = 'all';
-		dispatch('filterChange', { selectedCategory, selectedStage, selectedStatus });
+		onFilterChange?.({ selectedCategory, selectedStage, selectedStatus });
 	}
 
 	function handleStageChange() {
-		dispatch('filterChange', { selectedCategory, selectedStage, selectedStatus });
+		onFilterChange?.({ selectedCategory, selectedStage, selectedStatus });
 	}
 
 	function handleStatusChange() {
-		dispatch('filterChange', { selectedCategory, selectedStage, selectedStatus });
+		onFilterChange?.({ selectedCategory, selectedStage, selectedStatus });
 	}
 
 	function clearFilters() {
 		selectedCategory = 'all';
 		selectedStage = 'all';
 		selectedStatus = 'all';
-		dispatch('filterChange', { selectedCategory, selectedStage, selectedStatus });
+		onFilterChange?.({ selectedCategory, selectedStage, selectedStatus });
 	}
 </script>
 
 <div class="filter-container">
 	<div class="filter-header">
 		<h3>Filter Customer Inquiries</h3>
-		<button class="clear-filters-btn" on:click={clearFilters}>Clear All Filters</button>
+		<button class="clear-filters-btn" onclick={clearFilters}>Clear All Filters</button>
 	</div>
-	
+
 	<div class="filter-controls">
 		<div class="filter-group">
 			<label for="category-filter">Category:</label>
-			<select id="category-filter" bind:value={selectedCategory} on:change={handleCategoryChange}>
-				{#each Object.entries(CATEGORIES) as [value, label]}
-					<option value={value}>{label}</option>
+			<select id="category-filter" bind:value={selectedCategory} onchange={handleCategoryChange}>
+				{#each Object.entries(LEAD_CATEGORIES_WITH_ALL) as [value, label]}
+					<option {value}>{label}</option>
 				{/each}
 			</select>
 		</div>
 
 		<div class="filter-group">
 			<label for="stage-filter">Stage:</label>
-			<select id="stage-filter" bind:value={selectedStage} on:change={handleStageChange}>
+			<select id="stage-filter" bind:value={selectedStage} onchange={handleStageChange}>
 				{#each Object.entries(currentStages) as [value, label]}
-					<option value={value}>{label}</option>
+					<option {value}>{label}</option>
 				{/each}
 			</select>
 		</div>
 
 		<div class="filter-group">
 			<label for="status-filter">Status:</label>
-			<select id="status-filter" bind:value={selectedStatus} on:change={handleStatusChange}>
+			<select id="status-filter" bind:value={selectedStatus} onchange={handleStatusChange}>
 				{#each Object.entries(STATUS_OPTIONS) as [value, label]}
-					<option value={value}>{label}</option>
+					<option {value}>{label}</option>
 				{/each}
 			</select>
 		</div>
@@ -237,7 +216,7 @@
 			margin-left: 0;
 			margin-right: 0;
 		}
-		
+
 		.filter-controls {
 			gap: 0.75rem;
 		}
@@ -246,7 +225,7 @@
 			padding: 0.4rem;
 			font-size: 0.85rem;
 		}
-		
+
 		.clear-filters-btn {
 			width: 100%;
 			font-size: 0.8rem;

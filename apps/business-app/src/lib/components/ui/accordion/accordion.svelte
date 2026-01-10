@@ -1,23 +1,16 @@
-<script lang="ts" module>
-	import type { Accordion as AccordionPrimitive } from 'bits-ui';
-
-	export type AccordionProps = AccordionPrimitive.RootProps;
-</script>
-
 <script lang="ts">
-	import { Accordion as AccordionPrimitive } from 'bits-ui';
-	import { cn } from '$lib/utils';
+	import { Accordion as AccordionPrimitive } from "bits-ui";
 
 	let {
 		ref = $bindable(null),
-		class: className,
+		value = $bindable(),
 		...restProps
-	}: AccordionProps = $props();
+	}: AccordionPrimitive.RootProps = $props();
 </script>
 
 <AccordionPrimitive.Root
 	bind:ref
+	bind:value={value as never}
 	data-slot="accordion"
-	class={cn('w-full', className)}
 	{...restProps}
 />

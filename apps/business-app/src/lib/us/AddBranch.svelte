@@ -1,22 +1,24 @@
 <!-- AddBranch.svelte -->
-<script>
-	import { createEventDispatcher } from 'svelte';
+<script lang="ts">
+	export type AddBranchProps = {
+		show?: boolean;
+		businessId: number;
+		businessSlug?: string;
+		onClose?: () => void;
+		onBranchAdded?: () => void;
+	};
 
-	export let show = false;
-	export let businessId;
-	export let businessSlug; // Added business slug for redirection
-
-	const dispatch = createEventDispatcher();
+	let { show = false, businessId, businessSlug, onClose, onBranchAdded }: AddBranchProps = $props();
 
 	// Define reactive variables for state, county, and city selection
-	let state = '';
-	let county = '';
-	let city = '';
-	let counties = [];
-	let cities = [];
-	let isSubmitting = false;
-	let errorMessage = '';
-	let successMessage = '';
+	let state = $state('');
+	let county = $state('');
+	let city = $state('');
+	let counties = $state([]);
+	let cities = $state([]);
+	let isSubmitting = $state(false);
+	let errorMessage = $state('');
+	let successMessage = $state('');
 
 	// List of US states
 	const states = [
@@ -75,14 +77,18 @@
 	];
 
 	// Fetch counties dynamically when the state changes
-	$: if (state) {
-		updateCounties(state);
-	}
+	$effect(() => {
+		if (state) {
+			updateCounties(state);
+		}
+	});
 
 	// Fetch cities dynamically when the county changes
-	$: if (county) {
-		updateCities(county);
-	}
+	$effect(() => {
+		if (county) {
+			updateCities(county);
+		}
+	});
 
 	// Function to fetch counties for a selected state
 	async function updateCounties(selectedState) {
@@ -152,7 +158,9 @@
 				city = '';
 
 				// Notify parent component
-				dispatch('branchAdded', result.branch);
+				if (onBranchAdded) {
+					onBranchAdded(result.branch);
+				}
 
 				// Redirect to the branch page after a short delay
 				setTimeout(() => {
@@ -170,7 +178,9 @@
 	}
 
 	function closeModal() {
-		dispatch('close');
+		if (onClose) {
+			onClose();
+		}
 	}
 </script>
 
@@ -179,7 +189,7 @@
 		<div class="modal">
 			<div class="modal-header">
 				<h2>Add New Branch</h2>
-				<button class="close-btn" on:click={closeModal}>×</button>
+				<button class="close-btn" onclick={closeModal}>×</button>
 			</div>
 
 			<div class="modal-body">
@@ -191,7 +201,7 @@
 					<div class="success-message">{successMessage}</div>
 				{/if}
 
-				<form on:submit|preventDefault={handleSubmit}>
+				<form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
 					<!-- State Dropdown -->
 					<div class="form-group">
 						<label for="state">State:</label>
@@ -222,12 +232,7 @@
 					<!-- City Dropdown -->
 					<div class="form-group">
 						<label for="city">City:</label>
-						<select
-							id="city"
-							bind:value={city}
-							required
-							disabled={!county || cities.length === 0}
-						>
+						<select id="city" bind:value={city} required disabled={!county || cities.length === 0}>
 							<option value="">Select a city</option>
 							{#each cities as c}
 								<option value={c}>{c}</option>
@@ -236,7 +241,7 @@
 					</div>
 
 					<div class="form-actions">
-						<button type="button" on:click={closeModal} disabled={isSubmitting}>Cancel</button>
+						<button type="button" onclick={closeModal} disabled={isSubmitting}>Cancel</button>
 						<button type="submit" disabled={isSubmitting}>
 							{isSubmitting ? 'Adding...' : 'Add Branch'}
 						</button>

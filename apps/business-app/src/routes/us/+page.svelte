@@ -1,8 +1,8 @@
-<script>
-	import { isDarkMode } from '$lib/stores/theme.js';
+<script lang="ts">
+	import { isDarkMode } from '$lib/stores/theme.svelte';
 	import { onMount } from 'svelte';
 
-	$: darkMode = $isDarkMode;
+	let darkMode = $derived($isDarkMode);
 
 	onMount(() => {
 		// Redirect to login page if not authenticated
@@ -38,7 +38,9 @@
 		height: 100vh;
 		padding: 2rem;
 		font-family: var(--font-family);
-		transition: background-color 0.3s ease, color 0.3s ease;
+		transition:
+			background-color 0.3s ease,
+			color 0.3s ease;
 	}
 
 	.light {

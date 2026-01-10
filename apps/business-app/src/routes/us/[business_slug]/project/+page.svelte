@@ -1,26 +1,28 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/stores';
 	import { toast } from 'svelte-sonner';
-	import { isDarkMode } from '$lib/stores/theme.js';
-	import PostRecentProject from '$lib/us/PostRecentProject.svelte';
-	import ShowSupport from '$lib/us/ShowSupport.svelte';
+	import { isDarkMode } from '$lib/stores/theme.svelte';
+	import PostRecentProject from '$lib/us-new-rewrites/PostRecentProject.svelte';
+	import ShowSupport from '$lib/us-new-rewrites/ShowSupport.svelte';
 
 	// Access page data
 	const businessSlug = $page.params.business_slug;
-	$: ({ mainBusiness, projects = [], errorMessage } = $page.data);
-	$: darkMode = $isDarkMode;
+	let { mainBusiness, projects = [], errorMessage } = $derived($page.data);
+	let darkMode = $derived($isDarkMode);
 
 	// Computed business info
-	$: businessInfo = mainBusiness
-		? {
-				businessname: mainBusiness.businessname
-			}
-		: {};
+	let businessInfo = $derived(
+		mainBusiness
+			? {
+					businessname: mainBusiness.businessname
+				}
+			: {}
+	);
 
 	// State for modals
-	let showAddProject = false;
-	let showSupport = false;
-	let mobileMenuOpen = false;
+	let showAddProject = $state(false);
+	let showSupport = $state(false);
+	let mobileMenuOpen = $state(false);
 
 	// Function to toggle modals
 	const toggleAddProject = () => {
@@ -52,14 +54,16 @@
 	}
 
 	// State for delete confirmation
-	let deletingProject = null;
-	let isDeleting = false;
+	let deletingProject = $state(null);
+	let isDeleting = $state(false);
 
 	// Handle project deletion
 	async function handleDeleteProject(project) {
 		if (isDeleting) return;
-		
-		const confirmed = confirm(`Are you sure you want to hide "${project.title}"? This will remove it from public view.`);
+
+		const confirmed = confirm(
+			`Are you sure you want to hide "${project.title}"? This will remove it from public view.`
+		);
 		if (!confirmed) return;
 
 		try {
@@ -100,12 +104,20 @@
 <nav class="top-nav {darkMode ? 'dark' : 'light'}">
 	<div class="nav-brand">
 		<a href="/us/{businessSlug}">
-			<span class="brand-full">Solar Vipani Business Dashboard - {businessInfo.businessname || ''}</span>
+			<span class="brand-full"
+				>Solar Vipani Business Dashboard - {businessInfo.businessname || ''}</span
+			>
 			<span class="brand-mobile">{businessInfo.businessname || 'Business Dashboard'}</span>
 		</a>
 	</div>
 
-	<div class="hamburger" role="button" tabindex="0" on:click={toggleMobileMenu} on:keydown={(e) => e.key === 'Enter' && toggleMobileMenu()}>
+	<div
+		class="hamburger"
+		role="button"
+		tabindex="0"
+		onclick={toggleMobileMenu}
+		onkeydown={(e) => e.key === 'Enter' && toggleMobileMenu()}
+	>
 		<span></span>
 		<span></span>
 		<span></span>
@@ -113,9 +125,9 @@
 
 	<ul class="nav-list {mobileMenuOpen ? 'open' : ''}">
 		<!-- Temporarily hidden - will add later
-		<li><button on:click={toggleAddProject}>Post Recent Project</button></li>
+		<li><button onclick={toggleAddProject}>Post Recent Project</button></li>
 		-->
-		<li><button on:click={toggleSupport}>Support</button></li>
+		<li><button onclick={toggleSupport}>Support</button></li>
 		<li>
 			<form method="POST" action={`/us/${businessSlug}/logout`}>
 				<button type="submit">Logout</button>
@@ -125,7 +137,6 @@
 </nav>
 
 <main class={darkMode ? 'dark' : 'light'}>
-
 	<header>
 		<h1>Your Projects</h1>
 		<p>Showcase your solar panel installation projects</p>
@@ -142,23 +153,23 @@
 						<div class="project-header">
 							<h2>{project.title}</h2>
 						</div>
-						
+
 						{#if project.image_url}
 							<div class="project-image">
 								<img src={project.image_url} alt={project.title} loading="lazy" />
 							</div>
 						{/if}
-						
+
 						<div class="project-details">
 							<p><strong>Location:</strong> {project.pincode}</p>
 							<p><strong>Project Date:</strong> {formatDate(project.project_date)}</p>
 							<p><strong>Added:</strong> {formatDate(project.created_at)}</p>
 						</div>
-						
+
 						<div class="project-actions">
-							<button 
-								class="btn delete-btn" 
-								on:click={() => handleDeleteProject(project)}
+							<button
+								class="btn delete-btn"
+								onclick={() => handleDeleteProject(project)}
 								disabled={isDeleting && deletingProject === project.id}
 							>
 								{isDeleting && deletingProject === project.id ? 'Deleting...' : 'Delete'}
@@ -173,7 +184,7 @@
 		{#if projects.length === 0 && !errorMessage && mainBusiness}
 			<div class="no-projects">
 				<p>You haven't posted any projects yet.</p>
-				<button on:click={toggleAddProject}>Post Your First Project</button>
+				<button onclick={toggleAddProject}>Post Your First Project</button>
 			</div>
 		{/if}
 	</section>

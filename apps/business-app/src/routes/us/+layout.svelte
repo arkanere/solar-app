@@ -1,6 +1,6 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
-	import { theme } from '$lib/stores/theme.js';
+	import { theme } from '$lib/stores/theme.svelte';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import '../../app.css';
 
@@ -9,7 +9,7 @@
 	});
 </script>
 
-<!-- svelte-ignore a11y-img-redundant-alt -->
+<!-- svelte-ignore a11y_img_redundant_alt -->
 <svelte:head>
 	<!-- Umami Analytics - Layout 2 Business -->
 

@@ -1,43 +1,44 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/stores';
 	import { toast } from 'svelte-sonner';
-	import { isDarkMode } from '$lib/stores/theme.js';
-	import CustomerInquiry from '$lib/us/CustomerInquiry.svelte';
-	import ShowSupport from '$lib/us/ShowSupport.svelte';
-	import LeadFormModalBusiness from '$lib/us/LeadFormModalBusiness.svelte';
+	import { isDarkMode } from '$lib/stores/theme.svelte';
+	import CustomerInquiry from '$lib/us-new-rewrites/CustomerInquiry.svelte';
+	import ShowSupport from '$lib/us-new-rewrites/ShowSupport.svelte';
+	import LeadFormModalBusiness from '$lib/us-new-rewrites/LeadFormModalBusiness.svelte';
 
 	// Destructure page data for cleaner access
 	const businessSlug = $page.params.business_slug;
-	$: ({ business, branches = [], leads = [], leadClaims = [], errorMessage } = $page.data);
-	$: darkMode = $isDarkMode;
+	let { business, branches = [], leads = [], leadClaims = [], errorMessage } = $derived($page.data);
+	let darkMode = $derived($isDarkMode);
 
 	// Initialize state variables
-	let showSupport = false;
-	let showAddLead = false;
-	let isClaiming = false;
-	let mobileMenuOpen = false;
+	let showSupport = $state(false);
+	let showAddLead = $state(false);
+	let isClaiming = $state(false);
+	let mobileMenuOpen = $state(false);
 
 	// Computed business info
-	$: businessInfo = business
-		? {
-				id: business.id,
-				businessname: business.businessname,
-				description: business.description,
-				phonenumber: business.phonenumber,
-				email: business.email,
-				address: business.address,
-				website: business.website
-			}
-		: {};
+	let businessInfo = $derived(
+		business
+			? {
+					id: business.id,
+					businessname: business.businessname,
+					description: business.description,
+					phonenumber: business.phonenumber,
+					email: business.email,
+					address: business.address,
+					website: business.website
+				}
+			: {}
+	);
 
 	// UI toggle functions
 	const toggleSupport = () => (showSupport = !showSupport);
 	const toggleAddLead = () => (showAddLead = !showAddLead);
 	const toggleMobileMenu = () => (mobileMenuOpen = !mobileMenuOpen);
 
-	function handleLeadAdded(event) {
+	function handleLeadAdded(newLead) {
 		try {
-			const newLead = event.detail;
 			console.log('New lead added:', newLead);
 			showAddLead = false;
 			window.location.reload();
@@ -62,7 +63,9 @@
 			if (result.success) {
 				// Remove the claimed lead from the non-exclusive list since it's now allocated
 				leads = leads.filter((lead) => lead.id !== leadId);
-				toast.success('Lead claimed and allocated successfully! Check your allocated leads section.');
+				toast.success(
+					'Lead claimed and allocated successfully! Check your allocated leads section.'
+				);
 				// Optionally refresh the page to show the new allocated lead
 				window.location.reload();
 			} else {
@@ -79,27 +82,38 @@
 
 <svelte:head>
 	<title>CRM - {business?.businessname || 'Business'} | Solar Vipani</title>
-	<meta name="description" content="Customer Relationship Management for {business?.businessname || 'your business'}" />
+	<meta
+		name="description"
+		content="Customer Relationship Management for {business?.businessname || 'your business'}"
+	/>
 </svelte:head>
 
 <!-- TOP NAVIGATION -->
 <nav class="top-nav {darkMode ? 'dark' : 'light'}">
 	<div class="nav-brand">
 		<a href="/us/{businessSlug}">
-			<span class="brand-full">Solar Vipani Business Dashboard - {businessInfo.businessname || ''}</span>
+			<span class="brand-full"
+				>Solar Vipani Business Dashboard - {businessInfo.businessname || ''}</span
+			>
 			<span class="brand-mobile">{businessInfo.businessname || 'Business Dashboard'}</span>
 		</a>
 	</div>
 
-	<div class="hamburger" role="button" tabindex="0" on:click={toggleMobileMenu} on:keydown={(e) => e.key === 'Enter' && toggleMobileMenu()}>
+	<div
+		class="hamburger"
+		role="button"
+		tabindex="0"
+		onclick={toggleMobileMenu}
+		onkeydown={(e) => e.key === 'Enter' && toggleMobileMenu()}
+	>
 		<span></span>
 		<span></span>
 		<span></span>
 	</div>
 
 	<ul class="nav-list {mobileMenuOpen ? 'open' : ''}">
-		<li><button on:click={toggleAddLead}>Add Lead</button></li>
-		<li><button on:click={toggleSupport}>Support</button></li>
+		<li><button onclick={toggleAddLead}>Add Lead</button></li>
+		<li><button onclick={toggleSupport}>Support</button></li>
 		<li>
 			<form method="POST" action={`/us/${businessSlug}/logout`}>
 				<button type="submit">Logout</button>
@@ -125,7 +139,7 @@
 			{businessInfo}
 			{errorMessage}
 			{isClaiming}
-			on:claimLead={(event) => claimLead(event.detail.leadId, event.detail.businessId)}
+			onclaimLead={(event) => claimLead(event.detail.leadId, event.detail.businessId)}
 		/>
 	</div>
 </main>
@@ -134,19 +148,19 @@
 {#if showAddLead}
 	<div class="modal-overlay" class:dark={darkMode}>
 		<div class="modal-content">
-			<button class="close-btn" on:click={toggleAddLead}>&times;</button>
+			<button class="close-btn" onclick={toggleAddLead}>&times;</button>
 			<h2>Add Lead</h2>
 			<LeadFormModalBusiness
 				businessName={business?.businessname || ''}
 				{businessSlug}
-				on:leadAdded={handleLeadAdded}
+				onLeadAdded={handleLeadAdded}
 			/>
 		</div>
 	</div>
 {/if}
 
 {#if showSupport}
-	<ShowSupport show={showSupport} on:close={() => (showSupport = false)} />
+	<ShowSupport show={showSupport} onclose={() => (showSupport = false)} />
 {/if}
 
 <style>

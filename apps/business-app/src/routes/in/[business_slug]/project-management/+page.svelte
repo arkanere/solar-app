@@ -1,10 +1,8 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/stores';
 	import { Badge } from '$lib/components/ui/badge';
-	import { EmptyState } from '$lib/components/ui/empty-state';
-	import { PageHeader } from '$lib/components/ui/page-header';
-	import { StatCard } from '$lib/components/ui/stat-card';
-	import { DataTable, TableHeader, TableRow, TableCell } from '$lib/components/ui/data-table';
+	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
+	import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from '$lib/components/ui/table';
 
 	let businessSlug = $derived($page.params.business_slug);
 	let projects = $derived($page.data.projects || []);
@@ -67,67 +65,92 @@
 </svelte:head>
 
 <div class="min-h-screen p-8 md:p-4 transition-colors duration-300 bg-background text-foreground">
-	<PageHeader
-		title="Project Management"
-		description="Track and manage your solar installation projects"
-		centered
-	/>
+	<header class="mb-8 flex flex-col justify-center items-center text-center">
+		<div>
+			<h1 class="text-3xl font-bold mb-2">Project Management</h1>
+			<p class="text-muted-foreground">Track and manage your solar installation projects</p>
+		</div>
+	</header>
 
 	<section>
 		{#if projects.length === 0}
-			<EmptyState
-				title="No projects found."
-				description="Projects will appear here once you start managing leads."
-			/>
+			<div class="text-center py-12 bg-card rounded-lg border border-border">
+				<p class="text-muted-foreground">No projects found. Projects will appear here once you start managing leads.</p>
+			</div>
 		{:else}
 			<div class="flex gap-4 mb-8 flex-wrap md:flex-col">
-				<StatCard label="Total Projects" value={projects.length} />
-				<StatCard label="Active Projects" value={projects.filter(p => p.stage >= 1 && p.stage <= 4).length} />
-				<StatCard label="Won" value={projects.filter(p => p.stage === 5).length} variant="success" />
+				<Card class="flex-1">
+					<CardHeader class="pb-2">
+						<CardTitle class="text-sm font-medium text-muted-foreground">Total Projects</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<div class="text-2xl font-bold">{projects.length}</div>
+					</CardContent>
+				</Card>
+				<Card class="flex-1">
+					<CardHeader class="pb-2">
+						<CardTitle class="text-sm font-medium text-muted-foreground">Active Projects</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<div class="text-2xl font-bold">{projects.filter(p => p.stage >= 1 && p.stage <= 4).length}</div>
+					</CardContent>
+				</Card>
+				<Card class="flex-1">
+					<CardHeader class="pb-2">
+						<CardTitle class="text-sm font-medium text-muted-foreground">Won</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<div class="text-2xl font-bold text-success">{projects.filter(p => p.stage === 5).length}</div>
+					</CardContent>
+				</Card>
 			</div>
 
-			<DataTable>
-				{#snippet headers()}
-					<TableHeader>ID</TableHeader>
-					<TableHeader>Customer</TableHeader>
-					<TableHeader>Location</TableHeader>
-					<TableHeader>Stage</TableHeader>
-					<TableHeader>Created</TableHeader>
-					<TableHeader>Last Updated</TableHeader>
-				{/snippet}
-				{#each projects as project}
+			<Table>
+				<TableHeader>
 					<TableRow>
-						<TableCell>#{project.id}</TableCell>
-						<TableCell>
-							<div class="flex flex-col gap-1">
-								<div class="font-semibold">{project.customer_name || 'N/A'}</div>
-								{#if project.phone}
-									<div class="text-sm text-foreground-muted">{project.phone}</div>
-								{/if}
-							</div>
-						</TableCell>
-						<TableCell>
-							<div class="flex flex-col gap-1">
-								{#if project.district}
-									<div>{project.district}</div>
-								{/if}
-							</div>
-						</TableCell>
-						<TableCell>
-							<Badge variant={getStageVariant(project.stage)}>
-								{stageNames[project.stage] || `Stage ${project.stage}`}
-							</Badge>
-						</TableCell>
-						<TableCell>{formatDate(project.created_at)}</TableCell>
-						<TableCell>
-							<div class="flex flex-col gap-1">
-								<div>{formatDate(project.last_updated)}</div>
-								<div class="text-sm text-foreground-muted">{getDaysAgo(project.last_updated)}</div>
-							</div>
-						</TableCell>
+						<TableHead>ID</TableHead>
+						<TableHead>Customer</TableHead>
+						<TableHead>Location</TableHead>
+						<TableHead>Stage</TableHead>
+						<TableHead>Created</TableHead>
+						<TableHead>Last Updated</TableHead>
 					</TableRow>
-				{/each}
-			</DataTable>
+				</TableHeader>
+				<TableBody>
+					{#each projects as project}
+						<TableRow>
+							<TableCell>#{project.id}</TableCell>
+							<TableCell>
+								<div class="flex flex-col gap-1">
+									<div class="font-semibold">{project.customer_name || 'N/A'}</div>
+									{#if project.phone}
+										<div class="text-sm text-foreground-muted">{project.phone}</div>
+									{/if}
+								</div>
+							</TableCell>
+							<TableCell>
+								<div class="flex flex-col gap-1">
+									{#if project.district}
+										<div>{project.district}</div>
+									{/if}
+								</div>
+							</TableCell>
+							<TableCell>
+								<Badge variant={getStageVariant(project.stage)}>
+									{stageNames[project.stage] || `Stage ${project.stage}`}
+								</Badge>
+							</TableCell>
+							<TableCell>{formatDate(project.created_at)}</TableCell>
+							<TableCell>
+								<div class="flex flex-col gap-1">
+									<div>{formatDate(project.last_updated)}</div>
+									<div class="text-sm text-foreground-muted">{getDaysAgo(project.last_updated)}</div>
+								</div>
+							</TableCell>
+						</TableRow>
+					{/each}
+				</TableBody>
+			</Table>
 		{/if}
 	</section>
 </div>

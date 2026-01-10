@@ -1,9 +1,9 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/stores';
 	import { toast } from 'svelte-sonner';
-	import CustomerInquiryDashboardHome from '$lib/in/CustomerInquiryDashboardHome.svelte';
-	import SetupProgressCard from '$lib/in/SetupProgressCard.svelte';
-	import ShowEditProfile from '$lib/in/ShowEditProfile.svelte';
+	import CustomerInquiryDashboardHome from '$lib/in-new-rewrites/CustomerInquiryDashboardHome.svelte';
+	import SetupProgressCard from '$lib/in-new-rewrites/SetupProgressCard.svelte';
+	import ShowEditProfile from '$lib/in-new-rewrites/ShowEditProfile.svelte';
 
 	// Destructure page data
 	let businessSlug = $derived($page.params.business_slug);
@@ -22,17 +22,19 @@
 	let showEditProfile = $state(false);
 
 	// Computed business info
-	let businessInfo = $derived(business
-		? {
-				id: business.id,
-				businessname: business.businessname,
-				description: business.description,
-				phonenumber: business.phonenumber,
-				email: business.email,
-				address: business.address,
-				website: business.website
-			}
-		: {});
+	let businessInfo = $derived(
+		business
+			? {
+					id: business.id,
+					businessname: business.businessname,
+					description: business.description,
+					phonenumber: business.phonenumber,
+					email: business.email,
+					address: business.address,
+					website: business.website
+				}
+			: {}
+	);
 
 	// Lead claiming function (specific to this page)
 	async function claimLead(leadId, businessId) {
@@ -50,7 +52,9 @@
 
 			if (result.success) {
 				leads = leads.filter((lead) => lead.id !== leadId);
-				toast.success('Lead claimed and allocated successfully! Check your allocated leads section.');
+				toast.success(
+					'Lead claimed and allocated successfully! Check your allocated leads section.'
+				);
 				window.location.reload();
 			} else {
 				toast.error(result.error);

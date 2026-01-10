@@ -1,26 +1,25 @@
-<script>
+<script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores'; // Store to access route parameters
-	import { isDarkMode } from '$lib/stores/theme.js';
+	import { isDarkMode } from '$lib/stores/theme.svelte';
 
-	let name = '';
-	let phone = '';
-	let email = '';
-	let message = '';
+	let name = $state('');
+	let phone = $state('');
+	let email = $state('');
+	let message = $state('');
 
-	let errors = {
+	let errors = $state({
 		name: '',
 		phone: '',
 		email: '',
 		message: ''
-	};
+	});
 
 	// Get the business_slug from the URL
 	let business_slug = $page.params.business_slug;
 
 	// Initialize dark mode state
-	let darkMode;
-	$: darkMode = $isDarkMode;
+	let darkMode = $derived($isDarkMode);
 
 	function validateForm() {
 		errors = {
@@ -105,7 +104,7 @@
 		<p>Update business details such as phone number, email, website address when they change</p>
 	</div>
 
-	<form on:submit|preventDefault={handleSubmit}>
+	<form onsubmit={handleSubmit}>
 		<!-- Name Input -->
 		<div class="form-group">
 			<label for="name">Name:</label>

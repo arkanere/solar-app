@@ -1,36 +1,37 @@
-<script>
-	import { createEventDispatcher } from 'svelte';
+<script lang="ts">
+	export type LeadFormModalBusinessProps = {
+		businessName?: string;
+		businessSlug?: string;
+		onLeadAdded?: () => void;
+	};
 
-	export let businessName = '';
-	export let businessSlug = '';
+	let { businessName = '', businessSlug = '', onLeadAdded }: LeadFormModalBusinessProps = $props();
 
-	const dispatch = createEventDispatcher();
+	let name = $state('');
+	let phone = $state('');
+	let pinCode = $state('');
+	let type = $state('');
+	let comment = $state('');
+	let email = $state('');
+	let urlParam = $state('');
 
-	let name = '';
-	let phone = '';
-	let pinCode = '';
-	let type = '';
-	let comment = '';
-	let email = '';
-	let urlParam = '';
+	let isSubmitting = $state(false);
+	let submitSuccess = $state(false);
+	let submitMessage = $state('');
 
-	let isSubmitting = false;
-	let submitSuccess = false;
-	let submitMessage = '';
-
-	let errors = {
+	let errors = $state({
 		name: '',
 		phone: '',
 		pinCode: '',
 		type: '',
 		email: '',
 		comment: ''
-	};
+	});
 
 	// ✅ **Set the urlParam dynamically based on the businessSlug**
-	$: {
+	$effect(() => {
 		urlParam = `/solar-panel-installer/${businessSlug}`;
-	}
+	});
 
 	function validatePhoneNumber() {
 		if (!/^\+?\d{10,16}$/.test(phone)) {
@@ -96,7 +97,7 @@
 		errors = { name: '', phone: '', pinCode: '', type: '', email: '', comment: '' };
 	}
 
-	async function handleSubmit(event) {
+	async function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
 
 		if (validateForm()) {
@@ -126,9 +127,9 @@
 					submitSuccess = true;
 					submitMessage = 'Lead added successfully!';
 					resetForm();
-					
-					// Dispatch event to parent component
-					dispatch('leadAdded', {
+
+					// Call parent component callback
+					onLeadAdded?.({
 						name,
 						phone,
 						pinCode,
@@ -150,7 +151,12 @@
 	}
 </script>
 
-<form on:submit|preventDefault={handleSubmit}>
+<form
+	onsubmit={(e) => {
+		e.preventDefault();
+		handleSubmit(e);
+	}}
+>
 	<!-- Success/Error Message -->
 	{#if submitMessage}
 		<div class="message {submitSuccess ? 'success' : 'error'}">
@@ -170,7 +176,7 @@
 	<!-- Phone Number Input -->
 	<div>
 		<label for="phone">Phone Number:</label>
-		<input id="phone" type="text" bind:value={phone} required on:blur={validatePhoneNumber} />
+		<input id="phone" type="text" bind:value={phone} required onblur={validatePhoneNumber} />
 		{#if errors.phone}
 			<p class="error">{errors.phone}</p>
 		{/if}
@@ -179,7 +185,7 @@
 	<!-- Zip Code Input -->
 	<div>
 		<label for="pinCode">Zip Code:</label>
-		<input id="pinCode" type="text" bind:value={pinCode} required on:blur={validatePinCode} />
+		<input id="pinCode" type="text" bind:value={pinCode} required onblur={validatePinCode} />
 		{#if errors.pinCode}
 			<p class="error">{errors.pinCode}</p>
 		{/if}
@@ -188,7 +194,7 @@
 	<!-- Email Input -->
 	<div>
 		<label for="email">Email:</label>
-		<input id="email" type="email" bind:value={email} required on:blur={validateEmail} />
+		<input id="email" type="email" bind:value={email} required onblur={validateEmail} />
 		{#if errors.email}
 			<p class="error">{errors.email}</p>
 		{/if}

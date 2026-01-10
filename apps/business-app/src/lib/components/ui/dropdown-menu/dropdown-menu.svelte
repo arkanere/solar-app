@@ -1,13 +1,7 @@
-<script lang="ts" module>
-	import type { DropdownMenu as DropdownMenuPrimitive } from 'bits-ui';
-
-	export type DropdownMenuProps = DropdownMenuPrimitive.RootProps;
-</script>
-
 <script lang="ts">
-	import { DropdownMenu as DropdownMenuPrimitive } from 'bits-ui';
+	import { DropdownMenu as DropdownMenuPrimitive } from "bits-ui";
 
-	let { ...restProps }: DropdownMenuProps = $props();
+	let { open = $bindable(false), ...restProps }: DropdownMenuPrimitive.RootProps = $props();
 </script>
 
-<DropdownMenuPrimitive.Root {...restProps} />
+<DropdownMenuPrimitive.Root bind:open {...restProps} />

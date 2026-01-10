@@ -1,10 +1,6 @@
-import Root from './avatar.svelte';
-import Image from './avatar-image.svelte';
-import Fallback from './avatar-fallback.svelte';
-
-export type { AvatarProps } from './avatar.svelte';
-export type { AvatarImageProps } from './avatar-image.svelte';
-export type { AvatarFallbackProps } from './avatar-fallback.svelte';
+import Root from "./avatar.svelte";
+import Image from "./avatar-image.svelte";
+import Fallback from "./avatar-fallback.svelte";
 
 export {
 	Root,
@@ -13,5 +9,5 @@ export {
 	//
 	Root as Avatar,
 	Image as AvatarImage,
-	Fallback as AvatarFallback
+	Fallback as AvatarFallback,
 };

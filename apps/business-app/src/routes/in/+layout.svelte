@@ -1,17 +1,22 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
-	import { theme } from '$lib/stores/theme.svelte.js';
+	import { theme } from '$lib/stores/theme.svelte';
 	import { Toaster } from '$lib/components/ui/sonner';
+	import type { Snippet } from 'svelte';
 	import '../../app.css';
 
-	let { children } = $props();
+	export type LayoutProps = {
+		children: Snippet;
+	};
+
+	let { children }: LayoutProps = $props();
 
 	onMount(() => {
 		theme.initialize();
 	});
 </script>
 
-<!-- svelte-ignore a11y-img-redundant-alt -->
+<!-- svelte-ignore a11y_img_redundant_alt -->
 <svelte:head>
 	<!-- Umami Analytics - Layout 2 Business -->
 

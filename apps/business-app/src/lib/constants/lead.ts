@@ -27,10 +27,20 @@ export const LEAD_CATEGORIES_WITH_ALL = {
 // ===== STAGE CONSTANTS =====
 
 /** Stages for Exclusive leads (category 3) and Non-Exclusive available leads (category 1) */
-export const EXCLUSIVE_STAGES = ['New Inquiry', 'Contacted', 'Proposal/Quotation Sent', 'Won'] as const;
+export const EXCLUSIVE_STAGES = [
+	'New Inquiry',
+	'Contacted',
+	'Proposal/Quotation Sent',
+	'Won'
+] as const;
 
 /** Stages for Non-Exclusive-Claimed leads (category 2) */
-export const NON_EXCLUSIVE_CLAIMED_STAGES = ['Claimed', 'Contacted', 'Proposal/Quotation Sent', 'Won'] as const;
+export const NON_EXCLUSIVE_CLAIMED_STAGES = [
+	'Claimed',
+	'Contacted',
+	'Proposal/Quotation Sent',
+	'Won'
+] as const;
 
 /** Display stages for Non-Exclusive-Claimed leads (includes pre-claim qualification stage) */
 export const NON_EXCLUSIVE_CLAIMED_DISPLAY_STAGES = [
@@ -86,7 +96,9 @@ export function getDisplayStagesForCategory(category: LeadCategory): readonly st
 /**
  * Get the stages map based on lead category (for filters)
  */
-export function getStagesMapForCategory(category: LeadCategory | 'all' | string): typeof STAGES_MAP | typeof NON_EXCLUSIVE_CLAIMED_STAGES_MAP {
+export function getStagesMapForCategory(
+	category: LeadCategory | 'all' | string
+): typeof STAGES_MAP | typeof NON_EXCLUSIVE_CLAIMED_STAGES_MAP {
 	return category === 2 || category === '2' ? NON_EXCLUSIVE_CLAIMED_STAGES_MAP : STAGES_MAP;
 }
 

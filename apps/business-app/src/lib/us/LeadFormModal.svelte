@@ -1,32 +1,28 @@
-<script>
+<script lang="ts">
 	import { goto } from '$app/navigation';
 
-	export let businessName = '';
-	export let businessSlug = '';
+	let { businessName = '', businessSlug = '' } = $props();
 
-	let name = '';
-	let phone = '';
-	let pinCode = '';
-	let type = '';
-	let comment = '';
-	let email = '';
-	let urlParam = '';
+	let name = $state('');
+	let phone = $state('');
+	let pinCode = $state('');
+	let type = $state('');
+	let comment = $state('');
+	let email = $state('');
 
-	let isSubmitting = false;
+	let isSubmitting = $state(false);
 
-	let errors = {
+	let errors = $state({
 		name: '',
 		phone: '',
 		pinCode: '',
 		type: '',
 		email: '',
 		comment: ''
-	};
+	});
 
 	// ✅ **Set the urlParam dynamically based on the businessSlug**
-	$: {
-		urlParam = `/solar-panel-installer/${businessSlug}`;
-	}
+	let urlParam = $derived(`/solar-panel-installer/${businessSlug}`);
 
 	function validatePhoneNumber() {
 		if (!/^\+?\d{10,16}$/.test(phone)) {
@@ -82,7 +78,7 @@
 		return isValid;
 	}
 
-	async function handleSubmit(event) {
+	async function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
 
 		if (validateForm()) {

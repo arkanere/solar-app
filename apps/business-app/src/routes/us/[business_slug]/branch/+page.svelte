@@ -1,28 +1,30 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/stores';
-	import { isDarkMode } from '$lib/stores/theme.js';
-	import AddBranch from '$lib/us/AddBranch.svelte';
-	import ShowEditProfile from '$lib/us/ShowEditProfile.svelte';
-	import ShowSupport from '$lib/us/ShowSupport.svelte';
+	import { isDarkMode } from '$lib/stores/theme.svelte';
+	import AddBranch from '$lib/us-new-rewrites/AddBranch.svelte';
+	import ShowEditProfile from '$lib/us-new-rewrites/ShowEditProfile.svelte';
+	import ShowSupport from '$lib/us-new-rewrites/ShowSupport.svelte';
 
 	// Access page data
 	const businessSlug = $page.params.business_slug;
-	$: ({ mainBusiness, branches = [], errorMessage } = $page.data);
-	$: darkMode = $isDarkMode;
+	let { mainBusiness, branches = [], errorMessage } = $derived($page.data);
+	let darkMode = $derived($isDarkMode);
 
 	// Computed business info
-	$: businessInfo = mainBusiness
-		? {
-				businessname: mainBusiness.businessname
-			}
-		: {};
+	let businessInfo = $derived(
+		mainBusiness
+			? {
+					businessname: mainBusiness.businessname
+				}
+			: {}
+	);
 
 	// State for modals
-	let showAddBranch = false;
-	let showEditProfile = false;
-	let showSupport = false;
-	let mobileMenuOpen = false;
-	let selectedBranch = null;
+	let showAddBranch = $state(false);
+	let showEditProfile = $state(false);
+	let showSupport = $state(false);
+	let mobileMenuOpen = $state(false);
+	let selectedBranch = $state(null);
 
 	// Function to toggle modals
 	const toggleAddBranch = () => {
@@ -76,20 +78,28 @@
 <nav class="top-nav {darkMode ? 'dark' : 'light'}">
 	<div class="nav-brand">
 		<a href="/us/{businessSlug}">
-			<span class="brand-full">Solar Vipani Business Dashboard - {businessInfo.businessname || ''}</span>
+			<span class="brand-full"
+				>Solar Vipani Business Dashboard - {businessInfo.businessname || ''}</span
+			>
 			<span class="brand-mobile">{businessInfo.businessname || 'Business Dashboard'}</span>
 		</a>
 	</div>
 
-	<div class="hamburger" role="button" tabindex="0" on:click={toggleMobileMenu} on:keydown={(e) => e.key === 'Enter' && toggleMobileMenu()}>
+	<div
+		class="hamburger"
+		role="button"
+		tabindex="0"
+		onclick={toggleMobileMenu}
+		onkeydown={(e) => e.key === 'Enter' && toggleMobileMenu()}
+	>
 		<span></span>
 		<span></span>
 		<span></span>
 	</div>
 
 	<ul class="nav-list {mobileMenuOpen ? 'open' : ''}">
-		<li><button on:click={toggleAddBranch}>Add Branch</button></li>
-		<li><button on:click={toggleSupport}>Support</button></li>
+		<li><button onclick={toggleAddBranch}>Add Branch</button></li>
+		<li><button onclick={toggleSupport}>Support</button></li>
 		<li>
 			<form method="POST" action={`/us/${businessSlug}/logout`}>
 				<button type="submit">Logout</button>
@@ -99,7 +109,6 @@
 </nav>
 
 <main class={darkMode ? 'dark' : 'light'}>
-
 	<header>
 		<h1>Branch Offices</h1>
 		<p>Manage your business branches across different locations</p>
@@ -133,7 +142,7 @@
 								target="_blank"
 								class="btn profile-btn">Profile Page</a
 							>
-							<button class="btn edit-btn" on:click={() => openEditProfile(mainBusiness)}
+							<button class="btn edit-btn" onclick={() => openEditProfile(mainBusiness)}
 								>Edit Details</button
 							>
 						</div>
@@ -164,7 +173,7 @@
 									target="_blank"
 									class="btn profile-btn">Profile Page</a
 								>
-								<button class="btn edit-btn" on:click={() => openEditProfile(branch)}
+								<button class="btn edit-btn" onclick={() => openEditProfile(branch)}
 									>Edit Details</button
 								>
 							</div>
@@ -189,8 +198,8 @@
 		show={showAddBranch}
 		businessId={mainBusiness?.id}
 		{businessSlug}
-		on:close={() => (showAddBranch = false)}
-		on:branchAdded={handleBranchAdded}
+		onClose={() => (showAddBranch = false)}
+		onBranchAdded={handleBranchAdded}
 	/>
 {/if}
 

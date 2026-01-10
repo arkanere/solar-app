@@ -1,32 +1,37 @@
-<script>
-	export let show = false;
-	export let businessSlug = '';
-
+<script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import { toast } from 'svelte-sonner';
+
+	export type PostRecentProjectProps = {
+		show?: boolean;
+		businessSlug?: string;
+	};
+
+	let { show = $bindable(false), businessSlug = '' }: PostRecentProjectProps = $props();
+
 	const dispatch = createEventDispatcher();
 
 	// Form data
-	let formData = {
+	let formData = $state({
 		projectTitle: '',
 		pincode: '',
 		county: '',
 		city: '',
 		projectDate: '',
 		projectImage: null
-	};
+	});
 
 	// Image preview
-	let imagePreview = null;
+	let imagePreview = $state(null);
 
 	// Submission state
-	let isSubmitting = false;
-	let errorMessage = '';
-	let isCountyLoading = false;
-	let cities = [];
-	let isCitiesLoading = false;
-	let lastFetchedPincode = '';
-	let lastFetchedCounty = '';
+	let isSubmitting = $state(false);
+	let errorMessage = $state('');
+	let isCountyLoading = $state(false);
+	let cities = $state([]);
+	let isCitiesLoading = $state(false);
+	let lastFetchedPincode = $state('');
+	let lastFetchedCounty = $state('');
 
 	// Suggested project names for consistency
 	const suggestedNames = [
@@ -42,25 +47,31 @@
 	}
 
 	// Reset form data when modal is shown
-	$: if (show) {
-		resetForm();
-		isSubmitting = false;
-		errorMessage = '';
-	}
+	$effect(() => {
+		if (show) {
+			resetForm();
+			isSubmitting = false;
+			errorMessage = '';
+		}
+	});
 
 	// Fetch county automatically when pincode changes
-	$: if (
-		formData.pincode &&
-		formData.pincode.length === 6 &&
-		formData.pincode !== lastFetchedPincode
-	) {
-		fetchCountyByPincode(formData.pincode);
-	}
+	$effect(() => {
+		if (
+			formData.pincode &&
+			formData.pincode.length === 6 &&
+			formData.pincode !== lastFetchedPincode
+		) {
+			fetchCountyByPincode(formData.pincode);
+		}
+	});
 
 	// Fetch cities when county changes
-	$: if (formData.county && formData.county !== lastFetchedCounty) {
-		fetchCitiesByCounty(formData.county);
-	}
+	$effect(() => {
+		if (formData.county && formData.county !== lastFetchedCounty) {
+			fetchCitiesByCounty(formData.county);
+		}
+	});
 
 	function resetForm() {
 		formData = {
@@ -176,13 +187,14 @@
 	}
 
 	// Handle image file selection
-	function handleImageChange(event) {
-		const file = event.target.files[0];
+	function handleImageChange(event: Event) {
+		const target = event.target as HTMLInputElement;
+		const file = target.files?.[0];
 		if (file) {
 			// Validate file type
 			if (!allowedImageTypes.includes(file.type)) {
 				toast.error('Please upload a valid image file (JPG, PNG, WebP, GIF, BMP, TIFF, SVG)');
-				event.target.value = ''; // Clear the input
+				target.value = ''; // Clear the input
 				return;
 			}
 
@@ -190,7 +202,7 @@
 			const maxSize = 10 * 1024 * 1024; // 10MB in bytes
 			if (file.size > maxSize) {
 				toast.error('Image file size must be less than 10MB');
-				event.target.value = ''; // Clear the input
+				target.value = ''; // Clear the input
 				return;
 			}
 
@@ -198,8 +210,8 @@
 
 			// Create image preview
 			const reader = new FileReader();
-			reader.onload = (e) => {
-				imagePreview = e.target.result;
+			reader.onload = (e: ProgressEvent<FileReader>) => {
+				imagePreview = e.target?.result as string;
 			};
 			reader.readAsDataURL(file);
 		}
@@ -313,10 +325,10 @@
 {#if show}
 	<div role="dialog" aria-modal="true" aria-labelledby="post-project-title" class="modal-overlay">
 		<div class="modal">
-			<button class="close-modal" aria-label="Close dialog" on:click={close} disabled={isSubmitting}
+			<button class="close-modal" aria-label="Close dialog" onclick={close} disabled={isSubmitting}
 				>&times;</button
 			>
-			<form class="modal-content" on:submit|preventDefault={saveProject}>
+			<form class="modal-content" onsubmit={(e) => { e.preventDefault(); saveProject(); }}>
 				<h2 id="post-project-title">Post Recent Project</h2>
 
 				{#if errorMessage}
@@ -340,7 +352,7 @@
 							<button
 								type="button"
 								class="suggestion-btn"
-								on:click={() => useSuggestedName(suggestion)}
+								onclick={() => useSuggestedName(suggestion)}
 								disabled={isSubmitting}
 							>
 								{suggestion}
@@ -413,7 +425,7 @@
 						id="projectImage"
 						type="file"
 						accept=".jpg,.jpeg,.png,.webp,.gif,.bmp,.tiff,.svg,image/*"
-						on:change={handleImageChange}
+						onchange={handleImageChange}
 						disabled={isSubmitting}
 					/>
 					<small class="file-help-text">
@@ -430,13 +442,13 @@
 					<button type="submit" disabled={isSubmitting}>
 						{isSubmitting ? 'Posting...' : 'Post Project'}
 					</button>
-					<button type="button" on:click={close} disabled={isSubmitting}>Cancel</button>
+					<button type="button" onclick={close} disabled={isSubmitting}>Cancel</button>
 				</div>
 			</form>
 		</div>
 		<button
 			class="modal-backdrop"
-			on:click={close}
+			onclick={close}
 			aria-label="Close dialog"
 			disabled={isSubmitting}
 		></button>

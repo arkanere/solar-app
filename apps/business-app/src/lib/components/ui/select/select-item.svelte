@@ -1,37 +1,38 @@
-<script lang="ts" module>
-	import type { Select as SelectPrimitive } from 'bits-ui';
-
-	export type SelectItemProps = SelectPrimitive.ItemProps;
-</script>
-
 <script lang="ts">
-	import { Select as SelectPrimitive } from 'bits-ui';
-	import { cn } from '$lib/utils';
-	import { Check } from '@lucide/svelte';
+	import CheckIcon from "@lucide/svelte/icons/check";
+	import { Select as SelectPrimitive } from "bits-ui";
+	import { cn, type WithoutChild } from "$lib/utils.js";
 
 	let {
 		ref = $bindable(null),
 		class: className,
-		children,
+		value,
+		label,
+		children: childrenProp,
 		...restProps
-	}: SelectItemProps = $props();
+	}: WithoutChild<SelectPrimitive.ItemProps> = $props();
 </script>
 
 <SelectPrimitive.Item
 	bind:ref
+	{value}
 	data-slot="select-item"
 	class={cn(
-		'relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none',
-		'focus:bg-accent focus:text-accent-foreground',
-		'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+		"data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 ps-2 pe-8 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
 		className
 	)}
 	{...restProps}
 >
-	<span class="absolute left-2 flex size-3.5 items-center justify-center">
-		<SelectPrimitive.ItemIndicator>
-			<Check class="size-4" />
-		</SelectPrimitive.ItemIndicator>
-	</span>
-	{@render children?.()}
+	{#snippet children({ selected, highlighted })}
+		<span class="absolute end-2 flex size-3.5 items-center justify-center">
+			{#if selected}
+				<CheckIcon class="size-4" />
+			{/if}
+		</span>
+		{#if childrenProp}
+			{@render childrenProp({ selected, highlighted })}
+		{:else}
+			{label || value}
+		{/if}
+	{/snippet}
 </SelectPrimitive.Item>

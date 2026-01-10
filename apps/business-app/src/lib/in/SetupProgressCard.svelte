@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
-	import { isDarkMode } from '$lib/stores/theme.svelte.js';
+	import { isDarkMode } from '$lib/stores/theme.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import { cn } from '$lib/utils';
@@ -16,6 +16,16 @@
 		actionLabel: string;
 	};
 
+	export type SetupProgressCardProps = {
+		business?: { description?: string; website?: string };
+		businessSlug?: string;
+		projectsCount?: number;
+		referrersCount?: number;
+		proposalsCount?: number;
+		claimedLeadsCount?: number;
+		onOpenEditProfile?: () => void;
+	};
+
 	let {
 		business = {},
 		businessSlug = '',
@@ -24,15 +34,7 @@
 		proposalsCount = 0,
 		claimedLeadsCount = 0,
 		onOpenEditProfile = () => {}
-	}: {
-		business?: { description?: string; website?: string };
-		businessSlug?: string;
-		projectsCount?: number;
-		referrersCount?: number;
-		proposalsCount?: number;
-		claimedLeadsCount?: number;
-		onOpenEditProfile?: () => void;
-	} = $props();
+	}: SetupProgressCardProps = $props();
 
 	let darkMode = $derived($isDarkMode);
 
@@ -110,7 +112,7 @@
 	]);
 
 	// Calculate progress
-	let completedCount = $derived(tasks.filter(t => t.completed).length);
+	let completedCount = $derived(tasks.filter((t) => t.completed).length);
 	let totalCount = $derived(tasks.length);
 	let progressPercent = $derived(Math.round((completedCount / totalCount) * 100));
 
@@ -139,13 +141,19 @@
 			<div class="flex items-center gap-4 flex-1">
 				<Target class="shrink-0 text-accent" size={28} strokeWidth={2} />
 				<div>
-					<Card.Title class="text-xl font-bold text-accent max-sm:text-lg">Setup Your Business Account</Card.Title>
+					<Card.Title class="text-xl font-bold text-accent max-sm:text-lg"
+						>Setup Your Business Account</Card.Title
+					>
 					{#if !isExpanded}
-						<Card.Description class="mt-1">Progress: {completedCount} of {totalCount} complete ({progressPercent}%)</Card.Description>
+						<Card.Description class="mt-1"
+							>Progress: {completedCount} of {totalCount} complete ({progressPercent}%)</Card.Description
+						>
 					{/if}
 				</div>
 			</div>
-			<span class="w-8 h-8 flex items-center justify-center rounded bg-muted text-foreground text-xl font-bold shrink-0 transition-colors hover:bg-muted/80">
+			<span
+				class="w-8 h-8 flex items-center justify-center rounded bg-muted text-foreground text-xl font-bold shrink-0 transition-colors hover:bg-muted/80"
+			>
 				{isExpanded ? '─' : '+'}
 			</span>
 		</Button>
@@ -155,7 +163,10 @@
 	{#if !isExpanded}
 		<Card.Content class="pb-6 pt-0">
 			<div class="h-2.5 bg-muted rounded-md overflow-hidden">
-				<div class="h-full rounded-md transition-[width] duration-300 bg-accent" style="width: {progressPercent}%"></div>
+				<div
+					class="h-full rounded-md transition-[width] duration-300 bg-accent"
+					style="width: {progressPercent}%"
+				></div>
 			</div>
 		</Card.Content>
 	{/if}
@@ -165,22 +176,29 @@
 		<Card.Content>
 			<!-- Progress Info -->
 			<div class="mb-6">
-				<p class="m-0 mb-2 text-sm font-semibold text-foreground">Progress: {completedCount} of {totalCount} complete ({progressPercent}%)</p>
+				<p class="m-0 mb-2 text-sm font-semibold text-foreground">
+					Progress: {completedCount} of {totalCount} complete ({progressPercent}%)
+				</p>
 				<div class="h-2.5 bg-muted rounded-md overflow-hidden">
-					<div class="h-full rounded-md transition-[width] duration-300 bg-accent" style="width: {progressPercent}%"></div>
+					<div
+						class="h-full rounded-md transition-[width] duration-300 bg-accent"
+						style="width: {progressPercent}%"
+					></div>
 				</div>
 			</div>
 
 			<!-- Task List -->
 			<ul class="list-none p-0 m-0">
 				{#each tasks as task}
-					<li class={cn(
-						"flex justify-between items-start gap-4 p-4 mb-3 rounded-lg transition-colors",
-						"max-sm:flex-col max-sm:items-stretch",
-						task.completed
-							? "bg-success-muted border-l-[3px] border-l-success"
-							: "bg-warning-muted border-l-[3px] border-l-warning"
-					)}>
+					<li
+						class={cn(
+							'flex justify-between items-start gap-4 p-4 mb-3 rounded-lg transition-colors',
+							'max-sm:flex-col max-sm:items-stretch',
+							task.completed
+								? 'bg-success-muted border-l-[3px] border-l-success'
+								: 'bg-warning-muted border-l-[3px] border-l-warning'
+						)}
+					>
 						<div class="flex items-start gap-3 flex-1">
 							<div class="shrink-0">
 								{#if task.completed}
@@ -192,16 +210,14 @@
 							<div class="flex-1">
 								<h4 class="m-0 mb-1 text-base font-semibold text-foreground">{task.title}</h4>
 								{#if task.description}
-									<p class="m-0 text-sm text-muted-foreground leading-relaxed">{task.description}</p>
+									<p class="m-0 text-sm text-muted-foreground leading-relaxed">
+										{task.description}
+									</p>
 								{/if}
 							</div>
 						</div>
 						{#if !task.completed && task.action}
-							<Button
-								size="sm"
-								class="shrink-0 max-sm:w-full"
-								onclick={() => handleAction(task)}
-							>
+							<Button size="sm" class="shrink-0 max-sm:w-full" onclick={() => handleAction(task)}>
 								{task.actionLabel} →
 							</Button>
 						{/if}
