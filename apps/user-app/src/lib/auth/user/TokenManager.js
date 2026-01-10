@@ -34,7 +34,6 @@ export class TokenManager {
 					created_at: user.created_at
 				}
 			});
-
 		} catch (error) {
 			console.error('❌ Error validating magic link token:', error);
 			return ERROR_RESPONSE('Database error during token validation', AUTH_ERRORS.DATABASE_ERROR);
@@ -73,7 +72,6 @@ export class TokenManager {
 					created_at: user.created_at
 				}
 			});
-
 		} catch (error) {
 			console.error('❌ Error getting user by email:', error);
 			return ERROR_RESPONSE('Database error during user lookup', AUTH_ERRORS.DATABASE_ERROR);
@@ -110,7 +108,6 @@ export class TokenManager {
 					created_at: user.created_at
 				}
 			});
-
 		} catch (error) {
 			console.error('❌ Error getting user by ID:', error);
 			return ERROR_RESPONSE('Database error during user lookup', AUTH_ERRORS.DATABASE_ERROR);
@@ -134,7 +131,6 @@ export class TokenManager {
 			return SUCCESS_RESPONSE({
 				message: 'Token cleared successfully'
 			});
-
 		} catch (error) {
 			console.error('❌ Error clearing magic link token:', error);
 			// Don't fail authentication if we can't clear the token

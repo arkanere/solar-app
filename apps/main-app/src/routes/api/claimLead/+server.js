@@ -30,7 +30,7 @@ export async function POST({ request, fetch }) {
 				throw new Error('Lead not found');
 			}
 
-			let claim_id = claimCountResult.rows[0].claim_count;
+			const claim_id = claimCountResult.rows[0].claim_count;
 
 			// **Check if lead can still be claimed (Max = 5 claims)**
 			if (claim_id >= 5) {

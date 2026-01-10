@@ -34,10 +34,9 @@ export class LoginTracker {
 				};
 			} else {
 				// Get current last_login for reference
-				const currentResult = await pool.query(
-					'SELECT last_login FROM users WHERE id = $1',
-					[userId]
-				);
+				const currentResult = await pool.query('SELECT last_login FROM users WHERE id = $1', [
+					userId
+				]);
 
 				return {
 					updated: false,
@@ -62,10 +61,7 @@ export class LoginTracker {
 	 */
 	static async getLastLogin(userId) {
 		try {
-			const result = await pool.query(
-				'SELECT last_login FROM users WHERE id = $1',
-				[userId]
-			);
+			const result = await pool.query('SELECT last_login FROM users WHERE id = $1', [userId]);
 			return result.rows[0]?.last_login || null;
 		} catch (error) {
 			console.error('❌ Error getting last_login:', error);

@@ -30,7 +30,7 @@
 	function groupClaimsByLead(claimedBusinesses) {
 		const grouped = new Map();
 
-		claimedBusinesses.forEach(claim => {
+		claimedBusinesses.forEach((claim) => {
 			const key = claim.originalLeadId;
 			if (!grouped.has(key)) {
 				grouped.set(key, []);
@@ -60,9 +60,15 @@
 
 		{#if data.leads && data.leads.length > 0}
 			{#if data.leads.length === 1}
-				<p class="leads-intro">We have received your solar inquiry. Our team will contact you soon with quotations from verified installers.</p>
+				<p class="leads-intro">
+					We have received your solar inquiry. Our team will contact you soon with quotations from
+					verified installers.
+				</p>
 			{:else}
-				<p class="leads-intro">You have submitted {data.leads.length} solar inquiries. We will contact you soon with quotations from verified installers.</p>
+				<p class="leads-intro">
+					You have submitted {data.leads.length} solar inquiries. We will contact you soon with quotations
+					from verified installers.
+				</p>
 			{/if}
 
 			<div class="leads-container">
@@ -103,7 +109,9 @@
 			</div>
 		{:else}
 			<p class="no-leads">You haven't submitted any solar inquiries yet.</p>
-			<p class="cta-text">Ready to go solar? Submit your requirements and get quotes from verified installers!</p>
+			<p class="cta-text">
+				Ready to go solar? Submit your requirements and get quotes from verified installers!
+			</p>
 		{/if}
 	</section>
 
@@ -126,7 +134,10 @@
 						<div class="interest-group">
 							<div class="interest-group-header">
 								<h3>For your inquiry submitted on {formatDate(lead.submittedAt)}</h3>
-								<span class="interest-count-badge">{claimsForLead.length} {claimsForLead.length === 1 ? 'installer' : 'installers'} interested</span>
+								<span class="interest-count-badge"
+									>{claimsForLead.length}
+									{claimsForLead.length === 1 ? 'installer' : 'installers'} interested</span
+								>
 							</div>
 
 							<div class="business-claims-list">
@@ -163,7 +174,11 @@
 											</div>
 											{#if claim.businessSlug}
 												<div class="business-actions">
-													<a href="/solar-panel-installer/{claim.businessSlug}" target="_blank" class="view-profile-btn">
+													<a
+														href="/solar-panel-installer/{claim.businessSlug}"
+														target="_blank"
+														class="view-profile-btn"
+													>
 														View Installer Profile
 													</a>
 												</div>
@@ -177,7 +192,10 @@
 				{/each}
 			</div>
 		{:else}
-			<p class="no-interest">No installers have shown interest yet. We're matching your inquiry with qualified installers in your area.</p>
+			<p class="no-interest">
+				No installers have shown interest yet. We're matching your inquiry with qualified installers
+				in your area.
+			</p>
 		{/if}
 	</section>
 </main>
@@ -212,7 +230,7 @@
 		--shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
 
 		/* Typography */
-		--font-family: "Poppins", "Helvetica Neue", Arial, sans-serif;
+		--font-family: 'Poppins', 'Helvetica Neue', Arial, sans-serif;
 		--heading-line-height: 1.2;
 		--body-line-height: 1.6;
 

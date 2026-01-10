@@ -31,7 +31,7 @@ export async function load({ cookies }) {
 		`;
 
 		const result = await pool.query(query, [sessionResult.user.email]);
-		leads = result.rows.map(lead => ({
+		leads = result.rows.map((lead) => ({
 			id: lead.id,
 			name: lead.name,
 			phone: lead.phone,
@@ -85,7 +85,7 @@ export async function load({ cookies }) {
 			`;
 
 			const claimedResult = await pool.query(claimedQuery, [sessionResult.user.email]);
-			claimedBusinesses = claimedResult.rows.map(claim => ({
+			claimedBusinesses = claimedResult.rows.map((claim) => ({
 				claimId: claim.claim_id,
 				claimDate: claim.claim_date,
 				stage: claim.stage,
@@ -107,7 +107,6 @@ export async function load({ cookies }) {
 				isResolved: claim.isresolved
 			}));
 		}
-
 	} catch (err) {
 		console.error('Error fetching user leads:', err);
 		// Continue without leads if there's an error

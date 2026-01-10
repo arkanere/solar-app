@@ -1,0 +1,75 @@
+# Dependencies
+node_modules
+**/node_modules
+
+# Build outputs
+.svelte-kit
+**/.svelte-kit
+build
+**/build
+.output
+**/.output
+.vercel
+**/.vercel
+dist
+**/dist
+
+# Package manager files
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Environment files
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Coverage
+coverage
+**/.nyc_output
+**/coverage
+
+# Cache
+.cache
+.parcel-cache
+.eslintcache
+
+# Vite temporary files
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# SQL files
+*.sql
+backup.sql
+
+# Android apps
+android-customer-app
+android-business-app
+
+# Scripts with saved HTML pages
+scripts/find_us_businesses/saved_pages
+
+# Generated files
+*.min.js
+*.min.css
+
+# Documentation that may have specific formatting
+CHANGELOG.md
+LICENSE

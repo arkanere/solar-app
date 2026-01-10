@@ -246,19 +246,19 @@ export async function PUT({ request }) {
 			}
 
 			// Build the update query dynamically
-			let updateFields = [
+			const updateFields = [
 				'title = $2',
 				'project_slug = $3', 
 				'pincode = $4',
 				'district = $5',
 				'project_date = $6'
 			];
-			let queryParams = [projectId, projectTitle, projectSlug, pincode, district, projectDate];
+			const queryParams = [projectId, projectTitle, projectSlug, pincode, district, projectDate];
 			let returnFields = 'id, business_slug, title, project_slug, pincode, district, project_date, created_at';
 			let index = 7;
 
 			// Handle image updates
-			let oldPublicId = existingProject.cloudinary_public_id;
+			const oldPublicId = existingProject.cloudinary_public_id;
 
 			if (removeImage) {
 				// Remove image fields
