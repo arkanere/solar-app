@@ -108,7 +108,13 @@
 
 	{#if !imageData}
 		<!-- Upload UI -->
-		<div class="upload-area" on:click={triggerFileInput} on:keydown={handleKeydown} role="button" tabindex="0">
+		<div
+			class="upload-area"
+			on:click={triggerFileInput}
+			on:keydown={handleKeydown}
+			role="button"
+			tabindex="0"
+		>
 			<input
 				type="file"
 				bind:this={fileInput}
@@ -221,7 +227,7 @@
 	}
 
 	.upload-area:hover {
-		border-color: #4CAF50;
+		border-color: #4caf50;
 		background: #f0f9f0;
 	}
 
@@ -281,7 +287,7 @@
 		width: 40px;
 		height: 40px;
 		border: 4px solid #f3f3f3;
-		border-top: 4px solid #4CAF50;
+		border-top: 4px solid #4caf50;
 		border-radius: 50%;
 		animation: spin 1s linear infinite;
 	}
@@ -314,13 +320,13 @@
 		font-size: 13px;
 		margin-top: 8px;
 		padding: 8px 12px;
-		background: #FFEBEE;
+		background: #ffebee;
 		border-radius: 4px;
 	}
 
 	.dark .error-message {
-		background: #C62828;
-		color: #FFCDD2;
+		background: #c62828;
+		color: #ffcdd2;
 	}
 
 	.image-preview {
@@ -425,7 +431,7 @@
 
 	.alt-text-input input:focus {
 		outline: none;
-		border-color: #4CAF50;
+		border-color: #4caf50;
 		box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
 	}
 

@@ -3,8 +3,8 @@
   import { onMount } from "svelte";
 
   // SvelteKit automatically provides these props to layouts
-  export let data;
-  export let params = {};
+  export const data = undefined;
+  export const params = {};
 
   // Initialize the theme when the component is mounted
   onMount(() => {
@@ -40,7 +40,7 @@
       on:mouseenter={() => (leadDataDropdownVisible = true)}
       on:mouseleave={() => (leadDataDropdownVisible = false)}
     >
-      <a href="#" on:click|preventDefault>Lead Data</a>
+      <a href="/us/leaddata" on:click|preventDefault>Lead Data</a>
       {#if leadDataDropdownVisible}
         <div class="dropdown-content">
           <a href="/us/leaddata" target="_blank">View Lead Data</a>
@@ -333,8 +333,8 @@
   }
 
   /* Prevent horizontal scrolling */
-  body,
-  html {
+  :global(body),
+  :global(html) {
     overflow-x: hidden;
   }
 </style>

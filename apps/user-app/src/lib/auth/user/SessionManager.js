@@ -9,7 +9,7 @@ export class SessionManager {
 	 */
 	static createSession(user, authMethod) {
 		const now = new Date();
-		const expires = new Date(now.getTime() + (AUTH_CONFIG.SESSION_EXPIRY_DAYS * 24 * 60 * 60 * 1000));
+		const expires = new Date(now.getTime() + AUTH_CONFIG.SESSION_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
 
 		return {
 			userId: user.id,

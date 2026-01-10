@@ -48,7 +48,7 @@ export async function POST({ request, getClientAddress, fetch }) {
 		await pool.query(logUserMessageQuery, [ipAddress, 'user', userMessage, sessionId]);
 
 		// Prepare request payload for downstream API
-		let chatbotRequestPayload = { userMessage };
+		const chatbotRequestPayload = { userMessage };
 
 		// Include conversation context if provided
 		if (conversationContext && conversationContext.trim()) {

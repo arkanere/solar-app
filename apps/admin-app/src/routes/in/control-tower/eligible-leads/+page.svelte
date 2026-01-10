@@ -453,10 +453,6 @@
 		color: var(--accent-color);
 	}
 
-	.stat-card.unclaimed .stat-number {
-		color: var(--warning-color);
-	}
-
 	.stat-card.claimed .stat-number {
 		color: var(--success-color);
 	}
@@ -993,13 +989,6 @@
 
 	.dark .single-business-name {
 		background-color: #2a2a2a;
-	}
-
-	.business-details summary {
-		cursor: pointer;
-		font-size: 0.9rem;
-		color: var(--accent-color);
-		margin: 0.5rem 0;
 	}
 
 	.business-list {

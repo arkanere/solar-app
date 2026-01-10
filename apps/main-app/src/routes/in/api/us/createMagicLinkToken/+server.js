@@ -14,10 +14,10 @@ export async function POST({ request }) {
 		}
 
 		// Generate a UUID and embed the business ID
-		let base_uuid = uuidv4();
-		let parts = base_uuid.split('-');
+		const base_uuid = uuidv4();
+		const parts = base_uuid.split('-');
 		parts[2] = String(id); // Insert business ID in the 3rd segment
-		let magicLinkToken = parts.join('-');
+		const magicLinkToken = parts.join('-');
 
 		// Update the database with the new token
 		const client = await pool.connect();

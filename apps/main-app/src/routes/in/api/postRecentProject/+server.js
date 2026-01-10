@@ -248,7 +248,7 @@ export async function POST({ request }) {
 			let queryFields =
 				'business_slug, title, project_slug, pincode, district, project_date';
 			let queryValues = '$1, $2, $3, $4, $5, $6';
-			let queryParams = [business_slug, projectTitle, projectSlug, pincode, district, projectDate];
+			const queryParams = [business_slug, projectTitle, projectSlug, pincode, district, projectDate];
 			let returnFields =
 				'id, business_slug, title, project_slug, pincode, district, project_date, created_at';
 			let index = 7;

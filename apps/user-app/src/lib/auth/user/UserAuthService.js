@@ -36,7 +36,6 @@ export class UserAuthService {
 				isNewLogin: loginResult.updated,
 				lastLogin: loginResult.lastLogin
 			});
-
 		} catch (error) {
 			console.error('❌ Error in magic link authentication:', error);
 			return ERROR_RESPONSE('Authentication failed', AUTH_ERRORS.DATABASE_ERROR);
@@ -101,7 +100,6 @@ export class UserAuthService {
 			return SUCCESS_RESPONSE({
 				message: 'Logged out successfully'
 			});
-
 		} catch (error) {
 			console.error('❌ Error during logout:', error);
 			// Still clear session even if there's an error

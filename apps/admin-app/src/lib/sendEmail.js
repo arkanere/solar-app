@@ -47,7 +47,7 @@ export async function sendEmail(recipients, subject, message, options = {}) {
 			name: senderName,
 			email: senderEmail
 		},
-		to: recipients.map(email => ({ email })),
+		to: recipients.map((email) => ({ email })),
 		subject: subject,
 		...(isHtml ? { htmlContent: message } : { textContent: message })
 	};
@@ -67,24 +67,24 @@ export async function sendEmail(recipients, subject, message, options = {}) {
 		if (response.ok) {
 			console.log(`Email sent successfully to ${recipients.join(', ')}`);
 			console.log('Brevo response:', responseData);
-			
+
 			return {
 				success: true,
 				messageId: responseData.messageId,
 				recipients: recipients,
-				results: recipients.map(recipient => ({
+				results: recipients.map((recipient) => ({
 					recipient,
 					success: true
 				}))
 			};
 		} else {
 			console.error('Brevo API error:', responseData);
-			
+
 			return {
 				success: false,
 				error: responseData.message || 'Failed to send email',
 				code: responseData.code,
-				results: recipients.map(recipient => ({
+				results: recipients.map((recipient) => ({
 					recipient,
 					success: false,
 					error: responseData.message || 'Failed to send email'
@@ -93,11 +93,11 @@ export async function sendEmail(recipients, subject, message, options = {}) {
 		}
 	} catch (error) {
 		console.error('Error sending email via Brevo:', error);
-		
+
 		return {
 			success: false,
 			error: error.message || 'Network error while sending email',
-			results: recipients.map(recipient => ({
+			results: recipients.map((recipient) => ({
 				recipient,
 				success: false,
 				error: error.message || 'Network error'
@@ -131,7 +131,7 @@ export async function sendEmailIndividually(recipients, subject, message, option
 	});
 
 	const results = await Promise.all(emailPromises);
-	const allSuccess = results.every(result => result.success);
+	const allSuccess = results.every((result) => result.success);
 
 	return {
 		success: allSuccess,
@@ -147,11 +147,13 @@ export async function sendEmailIndividually(recipients, subject, message, option
  * @param {Object} options - Additional options
  * @returns {Promise<Object>} Result object with success status and details
  */
-export async function sendTemplatedEmail(recipients, templateId, templateParams = {}, options = {}) {
-	const {
-		senderName = 'Solar Vipani',
-		senderEmail = 'admin@solarvipani.com'
-	} = options;
+export async function sendTemplatedEmail(
+	recipients,
+	templateId,
+	templateParams = {},
+	options = {}
+) {
+	const { senderName = 'Solar Vipani', senderEmail = 'admin@solarvipani.com' } = options;
 
 	// Ensure recipients is an array
 	if (!Array.isArray(recipients)) {
@@ -170,7 +172,7 @@ export async function sendTemplatedEmail(recipients, templateId, templateParams 
 			name: senderName,
 			email: senderEmail
 		},
-		to: recipients.map(email => ({ email })),
+		to: recipients.map((email) => ({ email })),
 		templateId: templateId,
 		params: templateParams
 	};
@@ -189,7 +191,7 @@ export async function sendTemplatedEmail(recipients, templateId, templateParams 
 
 		if (response.ok) {
 			console.log(`Templated email sent successfully to ${recipients.join(', ')}`);
-			
+
 			return {
 				success: true,
 				messageId: responseData.messageId,
@@ -197,7 +199,7 @@ export async function sendTemplatedEmail(recipients, templateId, templateParams 
 			};
 		} else {
 			console.error('Brevo template API error:', responseData);
-			
+
 			return {
 				success: false,
 				error: responseData.message || 'Failed to send templated email',
@@ -206,7 +208,7 @@ export async function sendTemplatedEmail(recipients, templateId, templateParams 
 		}
 	} catch (error) {
 		console.error('Error sending templated email via Brevo:', error);
-		
+
 		return {
 			success: false,
 			error: error.message || 'Network error while sending templated email'

@@ -21,6 +21,7 @@ scripts/server-scripts/.env
 
 # n8n
 scripts/n8n/.n8n
+python-scripts-automation/n8n/.n8n
 
 # Vite
 vite.config.js.timestamp-*
@@ -54,6 +55,19 @@ android-business-app/.cxx/
 android-business-app/*.iml
 android-business-app/*.hprof
 android-business-app/app/release/
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.pytest_cache/
+.Python
+pip-log.txt
+.coverage
+htmlcov/
 
 # Apps
 apps/*/node_modules
