@@ -1,27 +1,29 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/stores';
 	import { toast } from 'svelte-sonner';
-	import { isDarkMode } from '$lib/stores/theme.js';
-	import ShowSupport from '$lib/us/ShowSupport.svelte';
+	import { isDarkMode } from '$lib/stores/theme.svelte';
+	import ShowSupport from '$lib/us-new-rewrites/ShowSupport.svelte';
 
 	const businessSlug = $page.params.business_slug;
-	$: darkMode = $isDarkMode;
-	$: ({ leads = [], business } = $page.data);
+	let darkMode = $derived($isDarkMode);
+	let { leads = [], business } = $derived($page.data);
 
 	// State variables
-	let showSupport = false;
-	let mobileMenuOpen = false;
+	let showSupport = $state(false);
+	let mobileMenuOpen = $state(false);
 
 	// UI toggle functions
 	const toggleSupport = () => (showSupport = !showSupport);
 	const toggleMobileMenu = () => (mobileMenuOpen = !mobileMenuOpen);
 
 	// Computed business info
-	$: businessInfo = business
-		? {
-				businessname: business.businessname
-			}
-		: {};
+	let businessInfo = $derived(
+		business
+			? {
+					businessname: business.businessname
+				}
+			: {}
+	);
 
 	// Function to calculate days ago
 	function getDaysAgo(dateString) {
@@ -29,7 +31,7 @@
 		const date = new Date(dateString);
 		const diffInMs = now - date;
 		const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-		
+
 		if (diffInDays === 0) {
 			return 'Today';
 		} else if (diffInDays === 1) {
@@ -56,19 +58,27 @@
 <nav class="top-nav {darkMode ? 'dark' : 'light'}">
 	<div class="nav-brand">
 		<a href="/us/{businessSlug}">
-			<span class="brand-full">Solar Vipani Business Dashboard - {businessInfo.businessname || ''}</span>
+			<span class="brand-full"
+				>Solar Vipani Business Dashboard - {businessInfo.businessname || ''}</span
+			>
 			<span class="brand-mobile">{businessInfo.businessname || 'Business Dashboard'}</span>
 		</a>
 	</div>
 
-	<div class="hamburger" role="button" tabindex="0" on:click={toggleMobileMenu} on:keydown={(e) => e.key === 'Enter' && toggleMobileMenu()}>
+	<div
+		class="hamburger"
+		role="button"
+		tabindex="0"
+		onclick={toggleMobileMenu}
+		onkeydown={(e) => e.key === 'Enter' && toggleMobileMenu()}
+	>
 		<span></span>
 		<span></span>
 		<span></span>
 	</div>
 
 	<ul class="nav-list {mobileMenuOpen ? 'open' : ''}">
-		<li><button on:click={toggleSupport}>Support</button></li>
+		<li><button onclick={toggleSupport}>Support</button></li>
 		<li>
 			<form method="POST" action={`/us/${businessSlug}/logout`}>
 				<button type="submit">Logout</button>
@@ -84,7 +94,7 @@
 			<h1>Open Inquiries</h1>
 			<p class="header-subtitle">Available inquiries that you can claim for free</p>
 		</header>
-		
+
 		{#if leads.length > 0}
 			<div class="table-container">
 				<table class="inquiries-table">
@@ -116,10 +126,7 @@
 								<td>{lead.state}</td>
 								<td class="received-cell">{getDaysAgo(lead.created_at)}</td>
 								<td class="action-cell">
-									<button 
-										class="claim-btn" 
-										on:click={() => showInquiryInstructions(lead)}
-									>
+									<button class="claim-btn" onclick={() => showInquiryInstructions(lead)}>
 										Get this Inquiry
 									</button>
 								</td>
@@ -132,8 +139,14 @@
 			<div class="no-inquiries">
 				<div class="no-inquiries-card">
 					<h2>🔍 No Open Inquiries Available</h2>
-					<p>There are currently no inquiries available to claim. New inquiries will appear here as they become available.</p>
-					<p>Check back later or visit your <a href="/us/{businessSlug}/crm">CRM section</a> to manage your existing leads.</p>
+					<p>
+						There are currently no inquiries available to claim. New inquiries will appear here as
+						they become available.
+					</p>
+					<p>
+						Check back later or visit your <a href="/us/{businessSlug}/crm">CRM section</a> to manage
+						your existing leads.
+					</p>
 				</div>
 			</div>
 		{/if}
@@ -151,7 +164,7 @@
 		margin: 0;
 		padding: 0;
 	}
-	
+
 	/* Root variables for light and dark modes */
 	:root {
 		--light-bg-color: #f8f9fa;
@@ -175,7 +188,9 @@
 		justify-content: flex-start;
 		font-family: var(--font-family);
 		min-height: calc(100vh - 70px);
-		transition: background-color 0.3s ease, color 0.3s ease;
+		transition:
+			background-color 0.3s ease,
+			color 0.3s ease;
 		padding: 0;
 		margin: 0;
 		width: 100%;

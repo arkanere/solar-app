@@ -1,5 +1,5 @@
 <!-- AddBranch.svelte -->
-<script>
+<script lang="ts">
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Select } from '$lib/components/ui/select';
@@ -112,7 +112,7 @@
 		}
 	}
 
-	function handleOpenChange(open) {
+	function handleOpenChange(open: boolean) {
 		if (!open) {
 			show = false;
 			onClose();
@@ -126,7 +126,7 @@
 	}
 
 	// Handle form submission
-	async function handleSubmit(event) {
+	async function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
 		errorMessage = '';
 		successMessage = '';
@@ -239,9 +239,7 @@
 			</div>
 
 			<Dialog.Footer>
-				<Button variant="secondary" disabled={isSubmitting} onclick={close}>
-					Cancel
-				</Button>
+				<Button variant="secondary" disabled={isSubmitting} onclick={close}>Cancel</Button>
 				<Button
 					type="submit"
 					class="bg-success text-success-foreground hover:bg-success/90"

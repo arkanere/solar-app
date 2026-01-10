@@ -1,16 +1,23 @@
-<script>
+<script lang="ts">
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Label } from '$lib/components/ui/label';
 
+	export type AddReferrerProps = {
+		show?: boolean;
+		businessId: number;
+		onClose?: () => void;
+		onReferrerAdded?: () => void;
+	};
+
 	let {
 		show = $bindable(false),
 		businessId,
 		onClose = () => {},
 		onReferrerAdded = () => {}
-	} = $props();
+	}: AddReferrerProps = $props();
 
 	// Form fields
 	let name = $state('');
@@ -22,7 +29,7 @@
 	let errorMessage = $state('');
 	let successMessage = $state('');
 
-	function handleOpenChange(open) {
+	function handleOpenChange(open: boolean) {
 		if (!open) {
 			resetForm();
 			onClose();
@@ -46,7 +53,7 @@
 	}
 
 	// Handle form submission
-	async function handleSubmit(event) {
+	async function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
 		errorMessage = '';
 		successMessage = '';
@@ -59,7 +66,8 @@
 		// Validate slug format (alphanumeric and hyphens only)
 		const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 		if (!slugRegex.test(slug)) {
-			errorMessage = 'Slug must be lowercase alphanumeric characters and hyphens only (e.g., john-doe)';
+			errorMessage =
+				'Slug must be lowercase alphanumeric characters and hyphens only (e.g., john-doe)';
 			return;
 		}
 
@@ -130,7 +138,9 @@
 		</Dialog.Header>
 
 		{#if errorMessage}
-			<div class="text-destructive mb-4 p-3 bg-destructive-muted rounded text-sm">{errorMessage}</div>
+			<div class="text-destructive mb-4 p-3 bg-destructive-muted rounded text-sm">
+				{errorMessage}
+			</div>
 		{/if}
 
 		{#if successMessage}
@@ -167,7 +177,9 @@
 					required
 					class="w-full"
 				/>
-				<small class="block mt-1 text-xs text-muted-foreground italic">Lowercase letters, numbers, and hyphens only. This will be used in the referrer URL.</small>
+				<small class="block mt-1 text-xs text-muted-foreground italic"
+					>Lowercase letters, numbers, and hyphens only. This will be used in the referrer URL.</small
+				>
 			</div>
 
 			<!-- Phone Field -->

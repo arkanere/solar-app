@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
@@ -61,10 +61,18 @@
 	/>
 </svelte:head>
 
-<main class="flex flex-col items-center justify-center min-h-screen p-12 md:p-6 bg-background text-foreground transition-colors duration-300">
+<main
+	class="flex flex-col items-center justify-center min-h-screen p-12 md:p-6 bg-background text-foreground transition-colors duration-300"
+>
 	<h1 class="text-3xl md:text-2xl font-semibold mb-8 text-center">Reset Your Password</h1>
 
-	<form onsubmit={(e) => { e.preventDefault(); handleSubmit(e); }} class="w-full max-w-[500px] bg-card p-8 md:p-6 rounded-lg border border-border shadow-md transition-colors">
+	<form
+		onsubmit={(e) => {
+			e.preventDefault();
+			handleSubmit(e);
+		}}
+		class="w-full max-w-[500px] bg-card p-8 md:p-6 rounded-lg border border-border shadow-md transition-colors"
+	>
 		<div class="mb-6 text-left">
 			<Label for="new-password" class="block mb-2 font-bold">New Password</Label>
 			<Input id="new-password" type="password" bind:value={newPassword} required />

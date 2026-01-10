@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -8,24 +8,26 @@
 
 	// SVG Drawing Colours (aligned with design system)
 	const SVG_COLORS = {
-		background: '#f8f9fa',          // Light background
-		title: '#3B82F6',               // Trust Blue (primary accent)
-		text: '#171717',                // Foreground
-		textMuted: '#737373',           // Muted foreground
-		textSecondary: '#525252',       // Secondary foreground
-		divider: '#E5E5E5',             // Border
-		panel: '#2c3e50',               // Solar panel (dark slate - represents actual panels)
-		panelBorder: '#34495e',         // Panel grid lines
-		annotation: '#F59E0B',          // Solar Amber (secondary accent - highlights)
-		support: '#6c757d',             // Support lines (grey)
-		footer: '#A3A3A3'               // Footer text
+		background: '#f8f9fa', // Light background
+		title: '#3B82F6', // Trust Blue (primary accent)
+		text: '#171717', // Foreground
+		textMuted: '#737373', // Muted foreground
+		textSecondary: '#525252', // Secondary foreground
+		divider: '#E5E5E5', // Border
+		panel: '#2c3e50', // Solar panel (dark slate - represents actual panels)
+		panelBorder: '#34495e', // Panel grid lines
+		annotation: '#F59E0B', // Solar Amber (secondary accent - highlights)
+		support: '#6c757d', // Support lines (grey)
+		footer: '#A3A3A3' // Footer text
 	};
 
-	let {
-		show = $bindable(false),
-		proposalData = {},
-		onClose = () => {}
-	} = $props();
+	export type DrawingModalProps = {
+		show?: boolean;
+		proposalData?: Record<string, any>;
+		onClose?: () => void;
+	};
+
+	let { show = $bindable(false), proposalData = {}, onClose = () => {} }: DrawingModalProps = $props();
 
 	// Form inputs
 	let roofType = $state('flat');
@@ -38,7 +40,7 @@
 	let isGenerating = $state(false);
 	let isDownloading = $state(false);
 
-	function handleOpenChange(open) {
+	function handleOpenChange(open: boolean) {
 		if (!open) {
 			drawingGenerated = false;
 			svgContent = '';
@@ -99,14 +101,14 @@
 			svg += `<rect width="${svgWidth}" height="${svgHeight}" fill="${SVG_COLORS.background}"/>`;
 
 			// Title
-			svg += `<text x="${svgWidth/2}" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="${SVG_COLORS.title}">Solar Panel Layout</text>`;
+			svg += `<text x="${svgWidth / 2}" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="${SVG_COLORS.title}">Solar Panel Layout</text>`;
 
 			// System info
-			svg += `<text x="${svgWidth/2}" y="55" text-anchor="middle" font-size="14" fill="${SVG_COLORS.text}">System: ${systemCapacity} kW | Panels: ${numberOfPanels} | ${roofType === 'flat' ? 'Flat' : 'Sloped'} Roof | Tilt: ${tiltAngle}°</text>`;
+			svg += `<text x="${svgWidth / 2}" y="55" text-anchor="middle" font-size="14" fill="${SVG_COLORS.text}">System: ${systemCapacity} kW | Panels: ${numberOfPanels} | ${roofType === 'flat' ? 'Flat' : 'Sloped'} Roof | Tilt: ${tiltAngle}°</text>`;
 
 			// View labels
-			svg += `<text x="${viewWidth/2}" y="90" text-anchor="middle" font-size="16" font-weight="bold" fill="${SVG_COLORS.title}">Top View</text>`;
-			svg += `<text x="${viewWidth + viewWidth/2}" y="90" text-anchor="middle" font-size="16" font-weight="bold" fill="${SVG_COLORS.title}">Side View</text>`;
+			svg += `<text x="${viewWidth / 2}" y="90" text-anchor="middle" font-size="16" font-weight="bold" fill="${SVG_COLORS.title}">Top View</text>`;
+			svg += `<text x="${viewWidth + viewWidth / 2}" y="90" text-anchor="middle" font-size="16" font-weight="bold" fill="${SVG_COLORS.title}">Side View</text>`;
 
 			// Divider line between views
 			svg += `<line x1="${viewWidth}" y1="100" x2="${viewWidth}" y2="${svgHeight - 50}" stroke="${SVG_COLORS.divider}" stroke-width="2" stroke-dasharray="5,5"/>`;
@@ -162,7 +164,10 @@
 			const panelSpacingSide = 15;
 
 			for (let i = 0; i < numPanelsToShow; i++) {
-				const baseX = sideViewCenterX - (numPanelsToShow * (sidePanelLength * Math.cos(tiltRad) + panelSpacingSide)) / 2 + i * (sidePanelLength * Math.cos(tiltRad) + panelSpacingSide);
+				const baseX =
+					sideViewCenterX -
+					(numPanelsToShow * (sidePanelLength * Math.cos(tiltRad) + panelSpacingSide)) / 2 +
+					i * (sidePanelLength * Math.cos(tiltRad) + panelSpacingSide);
 				const baseY = sideViewCenterY;
 
 				// Calculate panel corners for tilted rectangle
@@ -208,7 +213,7 @@
 			svg += `<text x="90" y="${legendY}" font-size="10" fill="${SVG_COLORS.textMuted}">Solar Panel</text>`;
 
 			// Footer
-			svg += `<text x="${svgWidth/2}" y="${svgHeight - 10}" text-anchor="middle" font-size="9" fill="${SVG_COLORS.footer}">Generated on Solarvipani.com</text>`;
+			svg += `<text x="${svgWidth / 2}" y="${svgHeight - 10}" text-anchor="middle" font-size="9" fill="${SVG_COLORS.footer}">Generated on Solarvipani.com</text>`;
 
 			svg += '</svg>';
 
@@ -278,7 +283,7 @@
 			});
 
 			// Convert canvas to PNG blob with high quality
-			const pngBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png', 1.0));
+			const pngBlob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png', 1.0));
 
 			// Generate filename
 			const customerName = proposalData.customer_name || 'customer';
@@ -322,7 +327,9 @@
 			<!-- Input Form -->
 			<div>
 				<h3 class="text-lg font-semibold text-accent mb-2">Drawing Parameters</h3>
-				<p class="text-muted-foreground text-sm mb-6">Provide basic information to generate the layout diagram</p>
+				<p class="text-muted-foreground text-sm mb-6">
+					Provide basic information to generate the layout diagram
+				</p>
 
 				<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
 					<div class="flex flex-col">
@@ -347,10 +354,12 @@
 					</div>
 				</div>
 
-				<div class="bg-accent-muted border-l-4 border-accent p-4 mb-6 rounded text-sm leading-relaxed">
-					<strong>System Info:</strong><br>
-					Capacity: {proposalData.system_capacity_kw || 'N/A'} kW<br>
-					Panels: {proposalData.number_of_panels || 'N/A'}<br>
+				<div
+					class="bg-accent-muted border-l-4 border-accent p-4 mb-6 rounded text-sm leading-relaxed"
+				>
+					<strong>System Info:</strong><br />
+					Capacity: {proposalData.system_capacity_kw || 'N/A'} kW<br />
+					Panels: {proposalData.number_of_panels || 'N/A'}<br />
 					Customer: {proposalData.customer_name || 'N/A'}
 				</div>
 
@@ -365,13 +374,22 @@
 			<!-- Drawing Preview -->
 			<div>
 				<h3 class="text-lg font-semibold text-accent mb-4">Preview</h3>
-				<div class="border-2 border-border rounded-lg p-4 bg-card mb-6 flex justify-center items-center overflow-hidden svg-preview">
+				<div
+					class="border-2 border-border rounded-lg p-4 bg-card mb-6 flex justify-center items-center overflow-hidden svg-preview"
+				>
 					{@html svgContent}
 				</div>
 
 				<Dialog.Footer class="max-sm:flex-col">
-					<Button variant="secondary" onclick={resetDrawing} class="max-sm:w-full">Edit Parameters</Button>
-					<Button variant="success" class="max-sm:w-full" onclick={downloadPNG} disabled={isDownloading}>
+					<Button variant="secondary" onclick={resetDrawing} class="max-sm:w-full"
+						>Edit Parameters</Button
+					>
+					<Button
+						variant="success"
+						class="max-sm:w-full"
+						onclick={downloadPNG}
+						disabled={isDownloading}
+					>
 						{isDownloading ? 'Downloading...' : 'Download PNG'}
 					</Button>
 				</Dialog.Footer>

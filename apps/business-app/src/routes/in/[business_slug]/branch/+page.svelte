@@ -1,11 +1,9 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/stores';
-	import ShowEditProfile from '$lib/in/ShowEditProfile.svelte';
-	import AddBranch from '$lib/in/AddBranch.svelte';
+	import ShowEditProfile from '$lib/in-new-rewrites/ShowEditProfile.svelte';
+	import AddBranch from '$lib/in-new-rewrites/AddBranch.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
-	import { EmptyState } from '$lib/components/ui/empty-state';
-	import { PageHeader } from '$lib/components/ui/page-header';
 
 	// Access page data
 	let businessSlug = $derived($page.params.business_slug);
@@ -54,26 +52,31 @@
 </script>
 
 <div class="min-h-screen p-8 md:p-4 transition-colors duration-300 bg-background text-foreground">
-	<PageHeader
-		title="Branch Offices"
-		description="Manage your business branches across different locations"
-	>
+	<header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+		<div>
+			<h1 class="text-3xl font-bold mb-2">Branch Offices</h1>
+			<p class="text-muted-foreground">Manage your business branches across different locations</p>
+		</div>
 		<Button onclick={() => (showAddBranch = true)} class="whitespace-nowrap md:w-full">
 			Add Branch
 		</Button>
-	</PageHeader>
+	</header>
 
 	<!-- Branches Section -->
 	<section>
 		{#if errorMessage}
-			<div class="bg-destructive-muted text-destructive p-4 rounded-md mb-4 text-center font-semibold">
+			<div
+				class="bg-destructive-muted text-destructive p-4 rounded-md mb-4 text-center font-semibold"
+			>
 				{errorMessage}
 			</div>
 		{:else}
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
 				<!-- Main Branch Tile -->
 				{#if mainBusiness}
-					<div class="bg-card rounded-lg p-6 border-2 border-success shadow-card hover:shadow-card-hover transition-shadow duration-300 flex flex-col gap-4">
+					<div
+						class="bg-card rounded-lg p-6 border-2 border-success shadow-card hover:shadow-card-hover transition-shadow duration-300 flex flex-col gap-4"
+					>
 						<div class="flex justify-between items-start gap-4 mb-2">
 							<h2 class="text-xl font-semibold flex-1">{mainBusiness.businessname}</h2>
 							<Badge class="bg-success text-success-foreground">Main Office</Badge>
@@ -86,7 +89,10 @@
 							{#if mainBusiness.email}
 								<p><strong>Email:</strong> {mainBusiness.email}</p>
 							{/if}
-							<p><strong>Location:</strong> {mainBusiness.city}, {mainBusiness.district}, {mainBusiness.state}</p>
+							<p>
+								<strong>Location:</strong>
+								{mainBusiness.city}, {mainBusiness.district}, {mainBusiness.state}
+							</p>
 						</div>
 						<div class="flex gap-3 flex-wrap md:flex-col">
 							<Button
@@ -111,7 +117,9 @@
 				<!-- Branch Offices Tiles -->
 				{#each branches as branch}
 					{#if !isMainBranch(branch)}
-						<div class="bg-card rounded-lg p-6 border border-border shadow-card hover:shadow-card-hover transition-shadow duration-300 flex flex-col gap-4">
+						<div
+							class="bg-card rounded-lg p-6 border border-border shadow-card hover:shadow-card-hover transition-shadow duration-300 flex flex-col gap-4"
+						>
 							<div class="flex justify-between items-start gap-4 mb-2">
 								<h2 class="text-xl font-semibold flex-1">{branch.businessname}</h2>
 								<Badge class="bg-accent text-accent-foreground">Branch Office</Badge>
@@ -151,7 +159,9 @@
 
 		<!-- No branches message -->
 		{#if branches.length === 0 && !errorMessage && mainBusiness}
-			<EmptyState title="You don't have any branch offices yet." />
+			<div class="text-center py-12 bg-card rounded-lg border border-border">
+				<p class="text-muted-foreground">You don't have any branch offices yet.</p>
+			</div>
 		{/if}
 	</section>
 </div>

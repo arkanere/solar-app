@@ -1,12 +1,21 @@
-<script>
+<script lang="ts">
 	import { toast } from 'svelte-sonner';
 	import LeadProgressBar from './LeadProgressBar.svelte';
 	import ProposalFormModal from './ProposalFormModal.svelte';
-	import LeadTile from './LeadTile.svelte';
+	import LeadTile from '../in-new-rewrites/LeadTile.svelte';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { cn } from '$lib/utils';
+
+	export type CustomerInquiryDashboardHomeProps = {
+		leads?: any[];
+		businessInfo?: Record<string, any>;
+		businessSlug?: string;
+		errorMessage?: string | null;
+		isClaiming?: boolean;
+		onClaimLead?: (lead: any) => void;
+	};
 
 	let {
 		leads = $bindable([]),
@@ -15,7 +24,7 @@
 		errorMessage = null,
 		isClaiming = false,
 		onClaimLead = () => {}
-	} = $props();
+	}: CustomerInquiryDashboardHomeProps = $props();
 
 	// Delete confirmation state
 	let showDeleteConfirm = $state(false);
@@ -76,7 +85,10 @@
 					id: lead.id,
 					stage: updateFields.stage !== undefined ? Number(updateFields.stage) : Number(lead.stage),
 					status: updateFields.status !== undefined ? updateFields.status : lead.status,
-					business_notes: updateFields.business_notes !== undefined ? updateFields.business_notes : lead.business_notes
+					business_notes:
+						updateFields.business_notes !== undefined
+							? updateFields.business_notes
+							: lead.business_notes
 				})
 			});
 
@@ -177,11 +189,11 @@
 		if (category === 2) {
 			switch (stage) {
 				case 0: // Claimed
-					return "Call the customer";
+					return 'Call the customer';
 				case 1: // Contacted
-					return "Send proposal/quotation if customer is interested, else make the inquiry inactive";
+					return 'Send proposal/quotation if customer is interested, else make the inquiry inactive';
 				case 2: // Proposal/Quotation Sent
-					return "Win the sale";
+					return 'Win the sale';
 				default:
 					return null;
 			}
@@ -191,11 +203,11 @@
 		if (category === 3 || category === null) {
 			switch (stage) {
 				case 0: // New Inquiry
-					return "Call the customer";
+					return 'Call the customer';
 				case 1: // Contacted
-					return "Send proposal/quotation if customer is interested, else make the inquiry inactive";
+					return 'Send proposal/quotation if customer is interested, else make the inquiry inactive';
 				case 2: // Proposal/Quotation Sent
-					return "Win the sale";
+					return 'Win the sale';
 				default:
 					return null;
 			}
@@ -225,7 +237,7 @@
 			}
 
 			const result = await response.json();
-			
+
 			if (result.success) {
 				// Remove the lead from the local array
 				leads = leads.filter((l) => l.id !== lead.id);
@@ -331,20 +343,34 @@
 					<div class="text-center p-4 my-5 rounded-lg bg-accent-muted border border-accent/20">
 						<p class="m-0 text-accent text-sm">
 							<strong>Showing 5 of {leads.length} leads.</strong>
-							<a href="/in/{businessSlug}/crm" class="text-accent underline font-semibold hover:opacity-80">View all leads in CRM</a>
+							<a
+								href="/in/{businessSlug}/crm"
+								class="text-accent underline font-semibold hover:opacity-80"
+								>View all leads in CRM</a
+							>
 						</p>
 					</div>
 				{/if}
 			{:else}
 				<!-- Display dummy test lead when no leads exist -->
-				<li class="mb-6 p-0 rounded-xl shadow-sm break-words transition-shadow duration-200 overflow-hidden list-none opacity-70 border-2 border-dashed border-border bg-card">
-					<div class="flex justify-between items-center py-5 px-5 pb-2 border-b border-border max-[480px]:flex-col max-[480px]:items-start max-[480px]:gap-2">
+				<li
+					class="mb-6 p-0 rounded-xl shadow-sm break-words transition-shadow duration-200 overflow-hidden list-none opacity-70 border-2 border-dashed border-border bg-card"
+				>
+					<div
+						class="flex justify-between items-center py-5 px-5 pb-2 border-b border-border max-[480px]:flex-col max-[480px]:items-start max-[480px]:gap-2"
+					>
 						<h3 class="m-0 text-lg font-bold text-foreground leading-tight">
-							{dummyLead.name} <Badge variant="outline" class="rounded-md py-1 px-2.5">Test Lead</Badge>
+							{dummyLead.name}
+							<Badge variant="outline" class="rounded-md py-1 px-2.5">Test Lead</Badge>
 						</h3>
 					</div>
 					<div class="p-5 space-y-3">
-						<p class="m-0 text-sm text-foreground"><strong>Received:</strong> <span class="text-success font-medium">{getRelativeTime(dummyLead.received_at).text}</span></p>
+						<p class="m-0 text-sm text-foreground">
+							<strong>Received:</strong>
+							<span class="text-success font-medium"
+								>{getRelativeTime(dummyLead.received_at).text}</span
+							>
+						</p>
 						<div class="flex flex-wrap items-center gap-4 max-sm:flex-col max-sm:items-start">
 							<p class="m-0 text-sm text-foreground"><strong>Phone:</strong> {dummyLead.phone}</p>
 							<button
@@ -371,9 +397,15 @@
 							</button>
 						</div>
 						<p class="m-0 text-sm text-foreground"><strong>Email:</strong> {dummyLead.email}</p>
-						<p class="m-0 text-sm text-foreground"><strong>Pin Code:</strong> {dummyLead.pin_code}</p>
+						<p class="m-0 text-sm text-foreground">
+							<strong>Pin Code:</strong>
+							{dummyLead.pin_code}
+						</p>
 						<p class="m-0 text-sm text-foreground"><strong>Type:</strong> {dummyLead.type}</p>
-						<p class="m-0 text-sm text-foreground"><strong>Customer Comment:</strong> {dummyLead.comment}</p>
+						<p class="m-0 text-sm text-foreground">
+							<strong>Customer Comment:</strong>
+							{dummyLead.comment}
+						</p>
 					</div>
 				</li>
 			{/if}
@@ -398,13 +430,25 @@
 			<Dialog.Title>Confirm Delete</Dialog.Title>
 		</Dialog.Header>
 		{#if leadToDelete}
-			<p class="m-0 leading-relaxed text-foreground">Are you sure you want to delete the lead for <strong>{leadToDelete.name}</strong>?</p>
+			<p class="m-0 leading-relaxed text-foreground">
+				Are you sure you want to delete the lead for <strong>{leadToDelete.name}</strong>?
+			</p>
 		{/if}
 		<Dialog.Footer class="max-[480px]:flex-col">
-			<Button variant="secondary" onclick={cancelDelete} disabled={isDeleting} class="max-[480px]:w-full">
+			<Button
+				variant="secondary"
+				onclick={cancelDelete}
+				disabled={isDeleting}
+				class="max-[480px]:w-full"
+			>
 				Cancel
 			</Button>
-			<Button variant="destructive" onclick={confirmDelete} disabled={isDeleting} class="max-[480px]:w-full">
+			<Button
+				variant="destructive"
+				onclick={confirmDelete}
+				disabled={isDeleting}
+				class="max-[480px]:w-full"
+			>
 				{isDeleting ? 'Deleting...' : 'Delete Lead'}
 			</Button>
 		</Dialog.Footer>

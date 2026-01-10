@@ -1,16 +1,19 @@
-<script lang="ts" module>
-	import type { Tabs as TabsPrimitive } from 'bits-ui';
-
-	export type TabsProps = TabsPrimitive.RootProps;
-</script>
-
 <script lang="ts">
-	import { Tabs as TabsPrimitive } from 'bits-ui';
+	import { Tabs as TabsPrimitive } from "bits-ui";
+	import { cn } from "$lib/utils.js";
 
 	let {
-		value = $bindable(''),
+		ref = $bindable(null),
+		value = $bindable(""),
+		class: className,
 		...restProps
-	}: TabsProps = $props();
+	}: TabsPrimitive.RootProps = $props();
 </script>
 
-<TabsPrimitive.Root bind:value data-slot="tabs" {...restProps} />
+<TabsPrimitive.Root
+	bind:ref
+	bind:value
+	data-slot="tabs"
+	class={cn("flex flex-col gap-2", className)}
+	{...restProps}
+/>

@@ -1,20 +1,13 @@
-<script lang="ts" module>
-	import type { HTMLSpanAttributes } from 'svelte/elements';
-
-	export type BreadcrumbEllipsisProps = HTMLSpanAttributes & {
-		ref?: HTMLSpanElement | null;
-	};
-</script>
-
 <script lang="ts">
-	import { cn } from '$lib/utils';
-	import { MoreHorizontal } from '@lucide/svelte';
+	import EllipsisIcon from "@lucide/svelte/icons/ellipsis";
+	import type { HTMLAttributes } from "svelte/elements";
+	import { cn, type WithElementRef, type WithoutChildren } from "$lib/utils.js";
 
 	let {
 		ref = $bindable(null),
 		class: className,
 		...restProps
-	}: BreadcrumbEllipsisProps = $props();
+	}: WithoutChildren<WithElementRef<HTMLAttributes<HTMLSpanElement>>> = $props();
 </script>
 
 <span
@@ -22,9 +15,9 @@
 	data-slot="breadcrumb-ellipsis"
 	role="presentation"
 	aria-hidden="true"
-	class={cn('flex size-9 items-center justify-center', className)}
+	class={cn("flex size-9 items-center justify-center", className)}
 	{...restProps}
 >
-	<MoreHorizontal class="size-4" />
+	<EllipsisIcon class="size-4" />
 	<span class="sr-only">More</span>
 </span>

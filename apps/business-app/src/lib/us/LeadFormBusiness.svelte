@@ -1,30 +1,27 @@
-<script>
+<script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 
-	let name = '';
-	let phone = '';
-	let zipCode = '';
-	let type = '';
-	let comment = '';
-	let email = '';
-	let urlParam = '';
+	let name = $state('');
+	let phone = $state('');
+	let zipCode = $state('');
+	let type = $state('');
+	let comment = $state('');
+	let email = $state('');
 
-	let isSubmitting = false;
+	let isSubmitting = $state(false);
 
-	let errors = {
+	let errors = $state({
 		name: '',
 		phone: '',
 		zipCode: '',
 		type: '',
 		email: '',
 		comment: ''
-	};
+	});
 
 	// ✅ Set the URL dynamically based on the current page
-	$: {
-		urlParam = $page.url.pathname;
-	}
+	let urlParam = $derived($page.url.pathname);
 
 	// ✅ Phone Number Validation (10-16 digits with optional + prefix)
 	function validatePhoneNumber() {
@@ -83,7 +80,7 @@
 		return isValid;
 	}
 
-	async function handleSubmit(event) {
+	async function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
 
 		if (validateForm()) {

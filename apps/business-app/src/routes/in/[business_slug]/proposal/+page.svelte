@@ -1,10 +1,8 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/stores';
-	import ProposalFormModal from '$lib/in/ProposalFormModal.svelte';
+	import ProposalFormModal from '$lib/in-new-rewrites/ProposalFormModal.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { EmptyState } from '$lib/components/ui/empty-state';
-	import { PageHeader } from '$lib/components/ui/page-header';
-	import { DataTable, TableHeader, TableRow, TableCell } from '$lib/components/ui/data-table';
+	import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from '$lib/components/ui/table';
 	import { toast } from 'svelte-sonner';
 
 	// Access page data
@@ -92,50 +90,54 @@
 </script>
 
 <div class="min-h-screen p-8 md:p-4 transition-colors duration-300 bg-background text-foreground">
-	<PageHeader
-		title="Proposals"
-		description="Create, Update and Download Proposals"
-		centered
-	/>
+	<header class="mb-8 flex flex-col justify-center items-center text-center">
+		<div>
+			<h1 class="text-3xl font-bold mb-2">Proposals</h1>
+			<p class="text-muted-foreground">Create, Update and Download Proposals</p>
+		</div>
+	</header>
 
 	<section>
 		{#if proposals.length === 0}
-			<EmptyState
-				title="No proposals found."
-				description="Proposals will appear here once created."
-			/>
+			<div class="text-center py-12 bg-card rounded-lg border border-border">
+				<p class="text-muted-foreground">No proposals found. Proposals will appear here once created.</p>
+			</div>
 		{:else}
-			<DataTable>
-				{#snippet headers()}
-					<TableHeader>Customer Name</TableHeader>
-					<TableHeader>System Size</TableHeader>
-					<TableHeader>Action</TableHeader>
-				{/snippet}
-				{#each proposals as proposal}
+			<Table>
+				<TableHeader>
 					<TableRow>
-						<TableCell>{proposal.customer_name}</TableCell>
-						<TableCell>{proposal.system_capacity_kw} kW</TableCell>
-						<TableCell>
-							<div class="flex gap-2 flex-wrap">
-								<Button
-									variant="default"
-									size="sm"
-									onclick={() => openUpdateProposal(proposal)}
-								>
-									Update Proposal
-								</Button>
-								<Button
-									variant="destructive"
-									size="sm"
-									onclick={() => deleteProposal(proposal.id, proposal.customer_name)}
-								>
-									Delete
-								</Button>
-							</div>
-						</TableCell>
+						<TableHead>Customer Name</TableHead>
+						<TableHead>System Size</TableHead>
+						<TableHead>Action</TableHead>
 					</TableRow>
-				{/each}
-			</DataTable>
+				</TableHeader>
+				<TableBody>
+					{#each proposals as proposal}
+						<TableRow>
+							<TableCell>{proposal.customer_name}</TableCell>
+							<TableCell>{proposal.system_capacity_kw} kW</TableCell>
+							<TableCell>
+								<div class="flex gap-2 flex-wrap">
+									<Button
+										variant="default"
+										size="sm"
+										onclick={() => openUpdateProposal(proposal)}
+									>
+										Update Proposal
+									</Button>
+									<Button
+										variant="destructive"
+										size="sm"
+										onclick={() => deleteProposal(proposal.id, proposal.customer_name)}
+									>
+										Delete
+									</Button>
+								</div>
+							</TableCell>
+						</TableRow>
+					{/each}
+				</TableBody>
+			</Table>
 		{/if}
 	</section>
 </div>

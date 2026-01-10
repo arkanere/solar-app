@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -8,13 +8,21 @@
 	import { jsPDF } from 'jspdf';
 	import DrawingModal from './DrawingModal.svelte';
 
+	export type ProposalFormModalProps = {
+		show?: boolean;
+		business?: Record<string, any>;
+		proposal?: any | null;
+		onClose?: () => void;
+		onGenerated?: () => void;
+	};
+
 	let {
 		show = $bindable(false),
 		business = {},
 		proposal = null,
 		onClose = () => {},
 		onGenerated = () => {}
-	} = $props();
+	}: ProposalFormModalProps = $props();
 
 	// Drawing modal state
 	let showDrawingModal = $state(false);
@@ -61,9 +69,11 @@
 	let isSaving = $state(false);
 
 	// Form validation - reactive
-	let isFormValid = $derived(formData.customerName.trim() !== '' && formData.systemCapacity.trim() !== '');
+	let isFormValid = $derived(
+		formData.customerName.trim() !== '' && formData.systemCapacity.trim() !== ''
+	);
 
-	function handleOpenChange(open) {
+	function handleOpenChange(open: boolean) {
 		if (!open) {
 			onClose();
 		}
@@ -129,7 +139,9 @@
 			const result = await response.json();
 
 			if (result.success) {
-				toast.success(proposal?.id ? 'Proposal updated successfully!' : 'Proposal created successfully!');
+				toast.success(
+					proposal?.id ? 'Proposal updated successfully!' : 'Proposal created successfully!'
+				);
 				onGenerated();
 				closeModal();
 			} else {
@@ -313,16 +325,26 @@
 <Dialog.Root open={show} onOpenChange={handleOpenChange}>
 	<Dialog.Content class="max-w-[800px] max-h-[90vh] flex flex-col overflow-hidden">
 		<Dialog.Header class="shrink-0">
-			<Dialog.Title class="text-accent">{proposal ? 'Update Proposal' : 'Create Proposal'}</Dialog.Title>
+			<Dialog.Title class="text-accent"
+				>{proposal ? 'Update Proposal' : 'Create Proposal'}</Dialog.Title
+			>
 		</Dialog.Header>
 
-		<form onsubmit={(e) => { e.preventDefault(); generatePDF(); }} class="flex-1 overflow-y-auto min-h-0 px-1">
+		<form
+			onsubmit={(e) => {
+				e.preventDefault();
+				generatePDF();
+			}}
+			class="flex-1 overflow-y-auto min-h-0 px-1"
+		>
 			<!-- Customer Information Section -->
 			<section class="mb-6 pb-6 border-b border-border">
 				<h3 class="text-lg font-semibold mb-4 text-accent">Customer Information</h3>
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div class="flex flex-col sm:col-span-2">
-						<Label for="customerName" class="mb-2">Customer Name <span class="text-destructive">*</span></Label>
+						<Label for="customerName" class="mb-2"
+							>Customer Name <span class="text-destructive">*</span></Label
+						>
 						<Input
 							type="text"
 							id="customerName"
@@ -369,7 +391,9 @@
 				<h3 class="text-lg font-semibold mb-4 text-accent">System Specifications</h3>
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div class="flex flex-col sm:col-span-2">
-						<Label for="systemCapacity" class="mb-2">System Capacity (kW) <span class="text-destructive">*</span></Label>
+						<Label for="systemCapacity" class="mb-2"
+							>System Capacity (kW) <span class="text-destructive">*</span></Label
+						>
 						<Input
 							type="text"
 							id="systemCapacity"
@@ -447,9 +471,14 @@
 				onclick={saveProposal}
 				disabled={!isFormValid || isSaving}
 			>
-				{isSaving ? 'Saving...' : (proposal?.id ? 'Update Proposal' : 'Save Proposal')}
+				{isSaving ? 'Saving...' : proposal?.id ? 'Update Proposal' : 'Save Proposal'}
 			</Button>
-			<Button type="button" onclick={generatePDF} disabled={!isFormValid || isGenerating} class="max-sm:w-full">
+			<Button
+				type="button"
+				onclick={generatePDF}
+				disabled={!isFormValid || isGenerating}
+				class="max-sm:w-full"
+			>
 				{isGenerating ? 'Downloading PDF...' : 'Download PDF'}
 			</Button>
 		</Dialog.Footer>

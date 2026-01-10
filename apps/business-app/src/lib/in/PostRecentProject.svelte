@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { toast } from 'svelte-sonner';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
@@ -6,12 +6,19 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
 
+	export type PostRecentProjectProps = {
+		show?: boolean;
+		businessSlug?: string;
+		onClose?: () => void;
+		onPosted?: () => void;
+	};
+
 	let {
 		show = $bindable(false),
 		businessSlug = '',
 		onClose = () => {},
 		onPosted = () => {}
-	} = $props();
+	}: PostRecentProjectProps = $props();
 
 	// Form data
 	let formData = $state({
@@ -103,7 +110,7 @@
 		onClose();
 	};
 
-	function handleOpenChange(open) {
+	function handleOpenChange(open: boolean) {
 		if (!open && !isSubmitting) {
 			show = false;
 			onClose();
@@ -196,13 +203,14 @@
 	}
 
 	// Handle image file selection
-	function handleImageChange(event) {
-		const file = event.target.files[0];
+	function handleImageChange(event: Event) {
+		const target = event.target as HTMLInputElement;
+		const file = target.files?.[0];
 		if (file) {
 			// Validate file type
 			if (!allowedImageTypes.includes(file.type)) {
 				toast.error('Please upload a valid image file (JPG, PNG, WebP, GIF, BMP, TIFF, SVG)');
-				event.target.value = ''; // Clear the input
+				target.value = ''; // Clear the input
 				return;
 			}
 
@@ -210,7 +218,7 @@
 			const maxSize = 10 * 1024 * 1024; // 10MB in bytes
 			if (file.size > maxSize) {
 				toast.error('Image file size must be less than 10MB');
-				event.target.value = ''; // Clear the input
+				target.value = ''; // Clear the input
 				return;
 			}
 
@@ -218,8 +226,8 @@
 
 			// Create image preview
 			const reader = new FileReader();
-			reader.onload = (e) => {
-				imagePreview = e.target.result;
+			reader.onload = (e: ProgressEvent<FileReader>) => {
+				imagePreview = e.target?.result as string;
 			};
 			reader.readAsDataURL(file);
 		}
@@ -336,9 +344,17 @@
 			<Dialog.Title class="text-accent">Post Recent Project</Dialog.Title>
 		</Dialog.Header>
 
-		<form class="flex flex-col gap-4" onsubmit={(e) => { e.preventDefault(); saveProject(); }}>
+		<form
+			class="flex flex-col gap-4"
+			onsubmit={(e) => {
+				e.preventDefault();
+				saveProject();
+			}}
+		>
 			{#if errorMessage}
-				<div class="bg-destructive-muted text-destructive p-3 rounded border-l-4 border-destructive text-sm">
+				<div
+					class="bg-destructive-muted text-destructive p-3 rounded border-l-4 border-destructive text-sm"
+				>
 					{errorMessage}
 				</div>
 			{/if}
@@ -356,7 +372,9 @@
 			</div>
 
 			<div class="p-4 bg-background-secondary rounded-lg border border-border">
-				<p class="font-semibold text-sm text-foreground-secondary mb-3">Suggested project titles:</p>
+				<p class="font-semibold text-sm text-foreground-secondary mb-3">
+					Suggested project titles:
+				</p>
 				<div class="flex flex-col gap-2 max-h-[200px] overflow-y-auto">
 					{#each suggestedNames as suggestion}
 						<button
@@ -449,7 +467,12 @@
 				</small>
 				{#if imagePreview}
 					<div class="mt-2 border border-dashed border-border p-2 rounded">
-						<img src={imagePreview} alt="Project preview" loading="lazy" class="max-w-full max-h-[200px] object-contain" />
+						<img
+							src={imagePreview}
+							alt="Project preview"
+							loading="lazy"
+							class="max-w-full max-h-[200px] object-contain"
+						/>
 					</div>
 				{/if}
 			</div>
@@ -458,11 +481,14 @@
 				<Button variant="secondary" disabled={isSubmitting} onclick={close} class="max-sm:w-full">
 					Cancel
 				</Button>
-				<Button type="submit" disabled={isSubmitting} class="bg-success text-success-foreground hover:bg-success/90 max-sm:w-full">
+				<Button
+					type="submit"
+					disabled={isSubmitting}
+					class="bg-success text-success-foreground hover:bg-success/90 max-sm:w-full"
+				>
 					{isSubmitting ? 'Posting...' : 'Post Project'}
 				</Button>
 			</Dialog.Footer>
 		</form>
 	</Dialog.Content>
 </Dialog.Root>
-

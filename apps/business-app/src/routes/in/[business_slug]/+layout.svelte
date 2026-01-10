@@ -1,22 +1,28 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/stores';
-	import { isSidebarExpanded, isMobileMenuOpen } from '$lib/in/sidebarStore';
-	import Sidebar from '$lib/in/Sidebar.svelte';
-	import PostRecentProject from '$lib/in/PostRecentProject.svelte';
-	import AddBranch from '$lib/in/AddBranch.svelte';
-	import ShowSupport from '$lib/in/ShowSupport.svelte';
-	import ShowRankingPolicy from '$lib/in/ShowRankingPolicy.svelte';
-	import LeadFormModalBusiness from '$lib/in/LeadFormModalBusiness.svelte';
+	import { isSidebarExpanded, isMobileMenuOpen } from '$lib/in/sidebarStore.svelte';
+	import Sidebar from '$lib/in-new-rewrites/Sidebar.svelte';
+	import PostRecentProject from '$lib/in-new-rewrites/PostRecentProject.svelte';
+	import AddBranch from '$lib/in-new-rewrites/AddBranch.svelte';
+	import ShowSupport from '$lib/in-new-rewrites/ShowSupport.svelte';
+	import ShowRankingPolicy from '$lib/in-new-rewrites/ShowRankingPolicy.svelte';
+	import LeadFormModalBusiness from '$lib/in-new-rewrites/LeadFormModalBusiness.svelte';
+	import type { Snippet } from 'svelte';
+
+	export type LayoutProps = {
+		data: any;
+		children: Snippet;
+	};
 
 	// Get data from layout load
-	let { data, children } = $props();
+	let { data, children }: LayoutProps = $props();
 	let business = $derived(data.business);
 
 	// Destructure page params
 	let businessSlug = $derived($page.params.business_slug);
 
 	// Sidebar state
-	let expanded = $derived($isSidebarExpanded);
+	let expanded = $derived(isSidebarExpanded.isExpanded);
 
 	// Modal states (lifted from individual pages)
 	let showSupport = $state(false);
@@ -77,7 +83,7 @@
 
 	// Toggle mobile menu
 	function toggleMobileMenu() {
-		isMobileMenuOpen.update((open) => !open);
+		isMobileMenuOpen.toggle();
 	}
 </script>
 

@@ -1,42 +1,43 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/stores';
 	import { toast } from 'svelte-sonner';
-	import { isDarkMode } from '$lib/stores/theme.js';
-	import ShowSupport from '$lib/us/ShowSupport.svelte';
-	import ShowRankingPolicy from '$lib/us/ShowRankingPolicy.svelte';
-	import PostRecentProject from '$lib/us/PostRecentProject.svelte';
-	import AddBranch from '$lib/us/AddBranch.svelte';
-	import CustomerInquiryDashboardHome from '$lib/us/CustomerInquiryDashboardHome.svelte';
-	import LeadFormModalBusiness from '$lib/us/LeadFormModalBusiness.svelte';
+	import { isDarkMode } from '$lib/stores/theme.svelte';
+	import ShowSupport from '$lib/us-new-rewrites/ShowSupport.svelte';
+	import ShowRankingPolicy from '$lib/us-new-rewrites/ShowRankingPolicy.svelte';
+	import PostRecentProject from '$lib/us-new-rewrites/PostRecentProject.svelte';
+	import AddBranch from '$lib/us-new-rewrites/AddBranch.svelte';
+	import CustomerInquiryDashboardHome from '$lib/us-new-rewrites/CustomerInquiryDashboardHome.svelte';
+	import LeadFormModalBusiness from '$lib/us-new-rewrites/LeadFormModalBusiness.svelte';
 
 	// Destructure page data for cleaner access
 	const businessSlug = $page.params.business_slug;
-	$: ({ business, branches = [], leads = [], leadClaims = [], errorMessage } = $page.data);
-	$: darkMode = $isDarkMode;
+	let { business, branches = [], leads = [], leadClaims = [], errorMessage } = $derived($page.data);
+	let darkMode = $derived($isDarkMode);
 
 	// Initialize state variables
-	let recentProjects = [];
-	let showSupport = false;
-	let showRankingPolicy = false;
-	let showPostRecentProject = false;
-	let showAddBranch = false;
-	let showAddLead = false;
-	let isClaiming = false;
-	let mobileMenuOpen = false;
+	let recentProjects = $state([]);
+	let showSupport = $state(false);
+	let showRankingPolicy = $state(false);
+	let showPostRecentProject = $state(false);
+	let showAddBranch = $state(false);
+	let showAddLead = $state(false);
+	let isClaiming = $state(false);
+	let mobileMenuOpen = $state(false);
 
 	// Computed business info
-	$: businessInfo = business
-		? {
-				id: business.id,
-				businessname: business.businessname,
-				description: business.description,
-				phonenumber: business.phonenumber,
-				email: business.email,
-				address: business.address,
-				website: business.website
-			}
-		: {};
-
+	let businessInfo = $derived(
+		business
+			? {
+					id: business.id,
+					businessname: business.businessname,
+					description: business.description,
+					phonenumber: business.phonenumber,
+					email: business.email,
+					address: business.address,
+					website: business.website
+				}
+			: {}
+	);
 
 	// UI toggle functions
 	const toggleSupport = () => (showSupport = !showSupport);
@@ -70,9 +71,8 @@
 		}
 	}
 
-	function handleLeadAdded(event) {
+	function handleLeadAdded(newLead) {
 		try {
-			const newLead = event.detail;
 			console.log('New lead added:', newLead);
 			// Close the modal after successful submission
 			showAddLead = false;
@@ -99,7 +99,9 @@
 			if (result.success) {
 				// Remove the claimed lead from the non-exclusive list since it's now allocated
 				leads = leads.filter((lead) => lead.id !== leadId);
-				toast.success('Lead claimed and allocated successfully! Check your allocated leads section.');
+				toast.success(
+					'Lead claimed and allocated successfully! Check your allocated leads section.'
+				);
 				// Optionally refresh the page to show the new allocated lead
 				window.location.reload();
 			} else {
@@ -112,30 +114,37 @@
 			isClaiming = false;
 		}
 	}
-
 </script>
 
 <!-- TOP NAVIGATION -->
 <nav class="top-nav {darkMode ? 'dark' : 'light'}">
 	<div class="nav-brand">
 		<a href="/us/{businessSlug}">
-			<span class="brand-full">Solar Vipani Business Dashboard - {businessInfo.businessname || ''}</span>
+			<span class="brand-full"
+				>Solar Vipani Business Dashboard - {businessInfo.businessname || ''}</span
+			>
 			<span class="brand-mobile">{businessInfo.businessname || 'Business Dashboard'}</span>
 		</a>
 	</div>
-	
-	<div class="hamburger" role="button" tabindex="0" on:click={toggleMobileMenu} on:keydown={(e) => e.key === 'Enter' && toggleMobileMenu()}>
+
+	<div
+		class="hamburger"
+		role="button"
+		tabindex="0"
+		onclick={toggleMobileMenu}
+		onkeydown={(e) => e.key === 'Enter' && toggleMobileMenu()}
+	>
 		<span></span>
 		<span></span>
 		<span></span>
 	</div>
-	
+
 	<ul class="nav-list {mobileMenuOpen ? 'open' : ''}">
-				<li><button on:click={toggleAddLead}>Add Lead</button></li>
-				<li>
-					<a href="/us/{businessSlug}/crm">CRM</a>
-				</li>
-				<!-- Temporarily hidden - will add later
+		<li><button onclick={toggleAddLead}>Add Lead</button></li>
+		<li>
+			<a href="/us/{businessSlug}/crm">CRM</a>
+		</li>
+		<!-- Temporarily hidden - will add later
 				<li>
 					<a href="/us/{businessSlug}/open-inquiries">Open Inquiries</a>
 				</li>
@@ -144,22 +153,21 @@
 					<a href="/us/{businessSlug}/project">Manage Project</a>
 				</li>
 				-->
-				<li><button on:click={toggleAddBranch}>Add Branch</button></li>
-				<li>
-					<a href="/us/{businessSlug}/branch">Manage Branch</a>
-				</li>
-				<!-- Temporarily hidden - will add later
+		<li><button onclick={toggleAddBranch}>Add Branch</button></li>
+		<li>
+			<a href="/us/{businessSlug}/branch">Manage Branch</a>
+		</li>
+		<!-- Temporarily hidden - will add later
 				<li><button on:click={toggleRankingPolicy}>Policy</button></li>
 				-->
-				<li><button on:click={toggleSupport}>Support</button></li>
-				<li>
-					<form method="POST" action={`/us/${businessSlug}/logout`}>
-						<button type="submit">Logout</button>
-					</form>
-				</li>
-			</ul>
-			
-		</nav>
+		<li><button onclick={toggleSupport}>Support</button></li>
+		<li>
+			<form method="POST" action={`/us/${businessSlug}/logout`}>
+				<button type="submit">Logout</button>
+			</form>
+		</li>
+	</ul>
+</nav>
 
 <!-- MAIN CONTENT -->
 <main class={darkMode ? 'dark' : 'light'}>
@@ -179,12 +187,12 @@
 {#if showAddLead}
 	<div class="modal-overlay" class:dark={darkMode}>
 		<div class="modal-content">
-			<button class="close-btn" on:click={toggleAddLead}>&times;</button>
+			<button class="close-btn" onclick={toggleAddLead}>&times;</button>
 			<h2>Add Lead</h2>
-			<LeadFormModalBusiness 
-				businessName={business?.businessname || ''} 
-				{businessSlug} 
-				on:leadAdded={handleLeadAdded}
+			<LeadFormModalBusiness
+				businessName={business?.businessname || ''}
+				{businessSlug}
+				onLeadAdded={handleLeadAdded}
 			/>
 		</div>
 	</div>
@@ -203,17 +211,16 @@
 {/if}
 
 {#if showRankingPolicy}
-	<ShowRankingPolicy show={showRankingPolicy} on:close={() => (showRankingPolicy = false)} />
+	<ShowRankingPolicy bind:show={showRankingPolicy} onClose={() => (showRankingPolicy = false)} />
 {/if}
-
 
 {#if showAddBranch}
 	<AddBranch
 		show={showAddBranch}
 		businessId={businessInfo.id}
 		{businessSlug}
-		on:close={() => (showAddBranch = false)}
-		on:branchAdded={handleBranchAdded}
+		onClose={() => (showAddBranch = false)}
+		onBranchAdded={handleBranchAdded}
 	/>
 {/if}
 
@@ -223,7 +230,7 @@
 		margin: 0;
 		padding: 0;
 	}
-	
+
 	/* Root variables for light and dark modes */
 	:root {
 		--light-bg-color: #f8f9fa;
@@ -275,7 +282,6 @@
 		background-color: var(--dark-bg-color);
 		color: var(--dark-primary-text-color);
 	}
-
 
 	.hamburger {
 		display: none;
@@ -468,7 +474,7 @@
 			flex-direction: column;
 			gap: 0.5rem;
 		}
-		
+
 		.container {
 			padding: 0 0.75rem;
 		}

@@ -1,2 +1,1 @@
-import Toaster from './sonner.svelte';
-export { Toaster };
+export { default as Toaster } from "./sonner.svelte";

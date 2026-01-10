@@ -1,44 +1,36 @@
-<script lang="ts" module>
-	import type { Checkbox as CheckboxPrimitive } from 'bits-ui';
-
-	export type CheckboxProps = CheckboxPrimitive.RootProps;
-</script>
-
 <script lang="ts">
-	import { Checkbox as CheckboxPrimitive } from 'bits-ui';
-	import { cn } from '$lib/utils';
-	import { Check, Minus } from '@lucide/svelte';
+	import { Checkbox as CheckboxPrimitive } from "bits-ui";
+	import CheckIcon from "@lucide/svelte/icons/check";
+	import MinusIcon from "@lucide/svelte/icons/minus";
+	import { cn, type WithoutChildrenOrChild } from "$lib/utils.js";
 
 	let {
 		ref = $bindable(null),
 		checked = $bindable(false),
+		indeterminate = $bindable(false),
 		class: className,
 		...restProps
-	}: CheckboxProps = $props();
+	}: WithoutChildrenOrChild<CheckboxPrimitive.RootProps> = $props();
 </script>
 
 <CheckboxPrimitive.Root
 	bind:ref
-	bind:checked
 	data-slot="checkbox"
 	class={cn(
-		'peer size-4 shrink-0 rounded border border-input shadow-xs',
-		'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-		'disabled:cursor-not-allowed disabled:opacity-50',
-		'data-[state=checked]:bg-primary data-[state=checked]:border-primary data-[state=checked]:text-primary-foreground',
-		'data-[state=indeterminate]:bg-primary data-[state=indeterminate]:border-primary data-[state=indeterminate]:text-primary-foreground',
-		'transition-colors duration-150',
+		"border-input dark:bg-input/30 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground dark:data-[state=checked]:bg-primary data-[state=checked]:border-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive peer flex size-4 shrink-0 items-center justify-center rounded-[4px] border shadow-xs transition-shadow outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50",
 		className
 	)}
+	bind:checked
+	bind:indeterminate
 	{...restProps}
 >
 	{#snippet children({ checked, indeterminate })}
-		<span class="flex items-center justify-center text-current">
-			{#if indeterminate}
-				<Minus class="size-3" />
-			{:else if checked}
-				<Check class="size-3" />
+		<div data-slot="checkbox-indicator" class="text-current transition-none">
+			{#if checked}
+				<CheckIcon class="size-3.5" />
+			{:else if indeterminate}
+				<MinusIcon class="size-3.5" />
 			{/if}
-		</span>
+		</div>
 	{/snippet}
 </CheckboxPrimitive.Root>

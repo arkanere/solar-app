@@ -1,7 +1,7 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/stores';
 	import { toast } from 'svelte-sonner';
-	import CustomerInquiry from '$lib/in/CustomerInquiry.svelte';
+	import CustomerInquiry from '$lib/in-new-rewrites/CustomerInquiry.svelte';
 
 	// Destructure page data
 	let businessSlug = $derived($page.params.business_slug);
@@ -15,17 +15,19 @@
 	let isClaiming = $state(false);
 
 	// Computed business info
-	let businessInfo = $derived(business
-		? {
-				id: business.id,
-				businessname: business.businessname,
-				description: business.description,
-				phonenumber: business.phonenumber,
-				email: business.email,
-				address: business.address,
-				website: business.website
-			}
-		: {});
+	let businessInfo = $derived(
+		business
+			? {
+					id: business.id,
+					businessname: business.businessname,
+					description: business.description,
+					phonenumber: business.phonenumber,
+					email: business.email,
+					address: business.address,
+					website: business.website
+				}
+			: {}
+	);
 
 	// Lead claiming function
 	async function claimLead(leadId, businessId) {

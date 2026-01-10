@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { Button } from '$lib/components/ui/button';
@@ -93,7 +93,9 @@
 	/>
 </svelte:head>
 
-<main class="flex flex-col items-center justify-center p-12 md:p-6 bg-background text-foreground transition-colors duration-300">
+<main
+	class="flex flex-col items-center justify-center p-12 md:p-6 bg-background text-foreground transition-colors duration-300"
+>
 	<div class="mb-8 text-center max-w-xl">
 		<h1 class="text-3xl md:text-2xl font-semibold mb-6">Claim Your Business</h1>
 		<h2 class="text-xl font-medium mb-4 text-accent">Benefits:</h2>
@@ -106,7 +108,13 @@
 		</div>
 	</div>
 
-	<form onsubmit={(e) => { e.preventDefault(); handleSubmit(e); }} class="w-full max-w-[600px] bg-card p-8 md:p-6 rounded-lg border border-border shadow-md transition-colors">
+	<form
+		onsubmit={(e) => {
+			e.preventDefault();
+			handleSubmit(e);
+		}}
+		class="w-full max-w-[600px] bg-card p-8 md:p-6 rounded-lg border border-border shadow-md transition-colors"
+	>
 		<!-- Name Input -->
 		<div class="mb-6 text-left">
 			<Label for="name" class="block mb-2 font-bold">Name:</Label>
@@ -137,7 +145,12 @@
 		<!-- Message Input -->
 		<div class="mb-6 text-left">
 			<Label for="message" class="block mb-2 font-bold">Message:</Label>
-			<Textarea id="message" bind:value={message} placeholder="Your message here" class="min-h-[100px]" />
+			<Textarea
+				id="message"
+				bind:value={message}
+				placeholder="Your message here"
+				class="min-h-[100px]"
+			/>
 			{#if errors.message}
 				<p class="text-destructive text-sm mt-2">{errors.message}</p>
 			{/if}

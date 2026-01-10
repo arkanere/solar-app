@@ -1,10 +1,8 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/stores';
-	import AddReferrer from '$lib/in/AddReferrer.svelte';
+	import AddReferrer from '$lib/in-new-rewrites/AddReferrer.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { EmptyState } from '$lib/components/ui/empty-state';
-	import { PageHeader } from '$lib/components/ui/page-header';
-	import { DataTable, TableHeader, TableRow, TableCell } from '$lib/components/ui/data-table';
+	import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from '$lib/components/ui/table';
 	import { toast } from 'svelte-sonner';
 
 	// Access page data
@@ -73,68 +71,72 @@
 </svelte:head>
 
 <div class="min-h-screen p-8 md:p-4 transition-colors duration-300 bg-background text-foreground">
-	<PageHeader
-		title="Referrers"
-		description="Manage your business referrers and partners"
-	>
+	<header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+		<div>
+			<h1 class="text-3xl font-bold mb-2">Referrers</h1>
+			<p class="text-muted-foreground">Manage your business referrers and partners</p>
+		</div>
 		<Button onclick={() => (showAddReferrer = true)} class="whitespace-nowrap md:w-full">
 			Add Referrer
 		</Button>
-	</PageHeader>
+	</header>
 
 	<section>
 		{#if referrers.length === 0}
-			<EmptyState
-				title="No referrers found."
-				description="Click &quot;Add Referrer&quot; to add your first referrer partner."
-			/>
+			<div class="text-center py-12 bg-card rounded-lg border border-border">
+				<p class="text-muted-foreground">No referrers found. Click "Add Referrer" to add your first referrer partner.</p>
+			</div>
 		{:else}
-			<DataTable>
-				{#snippet headers()}
-					<TableHeader>Name</TableHeader>
-					<TableHeader>Slug</TableHeader>
-					<TableHeader>Phone</TableHeader>
-					<TableHeader>Email</TableHeader>
-					<TableHeader>Notes</TableHeader>
-					<TableHeader>Actions</TableHeader>
-				{/snippet}
-				{#each referrers as referrer}
+			<Table>
+				<TableHeader>
 					<TableRow>
-						<TableCell>
-							<div class="font-semibold">{referrer.name}</div>
-						</TableCell>
-						<TableCell>
-							<code class="bg-muted px-2 py-1 rounded text-sm font-mono">{referrer.slug}</code>
-						</TableCell>
-						<TableCell>{referrer.phone || 'N/A'}</TableCell>
-						<TableCell>{referrer.email || 'N/A'}</TableCell>
-						<TableCell>
-							<div class="max-w-[300px] md:max-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap">
-								{referrer.notes || '-'}
-							</div>
-						</TableCell>
-						<TableCell>
-							<div class="flex gap-2 flex-wrap">
-								<Button
-									variant="outline"
-									size="sm"
-									class="bg-success hover:bg-success/90 text-success-foreground border-success"
-									onclick={() => copyReferrerLink(referrer.slug)}
-								>
-									Copy
-								</Button>
-								<Button
-									variant="destructive"
-									size="sm"
-									onclick={() => deleteReferrer(referrer.id, referrer.name)}
-								>
-									Delete
-								</Button>
-							</div>
-						</TableCell>
+						<TableHead>Name</TableHead>
+						<TableHead>Slug</TableHead>
+						<TableHead>Phone</TableHead>
+						<TableHead>Email</TableHead>
+						<TableHead>Notes</TableHead>
+						<TableHead>Actions</TableHead>
 					</TableRow>
-				{/each}
-			</DataTable>
+				</TableHeader>
+				<TableBody>
+					{#each referrers as referrer}
+						<TableRow>
+							<TableCell>
+								<div class="font-semibold">{referrer.name}</div>
+							</TableCell>
+							<TableCell>
+								<code class="bg-muted px-2 py-1 rounded text-sm font-mono">{referrer.slug}</code>
+							</TableCell>
+							<TableCell>{referrer.phone || 'N/A'}</TableCell>
+							<TableCell>{referrer.email || 'N/A'}</TableCell>
+							<TableCell>
+								<div class="max-w-[300px] md:max-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap">
+									{referrer.notes || '-'}
+								</div>
+							</TableCell>
+							<TableCell>
+								<div class="flex gap-2 flex-wrap">
+									<Button
+										variant="outline"
+										size="sm"
+										class="bg-success hover:bg-success/90 text-success-foreground border-success"
+										onclick={() => copyReferrerLink(referrer.slug)}
+									>
+										Copy
+									</Button>
+									<Button
+										variant="destructive"
+										size="sm"
+										onclick={() => deleteReferrer(referrer.id, referrer.name)}
+									>
+										Delete
+									</Button>
+								</div>
+							</TableCell>
+						</TableRow>
+					{/each}
+				</TableBody>
+			</Table>
 		{/if}
 	</section>
 </div>

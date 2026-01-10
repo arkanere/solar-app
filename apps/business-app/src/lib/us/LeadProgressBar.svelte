@@ -1,38 +1,27 @@
-<script>
-	export let currentStage = 0;
-	export let leadCategory = 3; // 2 = Non-Exclusive-Claimed, 3 = Exclusive
-	export let isActive = true; // New prop to track if lead is active
+<script lang="ts">
+	import {
+		EXCLUSIVE_STAGES,
+		NON_EXCLUSIVE_CLAIMED_DISPLAY_STAGES,
+		getDisplayStagesForCategory,
+		type LeadCategory
+	} from '$lib/constants/lead';
 
-	// Define stages for different lead categories
-	const exclusiveStages = [
-		'New Inquiry',
-		'Contacted',
-		'Proposal/Quotation Sent',
-		'Won'
-	];
+	let { currentStage = 0, leadCategory = 3, isActive = true } = $props<{
+		currentStage?: number;
+		leadCategory?: LeadCategory;
+		isActive?: boolean;
+	}>();
 
-	const nonExclusiveClaimedStages = [
-		'Claimed',
-		'Contacted',
-		'Proposal/Quotation Sent',
-		'Won'
-	];
+	let stages = $derived(getDisplayStagesForCategory(leadCategory));
 
-	// For display purposes, add "Qualified by Solar Vipani" before the actual stages for non-exclusive claimed leads
-	const nonExclusiveClaimedDisplayStages = [
-		'Qualified by Solar Vipani',
-		'Claimed',
-		'Contacted',
-		'Proposal/Quotation Sent',
-		'Won'
-	];
-
-	$: stages = leadCategory === 2 ? nonExclusiveClaimedDisplayStages : exclusiveStages;
 	// For non-exclusive claimed leads, adjust progress calculation to account for the extra display stage
-	$: progressPercentage = leadCategory === 2 
-		? ((currentStage + 1) / (stages.length - 1)) * 100
-		: (currentStage / (stages.length - 1)) * 100;
-	$: progressColor = isActive ? 'active' : 'inactive';
+	let progressPercentage = $derived(
+		leadCategory === 2
+			? ((currentStage + 1) / (stages.length - 1)) * 100
+			: (currentStage / (stages.length - 1)) * 100
+	);
+
+	let progressColor = $derived(isActive ? 'active' : 'inactive');
 </script>
 
 <div class="progress-container">
@@ -45,7 +34,7 @@
 			{@const isCompleted = leadCategory === 2 ? index <= currentStage : index < currentStage}
 			{@const isCurrent = leadCategory === 2 ? index === currentStage + 1 : index === currentStage}
 			{@const isFuture = leadCategory === 2 ? index > currentStage + 1 : index > currentStage}
-			
+
 			<div class="stage-item {isCompleted ? progressColor : isCurrent ? progressColor : 'future'}">
 				<div class="stage-circle">
 					{#if isCompleted && !isCurrent}
@@ -82,7 +71,9 @@
 	.progress-fill {
 		height: 100%;
 		border-radius: 2px;
-		transition: width 0.3s ease, background 0.3s ease;
+		transition:
+			width 0.3s ease,
+			background 0.3s ease;
 	}
 
 	.progress-fill.active {

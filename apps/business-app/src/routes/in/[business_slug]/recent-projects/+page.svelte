@@ -1,10 +1,8 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/stores';
-	import PostRecentProject from '$lib/in/PostRecentProject.svelte';
+	import PostRecentProject from '$lib/in-new-rewrites/PostRecentProject.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
-	import { EmptyState } from '$lib/components/ui/empty-state';
-	import { PageHeader } from '$lib/components/ui/page-header';
 	import { toast } from 'svelte-sonner';
 
 	// Access page data
@@ -74,38 +72,48 @@
 </script>
 
 <div class="min-h-screen p-8 md:p-4 transition-colors duration-300 bg-background text-foreground">
-	<PageHeader
-		title="Project Portfolio"
-		description="Manage your completed solar installation projects"
-	>
+	<header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+		<div>
+			<h1 class="text-3xl font-bold mb-2">Project Portfolio</h1>
+			<p class="text-muted-foreground">Manage your completed solar installation projects</p>
+		</div>
 		<Button onclick={() => (showPostRecentProject = true)} class="whitespace-nowrap md:w-full">
 			Post Recent Project
 		</Button>
-	</PageHeader>
+	</header>
 
 	<section>
 		{#if errorMessage}
-			<div class="bg-destructive-muted text-destructive p-4 rounded-md mb-4 text-center font-semibold">
+			<div
+				class="bg-destructive-muted text-destructive p-4 rounded-md mb-4 text-center font-semibold"
+			>
 				{errorMessage}
 			</div>
 		{:else if projects.length === 0}
-			<EmptyState
-				title="You haven't posted any projects yet."
-				description="Click the &quot;Post Recent Project&quot; button above to add your first project!"
-			/>
+			<div class="text-center py-12 bg-card rounded-lg border border-border">
+				<p class="text-muted-foreground">You haven't posted any projects yet. Click the "Post Recent Project" button above to add your first project!</p>
+			</div>
 		{:else}
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 				{#each projects as project}
-					<div class="bg-card rounded-lg overflow-hidden border border-border shadow-card hover:shadow-card-hover transition-shadow duration-300">
+					<div
+						class="bg-card rounded-lg overflow-hidden border border-border shadow-card hover:shadow-card-hover transition-shadow duration-300"
+					>
 						{#if project.image_url}
 							<div class="w-full h-[200px] overflow-hidden">
-								<img src={project.image_url} alt={project.title} class="w-full h-full object-cover" />
+								<img
+									src={project.image_url}
+									alt={project.title}
+									class="w-full h-full object-cover"
+								/>
 							</div>
 						{/if}
 						<div class="p-6">
 							<h3 class="text-xl font-semibold mb-2">{project.title}</h3>
 							{#if project.description}
-								<p class="text-sm text-foreground-secondary mb-4 leading-relaxed">{project.description}</p>
+								<p class="text-sm text-foreground-secondary mb-4 leading-relaxed">
+									{project.description}
+								</p>
 							{/if}
 							<div class="flex flex-wrap gap-3 mb-4">
 								{#if project.capacity}
@@ -115,7 +123,9 @@
 									<Badge variant="secondary" class="text-xs">{project.location}</Badge>
 								{/if}
 								{#if project.installation_date}
-									<Badge variant="secondary" class="text-xs">{formatDate(project.installation_date)}</Badge>
+									<Badge variant="secondary" class="text-xs"
+										>{formatDate(project.installation_date)}</Badge
+									>
 								{/if}
 							</div>
 							<div class="flex gap-2">

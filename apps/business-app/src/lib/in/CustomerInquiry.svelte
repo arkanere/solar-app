@@ -1,12 +1,20 @@
-<script>
+<script lang="ts">
 	import { toast } from 'svelte-sonner';
 	import LeadProgressBar from './LeadProgressBar.svelte';
-	import LeadStageFilter from './LeadStageFilter.svelte';
+	import LeadStageFilter from '../in-new-rewrites/LeadStageFilter.svelte';
 	import ProposalFormModal from './ProposalFormModal.svelte';
-	import LeadTile from './LeadTile.svelte';
+	import LeadTile from '../in-new-rewrites/LeadTile.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { cn } from '$lib/utils';
+
+	export type CustomerInquiryProps = {
+		leads?: any[];
+		businessInfo?: Record<string, any>;
+		errorMessage?: string | null;
+		isClaiming?: boolean;
+		onClaimLead?: (lead: any) => void;
+	};
 
 	let {
 		leads = $bindable([]),
@@ -14,7 +22,7 @@
 		errorMessage = null,
 		isClaiming = false,
 		onClaimLead = () => {}
-	} = $props();
+	}: CustomerInquiryProps = $props();
 
 	// Proposal modal state
 	let showProposalModal = $state(false);
@@ -78,7 +86,10 @@
 					id: lead.id,
 					stage: updateFields.stage !== undefined ? Number(updateFields.stage) : Number(lead.stage),
 					status: updateFields.status !== undefined ? updateFields.status : lead.status,
-					business_notes: updateFields.business_notes !== undefined ? updateFields.business_notes : lead.business_notes
+					business_notes:
+						updateFields.business_notes !== undefined
+							? updateFields.business_notes
+							: lead.business_notes
 				})
 			});
 
@@ -179,11 +190,11 @@
 		if (category === 2) {
 			switch (stage) {
 				case 0: // Claimed
-					return "Call the customer";
+					return 'Call the customer';
 				case 1: // Contacted
-					return "Send proposal/quotation if customer is interested, else make the inquiry inactive";
+					return 'Send proposal/quotation if customer is interested, else make the inquiry inactive';
 				case 2: // Proposal/Quotation Sent
-					return "Win the sale";
+					return 'Win the sale';
 				default:
 					return null;
 			}
@@ -193,11 +204,11 @@
 		if (category === 3 || category === null) {
 			switch (stage) {
 				case 0: // New Inquiry
-					return "Call the customer";
+					return 'Call the customer';
 				case 1: // Contacted
-					return "Send proposal/quotation if customer is interested, else make the inquiry inactive";
+					return 'Send proposal/quotation if customer is interested, else make the inquiry inactive';
 				case 2: // Proposal/Quotation Sent
-					return "Win the sale";
+					return 'Win the sale';
 				default:
 					return null;
 			}
@@ -208,7 +219,7 @@
 
 	// Filter function
 	function filterLeads() {
-		filteredLeads = leads.filter(lead => {
+		filteredLeads = leads.filter((lead) => {
 			// Category filter
 			if (selectedCategory !== 'all') {
 				const categoryValue = parseInt(selectedCategory);
@@ -245,10 +256,14 @@
 	}
 
 	// Handle filter changes
-	function handleFilterChange(event) {
-		selectedCategory = event.detail.selectedCategory;
-		selectedStage = event.detail.selectedStage;
-		selectedStatus = event.detail.selectedStatus;
+	function handleFilterChange(filters: {
+		selectedCategory: string;
+		selectedStage: string;
+		selectedStatus: string;
+	}) {
+		selectedCategory = filters.selectedCategory;
+		selectedStage = filters.selectedStage;
+		selectedStatus = filters.selectedStatus;
 		filterLeads();
 	}
 
@@ -279,7 +294,7 @@
 			}
 
 			const result = await response.json();
-			
+
 			if (result.success) {
 				// Remove the lead from the local array
 				leads = leads.filter((l) => l.id !== lead.id);
@@ -367,9 +382,15 @@
 			/>
 
 			{#if filteredLeads.length === 0}
-				<div class="text-center p-8 my-4 rounded-lg bg-muted/30 border-2 border-dashed border-muted-foreground/30">
-					<p class="font-semibold text-lg text-muted-foreground m-2">No leads match the selected filters.</p>
-					<p class="text-muted-foreground italic m-2"><small>Try adjusting your filters or clearing them to see more results.</small></p>
+				<div
+					class="text-center p-8 my-4 rounded-lg bg-muted/30 border-2 border-dashed border-muted-foreground/30"
+				>
+					<p class="font-semibold text-lg text-muted-foreground m-2">
+						No leads match the selected filters.
+					</p>
+					<p class="text-muted-foreground italic m-2">
+						<small>Try adjusting your filters or clearing them to see more results.</small>
+					</p>
 				</div>
 			{/if}
 		{/if}
@@ -399,25 +420,45 @@
 				{/each}
 			{:else}
 				<!-- Display dummy test lead when no leads exist -->
-				<li class="mb-8 rounded-xl shadow-sm border-2 border-dashed border-border overflow-hidden opacity-70 bg-card dark:bg-card">
+				<li
+					class="mb-8 rounded-xl shadow-sm border-2 border-dashed border-border overflow-hidden opacity-70 bg-card dark:bg-card"
+				>
 					<div class="flex justify-between items-center py-5 px-5 border-b border-border">
 						<h3 class="m-0 text-lg font-bold text-foreground">
-							{dummyLead.name} <span class="ml-2 text-xs font-semibold px-2 py-1 rounded bg-warning-muted text-warning">Test Lead</span>
+							{dummyLead.name}
+							<span
+								class="ml-2 text-xs font-semibold px-2 py-1 rounded bg-warning-muted text-warning"
+								>Test Lead</span
+							>
 						</h3>
 					</div>
 					<div class="p-5">
 						<p class="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-							<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								width="14"
+								height="14"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								class="shrink-0"
+							>
 								<circle cx="12" cy="12" r="10"></circle>
 								<polyline points="12 6 12 12 16 14"></polyline>
 							</svg>
 							<span class="font-medium">Received:</span>
-							<span class={cn(
-								"font-medium",
-								getRelativeTime(dummyLead.received_at).class === 'time-fresh' && "text-success",
-								getRelativeTime(dummyLead.received_at).class === 'time-recent' && "text-warning",
-								getRelativeTime(dummyLead.received_at).class === 'time-old' && "text-muted-foreground"
-							)}>{getRelativeTime(dummyLead.received_at).text}</span>
+							<span
+								class={cn(
+									'font-medium',
+									getRelativeTime(dummyLead.received_at).class === 'time-fresh' && 'text-success',
+									getRelativeTime(dummyLead.received_at).class === 'time-recent' && 'text-warning',
+									getRelativeTime(dummyLead.received_at).class === 'time-old' &&
+										'text-muted-foreground'
+								)}>{getRelativeTime(dummyLead.received_at).text}</span
+							>
 						</p>
 						<div class="flex items-center justify-between gap-4 mb-4 flex-wrap">
 							<p class="text-foreground m-0"><strong>Phone:</strong> {dummyLead.phone}</p>
@@ -445,10 +486,22 @@
 							</button>
 						</div>
 						<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-							<p class="text-foreground m-0"><strong class="text-foreground-secondary">Email:</strong> {dummyLead.email}</p>
-							<p class="text-foreground m-0"><strong class="text-foreground-secondary">Pin Code:</strong> {dummyLead.pin_code}</p>
-							<p class="text-foreground m-0"><strong class="text-foreground-secondary">Type:</strong> {dummyLead.type}</p>
-							<p class="text-foreground m-0 sm:col-span-2"><strong class="text-foreground-secondary">Customer Comment:</strong> {dummyLead.comment}</p>
+							<p class="text-foreground m-0">
+								<strong class="text-foreground-secondary">Email:</strong>
+								{dummyLead.email}
+							</p>
+							<p class="text-foreground m-0">
+								<strong class="text-foreground-secondary">Pin Code:</strong>
+								{dummyLead.pin_code}
+							</p>
+							<p class="text-foreground m-0">
+								<strong class="text-foreground-secondary">Type:</strong>
+								{dummyLead.type}
+							</p>
+							<p class="text-foreground m-0 sm:col-span-2">
+								<strong class="text-foreground-secondary">Customer Comment:</strong>
+								{dummyLead.comment}
+							</p>
 						</div>
 					</div>
 				</li>
@@ -464,13 +517,25 @@
 			<Dialog.Title>Confirm Delete</Dialog.Title>
 		</Dialog.Header>
 		{#if leadToDelete}
-			<p class="m-0 leading-relaxed text-foreground">Are you sure you want to delete the lead for <strong>{leadToDelete.name}</strong>?</p>
+			<p class="m-0 leading-relaxed text-foreground">
+				Are you sure you want to delete the lead for <strong>{leadToDelete.name}</strong>?
+			</p>
 		{/if}
 		<Dialog.Footer class="max-sm:flex-col">
-			<Button variant="secondary" onclick={cancelDelete} disabled={isDeleting} class="max-sm:w-full">
+			<Button
+				variant="secondary"
+				onclick={cancelDelete}
+				disabled={isDeleting}
+				class="max-sm:w-full"
+			>
 				Cancel
 			</Button>
-			<Button variant="destructive" onclick={confirmDelete} disabled={isDeleting} class="max-sm:w-full">
+			<Button
+				variant="destructive"
+				onclick={confirmDelete}
+				disabled={isDeleting}
+				class="max-sm:w-full"
+			>
 				{isDeleting ? 'Deleting...' : 'Delete Lead'}
 			</Button>
 		</Dialog.Footer>

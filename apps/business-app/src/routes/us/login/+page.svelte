@@ -1,10 +1,14 @@
-<script>
-	import { isDarkMode } from '$lib/stores/theme.js';
+<script lang="ts">
+	import { isDarkMode } from '$lib/stores/theme.svelte';
 	import { enhance } from '$app/forms';
-	
-	export let form = null;
 
-	$: darkMode = $isDarkMode; // Watch for changes in dark mode state
+	export type PageProps = {
+		form?: any | null;
+	};
+
+	let { form = null }: PageProps = $props();
+
+	let darkMode = $derived(isDarkMode.current);
 </script>
 
 <main class={darkMode ? 'dark' : 'light'}>

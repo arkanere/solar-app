@@ -1,15 +1,17 @@
-<script>
+<script lang="ts">
 	import { cn } from '$lib/utils';
 	import { Input } from '$lib/components/ui/input';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Label } from '$lib/components/ui/label';
 	import { Button } from '$lib/components/ui/button';
 
-	let {
-		businessName = '',
-		businessSlug = '',
-		onLeadAdded = () => {}
-	} = $props();
+	export type LeadFormModalBusinessProps = {
+		businessName?: string;
+		businessSlug?: string;
+		onLeadAdded?: () => void;
+	};
+
+	let { businessName = '', businessSlug = '', onLeadAdded = () => {} }: LeadFormModalBusinessProps = $props();
 
 	let name = $state('');
 	let phone = $state('');
@@ -94,7 +96,7 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 		errors = { name: '', phone: '', pinCode: '', email: '', comment: '' };
 	}
 
-	async function handleSubmit(event) {
+	async function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
 
 		if (validateForm()) {
@@ -146,13 +148,20 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 	}
 </script>
 
-<form onsubmit={handleSubmit} class="flex flex-col max-w-[400px] mx-auto pt-4 max-md:max-w-full max-md:p-0">
+<form
+	onsubmit={handleSubmit}
+	class="flex flex-col max-w-[400px] mx-auto pt-4 max-md:max-w-full max-md:p-0"
+>
 	<!-- Success/Error Message -->
 	{#if submitMessage}
-		<div class={cn(
-			"py-3 px-3 mb-4 rounded text-center font-bold",
-			submitSuccess ? "bg-success-muted text-success border border-success/30" : "bg-destructive-muted text-destructive border border-destructive/30"
-		)}>
+		<div
+			class={cn(
+				'py-3 px-3 mb-4 rounded text-center font-bold',
+				submitSuccess
+					? 'bg-success-muted text-success border border-success/30'
+					: 'bg-destructive-muted text-destructive border border-destructive/30'
+			)}
+		>
 			{submitMessage}
 		</div>
 	{/if}
@@ -169,7 +178,14 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 	<!-- Phone Number Input -->
 	<div class="mb-4 max-[576px]:mb-3">
 		<Label for="phone" class="block mb-2 font-bold text-left">Phone Number:</Label>
-		<Input id="phone" type="text" bind:value={phone} required onblur={validatePhoneNumber} class="w-full" />
+		<Input
+			id="phone"
+			type="text"
+			bind:value={phone}
+			required
+			onblur={validatePhoneNumber}
+			class="w-full"
+		/>
 		{#if errors.phone}
 			<p class="text-destructive text-sm mt-1">{errors.phone}</p>
 		{/if}
@@ -178,7 +194,14 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 	<!-- Pin Code Input -->
 	<div class="mb-4 max-[576px]:mb-3">
 		<Label for="pinCode" class="block mb-2 font-bold text-left">Pin Code:</Label>
-		<Input id="pinCode" type="text" bind:value={pinCode} required onblur={validatePinCode} class="w-full" />
+		<Input
+			id="pinCode"
+			type="text"
+			bind:value={pinCode}
+			required
+			onblur={validatePinCode}
+			class="w-full"
+		/>
 		{#if errors.pinCode}
 			<p class="text-destructive text-sm mt-1">{errors.pinCode}</p>
 		{/if}
@@ -187,7 +210,14 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 	<!-- Email Input -->
 	<div class="mb-4 max-[576px]:mb-3">
 		<Label for="email" class="block mb-2 font-bold text-left">Email:</Label>
-		<Input id="email" type="email" bind:value={email} required onblur={validateEmail} class="w-full" />
+		<Input
+			id="email"
+			type="email"
+			bind:value={email}
+			required
+			onblur={validateEmail}
+			class="w-full"
+		/>
 		{#if errors.email}
 			<p class="text-destructive text-sm mt-1">{errors.email}</p>
 		{/if}

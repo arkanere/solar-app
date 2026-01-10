@@ -1,9 +1,7 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/stores';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
-	import { EmptyState } from '$lib/components/ui/empty-state';
-	import { PageHeader } from '$lib/components/ui/page-header';
 	import { toast } from 'svelte-sonner';
 
 	let businessSlug = $derived($page.params.business_slug);
@@ -40,22 +38,24 @@
 </svelte:head>
 
 <div class="min-h-screen p-8 md:p-4 transition-colors duration-300 bg-background text-foreground">
-	<PageHeader
-		title="Open Inquiries"
-		description="Browse available customer inquiries in different districts"
-		centered
-	/>
+	<header class="mb-8 flex flex-col justify-center items-center text-center">
+		<div>
+			<h1 class="text-3xl font-bold mb-2">Open Inquiries</h1>
+			<p class="text-muted-foreground">Browse available customer inquiries in different districts</p>
+		</div>
+	</header>
 
 	<section>
 		{#if leads.length === 0}
-			<EmptyState
-				title="No open inquiries available at the moment."
-				description="Check back later for new opportunities!"
-			/>
+			<div class="text-center py-12 bg-card rounded-lg border border-border">
+				<p class="text-muted-foreground">No open inquiries available at the moment. Check back later for new opportunities!</p>
+			</div>
 		{:else}
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 				{#each leads as lead}
-					<div class="bg-card rounded-lg p-6 border border-border shadow-card hover:shadow-card-hover transition-shadow duration-300">
+					<div
+						class="bg-card rounded-lg p-6 border border-border shadow-card hover:shadow-card-hover transition-shadow duration-300"
+					>
 						<div class="flex justify-between items-center mb-4 gap-2 flex-wrap">
 							<Badge class="bg-accent text-accent-foreground">{lead.district}, {lead.state}</Badge>
 							<Badge variant="secondary" class="text-xs">{getDaysAgo(lead.created_at)}</Badge>

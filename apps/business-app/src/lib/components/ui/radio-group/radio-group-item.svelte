@@ -1,39 +1,31 @@
-<script lang="ts" module>
-	import type { RadioGroup as RadioGroupPrimitive } from 'bits-ui';
-
-	export type RadioGroupItemProps = RadioGroupPrimitive.ItemProps;
-</script>
-
 <script lang="ts">
-	import { RadioGroup as RadioGroupPrimitive } from 'bits-ui';
-	import { cn } from '$lib/utils';
-	import { Circle } from '@lucide/svelte';
+	import { RadioGroup as RadioGroupPrimitive } from "bits-ui";
+	import CircleIcon from "@lucide/svelte/icons/circle";
+	import { cn, type WithoutChildrenOrChild } from "$lib/utils.js";
 
 	let {
 		ref = $bindable(null),
 		class: className,
 		...restProps
-	}: RadioGroupItemProps = $props();
+	}: WithoutChildrenOrChild<RadioGroupPrimitive.ItemProps> = $props();
 </script>
 
 <RadioGroupPrimitive.Item
 	bind:ref
 	data-slot="radio-group-item"
 	class={cn(
-		'aspect-square size-4 rounded-full border border-input shadow-xs',
-		'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-		'disabled:cursor-not-allowed disabled:opacity-50',
-		'data-[state=checked]:border-primary data-[state=checked]:text-primary',
-		'transition-colors duration-150',
+		"border-input text-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 aspect-square size-4 shrink-0 rounded-full border shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50",
 		className
 	)}
 	{...restProps}
 >
 	{#snippet children({ checked })}
-		{#if checked}
-			<span class="flex items-center justify-center">
-				<Circle class="size-2 fill-current text-current" />
-			</span>
-		{/if}
+		<div data-slot="radio-group-indicator" class="relative flex items-center justify-center">
+			{#if checked}
+				<CircleIcon
+					class="fill-primary absolute start-1/2 top-1/2 size-2 -translate-x-1/2 -translate-y-1/2"
+				/>
+			{/if}
+		</div>
 	{/snippet}
 </RadioGroupPrimitive.Item>

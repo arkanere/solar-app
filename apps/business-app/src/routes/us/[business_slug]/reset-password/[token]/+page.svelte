@@ -1,20 +1,19 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
-	import { isDarkMode } from '$lib/stores/theme.js';
+	import { isDarkMode } from '$lib/stores/theme.svelte';
 
-	let newPassword = '';
-	let confirmPassword = '';
-	let errorMessage = '';
-	let isLoading = false; // Loading state to lock the button
+	let newPassword = $state('');
+	let confirmPassword = $state('');
+	let errorMessage = $state('');
+	let isLoading = $state(false); // Loading state to lock the button
 
 	let business_slug = $page.params.business_slug;
 	let token = $page.params.token;
 
 	// Initialize dark mode state
-	let darkMode;
-	$: darkMode = $isDarkMode;
+	let darkMode = $derived($isDarkMode);
 
 	async function handleSubmit(event) {
 		event.preventDefault();
@@ -65,7 +64,7 @@
 
 <main class={darkMode ? 'dark' : 'light'}>
 	<h1>Reset Your Password</h1>
-	<form on:submit|preventDefault={handleSubmit}>
+	<form onsubmit={handleSubmit}>
 		<div class="form-group">
 			<label for="new-password">New Password</label>
 			<input id="new-password" type="password" bind:value={newPassword} required />

@@ -1,23 +1,17 @@
-<script lang="ts" module>
-	import type { HTMLAttributes } from 'svelte/elements';
-	import type { WithElementRef } from '$lib/utils';
-
-	export type SkeletonProps = WithElementRef<HTMLDivElement> & HTMLAttributes<HTMLDivElement>;
-</script>
-
 <script lang="ts">
-	import { cn } from '$lib/utils';
+	import { cn, type WithElementRef, type WithoutChildren } from "$lib/utils.js";
+	import type { HTMLAttributes } from "svelte/elements";
 
 	let {
 		ref = $bindable(null),
 		class: className,
 		...restProps
-	}: SkeletonProps = $props();
+	}: WithoutChildren<WithElementRef<HTMLAttributes<HTMLDivElement>>> = $props();
 </script>
 
 <div
 	bind:this={ref}
 	data-slot="skeleton"
-	class={cn('animate-pulse rounded-md bg-muted', className)}
+	class={cn("bg-accent animate-pulse rounded-md", className)}
 	{...restProps}
-/>
+></div>

@@ -1,139 +1,77 @@
-<script>
-	export let show = false;
+<script lang="ts">
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { Button } from '$lib/components/ui/button';
 
-	import { createEventDispatcher } from 'svelte';
-	const dispatch = createEventDispatcher();
-
-	const close = () => {
-		show = false;
-		dispatch('close');
+	export type ShowRankingPolicyProps = {
+		show?: boolean;
+		onClose?: () => void;
 	};
 
-	const handleOverlayClick = (event) => {
-		// Only close if clicking directly on the overlay, not on the modal content
-		if (event.target === event.currentTarget) {
-			close();
+	let { show = $bindable(false), onClose = () => {} }: ShowRankingPolicyProps = $props();
+
+	function handleOpenChange(open: boolean) {
+		if (!open) {
+			show = false;
+			onClose();
 		}
-	};
+	}
+
+	function close() {
+		show = false;
+		onClose();
+	}
 </script>
 
-{#if show}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-	<div role="dialog" aria-modal="true" aria-labelledby="ranking-policy-title" class="modal-overlay" on:click={handleOverlayClick}>
-		<div class="modal">
-			<button class="close-modal" aria-label="Close dialog" on:click={close}>&times;</button>
-			<div class="modal-content">
-				<h2 id="ranking-policy-title">Policy</h2>
-				<div class="policy-content">
-					<h3>Non-Exclusive Lead Allotment</h3>
-					<p>Our lead distribution system works on a <strong>non-exclusive basis</strong> to ensure fair opportunity for all qualified businesses:</p>
-					<ul>
-						<li><strong>Lead Distribution:</strong> Each lead is allotted to 4 businesses simultaneously</li>
-						<li><strong>First Come, First Served:</strong> Leads are distributed on a first come, first served basis to eligible businesses</li>
-						<li><strong>Response Time Matters:</strong> Quick response to leads increases your chances of conversion</li>
-						<li><strong>Equal Opportunity:</strong> All businesses have an equal chance to connect with potential customers</li>
-					</ul>
+<Dialog.Root open={show} onOpenChange={handleOpenChange}>
+	<Dialog.Content class="max-w-[600px] max-h-[80vh] overflow-y-auto">
+		<Dialog.Header class="text-center sm:text-center">
+			<Dialog.Title class="text-accent">Policy</Dialog.Title>
+		</Dialog.Header>
 
-					<h3>Business Ranking Factors</h3>
-					<p>Your business ranking on Solar Vipani is determined by several factors:</p>
-					<ul>
-						<li><strong>Profile Completion:</strong> Businesses with complete profiles rank higher</li>
-						<li><strong>Recent Projects:</strong> Posting recent solar installation projects significantly improves your ranking</li>
-					</ul>
-					<p><strong>Pro Tip:</strong> Regularly update your profile and post recent projects to maintain high ranking!</p>
-				</div>
-				<button on:click={close}>Close</button>
-			</div>
+		<div class="text-left text-foreground">
+			<h3 class="mt-5 mb-3 text-accent text-lg font-semibold">Non-Exclusive Lead Allotment</h3>
+			<p class="mb-4 leading-relaxed">
+				Our lead distribution system works on a <strong>non-exclusive basis</strong> to ensure fair opportunity
+				for all qualified businesses:
+			</p>
+			<ul class="ml-5 mb-4 list-disc">
+				<li class="mb-2 leading-relaxed">
+					<strong>Lead Distribution:</strong> Each lead is allotted to 4 businesses simultaneously
+				</li>
+				<li class="mb-2 leading-relaxed">
+					<strong>First Come, First Served:</strong> Leads are distributed on a first come, first served
+					basis to eligible businesses
+				</li>
+				<li class="mb-2 leading-relaxed">
+					<strong>Response Time Matters:</strong> Quick response to leads increases your chances of conversion
+				</li>
+				<li class="mb-2 leading-relaxed">
+					<strong>Equal Opportunity:</strong> All businesses have an equal chance to connect with potential
+					customers
+				</li>
+			</ul>
+
+			<h3 class="mt-5 mb-3 text-accent text-lg font-semibold">Business Ranking Factors</h3>
+			<p class="mb-4 leading-relaxed">
+				Your business ranking on Solar Vipani is determined by several factors:
+			</p>
+			<ul class="ml-5 mb-4 list-disc">
+				<li class="mb-2 leading-relaxed">
+					<strong>Profile Completion:</strong> Businesses with complete profiles rank higher
+				</li>
+				<li class="mb-2 leading-relaxed">
+					<strong>Recent Projects:</strong> Posting recent solar installation projects significantly improves
+					your ranking
+				</li>
+			</ul>
+			<p class="mb-4 leading-relaxed">
+				<strong>Pro Tip:</strong> Regularly update your profile and post recent projects to maintain high
+				ranking!
+			</p>
 		</div>
-	</div>
-{/if}
 
-<style>
-	.modal-overlay {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: rgba(0, 0, 0, 0.5);
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		z-index: 1000;
-	}
-
-	.modal {
-		position: relative;
-		z-index: 1001;
-		background: white;
-		padding: 20px;
-		border-radius: 5px;
-		max-width: 600px;
-		width: 100%;
-		max-height: 80vh;
-		overflow-y: auto;
-	}
-
-	.close-modal {
-		position: absolute;
-		top: 10px;
-		right: 10px;
-		background: none;
-		border: none;
-		font-size: 1.5rem;
-		cursor: pointer;
-	}
-
-	.modal-content {
-		display: flex;
-		flex-direction: column;
-		gap: 15px;
-	}
-
-	.policy-content {
-		text-align: left;
-	}
-
-	h2 {
-		margin-bottom: 16px;
-		text-align: center;
-		color: #0056b3;
-	}
-
-	h3 {
-		margin-top: 20px;
-		margin-bottom: 12px;
-		color: #0056b3;
-		font-size: 1.2rem;
-	}
-
-	p {
-		margin-bottom: 15px;
-		line-height: 1.6;
-	}
-
-	ul {
-		margin-left: 20px;
-		margin-bottom: 15px;
-	}
-
-	li {
-		margin-bottom: 8px;
-		line-height: 1.5;
-	}
-
-	button {
-		padding: 8px 16px;
-		background-color: #f1f1f1;
-		border: 1px solid #ccc;
-		border-radius: 4px;
-		cursor: pointer;
-		margin: 0 auto;
-		width: fit-content;
-	}
-
-	button:hover {
-		background-color: #e1e1e1;
-	}
-</style>
+		<Dialog.Footer class="sm:justify-center">
+			<Button variant="outline" onclick={close}>Close</Button>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>
