@@ -218,8 +218,8 @@
 
 	<!-- Story Viewer Modal -->
 	{#if isViewerOpen && projects[currentStoryIndex]}
-		<div class="story-viewer" on:click={closeStory} role="dialog" aria-modal="true">
-			<div class="story-content" on:click|stopPropagation>
+		<button class="story-viewer" on:click={closeStory} aria-label="Close story viewer" type="button">
+			<div class="story-content" role="presentation">
 				<!-- Progress Indicators -->
 				<div class="progress-container">
 					{#each projects as _, index}
@@ -299,7 +299,7 @@
 					aria-label="Next story"
 				></button>
 			</div>
-		</div>
+		</button>
 	{/if}
 </main>
 
@@ -492,6 +492,8 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
+		border: none;
+		padding: 0;
 	}
 
 	.story-content {
@@ -587,12 +589,6 @@
 	.installer-link:hover {
 		color: #ffd700;
 		text-decoration: underline;
-	}
-
-	.installer-details p {
-		color: rgba(255, 255, 255, 0.8);
-		font-size: 0.8rem;
-		margin: 0;
 	}
 
 	.close-btn {
@@ -747,15 +743,6 @@
 
 		h1 {
 			font-size: 2rem;
-		}
-
-		.stories-preview {
-			gap: 1rem;
-		}
-
-		.story-ring {
-			width: 70px;
-			height: 70px;
 		}
 
 		.story-content {

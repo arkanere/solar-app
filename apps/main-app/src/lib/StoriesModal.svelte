@@ -149,8 +149,8 @@
 <svelte:window on:keydown={handleKeydown} />
 
 {#if $storiesModalOpen}
-	<div class="stories-modal-backdrop" on:click={closeStory}>
-		<div class="stories-modal-content" on:click|stopPropagation>
+	<button class="stories-modal-backdrop" on:click={closeStory} aria-label="Close stories modal" type="button">
+		<div class="stories-modal-content" role="presentation">
 			
 			{#if $storiesLoading}
 				<div class="loading-container">
@@ -265,7 +265,7 @@
 				></button>
 			{/if}
 		</div>
-	</div>
+	</button>
 {/if}
 
 <style>
@@ -295,6 +295,8 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
+		border: none;
+		padding: 0;
 	}
 
 	/* Modal Content */

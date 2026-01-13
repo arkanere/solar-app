@@ -1,56 +1,50 @@
-<script>
+<script lang="ts">
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores'; // Import the page store to access the URL
+	import { page } from '$app/stores';
 
-	let name = '';
-	let phone = '';
-	let message = '';
-	let pincode = ''; // New pincode variable
-	let isSubmitting = false; // Track the submission state
-	let urlParam = '';
+	let name: string = '';
+	let phone: string = '';
+	let message: string = '';
+	let pincode: string = '';
+	let isSubmitting: boolean = false;
+	let urlParam: string = '';
 
-	let errors = {
+	let errors: Record<string, string> = {
 		name: '',
 		phone: '',
 		message: '',
-		pincode: '' // New pincode error
+		pincode: ''
 	};
 
-	// Get the path from the current page's URL
 	$: {
-		urlParam = $page.url.pathname; // Capture the current path (e.g., '/about-us')
+		urlParam = $page.url.pathname;
 	}
 
-	function validateForm() {
-		// Reset errors before validation
+	function validateForm(): boolean {
 		errors = {
 			name: '',
 			phone: '',
 			message: '',
-			pincode: '' // Reset pincode error
+			pincode: ''
 		};
 
 		let isValid = true;
 
-		// Validation for Name
 		if (name.trim() === '') {
 			errors.name = 'Name is required';
 			isValid = false;
 		}
 
-		// Validation for Phone Number
 		if (!/^\d{10,16}$/.test(phone)) {
 			errors.phone = 'Phone number must be between 10 and 16 digits';
 			isValid = false;
 		}
 
-		// Validation for Message
 		if (message.trim() === '') {
 			errors.message = 'Message is required';
 			isValid = false;
 		}
 
-		// Validation for Pincode
 		if (!/^\d{6}$/.test(pincode)) {
 			errors.pincode = 'Pincode must be a 6-digit number';
 			isValid = false;
@@ -59,31 +53,31 @@
 		return isValid;
 	}
 
-	async function handleSubmit(event) {
+	async function handleSubmit(event: Event): Promise<void> {
 		event.preventDefault();
 
 		if (validateForm()) {
-			isSubmitting = true; // Disable the submit button
+			isSubmitting = true;
 			try {
 				const response = await fetch('/api/submitQuery', {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json'
 					},
-					body: JSON.stringify({ name, phone, message, pincode, urlParam }) // Include pincode in the request body
+					body: JSON.stringify({ name, phone, message, pincode, urlParam })
 				});
 
-				const result = await response.json();
+				const result: { success: boolean; error?: string } = await response.json();
 
 				if (result.success) {
 					goto('/thank-you');
 				} else {
 					console.error('Submission failed:', result.error);
-					isSubmitting = false; // Re-enable the submit button if submission failed
+					isSubmitting = false;
 				}
 			} catch (error) {
 				console.error('Error submitting form:', error);
-				isSubmitting = false; // Re-enable the submit button in case of error
+				isSubmitting = false;
 			}
 		}
 	}

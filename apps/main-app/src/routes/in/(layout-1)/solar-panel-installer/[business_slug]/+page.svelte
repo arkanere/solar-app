@@ -1032,8 +1032,6 @@
     color: var(--primary-light);
   }
 
-  .loading,
-  .error,
   .no-projects {
     text-align: center;
     padding: 2rem;
@@ -1043,8 +1041,6 @@
     color: var(--text-medium);
   }
 
-  .dark .loading,
-  .dark .error,
   .dark .no-projects {
     background-color: rgba(255, 255, 255, 0.05);
     color: #a0aec0;
