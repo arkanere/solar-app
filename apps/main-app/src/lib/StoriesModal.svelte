@@ -4,13 +4,12 @@
 	import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
 	import { isDarkMode } from './themeStore.js';
 
-	let darkMode;
-	$: darkMode = $isDarkMode;
+	let darkMode = $derived($isDarkMode);
 
-	let currentStoryIndex = 0;
-	let storyProgress = 0;
-	let progressInterval;
-	let showViewAll = false;
+	let currentStoryIndex = $state(0);
+	let storyProgress = $state(0);
+	let progressInterval = $state();
+	let showViewAll = $state(false);
 
 	// Story duration in milliseconds
 	const STORY_DURATION = 5000;
@@ -78,7 +77,7 @@
 	// Start story progress timer
 	function startStoryProgress() {
 		if (showViewAll) return;
-		
+
 		storyProgress = 0;
 		progressInterval = setInterval(() => {
 			storyProgress += (PROGRESS_UPDATE_INTERVAL / STORY_DURATION) * 100;
@@ -106,7 +105,7 @@
 	// Handle keyboard navigation
 	function handleKeydown(event) {
 		if (!$storiesModalOpen) return;
-		
+
 		if (event.key === 'Escape') {
 			closeStory();
 		} else if (event.key === 'ArrowLeft') {
@@ -127,18 +126,22 @@
 	}
 
 	// Auto-start stories when modal opens
-	$: if ($storiesModalOpen && $storiesData.length > 0 && !$storiesLoading) {
-		showViewAll = false;
-		currentStoryIndex = 0;
-		setTimeout(() => {
-			startStoryProgress();
-		}, 300);
-	}
+	$effect(() => {
+		if ($storiesModalOpen && $storiesData.length > 0 && !$storiesLoading) {
+			showViewAll = false;
+			currentStoryIndex = 0;
+			setTimeout(() => {
+				startStoryProgress();
+			}, 300);
+		}
+	});
 
 	// Load stories when modal opens
-	$: if ($storiesModalOpen && $storiesData.length === 0 && !$storiesLoading) {
-		loadStoriesData();
-	}
+	$effect(() => {
+		if ($storiesModalOpen && $storiesData.length === 0 && !$storiesLoading) {
+			loadStoriesData();
+		}
+	});
 
 	// Cleanup on component destroy
 	onDestroy(() => {
@@ -146,54 +149,66 @@
 	});
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} />
 
 {#if $storiesModalOpen}
-	<button class="stories-modal-backdrop" on:click={closeStory} aria-label="Close stories modal" type="button">
-		<div class="stories-modal-content" role="presentation">
-			
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div class="stories-modal-backdrop" role="button" onclick={closeStory} tabindex="0" onkeydown={(e) => e.key === 'Enter' && closeStory()}>
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div class="stories-modal-content" onclick={(e) => e.stopPropagation()}>
 			{#if $storiesLoading}
 				<div class="loading-container">
 					<div class="loading-spinner"></div>
 					<p>Loading stories...</p>
 				</div>
-				
 			{:else if $storiesError}
 				<div class="error-container">
 					<p>Error: {$storiesError}</p>
-					<button on:click={closeStory}>Close</button>
+					<button onclick={closeStory}>Close</button>
 				</div>
-				
 			{:else if $storiesData.length === 0}
 				<div class="no-stories-container">
 					<p>No stories available at the moment.</p>
-					<button on:click={closeStory}>Close</button>
+					<button onclick={closeStory}>Close</button>
 				</div>
-				
 			{:else if showViewAll}
 				<!-- View All Projects after stories finish -->
 				<div class="view-all-container">
 					<h2>You've seen all our latest solar stories!</h2>
-					<a href="/recent-solar-installation-projects" class="view-all-btn" on:click={closeStory}>
+					<a
+						href="/recent-solar-installation-projects"
+						class="view-all-btn"
+						onclick={closeStory}
+					>
 						View All Solar Projects →
 					</a>
-					<button class="replay-btn" on:click={() => { showViewAll = false; currentStoryIndex = 0; startStoryProgress(); }}>
+					<button
+						class="replay-btn"
+						onclick={() => {
+							showViewAll = false;
+							currentStoryIndex = 0;
+							startStoryProgress();
+						}}
+					>
 						▶️ Replay Stories
 					</button>
-					<button class="close-btn-alt" on:click={closeStory}>Close</button>
+					<button class="close-btn-alt" onclick={closeStory}>Close</button>
 				</div>
-				
 			{:else}
 				<!-- Story Viewer -->
 				<!-- Progress Indicators -->
 				<div class="progress-container">
 					{#each $storiesData as _, index}
 						<div class="progress-bar">
-							<div 
+							<div
 								class="progress-fill"
 								class:completed={index < currentStoryIndex}
 								class:active={index === currentStoryIndex}
-								style={index === currentStoryIndex ? `width: ${storyProgress}%` : ''}
+								style={index === currentStoryIndex
+									? `width: ${storyProgress}%`
+									: ""}
 							></div>
 						</div>
 					{/each}
@@ -203,28 +218,40 @@
 				<div class="story-header">
 					<div class="story-info">
 						<div class="installer-avatar">
-							<span>{formatBusinessName($storiesData[currentStoryIndex].business_slug).charAt(0)}</span>
+							<span
+								>{formatBusinessName(
+									$storiesData[currentStoryIndex].business_slug,
+								).charAt(0)}</span
+							>
 						</div>
 						<div class="installer-details">
 							<h3>
-								<a 
-									href="/solar-panel-installer/{$storiesData[currentStoryIndex].business_slug}" 
+								<a
+									href="/solar-panel-installer/{$storiesData[
+										currentStoryIndex
+									].business_slug}"
 									class="installer-link"
-									on:click={closeStory}
+									onclick={closeStory}
 								>
-									{formatBusinessName($storiesData[currentStoryIndex].business_slug)}
+									{formatBusinessName(
+										$storiesData[currentStoryIndex].business_slug,
+									)}
 								</a>
 							</h3>
 						</div>
 					</div>
-					<button class="close-btn" on:click={closeStory} aria-label="Close story">✕</button>
+					<button
+						class="close-btn"
+						onclick={closeStory}
+						aria-label="Close story">✕</button
+					>
 				</div>
 
 				<!-- Story Image -->
 				<div class="story-image-container">
 					{#if getImageUrl($storiesData[currentStoryIndex])}
 						<img
-							src={getImageUrl($storiesData[currentStoryIndex], 'w_800,h_800')}
+							src={getImageUrl($storiesData[currentStoryIndex], "w_800,h_800")}
 							alt={$storiesData[currentStoryIndex].title}
 							class="story-main-image"
 						/>
@@ -242,11 +269,17 @@
 					<div class="project-info">
 						<div class="info-item">
 							<span class="info-label">📍 Location:</span>
-							<span class="info-value">{$storiesData[currentStoryIndex].pincode || 'N/A'}</span>
+							<span class="info-value"
+								>{$storiesData[currentStoryIndex].pincode || "N/A"}</span
+							>
 						</div>
 						<div class="info-item">
 							<span class="info-label">📅 Completed:</span>
-							<span class="info-value">{formatDate($storiesData[currentStoryIndex].project_date)}</span>
+							<span class="info-value"
+								>{formatDate(
+									$storiesData[currentStoryIndex].project_date,
+								)}</span
+							>
 						</div>
 					</div>
 				</div>
@@ -254,18 +287,18 @@
 				<!-- Navigation Areas -->
 				<button
 					class="nav-area nav-left"
-					on:click={(e) => handleStoryClick(e, 'left')}
+					onclick={(e) => handleStoryClick(e, "left")}
 					disabled={currentStoryIndex === 0}
 					aria-label="Previous story"
 				></button>
 				<button
 					class="nav-area nav-right"
-					on:click={(e) => handleStoryClick(e, 'right')}
+					onclick={(e) => handleStoryClick(e, "right")}
 					aria-label="Next story"
 				></button>
 			{/if}
 		</div>
-	</button>
+	</div>
 {/if}
 
 <style>
@@ -295,8 +328,6 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		border: none;
-		padding: 0;
 	}
 
 	/* Modal Content */
@@ -338,8 +369,12 @@
 	}
 
 	@keyframes spin {
-		0% { transform: rotate(0deg); }
-		100% { transform: rotate(360deg); }
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
 	}
 
 	/* Progress Indicators */

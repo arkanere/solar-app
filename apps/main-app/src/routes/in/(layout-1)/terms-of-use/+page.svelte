@@ -2,10 +2,7 @@
 	import { isDarkMode } from '$lib/themeStore';
 
 	// Initialize dark mode state
-	let darkMode;
-
-	// Use the global theme store
-	$: darkMode = $isDarkMode;
+	let darkMode = $derived($isDarkMode);
 </script>
 
 <svelte:head>

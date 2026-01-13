@@ -1,7 +1,7 @@
 <script>
 	import { isDarkMode } from '$lib/themeStore';
 	
-	$: darkMode = $isDarkMode;
+	let darkMode = $derived($isDarkMode);
 </script>
 
 <section id="recommended-solar-systems" class={darkMode ? 'dark' : 'light'}>

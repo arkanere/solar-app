@@ -50,14 +50,18 @@
   ];
 
   // Fetch districts dynamically when the state changes
-  $: if (state) {
-    updateDistricts(state);
-  }
+  $effect(() => {
+    if (state) {
+      updateDistricts(state);
+    }
+  });
 
   // Fetch cities dynamically when the district changes
-  $: if (district) {
-    updateCities(district);
-  }
+  $effect(() => {
+    if (district) {
+      updateCities(district);
+    }
+  });
 
   async function updateDistricts(selectedState) {
     try {
@@ -94,7 +98,7 @@
   }
 
   // Use the global theme store
-  $: darkMode = $isDarkMode;
+  let darkMode = $derived($isDarkMode);
 
   // Function to format state name for URL
   function formatStateSlug(state) {

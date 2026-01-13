@@ -11,13 +11,12 @@
   import { PUBLIC_CLOUDINARY_CLOUD_NAME } from "$env/static/public";
   import { isDarkMode } from "./themeStore.js";
 
-  let darkMode;
-  $: darkMode = $isDarkMode;
+  let darkMode = $derived($isDarkMode);
 
-  let currentStoryIndex = 0;
-  let storyProgress = 0;
+  let currentStoryIndex = $state(0);
+  let storyProgress = $state(0);
   let progressInterval;
-  let showViewAll = false;
+  let showViewAll = $state(false);
 
   // Story duration in milliseconds
   const STORY_DURATION = 5000;
@@ -134,18 +133,22 @@
   }
 
   // Auto-start stories when modal opens
-  $: if ($storiesModalOpen && $storiesData.length > 0 && !$storiesLoading) {
-    showViewAll = false;
-    currentStoryIndex = 0;
-    setTimeout(() => {
-      startStoryProgress();
-    }, 300);
-  }
+  $effect(() => {
+    if ($storiesModalOpen && $storiesData.length > 0 && !$storiesLoading) {
+      showViewAll = false;
+      currentStoryIndex = 0;
+      setTimeout(() => {
+        startStoryProgress();
+      }, 300);
+    }
+  });
 
   // Load stories when modal opens
-  $: if ($storiesModalOpen && $storiesData.length === 0 && !$storiesLoading) {
-    loadStoriesData();
-  }
+  $effect(() => {
+    if ($storiesModalOpen && $storiesData.length === 0 && !$storiesLoading) {
+      loadStoriesData();
+    }
+  });
 
   // Cleanup on component destroy
   onDestroy(() => {
@@ -153,15 +156,15 @@
   });
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} />
 
 {#if $storiesModalOpen}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div class="stories-modal-backdrop" on:click={closeStory}>
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div class="stories-modal-content" on:click|stopPropagation>
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div class="stories-modal-backdrop" role="button" onclick={closeStory} tabindex="0" onkeydown={(e) => e.key === 'Enter' && closeStory()}>
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div class="stories-modal-content" onclick={(e) => e.stopPropagation()}>
       {#if $storiesLoading}
         <div class="loading-container">
           <div class="loading-spinner"></div>
@@ -170,12 +173,12 @@
       {:else if $storiesError}
         <div class="error-container">
           <p>Error: {$storiesError}</p>
-          <button on:click={closeStory}>Close</button>
+          <button onclick={closeStory}>Close</button>
         </div>
       {:else if $storiesData.length === 0}
         <div class="no-stories-container">
           <p>No stories available at the moment.</p>
-          <button on:click={closeStory}>Close</button>
+          <button onclick={closeStory}>Close</button>
         </div>
       {:else if showViewAll}
         <!-- View All Projects after stories finish -->
@@ -184,13 +187,13 @@
           <a
             href="/in/recent-solar-installation-projects"
             class="view-all-btn"
-            on:click={closeStory}
+            onclick={closeStory}
           >
             View All Solar Projects →
           </a>
           <button
             class="replay-btn"
-            on:click={() => {
+            onclick={() => {
               showViewAll = false;
               currentStoryIndex = 0;
               startStoryProgress();
@@ -198,7 +201,7 @@
           >
             ▶️ Replay Stories
           </button>
-          <button class="close-btn-alt" on:click={closeStory}>Close</button>
+          <button class="close-btn-alt" onclick={closeStory}>Close</button>
         </div>
       {:else}
         <!-- Story Viewer -->
@@ -235,7 +238,7 @@
                     currentStoryIndex
                   ].business_slug}"
                   class="installer-link"
-                  on:click={closeStory}
+                  onclick={closeStory}
                 >
                   {formatBusinessName(
                     $storiesData[currentStoryIndex].business_slug,
@@ -246,7 +249,7 @@
           </div>
           <button
             class="close-btn"
-            on:click={closeStory}
+            onclick={closeStory}
             aria-label="Close story">✕</button
           >
         </div>
@@ -291,13 +294,13 @@
         <!-- Navigation Areas -->
         <button
           class="nav-area nav-left"
-          on:click={(e) => handleStoryClick(e, "left")}
+          onclick={(e) => handleStoryClick(e, "left")}
           disabled={currentStoryIndex === 0}
           aria-label="Previous story"
         ></button>
         <button
           class="nav-area nav-right"
-          on:click={(e) => handleStoryClick(e, "right")}
+          onclick={(e) => handleStoryClick(e, "right")}
           aria-label="Next story"
         ></button>
       {/if}

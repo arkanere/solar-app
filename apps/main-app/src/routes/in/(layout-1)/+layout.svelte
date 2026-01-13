@@ -1,27 +1,24 @@
 <script>
   import { isDarkMode, toggleTheme, initializeTheme } from "$lib/themeStore";
-  import { browser } from "$app/environment";
   import { writable } from "svelte/store";
-  import { onMount } from "svelte";
-  import ChatbotWidget from "$lib/ChatbotWidget.svelte";
   import { storiesModalOpen } from "$lib/in/storiesStore.js";
   import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
   import { page } from "$app/stores";
 
   // Lazy loading for StoriesModal
-  let StoriesModalComponent = null;
-  let storiesModalLoading = false;
+  let StoriesModalComponent = $state(null);
+  let storiesModalLoading = $state(false);
 
   // Create a shared store for chat messages
   const chatMessages = writable([]);
 
   // Only load component client-side to avoid SSR issues
-  let showChat = false;
+  let showChat = $state(false);
 
   // Translation dropdown state
-  let showTranslateDropdown = false;
-  let showTranslationModal = false;
-  let selectedLanguage = "";
+  let showTranslateDropdown = $state(false);
+  let showTranslationModal = $state(false);
+  let selectedLanguage = $state("");
 
   // Indian languages for translation
   const indianLanguages = [
@@ -34,6 +31,9 @@
     { code: "more", name: "More Languages", flag: "🌍" },
   ];
 
+  // Reactive variables for store subscriptions
+  let storiesOpen = $derived($storiesModalOpen);
+
   // Reactive variable for current page path - format for CallSafe (only a-z, A-Z, 0-9, -, _)
   const currentPath = $derived(
     $page.url.pathname
@@ -44,7 +44,7 @@
   );
 
   // Initialize the theme when the component is mounted
-  onMount(() => {
+  $effect(() => {
     initializeTheme();
     // Only show the chat widget after the page has loaded
     showChat = true;
@@ -121,7 +121,7 @@
 
   // Watch for modal open state changes to trigger lazy loading
   $effect(() => {
-    if ($storiesModalOpen && !StoriesModalComponent && !storiesModalLoading) {
+    if (storiesOpen && !StoriesModalComponent && !storiesModalLoading) {
       loadStoriesModal();
     }
   });
@@ -205,7 +205,7 @@
   }
 </script>
 
-<!-- svelte-ignore a11y-img-redundant-alt -->
+<!-- svelte-ignore a11y_img_redundant_alt -->
 <svelte:head>
   <!-- Umami Analytics - Layout 1 Only (kept as defer for minimal impact) -->
   <script
@@ -243,12 +243,12 @@
   <a href="/in/business-listing">List Business</a>
   <a href="/in/recent-solar-installation-projects">Recent Projects</a>
   <a href="/in/solar-panel-installer-directory">Directory</a>
-  <button class="stories-nav-btn" on:click={openStoriesModal}>Stories</button>
+  <button class="stories-nav-btn" onclick={openStoriesModal}>Stories</button>
   <a href="/in/about-us">About us</a>
 
   <!-- Translate Dropdown -->
   <div class="translate-container">
-    <button class="translate-btn" on:click={toggleTranslateDropdown}>
+    <button class="translate-btn" onclick={toggleTranslateDropdown}>
       🌐 Translate
     </button>
 
@@ -257,7 +257,7 @@
         {#each indianLanguages as language}
           <button
             class="language-option"
-            on:click={() => selectLanguage(language)}
+            onclick={() => selectLanguage(language)}
           >
             {language.flag}
             {language.name}
@@ -267,17 +267,17 @@
     {/if}
   </div>
 
-  <button on:click={toggleTheme}>
+  <button onclick={toggleTheme}>
     {$isDarkMode ? "Light mode" : "Dark mode"}
   </button>
 </nav>
 
-<slot></slot>
+{@render children?.()}
 
 <!-- Stories Modal - Lazy Loaded -->
 {#if StoriesModalComponent}
-  <svelte:component this={StoriesModalComponent} />
-{:else if storiesModalLoading && $storiesModalOpen}
+  {@render StoriesModalComponent()}
+{:else if storiesModalLoading && storiesOpen}
   <!-- Loading state for component import -->
   <div class="stories-loading-backdrop">
     <div class="stories-loading-container">
@@ -289,15 +289,15 @@
 
 <!-- Translation Instructions Modal -->
 {#if showTranslationModal}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div class="modal-backdrop" on:click={closeTranslationModal}>
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div class="modal-content" on:click|stopPropagation>
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div class="modal-backdrop" onclick={closeTranslationModal}>
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div class="modal-content" onclick={(e) => e.stopPropagation()}>
       <div class="modal-header">
         <h3>🌐 How to translate to {selectedLanguage}</h3>
-        <button class="modal-close" on:click={closeTranslationModal}>×</button>
+        <button class="modal-close" onclick={closeTranslationModal}>×</button>
       </div>
       <div class="modal-body">
         <div class="instruction-steps">
@@ -664,10 +664,6 @@
     color: #333;
   }
 
-  .dark .modal-header h3 {
-    color: #fff;
-  }
-
   .modal-close {
     background: none;
     border: none;
@@ -718,10 +714,6 @@
     color: #333;
   }
 
-  .dark .step-content strong {
-    color: #fff;
-  }
-
   .alternative-method {
     border-top: 1px solid #eee;
     padding-top: 1rem;
@@ -733,28 +725,16 @@
     color: #333;
   }
 
-  .dark .alternative-method h4 {
-    color: #fff;
-  }
-
   .alternative-method p {
     margin: 0.25rem 0;
     font-size: 0.9rem;
     color: #666;
   }
 
-  .dark .alternative-method p {
-    color: #ccc;
-  }
-
   .instruction-steps h4 {
     margin: 1rem 0 0.5rem 0;
     color: #0077cc;
     font-size: 1rem;
-  }
-
-  .dark .instruction-steps h4 {
-    color: #66b2ff;
   }
 
   .instruction-steps:first-of-type h4 {

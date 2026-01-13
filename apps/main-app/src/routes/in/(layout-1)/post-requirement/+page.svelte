@@ -1,11 +1,8 @@
 <script>
 	import QueryForm from '$lib/QueryForm.svelte';
 	import { isDarkMode } from '$lib/themeStore'; // Import from store if globally managed
-	// Initialize dark mode state
-	let darkMode;
-
 	// Use the global theme store
-	$: darkMode = $isDarkMode;
+	let darkMode = $derived($isDarkMode);
 </script>
 
 <main class={darkMode ? 'dark' : 'light'}>

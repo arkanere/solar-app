@@ -1,5 +1,5 @@
 <script>
-	import { onMount, afterUpdate, tick } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { writable } from 'svelte/store';
 	import { isDarkMode } from '$lib/themeStore';
 	import conversationFlows from '$lib/conversationFlows.json';
@@ -76,9 +76,9 @@
 	};
 
 	// Reactive statement to get URL parameter
-	$: {
+	$effect(() => {
 		urlParam = $page.url.pathname;
-	}
+	});
 
 	// Function to update lead profile
 	function updateLeadProfile(field, value) {
@@ -991,7 +991,7 @@
 	});
 
 	// After any update, check if we should scroll
-	afterUpdate(() => {
+	$effect(() => {
 		// If new content was added (scrollHeight increased), and user was at bottom before
 		if (
 			chatHistoryContainer &&
@@ -1003,15 +1003,19 @@
 	});
 
 	// Reactive statement to validate form whenever formValues change
-	$: if (conversationFlows.flows[currentFlowId]?.flowType === 'form' && formValues) {
-		// Always validate, but control which errors to show based on hasAttemptedSubmit
-		validateForm(false); // Don't show required field errors until submit attempt
-	}
+	$effect(() => {
+		if (conversationFlows.flows[currentFlowId]?.flowType === 'form' && formValues) {
+			// Always validate, but control which errors to show based on hasAttemptedSubmit
+			validateForm(false); // Don't show required field errors until submit attempt
+		}
+	});
 
 	// Also reactive on hasAttemptedSubmit to show all errors when user attempts submit
-	$: if (hasAttemptedSubmit && conversationFlows.flows[currentFlowId]?.flowType === 'form') {
-		validateForm(true); // Show all errors including required field errors
-	}
+	$effect(() => {
+		if (hasAttemptedSubmit && conversationFlows.flows[currentFlowId]?.flowType === 'form') {
+			validateForm(true); // Show all errors including required field errors
+		}
+	});
 </script>
 
 <div class="chatbot-container {$isDarkMode ? 'dark-theme' : 'light-theme'}">

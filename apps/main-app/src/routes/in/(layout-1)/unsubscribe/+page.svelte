@@ -2,15 +2,18 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 
-	let email = '';
-	let isConfirming = true;
-	let isLoading = false;
-	let isSuccess = false;
-	let errorMessage = '';
+	let email = $state('');
+	let isConfirming = $state(true);
+	let isLoading = $state(false);
+	let isSuccess = $state(false);
+	let errorMessage = $state('');
+
+	// Derive page URL for reactive access
+	const pageUrl = $derived($page.url);
 
 	onMount(() => {
 		// Get email from URL query parameter
-		const params = new URLSearchParams($page.url.search);
+		const params = new URLSearchParams(pageUrl.search);
 		email = params.get('unsubscribe') || '';
 	});
 
@@ -63,7 +66,7 @@
 			{/if}
 
 			<div class="button-group">
-				<button class="confirm-button" on:click={handleConfirm} disabled={isLoading || !email}>
+				<button class="confirm-button" onclick={handleConfirm} disabled={isLoading || !email}>
 					{isLoading ? 'Processing...' : 'Confirm Unsubscription'}
 				</button>
 			</div>

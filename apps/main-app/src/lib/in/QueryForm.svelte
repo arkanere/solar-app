@@ -2,23 +2,25 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 
-	let name: string = '';
-	let phone: string = '';
-	let message: string = '';
-	let pincode: string = '';
-	let isSubmitting: boolean = false;
-	let urlParam: string = '';
+	let name = $state('');
+	let phone = $state('');
+	let message = $state('');
+	let pincode = $state('');
+	let isSubmitting = $state(false);
+	let urlParam = $state('');
 
-	let errors: Record<string, string> = {
+	let errors = $state<Record<string, string>>({
 		name: '',
 		phone: '',
 		message: '',
 		pincode: ''
-	};
+	});
 
-	$: {
-		urlParam = $page.url.pathname;
-	}
+	let pageData = $derived($page);
+
+	$effect(() => {
+		urlParam = pageData.url.pathname;
+	});
 
 	function validateForm(): boolean {
 		errors = {
@@ -83,7 +85,7 @@
 	}
 </script>
 
-<form on:submit|preventDefault={handleSubmit}>
+<form onsubmit={handleSubmit}>
 	<!-- Name Input -->
 	<div>
 		<label for="name">Name:</label>

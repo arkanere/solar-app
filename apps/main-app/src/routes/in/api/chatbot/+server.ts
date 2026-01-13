@@ -1,8 +1,6 @@
 import { ChatOpenAI, OpenAIEmbeddings } from '@langchain/openai';
 import { PineconeStore } from '@langchain/pinecone';
 import { Pinecone } from '@pinecone-database/pinecone';
-import { RetrievalQAChain } from 'langchain/chains';
-import { PromptTemplate } from '@langchain/core/prompts';
 import { OPENAI_API_KEY, PINECONE_API_KEY } from '$env/static/private';
 import { json, type RequestHandler } from '@sveltejs/kit';
 

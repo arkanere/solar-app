@@ -3,7 +3,7 @@
 	export let businessInfo = {};
 	export let businessSlug = '';
 
-	import { createEventDispatcher, onMount, afterUpdate } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 	const dispatch = createEventDispatcher();
 
 	// Create a local copy of the business info that we can modify
@@ -21,14 +21,18 @@
 	};
 
 	// Reset the form data whenever the modal is shown or businessInfo changes
-	$: if (show) {
-		resetForm();
-	}
+	$effect(() => {
+		if (show) {
+			resetForm();
+		}
+	});
 
-	$: if (businessInfo && Object.keys(businessInfo).length > 0) {
-		// Only update if businessInfo actually has values
-		if (show) resetForm();
-	}
+	$effect(() => {
+		if (businessInfo && Object.keys(businessInfo).length > 0) {
+			// Only update if businessInfo actually has values
+			if (show) resetForm();
+		}
+	});
 
 	function resetForm() {
 		// Create a fresh copy of the business info
@@ -78,7 +82,7 @@
 	};
 
 	// For debugging
-	afterUpdate(() => {
+	$effect(() => {
 		console.log('Component updated', { formData, show, businessInfo });
 	});
 </script>

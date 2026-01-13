@@ -1,4 +1,5 @@
-import { createPool, VercelPool } from '@vercel/postgres';
+import { createPool } from '@vercel/postgres';
+import type { VercelPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json, type RequestHandler } from '@sveltejs/kit';
 

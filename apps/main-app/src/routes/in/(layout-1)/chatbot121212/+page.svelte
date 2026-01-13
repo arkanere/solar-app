@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { writable } from 'svelte/store';
 
-	let userInput = ''; // Bind input field
+	let userInput = $state(''); // Bind input field
 	let messages = writable([]); // Message history
 
 	// Function to send user message to the backend
@@ -53,9 +53,9 @@
 			type="text"
 			bind:value={userInput}
 			placeholder="Ask your Solar PV question..."
-			on:keypress={(e) => e.key === 'Enter' && sendMessage()}
+			onkeypress={(e) => e.key === 'Enter' && sendMessage()}
 		/>
-		<button on:click={sendMessage}>Send</button>
+		<button onclick={sendMessage}>Send</button>
 	</div>
 </main>
 

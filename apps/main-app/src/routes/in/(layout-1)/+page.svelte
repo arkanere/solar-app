@@ -7,20 +7,19 @@
   import { isDarkMode } from "$lib/in/themeStore"; // Import from store if globally managed
 
   // Receive data from server
-  export let data;
+  let { data } = $props();
 
   // Initialize dark mode state
-  let darkMode;
-  let AboutSolarVipani;
-  let ChatbotPopup;
-  let shouldLoadAbout = false;
-  let shouldLoadChatbot = false;
+  let AboutSolarVipani = $state(null);
+  let ChatbotPopup = $state(null);
+  let shouldLoadAbout = $state(false);
+  let shouldLoadChatbot = $state(false);
 
   // Extract recent projects from data
-  $: recentProjects = data?.recentProjects || [];
+  const recentProjects = $derived(data?.recentProjects || []);
 
   // Use the global theme store
-  $: darkMode = $isDarkMode;
+  const darkMode = $derived($isDarkMode);
 
   // Lazy load non-critical components after initial page load
   onMount(async () => {
@@ -494,7 +493,7 @@
     <!-- About Section (Lazy Loaded) -->
     <div id="about-section">
       {#if shouldLoadAbout && AboutSolarVipani}
-        <svelte:component this={AboutSolarVipani} />
+        {@render AboutSolarVipani()}
       {/if}
     </div>
   </div>
@@ -502,7 +501,7 @@
 
 <!-- Chatbot Popup (Lazy Loaded) -->
 {#if shouldLoadChatbot && ChatbotPopup}
-  <svelte:component this={ChatbotPopup} />
+  {@render ChatbotPopup()}
 {/if}
 
 <style>

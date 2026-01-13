@@ -1,30 +1,29 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 
-	export let businessName: string = '';
-	export let businessSlug: string = '';
+	let { businessName = '', businessSlug = '' } = $props();
 
-	let name: string = '';
-	let phone: string = '';
-	let pinCode: string = '';
-	let type: string = '';
-	let comment: string = '';
-	let email: string = '';
-	let urlParam: string = '';
-	let isSubmitting: boolean = false;
+	let name = $state('');
+	let phone = $state('');
+	let pinCode = $state('');
+	let type = $state('');
+	let comment = $state('');
+	let email = $state('');
+	let urlParam = $state('');
+	let isSubmitting = $state(false);
 
-	let errors: Record<string, string> = {
+	let errors = $state<Record<string, string>>({
 		name: '',
 		phone: '',
 		pinCode: '',
 		type: '',
 		email: '',
 		comment: ''
-	};
+	});
 
-	$: {
+	$effect(() => {
 		urlParam = `/solar-panel-installer/${businessSlug}`;
-	}
+	});
 
 	function validatePhoneNumber(): boolean {
 		if (!/^\+?\d{10,16}$/.test(phone)) {
@@ -118,7 +117,7 @@
 	}
 </script>
 
-<form on:submit|preventDefault={handleSubmit}>
+<form onsubmit={(e) => { e.preventDefault(); handleSubmit(e); }}>
 	<!-- Name Input -->
 	<div>
 		<label for="name">Name:</label>
@@ -131,7 +130,7 @@
 	<!-- Phone Number Input -->
 	<div>
 		<label for="phone">Phone Number:</label>
-		<input id="phone" type="text" bind:value={phone} required on:blur={validatePhoneNumber} />
+		<input id="phone" type="text" bind:value={phone} required onblur={validatePhoneNumber} />
 		{#if errors.phone}
 			<p class="error">{errors.phone}</p>
 		{/if}
@@ -140,7 +139,7 @@
 	<!-- Pin Code Input -->
 	<div>
 		<label for="pinCode">Pin Code:</label>
-		<input id="pinCode" type="text" bind:value={pinCode} required on:blur={validatePinCode} />
+		<input id="pinCode" type="text" bind:value={pinCode} required onblur={validatePinCode} />
 		{#if errors.pinCode}
 			<p class="error">{errors.pinCode}</p>
 		{/if}
@@ -149,7 +148,7 @@
 	<!-- Email Input -->
 	<div>
 		<label for="email">Email:</label>
-		<input id="email" type="email" bind:value={email} required on:blur={validateEmail} />
+		<input id="email" type="email" bind:value={email} required onblur={validateEmail} />
 		{#if errors.email}
 			<p class="error">{errors.email}</p>
 		{/if}

@@ -1,22 +1,20 @@
 <script>
-  /** @type {import('./$types').PageData} */
-  export let data;
   import { PUBLIC_CLOUDINARY_CLOUD_NAME } from "$env/static/public";
   import { isDarkMode } from "$lib/in/themeStore";
   import { page } from "$app/stores";
   import { onMount } from "svelte";
   import { writable } from "svelte/store";
 
-  // Initialize dark mode state
-  let darkMode;
+  /** @type {import('./$types').PageData} */
+  const { data } = $props();
 
   // Use the global theme store
-  $: darkMode = $isDarkMode;
+  let darkMode = $derived($isDarkMode);
 
   // Get current page from data (this is always page 1 for the main route)
-  $: currentPage = 1;
-  $: totalPages = data.pagination?.totalPages || 1;
-  $: projects = data.projects || [];
+  let currentPage = $derived(1);
+  let totalPages = $derived(data.pagination?.totalPages || 1);
+  let projects = $derived(data.projects || []);
 
   // Format date to a more readable format
   function formatDate(dateString) {
@@ -79,7 +77,7 @@
     return links;
   }
 
-  $: paginationLinks = generatePaginationLinks(currentPage, totalPages);
+  let paginationLinks = $derived(generatePaginationLinks(currentPage, totalPages));
 </script>
 
 <svelte:head>

@@ -2,28 +2,30 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 
-	let name: string = '';
-	let phone: string = '';
-	let pinCode: string = '';
-	let comment: string = '';
-	let email: string = '';
-	let urlParam: string = '';
-	let isSubmitting: boolean = false;
+	let name = $state('');
+	let phone = $state('');
+	let pinCode = $state('');
+	let comment = $state('');
+	let email = $state('');
+	let urlParam = $state('');
+	let isSubmitting = $state(false);
 
 	const commentPlaceholder: string = `Tell us about your requirement.
 Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 
-	let errors: Record<string, string> = {
+	let errors = $state<Record<string, string>>({
 		name: '',
 		phone: '',
 		pinCode: '',
 		email: '',
 		comment: ''
-	};
+	});
 
-	$: {
-		urlParam = $page.url.pathname;
-	}
+	let pageData = $derived($page);
+
+	$effect(() => {
+		urlParam = pageData.url.pathname;
+	});
 
 	function validatePhoneNumber(): boolean {
 		if (!/^\+?\d{10,16}$/.test(phone)) {
@@ -103,7 +105,7 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 	}
 </script>
 
-<form on:submit|preventDefault={handleSubmit}>
+<form onsubmit={handleSubmit}>
 	<!-- Name Input -->
 	<div>
 		<label for="name">Name:</label>
@@ -116,7 +118,7 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 	<!-- Phone Number Input -->
 	<div>
 		<label for="phone">Phone Number:</label>
-		<input id="phone" type="text" bind:value={phone} required on:blur={validatePhoneNumber} />
+		<input id="phone" type="text" bind:value={phone} required onblur={validatePhoneNumber} />
 		{#if errors.phone}
 			<p class="error">{errors.phone}</p>
 		{/if}
@@ -125,7 +127,7 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 	<!-- Pin Code Input -->
 	<div>
 		<label for="pinCode">Pin Code:</label>
-		<input id="pinCode" type="text" bind:value={pinCode} required on:blur={validatePinCode} />
+		<input id="pinCode" type="text" bind:value={pinCode} required onblur={validatePinCode} />
 		{#if errors.pinCode}
 			<p class="error">{errors.pinCode}</p>
 		{/if}
@@ -134,7 +136,7 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 	<!-- Email Input -->
 	<div>
 		<label for="email">Email:</label>
-		<input id="email" type="email" bind:value={email} required on:blur={validateEmail} />
+		<input id="email" type="email" bind:value={email} required onblur={validateEmail} />
 		{#if errors.email}
 			<p class="error">{errors.email}</p>
 		{/if}

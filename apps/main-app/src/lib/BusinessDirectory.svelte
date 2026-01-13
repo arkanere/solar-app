@@ -5,16 +5,16 @@
 	import { goto } from '$app/navigation';
 
 	// Reactive store for theme mode
-	$: darkMode = $isDarkMode;
+	let darkMode = $derived($isDarkMode);
 
 	import { onMount } from 'svelte';
 
 	// Define reactive variables for state and district selection
-	let state = '';
-	let district = '';
-	let districts = [];
-	let isLoading = false;
-	let mounted = false;
+	let state = $state('');
+	let district = $state('');
+	let districts = $state([]);
+	let isLoading = $state(false);
+	let mounted = $state(false);
 
 	// List of states
 	const states = [
@@ -128,7 +128,7 @@
 		<!-- State Dropdown -->
 		<div>
 			<label for="state">State:</label>
-			<select id="state" value={state} on:change={handleStateChange} required>
+			<select id="state" value={state} onchange={handleStateChange} required>
 				<option value="">Select a state</option>
 				{#each states as s}
 					<option value={s}>{s}</option>
@@ -139,11 +139,11 @@
 		<!-- District Dropdown -->
 		<div>
 			<label for="district">District:</label>
-			<select 
-				id="district" 
-				bind:value={district} 
+			<select
+				id="district"
+				bind:value={district}
 				disabled={!state || isLoading}
-				on:change={handleDistrictSelection}
+				onchange={handleDistrictSelection}
 			>
 				<option value="">
 					{#if isLoading}

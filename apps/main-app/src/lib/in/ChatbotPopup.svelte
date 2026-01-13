@@ -4,11 +4,10 @@
 	import ChatBotBox from '$lib/in/ChatBotBox.svelte';
 
 	// Store to maintain message history
-	export let messages = writable([]);
+	let { messages = writable([]), isVisible = true } = $props();
 
 	// Popup state
-	export let isVisible = true;
-	let isManuallyDismissed = false;
+	let isManuallyDismissed = $state(false);
 
 	// Function to close the popup
 	function closePopup() {
@@ -16,9 +15,11 @@
 	}
 
 	// Reset manual dismissal when popup becomes invisible (user scrolled up)
-	$: if (!isVisible) {
-		isManuallyDismissed = false;
-	}
+	$effect(() => {
+		if (!isVisible) {
+			isManuallyDismissed = false;
+		}
+	});
 
 	onMount(() => {
 		console.log('[ChatbotPopup] Component mounted');

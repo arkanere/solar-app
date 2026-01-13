@@ -1,21 +1,21 @@
 <script>
-	/** @type {import('./$types').PageData} */
-	export let data;
 	import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
 	import { isDarkMode } from '$lib/themeStore';
 	import { onMount } from 'svelte';
 
-	let darkMode;
-	$: darkMode = $isDarkMode;
+	/** @type {import('./$types').PageData} */
+	let { data } = $props();
 
-	$: projects = data.projects || [];
+	let darkMode = $derived($isDarkMode);
 
-	let currentStoryIndex = 0;
-	let isViewerOpen = false;
-	let storyProgress = 0;
+	let projects = $derived(data.projects || []);
+
+	let currentStoryIndex = $state(0);
+	let isViewerOpen = $state(false);
+	let storyProgress = $state(0);
 	let storyInterval;
 	let progressInterval;
-	let storiesLoaded = false;
+	let storiesLoaded = $state(false);
 
 	// Story duration in milliseconds
 	const STORY_DURATION = 5000;
@@ -66,7 +66,7 @@
 		showViewAll = true;
 	}
 
-	let showViewAll = false;
+	let showViewAll = $state(false);
 
 	// Navigate to next story
 	function nextStory() {
@@ -115,13 +115,21 @@
 	// Handle keyboard navigation
 	function handleKeydown(event) {
 		if (!isViewerOpen) return;
-		
+
 		if (event.key === 'Escape') {
 			closeStory();
 		} else if (event.key === 'ArrowLeft') {
 			previousStory();
 		} else if (event.key === 'ArrowRight') {
 			nextStory();
+		}
+	}
+
+	// Handle keyboard events on the modal backdrop
+	function handleBackdropKeydown(event) {
+		if (event.key === 'Enter' || event.key === ' ') {
+			event.preventDefault();
+			closeStory();
 		}
 	}
 
@@ -142,19 +150,21 @@
 				openStory(0);
 			}, 500); // Small delay to let the page render
 		}
-		
+
 		return () => {
 			stopStoryProgress();
 		};
 	});
-	
+
 	// Auto-start stories when projects data loads
-	$: if (projects.length > 0 && !storiesLoaded && !isViewerOpen) {
-		storiesLoaded = true;
-		setTimeout(() => {
-			openStory(0);
-		}, 500);
-	}
+	$effect(() => {
+		if (projects.length > 0 && !storiesLoaded && !isViewerOpen) {
+			storiesLoaded = true;
+			setTimeout(() => {
+				openStory(0);
+			}, 500);
+		}
+	});
 </script>
 
 <svelte:head>
@@ -177,7 +187,7 @@
 	<meta property="og:url" content="https://solarvipani.com/stories" />
 </svelte:head>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} />
 
 <main class={darkMode ? 'dark' : 'light'}>
 	<div class="stories-container">
@@ -208,7 +218,7 @@
 					<a href="/recent-solar-installation-projects" class="view-all-btn">
 						View All Solar Projects →
 					</a>
-					<button class="replay-btn" on:click={() => { showViewAll = false; openStory(0); }}>
+					<button class="replay-btn" onclick={() => { showViewAll = false; openStory(0); }}>
 						▶️ Replay Stories
 					</button>
 				</div>
@@ -218,8 +228,8 @@
 
 	<!-- Story Viewer Modal -->
 	{#if isViewerOpen && projects[currentStoryIndex]}
-		<button class="story-viewer" on:click={closeStory} aria-label="Close story viewer" type="button">
-			<div class="story-content" role="presentation">
+		<div class="story-viewer" role="button" tabindex="0" onclick={closeStory} onkeydown={handleBackdropKeydown}>
+			<div class="story-content" role="presentation" onclick={(e) => e.stopPropagation()}>
 				<!-- Progress Indicators -->
 				<div class="progress-container">
 					{#each projects as _, index}
@@ -242,17 +252,17 @@
 						</div>
 						<div class="installer-details">
 							<h3>
-								<a 
-									href="/solar-panel-installer/{projects[currentStoryIndex].business_slug}" 
+								<a
+									href="/solar-panel-installer/{projects[currentStoryIndex].business_slug}"
 									class="installer-link"
-									on:click|stopPropagation
+									onclick={(e) => e.stopPropagation()}
 								>
 									{formatBusinessName(projects[currentStoryIndex].business_slug)}
 								</a>
 							</h3>
 						</div>
 					</div>
-					<button class="close-btn" on:click={closeStory} aria-label="Close story">✕</button>
+					<button class="close-btn" onclick={closeStory} aria-label="Close story">✕</button>
 				</div>
 
 				<!-- Story Image -->
@@ -289,17 +299,17 @@
 				<!-- Navigation Areas -->
 				<button
 					class="nav-area nav-left"
-					on:click={(e) => handleStoryClick(e, 'left')}
+					onclick={(e) => handleStoryClick(e, 'left')}
 					disabled={currentStoryIndex === 0}
 					aria-label="Previous story"
 				></button>
 				<button
 					class="nav-area nav-right"
-					on:click={(e) => handleStoryClick(e, 'right')}
+					onclick={(e) => handleStoryClick(e, 'right')}
 					aria-label="Next story"
 				></button>
 			</div>
-		</button>
+		</div>
 	{/if}
 </main>
 

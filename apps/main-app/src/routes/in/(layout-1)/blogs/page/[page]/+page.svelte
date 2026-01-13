@@ -1,11 +1,10 @@
 <script>
   import { isDarkMode } from "$lib/themeStore";
 
-  export let data;
+  let { data } = $props();
 
-  let darkMode;
-  $: darkMode = $isDarkMode;
-  $: ({ blogs, error, pagination } = data);
+  let darkMode = $derived($isDarkMode);
+  let { blogs, error, pagination } = $derived(data);
 
   function formatDate(dateString) {
     if (!dateString) return '';

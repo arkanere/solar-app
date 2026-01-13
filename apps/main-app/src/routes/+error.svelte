@@ -1,5 +1,7 @@
 <script>
 	import { page } from '$app/stores';
+
+	const pageData = $derived($page);
 </script>
 
-<h1>{$page.status}: {$page.error.message}</h1>
+<h1>{pageData.status}: {pageData.error.message}</h1>

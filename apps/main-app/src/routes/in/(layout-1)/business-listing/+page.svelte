@@ -1,4 +1,4 @@
-<script context="module">
+<script module>
   // Enhanced data objects with icons
   const benefits = [
     {
@@ -76,10 +76,10 @@
   import AboutSolarVipani from "$lib/AboutSolarVipani.svelte";
 
   // For data loading
-  export let data;
+  let { data } = $props();
 
   // Reactive statement for dark mode
-  $: darkMode = $isDarkMode;
+  let darkMode = $derived($isDarkMode);
 
   // Navigation function
   const navigateToBusinessForm = () => goto("/in/business-form");
@@ -352,7 +352,7 @@
         Connect directly with customers seeking solar installation services in
         your area
       </p>
-      <button class="cta-button pulse" on:click={navigateToBusinessForm}>
+      <button class="cta-button pulse" onclick={navigateToBusinessForm}>
         <span>List My Business Now</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -402,7 +402,7 @@
       </div>
 
       <div class="cta-center">
-        <button class="cta-button" on:click={navigateToBusinessForm}>
+        <button class="cta-button" onclick={navigateToBusinessForm}>
           <span>Get Started for Free</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -441,7 +441,7 @@
       </div>
 
       <div class="cta-center">
-        <button class="cta-button" on:click={navigateToBusinessForm}>
+        <button class="cta-button" onclick={navigateToBusinessForm}>
           <span>List My Business</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -550,7 +550,7 @@
       </div>
 
       <div class="cta-center">
-        <button class="cta-button" on:click={navigateToBusinessForm}>
+        <button class="cta-button" onclick={navigateToBusinessForm}>
           <span>Join These Businesses</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -596,7 +596,7 @@
       </div>
 
       <div class="cta-center">
-        <button class="cta-button" on:click={navigateToBusinessForm}>
+        <button class="cta-button" onclick={navigateToBusinessForm}>
           <span>Try It Now — Free</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -645,7 +645,7 @@
         </p>
         <button
           class="cta-button large pulse"
-          on:click={navigateToBusinessForm}
+          onclick={navigateToBusinessForm}
         >
           <span>List My Business Now</span>
           <svg
@@ -1400,10 +1400,6 @@
 
   .dark .contact-link:hover {
     color: #64b5f6;
-  }
-
-  .dark .about-text p {
-    color: #cbd5e0;
   }
 
   /* CTA Button Styling */
