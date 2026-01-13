@@ -21,6 +21,7 @@
 		"@tiptap/extension-link": "^2.1.13",
 		"@tiptap/pm": "^2.1.13",
 		"@tiptap/starter-kit": "^2.1.13",
+		"@vercel/postgres": "^0.10.0",
 		"escape-html": "^1.0.3"
 	}
 }
