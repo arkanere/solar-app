@@ -1,10 +1,8 @@
 <script>
 	import { isDarkMode } from '$lib/themeStore'; // Import dark mode state from your store
-	let darkMode;
-	$: darkMode = $isDarkMode;
+	let darkMode = $derived($isDarkMode);
 </script>
 
-<!-- svelte-ignore a11y-img-redundant-alt -->
 <svelte:head>
 	<!-- Meta Pixel Code -->
 	<script>
@@ -28,12 +26,13 @@
 		fbq('track', 'Lead');
 	</script>
 	<noscript>
+		<!-- svelte-ignore a11y_img_redundant_alt -->
 		<img
 			height="1"
 			width="1"
 			style="display:none"
 			src="https://www.facebook.com/tr?id=1226087962095221&ev=PageView&noscript=1"
-			alt="Facebook Pixel tracking image for PageView event"
+			alt="Facebook Pixel tracking"
 		/>
 	</noscript>
 	<!-- End Meta Pixel Code -->

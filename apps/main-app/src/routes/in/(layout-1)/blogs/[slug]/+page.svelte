@@ -2,11 +2,10 @@
 	import { isDarkMode } from '$lib/themeStore';
 	import LeadFormBusiness from '$lib/LeadFormBusiness.svelte';
 
-	export let data;
+	const { data } = $props();
 
-	let darkMode;
-	$: darkMode = $isDarkMode;
-	$: ({ blog } = data);
+	let darkMode = $derived($isDarkMode);
+	let blog = $derived(data.blog);
 
 	function formatDate(dateString) {
 		if (!dateString) return '';
@@ -28,9 +27,9 @@
 		return typeof featuredImage === 'string' ? blog.title : featuredImage.alt || blog.title;
 	}
 
-	$: articleUrl = `https://solarvipani.com/in/blogs/${blog.slug}`;
+	let articleUrl = $derived(`https://solarvipani.com/in/blogs/${blog.slug}`);
 
-	$: jsonLdData = {
+	let jsonLdData = $derived({
 		'@context': 'https://schema.org',
 		'@type': 'Article',
 		headline: blog.seo_metadata?.metaTitle || blog.title,
@@ -53,13 +52,13 @@
 		...(getFeaturedImageUrl(blog.featured_image) && {
 			image: getFeaturedImageUrl(blog.featured_image)
 		})
-	};
+	});
 
-	$: jsonLdString = JSON.stringify(jsonLdData);
+	let jsonLdString = $derived(JSON.stringify(jsonLdData));
 
-	$: metaTitle = blog.seo_metadata?.metaTitle || blog.title;
-	$: metaDescription = blog.seo_metadata?.metaDescription || blog.excerpt;
-	$: metaKeywords = blog.seo_metadata?.keywords || blog.tags?.join(', ') || '';
+	let metaTitle = $derived(blog.seo_metadata?.metaTitle || blog.title);
+	let metaDescription = $derived(blog.seo_metadata?.metaDescription || blog.excerpt);
+	let metaKeywords = $derived(blog.seo_metadata?.keywords || blog.tags?.join(', ') || '');
 </script>
 
 <svelte:head>

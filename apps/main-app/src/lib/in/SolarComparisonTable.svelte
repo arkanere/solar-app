@@ -1,7 +1,7 @@
 <script>
 	import { isDarkMode } from '$lib/themeStore';
 	
-	$: darkMode = $isDarkMode;
+	let darkMode = $derived($isDarkMode);
 </script>
 
 <section class="comparison-section" class:dark={darkMode}>
@@ -95,7 +95,7 @@
 		line-height: 1.3;
 	}
 
-	.dark .comparison-section h2 {
+	.dark.comparison-section h2 {
 		color: var(--primary-light);
 	}
 

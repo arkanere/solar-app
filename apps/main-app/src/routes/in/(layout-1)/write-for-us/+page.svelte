@@ -1,8 +1,7 @@
 <script>
   import { isDarkMode } from "$lib/in/themeStore";
 
-  let darkMode;
-  $: darkMode = $isDarkMode;
+  let darkMode = $derived($isDarkMode);
 
   // Email for submissions
   const submissionEmail = "admin@solarvipani.com";

@@ -2,7 +2,7 @@
 	import { isDarkMode } from '$lib/themeStore';
 
 	// Reactive statement for dark mode
-	$: darkMode = $isDarkMode;
+	let darkMode = $derived($isDarkMode);
 
 	const socialLinks = [
 		{

@@ -2,23 +2,23 @@
     import { goto } from '$app/navigation';
     import { base } from '$app/paths';
 
-    let businessName: string = '';
-    let address: string = '';
-    let plusCode: string = '';
-    let phoneNumber: string = '';
-    let whatsappNumber: string = '';
-    let email: string = '';
-    let login_email: string = '';
-    let website: string = '';
-    let gstn: string = '';
-    let state: string = '';
-    let district: string = '';
-    let city: string = '';
-    let districts: string[] = [];
-    let cities: string[] = [];
-    let isDistrictLoading: boolean = false;
-    let isCityLoading: boolean = false;
-    let isSubmitting: boolean = false;
+    let businessName = $state('');
+    let address = $state('');
+    let plusCode = $state('');
+    let phoneNumber = $state('');
+    let whatsappNumber = $state('');
+    let email = $state('');
+    let login_email = $state('');
+    let website = $state('');
+    let gstn = $state('');
+    let state = $state('');
+    let district = $state('');
+    let city = $state('');
+    let districts = $state<string[]>([]);
+    let cities = $state<string[]>([]);
+    let isDistrictLoading = $state(false);
+    let isCityLoading = $state(false);
+    let isSubmitting = $state(false);
 
     const states: string[] = [
         'Andaman and Nicobar Islands',
@@ -59,15 +59,17 @@
         'West Bengal'
     ];
 
-    let errors: Record<string, string> = {
+    let errors = $state<Record<string, string>>({
         phoneNumber: '',
         whatsappNumber: '',
         gstn: ''
-    };
+    });
 
-    $: if (state) {
-        updateDistricts(state);
-    }
+    $effect(() => {
+        if (state) {
+            updateDistricts(state);
+        }
+    });
 
     async function updateDistricts(selectedState: string): Promise<void> {
         isDistrictLoading = true;
@@ -87,9 +89,11 @@
         }
     }
 
-    $: if (district) {
-        updateCities(district);
-    }
+    $effect(() => {
+        if (district) {
+            updateCities(district);
+        }
+    });
 
     async function updateCities(selectedDistrict: string): Promise<void> {
         isCityLoading = true;
@@ -196,7 +200,7 @@
     }
 </script>
 
-<form on:submit|preventDefault={handleSubmit}>
+<form onsubmit={handleSubmit}>
     <h1>Get listed by filling the form below</h1>
     <p>It takes 90 seconds to fill this form</p>
 
@@ -221,7 +225,7 @@
             bind:value={gstn}
             placeholder="GSTN"
             required
-            on:blur={validateGSTN}
+            onblur={validateGSTN}
         />
         {#if errors.gstn}
             <p class="error">{errors.gstn}</p>
@@ -248,7 +252,7 @@
             type="text"
             bind:value={phoneNumber}
             placeholder="Phone Number"
-            on:blur={validatePhoneNumber}
+            onblur={validatePhoneNumber}
             required
         />
         {#if errors.phoneNumber}
@@ -264,7 +268,7 @@
             type="text"
             bind:value={whatsappNumber}
             placeholder="eg +919812345678"
-            on:blur={validateWhatsappNumber}
+            onblur={validateWhatsappNumber}
         />
         {#if errors.whatsappNumber}
             <p class="error">{errors.whatsappNumber}</p>

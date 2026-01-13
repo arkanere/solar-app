@@ -4,22 +4,25 @@
 	import LeadFormModal from '$lib/LeadFormModal.svelte';
 
 	// State management
-	let visibleBusinesses = []; // Businesses to display on the screen
-	let loadedCount = 0; // Tracks the number of businesses currently loaded
-	let isModalOpen = false; // State to track if the modal is open
-	let selectedBusinessName = '';
-	let selectedBusinessSlug = '';
+	let visibleBusinesses = $state([]);
+	let loadedCount = $state(0);
+	let isModalOpen = $state(false);
+	let selectedBusinessName = $state('');
+	let selectedBusinessSlug = $state('');
 
 	const batchSize = 3; // Number of businesses to load at a time
 
 	// Get reactive data from the page store
-	$: city = $page.data.city;
-	$: businesses = $page.data.businesses || [];
-	$: errorMessage = $page.data.errorMessage;
-	$: darkMode = $isDarkMode;
-	$: if (loadedCount === 0 && businesses.length > 0) {
-		loadMoreBusinesses();
-	}
+	let city = $derived($page.data.city);
+	let businesses = $derived($page.data.businesses || []);
+	let errorMessage = $derived($page.data.errorMessage);
+	let darkMode = $derived($isDarkMode);
+
+	$effect(() => {
+		if (loadedCount === 0 && businesses.length > 0) {
+			loadMoreBusinesses();
+		}
+	});
 
 	// Load more businesses function
 	function loadMoreBusinesses() {
@@ -134,7 +137,7 @@
 						<div class="button-container">
 							<button
 								class="call-now"
-								on:click={() => makeCall(business.phonenumber, business.city, business.slug)}
+								onclick={() => makeCall(business.phonenumber, business.city, business.slug)}
 							>
 								<span class="button-icon phone-button-icon">
 									<svg
@@ -156,7 +159,7 @@
 							</button>
 							<button
 								class="whatsapp-button"
-								on:click={() => openWhatsApp(business.phonenumber, business.city, business.slug)}
+								onclick={() => openWhatsApp(business.phonenumber, business.city, business.slug)}
 							>
 								<span class="button-icon whatsapp-button-icon">
 									<svg
@@ -227,7 +230,7 @@
 							{#if business.phonenumber}
 								<button
 									class="call-now"
-									on:click={() => makeCall(business.phonenumber, business.city, business.slug)}
+									onclick={() => makeCall(business.phonenumber, business.city, business.slug)}
 								>
 									<span class="button-icon phone-button-icon">
 										<svg
@@ -249,7 +252,7 @@
 								</button>
 								<button
 									class="whatsapp-button"
-									on:click={() => openWhatsApp(business.phonenumber, business.city, business.slug)}
+									onclick={() => openWhatsApp(business.phonenumber, business.city, business.slug)}
 								>
 									<span class="button-icon whatsapp-button-icon">
 										<svg
@@ -274,7 +277,7 @@
 		</ul>
 
 		{#if loadedCount < businesses.length}
-			<button class="load-more" on:click={loadMoreBusinesses}>
+			<button class="load-more" onclick={loadMoreBusinesses}>
 				<span>LOAD MORE</span>
 			</button>
 		{/if}
@@ -285,14 +288,14 @@
 	<div
 		class="modal-overlay"
 		class:dark={darkMode}
-		on:click={toggleModal}
-		on:keydown={(e) => e.key === 'Escape' && toggleModal()}
+		onclick={toggleModal}
+		onkeydown={(e) => e.key === 'Escape' && toggleModal()}
 		role="button"
 		tabindex="0"
 		aria-label="Close modal"
 	>
 		<dialog class="modal" open aria-modal="true" use:preventClickPropagation>
-			<button class="close-modal" on:click={toggleModal} aria-label="Close"> &times; </button>
+			<button class="close-modal" onclick={toggleModal} aria-label="Close"> &times; </button>
 			<h2>Request a Free Quote from {selectedBusinessName}</h2>
 			<LeadFormModal businessName={selectedBusinessName} businessSlug={selectedBusinessSlug} />
 		</dialog>
@@ -613,7 +616,7 @@
 		color: var(--primary-color);
 	}
 
-	.dark #all-installers h2 {
+	#all-installers.dark h2 {
 		color: var(--primary-light);
 	}
 

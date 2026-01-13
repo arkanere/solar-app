@@ -1,20 +1,19 @@
 <script>
 	import { isDarkMode } from '$lib/themeStore'; // Assuming this store is globally managed
 
-	let currentBill = 1500; // Initial value for current electricity bill in Rupees
-	let ratePerUnit = 9; // Initial value for electricity rate per unit in Rupees
-	let solarSystemSize = null;
+	let currentBill = $state(1500); // Initial value for current electricity bill in Rupees
+	let ratePerUnit = $state(9); // Initial value for electricity rate per unit in Rupees
+	let solarSystemSize = $state(null);
 
 	// Dark mode state from the store
-	let darkMode;
-
-	// Subscribe to the dark mode store
-	$: darkMode = $isDarkMode;
+	let darkMode = $derived($isDarkMode);
 
 	// Recalculate solar system size whenever input values change
-	$: if (currentBill && ratePerUnit) {
-		calculateSolarSystemSize();
-	}
+	$effect(() => {
+		if (currentBill && ratePerUnit) {
+			calculateSolarSystemSize();
+		}
+	});
 
 	function calculateSolarSystemSize() {
 		const monthlyConsumption = currentBill / ratePerUnit;

@@ -7,11 +7,11 @@
   import { PUBLIC_CLOUDINARY_CLOUD_NAME } from "$env/static/public";
   import AboutSolarVipani from "$lib/in/AboutSolarVipani.svelte";
 
-  // Destructure page data with reactive declaration
-  $: ({ business, projects = [], errorMessage } = $page.data);
-  $: darkMode = $isDarkMode;
-  $: businessSlug = business?.slug || "";
-  $: showProjects = business?.businessfilled && business?.tier3;
+  // Destructure page data using derived
+  const { business, projects = [], errorMessage } = $derived($page.data);
+  const darkMode = $derived($isDarkMode);
+  const businessSlug = $derived(business?.slug || "");
+  const showProjects = $derived(business?.businessfilled && business?.tier3);
 
   // Function to make call with Umami tracking
   function makeCall(phoneNumber, businessSlug) {
@@ -83,7 +83,7 @@
     <div class="business-owner-section">
       <button
         class="business-login-btn"
-        on:click={business.businessfilled ? navigateToLogin : navigateToClaim}
+        onclick={business.businessfilled ? navigateToLogin : navigateToClaim}
         title={business.businessfilled
           ? "Business owner login"
           : "Claim this business listing"}
@@ -102,7 +102,7 @@
         <div class="hero-actions">
           <button
             class="call-now-button-hero"
-            on:click={() => makeCall(business.phonenumber, business.slug)}
+            onclick={() => makeCall(business.phonenumber, business.slug)}
           >
             <span class="button-icon phone-button-icon">
               <svg
@@ -125,7 +125,7 @@
           </button>
           <button
             class="whatsapp-button-hero"
-            on:click={() => openWhatsApp(business.phonenumber, business.slug)}
+            onclick={() => openWhatsApp(business.phonenumber, business.slug)}
           >
             <span class="button-icon whatsapp-button-icon">
               <svg
@@ -379,7 +379,7 @@
           If you're interested in exploring other solar businesses in {business.city},
           visit our directory page.
         </p>
-        <button on:click={navigateToDirectory}>
+        <button onclick={navigateToDirectory}>
           View Solar Businesses in {business.city}
         </button>
       </section>

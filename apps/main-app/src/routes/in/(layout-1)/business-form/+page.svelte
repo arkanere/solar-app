@@ -2,10 +2,10 @@
 	import BusinessForm from '$lib/BusinessForm.svelte';
 	import { isDarkMode } from '$lib/themeStore'; // Import dark mode state
 
-	$: darkMode = $isDarkMode; // Watch for changes in dark mode state
+	let darkMode = $derived($isDarkMode); // Watch for changes in dark mode state
 </script>
 
-<!-- svelte-ignore a11y-img-redundant-alt -->
+<!-- svelte-ignore a11y_img_redundant_alt -->
 <svelte:head>
 	<!-- Meta Pixel Code -->
 	<script>

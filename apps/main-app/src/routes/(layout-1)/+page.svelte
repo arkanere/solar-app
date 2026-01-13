@@ -76,7 +76,7 @@
       {#each countries as country}
         <button
           class="country-card"
-          on:click={() => selectCountry(country.path)}
+          onclick={() => selectCountry(country.path)}
         >
           <div class="country-flag">{country.flag}</div>
           <h3>{country.name}</h3>

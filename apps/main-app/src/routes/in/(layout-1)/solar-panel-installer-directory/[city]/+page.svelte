@@ -10,14 +10,14 @@
   import SolarComparisonTable from "$lib/in/SolarComparisonTable.svelte";
 
   // Lazy-loaded components (non-critical)
-  let RecentProjectsCity;
-  let AboutSolarVipani;
-  let ChatbotPopup;
+  let RecentProjectsCity = $state();
+  let AboutSolarVipani = $state();
+  let ChatbotPopup = $state();
 
   // Loading states
-  let shouldLoadRecentProjects = false;
-  let shouldLoadAbout = false;
-  let shouldLoadChatbot = false;
+  let shouldLoadRecentProjects = $state(false);
+  let shouldLoadAbout = $state(false);
+  let shouldLoadChatbot = $state(false);
 
   // Default business data
   const defaultBusiness = {
@@ -26,19 +26,19 @@
   };
 
   // State management
-  let isModalOpen = false; // State to track if the modal is open
-  let selectedBusinessName = "";
-  let selectedBusinessSlug = "";
+  let isModalOpen = $state(false); // State to track if the modal is open
+  let selectedBusinessName = $state("");
+  let selectedBusinessSlug = $state("");
 
-  // Get reactive data from the page store
-  $: city = $page.data.city;
-  $: businesses = $page.data.businesses || [];
-  $: subset_cities_localities = $page.data.subset_cities_localities || [];
-  $: district = $page.data.district || "";
-  $: recentProjects = $page.data.recentProjects || [];
-  $: errorMessage = $page.data.errorMessage;
-  $: lastUpdated = $page.data.lastUpdated;
-  $: darkMode = $isDarkMode;
+  // Get reactive data from the page store using derived
+  const city = $derived($page.data.city);
+  const businesses = $derived($page.data.businesses || []);
+  const subset_cities_localities = $derived($page.data.subset_cities_localities || []);
+  const district = $derived($page.data.district || "");
+  const recentProjects = $derived($page.data.recentProjects || []);
+  const errorMessage = $derived($page.data.errorMessage);
+  const lastUpdated = $derived($page.data.lastUpdated);
+  const darkMode = $derived($isDarkMode);
 
   // Function to toggle modal visibility
   function toggleModal(businessName = "", businessSlug = "") {
@@ -438,7 +438,7 @@
 
         <button
           class="primary-recruitment-cta"
-          on:click={() => (window.location.href = "/in/business-form")}
+          onclick={() => (window.location.href = "/in/business-form")}
         >
           Join Our Network - Register Your Business
         </button>
@@ -476,7 +476,7 @@
 
   <section id="recent-projects-section">
     {#if shouldLoadRecentProjects && RecentProjectsCity}
-      <svelte:component this={RecentProjectsCity} />
+      {@render RecentProjectsCity()}
     {/if}
   </section>
 
@@ -565,7 +565,7 @@
 
     <!-- Get Quotation Button after Recommended Solar Systems -->
     <div class="quotation-button-container">
-      <button class="get-quotation-btn" on:click={scrollToLeadForm}>
+      <button class="get-quotation-btn" onclick={scrollToLeadForm}>
         Get Quotation
       </button>
     </div>
@@ -631,7 +631,7 @@
         visit our district directory page.
       </p>
       <button
-        on:click={() =>
+        onclick={() =>
           (window.location.href = `/in/district/${district.toLowerCase().replace(/\s+/g, "-")}`)}
       >
         View Solar Businesses in {district} district
@@ -645,7 +645,7 @@
 
     <!-- Get Quotation Button after Solar Comparison Table -->
     <div class="quotation-button-container">
-      <button class="get-quotation-btn" on:click={scrollToLeadForm}>
+      <button class="get-quotation-btn" onclick={scrollToLeadForm}>
         Get Quotation
       </button>
     </div>
@@ -654,27 +654,27 @@
   <!-- About Solarvipani Section (Lazy Loaded) -->
   <section id="about-section">
     {#if shouldLoadAbout && AboutSolarVipani}
-      <svelte:component this={AboutSolarVipani} />
+      {@render AboutSolarVipani()}
     {/if}
   </section>
 </main>
 
 <!-- Chatbot Popup (Lazy Loaded) -->
 {#if shouldLoadChatbot && ChatbotPopup}
-  <svelte:component this={ChatbotPopup} />
+  {@render ChatbotPopup()}
 {/if}
 
 {#if isModalOpen}
   <div
     class="modal-overlay"
-    on:click={toggleModal}
-    on:keydown={(e) => e.key === "Escape" && toggleModal()}
+    onclick={toggleModal}
+    onkeydown={(e) => e.key === "Escape" && toggleModal()}
     role="button"
     tabindex="0"
     aria-label="Close modal"
   >
     <dialog class="modal" open aria-modal="true" use:preventClickPropagation>
-      <button class="close-modal" on:click={toggleModal} aria-label="Close">
+      <button class="close-modal" onclick={toggleModal} aria-label="Close">
         &times;
       </button>
       <h2>Request a Free Quote from {selectedBusinessName}</h2>
@@ -817,10 +817,6 @@
 
   /* Section heading styles */
 
-  .dark section h1 {
-    color: var(--primary-light);
-  }
-
   h1 {
     text-align: center;
   }
@@ -857,11 +853,6 @@
 
   /* List item styling - business cards */
 
-  .dark #all-installers li {
-    background-color: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
   /* Paragraph styling */
   p {
     font-size: 1rem;
@@ -875,15 +866,6 @@
 
   .dark li p {
     color: #cbd5e0;
-  }
-
-  li p strong {
-    color: var(--text-dark);
-    font-weight: 600;
-  }
-
-  .dark li p strong {
-    color: var(--text-light);
   }
 
   /* Button styling */
@@ -1089,10 +1071,6 @@
     padding: 5px;
     margin: 0;
     color: var(--text-dark);
-  }
-
-  .dark .about-text strong {
-    color: #90caf9;
   }
 
   /* Combined Recruitment Section Styling - Similar to AboutSolarVipani */

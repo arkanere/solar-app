@@ -2,7 +2,7 @@
 	import { isDarkMode } from '$lib/themeStore';
 
 	// Reactive statement for dark mode
-	$: darkMode = $isDarkMode;
+	let darkMode = $derived($isDarkMode);
 
 	// Scroll to lead form function
 	function scrollToLeadForm() {
@@ -65,7 +65,7 @@
 			</p>
 			<p>
 				Our platform is designed for smart homeowners and businesses ready to go solar but unsure where to start.
-				<button class="cta-link" on:click={scrollToLeadForm}>Get 2-3 free quotes from verified installers in your area</button> and compare prices to find the best solution for your needs.
+				<button class="cta-link" onclick={scrollToLeadForm}>Get 2-3 free quotes from verified installers in your area</button> and compare prices to find the best solution for your needs.
 			</p>
 		</div>
 	</div>

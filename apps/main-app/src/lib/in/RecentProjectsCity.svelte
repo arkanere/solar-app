@@ -3,8 +3,8 @@
 	import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
 
 	// Get city and projects from page data
-	$: city = $page.data.city;
-	$: projects = $page.data.recentProjects || [];
+	let city = $derived($page.data.city);
+	let projects = $derived($page.data.recentProjects || []);
 
 	// Format date helper function
 	const formatDate = (dateString) => {
@@ -124,9 +124,7 @@
 											/>
 										</svg>
 										Installer:
-										<a href={`/solar-panel-installer/${project.business_slug}`}
-											>{formatBusinessName(project.business_slug)}</a
-										>
+										<span class="installer-link">{formatBusinessName(project.business_slug)}</span>
 									</p>
 								</div>
 							</div>
@@ -250,6 +248,17 @@
 	.project-meta svg {
 		flex-shrink: 0;
 		opacity: 0.7;
+	}
+
+	.installer-link {
+		color: var(--accent-color, #ff6b35);
+		cursor: pointer;
+		text-decoration: underline;
+		transition: color 0.2s ease;
+	}
+
+	.installer-link:hover {
+		color: var(--accent-color-hover, #e55a2b);
 	}
 
 	.view-more {

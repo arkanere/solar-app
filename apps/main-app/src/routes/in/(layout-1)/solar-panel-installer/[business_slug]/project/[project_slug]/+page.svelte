@@ -4,9 +4,9 @@
   import { goto } from "$app/navigation";
   import { PUBLIC_CLOUDINARY_CLOUD_NAME } from "$env/static/public";
 
-  // Destructure page data
-  $: ({ project, business } = $page.data);
-  $: darkMode = $isDarkMode;
+  // Destructure page data using derived
+  const { project, business } = $derived($page.data);
+  const darkMode = $derived($isDarkMode);
 
   // Helper functions
 
@@ -68,11 +68,11 @@
   <nav class="breadcrumb">
     <a href="/in">Home</a>
     <span> › </span>
-    <button on:click={navigateToDirectory}>
+    <button onclick={navigateToDirectory}>
       Solar Installers in {business.city}
     </button>
     <span> › </span>
-    <button on:click={navigateToBusinessPage}>
+    <button onclick={navigateToBusinessPage}>
       {business.businessname}
     </button>
     <span> › </span>
@@ -83,7 +83,7 @@
   <header class="project-header">
     <h1>{project.title}</h1>
     <p class="project-meta">
-      By <button class="business-link" on:click={navigateToBusinessPage}>
+      By <button class="business-link" onclick={navigateToBusinessPage}>
         {business.businessname}
       </button>
       • Completed on {formatDate(project.project_date)}

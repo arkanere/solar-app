@@ -1,36 +1,35 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
 
-	export let businessName = '';
-	export let businessSlug = '';
+	let { businessName = '', businessSlug = '' } = $props();
 
 	const dispatch = createEventDispatcher();
 
-	let name = '';
-	let phone = '';
-	let pinCode = '';
-	let type = '';
-	let comment = '';
-	let email = '';
-	let urlParam = '';
+	let name = $state('');
+	let phone = $state('');
+	let pinCode = $state('');
+	let type = $state('');
+	let comment = $state('');
+	let email = $state('');
+	let urlParam = $state('');
 
-	let isSubmitting = false;
-	let submitSuccess = false;
-	let submitMessage = '';
+	let isSubmitting = $state(false);
+	let submitSuccess = $state(false);
+	let submitMessage = $state('');
 
-	let errors = {
+	let errors = $state<Record<string, string>>({
 		name: '',
 		phone: '',
 		pinCode: '',
 		type: '',
 		email: '',
 		comment: ''
-	};
+	});
 
 	// ✅ **Set the urlParam dynamically based on the businessSlug**
-	$: {
+	$effect(() => {
 		urlParam = `/solar-panel-installer/${businessSlug}`;
-	}
+	});
 
 	function validatePhoneNumber() {
 		if (!/^\+?\d{10,16}$/.test(phone)) {

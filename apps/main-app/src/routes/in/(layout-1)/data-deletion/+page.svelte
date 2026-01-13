@@ -2,18 +2,17 @@
   import { isDarkMode } from "$lib/in/themeStore";
   import { enhance } from "$app/forms";
 
-  let darkMode;
-  $: darkMode = $isDarkMode;
+  let darkMode = $derived($isDarkMode);
 
-  let formData = {
+  let formData = $state({
     email: "",
     phone: "",
     reason: "",
-  };
+  });
 
-  let submitting = false;
-  let submitted = false;
-  let error = "";
+  let submitting = $state(false);
+  let submitted = $state(false);
+  let error = $state("");
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -101,7 +100,7 @@
         </p>
       </div>
     {:else}
-      <form on:submit={handleSubmit} class="deletion-form">
+      <form onsubmit={handleSubmit} class="deletion-form">
         <div class="form-group">
           <label for="email">Email Address *</label>
           <input

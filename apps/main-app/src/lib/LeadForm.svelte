@@ -2,24 +2,26 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 
-	let name: string = '';
-	let phone: string = '';
-	let pinCode: string = '';
-	let type: string = '';
-	let comment: string = '';
-	let urlParam: string = '';
-	let isSubmitting: boolean = false;
+	let name = $state('');
+	let phone = $state('');
+	let pinCode = $state('');
+	let type = $state('');
+	let comment = $state('');
+	let urlParam = $state('');
+	let isSubmitting = $state(false);
 
-	let errors: Record<string, string> = {
+	let errors = $state<Record<string, string>>({
 		name: '',
 		phone: '',
 		pinCode: '',
 		type: ''
-	};
+	});
 
-	$: {
-		urlParam = $page.url.pathname;
-	}
+	let pageData = $derived($page);
+
+	$effect(() => {
+		urlParam = pageData.url.pathname;
+	});
 
 	function validateForm(): boolean {
 		errors = {

@@ -3,11 +3,10 @@
   import { isDarkMode } from "$lib/in/themeStore";
 
   // Props
-  export let projects = [];
+  let { projects = [] } = $props();
 
   // Initialize dark mode state
-  let darkMode;
-  $: darkMode = $isDarkMode;
+  let darkMode = $derived($isDarkMode);
 
   // Format date to a more readable format
   function formatDate(dateString) {

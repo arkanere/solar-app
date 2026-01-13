@@ -1,14 +1,12 @@
-<!-- svelte-ignore a11y-img-redundant-alt -->
 <script>
 	import { isDarkMode } from '$lib/themeStore'; // Import dark mode state from your store
-	export let data; // Receive data from page.server.js
-	
-	let darkMode;
-	$: darkMode = $isDarkMode;
-	
+	let { data } = $props();
+
+	let darkMode = $derived($isDarkMode);
+
 	// Extract customer details from server data
-	$: customerDetails = data?.customerDetails || null;
-	$: error = data?.error || null;
+	let customerDetails = $derived(data?.customerDetails || null);
+	let error = $derived(data?.error || null);
 	
 	// Format date for display
 	function formatDate(dateString) {
@@ -47,12 +45,13 @@
 		fbq('track', 'Lead');
 	</script>
 	<noscript>
+		<!-- svelte-ignore a11y_img_redundant_alt -->
 		<img
 			height="1"
 			width="1"
 			style="display:none"
 			src="https://www.facebook.com/tr?id=1226087962095221&ev=PageView&noscript=1"
-			alt="Facebook Pixel tracking image for PageView event"
+			alt="Facebook Pixel tracking"
 		/>
 	</noscript>
 	<!-- End Meta Pixel Code -->

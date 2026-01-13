@@ -13,13 +13,16 @@
   const batchSize = 3; // Number of businesses to load at a time
 
   // Get reactive data from the page store
-  $: city = $page.data.city;
-  $: businesses = $page.data.businesses || [];
-  $: errorMessage = $page.data.errorMessage;
-  $: darkMode = $isDarkMode;
-  $: if (loadedCount === 0 && businesses.length > 0) {
-    loadMoreBusinesses();
-  }
+  let city = $derived($page.data.city);
+  let businesses = $derived($page.data.businesses || []);
+  let errorMessage = $derived($page.data.errorMessage);
+  let darkMode = $derived($isDarkMode);
+
+  $effect(() => {
+    if (loadedCount === 0 && businesses.length > 0) {
+      loadMoreBusinesses();
+    }
+  });
 
   // Load more businesses function
   function loadMoreBusinesses() {

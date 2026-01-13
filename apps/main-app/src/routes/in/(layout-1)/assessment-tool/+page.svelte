@@ -2,8 +2,8 @@
 	import { onMount } from 'svelte';
 
 	// Initialize component state
-	let currentStep = 0;
-	let userResponses = {
+	let currentStep = $state(0);
+	let userResponses = $state({
 		propertyType: '',
 		location: '',
 		roofType: '',
@@ -15,10 +15,10 @@
 		email: '',
 		phone: '',
 		contactConsent: false
-	};
-	let showResults = false;
-	let submitted = false;
-	let formErrors = {};
+	});
+	let showResults = $state(false);
+	let submitted = $state(false);
+	let formErrors = $state({});
 
 	// Questions for the assessment
 	const questions = [
@@ -248,14 +248,14 @@
 								class="option-button {userResponses[questions[currentStep].id] === option
 									? 'selected'
 									: ''}"
-								on:click={() => handleOptionSelect(option)}
+								onclick={() => handleOptionSelect(option)}
 							>
 								{option}
 							</button>
 						{/each}
 					</div>
 					{#if currentStep > 0}
-						<button on:click={handleBack} class="back-button"> ← Back </button>
+						<button onclick={handleBack} class="back-button"> ← Back </button>
 					{/if}
 				</div>
 			{/if}

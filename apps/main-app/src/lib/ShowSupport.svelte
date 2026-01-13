@@ -1,7 +1,7 @@
 <script>
-	export let show = false;
-
 	import { createEventDispatcher } from 'svelte';
+
+	let { show = false } = $props();
 	const dispatch = createEventDispatcher();
 
 	const close = () => {

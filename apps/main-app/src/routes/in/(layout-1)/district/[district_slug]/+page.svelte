@@ -3,11 +3,11 @@
   import { page } from "$app/stores";
   import { isDarkMode } from "$lib/in/themeStore";
 
-  // Get reactive data from the page store
-  $: district = $page.data.district;
-  $: cities = $page.data.cities || [];
-  $: errorMessage = $page.data.errorMessage;
-  $: darkMode = $isDarkMode;
+  // Get reactive data from the page store using derived
+  const district = $derived($page.data.district);
+  const cities = $derived($page.data.cities || []);
+  const errorMessage = $derived($page.data.errorMessage);
+  const darkMode = $derived($isDarkMode);
 
   // Function to format city name for URL
   function formatCitySlug(city) {

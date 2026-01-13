@@ -1,5 +1,4 @@
 <script>
-	import { onMount } from 'svelte';
 	import { writable } from 'svelte/store';
 	import { isDarkMode } from '$lib/themeStore';
 
@@ -7,9 +6,13 @@
 	let { messages = writable([]) } = $props();
 
 	// Widget state
-	let isOpen = false;
-	let userInput = '';
-	let unreadMessages = 0;
+	let isOpen = $state(false);
+	let userInput = $state('');
+	let unreadMessages = $state(0);
+
+	// Derived values for reactive access
+	let isDarkMode = $derived($isDarkMode);
+	let messagesList = $derived($messages);
 
 	// Function to toggle chat window
 	function toggleChat() {
@@ -55,12 +58,12 @@
 	// Save messages to localStorage
 	$effect(() => {
 		if (typeof window !== 'undefined') {
-			localStorage.setItem('chatMessages', JSON.stringify($messages));
+			localStorage.setItem('chatMessages', JSON.stringify(messagesList));
 		}
 	});
 
 	// Load messages from localStorage on mount
-	onMount(() => {
+	$effect.pre(() => {
 		if (typeof window !== 'undefined') {
 			const savedMessages = localStorage.getItem('chatMessages');
 			if (savedMessages) {
@@ -70,7 +73,7 @@
 	});
 </script>
 
-<div class="chat-widget {isOpen ? 'open' : 'closed'} {$isDarkMode ? 'dark-theme' : 'light-theme'}">
+<div class="chat-widget {isOpen ? 'open' : 'closed'} {isDarkMode ? 'dark-theme' : 'light-theme'}">
 	{#if !isOpen}
 		<button class="chat-button" on:click={toggleChat}>
 			<span>AI Chat Assistant</span>
@@ -95,7 +98,7 @@
 
 			<!-- Chat history -->
 			<div class="chat-history">
-				{#each $messages as message}
+				{#each messagesList as message}
 					<div class="message {message.role}">
 						<strong>{message.role === 'user' ? 'You' : 'AI Assistant'}:</strong>
 						<p>{message.content}</p>
