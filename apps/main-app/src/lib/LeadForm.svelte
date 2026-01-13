@@ -1,30 +1,27 @@
-<script>
+<script lang="ts">
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores'; // Import the page store to access the URL
+	import { page } from '$app/stores';
 
-	let name = '';
-	let phone = '';
-	let pinCode = '';
-	let type = '';
-	let comment = '';
-	let urlParam = ''; // New variable to capture the path from the URL
+	let name: string = '';
+	let phone: string = '';
+	let pinCode: string = '';
+	let type: string = '';
+	let comment: string = '';
+	let urlParam: string = '';
+	let isSubmitting: boolean = false;
 
-	let errors = {
+	let errors: Record<string, string> = {
 		name: '',
 		phone: '',
 		pinCode: '',
 		type: ''
 	};
 
-	// State to track form submission
-	let isSubmitting = false;
-
-	// Get the path from the current page's URL
 	$: {
-		urlParam = $page.url.pathname; // Capture the current path (e.g., '/about-us')
+		urlParam = $page.url.pathname;
 	}
 
-	function validateForm() {
+	function validateForm(): boolean {
 		errors = {
 			name: '',
 			phone: '',
@@ -34,25 +31,21 @@
 
 		let isValid = true;
 
-		// Validation for Name
 		if (name.trim() === '') {
 			errors.name = 'Name is required';
 			isValid = false;
 		}
 
-		// Validation for Phone Number - Updated to allow '+' at the beginning
 		if (!/^\+?\d{10,16}$/.test(phone)) {
 			errors.phone = 'Phone number must be between 10 and 16 digits, optionally starting with +';
 			isValid = false;
 		}
 
-		// Validation for Pin Code
 		if (!/^\d{6}$/.test(pinCode)) {
 			errors.pinCode = 'Pin code must be exactly 6 digits';
 			isValid = false;
 		}
 
-		// Validation for Type
 		if (type.trim() === '') {
 			errors.type = 'Type is required';
 			isValid = false;
@@ -61,11 +54,11 @@
 		return isValid;
 	}
 
-	async function handleSubmit(event) {
+	async function handleSubmit(event: Event): Promise<void> {
 		event.preventDefault();
 
 		if (validateForm()) {
-			isSubmitting = true; // Lock the button before submission
+			isSubmitting = true;
 
 			try {
 				const response = await fetch('/api/submitLead', {
@@ -76,7 +69,7 @@
 					body: JSON.stringify({ name, phone, pinCode, type, comment, urlParam })
 				});
 
-				const result = await response.json();
+				const result: { success: boolean; error?: string } = await response.json();
 
 				if (result.success) {
 					goto('/thank-you');
@@ -86,7 +79,7 @@
 			} catch (error) {
 				console.error('Error submitting form:', error);
 			} finally {
-				isSubmitting = false; // Unlock the button after submission
+				isSubmitting = false;
 			}
 		}
 	}

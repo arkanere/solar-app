@@ -4,7 +4,7 @@
 	import { isDarkMode } from '$lib/themeStore';
 
 	// Store to maintain message history
-	export let messages = writable([]);
+	let { messages = writable([]) } = $props();
 
 	// Widget state
 	let isOpen = false;
@@ -53,9 +53,11 @@
 	}
 
 	// Save messages to localStorage
-	$: if (typeof window !== 'undefined') {
-		localStorage.setItem('chatMessages', JSON.stringify($messages));
-	}
+	$effect(() => {
+		if (typeof window !== 'undefined') {
+			localStorage.setItem('chatMessages', JSON.stringify($messages));
+		}
+	});
 
 	// Load messages from localStorage on mount
 	onMount(() => {

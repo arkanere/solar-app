@@ -427,18 +427,6 @@
     color: var(--primary-light);
   }
 
-  /* Section heading styles */
-  section h2 {
-    font-size: 1.8rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: var(--primary-color);
-  }
-
-  .dark section h2 {
-    color: var(--primary-light);
-  }
-
   /* Paragraph styling */
   p {
     font-size: 1rem;

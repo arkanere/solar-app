@@ -2,8 +2,7 @@
   import { isDarkMode } from "$lib/themeStore";
   import { goto } from "$app/navigation";
 
-  let darkMode;
-  $: darkMode = $isDarkMode;
+  let darkMode = $derived($isDarkMode);
 
   const countries = [
     {

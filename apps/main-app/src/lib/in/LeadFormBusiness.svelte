@@ -1,21 +1,19 @@
-<script>
+<script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 
-	let name = '';
-	let phone = '';
-	let pinCode = '';
-	let comment = '';
-	let email = '';
-	let urlParam = '';
-	
-	// Placeholder text with line break
-	const commentPlaceholder = `Tell us about your requirement.
+	let name: string = '';
+	let phone: string = '';
+	let pinCode: string = '';
+	let comment: string = '';
+	let email: string = '';
+	let urlParam: string = '';
+	let isSubmitting: boolean = false;
+
+	const commentPlaceholder: string = `Tell us about your requirement.
 Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 
-	let isSubmitting = false;
-
-	let errors = {
+	let errors: Record<string, string> = {
 		name: '',
 		phone: '',
 		pinCode: '',
@@ -23,13 +21,11 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 		comment: ''
 	};
 
-	// ✅ Set the URL dynamically based on the current page
 	$: {
 		urlParam = $page.url.pathname;
 	}
 
-	// ✅ Phone Number Validation (10-16 digits with optional + prefix)
-	function validatePhoneNumber() {
+	function validatePhoneNumber(): boolean {
 		if (!/^\+?\d{10,16}$/.test(phone)) {
 			errors.phone = 'Phone number must be between 10 and 16 digits, optionally starting with +';
 			return false;
@@ -39,8 +35,7 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 		}
 	}
 
-	// ✅ Email Validation (Standard Format)
-	function validateEmail() {
+	function validateEmail(): boolean {
 		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
 			errors.email = 'Invalid email address';
 			return false;
@@ -50,8 +45,7 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 		}
 	}
 
-	// ✅ Pin Code Validation (Exactly 6 Digits)
-	function validatePinCode() {
+	function validatePinCode(): boolean {
 		if (!/^\d{6}$/.test(pinCode)) {
 			errors.pinCode = 'Pin code must be exactly 6 digits';
 			return false;
@@ -61,8 +55,7 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 		}
 	}
 
-	// ✅ Form Validation
-	function validateForm() {
+	function validateForm(): boolean {
 		errors = { name: '', phone: '', pinCode: '', email: '', comment: '' };
 		let isValid = true;
 
@@ -81,7 +74,7 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 		return isValid;
 	}
 
-	async function handleSubmit(event) {
+	async function handleSubmit(event: Event): Promise<void> {
 		event.preventDefault();
 
 		if (validateForm()) {
@@ -94,7 +87,7 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 					body: JSON.stringify({ name, phone, pinCode, comment, email, urlParam })
 				});
 
-				const result = await response.json();
+				const result: { success: boolean; reference_uuid?: string; error?: string } = await response.json();
 
 				if (result.success) {
 					goto(`/thank-you?ref=${result.reference_uuid}`);
@@ -189,7 +182,6 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 	}
 
 	input,
-	select,
 	textarea {
 		width: 100%;
 		padding: 0.5em;
@@ -233,7 +225,6 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 		}
 
 		input,
-		select,
 		textarea {
 			font-size: 16px; /* Prevents zoom on iOS */
 		}
@@ -245,7 +236,6 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 		}
 
 		input,
-		select,
 		textarea {
 			padding: 0.6em 0.5em;
 		}

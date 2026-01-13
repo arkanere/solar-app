@@ -1,26 +1,26 @@
-<script>
+<script lang="ts">
     import { goto } from '$app/navigation';
     import { base } from '$app/paths';
 
-    let businessName = '';
-    let address = '';
-    let plusCode = '';
-    let phoneNumber = '';
-    let whatsappNumber = '';
-    let email = '';
-    let login_email = '';
-    let website = '';
-    let gstn = '';
-    let state = '';
-    let district = '';
-    let city = '';
-    let districts = [];
-    let cities = [];
-    let isDistrictLoading = false; // Add loading state for districts
-    let isCityLoading = false; // Add loading state for cities
-    let isSubmitting = false; // Track form submission state
+    let businessName: string = '';
+    let address: string = '';
+    let plusCode: string = '';
+    let phoneNumber: string = '';
+    let whatsappNumber: string = '';
+    let email: string = '';
+    let login_email: string = '';
+    let website: string = '';
+    let gstn: string = '';
+    let state: string = '';
+    let district: string = '';
+    let city: string = '';
+    let districts: string[] = [];
+    let cities: string[] = [];
+    let isDistrictLoading: boolean = false;
+    let isCityLoading: boolean = false;
+    let isSubmitting: boolean = false;
 
-    const states = [
+    const states: string[] = [
         'Andaman and Nicobar Islands',
         'Andhra Pradesh',
         'Arunachal Pradesh',
@@ -59,61 +59,57 @@
         'West Bengal'
     ];
 
-    let errors = {
+    let errors: Record<string, string> = {
         phoneNumber: '',
         whatsappNumber: '',
         gstn: ''
     };
 
-    // Fetch districts dynamically when the state changes
     $: if (state) {
         updateDistricts(state);
     }
 
-    async function updateDistricts(selectedState) {
-        isDistrictLoading = true; // Set loading state
+    async function updateDistricts(selectedState: string): Promise<void> {
+        isDistrictLoading = true;
         try {
-            // Send POST request to fetch districts for the selected state
             const res = await fetch('/api/getDistricts', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ state: selectedState })
             });
-            const data = await res.json();
+            const data: { districts: string[] } = await res.json();
             districts = data.districts || [];
-            district = ''; // Reset district when state changes
+            district = '';
         } catch (error) {
             console.error('Error fetching districts:', error);
         } finally {
-            isDistrictLoading = false; // Remove loading state after districts are fetched
+            isDistrictLoading = false;
         }
     }
 
-    // Fetch cities dynamically when the district changes
     $: if (district) {
         updateCities(district);
     }
 
-    async function updateCities(selectedDistrict) {
-        isCityLoading = true; // Set loading state
+    async function updateCities(selectedDistrict: string): Promise<void> {
+        isCityLoading = true;
         try {
-            // Send POST request to fetch cities for the selected district
             const res = await fetch('/api/getCities', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ district: selectedDistrict })
             });
-            const data = await res.json();
+            const data: { cities: string[] } = await res.json();
             cities = data.cities || [];
-            city = ''; // Reset city when district changes
+            city = '';
         } catch (error) {
             console.error('Error fetching cities:', error);
         } finally {
-            isCityLoading = false; // Remove loading state after cities are fetched
+            isCityLoading = false;
         }
     }
 
-    function validatePhoneNumber() {
+    function validatePhoneNumber(): boolean {
         if (!/^\d{10,16}$/.test(phoneNumber)) {
             errors.phoneNumber = 'Phone number must be between 10 and 16 digits';
             return false;
@@ -123,7 +119,7 @@
         }
     }
 
-    function validateWhatsappNumber() {
+    function validateWhatsappNumber(): boolean {
         if (whatsappNumber && !/^\d{10,16}$/.test(whatsappNumber)) {
             errors.whatsappNumber = 'WhatsApp number must be between 10 and 16 digits';
             return false;
@@ -133,8 +129,8 @@
         }
     }
 
-    function validateGSTN() {
-        const gstRegex = /^[0-9A-Z]{15}$/; // Only uppercase letters and numbers, exactly 15 characters
+    function validateGSTN(): boolean {
+        const gstRegex = /^[0-9A-Z]{15}$/;
         if (!gstRegex.test(gstn)) {
             errors.gstn =
                 'GST number must be 15 characters long and contain only uppercase letters and numbers';
@@ -145,14 +141,14 @@
         }
     }
 
-    function scrollToFirstError() {
+    function scrollToFirstError(): void {
         const errorFields = document.querySelectorAll('.error');
         if (errorFields.length > 0) {
             errorFields[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     }
 
-    async function handleSubmit(event) {
+    async function handleSubmit(event: Event): Promise<void> {
         event.preventDefault();
 
         if (validatePhoneNumber() && validateWhatsappNumber() && validateGSTN()) {
@@ -177,7 +173,7 @@
                     })
                 });
 
-                const result = await response.json();
+                const result: { success: boolean; error?: string } = await response.json();
 
                 if (result.success) {
                     goto(`${base}/thank-you-business`);
@@ -186,16 +182,16 @@
                 }
             } catch (error) {
                 console.error('Error submitting form:', error);
-                alert(`Error submitting form: ${error.message}`);
+                alert(`Error submitting form: ${error instanceof Error ? error.message : 'Unknown error'}`);
             } finally {
                 isSubmitting = false;
             }
         } else {
-            scrollToFirstError(); // Move to the first error field
+            scrollToFirstError();
         }
     }
 
-    function isFormValid() {
+    function isFormValid(): boolean {
         return Object.values(errors).every((error) => error === '');
     }
 </script>
@@ -402,16 +398,6 @@
         font-size: 0.9rem;
         margin-top: -0.5em;
         margin-bottom: 1em;
-    }
-
-    .server-error {
-        background-color: #ffebee;
-        border: 1px solid #ffcdd2;
-        border-radius: 4px;
-        padding: 10px;
-        margin-top: 1em;
-        margin-bottom: 1em;
-        font-weight: bold;
     }
 
     p {

@@ -35,12 +35,13 @@
   ];
 
   // Reactive variable for current page path - format for CallSafe (only a-z, A-Z, 0-9, -, _)
-  $: currentPath =
+  const currentPath = $derived(
     $page.url.pathname
       .replace(/\//g, "-") // Replace slashes with hyphens
       .replace(/^-+|-+$/g, "") // Remove leading/trailing hyphens
       .replace(/-+/g, "-") || // Replace multiple hyphens with single
-    "home"; // Default to 'home' for root path
+    "home" // Default to 'home' for root path
+  );
 
   // Initialize the theme when the component is mounted
   onMount(() => {
@@ -119,9 +120,11 @@
   }
 
   // Watch for modal open state changes to trigger lazy loading
-  $: if ($storiesModalOpen && !StoriesModalComponent && !storiesModalLoading) {
-    loadStoriesModal();
-  }
+  $effect(() => {
+    if ($storiesModalOpen && !StoriesModalComponent && !storiesModalLoading) {
+      loadStoriesModal();
+    }
+  });
 
   // Handle translate dropdown toggle
   function toggleTranslateDropdown() {

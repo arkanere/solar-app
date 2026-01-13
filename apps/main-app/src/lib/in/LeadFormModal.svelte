@@ -1,20 +1,19 @@
-<script>
+<script lang="ts">
 	import { goto } from '$app/navigation';
 
-	export let businessName = '';
-	export let businessSlug = '';
+	export let businessName: string = '';
+	export let businessSlug: string = '';
 
-	let name = '';
-	let phone = '';
-	let pinCode = '';
-	let type = '';
-	let comment = '';
-	let email = '';
-	let urlParam = '';
+	let name: string = '';
+	let phone: string = '';
+	let pinCode: string = '';
+	let type: string = '';
+	let comment: string = '';
+	let email: string = '';
+	let urlParam: string = '';
+	let isSubmitting: boolean = false;
 
-	let isSubmitting = false;
-
-	let errors = {
+	let errors: Record<string, string> = {
 		name: '',
 		phone: '',
 		pinCode: '',
@@ -23,12 +22,11 @@
 		comment: ''
 	};
 
-	// ✅ **Set the urlParam dynamically based on the businessSlug**
 	$: {
 		urlParam = `/solar-panel-installer/${businessSlug}`;
 	}
 
-	function validatePhoneNumber() {
+	function validatePhoneNumber(): boolean {
 		if (!/^\+?\d{10,16}$/.test(phone)) {
 			errors.phone = 'Phone number must be between 10 and 16 digits, optionally starting with +';
 			return false;
@@ -38,7 +36,7 @@
 		}
 	}
 
-	function validateEmail() {
+	function validateEmail(): boolean {
 		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
 			errors.email = 'Invalid email address';
 			return false;
@@ -48,7 +46,7 @@
 		}
 	}
 
-	function validatePinCode() {
+	function validatePinCode(): boolean {
 		if (!/^\d{6}$/.test(pinCode)) {
 			errors.pinCode = 'Pin code must be exactly 6 digits';
 			return false;
@@ -58,7 +56,7 @@
 		}
 	}
 
-	function validateForm() {
+	function validateForm(): boolean {
 		errors = { name: '', phone: '', pinCode: '', type: '', email: '', comment: '' };
 		let isValid = true;
 
@@ -82,7 +80,7 @@
 		return isValid;
 	}
 
-	async function handleSubmit(event) {
+	async function handleSubmit(event: Event): Promise<void> {
 		event.preventDefault();
 
 		if (validateForm()) {
@@ -104,7 +102,7 @@
 					})
 				});
 
-				const result = await response.json();
+				const result: { success: boolean; error?: string } = await response.json();
 
 				if (result.success) {
 					goto('/thank-you');

@@ -776,13 +776,6 @@
     transition: background-color var(--transition-medium);
   }
 
-  /* Chatbot section - minimize side spacing */
-  #chatbot {
-    padding: 1rem 0.5rem;
-    max-width: 100%;
-    margin-top: 3rem;
-  }
-
   /* Get Quotation Button Styling */
   .quotation-button-container {
     text-align: center;
@@ -1314,11 +1307,6 @@
     /* Extra small mobile styles for combined section */
     .combined-recruitment-section {
       padding: 1.5rem 0.5rem;
-    }
-
-    /* Optimize chatbot spacing on mobile */
-    #chatbot {
-      padding: 0.5rem 0.25rem;
     }
 
     /* Mobile optimization for quotation buttons */
