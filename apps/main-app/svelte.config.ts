@@ -1,6 +1,7 @@
 import adapter from '@sveltejs/adapter-vercel';
 import { withMicrofrontends } from '@vercel/microfrontends/experimental/sveltekit';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import type { Config } from '@sveltejs/kit';
 
 // Generate blog prerender entries
 const blogSlugs = [
@@ -79,8 +80,7 @@ const blogSlugs = [
 const blogEntries = blogSlugs.map(slug => `/blogs/${slug}`);
 const blogPaginationPages = ['/blogs', '/blogs/page/2', '/blogs/page/3', '/blogs/page/4', '/blogs/page/5', '/blogs/page/6', '/blogs/page/7'];
 
-/** @type {import('@sveltejs/kit').Config} */
-const config = withMicrofrontends({
+const config: Config = withMicrofrontends({
 	preprocess: vitePreprocess(),
 	compilerOptions: {
 		runes: true

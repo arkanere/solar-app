@@ -1,21 +1,444 @@
-/* Basic CSS reset and styling */
-* {
-	margin: 0;
-	padding: 0;
-	box-sizing: border-box;
+@import "tailwindcss";
+
+/* ===== THEME CONFIGURATION (Linear-inspired) ===== */
+@theme {
+  /* Base radius for border-radius calculations */
+  --radius: 0.375rem;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) + 2px);
+  --radius-lg: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 8px);
+
+  /* Typography - Inter font stack */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+
+  /* Font Sizes with Line Heights */
+  --font-size-xs: 0.75rem;
+  --font-size-xs--line-height: 1rem;
+  --font-size-sm: 0.875rem;
+  --font-size-sm--line-height: 1.25rem;
+  --font-size-base: 1rem;
+  --font-size-base--line-height: 1.5rem;
+  --font-size-lg: 1.125rem;
+  --font-size-lg--line-height: 1.75rem;
+  --font-size-xl: 1.25rem;
+  --font-size-xl--line-height: 1.75rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-2xl--line-height: 2rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-3xl--line-height: 2.25rem;
+  --font-size-4xl: 2.25rem;
+  --font-size-4xl--line-height: 2.5rem;
+
+  /* Shadows (Linear uses very subtle, diffused shadows) */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.02);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.06), 0 4px 8px rgba(0, 0, 0, 0.03);
+  --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.08), 0 6px 12px rgba(0, 0, 0, 0.04);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+  /* Animation timing */
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-linear: linear;
+
+  /* Transition Durations */
+  --duration-fast: 100ms;
+  --duration-default: 150ms;
+  --duration-slow: 200ms;
+  --duration-slower: 300ms;
+
+  /* Z-Index Scale (layering system) */
+  --z-base: 0;
+  --z-dropdown: 50;
+  --z-sticky: 100;
+  --z-fixed: 200;
+  --z-sidebar: 1000;
+  --z-modal-backdrop: 1100;
+  --z-modal: 1100;
+  --z-popover: 1200;
+  --z-tooltip: 1300;
+  --z-toast: 1400;
+
+  /* Focus Ring Tokens */
+  --ring-width: 2px;
+  --ring-offset-width: 2px;
+
+  /* Opacity Scale */
+  --opacity-0: 0;
+  --opacity-5: 0.05;
+  --opacity-10: 0.1;
+  --opacity-20: 0.2;
+  --opacity-30: 0.3;
+  --opacity-40: 0.4;
+  --opacity-50: 0.5;
+  --opacity-60: 0.6;
+  --opacity-70: 0.7;
+  --opacity-80: 0.8;
+  --opacity-90: 0.9;
+  --opacity-100: 1;
+
+  /* Letter Spacing (Tracking) */
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+  --tracking-widest: 0.1em;
+
+  /* ===== ANIMATIONS ===== */
+  /* Keyframe definitions for animations */
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-fade-in: fade-in 0.15s ease-out;
+  --animate-fade-out: fade-out 0.15s ease-out;
+  --animate-slide-in-from-top: slide-in-from-top 0.2s ease-out;
+  --animate-slide-in-from-bottom: slide-in-from-bottom 0.2s ease-out;
+
+  /* ===== COLOR TOKENS FOR TAILWIND V4 ===== */
+  /* These enable classes like bg-background, text-foreground, etc. */
+
+  /* Background colors */
+  --color-background: hsl(var(--background));
+  --color-background-secondary: hsl(var(--background-secondary));
+  --color-background-tertiary: hsl(var(--background-tertiary));
+
+  /* Foreground/text colors */
+  --color-foreground: hsl(var(--foreground));
+  --color-foreground-secondary: hsl(var(--foreground-secondary));
+  --color-foreground-muted: hsl(var(--foreground-muted));
+
+  /* Border colors */
+  --color-border: hsl(var(--border));
+  --color-border-hover: hsl(var(--border-hover));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  /* Primary */
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  /* Secondary */
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  /* Muted */
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  /* Accent */
+  --color-accent: hsl(var(--accent));
+  --color-accent-hover: hsl(var(--accent-hover));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-muted: hsl(var(--accent-muted));
+
+  /* Secondary (Solar Amber) */
+  --color-secondary-hover: hsl(var(--secondary-hover));
+  --color-secondary-muted: hsl(var(--secondary-muted));
+
+  /* Card */
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  /* Popover */
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  /* Destructive */
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-destructive-muted: hsl(var(--destructive-muted));
+
+  /* Success */
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-success-muted: hsl(var(--success-muted));
+
+  /* Warning */
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-warning-muted: hsl(var(--warning-muted));
+}
+
+/* ===== KEYFRAMES ===== */
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slide-in-from-top {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-from-bottom {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ===== CSS CUSTOM PROPERTIES FOR HSL VALUES ===== */
+:root {
+  /* ===== LIGHT MODE (Linear-inspired) ===== */
+
+  /* Backgrounds - Clean whites and light grays */
+  --background: 0 0% 98%;           /* #FAFAFA - Main background */
+  --background-secondary: 0 0% 96%; /* #F5F5F5 - Secondary surfaces */
+  --background-tertiary: 0 0% 92%;  /* #EBEBEB - Tertiary/hover states */
+
+  /* Foreground/Text - Near-blacks for high contrast */
+  --foreground: 0 0% 9%;            /* #171717 - Primary text */
+  --foreground-secondary: 0 0% 32%; /* #525252 - Secondary text */
+  --foreground-muted: 0 0% 45%;     /* #737373 - Muted/placeholder text */
+
+  /* Borders - Subtle grays */
+  --border: 0 0% 90%;               /* #E5E5E5 - Default borders */
+  --border-hover: 0 0% 83%;         /* #D4D4D4 - Hover state borders */
+
+  /* Accent - Trust Blue (professional, sky, clean energy) */
+  --accent: 221 83% 53%;            /* #3B82F6 - Primary accent */
+  --accent-hover: 221 83% 45%;      /* #2563EB - Accent hover */
+  --accent-foreground: 0 0% 100%;   /* White text on accent */
+  --accent-muted: 214 95% 93%;      /* #DBEAFE - Light accent bg */
+
+  /* Secondary - Solar Amber (sun, warmth, energy) */
+  --secondary: 38 92% 50%;          /* #F59E0B - Secondary accent */
+  --secondary-hover: 32 95% 44%;    /* #D97706 - Secondary hover */
+  --secondary-foreground: 0 0% 100%;/* White text on secondary */
+  --secondary-muted: 48 96% 89%;    /* #FEF3C7 - Light secondary bg */
+
+  /* Semantic - Success (green) */
+  --success: 142 71% 45%;           /* #22C55E */
+  --success-foreground: 0 0% 100%;
+  --success-muted: 142 76% 94%;     /* #DCFCE7 */
+
+  /* Semantic - Warning (amber) */
+  --warning: 38 92% 50%;            /* #F59E0B */
+  --warning-foreground: 0 0% 9%;
+  --warning-muted: 48 96% 89%;      /* #FEF3C7 */
+
+  /* Semantic - Destructive (red) */
+  --destructive: 0 84% 60%;         /* #EF4444 */
+  --destructive-foreground: 0 0% 100%;
+  --destructive-muted: 0 93% 94%;   /* #FEE2E2 */
+
+  /* Component surfaces */
+  --card: 0 0% 100%;                /* White cards */
+  --card-foreground: 0 0% 9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 9%;
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 45%;
+
+  /* Form elements */
+  --input: 0 0% 90%;                /* Input borders */
+  --ring: 221 83% 53%;              /* Focus ring color - Trust Blue */
+
+  /* Primary (shadcn compatibility - same as accent) */
+  --primary: 221 83% 53%;
+  --primary-foreground: 0 0% 100%;
+}
+
+.dark {
+  /* ===== DARK MODE (Linear-inspired) ===== */
+
+  /* Backgrounds - Deep blacks */
+  --background: 0 0% 5%;            /* #0D0D0D - Main background */
+  --background-secondary: 0 0% 10%; /* #1A1A1A - Secondary surfaces */
+  --background-tertiary: 0 0% 15%;  /* #262626 - Tertiary surfaces */
+
+  /* Foreground/Text - Bright for contrast */
+  --foreground: 0 0% 98%;           /* #FAFAFA - Primary text */
+  --foreground-secondary: 0 0% 64%; /* #A3A3A3 - Secondary text */
+  --foreground-muted: 0 0% 45%;     /* #737373 - Muted text */
+
+  /* Borders - Subtle dark borders */
+  --border: 0 0% 18%;               /* #2E2E2E - Default borders */
+  --border-hover: 0 0% 25%;         /* #404040 - Hover borders */
+
+  /* Accent - Trust Blue (brighter in dark mode) */
+  --accent: 217 91% 60%;            /* #60A5FA - Brighter blue */
+  --accent-hover: 217 91% 55%;
+  --accent-foreground: 0 0% 100%;
+  --accent-muted: 221 47% 25%;      /* #1E3A5F - Dark accent bg */
+
+  /* Secondary - Solar Amber (brighter in dark mode) */
+  --secondary: 38 92% 55%;          /* #FBBF24 - Brighter amber */
+  --secondary-hover: 38 92% 50%;
+  --secondary-foreground: 0 0% 100%;
+  --secondary-muted: 38 50% 20%;    /* #4D3B1A - Dark secondary bg */
+
+  /* Semantic colors - Adjusted for dark */
+  --success: 142 71% 45%;
+  --success-foreground: 0 0% 100%;
+  --success-muted: 142 40% 15%;
+
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 9%;
+  --warning-muted: 38 40% 15%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --destructive-muted: 0 40% 15%;
+
+  /* Component surfaces */
+  --card: 0 0% 10%;
+  --card-foreground: 0 0% 98%;
+  --popover: 0 0% 10%;
+  --popover-foreground: 0 0% 98%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 64%;
+
+  /* Form elements */
+  --input: 0 0% 18%;
+  --ring: 217 91% 60%;              /* Trust Blue */
+
+  /* Primary (shadcn compatibility) */
+  --primary: 217 91% 60%;
+  --primary-foreground: 0 0% 100%;
+}
+
+/* ===== BASE STYLES ===== */
+*,
+*::before,
+*::after {
+  border-color: hsl(var(--border));
 }
 
 body {
-	font-family: system-ui, sans-serif;
-	line-height: 1.6;
-	color: #333;
+  margin: 0;
+  padding: 0;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "rlig" 1, "calt" 1;
 }
 
-h1 {
-	color: #2563eb;
-	margin-bottom: 1rem;
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
 }
 
-p {
-	margin-bottom: 1rem;
+/* Focus visible styling */
+:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 var(--ring-width) hsl(var(--ring)),
+    0 0 0 calc(var(--ring-width) + var(--ring-offset-width)) hsl(var(--background));
+}
+
+/* Selection styling */
+::selection {
+  background-color: hsl(var(--accent) / 0.2);
+  color: hsl(var(--foreground));
+}
+
+/* ===== UTILITY CLASSES ===== */
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Subtle scrollbar for dark mode */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border)) transparent;
+}
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--border-hover));
+}
+
+/* ===== REDUCED MOTION SUPPORT ===== */
+/* Respects user's motion preferences for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Utility class to force reduced motion */
+.motion-reduce {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Utility class to preserve motion (opt-in for essential animations) */
+.motion-safe {
+  /* Applied only when user has no motion preference */
+}
+@media (prefers-reduced-motion: no-preference) {
+  .motion-safe {
+    animation-duration: inherit;
+    transition-duration: inherit;
+  }
 }
