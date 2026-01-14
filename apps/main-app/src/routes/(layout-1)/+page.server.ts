@@ -7,5 +7,7 @@ export const config = {
 
 // Home page doesn't need data loading, but we export the config for ISR
 export const load: PageServerLoad = async () => {
-	return {};
+	return {
+		user: null
+	};
 };

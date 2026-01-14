@@ -62,6 +62,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			.catch((err) => console.error('Error updating view count:', err));
 
 		return {
+			user: null,
 			blog
 		};
 	} catch (err) {

@@ -22,12 +22,12 @@ export const load: PageServerLoad = async () => {
 		try {
 			// Query to get paginated projects from all businesses
 			const projectsQuery = `
-        SELECT 
-          id, 
-          business_slug, 
-          title, 
-          pincode, 
-          project_date, 
+        SELECT
+          id,
+          business_slug,
+          title,
+          pincode,
+          project_date,
           created_at,
           image_url,
           cloudinary_public_id,
@@ -35,7 +35,7 @@ export const load: PageServerLoad = async () => {
           image_height,
           image_format,
           project_slug
-        FROM projects 
+        FROM projects
         WHERE isvisible = true
         AND business_slug IS NOT NULL
         ORDER BY project_date DESC
@@ -58,6 +58,7 @@ export const load: PageServerLoad = async () => {
 			const totalPages = Math.ceil(totalProjects / limit);
 
 			return {
+				user: null,
 				success: true,
 				projects: projectsResult.rows,
 				pagination: {
@@ -75,8 +76,9 @@ export const load: PageServerLoad = async () => {
 		} catch (queryError) {
 			console.error('Database query error:', queryError);
 			return {
+				user: null,
 				success: false,
-				error: 'Failed to fetch projects: ' + queryError.message
+				error: 'Failed to fetch projects: ' + (queryError instanceof Error ? queryError.message : String(queryError))
 			};
 		} finally {
 			client.release();
@@ -84,8 +86,9 @@ export const load: PageServerLoad = async () => {
 	} catch (connectionError) {
 		console.error('Database connection error:', connectionError);
 		return {
+			user: null,
 			success: false,
-			error: 'Database connection error: ' + connectionError.message
+			error: 'Database connection error: ' + (connectionError instanceof Error ? connectionError.message : String(connectionError))
 		};
 	}
 }

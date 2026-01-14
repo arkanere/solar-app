@@ -55,11 +55,13 @@ export const load: PageServerLoad = async () => {
 			const projectsResult = await client.query<Project>(projectsQuery);
 
 			return {
+				user: null,
 				recentProjects: projectsResult.rows
 			};
 		} catch (queryError) {
 			console.error('Database query error:', queryError);
 			return {
+				user: null,
 				recentProjects: []
 			};
 		} finally {
@@ -68,6 +70,7 @@ export const load: PageServerLoad = async () => {
 	} catch (connectionError) {
 		console.error('Database connection error:', connectionError);
 		return {
+			user: null,
 			recentProjects: []
 		};
 	}

@@ -14,16 +14,16 @@ export const load: PageServerLoad = async () => {
 	try {
 		// Query to get the 10 latest verified businesses
 		const latestBusinessesResult = await pool.query(
-			`SELECT 
+			`SELECT
         id,
-        businessname, 
-        phonenumber, 
-        city, 
-        state, 
+        businessname,
+        phonenumber,
+        city,
+        state,
         district,
         slug
-      FROM businesses_1 
-      WHERE isvisible = true 
+      FROM businesses_1
+      WHERE isvisible = true
       AND businessfilled = true
       ORDER BY id DESC
       LIMIT 10;`
@@ -34,13 +34,14 @@ export const load: PageServerLoad = async () => {
 		// Return the businesses or an error message if none found
 		if (businesses.length > 0) {
 			return {
+				user: null,
 				businesses
 			};
 		} else {
-			return { errorMessage: 'No verified businesses found.' };
+			return { user: null, errorMessage: 'No verified businesses found.' };
 		}
 	} catch (error) {
 		console.error('Database query error:', error);
-		return { errorMessage: 'Failed to load businesses' };
+		return { user: null, errorMessage: 'Failed to load businesses' };
 	}
 }

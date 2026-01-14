@@ -71,6 +71,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			}
 
 			return {
+				user: null,
 				success: true,
 				projects: projectsResult.rows,
 				pagination: {
@@ -88,8 +89,9 @@ export const load: PageServerLoad = async ({ params }) => {
 		} catch (queryError) {
 			console.error('Database query error:', queryError);
 			return {
+				user: null,
 				success: false,
-				error: 'Failed to fetch projects: ' + queryError.message
+				error: 'Failed to fetch projects: ' + (queryError instanceof Error ? queryError.message : String(queryError))
 			};
 		} finally {
 			client.release();
@@ -97,8 +99,9 @@ export const load: PageServerLoad = async ({ params }) => {
 	} catch (connectionError) {
 		console.error('Database connection error:', connectionError);
 		return {
+			user: null,
 			success: false,
-			error: 'Database connection error: ' + connectionError.message
+			error: 'Database connection error: ' + (connectionError instanceof Error ? connectionError.message : String(connectionError))
 		};
 	}
 }
