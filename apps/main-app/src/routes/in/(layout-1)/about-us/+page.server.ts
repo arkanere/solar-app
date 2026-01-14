@@ -11,7 +11,6 @@ export const load: PageServerLoad = async () => {
 	// This page is mostly static content (about us information)
 	// ISR will cache the static content for performance
 	return {
-		// Return empty object since the page is static
-		// with no server-side data requirements
+		user: null
 	};
 }

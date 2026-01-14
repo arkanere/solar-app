@@ -3,7 +3,6 @@
 import type { PageServerLoad } from './$types';
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
-import { error } from '@sveltejs/kit';
 export const config = {
 	isr: {
 		expiration: 604800 // 7 days

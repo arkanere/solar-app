@@ -13,6 +13,7 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	if (!districtSlug) {
 		return {
+			user: null,
 			district: '',
 			errorMessage: 'Invalid district URL format'
 		};
@@ -43,6 +44,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		// Return cities from the district
 		if (cities.length > 0) {
 			return {
+				user: null,
 				district: districtFormatted,
 				cities: cities
 			};
@@ -60,12 +62,14 @@ export const load: PageServerLoad = async ({ params }) => {
 
 			if (districtCheckResult.rows.length > 0) {
 				return {
+					user: null,
 					district: districtFormatted,
 					cities: [],
 					errorMessage: `No cities found in ${districtFormatted}.`
 				};
 			} else {
 				return {
+					user: null,
 					district: districtFormatted,
 					cities: [],
 					errorMessage: `${districtFormatted} is not a recognized district or we don't have coverage in this area yet.`
@@ -75,6 +79,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	} catch (error) {
 		console.error('Database query error:', error);
 		return {
+			user: null,
 			district: districtFormatted,
 			cities: [],
 			errorMessage: 'Failed to load cities'

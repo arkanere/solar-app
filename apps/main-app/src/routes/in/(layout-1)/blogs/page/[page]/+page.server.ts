@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
-import { error, redirect } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const page = parseInt(params.page);
@@ -49,6 +49,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		`, [perPage, offset]);
 
 		return {
+			user: null,
 			blogs: result.rows,
 			pagination: {
 				page,
@@ -58,9 +59,10 @@ export const load: PageServerLoad = async ({ params }) => {
 			}
 		};
 	} catch (err) {
-		if (err.status === 302) throw err;
+		if (err instanceof Error && 'status' in err && err.status === 302) throw err;
 		console.error('Error loading blogs:', err);
 		return {
+			user: null,
 			blogs: [],
 			error: 'Failed to load blogs',
 			pagination: { page: 1, perPage: 6, total: 0, totalPages: 0 }
