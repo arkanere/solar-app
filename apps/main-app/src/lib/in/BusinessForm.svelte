@@ -201,7 +201,7 @@
   }
 </script>
 
-<form on:submit|preventDefault={handleSubmit}>
+<form onsubmit={handleSubmit}>
   <h1>Get listed by filling the form below</h1>
   <p>It takes 90 seconds to fill this form</p>
 
@@ -226,7 +226,7 @@
       bind:value={gstn}
       placeholder="GSTN"
       required
-      on:blur={validateGSTN}
+      onblur={validateGSTN}
     />
     {#if errors.gstn}
       <p class="error">{errors.gstn}</p>
@@ -266,7 +266,7 @@
       type="text"
       bind:value={phoneNumber}
       placeholder="Phone Number"
-      on:blur={validatePhoneNumber}
+      onblur={validatePhoneNumber}
       required
     />
     {#if errors.phoneNumber}
@@ -282,7 +282,7 @@
       type="text"
       bind:value={whatsappNumber}
       placeholder="eg +919812345678"
-      on:blur={validateWhatsappNumber}
+      onblur={validateWhatsappNumber}
     />
     {#if errors.whatsappNumber}
       <p class="error">{errors.whatsappNumber}</p>

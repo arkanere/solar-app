@@ -5,6 +5,9 @@
   import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
   import { page } from "$app/stores";
 
+  // Accept children snippet from SvelteKit
+  let { children } = $props();
+
   // Lazy loading for StoriesModal
   let StoriesModalComponent = $state(null);
   let storiesModalLoading = $state(false);
@@ -103,7 +106,7 @@
 
     try {
       storiesModalLoading = true;
-      const module = await import("$lib/StoriesModal.svelte");
+      const module = await import("$lib/in/StoriesModal.svelte");
       StoriesModalComponent = module.default;
     } catch (error) {
       console.error("Failed to load StoriesModal:", error);

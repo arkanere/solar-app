@@ -73,7 +73,7 @@
 <script>
   import { isDarkMode } from "$lib/themeStore";
   import { goto } from "$app/navigation";
-  import AboutSolarVipani from "$lib/AboutSolarVipani.svelte";
+  import AboutSolarVipani from "$lib/in/AboutSolarVipani.svelte";
 
   // For data loading
   let { data } = $props();

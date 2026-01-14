@@ -1,5 +1,4 @@
 <script>
-  import { onMount, onDestroy } from "svelte";
   import {
     storiesModalOpen,
     storiesData,
@@ -151,8 +150,10 @@
   });
 
   // Cleanup on component destroy
-  onDestroy(() => {
-    stopStoryProgress();
+  $effect(() => {
+    return () => {
+      stopStoryProgress();
+    };
   });
 </script>
 

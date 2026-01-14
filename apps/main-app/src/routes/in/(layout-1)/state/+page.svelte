@@ -1,5 +1,5 @@
 <script>
-	import { isDarkMode } from '$lib/themeStore';
+	import { isDarkMode } from '$lib/in/themeStore';
 
 	// States array defined directly in the component
 	const states = [

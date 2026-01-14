@@ -1,6 +1,6 @@
 <script>
 	import { isDarkMode } from '$lib/themeStore';
-	import LeadFormBusiness from '$lib/LeadFormBusiness.svelte';
+	import LeadFormBusiness from '$lib/in/LeadFormBusiness.svelte';
 
 	const { data } = $props();
 

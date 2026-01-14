@@ -7,14 +7,13 @@
 	// Reactive store for theme mode
 	let darkMode = $derived($isDarkMode);
 
-	import { onMount } from 'svelte';
-
 	// Define reactive variables for state and district selection
 	let state = $state('');
 	let district = $state('');
 	let districts = $state([]);
 	let isLoading = $state(false);
 	let mounted = $state(false);
+	let initializationDone = $state(false);
 
 	// List of states
 	const states = [
@@ -57,8 +56,11 @@
 	];
 
 	// Ensure component is mounted before making API calls
-	onMount(() => {
-		mounted = true;
+	$effect(() => {
+		if (!initializationDone) {
+			mounted = true;
+			initializationDone = true;
+		}
 	});
 
 	// Function to handle state selection change
