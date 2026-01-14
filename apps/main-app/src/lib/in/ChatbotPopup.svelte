@@ -1,5 +1,4 @@
 <script>
-	import { onMount } from 'svelte';
 	import { writable } from 'svelte/store';
 	import ChatBotBox from '$lib/in/ChatBotBox.svelte';
 
@@ -21,7 +20,7 @@
 		}
 	});
 
-	onMount(() => {
+	$effect(() => {
 		console.log('[ChatbotPopup] Component mounted');
 		// Don't disable body scroll - allow page scrolling to hide/show popup
 

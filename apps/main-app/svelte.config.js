@@ -1,8 +1,6 @@
 import adapter from '@sveltejs/adapter-vercel';
 import { withMicrofrontends } from '@vercel/microfrontends/experimental/sveltekit';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
-import { cities } from './src/lib/cities.js';
-import { businesses } from './src/lib/businesses.js';
 
 // Generate blog prerender entries
 const blogSlugs = [

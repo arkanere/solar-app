@@ -1,6 +1,6 @@
 <script>
-  import { onMount, tick } from "svelte";
-  import { writable } from "svelte/store";
+  import { tick } from "svelte";
+  import { writable, get } from "svelte/store";
   import { isDarkMode } from "$lib/in/themeStore";
   import conversationFlows from "$lib/in/conversationFlows.json";
   import { page } from "$app/stores";
@@ -763,13 +763,6 @@
     }
   }
 
-  // Get store value helper
-  function get(store) {
-    let value;
-    const unsubscribe = store.subscribe((v) => (value = v));
-    unsubscribe();
-    return value;
-  }
 
   // Enhanced process message text function to update lead profile
   function processMessageText(text) {
@@ -1062,7 +1055,7 @@
   }
 
   // Load state from localStorage on mount and set up scroll handler
-  onMount(() => {
+  $effect(() => {
     if (typeof window !== "undefined") {
       window.resetChat = resetChat;
 

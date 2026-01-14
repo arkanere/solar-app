@@ -1,5 +1,5 @@
 <script>
-	import BusinessForm from '$lib/BusinessForm.svelte';
+	import BusinessForm from '$lib/in/BusinessForm.svelte';
 	import { isDarkMode } from '$lib/themeStore'; // Import dark mode state
 
 	let darkMode = $derived($isDarkMode); // Watch for changes in dark mode state
