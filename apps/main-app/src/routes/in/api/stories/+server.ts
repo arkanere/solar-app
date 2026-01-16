@@ -54,7 +54,7 @@ export const GET: RequestHandler = async () => {
 			console.error('Database query error:', queryError);
 			return json({
 				success: false,
-				error: 'Failed to fetch projects: ' + queryError.message
+				error: 'Failed to fetch projects: ' + (queryError as Error).message
 			}, { status: 500 });
 		} finally {
 			client.release();
@@ -63,7 +63,7 @@ export const GET: RequestHandler = async () => {
 		console.error('Database connection error:', connectionError);
 		return json({
 			success: false,
-			error: 'Database connection error: ' + connectionError.message
+			error: 'Database connection error: ' + (connectionError as Error).message
 		}, { status: 500 });
 	}
 }

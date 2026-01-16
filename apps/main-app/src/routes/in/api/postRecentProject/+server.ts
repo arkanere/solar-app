@@ -18,7 +18,7 @@ cloudinary.config({
 const pool = createPool({ connectionString: POSTGRES_URL });
 
 // Helper function to generate project slug
-function generateProjectSlug(title) {
+function generateProjectSlug(title: string) {
 	// Convert to lowercase
 	let slug = title.toLowerCase();
 
@@ -48,7 +48,7 @@ function generateProjectSlug(title) {
 }
 
 // Helper function to upload to Cloudinary from File object (Web)
-async function uploadFileToCloudinary(file) {
+async function uploadFileToCloudinary(file: File) {
 	try {
 		// Convert file to base64 for Cloudinary upload
 		const buffer = Buffer.from(await file.arrayBuffer());
@@ -58,7 +58,7 @@ async function uploadFileToCloudinary(file) {
 		const dataURI = `data:${file.type};base64,${base64Data}`;
 
 		// Upload to Cloudinary
-		const result = await new Promise((resolve, reject) => {
+		const result: any = await new Promise((resolve, reject) => {
 			cloudinary.uploader.upload(
 				dataURI,
 				{
@@ -66,14 +66,13 @@ async function uploadFileToCloudinary(file) {
 					resource_type: 'auto', // Auto-detect resource type
 					transformation: [
 						{ width: 1200, crop: 'limit' }, // Resize large images to max width 1200px
-						{ quality: 'auto' } // Auto-optimize quality
-					]
-				},
-				(error, result) => {
-					if (error) reject(error);
-					else resolve(result);
-				}
-			);
+						                        { quality: 'auto' } // Auto-optimize quality
+						                    ]
+						                },
+						                (error, result: any) => {
+						                    if (error) reject(error);
+						                    else resolve(result);
+						                }			);
 		});
 
 		console.log('File uploaded to Cloudinary:', result.secure_url);
@@ -84,21 +83,21 @@ async function uploadFileToCloudinary(file) {
 			height: result.height,
 			format: result.format
 		};
-	} catch (error) {
+	} catch (error: any) {
 		console.error('Cloudinary file upload error:', error);
 		throw error;
 	}
 }
 
 // Helper function to upload to Cloudinary from base64 string (Android)
-async function uploadBase64ToCloudinary(base64Data, mimetype, filename) {
+async function uploadBase64ToCloudinary(base64Data: string, mimetype: string, filename: string) {
 	try {
 		// Clean filename for public_id
 		const cleanFilename = filename.replace(/[^a-zA-Z0-9-_]/g, '');
 		
 		const dataURI = `data:${mimetype};base64,${base64Data}`;
 
-		const result = await new Promise((resolve, reject) => {
+		const result: any = await new Promise((resolve, reject) => {
 			cloudinary.uploader.upload(
 				dataURI,
 				{
@@ -110,7 +109,7 @@ async function uploadBase64ToCloudinary(base64Data, mimetype, filename) {
 						{ quality: 'auto' }
 					]
 				},
-				(error, result) => {
+				(error, result: any) => {
 					if (error) reject(error);
 					else resolve(result);
 				}
@@ -125,10 +124,22 @@ async function uploadBase64ToCloudinary(base64Data, mimetype, filename) {
 			height: result.height,
 			format: result.format
 		};
-	} catch (error) {
+	} catch (error: any) {
 		console.error('Cloudinary base64 upload error:', error);
 		throw error;
 	}
+}
+
+interface RequestBody {
+	projectTitle: string;
+	pincode: string;
+	projectDate: string;
+	business_slug: string;
+	image?: {
+		data: string;
+		mimetype: string;
+		filename?: string;
+	};
 }
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -145,17 +156,17 @@ export const POST: RequestHandler = async ({ request }) => {
 			console.log('Processing multipart form data (Website)');
 			const formData = await request.formData();
 			
-			projectTitle = formData.get('projectTitle');
-			pincode = formData.get('pincode');
-			projectDate = formData.get('projectDate');
-			business_slug = formData.get('business_slug');
+			projectTitle = formData.get('projectTitle') as string;
+			pincode = formData.get('pincode') as string;
+			projectDate = formData.get('projectDate') as string;
+			business_slug = formData.get('business_slug') as string;
 			const projectImage = formData.get('projectImage');
 
-			if (projectImage && projectImage.size > 0) {
+			if (projectImage instanceof File && projectImage.size > 0) {
 				try {
 					imageData = await uploadFileToCloudinary(projectImage);
 					console.log('Multipart image uploaded successfully');
-				} catch (imageError) {
+				} catch (imageError: any) {
 					console.error('Error uploading multipart image:', imageError);
 				}
 			}
@@ -163,7 +174,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		} else if (contentType.includes('application/json')) {
 			// Handle JSON data (Android App)
 			console.log('Processing JSON data (Android App)');
-			const requestBody = await request.json();
+			const requestBody: RequestBody = await request.json();
 
 			projectTitle = requestBody.projectTitle;
 			pincode = requestBody.pincode;
@@ -179,7 +190,7 @@ export const POST: RequestHandler = async ({ request }) => {
 						requestBody.image.filename || 'android-upload'
 					);
 					console.log('Base64 image uploaded successfully');
-				} catch (imageError) {
+				} catch (imageError: any) {
 					console.error('Error uploading base64 image:', imageError);
 				}
 			}
@@ -203,7 +214,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		}
 
 		// Validate pincode format (numbers only)
-		if (!/^\d+$/.test(pincode)) {
+		if (pincode && !/^\d+$/.test(pincode)) {
 			console.log('Validation failed: Invalid pincode format');
 			return json(
 				{
@@ -217,7 +228,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		console.log('All validations passed');
 
 		// Generate project slug
-		const projectSlug = generateProjectSlug(projectTitle);
+		const projectSlug = projectTitle ? generateProjectSlug(projectTitle) : '';
 		console.log('Generated project slug:', projectSlug);
 
 		const client = await pool.connect();
@@ -236,7 +247,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				} else {
 					console.log('No district found for pincode', pincode, ', using "Unknown"');
 				}
-			} catch (districtError) {
+			} catch (districtError: any) {
 				console.error('Error looking up district for pincode', pincode, ':', districtError);
 				// Continue with 'Unknown' as default
 			}
@@ -294,7 +305,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				success: true,
 				project: result.rows[0]
 			});
-		} catch (dbError) {
+		} catch (dbError: any) {
 			console.error('Database error:', dbError);
 			return json(
 				{
@@ -306,7 +317,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		} finally {
 			client.release();
 		}
-	} catch (error) {
+	} catch (error: any) {
 		console.error('Error processing request:', error);
 		return json(
 			{

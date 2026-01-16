@@ -6,12 +6,6 @@ interface CityParams {
 	city: string;
 }
 
-interface Business {
-	id: number;
-	city: string;
-	[key: string]: unknown;
-}
-
 // Utility function to normalize city names
 function normalizeCityName(cityParam: string): string {
 	return cityParam

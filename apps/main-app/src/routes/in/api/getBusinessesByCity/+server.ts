@@ -2,12 +2,6 @@ import { createPool } from '@vercel/postgres';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { POSTGRES_URL } from '$env/static/private';
 
-interface Business {
-	id: number;
-	city: string;
-	[key: string]: unknown;
-}
-
 // Utility function to normalize city names
 function normalizeCityName(cityParam: string): string {
 	return cityParam

@@ -71,13 +71,14 @@ export const GET: RequestHandler = async ({ url }) => {
 			});
 		} catch (queryError) {
 			console.error('Database query error:', queryError);
+			const error = queryError as Error & { code: string };
 			return json(
 				{
 					success: false,
-					error: 'Database query error: ' + queryError.message,
+					error: 'Database query error: ' + error.message,
 					debug: {
-						message: queryError.message,
-						code: queryError.code
+						message: error.message,
+						code: error.code
 					}
 				},
 				{ status: 500 }
@@ -87,13 +88,14 @@ export const GET: RequestHandler = async ({ url }) => {
 		}
 	} catch (connectionError) {
 		console.error('Database connection error:', connectionError);
+		const error = connectionError as Error & { code: string };
 		return json(
 			{
 				success: false,
-				error: 'Database connection error: ' + connectionError.message,
+				error: 'Database connection error: ' + error.message,
 				debug: {
-					message: connectionError.message,
-					code: connectionError.code
+					message: error.message,
+					code: error.code
 				}
 			},
 			{ status: 500 }

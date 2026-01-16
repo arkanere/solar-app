@@ -14,7 +14,7 @@ interface ConfirmationData {
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
-		const { id, name, phone, zipCode, type, comment, urlParam, email } = await request.json() as ConfirmationData;
+		const { name, phone, zipCode, comment, email } = await request.json() as ConfirmationData;
 
 		if (!email) {
 			return json({ success: false, error: 'No email provided for confirmation' }, { status: 400 });

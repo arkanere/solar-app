@@ -67,7 +67,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		const maskedPhone = lead.phone.replace(/\d(?=\d{4})/g, '*'); // Mask all but last 4 digits
 		const maskedEmail = lead.email.replace(
 			/^(.{2})(.*)(@.*)$/,
-			(_, first, middle, domain) => first + '*****' + domain
+			(_: string, first: string, domain: string) => first + '*****' + domain
 		);
 
 		let businessDetailsForAdmin = '';
@@ -88,88 +88,86 @@ export const POST: RequestHandler = async ({ request }) => {
         <p><strong>Important:</strong> Businesses that have either main branch or branch office in <a href="https://solarvipani.com/solar-panel-installer-directory/${lead.district.toLowerCase().replace(/\s+/g, '-')}" style="font-weight: bold;">${lead.district}</a> district can claim this lead by logging into their account.</p>
         `;
 
-		const subject = `New Solar Lead Inquiry in  ${district}, ${state} - ${lead.name}`;
-
-		for (const business of businesses) {
-			const { business_id, login_email, slug, magic_link_token, district } = business;
-
-			// Generate the magic login link
-			const magicLink = `https://solarvipani.com/business/${slug}/signin-link/${magic_link_token}`;
-
-			// Append business details for admin summary
-			businessDetailsForAdmin += `
-          <p><strong>Business ID:</strong> ${business_id}</p>
-          <p><strong>Login Email:</strong> ${login_email}</p>
-          <p><strong>Business Slug:</strong> ${slug}</p>
-          <p><strong>District:</strong> ${district}</p>
-          <p><strong>Magic Link:</strong> <a href="${magicLink}">${magicLink}</a></p>
-          <hr>
-        `;
-
-			// Complete email content with business-specific magic link
-			const message = emailTemplate + `
-        <p>If you're interested in claiming this lead, use the link below:</p>
-        <p style="margin-bottom: 2rem;">
-        <a href="${magicLink}">Access Your Account</a>
-        </p>
-        
-        <p><strong>How to Add Branch:</strong></p>
-        <ul>
-          <li>Log into your Solar Vipani business account</li>
-          <li>Go to "Branch Management" section</li>
-          <li>Click "Add New Branch" and enter branch details</li>
-          <li>This will expand your service coverage and lead eligibility</li>
-        </ul>
-        
-        <p> Few more businesses are invited to show interest. Therefore, the allotment is subject to certain conditions. </p>
-        <p>For assistance, call us at <a href="tel:+918983066701">+91 8983066701</a></p>
-        <p>Team</p>
-        <p><strong>Solar Vipani</strong></p>
-        `;
-
-			try {
-				// Send email to business only
-				await sendEmail([login_email], subject, message, { isHtml: true });
-
-				// ✅ Log success and increment counter
-				console.log(
-					`✅ Email sent successfully to Business ID: ${business_id}, Email: ${login_email}`
-				);
-				emailsSentCount++;
-			} catch (error) {
-				// ❌ Log failure
-				console.error(
-					`❌ Failed to send email to Business ID: ${business_id}, Email: ${login_email}`,
-					error
-				);
-			}
-		}
-
-		// Send single copy to admin after all business emails are sent
-		if (emailsSentCount > 0) {
-			try {
-				// Use the first business's magic link for admin copy (or create a generic message)
-				const firstBusiness = businesses[0];
-				const adminCopyMessage = emailTemplate + `
-        <p><strong>Admin Note:</strong> This is a copy of the email sent to ${emailsSentCount} businesses in ${state}.</p>
-        <p>If you need to access any business account, use the magic links in the admin summary email.</p>
-        
-        <p><strong>How to Add Branch:</strong></p>
-        <ul>
-          <li>Log into your Solar Vipani business account</li>
-          <li>Go to "Branch Management" section</li>
-          <li>Click "Add New Branch" and enter branch details</li>
-          <li>This will expand your service coverage and lead eligibility</li>
-        </ul>
-        
-        <p> Few more businesses are invited to show interest. Therefore, the allotment is subject to certain conditions. </p>
-        <p>For assistance, call us at <a href="tel:+918983066701">+91 8983066701</a></p>
-        <p>Team</p>
-        <p><strong>Solar Vipani</strong></p>
-        `;
-
-				await sendEmail([adminEmail], `[COPY] ${subject}`, adminCopyMessage, { isHtml: true });
-				console.log(`✅ Single admin copy sent for lead shared with ${emailsSentCount} businesses`);
+		        const subject = `New Solar Lead Inquiry in  ${lead.district}, ${state} - ${lead.name}`;
+		
+				for (const business of businesses) {
+					const { business_id, login_email, slug, magic_link_token, district } = business;
+		
+					// Generate the magic login link
+					const magicLink = `https://solarvipani.com/business/${slug}/signin-link/${magic_link_token}`;
+		
+					// Append business details for admin summary
+					businessDetailsForAdmin += `
+		          <p><strong>Business ID:</strong> ${business_id}</p>
+		          <p><strong>Login Email:</strong> ${login_email}</p>
+		          <p><strong>Business Slug:</strong> ${slug}</p>
+		          <p><strong>District:</strong> ${district}</p>
+		          <p><strong>Magic Link:</strong> <a href="${magicLink}">${magicLink}</a></p>
+		          <hr>
+		        `;
+		
+					// Complete email content with business-specific magic link
+					const message = emailTemplate + `
+		        <p>If you're interested in claiming this lead, use the link below:</p>
+		        <p style="margin-bottom: 2rem;">
+		        <a href="${magicLink}">Access Your Account</a>
+		        </p>
+		        
+		        <p><strong>How to Add Branch:</strong></p>
+		        <ul>
+		          <li>Log into your Solar Vipani business account</li>
+		          <li>Go to "Branch Management" section</li>
+		          <li>Click "Add New Branch" and enter branch details</li>
+		          <li>This will expand your service coverage and lead eligibility</li>
+		        </ul>
+		        
+		        <p> Few more businesses are invited to show interest. Therefore, the allotment is subject to certain conditions. </p>
+		        <p>For assistance, call us at <a href="tel:+918983066701">+91 8983066701</a></p>
+		        <p>Team</p>
+		        <p><strong>Solar Vipani</strong></p>
+		        `;
+		
+					try {
+						// Send email to business only
+						await sendEmail([login_email], subject, message, { isHtml: true });
+		
+						// ✅ Log success and increment counter
+						console.log(
+							`✅ Email sent successfully to Business ID: ${business_id}, Email: ${login_email}`
+						);
+						emailsSentCount++;
+					} catch (error) {
+						// ❌ Log failure
+						console.error(
+							`❌ Failed to send email to Business ID: ${business_id}, Email: ${login_email}`,
+							error
+						);
+					}
+				}
+		
+				// Send single copy to admin after all business emails are sent
+				if (emailsSentCount > 0) {
+					try {
+						// Use the first business's magic link for admin copy (or create a generic message)
+						const adminCopyMessage = emailTemplate + `
+		        <p><strong>Admin Note:</strong> This is a copy of the email sent to ${emailsSentCount} businesses in ${state}.</p>
+		        <p>If you need to access any business account, use the magic links in the admin summary email.</p>
+		        
+		        <p><strong>How to Add Branch:</strong></p>
+		        <ul>
+		          <li>Log into your Solar Vipani business account</li>
+		          <li>Go to "Branch Management" section</li>
+		          <li>Click "Add New Branch" and enter branch details</li>
+		          <li>This will expand your service coverage and lead eligibility</li>
+		        </ul>
+		        
+		        <p> Few more businesses are invited to show interest. Therefore, the allotment is subject to certain conditions. </p>
+		        <p>For assistance, call us at <a href="tel:+918983066701">+91 8983066701</a></p>
+		        <p>Team</p>
+		        <p><strong>Solar Vipani</strong></p>
+		        `;
+		
+						await sendEmail([adminEmail], `[COPY] ${subject}`, adminCopyMessage, { isHtml: true });				console.log(`✅ Single admin copy sent for lead shared with ${emailsSentCount} businesses`);
 			} catch (error) {
 				console.error('❌ Failed to send admin copy:', error);
 			}

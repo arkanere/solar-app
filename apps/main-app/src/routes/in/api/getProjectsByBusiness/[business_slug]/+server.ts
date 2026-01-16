@@ -54,36 +54,91 @@ export const GET: RequestHandler = async ({ params }) => {
 				ORDER BY project_date DESC, created_at DESC
 			`, [business_slug]);
 
-			const projects = projectsResult.rows;
+						const projects = projectsResult.rows;
 
-			// Format the response data
-			const formatBusiness = (business) => ({
-				id: business.id,
-				businessname: business.businessname,
-				slug: business.slug,
-				address: business.address,
-				city: business.city,
-				district: business.district,
-				state: business.state,
-				phonenumber: business.phonenumber,
-				email: business.email
-			});
+			
 
-			const formatProject = (project) => ({
-				id: project.id,
-				business_slug: project.business_slug,
-				project_slug: project.project_slug,
-				title: project.title,
-				pincode: project.pincode,
-				district: project.district,
-				project_date: project.project_date,
-				created_at: project.created_at,
-				image_url: project.image_url,
-				cloudinary_public_id: project.cloudinary_public_id,
-				image_width: project.image_width,
-				image_height: project.image_height,
-				image_format: project.image_format
-			});
+						// Define a type for the business object
+
+						interface Business {
+
+							id: number;
+
+							businessname: string;
+
+							slug: string;
+
+							address: string;
+
+							city: string;
+
+							district: string;
+
+							state: string;
+
+							phonenumber: string;
+
+							email: string;
+
+						}
+
+			
+
+						// Format the response data
+
+						const formatBusiness = (business: Business) => ({
+
+							id: business.id,
+
+							businessname: business.businessname,
+
+							slug: business.slug,
+
+							address: business.address,
+
+							city: business.city,
+
+							district: business.district,
+
+							state: business.state,
+
+							phonenumber: business.phonenumber,
+
+							email: business.email
+
+						});
+
+			
+
+						const formatProject = (project: any) => ({
+
+							id: project.id,
+
+							business_slug: project.business_slug,
+
+							project_slug: project.project_slug,
+
+							title: project.title,
+
+							pincode: project.pincode,
+
+							district: project.district,
+
+							project_date: project.project_date,
+
+							created_at: project.created_at,
+
+							image_url: project.image_url,
+
+							cloudinary_public_id: project.cloudinary_public_id,
+
+							image_width: project.image_width,
+
+							image_height: project.image_height,
+
+							image_format: project.image_format
+
+						});
 
 			return json({
 				success: true,

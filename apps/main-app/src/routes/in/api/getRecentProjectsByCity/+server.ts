@@ -92,7 +92,7 @@ export const GET: RequestHandler = async ({ url }) => {
 					total_count: result.rowCount
 				}
 			});
-		} catch (queryError) {
+		} catch (queryError: any) {
 			return json(
 				{
 					success: false,
@@ -103,7 +103,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		} finally {
 			client.release();
 		}
-	} catch (connectionError) {
+	} catch (connectionError: any) {
 		return json(
 			{
 				success: false,

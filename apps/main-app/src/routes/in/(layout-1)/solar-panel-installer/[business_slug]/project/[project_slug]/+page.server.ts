@@ -62,7 +62,8 @@ export const load: PageServerLoad = async ({ params }) => {
 					businessname: data.businessname,
 					slug: data.business_slug,
 					city: data.business_city
-				}
+				},
+				user: null
 			};
 		} else {
 			// Check if business exists but project doesn't
@@ -80,9 +81,9 @@ export const load: PageServerLoad = async ({ params }) => {
 				throw error(404, 'Project not found');
 			}
 		}
-	} catch (err) {
-		if (err.status) {
-			throw err; // Re-throw SvelteKit errors
+	} catch (err: unknown) {
+		if (typeof err === 'object' && err !== null && 'status' in err && typeof err.status === 'number') {
+			throw error(err.status, 'Failed to load project details');
 		}
 		console.error('Database query error:', err);
 		throw error(500, 'Failed to load project details');

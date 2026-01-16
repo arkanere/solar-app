@@ -2,7 +2,7 @@
 	import { isDarkMode } from '$lib/themeStore';
 
 	// Reactive statement for dark mode
-	let darkMode = $derived($isDarkMode);
+	const darkMode = isDarkMode;
 
 	// Scroll to lead form function
 	function scrollToLeadForm() {
@@ -74,8 +74,9 @@
 	<div class="social-media">
 		<h4>Follow us on:</h4>
 		<div class="social-links">
-			{#each socialLinks as link}
+			{#each socialLinks as link (link.url)}
 				<a href={link.url} target="_blank" aria-label={link.label} class="social-link">
+					<!-- svelte-ignore a11y_no_static_element_interactions -->
 					{@html link.icon}
 					<span>{link.label}</span>
 				</a>

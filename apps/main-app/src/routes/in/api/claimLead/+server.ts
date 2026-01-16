@@ -83,8 +83,6 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 				lead_id
 			]);
 
-			// Auto-allocate ALL successful claims (within 5-claim limit)
-			let isAutoAllocated = false;
 			// Since we passed the claim limit check, auto-allocate this claim
 
 			// Set this claim as allotted
@@ -124,7 +122,6 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 					]
 				);
 
-				isAutoAllocated = true;
 			}
 
 			await client.query('COMMIT');

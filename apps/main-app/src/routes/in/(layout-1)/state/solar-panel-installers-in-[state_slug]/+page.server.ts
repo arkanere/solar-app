@@ -24,7 +24,8 @@ export const load: PageServerLoad = async ({ params }) => {
 	if (!stateName) {
 		return {
 			state: '',
-			errorMessage: 'Invalid state URL format'
+			errorMessage: 'Invalid state URL format',
+			user: null
 		};
 	}
 
@@ -54,7 +55,8 @@ export const load: PageServerLoad = async ({ params }) => {
 		if (districts.length > 0) {
 			return {
 				state: stateFormatted,
-				districts
+				districts,
+				user: null
 			};
 		} else {
 			// Check if the state exists in our database
@@ -71,12 +73,14 @@ export const load: PageServerLoad = async ({ params }) => {
 			if (stateCheckResult.rows.length > 0) {
 				return {
 					state: stateFormatted,
-					errorMessage: `No districts found in ${stateFormatted}.`
+					errorMessage: `No districts found in ${stateFormatted}.`,
+					user: null
 				};
 			} else {
 				return {
 					state: stateFormatted,
-					errorMessage: `${stateFormatted} is not a recognized state or we don't have coverage in this area yet.`
+					errorMessage: `${stateFormatted} is not a recognized state or we don't have coverage in this area yet.`,
+					user: null
 				};
 			}
 		}
@@ -84,7 +88,8 @@ export const load: PageServerLoad = async ({ params }) => {
 		console.error('Database query error:', error);
 		return {
 			state: stateFormatted,
-			errorMessage: 'Failed to load solar panel installers'
+			errorMessage: 'Failed to load solar panel installers',
+			user: null
 		};
 	}
 }
