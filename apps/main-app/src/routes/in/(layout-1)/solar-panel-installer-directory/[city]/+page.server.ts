@@ -12,10 +12,10 @@ export const load: PageServerLoad = async ({ params }) => {
 	const cityParam = params.city; // The city from the URL (e.g., "dallas")
 
 	// Utility function to capitalize city names
-	function capitalizeCityName(city) {
+	function capitalizeCityName(city: string) {
 		return city
 			.split(/([\s-])/g) // Split on spaces or hyphens while keeping the delimiters
-			.map((part, index) => {
+			.map((part, _) => {
 				// If it's not a delimiter (i.e., it's a word), capitalize it
 				if (!part.match(/[\s-]/)) {
 					return part.charAt(0).toUpperCase() + part.slice(1);
@@ -50,7 +50,8 @@ export const load: PageServerLoad = async ({ params }) => {
 				subset_cities_localities: [],
 				district: '',
 				recentProjects: [],
-				lastUpdated: new Date().toISOString()
+				lastUpdated: new Date().toISOString(),
+				user: null
 			};
 		}
 
@@ -118,7 +119,8 @@ export const load: PageServerLoad = async ({ params }) => {
 				businesses,
 				subset_cities_localities,
 				recentProjects,
-				lastUpdated: new Date().toISOString()
+				lastUpdated: new Date().toISOString(),
+				user: null
 			};
 		} else {
 			return {
@@ -127,7 +129,8 @@ export const load: PageServerLoad = async ({ params }) => {
 				subset_cities_localities,
 				recentProjects,
 				lastUpdated: new Date().toISOString(),
-				errorMessage: `No businesses found in ${city} or its district: ${district}.`
+				errorMessage: `No businesses found in ${city} or its district: ${district}.`,
+				user: null
 			};
 		}
 	} catch (error) {
@@ -138,7 +141,8 @@ export const load: PageServerLoad = async ({ params }) => {
 			subset_cities_localities: [],
 			district: '',
 			recentProjects: [],
-			lastUpdated: new Date().toISOString()
+			lastUpdated: new Date().toISOString(),
+			user: null
 		};
 	}
 }

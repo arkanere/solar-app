@@ -2,20 +2,20 @@
   import { goto } from "$app/navigation";
   import { base } from "$app/paths";
 
-  let businessName = $state("");
-  let address = $state("");
-  let plusCode = $state("");
-  let phoneNumber = $state("");
-  let whatsappNumber = $state("");
-  let email = $state("");
-  let login_email = $state("");
-  let website = $state("");
-  let gstn = $state("");
-  let state = $state("");
-  let district = $state("");
-  let city = $state("");
-  let districts = $state<string[]>([]);
-  let cities = $state<string[]>([]);
+  let businessName = $state('');
+  let address = $state('');
+  let plusCode = $state('');
+  let phoneNumber = $state('');
+  let whatsappNumber = $state('');
+  let email = $state('');
+  let login_email = $state('');
+  let website = $state('');
+  let gstn = $state('');
+  let selectedState = $state('');
+  let district = $state('');
+  let city = $state('');
+  let districts: string[] = $state([]);
+  let cities: string[] = $state([]);
   let isDistrictLoading = $state(false);
   let isCityLoading = $state(false);
   let isSubmitting = $state(false);
@@ -59,16 +59,10 @@
     "West Bengal",
   ];
 
-  let errors = $state<Record<string, string>>({
+  let errors: Record<string, string> = $state({
     phoneNumber: "",
     whatsappNumber: "",
     gstn: "",
-  });
-
-  $effect(() => {
-    if (state) {
-      updateDistricts(state);
-    }
   });
 
   async function updateDistricts(selectedState: string): Promise<void> {
@@ -89,11 +83,6 @@
     }
   }
 
-  $effect(() => {
-    if (district) {
-      updateCities(district);
-    }
-  });
 
   async function updateCities(selectedDistrict: string): Promise<void> {
     isCityLoading = true;
@@ -172,7 +161,7 @@
             login_email,
             website,
             gstn,
-            state,
+            state: selectedState,
             district,
             city,
           }),
@@ -331,7 +320,7 @@
   <!-- State Dropdown -->
   <div>
     <label for="state">State:</label>
-    <select id="state" bind:value={state} required>
+    <select id="state" bind:value={selectedState} onchange={() => updateDistricts(selectedState)} required>
       <option value="">Select a state</option>
       {#each states as state}
         <option value={state}>{state}</option>
@@ -345,8 +334,9 @@
     <select
       id="district"
       bind:value={district}
+      onchange={() => updateCities(district)}
       required
-      disabled={!state || isDistrictLoading}
+      disabled={!selectedState || isDistrictLoading}
     >
       <option value="">Select a district</option>
       {#if isDistrictLoading}

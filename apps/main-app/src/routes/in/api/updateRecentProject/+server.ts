@@ -18,7 +18,7 @@ cloudinary.config({
 const pool = createPool({ connectionString: POSTGRES_URL });
 
 // Helper function to generate project slug
-function generateProjectSlug(title) {
+function generateProjectSlug(title: string) {
 	// Convert to lowercase
 	let slug = title.toLowerCase();
 
@@ -48,7 +48,7 @@ function generateProjectSlug(title) {
 }
 
 // Helper function to upload to Cloudinary
-async function uploadToCloudinary(file) {
+async function uploadToCloudinary(file: File) {
 	try {
 		// Convert file to base64 for Cloudinary upload
 		const buffer = Buffer.from(await file.arrayBuffer());
@@ -76,13 +76,13 @@ async function uploadToCloudinary(file) {
 			);
 		});
 
-		console.log('Image uploaded to Cloudinary:', result.secure_url);
+		console.log('Image uploaded to Cloudinary:', (result as any).secure_url);
 		return {
-			url: result.secure_url,
-			publicId: result.public_id,
-			width: result.width,
-			height: result.height,
-			format: result.format
+			url: (result as any).secure_url,
+			publicId: (result as any).public_id,
+			width: (result as any).width,
+			height: (result as any).height,
+			format: (result as any).format
 		};
 	} catch (error) {
 		console.error('Cloudinary upload error:', error);
@@ -91,12 +91,12 @@ async function uploadToCloudinary(file) {
 }
 
 // Helper function to delete from Cloudinary
-async function deleteFromCloudinary(publicId) {
+async function deleteFromCloudinary(publicId: string) {
 	try {
 		if (!publicId) return;
 		
 		const result = await new Promise((resolve, reject) => {
-			cloudinary.uploader.destroy(publicId, (error, result) => {
+			cloudinary.uploader.destroy(publicId, (error: any, result: any) => {
 				if (error) reject(error);
 				else resolve(result);
 			});
@@ -132,7 +132,7 @@ export const PUT: RequestHandler = async ({ request }) => {
 			removeImage = formData.get('removeImage') === 'true';
 
 			// Handle image upload if it exists
-			if (projectImage && projectImage.size > 0) {
+			if (projectImage instanceof File && projectImage.size > 0) {
 				try {
 					// Upload to Cloudinary
 					imageData = await uploadToCloudinary(projectImage);
@@ -142,7 +142,7 @@ export const PUT: RequestHandler = async ({ request }) => {
 					return json(
 						{
 							success: false,
-							error: 'Failed to upload image: ' + imageError.message
+							error: 'Failed to upload image: ' + (imageError as Error).message
 						},
 						{ status: 500 }
 					);
@@ -323,7 +323,7 @@ export const PUT: RequestHandler = async ({ request }) => {
 			return json(
 				{
 					success: false,
-					error: 'Database error: ' + dbError.message
+					error: 'Database error: ' + (dbError as Error).message
 				},
 				{ status: 500 }
 			);
@@ -335,7 +335,7 @@ export const PUT: RequestHandler = async ({ request }) => {
 		return json(
 			{
 				success: false,
-				error: 'Internal server error: ' + error.message
+				error: 'Internal server error: ' + (error as Error).message
 			},
 			{ status: 500 }
 		);
@@ -405,7 +405,7 @@ export const DELETE: RequestHandler = async ({ request }) => {
 			return json(
 				{
 					success: false,
-					error: 'Database error: ' + dbError.message
+					error: 'Database error: ' + (dbError as Error).message
 				},
 				{ status: 500 }
 			);
@@ -417,7 +417,7 @@ export const DELETE: RequestHandler = async ({ request }) => {
 		return json(
 			{
 				success: false,
-				error: 'Internal server error: ' + error.message
+				error: 'Internal server error: ' + (error as Error).message
 			},
 			{ status: 500 }
 		);

@@ -5,7 +5,6 @@ import { sendEmail } from '$lib/sendEmail'; // Utility for sending emails
 export const POST: RequestHandler = async ({ request }) => {
 	try {
 		const {
-			id,
 			businessName,
 			address,
 			plusCode,

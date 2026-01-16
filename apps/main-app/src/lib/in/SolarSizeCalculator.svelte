@@ -3,12 +3,13 @@
 
 	let currentBill = $state(1500); // Initial value for current electricity bill in Rupees
 	let ratePerUnit = $state(9); // Initial value for electricity rate per unit in Rupees
-	let solarSystemSize: number | null = $state(null);
+	let solarSystemSize = $state<number | null>(null);
 
 	// Dark mode state from the store
-
-	// Subscribe to the dark mode store
-	let darkMode = $derived($isDarkMode);
+	let darkMode = $state(false);
+	isDarkMode.subscribe(value => {
+		darkMode = value;
+	});
 
 	// Recalculate solar system size whenever input values change
 	$effect(() => {
@@ -19,14 +20,10 @@
 
 	function calculateSolarSystemSize() {
 		const monthlyConsumption = currentBill / ratePerUnit;
-		const avgSunlightHours = 5; // Average sunlight hours per day
-		const daysInMonth = 30;
-		const efficiencyFactor = 1.15; // Accounting for losses in the system
-
 		// Calculate the required solar panel size in kW
 		const solarSystemSizeKW = monthlyConsumption / 100;
 
-		solarSystemSize = solarSystemSizeKW.toFixed(2);
+		solarSystemSize = parseFloat(solarSystemSizeKW.toFixed(2));
 	}
 </script>
 

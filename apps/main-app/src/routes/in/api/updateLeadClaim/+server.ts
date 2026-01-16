@@ -2,6 +2,7 @@
 
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
+import type { RequestHandler } from '@sveltejs/kit';
 
 export const POST: RequestHandler = async ({ request, fetch }) => {
 	// ✅ Use `fetch` from event
@@ -49,6 +50,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 				);
 
 				newLeadId = newLeadResult.rows[0].id;
+				console.log(`New lead created with ID: ${newLeadId}`);
 			}
 		}
 
@@ -65,6 +67,6 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 		return new Response(JSON.stringify({ success: true }), { status: 200 });
 	} catch (error) {
 		console.error('Error updating lead claim:', error);
-		return new Response(JSON.stringify({ success: false, error: error.message }), { status: 500 });
+		return new Response(JSON.stringify({ success: false, error: (error as Error).message }), { status: 500 });
 	}
 }

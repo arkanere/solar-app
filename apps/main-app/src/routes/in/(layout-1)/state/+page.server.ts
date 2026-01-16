@@ -1,4 +1,3 @@
-import type { PageServerLoad } from './$types';
 // export const prerender = 'false';
 // import { createPool } from '@vercel/postgres';
 // import { POSTGRES_URL } from '$env/static/private';

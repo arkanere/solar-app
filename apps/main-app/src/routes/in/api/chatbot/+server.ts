@@ -1,24 +1,11 @@
 import { ChatOpenAI, OpenAIEmbeddings } from '@langchain/openai';
-import { PineconeStore } from '@langchain/pinecone';
-import { Pinecone } from '@pinecone-database/pinecone';
+import { type Index, type QueryResponse, type RecordMetadata, Pinecone } from '@pinecone-database/pinecone';
 import { OPENAI_API_KEY, PINECONE_API_KEY } from '$env/static/private';
 import { json, type RequestHandler } from '@sveltejs/kit';
 
 interface ChatRequest {
 	userMessage: string;
 	conversationContext?: string;
-}
-
-interface QueryMatch {
-	score: number;
-	metadata?: {
-		file_name?: string;
-		text?: string;
-	};
-}
-
-interface QueryResult {
-	matches?: QueryMatch[];
 }
 
 // Helper function to determine if guided flow should be suggested
@@ -88,33 +75,21 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		// Step 1: Convert the user query to an embedding
 		console.log('Creating embedding for user query');
-		const embeddingStartTime = Date.now();
-
 		const queryEmbedding = await embeddings.embedQuery(userMessage);
-
-		const embeddingEndTime = Date.now();
 		console.log('Embedding created successfully');
 		console.log('Embedding dimensions:', queryEmbedding.length);
 
 		// Step 2: Initialize Pinecone VectorStore with LangChain
 		console.log('Querying Pinecone for similar documents');
-		const pineconeStartTime = Date.now();
 
-		const index = pinecone.index(INDEX_NAME);
-
-		// Create vector store
-		const vectorStore = await PineconeStore.fromExistingIndex(embeddings, {
-			pineconeIndex: index
-		});
+		const index: Index<RecordMetadata> = pinecone.index(INDEX_NAME);
 
 		// Query directly to maintain same logging behavior
-		const queryResult: QueryResult = await index.query({
+		const queryResult: QueryResponse<RecordMetadata> = await index.query({
 			vector: queryEmbedding,
 			topK: 3,
 			includeMetadata: true
 		});
-
-		const pineconeEndTime = Date.now();
 		console.log('Pinecone query completed');
 
 		// Step 3: Extract and prepare context from retrieved documents
@@ -150,7 +125,6 @@ Otherwise, just provide a helpful response about solar energy without suggesting
 
 		// Step 5: Generate response using LangChain
 		console.log('Generating AI response');
-		const chatStartTime = Date.now();
 
 		const model = new ChatOpenAI({
 			openAIApiKey: OPENAI_API_KEY,
@@ -166,7 +140,6 @@ Otherwise, just provide a helpful response about solar energy without suggesting
 			{ role: 'user', content: userMessage }
 		]);
 
-		const chatEndTime = Date.now();
 		let assistantReply = response.content as string;
 
 		console.log('AI response generated successfully');

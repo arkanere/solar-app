@@ -26,7 +26,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		);
 
 		if (businessResult.rows.length === 0) {
-			return { errorMessage: `No business found` };
+			return { errorMessage: `No business found`, user: null };
 		}
 
 		const business = businessResult.rows[0];
@@ -69,10 +69,11 @@ export const load: PageServerLoad = async ({ params }) => {
 
 		return {
 			business,
-			projects
+			projects,
+			user: null
 		};
 	} catch (error) {
 		console.error('Database query error:', error);
-		return { errorMessage: 'Failed to load business details' };
+		return { errorMessage: 'Failed to load business details', user: null };
 	}
 }

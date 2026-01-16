@@ -2,7 +2,6 @@
 import type { PageServerLoad } from './$types';
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
-import { error } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ url }) => {
 	const pool = createPool({ connectionString: POSTGRES_URL });
@@ -13,7 +12,8 @@ export const load: PageServerLoad = async ({ url }) => {
 	// If no reference UUID provided, return null (show generic thank you)
 	if (!referenceUuid) {
 		return {
-			customerDetails: null
+			customerDetails: null,
+			user: null
 		};
 	}
 
@@ -32,7 +32,8 @@ export const load: PageServerLoad = async ({ url }) => {
 			// Lead not found, return error
 			return {
 				customerDetails: null,
-				error: 'Details not found'
+				error: 'Details not found',
+				user: null
 			};
 		}
 
@@ -43,7 +44,8 @@ export const load: PageServerLoad = async ({ url }) => {
 			// Lead exists but is not visible, return error
 			return {
 				customerDetails: null,
-				error: 'Details not found'
+				error: 'Details not found',
+				user: null
 			};
 		}
 		
@@ -82,14 +84,16 @@ export const load: PageServerLoad = async ({ url }) => {
 				district: lead.district,
 				submittedAt: lead.created_at,
 				hasVerifiedBusinessInDistrict
-			}
+			},
+			user: null
 		};
 		
 	} catch (err) {
 		console.error('Error fetching lead details:', err);
 		// On database error, return null to show generic thank you
 		return {
-			customerDetails: null
+			customerDetails: null,
+			user: null
 		};
 	}
 }

@@ -4,7 +4,7 @@ import { sendEmail } from '$lib/sendEmail'; // Utility for sending emails
 
 export const POST: RequestHandler = async ({ request, fetch }) => {
 	try {
-		const { id, name, phone, pinCode, type, comment, urlParam, email } = await request.json();
+		const { name, phone, pinCode, comment, urlParam, email } = await request.json();
 
 		if (!email) {
 			return json({ success: false, error: 'No email provided for confirmation' }, { status: 400 });

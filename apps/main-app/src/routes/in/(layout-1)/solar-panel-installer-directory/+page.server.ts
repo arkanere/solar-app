@@ -13,5 +13,6 @@ export const load: PageServerLoad = async () => {
 	return {
 		// Return empty object since the page is mostly static
 		// with client-side data fetching
+		user: null
 	};
 }

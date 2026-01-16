@@ -90,7 +90,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		const maskedPhone = lead.phone.replace(/\d(?=\d{4})/g, '*');
 		const maskedEmail = lead.email.replace(
 			/^(.{2})(.*)(@.*)$/,
-			(_, first, middle, domain) => first + '*****' + domain
+			(_, first, domain) => first + '*****' + domain
 		);
 
 		let businessDetailsForAdmin = '';

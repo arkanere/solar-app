@@ -40,14 +40,6 @@ export const GET: RequestHandler = async ({ params }) => {
 				[`/solar-panel-installer/${business_slug}%`]
 			);
 
-			// ✅ Fetch claimed leads from `leaddata_claimrequests`
-			const claimedLeadResult = await client.query(
-				'SELECT lead_id FROM leaddata_claimrequests WHERE business_id = $1',
-				[businessId]
-			);
-
-			const claimedLeadIds = new Set(claimedLeadResult.rows.map((row) => row.lead_id));
-
 			// ✅ Fetch non-exclusive claimed leads (category = 2 & business_id matches)
 			const nonExclusiveClaimedResult = await client.query(
 				'SELECT * FROM leaddata WHERE category = 2 AND business_id = $1 ORDER BY id DESC',
@@ -111,7 +103,7 @@ export const GET: RequestHandler = async ({ params }) => {
 /**
  * Mask email for UI-friendly display (e.g., "br*****@gmail.com")
  */
-function maskEmail(email) {
+function maskEmail(email: string) {
 	if (!email || !email.includes('@')) return email;
 	const [name, domain] = email.split('@');
 	return name.slice(0, 2) + '*****' + '@' + domain;
@@ -120,7 +112,7 @@ function maskEmail(email) {
 /**
  * Mask phone number for UI-friendly display (e.g., "+91 *****6789")
  */
-function maskPhone(phone) {
+function maskPhone(phone: string) {
 	if (!phone || phone.length < 4) return phone;
 	return phone.slice(0, -4).replace(/\d/g, '*') + phone.slice(-4);
 }

@@ -49,7 +49,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		const maskedPhone = lead.phone.replace(/\d(?=\d{4})/g, '*'); // Mask all but last 4 digits
 		const maskedEmail = lead.email.replace(
 			/^(.{2})(.*)(@.*)$/,
-			(_, first, middle, domain) => first + '*****' + domain
+			(_: string, first: string, domain: string) => first + '*****' + domain
 		);
 
 		let businessDetailsForAdmin = '';

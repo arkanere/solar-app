@@ -48,22 +48,25 @@ export const load: PageServerLoad = async () => {
 				debug: {
 					timestamp: new Date().toISOString(),
 					projectCount: projectsResult.rowCount
-				}
+				},
+				user: null
 			};
-		} catch (queryError) {
+		} catch (queryError: unknown) {
 			console.error('Database query error:', queryError);
 			return {
 				success: false,
-				error: 'Failed to fetch projects: ' + queryError.message
+				error: 'Failed to fetch projects: ' + (queryError as Error).message,
+				user: null
 			};
 		} finally {
 			client.release();
 		}
-	} catch (connectionError) {
+	} catch (connectionError: unknown) {
 		console.error('Database connection error:', connectionError);
 		return {
 			success: false,
-			error: 'Database connection error: ' + connectionError.message
+			error: 'Database connection error: ' + (connectionError as Error).message,
+			user: null
 		};
 	}
 }
