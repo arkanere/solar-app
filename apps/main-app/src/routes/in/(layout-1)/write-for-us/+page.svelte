@@ -122,80 +122,82 @@
   <meta property="og:type" content="website" />
 </svelte:head>
 
-<main class={darkMode ? "dark" : "light"}>
-  <div class="container">
+<main class={darkMode ? "dark bg-background dark:bg-background text-foreground dark:text-foreground" : "light bg-background text-foreground"}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 md:px-8">
     <!-- Hero Section -->
-    <section class="hero-section">
-      <h1>Contribute as a Solar Expert</h1>
-      <p class="hero-subtitle">
+    <section class="py-12 md:py-16 text-center">
+      <h1 class="text-3xl md:text-4xl font-bold mb-4 text-primary dark:text-primary">
+        Contribute as a Solar Expert
+      </h1>
+      <p class="text-lg md:text-xl font-semibold mb-4 text-foreground-secondary dark:text-foreground-secondary">
         Share Your Knowledge. Shape India's Solar Future.
       </p>
-      <p class="hero-description">
+      <p class="text-base md:text-lg leading-relaxed max-w-2xl mx-auto text-foreground-secondary dark:text-foreground-secondary">
         We invite solar professionals, engineers, researchers, and sustainability experts to contribute original,
         high-quality content that helps homeowners and businesses make informed solar decisions.
       </p>
     </section>
 
     <!-- Why Contribute Section -->
-    <section class="benefits-section">
-      <h2>Why Contribute to Solar Vipani?</h2>
-      <div class="benefits-grid">
+    <section class="mb-16 md:mb-20">
+      <h2 class="text-2xl md:text-3xl font-bold mb-6 text-primary dark:text-primary">Why Contribute to Solar Vipani?</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {#each benefits as benefit}
-          <div class="benefit-card">
-            <div class="benefit-icon">{benefit.icon}</div>
-            <h3>{benefit.title}</h3>
-            <p>{benefit.description}</p>
+          <div class="bg-card dark:bg-card rounded-lg shadow-md dark:shadow-card p-6 text-center hover:shadow-lg dark:hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300">
+            <div class="text-4xl mb-4">{benefit.icon}</div>
+            <h3 class="text-lg font-semibold mb-3 text-foreground dark:text-foreground">{benefit.title}</h3>
+            <p class="text-sm leading-relaxed text-foreground-secondary dark:text-foreground-secondary">{benefit.description}</p>
           </div>
         {/each}
       </div>
     </section>
 
     <!-- Who We're Looking For -->
-    <section class="audience-section">
-      <h2>Who We're Looking For</h2>
-      <div class="audience-content">
-        <p>We welcome contributions from credentialed professionals in the solar and renewable energy industry:</p>
-        <div class="audience-list">
-          <div class="audience-item">
-            <span class="check-icon">✓</span>
+    <section class="mb-16 md:mb-20">
+      <h2 class="text-2xl md:text-3xl font-bold mb-6 text-primary dark:text-primary">Who We're Looking For</h2>
+      <div class="bg-card dark:bg-card rounded-lg shadow-md dark:shadow-card p-6 md:p-8">
+        <p class="text-base md:text-lg mb-6 text-foreground-secondary dark:text-foreground-secondary">We welcome contributions from credentialed professionals in the solar and renewable energy industry:</p>
+        <div class="space-y-6">
+          <div class="flex gap-4 items-start">
+            <span class="text-xl font-bold text-success flex-shrink-0">✓</span>
             <div>
-              <strong>Solar Installation Professionals</strong>
-              <p>Licensed installers with hands-on experience in residential and commercial projects</p>
+              <strong class="block mb-1 text-foreground dark:text-foreground">Solar Installation Professionals</strong>
+              <p class="text-sm text-foreground-secondary dark:text-foreground-secondary">Licensed installers with hands-on experience in residential and commercial projects</p>
             </div>
           </div>
-          <div class="audience-item">
-            <span class="check-icon">✓</span>
+          <div class="flex gap-4 items-start">
+            <span class="text-xl font-bold text-success flex-shrink-0">✓</span>
             <div>
-              <strong>Electrical & Solar Engineers</strong>
-              <p>Technical experts in PV systems, inverters, batteries, and grid integration</p>
+              <strong class="block mb-1 text-foreground dark:text-foreground">Electrical & Solar Engineers</strong>
+              <p class="text-sm text-foreground-secondary dark:text-foreground-secondary">Technical experts in PV systems, inverters, batteries, and grid integration</p>
             </div>
           </div>
-          <div class="audience-item">
-            <span class="check-icon">✓</span>
+          <div class="flex gap-4 items-start">
+            <span class="text-xl font-bold text-success flex-shrink-0">✓</span>
             <div>
-              <strong>Energy Consultants & Advisors</strong>
-              <p>Professionals guiding customers on system design, financing, and ROI</p>
+              <strong class="block mb-1 text-foreground dark:text-foreground">Energy Consultants & Advisors</strong>
+              <p class="text-sm text-foreground-secondary dark:text-foreground-secondary">Professionals guiding customers on system design, financing, and ROI</p>
             </div>
           </div>
-          <div class="audience-item">
-            <span class="check-icon">✓</span>
+          <div class="flex gap-4 items-start">
+            <span class="text-xl font-bold text-success flex-shrink-0">✓</span>
             <div>
-              <strong>Researchers & Academics</strong>
-              <p>Scientists studying solar technology, efficiency, sustainability, or policy</p>
+              <strong class="block mb-1 text-foreground dark:text-foreground">Researchers & Academics</strong>
+              <p class="text-sm text-foreground-secondary dark:text-foreground-secondary">Scientists studying solar technology, efficiency, sustainability, or policy</p>
             </div>
           </div>
-          <div class="audience-item">
-            <span class="check-icon">✓</span>
+          <div class="flex gap-4 items-start">
+            <span class="text-xl font-bold text-success flex-shrink-0">✓</span>
             <div>
-              <strong>Policy & Regulatory Experts</strong>
-              <p>Professionals with deep knowledge of solar subsidies, net metering, and compliance</p>
+              <strong class="block mb-1 text-foreground dark:text-foreground">Policy & Regulatory Experts</strong>
+              <p class="text-sm text-foreground-secondary dark:text-foreground-secondary">Professionals with deep knowledge of solar subsidies, net metering, and compliance</p>
             </div>
           </div>
-          <div class="audience-item">
-            <span class="check-icon">✓</span>
+          <div class="flex gap-4 items-start">
+            <span class="text-xl font-bold text-success flex-shrink-0">✓</span>
             <div>
-              <strong>Sustainability Professionals</strong>
-              <p>Corporate sustainability managers, ESG consultants, and clean energy advocates</p>
+              <strong class="block mb-1 text-foreground dark:text-foreground">Sustainability Professionals</strong>
+              <p class="text-sm text-foreground-secondary dark:text-foreground-secondary">Corporate sustainability managers, ESG consultants, and clean energy advocates</p>
             </div>
           </div>
         </div>
@@ -203,761 +205,152 @@
     </section>
 
     <!-- Topics We Accept -->
-    <section class="topics-section">
-      <h2>What Topics We Accept</h2>
-      <p class="section-intro">
+    <section class="mb-16 md:mb-20">
+      <h2 class="text-2xl md:text-3xl font-bold mb-6 text-primary dark:text-primary">What Topics We Accept</h2>
+      <p class="text-base md:text-lg leading-relaxed mb-6 text-foreground-secondary dark:text-foreground-secondary">
         We publish expert content that educates, informs, and empowers our audience. Here are some topic areas we're interested in:
       </p>
-      <div class="topics-grid">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         {#each acceptedTopics as topic}
-          <div class="topic-card">
-            <h3>{topic.title}</h3>
-            <p class="topic-examples"><strong>Examples:</strong> {topic.examples}</p>
+          <div class="bg-card dark:bg-card rounded-lg p-4 shadow-sm border-l-4 border-primary">
+            <h3 class="text-lg font-semibold mb-2 text-primary dark:text-primary">{topic.title}</h3>
+            <p class="text-sm text-foreground-secondary dark:text-foreground-secondary"><strong>Examples:</strong> {topic.examples}</p>
           </div>
         {/each}
       </div>
-      <div class="topics-note">
-        <p><strong>Note:</strong> We prioritize actionable, practical content over generic overviews. Case studies and real-world examples are especially valued.</p>
+      <div class="bg-primary/10 dark:bg-primary/20 border-l-4 border-primary rounded-lg p-4 md:p-6">
+        <p class="text-foreground dark:text-foreground"><strong>Note:</strong> We prioritize actionable, practical content over generic overviews. Case studies and real-world examples are especially valued.</p>
       </div>
     </section>
 
     <!-- Editorial Guidelines -->
-    <section class="guidelines-section">
-      <h2>Editorial Guidelines</h2>
-      <p class="section-intro">
+    <section class="mb-16 md:mb-20">
+      <h2 class="text-2xl md:text-3xl font-bold mb-6 text-primary dark:text-primary">Editorial Guidelines</h2>
+      <p class="text-base md:text-lg leading-relaxed mb-6 text-foreground-secondary dark:text-foreground-secondary">
         To maintain the highest quality standards, all submissions must meet these requirements:
       </p>
-      <div class="guidelines-grid">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         {#each guidelines as guideline}
-          <div class="guideline-card">
-            <h3>{guideline.title}</h3>
-            <p>{guideline.description}</p>
+          <div class="bg-card dark:bg-card rounded-lg p-4 shadow-sm">
+            <h3 class="text-base font-semibold mb-2 text-foreground dark:text-foreground">{guideline.title}</h3>
+            <p class="text-sm text-foreground-secondary dark:text-foreground-secondary">{guideline.description}</p>
           </div>
         {/each}
       </div>
     </section>
 
     <!-- Link Policy -->
-    <section class="policy-section">
-      <h2>Link Policy</h2>
-      <div class="policy-content">
-        <div class="policy-box allowed">
-          <h3>✓ What We Allow</h3>
-          <ul>
-            <li>Links to credible research papers, government resources, or industry reports</li>
-            <li>References to relevant technical standards or certification bodies</li>
-            <li>Author bio with one link to your professional LinkedIn or company website</li>
-            <li>Links that genuinely add value to the reader's understanding</li>
+    <section class="mb-16 md:mb-20">
+      <h2 class="text-2xl md:text-3xl font-bold mb-6 text-primary dark:text-primary">Link Policy</h2>
+      <div class="space-y-6">
+        <div class="bg-card dark:bg-card rounded-lg p-6 shadow-md border-l-4 border-success">
+          <h3 class="text-lg font-semibold mb-4 text-foreground dark:text-foreground">✓ What We Allow</h3>
+          <ul class="space-y-2">
+            <li class="text-sm pl-4 text-foreground-secondary dark:text-foreground-secondary">
+              <span class="inline-block mr-2 text-success font-bold">✓</span>Links to credible research papers, government resources, or industry reports
+            </li>
+            <li class="text-sm pl-4 text-foreground-secondary dark:text-foreground-secondary">
+              <span class="inline-block mr-2 text-success font-bold">✓</span>References to relevant technical standards or certification bodies
+            </li>
+            <li class="text-sm pl-4 text-foreground-secondary dark:text-foreground-secondary">
+              <span class="inline-block mr-2 text-success font-bold">✓</span>Author bio with one link to your professional LinkedIn or company website
+            </li>
+            <li class="text-sm pl-4 text-foreground-secondary dark:text-foreground-secondary">
+              <span class="inline-block mr-2 text-success font-bold">✓</span>Links that genuinely add value to the reader's understanding
+            </li>
           </ul>
         </div>
-        <div class="policy-box rejected">
-          <h3>✗ What We Reject</h3>
-          <ul>
-            <li>Promotional links to products, services, or unrelated websites</li>
-            <li>Affiliate links or commercial referral URLs</li>
-            <li>Excessive self-promotion or company advertising within content</li>
-            <li>Link exchanges, paid links, or SEO link-building schemes</li>
-            <li>Links to low-quality or irrelevant sources</li>
+        <div class="bg-card dark:bg-card rounded-lg p-6 shadow-md border-l-4 border-destructive">
+          <h3 class="text-lg font-semibold mb-4 text-foreground dark:text-foreground">✗ What We Reject</h3>
+          <ul class="space-y-2">
+            <li class="text-sm pl-4 text-foreground-secondary dark:text-foreground-secondary">
+              <span class="inline-block mr-2 text-destructive font-bold">✗</span>Promotional links to products, services, or unrelated websites
+            </li>
+            <li class="text-sm pl-4 text-foreground-secondary dark:text-foreground-secondary">
+              <span class="inline-block mr-2 text-destructive font-bold">✗</span>Affiliate links or commercial referral URLs
+            </li>
+            <li class="text-sm pl-4 text-foreground-secondary dark:text-foreground-secondary">
+              <span class="inline-block mr-2 text-destructive font-bold">✗</span>Excessive self-promotion or company advertising within content
+            </li>
+            <li class="text-sm pl-4 text-foreground-secondary dark:text-foreground-secondary">
+              <span class="inline-block mr-2 text-destructive font-bold">✗</span>Link exchanges, paid links, or SEO link-building schemes
+            </li>
+            <li class="text-sm pl-4 text-foreground-secondary dark:text-foreground-secondary">
+              <span class="inline-block mr-2 text-destructive font-bold">✗</span>Links to low-quality or irrelevant sources
+            </li>
           </ul>
         </div>
-        <p class="policy-warning">
-          <strong>⚠️ Important:</strong> We are not a platform for link building or SEO backlinks.
-          Articles submitted primarily for link placement will be rejected immediately. Our focus is educational value, not search rankings.
-        </p>
+        <div class="bg-warning/10 dark:bg-warning/20 border-l-4 border-warning rounded-lg p-4 md:p-6">
+          <p class="text-foreground dark:text-foreground">
+            <strong>⚠️ Important:</strong> We are not a platform for link building or SEO backlinks.
+            Articles submitted primarily for link placement will be rejected immediately. Our focus is educational value, not search rankings.
+          </p>
+        </div>
       </div>
     </section>
 
     <!-- Submission Process -->
-    <section class="submission-section">
-      <h2>How to Submit</h2>
-      <div class="submission-steps">
-        <div class="step">
-          <div class="step-number">1</div>
-          <div class="step-content">
-            <h3>Send a Pitch</h3>
-            <p>Email us at <a href="mailto:{submissionEmail}">{submissionEmail}</a> with:</p>
-            <ul>
-              <li>Proposed article title and brief outline (3-5 bullet points)</li>
-              <li>Your credentials and relevant experience</li>
-              <li>Links to previous published work (if available)</li>
-            </ul>
+    <section class="mb-16 md:mb-20">
+      <h2 class="text-2xl md:text-3xl font-bold mb-6 text-primary dark:text-primary">How to Submit</h2>
+      <div class="space-y-6">
+        {#each [
+          {num: 1, title: 'Send a Pitch', content: `Email us at <a href="mailto:${submissionEmail}">${submissionEmail}</a> with:`, items: ['Proposed article title and brief outline (3-5 bullet points)', 'Your credentials and relevant experience', 'Links to previous published work (if available)']},
+          {num: 2, title: 'Receive Feedback', content: 'Our editorial team will review your pitch within 5-7 business days and respond with:', items: ['Approval to proceed with a full draft', 'Suggestions for refinement or alternative angles', 'Rejection if the topic doesn\'t align with our audience needs']},
+          {num: 3, title: 'Submit Full Article', content: 'If approved, submit your complete article as:', items: ['Google Doc (with comment access) or Word document', 'Include all images, charts, or diagrams with proper attribution', 'Add a 50-75 word author bio with one professional link']},
+          {num: 4, title: 'Review & Publication', content: 'We will:', items: ['Review for accuracy, clarity, and editorial standards', 'Request revisions if needed (you retain final approval)', 'Publish approved articles within 2-3 weeks', 'Notify you when your article goes live']}
+        ] as step}
+          <div class="flex gap-4 md:gap-6 items-start">
+            <div class="bg-primary text-white w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-lg">
+              {step.num}
+            </div>
+            <div class="bg-card dark:bg-card rounded-lg p-4 md:p-6 shadow-sm flex-1">
+              <h3 class="text-lg font-semibold mb-3 text-foreground dark:text-foreground">{step.title}</h3>
+              <p class="text-sm mb-3 text-foreground-secondary dark:text-foreground-secondary">{@html step.content}</p>
+              <ul class="list-disc list-inside space-y-1">
+                {#each step.items as item}
+                  <li class="text-sm text-foreground-secondary dark:text-foreground-secondary">{item}</li>
+                {/each}
+              </ul>
+            </div>
           </div>
-        </div>
-        <div class="step">
-          <div class="step-number">2</div>
-          <div class="step-content">
-            <h3>Receive Feedback</h3>
-            <p>Our editorial team will review your pitch within 5-7 business days and respond with:</p>
-            <ul>
-              <li>Approval to proceed with a full draft</li>
-              <li>Suggestions for refinement or alternative angles</li>
-              <li>Rejection if the topic doesn't align with our audience needs</li>
-            </ul>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-number">3</div>
-          <div class="step-content">
-            <h3>Submit Full Article</h3>
-            <p>If approved, submit your complete article as:</p>
-            <ul>
-              <li>Google Doc (with comment access) or Word document</li>
-              <li>Include all images, charts, or diagrams with proper attribution</li>
-              <li>Add a 50-75 word author bio with one professional link</li>
-            </ul>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-number">4</div>
-          <div class="step-content">
-            <h3>Review & Publication</h3>
-            <p>We will:</p>
-            <ul>
-              <li>Review for accuracy, clarity, and editorial standards</li>
-              <li>Request revisions if needed (you retain final approval)</li>
-              <li>Publish approved articles within 2-3 weeks</li>
-              <li>Notify you when your article goes live</li>
-            </ul>
-          </div>
-        </div>
+        {/each}
       </div>
     </section>
 
     <!-- Important Disclaimers -->
-    <section class="disclaimer-section">
-      <h2>Important Notes</h2>
-      <div class="disclaimer-box">
-        <ul>
-          <li><strong>Editorial Control:</strong> We reserve the right to edit submissions for clarity, length, grammar, and style. Major changes will be shared with you for approval.</li>
-          <li><strong>Rejection Rights:</strong> We may decline articles that don't meet our quality standards, are overly promotional, or lack relevance to our audience.</li>
-          <li><strong>No Payment:</strong> This is an unpaid guest contribution opportunity. The primary benefit is audience reach and professional visibility.</li>
-          <li><strong>Content Ownership:</strong> You retain copyright of your work, but grant Solar Vipani non-exclusive rights to publish and promote it.</li>
-          <li><strong>No Guaranteed Publication:</strong> Submission does not guarantee publication. We publish based on editorial merit and audience value.</li>
+    <section class="mb-16 md:mb-20">
+      <h2 class="text-2xl md:text-3xl font-bold mb-6 text-primary dark:text-primary">Important Notes</h2>
+      <div class="bg-card dark:bg-card rounded-lg p-6 md:p-8 shadow-md">
+        <ul class="space-y-4 divide-y divide-border dark:divide-border">
+          <li class="pt-4 first:pt-0 text-sm text-foreground-secondary dark:text-foreground-secondary">
+            <strong class="text-foreground dark:text-foreground">Editorial Control:</strong> We reserve the right to edit submissions for clarity, length, grammar, and style. Major changes will be shared with you for approval.
+          </li>
+          <li class="pt-4 text-sm text-foreground-secondary dark:text-foreground-secondary">
+            <strong class="text-foreground dark:text-foreground">Rejection Rights:</strong> We may decline articles that don't meet our quality standards, are overly promotional, or lack relevance to our audience.
+          </li>
+          <li class="pt-4 text-sm text-foreground-secondary dark:text-foreground-secondary">
+            <strong class="text-foreground dark:text-foreground">No Payment:</strong> This is an unpaid guest contribution opportunity. The primary benefit is audience reach and professional visibility.
+          </li>
+          <li class="pt-4 text-sm text-foreground-secondary dark:text-foreground-secondary">
+            <strong class="text-foreground dark:text-foreground">Content Ownership:</strong> You retain copyright of your work, but grant Solar Vipani non-exclusive rights to publish and promote it.
+          </li>
+          <li class="pt-4 text-sm text-foreground-secondary dark:text-foreground-secondary">
+            <strong class="text-foreground dark:text-foreground">No Guaranteed Publication:</strong> Submission does not guarantee publication. We publish based on editorial merit and audience value.
+          </li>
         </ul>
       </div>
     </section>
 
     <!-- CTA Section -->
-    <section class="cta-section">
-      <h2>Ready to Share Your Expertise?</h2>
-      <p>
+    <section class="text-center bg-gradient-to-r from-primary to-primary/90 dark:from-primary dark:to-primary/80 rounded-lg p-8 md:p-12 text-white shadow-lg mb-16">
+      <h2 class="text-2xl md:text-3xl font-bold mb-4 text-white">Ready to Share Your Expertise?</h2>
+      <p class="text-base md:text-lg mb-6 max-w-xl mx-auto">
         Help homeowners and businesses across India make informed solar decisions.
         Your insights can accelerate the clean energy transition.
       </p>
-      <p class="cta-email">
-        Email us at: <a href="mailto:{submissionEmail}">{submissionEmail}</a>
+      <p class="text-base md:text-lg">
+        Email us at: <a href="mailto:{submissionEmail}" class="underline hover:no-underline">{submissionEmail}</a>
       </p>
     </section>
   </div>
 </main>
-
-<style>
-  /* Root variables */
-  :root {
-    --primary-color: #0056b3;
-    --primary-hover: #004494;
-    --primary-light: #e6f0ff;
-    --success-color: #28a745;
-    --danger-color: #dc3545;
-    --text-dark: #2c3e50;
-    --text-medium: #546e7a;
-    --text-light: #ecf0f1;
-    --light-bg-color: #f8f9fa;
-    --dark-bg-color: #1a202c;
-    --light-card-bg: #ffffff;
-    --dark-card-bg: #2d3748;
-    --border-radius-md: 8px;
-    --border-radius-lg: 16px;
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
-  }
-
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-
-  main {
-    min-height: 100vh;
-    font-family: "Poppins", "Helvetica Neue", Arial, sans-serif;
-    transition: background-color 0.3s ease;
-  }
-
-  .light {
-    background-color: var(--light-bg-color);
-    color: var(--text-dark);
-  }
-
-  .dark {
-    background-color: var(--dark-bg-color);
-    color: var(--text-light);
-  }
-
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-  }
-
-  /* Hero Section */
-  .hero-section {
-    text-align: center;
-    padding: 3rem 0 4rem;
-  }
-
-  .hero-section h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-    color: var(--primary-color);
-  }
-
-  .dark .hero-section h1 {
-    color: var(--primary-light);
-  }
-
-  .hero-subtitle {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: var(--text-medium);
-  }
-
-  .dark .hero-subtitle {
-    color: var(--text-light);
-  }
-
-  .hero-description {
-    font-size: 1.1rem;
-    line-height: 1.6;
-    max-width: 800px;
-    margin: 0 auto;
-    color: var(--text-medium);
-  }
-
-  .dark .hero-description {
-    color: #cbd5e0;
-  }
-
-  /* Section Common Styles */
-  section {
-    margin-bottom: 4rem;
-  }
-
-  h2 {
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 1.5rem;
-    color: var(--primary-color);
-  }
-
-  .dark h2 {
-    color: var(--primary-light);
-  }
-
-  .section-intro {
-    font-size: 1.1rem;
-    line-height: 1.6;
-    margin-bottom: 2rem;
-    color: var(--text-medium);
-  }
-
-  .dark .section-intro {
-    color: #cbd5e0;
-  }
-
-  /* Benefits Grid */
-  .benefits-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2rem;
-    margin-top: 2rem;
-  }
-
-  .benefit-card {
-    background: var(--light-card-bg);
-    padding: 2rem;
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-md);
-    text-align: center;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
-
-  .dark .benefit-card {
-    background: var(--dark-card-bg);
-  }
-
-  .benefit-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-lg);
-  }
-
-  .benefit-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-  }
-
-  .benefit-card h3 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 0.75rem;
-    color: var(--text-dark);
-  }
-
-  .dark .benefit-card h3 {
-    color: var(--text-light);
-  }
-
-  .benefit-card p {
-    font-size: 1rem;
-    line-height: 1.5;
-    color: var(--text-medium);
-  }
-
-  .dark .benefit-card p {
-    color: #cbd5e0;
-  }
-
-  /* Audience Section */
-  .audience-content {
-    background: var(--light-card-bg);
-    padding: 2rem;
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-md);
-  }
-
-  .dark .audience-content {
-    background: var(--dark-card-bg);
-  }
-
-  .audience-content > p {
-    font-size: 1.1rem;
-    margin-bottom: 1.5rem;
-    color: var(--text-medium);
-  }
-
-  .dark .audience-content > p {
-    color: #cbd5e0;
-  }
-
-  .audience-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .audience-item {
-    display: flex;
-    gap: 1rem;
-    align-items: flex-start;
-  }
-
-  .check-icon {
-    font-size: 1.5rem;
-    color: var(--success-color);
-    font-weight: bold;
-    flex-shrink: 0;
-  }
-
-  .audience-item strong {
-    font-size: 1.1rem;
-    display: block;
-    margin-bottom: 0.25rem;
-    color: var(--text-dark);
-  }
-
-  .dark .audience-item strong {
-    color: var(--text-light);
-  }
-
-  .audience-item p {
-    font-size: 0.95rem;
-    color: var(--text-medium);
-  }
-
-  .dark .audience-item p {
-    color: #cbd5e0;
-  }
-
-  /* Topics Grid */
-  .topics-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-  }
-
-  .topic-card {
-    background: var(--light-card-bg);
-    padding: 1.5rem;
-    border-radius: var(--border-radius-md);
-    box-shadow: var(--shadow-sm);
-    border-left: 4px solid var(--primary-color);
-  }
-
-  .dark .topic-card {
-    background: var(--dark-card-bg);
-  }
-
-  .topic-card h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 0.75rem;
-    color: var(--primary-color);
-  }
-
-  .dark .topic-card h3 {
-    color: var(--primary-light);
-  }
-
-  .topic-examples {
-    font-size: 0.9rem;
-    line-height: 1.5;
-    color: var(--text-medium);
-  }
-
-  .dark .topic-examples {
-    color: #cbd5e0;
-  }
-
-  .topics-note {
-    background: var(--primary-light);
-    padding: 1.5rem;
-    border-radius: var(--border-radius-md);
-    border-left: 4px solid var(--primary-color);
-  }
-
-  .dark .topics-note {
-    background: #1e3a5f;
-  }
-
-  .topics-note p {
-    margin: 0;
-    color: var(--text-dark);
-  }
-
-  .dark .topics-note p {
-    color: var(--text-light);
-  }
-
-  /* Guidelines Grid */
-  .guidelines-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-  }
-
-  .guideline-card {
-    background: var(--light-card-bg);
-    padding: 1.5rem;
-    border-radius: var(--border-radius-md);
-    box-shadow: var(--shadow-sm);
-  }
-
-  .dark .guideline-card {
-    background: var(--dark-card-bg);
-  }
-
-  .guideline-card h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: var(--text-dark);
-  }
-
-  .dark .guideline-card h3 {
-    color: var(--text-light);
-  }
-
-  .guideline-card p {
-    font-size: 0.95rem;
-    line-height: 1.5;
-    color: var(--text-medium);
-  }
-
-  .dark .guideline-card p {
-    color: #cbd5e0;
-  }
-
-  /* Policy Section */
-  .policy-content {
-    display: grid;
-    gap: 2rem;
-  }
-
-  .policy-box {
-    background: var(--light-card-bg);
-    padding: 2rem;
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-md);
-  }
-
-  .dark .policy-box {
-    background: var(--dark-card-bg);
-  }
-
-  .policy-box.allowed {
-    border-left: 4px solid var(--success-color);
-  }
-
-  .policy-box.rejected {
-    border-left: 4px solid var(--danger-color);
-  }
-
-  .policy-box h3 {
-    font-size: 1.25rem;
-    margin-bottom: 1rem;
-    color: var(--text-dark);
-  }
-
-  .dark .policy-box h3 {
-    color: var(--text-light);
-  }
-
-  .policy-box ul {
-    list-style: none;
-    padding-left: 0;
-  }
-
-  .policy-box li {
-    padding: 0.5rem 0;
-    padding-left: 1.5rem;
-    position: relative;
-    color: var(--text-medium);
-  }
-
-  .dark .policy-box li {
-    color: #cbd5e0;
-  }
-
-  .policy-box li::before {
-    position: absolute;
-    left: 0;
-  }
-
-  .policy-box.allowed li::before {
-    content: "✓";
-    color: var(--success-color);
-  }
-
-  .policy-box.rejected li::before {
-    content: "✗";
-    color: var(--danger-color);
-  }
-
-  .policy-warning {
-    background: #fff3cd;
-    border: 1px solid #ffc107;
-    padding: 1.5rem;
-    border-radius: var(--border-radius-md);
-    margin-top: 2rem;
-  }
-
-  .dark .policy-warning {
-    background: #4a3f2a;
-    border-color: #ffc107;
-  }
-
-  .policy-warning strong {
-    color: #856404;
-  }
-
-  .dark .policy-warning strong {
-    color: #ffc107;
-  }
-
-  /* Submission Steps */
-  .submission-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-  }
-
-  .step {
-    display: flex;
-    gap: 1.5rem;
-    align-items: flex-start;
-  }
-
-  .step-number {
-    background: var(--primary-color);
-    color: white;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    font-weight: 700;
-    flex-shrink: 0;
-  }
-
-  .step-content {
-    flex: 1;
-    background: var(--light-card-bg);
-    padding: 1.5rem;
-    border-radius: var(--border-radius-md);
-    box-shadow: var(--shadow-sm);
-  }
-
-  .dark .step-content {
-    background: var(--dark-card-bg);
-  }
-
-  .step-content h3 {
-    font-size: 1.25rem;
-    margin-bottom: 0.75rem;
-    color: var(--text-dark);
-  }
-
-  .dark .step-content h3 {
-    color: var(--text-light);
-  }
-
-  .step-content p {
-    margin-bottom: 0.75rem;
-    color: var(--text-medium);
-  }
-
-  .dark .step-content p {
-    color: #cbd5e0;
-  }
-
-  .step-content ul {
-    margin-left: 1.5rem;
-  }
-
-  .step-content li {
-    margin-bottom: 0.5rem;
-    color: var(--text-medium);
-  }
-
-  .dark .step-content li {
-    color: #cbd5e0;
-  }
-
-  /* Disclaimer Section */
-  .disclaimer-box {
-    background: var(--light-card-bg);
-    padding: 2rem;
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-md);
-  }
-
-  .dark .disclaimer-box {
-    background: var(--dark-card-bg);
-  }
-
-  .disclaimer-box ul {
-    list-style: none;
-    padding-left: 0;
-  }
-
-  .disclaimer-box li {
-    padding: 1rem 0;
-    border-bottom: 1px solid #e0e0e0;
-    color: var(--text-medium);
-  }
-
-  .dark .disclaimer-box li {
-    border-bottom-color: #4a5568;
-    color: #cbd5e0;
-  }
-
-  .disclaimer-box li:last-child {
-    border-bottom: none;
-  }
-
-  .disclaimer-box strong {
-    color: var(--text-dark);
-  }
-
-  .dark .disclaimer-box strong {
-    color: var(--text-light);
-  }
-
-  /* CTA Section */
-  .cta-section {
-    text-align: center;
-    background: linear-gradient(135deg, var(--primary-color) 0%, #0a4b9e 100%);
-    color: white;
-    padding: 3rem 2rem;
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-lg);
-  }
-
-  .cta-section h2 {
-    color: white;
-    margin-bottom: 1rem;
-  }
-
-  .cta-section p {
-    font-size: 1.1rem;
-    margin-bottom: 2rem;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .cta-email {
-    margin-top: 1.5rem;
-    font-size: 1.1rem;
-  }
-
-  .cta-email a {
-    color: white;
-    text-decoration: underline;
-  }
-
-  /* Links */
-  a {
-    color: var(--primary-color);
-    transition: color 0.3s ease;
-  }
-
-  .dark a {
-    color: var(--primary-light);
-  }
-
-  a:hover {
-    color: var(--primary-hover);
-  }
-
-  /* Responsive */
-  @media (max-width: 768px) {
-    .container {
-      padding: 1rem;
-    }
-
-    .hero-section h1 {
-      font-size: 2rem;
-    }
-
-    .hero-subtitle {
-      font-size: 1.25rem;
-    }
-
-    h2 {
-      font-size: 1.5rem;
-    }
-
-    .benefits-grid,
-    .topics-grid,
-    .guidelines-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .step {
-      flex-direction: column;
-    }
-
-    .step-number {
-      width: 40px;
-      height: 40px;
-      font-size: 1.25rem;
-    }
-  }
-</style>

@@ -131,47 +131,47 @@
   </script>
 </svelte:head>
 
-<main class={darkMode ? "dark" : "light"}>
-  <div class="content">
+<main class="w-full bg-background text-foreground transition-colors duration-300 overflow-x-hidden dark:bg-background dark:text-foreground">
+  <div class="mx-auto max-w-[1140px] p-4">
     <!-- Hero Section -->
-    <section class="hero-section">
-      <div class="section-header">
-        <h1>Solar Panel Installer Directory</h1>
-        <div class="section-divider">
-          <span class="divider-accent"></span>
+    <section class="rounded-2xl bg-gradient-to-r from-primary to-blue-700 text-white p-12 md:p-16 mb-8 shadow-md">
+      <div class="text-center mb-8">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4 text-white leading-tight">Solar Panel Installer Directory</h1>
+        <div class="flex justify-center items-center my-4">
+          <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
-        <p class="section-subtitle">
+        <p class="text-lg md:text-xl text-white/90 max-w-2xl mx-auto">
           Find trusted local solar installers across India
         </p>
       </div>
     </section>
 
     <!-- Solar Panel Installers by State Section -->
-    <section class="states-section">
-      <div class="section-header">
-        <h2>Solar Panel Installers by State</h2>
-        <div class="section-divider">
-          <span class="divider-accent"></span>
+    <section class="rounded-2xl bg-card dark:bg-card p-12 md:p-16 mb-8 shadow-md">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary dark:text-blue-300">Solar Panel Installers by State</h2>
+        <div class="flex justify-center items-center my-4">
+          <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
-        <p class="section-subtitle">
+        <p class="text-base md:text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
           Browse solar panel installers by state. We have listings in {states.length}
           states across India.
         </p>
       </div>
 
-      <div class="states-grid">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {#each states as state}
-          <div class="state-card">
-            <a href={`/in/state/${formatStateSlug(state)}`}>
-              <h3>{state}</h3>
-              <p>Find verified solar installers in {state}</p>
-              <div class="view-more">
+          <div class="h-full transition-transform duration-300 hover:-translate-y-2">
+            <a href={`/in/state/${formatStateSlug(state)}`} class="flex flex-col h-full p-6 rounded-lg bg-background dark:bg-slate-800/50 border border-border dark:border-slate-600 hover:border-primary dark:hover:border-blue-300 hover:shadow-lg transition-all no-underline text-foreground dark:text-foreground">
+              <h3 class="text-xl font-semibold mb-2 text-center text-primary dark:text-blue-300">{state}</h3>
+              <p class="text-base text-foreground dark:text-foreground-secondary text-center flex-grow mb-4">Find verified solar installers in {state}</p>
+              <div class="flex items-center justify-center font-medium text-primary dark:text-blue-300 mt-auto gap-2 group">
                 <span>View Districts</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 20 20"
                   fill="currentColor"
-                  class="arrow-icon"
+                  class="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1"
                 >
                   <path
                     fill-rule="evenodd"
@@ -188,315 +188,3 @@
   </div>
 </main>
 
-<style>
-  /* Root variables using patterns from other pages */
-  :root {
-    /* Colors */
-    --primary-color: #0056b3;
-    --primary-hover: #004494;
-    --primary-light: #e6f0ff;
-    --secondary-color: #4caf50;
-    --accent-color: #ffc107;
-
-    /* Text colors */
-    --text-dark: #2c3e50;
-    --text-medium: #546e7a;
-    --text-light: #ecf0f1;
-
-    /* Theme colors */
-    --light-bg-color: #f8f9fa;
-    --dark-bg-color: #1a202c;
-    --light-card-bg: #ffffff;
-    --dark-card-bg: #2d3748;
-
-    /* UI elements */
-    --border-radius-sm: 4px;
-    --border-radius-md: 8px;
-    --border-radius-lg: 16px;
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
-
-    /* Typography */
-    --font-family: "Poppins", "Helvetica Neue", Arial, sans-serif;
-    --heading-line-height: 1.2;
-    --body-line-height: 1.6;
-
-    /* Layout */
-    --section-padding: 4rem 1.5rem;
-    --container-width: 1140px;
-    --grid-gap: 1.5rem;
-
-    /* Transitions */
-    --transition-fast: 0.2s ease;
-    --transition-medium: 0.3s ease;
-    --transition-slow: 0.5s ease;
-  }
-
-  /* Base styles */
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-
-  main {
-    width: 100%;
-    font-family: var(--font-family);
-    line-height: var(--body-line-height);
-    overflow-x: hidden;
-    transition:
-      background-color var(--transition-medium),
-      color var(--transition-medium);
-  }
-
-  .light {
-    background-color: var(--light-bg-color);
-    color: var(--text-dark);
-  }
-
-  .dark {
-    background-color: var(--dark-bg-color);
-    color: var(--text-light);
-  }
-
-  /* Content container */
-  .content {
-    max-width: var(--container-width);
-    margin: 0 auto;
-    padding: 1rem;
-  }
-
-  /* Section styling */
-  section {
-    padding: var(--section-padding);
-    margin-bottom: 2rem;
-    border-radius: var(--border-radius-lg);
-    background-color: var(--light-card-bg);
-    box-shadow: var(--shadow-md);
-    transition: background-color var(--transition-medium);
-  }
-
-  .dark section {
-    background-color: var(--dark-card-bg);
-  }
-
-  /* Section Headers */
-  .section-header {
-    text-align: center;
-    margin-bottom: 2.5rem;
-  }
-
-  .section-header h1 {
-    font-size: 2.8rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-    color: var(--primary-color);
-    line-height: var(--heading-line-height);
-  }
-
-  .section-header h2 {
-    font-size: 2.2rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: var(--primary-color);
-    line-height: var(--heading-line-height);
-  }
-
-  .dark .section-header h1,
-  .dark .section-header h2 {
-    color: var(--primary-light);
-  }
-
-  .section-divider {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 1rem auto;
-  }
-
-  .divider-accent {
-    width: 80px;
-    height: 4px;
-    background: var(--accent-color);
-    border-radius: 2px;
-  }
-
-  .section-subtitle {
-    font-size: 1.2rem;
-    color: var(--text-medium);
-    max-width: 700px;
-    margin: 0 auto;
-  }
-
-  .dark .section-subtitle {
-    color: #a0aec0;
-  }
-
-  /* Hero Section */
-  .hero-section {
-    background: linear-gradient(135deg, var(--primary-color), #0a4b9e);
-    color: white;
-    margin-bottom: 0;
-  }
-
-  .hero-section .section-header h1,
-  .hero-section .section-subtitle {
-    color: white;
-  }
-
-  /* States Section */
-  .states-section {
-    background-color: var(--light-card-bg);
-  }
-
-  .dark .states-section {
-    background-color: var(--dark-card-bg);
-  }
-
-  .states-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: var(--grid-gap);
-  }
-
-  .state-card {
-    height: 100%;
-    transition:
-      transform var(--transition-medium),
-      box-shadow var(--transition-medium);
-  }
-
-  .state-card:hover {
-    transform: translateY(-10px);
-  }
-
-  .state-card a {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    padding: 2rem 1.5rem;
-    border-radius: var(--border-radius-md);
-    background-color: var(--light-bg-color);
-    border: 1px solid #e2e8f0;
-    text-decoration: none;
-    color: inherit;
-    transition:
-      border-color var(--transition-medium),
-      box-shadow var(--transition-medium);
-  }
-
-  .state-card:hover a {
-    border-color: var(--primary-color);
-    box-shadow: var(--shadow-lg);
-  }
-
-  .dark .state-card a {
-    background-color: rgba(255, 255, 255, 0.05);
-    border-color: #4a5568;
-  }
-
-  .dark .state-card:hover a {
-    border-color: var(--primary-light);
-  }
-
-  .state-card h3 {
-    font-size: 1.3rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: var(--primary-color);
-    text-align: center;
-  }
-
-  .dark .state-card h3 {
-    color: var(--primary-light);
-  }
-
-  .state-card p {
-    font-size: 1rem;
-    color: var(--text-medium);
-    margin-bottom: 1.5rem;
-    text-align: center;
-    flex-grow: 1;
-  }
-
-  .dark .state-card p {
-    color: #a0aec0;
-  }
-
-  .view-more {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    font-weight: 500;
-    color: var(--primary-color);
-    margin-top: auto;
-  }
-
-  .dark .view-more {
-    color: var(--primary-light);
-  }
-
-  .arrow-icon {
-    width: 20px;
-    height: 20px;
-    margin-left: 0.5rem;
-    transition: transform var(--transition-fast);
-  }
-
-  .state-card:hover .arrow-icon {
-    transform: translateX(5px);
-  }
-
-  /* Typography */
-  p {
-    font-size: 1.1rem;
-    line-height: 1.6;
-    margin-bottom: 1.5rem;
-  }
-
-  /* Responsive Styling */
-  @media (max-width: 992px) {
-    .section-header h1 {
-      font-size: 2.5rem;
-    }
-
-    .section-header h2 {
-      font-size: 2rem;
-    }
-
-    .states-grid {
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    }
-  }
-
-  @media (max-width: 768px) {
-    .section-header h1 {
-      font-size: 2rem;
-    }
-
-    .section-header h2 {
-      font-size: 1.8rem;
-    }
-
-    .states-grid {
-      grid-template-columns: 1fr;
-      gap: 1rem;
-    }
-
-    .state-card a {
-      padding: 1.5rem 1rem;
-    }
-  }
-
-  @media (max-width: 576px) {
-    .section-header h1 {
-      font-size: 1.8rem;
-    }
-
-    .section-header h2 {
-      font-size: 1.5rem;
-    }
-  }
-</style>
