@@ -1,10 +1,10 @@
 <script>
   import { onMount } from "svelte";
-  import BusinessDirectory from "$lib/in/BusinessDirectory.svelte";
-  import RecentProjectsHome from "$lib/in/RecentProjectsHome.svelte";
-  import LeadFormBusiness from "$lib/in/LeadFormBusiness.svelte";
-  import SolarComparisonTable from "$lib/in/SolarComparisonTable.svelte";
-  import { isDarkMode } from "$lib/in/themeStore"; // Import from store if globally managed
+  import BusinessDirectory from "$lib/in-new-rewrites/BusinessDirectory.svelte";
+  import RecentProjectsHome from "$lib/in-new-rewrites/RecentProjectsHome.svelte";
+  import LeadFormBusiness from "$lib/in-new-rewrites/LeadFormBusiness.svelte";
+  import SolarComparisonTable from "$lib/in-new-rewrites/SolarComparisonTable.svelte";
+  import { isDarkMode } from "$lib/themeStore"; // Import from store if globally managed
 
   // Receive data from server
   let { data } = $props();
@@ -27,7 +27,7 @@
     const aboutObserver = new IntersectionObserver(
       async (entries) => {
         if (entries[0].isIntersecting) {
-          const module = await import("$lib/in/AboutSolarVipani.svelte");
+          const module = await import("$lib/in-new-rewrites/AboutSolarVipani.svelte");
           AboutSolarVipani = module.default;
           shouldLoadAbout = true;
           aboutObserver.disconnect();
@@ -61,7 +61,7 @@
             if (!chatbotTimer) {
               chatbotTimer = setTimeout(async () => {
                 if (!ChatbotPopup) {
-                  const module = await import("$lib/in/ChatbotPopup.svelte");
+                  const module = await import("$lib/in-new-rewrites/ChatbotPopup.svelte");
                   ChatbotPopup = module.default;
                 }
                 shouldLoadChatbot = true;

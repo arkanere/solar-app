@@ -1,5 +1,5 @@
 <script>
-	import { isDarkMode } from '$lib/in/themeStore'; // Import dark mode state from your store
+	import { isDarkMode } from '$lib/themeStore'; // Import dark mode state from your store
 	let darkMode = $derived($isDarkMode);
 </script>
 

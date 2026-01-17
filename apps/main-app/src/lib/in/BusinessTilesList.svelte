@@ -1,7 +1,7 @@
 <script>
 	import { page } from '$app/stores';
 	import { isDarkMode } from '$lib/themeStore';
-	import LeadFormModal from '$lib/in/LeadFormModal.svelte';
+	import LeadFormModal from '$lib/in-new-rewrites/LeadFormModal.svelte';
 
 	// State management
 	let visibleBusinesses = $state([]);

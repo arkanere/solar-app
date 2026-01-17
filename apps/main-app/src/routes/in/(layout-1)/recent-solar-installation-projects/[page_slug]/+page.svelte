@@ -1,6 +1,6 @@
 <script>
 	import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
-	import { isDarkMode } from '$lib/in/themeStore';
+	import { isDarkMode } from '$lib/themeStore';
 
 	/** @type {import('./$types').PageData} */
 	const { data } = $props();

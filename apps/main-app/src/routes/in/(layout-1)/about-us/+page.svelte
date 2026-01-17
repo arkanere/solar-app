@@ -1,9 +1,5 @@
 <script>
-  import QueryForm from "$lib/in/QueryForm.svelte";
-  import { isDarkMode } from "$lib/in/themeStore"; // Import from store if globally managed
-
-  // Use the global theme store
-  const darkMode = $derived($isDarkMode);
+  import QueryForm from "$lib/in-new-rewrites/QueryForm.svelte";
 
   const socialLinks = [
     {

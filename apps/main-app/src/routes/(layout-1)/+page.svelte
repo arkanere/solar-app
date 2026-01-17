@@ -1,5 +1,5 @@
 <script>
-  import { isDarkMode } from "$lib/in/themeStore";
+  import { isDarkMode } from "$lib/themeStore";
   import { goto } from "$app/navigation";
 
   let darkMode = $derived($isDarkMode);
