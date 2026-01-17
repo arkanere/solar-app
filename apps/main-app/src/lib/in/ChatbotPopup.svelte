@@ -1,6 +1,6 @@
 <script>
 	import { writable } from 'svelte/store';
-	import ChatBotBox from '$lib/in/ChatBotBox.svelte';
+	import ChatBotBox from '$lib/in-new-rewrites/ChatBotBox.svelte';
 
 	// Store to maintain message history
 	let { messages = writable([]), isVisible = true } = $props();

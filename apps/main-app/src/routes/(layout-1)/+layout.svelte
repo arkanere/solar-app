@@ -106,7 +106,7 @@
 
     try {
       storiesModalLoading = true;
-      const module = await import("$lib/in/StoriesModal.svelte");
+      const module = await import("$lib/in-new-rewrites/StoriesModal.svelte");
       StoriesModalComponent = module.default;
     } catch (error) {
       console.error("Failed to load StoriesModal:", error);

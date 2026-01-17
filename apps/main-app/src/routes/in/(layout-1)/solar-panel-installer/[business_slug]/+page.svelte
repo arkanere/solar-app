@@ -1,11 +1,11 @@
 <script>
   import { page } from "$app/stores";
-  import { isDarkMode } from "$lib/in/themeStore";
+  import { isDarkMode } from "$lib/themeStore";
   import { goto } from "$app/navigation";
-  import LeadFormBusiness from "$lib/in/LeadFormBusiness.svelte";
-  import SolarSizeCalculator from "$lib/in/SolarSizeCalculator.svelte";
+  import LeadFormBusiness from "$lib/in-new-rewrites/LeadFormBusiness.svelte";
+  import SolarSizeCalculator from "$lib/in-new-rewrites/SolarSizeCalculator.svelte";
   import { PUBLIC_CLOUDINARY_CLOUD_NAME } from "$env/static/public";
-  import AboutSolarVipani from "$lib/in/AboutSolarVipani.svelte";
+  import AboutSolarVipani from "$lib/in-new-rewrites/AboutSolarVipani.svelte";
 
   // Destructure page data using derived
   const { business, projects = [], errorMessage } = $derived($page.data);

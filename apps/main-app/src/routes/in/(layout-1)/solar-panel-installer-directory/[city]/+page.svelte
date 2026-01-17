@@ -1,13 +1,13 @@
 <script>
   import { onMount } from "svelte";
   import { page } from "$app/stores";
-  import { isDarkMode } from "$lib/in/themeStore";
+  import { isDarkMode } from "$lib/themeStore";
   import { city_jsonLD1 } from "$lib/in/city_jsonLD1";
-  import LeadFormModal from "$lib/in/LeadFormModal.svelte";
-  import LeadFormBusiness from "$lib/in/LeadFormBusiness.svelte";
-  import BusinessTilesList from "$lib/in/BusinessTilesList.svelte"; // Keep for critical content
-  import RecommendedSolarSystems from "$lib/in/RecommendedSolarSystems.svelte";
-  import SolarComparisonTable from "$lib/in/SolarComparisonTable.svelte";
+  import LeadFormModal from "$lib/in-new-rewrites/LeadFormModal.svelte";
+  import LeadFormBusiness from "$lib/in-new-rewrites/LeadFormBusiness.svelte";
+  import BusinessTilesList from "$lib/in-new-rewrites/BusinessTilesList.svelte"; // Keep for critical content
+  import RecommendedSolarSystems from "$lib/in-new-rewrites/RecommendedSolarSystems.svelte";
+  import SolarComparisonTable from "$lib/in-new-rewrites/SolarComparisonTable.svelte";
 
   // Lazy-loaded components (non-critical)
   let RecentProjectsCity = $state();
@@ -218,7 +218,7 @@
     const recentProjectsObserver = new IntersectionObserver(
       async (entries) => {
         if (entries[0].isIntersecting) {
-          const module = await import("$lib/in/RecentProjectsCity.svelte");
+          const module = await import("$lib/in-new-rewrites/RecentProjectsCity.svelte");
           RecentProjectsCity = module.default;
           shouldLoadRecentProjects = true;
           recentProjectsObserver.disconnect();
@@ -231,7 +231,7 @@
     const aboutObserver = new IntersectionObserver(
       async (entries) => {
         if (entries[0].isIntersecting) {
-          const module = await import("$lib/in/AboutSolarVipani.svelte");
+          const module = await import("$lib/in-new-rewrites/AboutSolarVipani.svelte");
           AboutSolarVipani = module.default;
           shouldLoadAbout = true;
           aboutObserver.disconnect();
@@ -275,7 +275,7 @@
               if (!chatbotTimer) {
                 chatbotTimer = setTimeout(async () => {
                   if (!ChatbotPopup) {
-                    const module = await import("$lib/in/ChatbotPopup.svelte");
+                    const module = await import("$lib/in-new-rewrites/ChatbotPopup.svelte");
                     ChatbotPopup = module.default;
                   }
                   shouldLoadChatbot = true;

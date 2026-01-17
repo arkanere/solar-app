@@ -1,7 +1,7 @@
 <script>
-  import { isDarkMode } from "$lib/in/themeStore"; // Import the dark mode store
+  import { isDarkMode } from "$lib/themeStore"; // Import the dark mode store
   import { goto } from "$app/navigation";
-  import BusinessDirectory from "$lib/in/BusinessDirectory.svelte";
+  import BusinessDirectory from "$lib/in-new-rewrites/BusinessDirectory.svelte";
 
   let state = "";
   let district = "";

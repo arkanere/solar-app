@@ -1,6 +1,6 @@
 <script>
   import { page } from "$app/stores";
-  import { isDarkMode } from "$lib/in/themeStore";
+  import { isDarkMode } from "$lib/themeStore";
   import { goto } from "$app/navigation";
   import { PUBLIC_CLOUDINARY_CLOUD_NAME } from "$env/static/public";
 
