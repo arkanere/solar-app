@@ -1,12 +1,4 @@
-<script lang="ts">
-	import { toast } from 'svelte-sonner';
-	import LeadTile from './LeadTile.svelte';
-	import ProposalFormModal from './ProposalFormModal.svelte';
-	import { Badge } from '$lib/components/ui/badge';
-	import { Button } from '$lib/components/ui/button';
-	import * as Dialog from '$lib/components/ui/dialog';
-	import * as Card from '$lib/components/ui/card';
-
+<script module lang="ts">
 	export type CustomerInquiryDashboardHomeProps = {
 		leads?: any[];
 		businessInfo?: Record<string, any>;
@@ -15,6 +7,16 @@
 		isClaiming?: boolean;
 		onClaimLead?: (lead: any) => void;
 	};
+</script>
+
+<script lang="ts">
+	import { toast } from 'svelte-sonner';
+	import LeadTile from './LeadTile.svelte';
+	import ProposalFormModal from './ProposalFormModal.svelte';
+	import { Badge } from '$lib/components/ui/badge';
+	import { Button } from '$lib/components/ui/button';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import * as Card from '$lib/components/ui/card';
 
 	let {
 		leads = $bindable([]),
@@ -26,14 +28,14 @@
 	}: CustomerInquiryDashboardHomeProps = $props();
 
 	let showDeleteConfirm = $state(false);
-	let leadToDelete = $state(null);
+	let leadToDelete = $state<any>(null);
 	let isDeleting = $state(false);
 	let showProposalModal = $state(false);
-	let selectedLeadForProposal = $state(null);
+	let selectedLeadForProposal = $state<{ customer_name: string; phone_number: string; email: string; address: string; lead_id: number } | null>(null);
 
-	function makeCall(phoneNumber, leadName, leadId) {
-		if (typeof window !== 'undefined' && window.umami) {
-			window.umami.track(`dashboard-home-call-now-button-${leadId}`);
+	function makeCall(phoneNumber: string, _leadName: string, leadId: number) {
+		if (typeof window !== 'undefined' && (window as any).umami) {
+			(window as any).umami.track(`dashboard-home-call-now-button-${leadId}`);
 		}
 		window.location.href = `tel:${phoneNumber}`;
 	}
@@ -63,11 +65,11 @@
 	};
 
 	let limitedLeads = $derived(leads.slice(0, 5));
-	let savingNotes = $state(new Set());
-	let savedNotes = $state(new Set());
-	let expandedLeads = $state(new Set());
+	let savingNotes = $state<Set<number>>(new Set());
+	let savedNotes = $state<Set<number>>(new Set());
+	let expandedLeads = $state<Set<number>>(new Set());
 
-	async function updateLead(lead, updateFields = {}) {
+	async function updateLead(lead: any, updateFields: Record<string, any> = {}) {
 		try {
 			const response = await fetch('/in/api/updateLeadByBusiness', {
 				method: 'POST',
@@ -102,7 +104,7 @@
 		}
 	}
 
-	async function saveBusinessNotes(lead) {
+	async function saveBusinessNotes(lead: any) {
 		const newSavingSet = new Set(savingNotes);
 		newSavingSet.add(lead.id);
 		savingNotes = newSavingSet;
@@ -124,15 +126,15 @@
 		}, 3000);
 	}
 
-	async function claimLead(leadId, businessId) {
+	async function claimLead(leadId: number, businessId: number) {
 		if (isClaiming) return;
 		onClaimLead({ leadId, businessId });
 	}
 
-	function getRelativeTime(dateString) {
+	function getRelativeTime(dateString: string) {
 		const now = new Date();
 		const date = new Date(dateString);
-		const diffInMs = now - date;
+		const diffInMs = now.getTime() - date.getTime();
 		const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 		const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
 		const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
@@ -140,27 +142,27 @@
 		if (diffInDays > 0) {
 			return {
 				text: `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`,
-				class: diffInDays <= 1 ? 'time-fresh' : diffInDays <= 3 ? 'time-recent' : 'time-old'
+				variant: diffInDays <= 1 ? 'time-fresh' : diffInDays <= 3 ? 'time-recent' : 'time-old'
 			};
 		} else if (diffInHours > 0) {
 			return {
 				text: `${diffInHours} hour${diffInHours === 1 ? '' : 's'} ago`,
-				class: 'time-fresh'
+				variant: 'time-fresh'
 			};
 		} else if (diffInMinutes > 0) {
 			return {
 				text: `${diffInMinutes} minute${diffInMinutes === 1 ? '' : 's'} ago`,
-				class: 'time-fresh'
+				variant: 'time-fresh'
 			};
 		} else {
 			return {
 				text: 'Just now',
-				class: 'time-fresh'
+				variant: 'time-fresh'
 			};
 		}
 	}
 
-	function getNextAction(stage, category, status) {
+	function getNextAction(stage: number, category: number | null, status: any) {
 		if (!status || stage === 3) {
 			return null;
 		}
@@ -194,7 +196,7 @@
 		return null;
 	}
 
-	async function deleteLead(lead) {
+	async function deleteLead(lead: any) {
 		if (isDeleting) return;
 		isDeleting = true;
 
@@ -230,7 +232,7 @@
 		}
 	}
 
-	function showDeleteConfirmation(lead) {
+	function showDeleteConfirmation(lead: any) {
 		leadToDelete = lead;
 		showDeleteConfirm = true;
 	}
@@ -247,7 +249,7 @@
 		}
 	}
 
-	function openProposalModal(lead) {
+	function openProposalModal(lead: any) {
 		selectedLeadForProposal = {
 			customer_name: lead.name,
 			phone_number: lead.phone,
@@ -267,7 +269,7 @@
 		closeProposalModal();
 	}
 
-	function toggleLeadDetails(leadId) {
+	function toggleLeadDetails(leadId: number) {
 		const newSet = new Set(expandedLeads);
 		if (newSet.has(leadId)) {
 			newSet.delete(leadId);
@@ -368,8 +370,8 @@
 		</div>
 
 		<div class="flex justify-center pt-6 border-t-2 border-border">
-			<Button asChild size="lg">
-				<a href="/in/{businessSlug}/crm">Open CRM</a>
+			<Button size="lg" onclick={() => (window.location.href = `/in/${businessSlug}/crm`)}>
+				Open CRM
 			</Button>
 		</div>
 	{/if}

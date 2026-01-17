@@ -2,9 +2,9 @@
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
-import { BusinessAuthService } from '$lib/us/auth/business/index.ts';
+import { BusinessAuthService } from '$lib/us/auth/business';
 import type { RequestHandler } from './$types';
-import type { LeadUpdatePayload, LeadApiResponse, LeadData } from '$lib/types/lead';
+import type { LeadUpdatePayload, LeadData } from '$lib/types/lead';
 
 /**
  * Updates lead fields (stage, status) for a business's lead in US region
@@ -20,7 +20,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		const sessionResult = authService.validateSession(cookies);
 
 		if (!sessionResult.success) {
-			return json<LeadApiResponse>(
+			return json(
 				{ success: false, error: 'Unauthorized - Please login' },
 				{ status: 401 }
 			);
@@ -29,7 +29,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		const { id, stage, status } = (await request.json()) as LeadUpdatePayload;
 
 		if (!id) {
-			return json<LeadApiResponse>(
+			return json(
 				{ success: false, error: 'Lead ID is required' },
 				{ status: 400 }
 			);
@@ -42,7 +42,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		const verifyResult = await pool.query<{ business_id: number | null }>(verifyQuery, [id]);
 
 		if (verifyResult.rows.length === 0) {
-			return json<LeadApiResponse>(
+			return json(
 				{ success: false, error: 'Lead not found' },
 				{ status: 404 }
 			);
@@ -51,7 +51,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		// Check if the lead belongs to this business
 		const leadBusinessId = verifyResult.rows[0].business_id;
 		if (leadBusinessId && leadBusinessId !== sessionResult.session.businessId) {
-			return json<LeadApiResponse>(
+			return json(
 				{ success: false, error: 'Forbidden - You can only update your own leads' },
 				{ status: 403 }
 			);
@@ -68,16 +68,16 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		const result = await pool.query<LeadData>(updateQuery, [stage, status, id]);
 
 		if (result.rows.length === 0) {
-			return json<LeadApiResponse>(
+			return json(
 				{ success: false, error: 'Lead not found' },
 				{ status: 404 }
 			);
 		}
 
-		return json<LeadApiResponse>({ success: true, lead: result.rows[0] });
+		return json({ success: true, lead: result.rows[0] });
 	} catch (error) {
 		console.error('❌ Error updating lead data:', error);
-		return json<LeadApiResponse>(
+		return json(
 			{ success: false, error: 'Failed to update lead' },
 			{ status: 500 }
 		);

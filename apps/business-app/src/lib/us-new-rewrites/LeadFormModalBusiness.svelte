@@ -10,7 +10,7 @@
 	export type LeadFormModalBusinessProps = {
 		businessName?: string;
 		businessSlug?: string;
-		onLeadAdded?: () => void;
+		onLeadAdded?: (lead: any) => void;
 	};
 
 	let { businessName = '', businessSlug = '', onLeadAdded }: LeadFormModalBusinessProps = $props();

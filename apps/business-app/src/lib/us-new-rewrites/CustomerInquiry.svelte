@@ -16,6 +16,7 @@
 		businessInfo?: Record<string, any>;
 		errorMessage?: string | null;
 		isClaiming?: boolean;
+		onclaimLead?: (event: CustomEvent<{ leadId: number; businessId: number }>) => void;
 	};
 
 	let {

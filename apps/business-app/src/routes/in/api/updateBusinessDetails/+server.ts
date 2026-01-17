@@ -1,9 +1,8 @@
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
-import { BusinessAuthService } from '$lib/in/auth/business/index.ts';
+import { BusinessAuthService } from '$lib/in/auth/business';
 import type { RequestHandler } from './$types';
-import type { ApiResponse } from '$lib/types/api';
 
 interface UpdateBusinessDetailsRequest {
 	businessname: string;
@@ -27,7 +26,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		const sessionResult = authService.validateSession(cookies);
 
 		if (!sessionResult.success) {
-			return json<ApiResponse<{ id: number }>>(
+			return json(
 				{ success: false, error: 'Unauthorized - Please login' },
 				{ status: 401 }
 			);
@@ -49,7 +48,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		// Verify the logged-in business owns the resource
 		if (sessionResult.session.businessSlug !== business_slug) {
-			return json<ApiResponse<{ id: number }>>(
+			return json(
 				{ success: false, error: 'Forbidden - You can only update your own business' },
 				{ status: 403 }
 			);
@@ -77,19 +76,19 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		]);
 
 		if (result.rows.length > 0) {
-			return json<ApiResponse<{ id: number }>>({
+			return json({
 				success: true,
 				id: result.rows[0].id as number
 			});
 		} else {
-			return json<ApiResponse<{ id: number }>>(
+			return json(
 				{ success: false, error: 'Business not found' },
 				{ status: 404 }
 			);
 		}
 	} catch (error) {
 		console.error('❌ Error updating business data:', error);
-		return json<ApiResponse<{ id: number }>>(
+		return json(
 			{ success: false, error: 'Failed to update business' },
 			{ status: 500 }
 		);

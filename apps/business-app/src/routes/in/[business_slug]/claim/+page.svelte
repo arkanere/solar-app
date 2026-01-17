@@ -58,7 +58,7 @@
 		return isValid;
 	}
 
-	async function handleSubmit(event) {
+	async function handleSubmit(event: any) {
 		event.preventDefault();
 
 		if (validateForm()) {

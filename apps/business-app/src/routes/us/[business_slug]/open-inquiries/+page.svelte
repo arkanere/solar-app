@@ -26,10 +26,10 @@
 	);
 
 	// Function to calculate days ago
-	function getDaysAgo(dateString) {
+	function getDaysAgo(dateString: string) {
 		const now = new Date();
 		const date = new Date(dateString);
-		const diffInMs = now - date;
+		const diffInMs = now.getTime() - date.getTime();
 		const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 
 		if (diffInDays === 0) {
@@ -42,7 +42,7 @@
 	}
 
 	// Function to show instructions for getting the inquiry
-	function showInquiryInstructions(lead) {
+	function showInquiryInstructions(lead: any) {
 		toast.info(`How to get inquiry in ${lead.county}`, {
 			description: `1. Add a branch in any city within ${lead.county} county\n2. Once added, the lead will appear in your dashboard home page\n3. Click "Add Branch" in the navigation menu to get started`,
 			duration: 10000

@@ -66,3 +66,7 @@ export const flyAndScale = (
 		easing: (t) => t * (2 - t) // easeOut
 	};
 };
+
+export type WithoutChild<T> = Omit<T, 'child' | 'children'>;
+export type WithoutChildren<T> = Omit<T, 'children'>;
+export type WithoutChildrenOrChild<T> = Omit<T, 'children' | 'child'>;

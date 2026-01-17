@@ -3,10 +3,9 @@ import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
 import { randomBytes } from 'crypto';
-import { BusinessAuthService } from '$lib/us/auth/business/index.ts';
+import { BusinessAuthService } from '$lib/us/auth/business';
 import type { RequestHandler } from './$types';
 import type { AddBranchRequest } from '$lib/types/business';
-import type { BranchApiResponse } from '$lib/types/api';
 
 // Function to generate branch slug using main business slug
 function generateBranchSlug(mainBusinessSlug: string): string {
@@ -24,7 +23,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		const sessionResult = authService.validateSession(cookies);
 
 		if (!sessionResult.success) {
-			return json<BranchApiResponse>(
+			return json(
 				{ success: false, error: 'Unauthorized - Please login' },
 				{ status: 401 }
 			);
@@ -40,7 +39,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		// Verify the logged-in business is creating branch for themselves
 		if (sessionResult.session.businessId !== businessId) {
-			return json<BranchApiResponse>(
+			return json(
 				{ success: false, error: 'Forbidden - You can only add branches to your own business' },
 				{ status: 403 }
 			);
@@ -53,7 +52,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		const businessResult = await pool.query(fetchBusinessQuery, [businessId]);
 
 		if (businessResult.rows.length === 0) {
-			return json<BranchApiResponse>(
+			return json(
 				{ success: false, error: 'Main business not found' },
 				{ status: 404 }
 			);
@@ -65,7 +64,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		// 2.1 First, check if the main business is in the same city
 		if (mainBusiness.city.toLowerCase() === city.toLowerCase()) {
-			return json<BranchApiResponse>(
+			return json(
 				{ success: false, error: 'Your business already has its main office in this city' },
 				{ status: 400 }
 			);
@@ -84,7 +83,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		const branchesResult = await pool.query(checkBranchesQuery, [businessId, city]);
 
 		if (branchesResult.rows.length > 0) {
-			return json<BranchApiResponse>(
+			return json(
 				{ success: false, error: 'Your business already has a branch office in this city' },
 				{ status: 400 }
 			);
@@ -145,7 +144,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			true // Set as active by default
 		]);
 
-		return json<BranchApiResponse>({
+		return json({
 			success: true,
 			message: 'Branch office added successfully',
 			branch: {
@@ -157,7 +156,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		});
 	} catch (error) {
 		console.error('❌ Error adding branch office:', error);
-		return json<BranchApiResponse>(
+		return json(
 			{ success: false, error: 'Failed to add branch office' },
 			{ status: 500 }
 		);

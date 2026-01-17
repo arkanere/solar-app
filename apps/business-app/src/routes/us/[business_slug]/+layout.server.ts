@@ -9,7 +9,16 @@ interface LayoutServerData {
 export const prerender = false;
 
 export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params, url }) => {
-	const business_session = cookies.get('business-session');
+	const business_session_raw = cookies.get('business-session');
+	let sessionData: SessionData | undefined;
+	if (business_session_raw) {
+		try {
+			sessionData = JSON.parse(business_session_raw);
+		} catch {
+			// invalid cookie
+			cookies.delete('business-session', { path: '/' });
+		}
+	}
 	const { business_slug } = params;
 
 	// Check if the URL matches claim, login, reset-password, or magic-link routes
@@ -20,7 +29,7 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 
 	// If no session and not on an allowed page, redirect to login
 	if (
-		!business_session &&
+		!sessionData &&
 		!isLoginPage &&
 		!isClaimPage &&
 		!isResetPasswordPage &&
@@ -31,10 +40,8 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 
 	// Ensure user is redirected to the correct business if they change the URL
 	// Skip this validation for magic link pages to avoid conflicts during login
-	if (business_session && !isMagicLinkPage) {
+	if (sessionData && !isMagicLinkPage) {
 		try {
-			const sessionData: SessionData = JSON.parse(business_session);
-
 			// If session's businessSlug does not match the URL, redirect to the correct business
 			if (sessionData.businessSlug !== business_slug) {
 				throw redirect(302, `/us/${sessionData.businessSlug}`);
@@ -52,5 +59,5 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 		}
 	}
 
-	return { business_session };
+	return { business_session: sessionData };
 };

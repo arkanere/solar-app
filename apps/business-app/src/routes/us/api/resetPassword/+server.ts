@@ -3,8 +3,8 @@ import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import bcrypt from 'bcrypt';
-import { TokenSecurity } from '$lib/us/auth/business/TokenSecurity.ts';
-import { passwordResetLimiter } from '$lib/us/auth/business/RateLimiter.ts';
+import { TokenSecurity } from '$lib/us/auth/business/TokenSecurity';
+import { passwordResetLimiter } from '$lib/us/auth/business/RateLimiter';
 
 interface ResetPasswordRequest {
 	business_slug: string;

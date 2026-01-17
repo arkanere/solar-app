@@ -1,7 +1,7 @@
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
-import { BusinessAuthService } from '$lib/in/auth/business/index.ts';
+import { BusinessAuthService } from '$lib/in/auth/business';
 import type { RequestHandler } from './$types';
 
 interface DeleteReferrerRequest {

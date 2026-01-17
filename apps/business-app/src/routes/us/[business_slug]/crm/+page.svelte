@@ -37,7 +37,7 @@
 	const toggleAddLead = () => (showAddLead = !showAddLead);
 	const toggleMobileMenu = () => (mobileMenuOpen = !mobileMenuOpen);
 
-	function handleLeadAdded(newLead) {
+	function handleLeadAdded(newLead: any) {
 		try {
 			console.log('New lead added:', newLead);
 			showAddLead = false;
@@ -160,7 +160,7 @@
 {/if}
 
 {#if showSupport}
-	<ShowSupport show={showSupport} onclose={() => (showSupport = false)} />
+	<ShowSupport show={showSupport} onClose={() => (showSupport = false)} />
 {/if}
 
 <style>

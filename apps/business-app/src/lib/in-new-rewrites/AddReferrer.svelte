@@ -1,3 +1,12 @@
+<script module lang="ts">
+	export type AddReferrerProps = {
+		show?: boolean;
+		businessId: number;
+		onClose?: () => void;
+		onReferrerAdded?: (referrer: any) => void;
+	};
+</script>
+
 <script lang="ts">
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Alert from '$lib/components/ui/alert';
@@ -6,13 +15,6 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Label } from '$lib/components/ui/label';
 	import { AlertCircle, CheckCircle2 } from '@lucide/svelte';
-
-	export type AddReferrerProps = {
-		show?: boolean;
-		businessId: number;
-		onClose?: () => void;
-		onReferrerAdded?: (referrer: any) => void;
-	};
 
 	let {
 		show = $bindable(false),
@@ -174,7 +176,7 @@
 					id="phone"
 					bind:value={phone}
 					placeholder="10-digit phone number"
-					maxlength="10"
+					maxlength={10}
 					required
 				/>
 			</div>

@@ -5,13 +5,11 @@
 	import * as Card from '$lib/components/ui/card';
 	import {
 		LEAD_CATEGORIES_WITH_ALL,
-		STAGES_MAP,
-		NON_EXCLUSIVE_CLAIMED_STAGES_MAP,
 		STATUS_OPTIONS,
 		getStagesMapForCategory
 	} from '$lib/constants/lead';
 
-	export type LeadStageFilterProps = {
+	type LeadStageFilterProps = {
 		selectedCategory?: string;
 		selectedStage?: string;
 		selectedStatus?: string;
@@ -78,7 +76,7 @@
 			<Label for="category-filter" class="font-semibold">Category:</Label>
 			<Select.Root type="single" bind:value={selectedCategory} onValueChange={handleCategoryChange}>
 				<Select.Trigger id="category-filter" class="w-full">
-					{LEAD_CATEGORIES_WITH_ALL[selectedCategory] || 'Select category'}
+					{(LEAD_CATEGORIES_WITH_ALL as any)[selectedCategory] || 'Select category'}
 				</Select.Trigger>
 				<Select.Content>
 					{#each Object.entries(LEAD_CATEGORIES_WITH_ALL) as [value, label]}
@@ -92,7 +90,7 @@
 			<Label for="stage-filter" class="font-semibold">Stage:</Label>
 			<Select.Root type="single" bind:value={selectedStage} onValueChange={handleStageChange}>
 				<Select.Trigger id="stage-filter" class="w-full">
-					{currentStages[selectedStage] || 'Select stage'}
+					{(currentStages as any)[selectedStage] || 'Select stage'}
 				</Select.Trigger>
 				<Select.Content>
 					{#each Object.entries(currentStages) as [value, label]}
@@ -106,7 +104,7 @@
 			<Label for="status-filter" class="font-semibold">Status:</Label>
 			<Select.Root type="single" bind:value={selectedStatus} onValueChange={handleStatusChange}>
 				<Select.Trigger id="status-filter" class="w-full">
-					{STATUS_OPTIONS[selectedStatus] || 'Select status'}
+					{(STATUS_OPTIONS as any)[selectedStatus] || 'Select status'}
 				</Select.Trigger>
 				<Select.Content>
 					{#each Object.entries(STATUS_OPTIONS) as [value, label]}

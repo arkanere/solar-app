@@ -1,7 +1,7 @@
 export const prerender = false;
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { BusinessAuthService } from '$lib/in/auth/business/index.ts';
+import { BusinessAuthService } from '$lib/in/auth/business';
 
 export const load: PageServerLoad = async ({ params, cookies }) => {
 	const { business_slug, token } = params;

@@ -17,7 +17,7 @@ const pool = createPool({ connectionString: POSTGRES_URL });
 
 export const DELETE: RequestHandler = async ({ request, cookies }) => {
 	try {
-		const { BusinessAuthService } = await import('$lib/in/auth/business/index.ts');
+		const { BusinessAuthService } = await import('$lib/in/auth/business');
 		const authService = new BusinessAuthService();
 		const sessionResult = authService.validateSession(cookies);
 
