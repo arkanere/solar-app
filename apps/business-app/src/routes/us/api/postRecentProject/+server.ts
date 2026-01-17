@@ -129,7 +129,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	console.log('Received project submission request');
 
 	try {
-		const { BusinessAuthService } = await import('$lib/us/auth/business/index.ts');
+		const { BusinessAuthService } = await import('$lib/us/auth/business');
 		const authService = new BusinessAuthService();
 		const sessionResult = authService.validateSession(cookies);
 

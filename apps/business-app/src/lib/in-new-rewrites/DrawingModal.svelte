@@ -1,6 +1,13 @@
+<script module lang="ts">
+	export type DrawingModalProps = {
+		show?: boolean;
+		proposalData?: Record<string, any>;
+		onClose?: () => void;
+	};
+</script>
+
 <script lang="ts">
 	import * as Dialog from '$lib/components/ui/dialog';
-	import * as Select from '$lib/components/ui/select';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
@@ -19,12 +26,6 @@
 		annotation: '#F59E0B',
 		support: '#6c757d',
 		footer: '#A3A3A3'
-	};
-
-	export type DrawingModalProps = {
-		show?: boolean;
-		proposalData?: Record<string, any>;
-		onClose?: () => void;
 	};
 
 	let { show = $bindable(false), proposalData = {}, onClose = () => {} }: DrawingModalProps =
@@ -308,29 +309,21 @@
 					<!-- Roof Type -->
 					<div class="space-y-2">
 						<Label for="roofType">Roof Type</Label>
-						<Select.Root type="single" bind:value={roofType}>
-							<Select.Trigger id="roofType" class="w-full">
+						<div class="border border-input rounded-md">
+							<button class="w-full px-3 py-2 text-sm text-left" onclick={() => (roofType = roofType === 'flat' ? 'sloped' : 'flat')}>
 								{roofType === 'flat' ? 'Flat Roof' : 'Sloped Roof'}
-							</Select.Trigger>
-							<Select.Content>
-								<Select.Item value="flat">Flat Roof</Select.Item>
-								<Select.Item value="sloped">Sloped Roof</Select.Item>
-							</Select.Content>
-						</Select.Root>
+							</button>
+						</div>
 					</div>
 
 					<!-- Panel Orientation -->
 					<div class="space-y-2">
 						<Label for="panelOrientation">Panel Orientation</Label>
-						<Select.Root type="single" bind:value={panelOrientation}>
-							<Select.Trigger id="panelOrientation" class="w-full">
+						<div class="border border-input rounded-md">
+							<button class="w-full px-3 py-2 text-sm text-left" onclick={() => (panelOrientation = panelOrientation === 'landscape' ? 'portrait' : 'landscape')}>
 								{panelOrientation === 'landscape' ? 'Landscape' : 'Portrait'}
-							</Select.Trigger>
-							<Select.Content>
-								<Select.Item value="landscape">Landscape</Select.Item>
-								<Select.Item value="portrait">Portrait</Select.Item>
-							</Select.Content>
-						</Select.Root>
+							</button>
+						</div>
 					</div>
 
 					<!-- Tilt Angle -->
@@ -369,7 +362,7 @@
 						>Edit Parameters</Button
 					>
 					<Button
-						variant="success"
+						variant="default"
 						class="max-sm:w-full"
 						onclick={downloadPNG}
 						disabled={isDownloading}

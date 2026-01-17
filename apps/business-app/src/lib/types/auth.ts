@@ -157,7 +157,7 @@ export interface PasswordValidationResult {
 // Helper type constructors for consistent response patterns
 export const SUCCESS_RESPONSE = <T extends Record<string, unknown>>(
 	data: T
-): AuthSuccessResponse<T> & T => ({
+): AuthSuccessResponse & T => ({
 	success: true,
 	...data
 });

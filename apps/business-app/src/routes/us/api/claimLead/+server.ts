@@ -1,8 +1,8 @@
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { BusinessAuthService } from '$lib/us/auth/business/index.ts';
-import type { ClaimRequestPayload, ClaimApiResponse } from '$lib/types/lead';
+import { BusinessAuthService } from '$lib/us/auth/business';
+import type { ClaimRequestPayload } from '$lib/types/lead';
 
 interface ClaimCountRow {
 	claim_count: number;
@@ -40,7 +40,7 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 		const sessionResult = authService.validateSession(cookies);
 
 		if (!sessionResult.success) {
-			return json<ClaimApiResponse>(
+			return json(
 				{ success: false, error: 'Unauthorized - Please login' },
 				{ status: 401 }
 			);
@@ -49,7 +49,7 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 		const { lead_id, business_id } = (await request.json()) as ClaimRequestPayload;
 
 		if (!lead_id || !business_id) {
-			return json<ClaimApiResponse>(
+			return json(
 				{ success: false, error: 'Lead ID and Business ID are required' },
 				{ status: 400 }
 			);
@@ -57,7 +57,7 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 
 		// Verify the logged-in business is claiming for themselves
 		if (sessionResult.session.businessId !== business_id) {
-			return json<ClaimApiResponse>(
+			return json(
 				{ success: false, error: 'Forbidden - You can only claim leads for your own business' },
 				{ status: 403 }
 			);
@@ -85,7 +85,7 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 			// **Check if lead can still be claimed (Max = 5 claims)**
 			if (claim_id >= 5) {
 				await client.query('ROLLBACK');
-				return json<ClaimApiResponse>(
+				return json(
 					{ success: false, error: 'Maximum claim limit reached for this lead' },
 					{ status: 400 }
 				);
@@ -99,7 +99,7 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 
 			if (duplicateCheck.rows.length > 0) {
 				await client.query('ROLLBACK');
-				return json<ClaimApiResponse>(
+				return json(
 					{ success: false, error: 'You have already claimed this lead' },
 					{ status: 400 }
 				);
@@ -176,7 +176,7 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 			await client.query('ROLLBACK');
 			console.error('❌ Error claiming lead:', error);
 			const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-			return json<ClaimApiResponse>({ success: false, error: errorMessage }, { status: 500 });
+			return json({ success: false, error: errorMessage }, { status: 500 });
 		} finally {
 			client.release();
 		}
@@ -203,10 +203,10 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 			}
 		}
 
-		return json<ClaimApiResponse>({ success: true });
+		return json({ success: true });
 	} catch (error) {
 		console.error('❌ Database connection error:', error);
-		return json<ClaimApiResponse>(
+		return json(
 			{ success: false, error: 'Failed to claim lead' },
 			{ status: 500 }
 		);

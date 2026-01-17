@@ -4,12 +4,6 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import type { ProposalPayload, Proposal } from '$lib/types/lead';
 
-interface SaveProposalResponse {
-	success: boolean;
-	error?: string;
-	proposal?: Proposal;
-}
-
 export const POST: RequestHandler = async ({ request }) => {
 	const pool = createPool({ connectionString: POSTGRES_URL });
 
@@ -30,7 +24,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		} = proposalData;
 
 		if (!customer_name || !system_capacity_kw) {
-			return json<SaveProposalResponse>(
+			return json(
 				{ success: false, error: 'Customer name and system capacity are required' },
 				{ status: 400 }
 			);
@@ -73,7 +67,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			result = await pool.query<Proposal>(updateQuery, values);
 
 			if (result.rows.length === 0) {
-				return json<SaveProposalResponse>(
+				return json(
 					{ success: false, error: 'Proposal not found' },
 					{ status: 404 }
 				);
@@ -115,10 +109,10 @@ export const POST: RequestHandler = async ({ request }) => {
 			result = await pool.query<Proposal>(insertQuery, values);
 		}
 
-		return json<SaveProposalResponse>({ success: true, proposal: result.rows[0] });
+		return json({ success: true, proposal: result.rows[0] });
 	} catch (error) {
 		console.error('❌ Error saving proposal:', error);
-		return json<SaveProposalResponse>(
+		return json(
 			{ success: false, error: 'Failed to save proposal' },
 			{ status: 500 }
 		);

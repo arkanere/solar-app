@@ -1,3 +1,11 @@
+<script module lang="ts">
+	export type LeadFormModalBusinessProps = {
+		businessName?: string;
+		businessSlug?: string;
+		onLeadAdded?: () => void;
+	};
+</script>
+
 <script lang="ts">
 	import { Input } from '$lib/components/ui/input';
 	import { Textarea } from '$lib/components/ui/textarea';
@@ -5,12 +13,6 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Alert from '$lib/components/ui/alert';
 	import { CheckCircle, AlertCircle } from '@lucide/svelte';
-
-	export type LeadFormModalBusinessProps = {
-		businessName?: string;
-		businessSlug?: string;
-		onLeadAdded?: () => void;
-	};
 
 	let { businessName = '', businessSlug = '', onLeadAdded = () => {} }: LeadFormModalBusinessProps = $props();
 
@@ -121,7 +123,7 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 					submitSuccess = true;
 					submitMessage = 'Lead added successfully!';
 					resetForm();
-					onLeadAdded({ name, phone, pinCode, comment, email });
+					onLeadAdded();
 				} else {
 					submitMessage = 'Failed to add lead. Please try again.';
 					console.error('Submission failed:', result.error);

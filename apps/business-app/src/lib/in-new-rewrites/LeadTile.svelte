@@ -18,21 +18,23 @@
 	} from '@lucide/svelte';
 	import { getStagesMapForCategory, getCategoryLabel } from '$lib/constants/lead';
 
-	export type LeadTileProps = {
+	type LeadTileProps = {
 		lead: any;
 		businessInfo: Record<string, any>;
 		isClaiming?: boolean;
 		savingNotes?: Set<number>;
 		savedNotes?: Set<number>;
 		expandedLeads?: Set<number>;
-		makeCall?: (phone: string) => void;
+		STAGES?: Record<number, string>;
+		NON_EXCLUSIVE_CLAIMED_STAGES?: Record<number, string>;
+		makeCall?: (phone: string, name: string, id: number) => void;
 		saveBusinessNotes?: (lead: any) => void;
 		updateLead?: (lead: any, updates: any) => void;
-		getRelativeTime?: (date: string) => any;
-		getNextAction?: (stage: number, category: number, status: string) => string;
+		getRelativeTime?: (date: string) => { text: string; variant: string };
+		getNextAction?: (stage: number, category: number, status: string) => string | null;
 		openProposalModal?: (lead: any) => void;
 		showDeleteConfirmation?: (lead: any) => void;
-		claimLead?: (lead: any) => void;
+		claimLead?: (leadId: number, businessId: number) => void;
 		onToggleDetails?: (params: { leadId: number }) => void;
 	};
 
@@ -46,8 +48,8 @@
 		makeCall = () => {},
 		saveBusinessNotes = () => {},
 		updateLead = () => {},
-		getRelativeTime = () => {},
-		getNextAction = () => {},
+		getRelativeTime = () => ({ text: '', variant: '' }),
+		getNextAction = () => null,
 		openProposalModal = () => {},
 		showDeleteConfirmation = () => {},
 		claimLead = () => {},
@@ -197,7 +199,7 @@
 								<Select.Root
 									type="single"
 									bind:value={lead.stage}
-									onSelectedChange={(v) => {
+									onValueChange={(v) => {
 										if (v?.value !== undefined) {
 											lead.stage = v.value;
 											updateLead(lead, { stage: lead.stage });
@@ -223,7 +225,7 @@
 								<Select.Root
 									type="single"
 									bind:value={lead.status}
-									onSelectedChange={(v) => {
+									onValueChange={(v) => {
 										if (v?.value !== undefined) {
 											lead.status = v.value;
 											updateLead(lead, { status: lead.status });

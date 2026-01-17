@@ -104,10 +104,7 @@ async function deleteFromCloudinary(publicId: string): Promise<void> {
 }
 
 export const PUT: RequestHandler = async ({ request, cookies }) => {
-	console.log('Received project update request');
-
-	try {
-		const { BusinessAuthService } = await import('$lib/in/auth/business/index.ts');
+const { BusinessAuthService } = await import('$lib/in/auth/business');
 		const authService = new BusinessAuthService();
 		const sessionResult = authService.validateSession(cookies);
 
@@ -330,23 +327,13 @@ export const PUT: RequestHandler = async ({ request, cookies }) => {
 		} finally {
 			client.release();
 		}
-	} catch (error) {
-		console.error('❌ Error processing request:', error);
-		return json(
-			{
-				success: false,
-				error: 'Internal server error: ' + (error instanceof Error ? error.message : String(error))
-			},
-			{ status: 500 }
-		);
-	}
 };
 
 export const DELETE: RequestHandler = async ({ request, cookies }) => {
 	console.log('Received project delete request');
 
 	try {
-		const { BusinessAuthService } = await import('$lib/in/auth/business/index.ts');
+		const { BusinessAuthService } = await import('$lib/in/auth/business');
 		const authService = new BusinessAuthService();
 		const sessionResult = authService.validateSession(cookies);
 
@@ -424,14 +411,11 @@ export const DELETE: RequestHandler = async ({ request, cookies }) => {
 		} finally {
 			client.release();
 		}
-	} catch (error) {
-		console.error('❌ Error processing request:', error);
-		return json(
-			{
-				success: false,
-				error: 'Internal server error: ' + (error instanceof Error ? error.message : String(error))
-			},
-			{ status: 500 }
-		);
-	}
+} catch (error) {
+	console.error('Error in DELETE handler:', error);
+	return json(
+		{ success: false, error: 'An unexpected error occurred' },
+		{ status: 500 }
+	);
+}
 };

@@ -7,7 +7,7 @@
 		getDisplayStagesForCategory
 	} from '$lib/constants/lead';
 
-	export type LeadProgressBarProps = {
+	type LeadProgressBarProps = {
 		currentStage?: LeadStage;
 		leadCategory?: LeadCategory;
 		isActive?: boolean;

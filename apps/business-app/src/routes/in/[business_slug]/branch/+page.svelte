@@ -19,24 +19,24 @@
 	let showAddBranch = $state(false);
 
 	// Function to open edit profile modal
-	const openEditProfile = (branch) => {
+	const openEditProfile = (branch: any) => {
 		selectedBranch = branch;
 		showEditProfile = true;
 	};
 
 	// Handle branch updated event
-	function handleBranchUpdated(event) {
+	function handleBranchUpdated(event: any) {
 		window.location.reload();
 	}
 
 	// Handle branch added event
-	function handleBranchAdded(event) {
+	function handleBranchAdded(event: any) {
 		showAddBranch = false;
 		window.location.reload();
 	}
 
 	// Format address for display
-	function formatAddress(branch) {
+	function formatAddress(branch: any) {
 		const parts = [];
 		if (branch.address) parts.push(branch.address);
 		if (branch.city) parts.push(branch.city);
@@ -46,7 +46,7 @@
 	}
 
 	// Determine if a branch is the main branch
-	function isMainBranch(branch) {
+	function isMainBranch(branch: any) {
 		return mainBusiness && branch.id === mainBusiness.id;
 	}
 </script>

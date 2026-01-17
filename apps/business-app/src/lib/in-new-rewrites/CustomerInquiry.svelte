@@ -1,8 +1,34 @@
+<script module lang="ts">
+	export type Lead = {
+		id: number;
+		name: string;
+		phone: string;
+		email: string;
+		address?: string;
+		stage: number;
+		status: boolean;
+		category?: number | null;
+		business_notes?: string;
+		received_at: string;
+		pin_code?: string;
+		type?: string;
+		comment?: string;
+	};
+
+	export type CustomerInquiryProps = {
+		leads?: Lead[];
+		businessInfo?: Record<string, any>;
+		errorMessage?: string | null;
+		isClaiming?: boolean;
+		onClaimLead?: (lead: any) => void;
+	};
+</script>
+
 <script lang="ts">
 	import { toast } from 'svelte-sonner';
 	import { Clock, Phone } from '@lucide/svelte';
 	import LeadStageFilter from './LeadStageFilter.svelte';
-	import ProposalFormModal from '../in/ProposalFormModal.svelte';
+	import ProposalFormModal from './ProposalFormModal.svelte';
 	import LeadTile from './LeadTile.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
@@ -10,14 +36,6 @@
 	import * as Alert from '$lib/components/ui/alert';
 	import { Badge } from '$lib/components/ui/badge';
 	import { cn } from '$lib/utils';
-
-	export type CustomerInquiryProps = {
-		leads?: any[];
-		businessInfo?: Record<string, any>;
-		errorMessage?: string | null;
-		isClaiming?: boolean;
-		onClaimLead?: (lead: any) => void;
-	};
 
 	let {
 		leads = $bindable([]),
@@ -29,26 +47,32 @@
 
 	// Proposal modal state
 	let showProposalModal = $state(false);
-	let selectedLeadForProposal = $state(null);
+	let selectedLeadForProposal: {
+		customer_name: string;
+		phone_number: string;
+		email: string;
+		address: string;
+		lead_id: number;
+	} | null = $state(null);
 
 	// Filter state
 	let selectedCategory = $state('all');
 	let selectedStage = $state('all');
 	let selectedStatus = $state('all');
-	let filteredLeads = $state([]);
+	let filteredLeads: Lead[] = $state([]);
 
 	// Function to make call
-	function makeCall(phoneNumber, leadName, leadId) {
+	function makeCall(phoneNumber: string, _leadName: string, leadId: number) {
 		// Track Umami event after hydration
-		if (typeof window !== 'undefined' && window.umami) {
-			window.umami.track(`crm-call-now-button-${leadId}`);
+		if (typeof window !== 'undefined' && (window as any).umami) {
+			(window as any).umami.track(`crm-call-now-button-${leadId}`);
 		}
 		window.location.href = `tel:${phoneNumber}`;
 	}
 
 	// Delete confirmation state
 	let showDeleteConfirm = $state(false);
-	let leadToDelete = $state(null);
+	let leadToDelete: Lead | null = $state(null);
 	let isDeleting = $state(false);
 
 	// Lead stage mapping
@@ -78,7 +102,7 @@
 		comment: 'I want to install 3kW at my home. Please call me!'
 	};
 
-	async function updateLead(lead, updateFields = {}) {
+	async function updateLead(lead: any, updateFields: Record<string, any> = {}) {
 		try {
 			const response = await fetch('/in/api/updateLeadByBusiness', {
 				method: 'POST',
@@ -115,14 +139,14 @@
 	}
 
 	// State for tracking save status per lead
-	let savingNotes = $state(new Set());
-	let savedNotes = $state(new Set());
+	let savingNotes = $state<Set<number>>(new Set());
+	let savedNotes = $state<Set<number>>(new Set());
 
 	// State for tracking expanded/collapsed leads (compact view)
-	let expandedLeads = $state(new Set());
+	let expandedLeads = $state<Set<number>>(new Set());
 
 	// Function to save business notes
-	async function saveBusinessNotes(lead) {
+	async function saveBusinessNotes(lead: any) {
 		const newSavingSet = new Set(savingNotes);
 		newSavingSet.add(lead.id);
 		savingNotes = newSavingSet; // Create new Set instance for Svelte 5 reactivity
@@ -146,16 +170,16 @@
 		}, 3000);
 	}
 
-	async function claimLead(leadId, businessId) {
+	async function claimLead(leadId: number, businessId: number) {
 		if (isClaiming) return;
 
 		onClaimLead({ leadId, businessId });
 	}
 
-	function getRelativeTime(dateString) {
+	function getRelativeTime(dateString: string) {
 		const now = new Date();
 		const date = new Date(dateString);
-		const diffInMs = now - date;
+		const diffInMs = now.getTime() - date.getTime();
 		const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 		const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
 		const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
@@ -163,29 +187,29 @@
 		if (diffInDays > 0) {
 			return {
 				text: `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`,
-				class: diffInDays <= 1 ? 'time-fresh' : diffInDays <= 3 ? 'time-recent' : 'time-old'
+				variant: diffInDays <= 1 ? 'time-fresh' : diffInDays <= 3 ? 'time-recent' : 'time-old'
 			};
 		} else if (diffInHours > 0) {
 			return {
 				text: `${diffInHours} hour${diffInHours === 1 ? '' : 's'} ago`,
-				class: 'time-fresh'
+				variant: 'time-fresh'
 			};
 		} else if (diffInMinutes > 0) {
 			return {
 				text: `${diffInMinutes} minute${diffInMinutes === 1 ? '' : 's'} ago`,
-				class: 'time-fresh'
+				variant: 'time-fresh'
 			};
 		} else {
 			return {
 				text: 'Just now',
-				class: 'time-fresh'
+				variant: 'time-fresh'
 			};
 		}
 	}
 
-	function getNextAction(stage, category, status) {
+	function getNextAction(stage: number, category: number, status: string) {
 		// No next action if lead is inactive or won
-		if (!status || stage === 3) {
+		if (status === 'false' || stage === 3) {
 			return null;
 		}
 
@@ -277,7 +301,7 @@
 	});
 
 	// Delete lead function
-	async function deleteLead(lead) {
+	async function deleteLead(lead: Lead) {
 		if (isDeleting) return;
 		isDeleting = true;
 
@@ -315,7 +339,7 @@
 	}
 
 	// Show delete confirmation
-	function showDeleteConfirmation(lead) {
+	function showDeleteConfirmation(lead: Lead) {
 		leadToDelete = lead;
 		showDeleteConfirm = true;
 	}
@@ -335,7 +359,7 @@
 	}
 
 	// Open proposal modal
-	function openProposalModal(lead) {
+	function openProposalModal(lead: Lead) {
 		selectedLeadForProposal = {
 			customer_name: lead.name,
 			phone_number: lead.phone,
@@ -359,7 +383,7 @@
 	}
 
 	// Toggle lead details expand/collapse
-	function toggleLeadDetails(leadId) {
+	function toggleLeadDetails(leadId: number) {
 		const newSet = new Set(expandedLeads);
 		if (newSet.has(leadId)) {
 			newSet.delete(leadId);
@@ -441,9 +465,9 @@
 								<span
 									class={cn(
 										'font-medium',
-										getRelativeTime(dummyLead.received_at).class === 'time-fresh' && 'text-success',
-										getRelativeTime(dummyLead.received_at).class === 'time-recent' && 'text-warning',
-										getRelativeTime(dummyLead.received_at).class === 'time-old' &&
+										getRelativeTime(dummyLead.received_at).variant === 'time-fresh' && 'text-success',
+										getRelativeTime(dummyLead.received_at).variant === 'time-recent' && 'text-warning',
+										getRelativeTime(dummyLead.received_at).variant === 'time-old' &&
 											'text-muted-foreground'
 									)}>{getRelativeTime(dummyLead.received_at).text}</span
 								>
