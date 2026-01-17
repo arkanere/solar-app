@@ -4,12 +4,11 @@
   import RecentProjectsHome from "$lib/in-new-rewrites/RecentProjectsHome.svelte";
   import LeadFormBusiness from "$lib/in-new-rewrites/LeadFormBusiness.svelte";
   import SolarComparisonTable from "$lib/in-new-rewrites/SolarComparisonTable.svelte";
-  import { isDarkMode } from "$lib/themeStore"; // Import from store if globally managed
 
   // Receive data from server
   let { data } = $props();
 
-  // Initialize dark mode state
+  // Initialize component state
   let AboutSolarVipani = $state(null);
   let ChatbotPopup = $state(null);
   let shouldLoadAbout = $state(false);
@@ -17,9 +16,6 @@
 
   // Extract recent projects from data
   const recentProjects = $derived(data?.recentProjects || []);
-
-  // Use the global theme store
-  const darkMode = $derived($isDarkMode);
 
   // Lazy load non-critical components after initial page load
   onMount(async () => {
@@ -240,9 +236,9 @@
   </script>
 </svelte:head>
 
-<main class={darkMode ? "dark" : "light"}>
+<main class="w-full bg-background text-foreground transition-colors duration-300 overflow-x-hidden dark:bg-background dark:text-foreground">
   <!-- Hero Banner Section -->
-  <div class="hero-banner">
+  <div class="relative w-full h-[600px] flex items-center justify-center text-center overflow-hidden md:h-[600px] sm:h-[500px]">
     <picture>
       <source
         media="(max-width: 768px)"
@@ -255,7 +251,7 @@
         type="image/avif"
       />
       <img
-        class="hero-image"
+        class="absolute top-0 left-0 w-full h-full object-cover object-center z-0"
         src="/header/header_desktop.avif"
         alt="Solar Panel Installation in India"
         width="1920"
@@ -264,66 +260,60 @@
         decoding="async"
       />
     </picture>
-    <div class="overlay"></div>
-    <div class="hero-content">
-      <h1>
+    <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-black/40 to-blue-900/70 z-10"></div>
+    <div class="relative z-20 max-w-3xl px-6">
+      <h1 class="text-4xl md:text-5xl font-bold mb-6 text-white leading-tight">
         Get 2-3 Free Quotes from Verified Installers in Your Area
       </h1>
-      <h2>
+      <h2 class="text-2xl md:text-3xl font-medium mb-6 text-accent drop-shadow-lg leading-snug">
         Compare prices and save 50-80% on electricity bills with PM Surya Ghar Yojana subsidies.
       </h2>
-      <p class="hero-social-proof">
+      <p class="text-base md:text-lg mb-6 text-white/95 opacity-95 italic drop-shadow-md leading-relaxed">
         2,000+ homeowners have begun their switch to solar through our platform.
       </p>
-      <div class="hero-features">
-        <span>✓ 450+ Pre-Vetted Installers</span>
-        <span>✓ Zero Cost Consultation</span>
-        <span>✓ Full Subsidy Guidance</span>
+      <div class="flex justify-center gap-4 md:gap-8 flex-wrap mt-8">
+        <span class="bg-white/15 px-4 py-2 rounded-full text-white text-sm md:text-base font-medium backdrop-blur border border-white/20">✓ 450+ Pre-Vetted Installers</span>
+        <span class="bg-white/15 px-4 py-2 rounded-full text-white text-sm md:text-base font-medium backdrop-blur border border-white/20">✓ Zero Cost Consultation</span>
+        <span class="bg-white/15 px-4 py-2 rounded-full text-white text-sm md:text-base font-medium backdrop-blur border border-white/20">✓ Full Subsidy Guidance</span>
       </div>
     </div>
   </div>
 
-  <div class="content">
+  <div class="mx-auto max-w-[1140px] p-4 md:p-4">
     <!-- Benefits Section -->
-    <section class="benefits-section">
-      <div class="section-header">
-        <h2>Why Now is the Right Time to Install Solar in India</h2>
-        <div class="section-divider">
-          <span class="divider-accent"></span>
+    <section class="rounded-lg bg-blue-50 dark:bg-blue-950/15 p-12 md:p-24 mb-8 shadow-md">
+      <div class="text-center mb-10">
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary dark:text-blue-300">Why Now is the Right Time to Install Solar in India</h2>
+        <div class="flex justify-center items-center my-4">
+          <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
-        <p class="section-subtitle">
+        <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
           Take advantage of record subsidies, rising electricity costs, and our network of verified installers
         </p>
       </div>
 
-      <div class="benefits-grid">
-        <div class="benefit-card highlight-card">
-          <div class="benefit-icon">
-            <span class="icon-emoji">💰</span>
-          </div>
-          <div class="benefit-stat">Up to ₹78,000</div>
-          <h3>Government Subsidy</h3>
-          <p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="p-8 rounded-lg bg-card dark:bg-slate-800/50 border-t-4 border-accent shadow-md flex flex-col items-center text-center hover:shadow-lg hover:-translate-y-2 transition-all">
+          <div class="text-5xl mb-4">💰</div>
+          <div class="text-3xl font-bold text-primary dark:text-blue-300 mb-2">Up to ₹78,000</div>
+          <h3 class="text-xl font-semibold text-primary dark:text-blue-300 mb-3">Government Subsidy</h3>
+          <p class="text-foreground dark:text-foreground-secondary">
             Get up to ₹78,000 in direct subsidy under PM Surya Ghar Yojana - available for limited time
           </p>
         </div>
 
-        <div class="benefit-card highlight-card">
-          <div class="benefit-icon">
-            <span class="icon-emoji">🏦</span>
-          </div>
-          <div class="benefit-stat">0% Interest</div>
-          <h3>Easy Financing Options</h3>
-          <p>Zero-cost EMI and attractive loan schemes from leading banks and NBFCs make solar affordable</p>
+        <div class="p-8 rounded-lg bg-card dark:bg-slate-800/50 border-t-4 border-accent shadow-md flex flex-col items-center text-center hover:shadow-lg hover:-translate-y-2 transition-all">
+          <div class="text-5xl mb-4">🏦</div>
+          <div class="text-3xl font-bold text-primary dark:text-blue-300 mb-2">0% Interest</div>
+          <h3 class="text-xl font-semibold text-primary dark:text-blue-300 mb-3">Easy Financing Options</h3>
+          <p class="text-foreground dark:text-foreground-secondary">Zero-cost EMI and attractive loan schemes from leading banks and NBFCs make solar affordable</p>
         </div>
 
-        <div class="benefit-card highlight-card">
-          <div class="benefit-icon">
-            <span class="icon-emoji">⚡</span>
-          </div>
-          <div class="benefit-stat">50-80%</div>
-          <h3>Electricity Bill Savings</h3>
-          <p>
+        <div class="p-8 rounded-lg bg-card dark:bg-slate-800/50 border-t-4 border-accent shadow-md flex flex-col items-center text-center hover:shadow-lg hover:-translate-y-2 transition-all">
+          <div class="text-5xl mb-4">⚡</div>
+          <div class="text-3xl font-bold text-primary dark:text-blue-300 mb-2">50-80%</div>
+          <h3 class="text-xl font-semibold text-primary dark:text-blue-300 mb-3">Electricity Bill Savings</h3>
+          <p class="text-foreground dark:text-foreground-secondary">
             Save up to 80% on rising electricity costs with net metering and reduce dependency on the grid
           </p>
         </div>
@@ -334,65 +324,61 @@
     <SolarComparisonTable />
 
     <!-- How It Works Section -->
-    <section class="how-it-works-section">
-      <div class="section-header">
-        <h2>How Solar Vipani Works</h2>
-        <div class="section-divider">
-          <span class="divider-accent"></span>
+    <section class="rounded-lg bg-card dark:bg-card p-12 md:p-24 mb-8 shadow-md">
+      <div class="text-center mb-10">
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary dark:text-blue-300">How Solar Vipani Works</h2>
+        <div class="flex justify-center items-center my-4">
+          <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
       </div>
-      <div class="steps-grid">
-        <div class="step-card">
-          <div class="step-number">1</div>
-          <h3>Fill the Inquiry Form</h3>
-          <p>
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+        <div class="p-8 rounded-lg bg-background dark:bg-slate-800/50 border border-border hover:shadow-lg hover:-translate-y-1 transition-all text-center">
+          <div class="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4">1</div>
+          <h3 class="text-lg font-semibold text-primary dark:text-blue-300 mb-3">Fill the Inquiry Form</h3>
+          <p class="text-foreground dark:text-foreground-secondary">
             Share your basic details and energy requirements to help us understand your needs.
           </p>
         </div>
-        <div class="step-card">
-          <div class="step-number">2</div>
-          <h3>Connect with Experts</h3>
-          <p>
-            Reach out to vetted, local solar providers who understand your
-            unique needs.
+        <div class="p-8 rounded-lg bg-background dark:bg-slate-800/50 border border-border hover:shadow-lg hover:-translate-y-1 transition-all text-center">
+          <div class="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4">2</div>
+          <h3 class="text-lg font-semibold text-primary dark:text-blue-300 mb-3">Connect with Experts</h3>
+          <p class="text-foreground dark:text-foreground-secondary">
+            Reach out to vetted, local solar providers who understand your unique needs.
           </p>
         </div>
-        <div class="step-card">
-          <div class="step-number">3</div>
-          <h3>Receive Competitive Quotes</h3>
-          <p>
-            Review quotes from 2-3 solar companies, comparing costs,
-            equipment, and terms to find the perfect match.
+        <div class="p-8 rounded-lg bg-background dark:bg-slate-800/50 border border-border hover:shadow-lg hover:-translate-y-1 transition-all text-center">
+          <div class="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4">3</div>
+          <h3 class="text-lg font-semibold text-primary dark:text-blue-300 mb-3">Receive Competitive Quotes</h3>
+          <p class="text-foreground dark:text-foreground-secondary">
+            Review quotes from 2-3 solar companies, comparing costs, equipment, and terms to find the perfect match.
           </p>
         </div>
-        <div class="step-card">
-          <div class="step-number">4</div>
-          <h3>Make an Informed Choice</h3>
-          <p>
-            Select a provider with complete confidence, backed by transparent,
-            verified information.
+        <div class="p-8 rounded-lg bg-background dark:bg-slate-800/50 border border-border hover:shadow-lg hover:-translate-y-1 transition-all text-center">
+          <div class="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4">4</div>
+          <h3 class="text-lg font-semibold text-primary dark:text-blue-300 mb-3">Make an Informed Choice</h3>
+          <p class="text-foreground dark:text-foreground-secondary">
+            Select a provider with complete confidence, backed by transparent, verified information.
           </p>
         </div>
-        <div class="step-card">
-          <div class="step-number">5</div>
-          <h3>Share Your Success</h3>
-          <p>
-            Join our community of solar adopters by sharing your experience,
-            helping others on their journey to clean energy.
+        <div class="p-8 rounded-lg bg-background dark:bg-slate-800/50 border border-border hover:shadow-lg hover:-translate-y-1 transition-all text-center">
+          <div class="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4">5</div>
+          <h3 class="text-lg font-semibold text-primary dark:text-blue-300 mb-3">Share Your Success</h3>
+          <p class="text-foreground dark:text-foreground-secondary">
+            Join our community of solar adopters by sharing your experience, helping others on their journey to clean energy.
           </p>
         </div>
       </div>
     </section>
 
     <!-- Lead Form Section -->
-    <section id="lead-form-sv" class="lead-form-section">
-      <div class="form-card">
-        <div class="section-header">
-          <h2>Book A Free Consultation</h2>
-          <div class="section-divider">
-            <span class="divider-accent"></span>
+    <section id="lead-form-sv" class="mb-8">
+      <div class="bg-gradient-to-r from-primary to-blue-700 text-white p-12 md:p-12 rounded-lg shadow-lg">
+        <div class="text-center mb-10">
+          <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-white">Book A Free Consultation</h2>
+          <div class="flex justify-center items-center my-4">
+            <span class="w-20 h-1 bg-accent rounded"></span>
           </div>
-          <p class="section-subtitle">
+          <p class="text-lg text-white/90">
             Get personalized solar recommendations from our experts
           </p>
         </div>
@@ -400,13 +386,13 @@
       </div>
     </section>
     <!-- Business Directory Section -->
-    <section class="directory-section">
-      <div class="section-header">
-        <h2>Solar Panel Installer Directory</h2>
-        <div class="section-divider">
-          <span class="divider-accent"></span>
+    <section class="rounded-lg bg-slate-50 dark:bg-blue-950/5 p-12 md:p-24 mb-8 shadow-md">
+      <div class="text-center mb-10">
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary dark:text-blue-300">Solar Panel Installer Directory</h2>
+        <div class="flex justify-center items-center my-4">
+          <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
-        <p class="section-subtitle">
+        <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
           Find verified solar installers in your area
         </p>
       </div>
@@ -414,76 +400,80 @@
     </section>
 
     <!-- Blogs Section -->
-    <section class="blogs-section">
-      <div class="section-header">
-        <h2>Latest Solar Insights</h2>
-        <div class="section-divider">
-          <span class="divider-accent"></span>
+    <section class="rounded-lg bg-card dark:bg-card p-12 md:p-24 mb-8 shadow-md">
+      <div class="text-center mb-10">
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary dark:text-blue-300">Latest Solar Insights</h2>
+        <div class="flex justify-center items-center my-4">
+          <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
-        <p class="section-subtitle">
+        <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
           Stay informed with expert advice and industry updates
         </p>
       </div>
 
-      <div class="blogs-grid">
-        <div class="blog-card">
-          <div class="blog-content">
-            <h3>
-              <a
-                href="/in/blogs/hiring-verified-solar-installer-in-india-is-essential"
-                >Why Hiring a Verified Solar Installer in India Is Essential</a
-              >
-            </h3>
-            <p>
-              Learn about the importance of professional workmanship, safety
-              compliance, maximizing system efficiency, and ensuring long-term
-              support.
-            </p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="p-8 rounded-lg bg-background dark:bg-slate-800/50 border border-border hover:shadow-lg hover:-translate-y-1 transition-all flex flex-col">
+          <h3 class="text-lg font-semibold mb-3">
             <a
               href="/in/blogs/hiring-verified-solar-installer-in-india-is-essential"
-              class="read-more">Read More →</a
+              class="text-primary dark:text-blue-300 hover:text-primary-hover dark:hover:text-blue-400 transition-colors"
+            >Why Hiring a Verified Solar Installer in India Is Essential</a
             >
-          </div>
+          </h3>
+          <p class="text-foreground dark:text-foreground-secondary mb-4 flex-grow">
+            Learn about the importance of professional workmanship, safety
+            compliance, maximizing system efficiency, and ensuring long-term
+            support.
+          </p>
+          <a
+            href="/in/blogs/hiring-verified-solar-installer-in-india-is-essential"
+            class="text-primary dark:text-blue-300 font-semibold text-sm hover:text-primary-hover dark:hover:text-blue-400 transition-colors"
+          >Read More →</a
+          >
         </div>
 
-        <div class="blog-card">
-          <div class="blog-content">
-            <h3>
-              <a href="/in/blogs/pm-surya-ghar-yojana"
-                >PM Surya Ghar Yojana: Your Guide to Check Eligibility</a
-              >
-            </h3>
-            <p>
-              Understand the eligibility criteria and steps to benefit from the
-              government scheme providing subsidies for solar rooftop
-              installations.
-            </p>
-            <a href="/in/blogs/pm-surya-ghar-yojana" class="read-more"
-              >Read More →</a
+        <div class="p-8 rounded-lg bg-background dark:bg-slate-800/50 border border-border hover:shadow-lg hover:-translate-y-1 transition-all flex flex-col">
+          <h3 class="text-lg font-semibold mb-3">
+            <a
+              href="/in/blogs/pm-surya-ghar-yojana"
+              class="text-primary dark:text-blue-300 hover:text-primary-hover dark:hover:text-blue-400 transition-colors"
+            >PM Surya Ghar Yojana: Your Guide to Check Eligibility</a
             >
-          </div>
+          </h3>
+          <p class="text-foreground dark:text-foreground-secondary mb-4 flex-grow">
+            Understand the eligibility criteria and steps to benefit from the
+            government scheme providing subsidies for solar rooftop
+            installations.
+          </p>
+          <a
+            href="/in/blogs/pm-surya-ghar-yojana"
+            class="text-primary dark:text-blue-300 font-semibold text-sm hover:text-primary-hover dark:hover:text-blue-400 transition-colors"
+          >Read More →</a
+          >
         </div>
 
-        <div class="blog-card">
-          <div class="blog-content">
-            <h3>
-              <a href="/in/blogs/cost-of-solar-on-grid-system"
-                >What is the Approximate Cost of a Solar On Grid System?</a
-              >
-            </h3>
-            <p>
-              Learn about the costs associated with installing a solar on-grid
-              system, including equipment, labor, and other components.
-            </p>
-            <a href="/in/blogs/cost-of-solar-on-grid-system" class="read-more"
-              >Read More →</a
+        <div class="p-8 rounded-lg bg-background dark:bg-slate-800/50 border border-border hover:shadow-lg hover:-translate-y-1 transition-all flex flex-col">
+          <h3 class="text-lg font-semibold mb-3">
+            <a
+              href="/in/blogs/cost-of-solar-on-grid-system"
+              class="text-primary dark:text-blue-300 hover:text-primary-hover dark:hover:text-blue-400 transition-colors"
+            >What is the Approximate Cost of a Solar On Grid System?</a
             >
-          </div>
+          </h3>
+          <p class="text-foreground dark:text-foreground-secondary mb-4 flex-grow">
+            Learn about the costs associated with installing a solar on-grid
+            system, including equipment, labor, and other components.
+          </p>
+          <a
+            href="/in/blogs/cost-of-solar-on-grid-system"
+            class="text-primary dark:text-blue-300 font-semibold text-sm hover:text-primary-hover dark:hover:text-blue-400 transition-colors"
+          >Read More →</a
+          >
         </div>
       </div>
 
-      <div class="blogs-cta">
-        <a href="/in/blogs" class="view-all-blogs">View All Blogs</a>
+      <div class="text-center">
+        <a href="/in/blogs" class="inline-block px-8 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary-hover hover:-translate-y-1 transition-all">View All Blogs</a>
       </div>
     </section>
 
@@ -504,744 +494,3 @@
   {@render ChatbotPopup()}
 {/if}
 
-<style>
-  /* Root variables using custom properties from business page */
-  :root {
-    /* Colors */
-    --primary-color: #0056b3;
-    --primary-hover: #004494;
-    --primary-light: #e6f0ff;
-    --secondary-color: #4caf50;
-    --accent-color: #ffc107;
-
-    /* Text colors */
-    --text-dark: #2c3e50;
-    --text-medium: #546e7a;
-    --text-light: #ecf0f1;
-
-    /* Theme colors */
-    --light-bg-color: #f8f9fa;
-    --dark-bg-color: #1a202c;
-    --light-card-bg: #ffffff;
-    --dark-card-bg: #2d3748;
-
-    /* UI elements */
-    --border-radius-sm: 4px;
-    --border-radius-md: 8px;
-    --border-radius-lg: 16px;
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
-
-    /* Typography */
-    --font-family: "Poppins", "Helvetica Neue", Arial, sans-serif;
-    --heading-line-height: 1.2;
-    --body-line-height: 1.6;
-
-    /* Layout */
-    --section-padding: 4rem 1.5rem;
-    --container-width: 1140px;
-    --grid-gap: 1.5rem;
-
-    /* Transitions */
-    --transition-fast: 0.2s ease;
-    --transition-medium: 0.3s ease;
-    --transition-slow: 0.5s ease;
-  }
-
-  /* Base styles */
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-
-  main {
-    width: 100%;
-    font-family: var(--font-family);
-    line-height: var(--body-line-height);
-    overflow-x: hidden;
-    transition:
-      background-color var(--transition-medium),
-      color var(--transition-medium);
-  }
-
-  .light {
-    background-color: var(--light-bg-color);
-    color: var(--text-dark);
-  }
-
-  .dark {
-    background-color: var(--dark-bg-color);
-    color: var(--text-light);
-  }
-
-  /* Content container */
-  .content {
-    max-width: var(--container-width);
-    margin: 0 auto;
-    padding: 1rem;
-  }
-
-  /* Mobile content optimization */
-  @media (max-width: 768px) {
-    .content {
-      padding: 0.5rem;
-    }
-  }
-
-  @media (max-width: 576px) {
-    .content {
-      padding: 0.25rem;
-    }
-
-    /* Optimize section paddings for mobile */
-    section {
-      padding: 2rem 0.5rem !important;
-    }
-
-    .form-card {
-      margin: 0 0.25rem;
-      padding: 2rem 1rem !important;
-    }
-  }
-
-  /* Hero Banner */
-  .hero-banner {
-    position: relative;
-    height: 600px;
-    width: 100%;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    overflow: hidden;
-  }
-
-  .hero-image {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    z-index: 0;
-  }
-
-  .overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 56, 146, 0.7));
-    z-index: 1;
-  }
-
-  .hero-content {
-    position: relative;
-    z-index: 2;
-    max-width: 800px;
-    padding: 0 1.5rem;
-  }
-
-  .hero-content h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 1.5rem;
-    letter-spacing: 0.5px;
-    line-height: 1.3;
-  }
-
-  .hero-content h2 {
-    font-size: 1.5rem;
-    font-weight: 500;
-    margin-bottom: 1.5rem;
-    color: var(--accent-color);
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    line-height: 1.5;
-  }
-
-  .hero-content p {
-    font-size: 1.1rem;
-    margin-bottom: 1rem;
-    opacity: 0.9;
-    max-width: 700px;
-    margin-left: auto;
-    margin-right: auto;
-    line-height: 1.6;
-  }
-
-  .hero-social-proof {
-    font-size: 1rem !important;
-    margin-bottom: 1.5rem !important;
-    opacity: 0.95 !important;
-    font-weight: 500;
-    color: var(--accent-color) !important;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    font-style: italic;
-    line-height: 1.5 !important;
-  }
-
-  .hero-features {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-    flex-wrap: wrap;
-    margin-top: 2rem;
-  }
-
-  .hero-features span {
-    background: rgba(255, 255, 255, 0.15);
-    padding: 0.5rem 1rem;
-    border-radius: 25px;
-    font-size: 0.95rem;
-    font-weight: 500;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-  }
-
-  /* Section styling */
-  section {
-    padding: var(--section-padding);
-    margin-bottom: 2rem;
-    border-radius: var(--border-radius-lg);
-    background-color: var(--light-card-bg);
-    box-shadow: var(--shadow-md);
-    transition: background-color var(--transition-medium);
-  }
-
-  .dark section {
-    background-color: var(--dark-card-bg);
-  }
-
-  .section-header {
-    text-align: center;
-    margin-bottom: 2.5rem;
-  }
-
-  .section-header h2 {
-    font-size: 2.2rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: var(--primary-color);
-  }
-
-  .dark .section-header h2 {
-    color: var(--primary-light);
-  }
-
-  .section-divider {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 1rem auto;
-  }
-
-  .divider-accent {
-    width: 80px;
-    height: 4px;
-    background: var(--accent-color);
-    border-radius: 2px;
-  }
-
-  .section-subtitle {
-    font-size: 1.2rem;
-    color: var(--text-medium);
-    max-width: 700px;
-    margin: 0 auto;
-  }
-
-  .dark .section-subtitle {
-    color: #a0aec0;
-  }
-
-  /* Benefits Section */
-  .benefits-section {
-    background-color: var(--primary-light);
-  }
-
-  .dark .benefits-section {
-    background-color: rgba(0, 86, 179, 0.15);
-  }
-
-  .benefits-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: var(--grid-gap);
-    margin-bottom: 2rem;
-  }
-
-  .benefit-card {
-    padding: 2rem 1.5rem;
-    border-radius: var(--border-radius-md);
-    background-color: var(--light-card-bg);
-    box-shadow: var(--shadow-md);
-    transition:
-      transform var(--transition-medium),
-      box-shadow var(--transition-medium);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .benefit-card:hover {
-    transform: translateY(-10px);
-    box-shadow: var(--shadow-lg);
-  }
-
-  .dark .benefit-card {
-    background-color: rgba(255, 255, 255, 0.05);
-  }
-
-  .highlight-card {
-    border-top: 4px solid var(--accent-color);
-  }
-
-  .benefit-icon {
-    width: 80px;
-    height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 1rem;
-    border-radius: 50%;
-    background-color: var(--primary-light);
-    position: relative;
-  }
-
-  .dark .benefit-icon {
-    background-color: rgba(0, 86, 179, 0.2);
-  }
-
-  .icon-emoji {
-    font-size: 2.5rem;
-    display: block;
-  }
-
-  .benefit-stat {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    margin-bottom: 0.5rem;
-    line-height: 1;
-  }
-
-  .dark .benefit-stat {
-    color: #90caf9;
-  }
-
-  .benefit-card h3 {
-    font-size: 1.4rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: var(--primary-color);
-  }
-
-  .dark .benefit-card h3 {
-    color: #90caf9;
-  }
-
-  .benefit-card p {
-    font-size: 1rem;
-    color: var(--text-medium);
-    text-align: center;
-  }
-
-  .dark .benefit-card p {
-    color: #cbd5e0;
-  }
-
-  /* How It Works Section */
-  .how-it-works-section {
-    background-color: var(--light-card-bg);
-  }
-
-  .dark .how-it-works-section {
-    background-color: var(--dark-card-bg);
-  }
-
-  .steps-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: var(--grid-gap);
-  }
-
-  .step-card {
-    padding: 2rem 1.5rem;
-    border-radius: var(--border-radius-md);
-    background-color: var(--light-bg-color);
-    border: 1px solid #e2e8f0;
-    transition:
-      transform var(--transition-medium),
-      box-shadow var(--transition-medium);
-    text-align: center;
-    position: relative;
-  }
-
-  .step-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-lg);
-  }
-
-  .dark .step-card {
-    background-color: rgba(255, 255, 255, 0.03);
-    border-color: #4a5568;
-  }
-
-  .step-number {
-    width: 50px;
-    height: 50px;
-    background: var(--primary-color);
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin: 0 auto 1rem;
-  }
-
-  .step-card h3 {
-    font-size: 1.3rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: var(--primary-color);
-  }
-
-  .dark .step-card h3 {
-    color: var(--primary-light);
-  }
-
-  .step-card p {
-    color: var(--text-medium);
-    line-height: 1.6;
-    margin: 0;
-  }
-
-  .dark .step-card p {
-    color: #a0aec0;
-  }
-
-  /* Directory Section */
-  .directory-section {
-    background-color: #f8f9fa;
-  }
-
-  .dark .directory-section {
-    background-color: rgba(0, 86, 179, 0.05);
-  }
-
-  /* Lead Form Section */
-  .lead-form-section {
-    padding: 0;
-    box-shadow: none;
-    background-color: transparent;
-  }
-
-  .form-card {
-    background: linear-gradient(135deg, var(--primary-color), #0a4b9e);
-    color: white;
-    padding: 3rem 2rem;
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-lg);
-    max-width: 800px;
-    margin: 0 auto;
-  }
-
-  .form-card .section-header h2 {
-    color: white;
-  }
-
-  .form-card .section-subtitle {
-    color: rgba(255, 255, 255, 0.9);
-  }
-
-  .form-card .divider-accent {
-    background: var(--accent-color);
-  }
-
-  /* Blogs Section */
-  .blogs-section {
-    background-color: var(--light-card-bg);
-  }
-
-  .dark .blogs-section {
-    background-color: var(--dark-card-bg);
-  }
-
-  .blogs-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: var(--grid-gap);
-    margin-bottom: 2rem;
-  }
-
-  .blog-card {
-    padding: 2rem;
-    border-radius: var(--border-radius-md);
-    background-color: var(--light-bg-color);
-    border: 1px solid #e2e8f0;
-    transition:
-      transform var(--transition-medium),
-      box-shadow var(--transition-medium),
-      border-color var(--transition-medium);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .blog-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--primary-color);
-  }
-
-  .dark .blog-card {
-    background-color: rgba(255, 255, 255, 0.03);
-    border-color: #4a5568;
-  }
-
-  .dark .blog-card:hover {
-    border-color: var(--primary-light);
-  }
-
-  .blog-content {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
-
-  .blog-card h3 {
-    font-size: 1.3rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    line-height: 1.3;
-  }
-
-  .blog-card h3 a {
-    color: var(--primary-color);
-    text-decoration: none;
-    transition: color var(--transition-fast);
-  }
-
-  .blog-card h3 a:hover {
-    color: var(--primary-hover);
-  }
-
-  .dark .blog-card h3 a {
-    color: var(--primary-light);
-  }
-
-  .dark .blog-card h3 a:hover {
-    color: #90caf9;
-  }
-
-  .blog-card p {
-    color: var(--text-medium);
-    font-size: 1rem;
-    line-height: 1.6;
-    margin-bottom: 1.5rem;
-    flex-grow: 1;
-  }
-
-  .dark .blog-card p {
-    color: #a0aec0;
-  }
-
-  .read-more {
-    color: var(--primary-color);
-    font-weight: 600;
-    text-decoration: none;
-    font-size: 0.95rem;
-    transition: color var(--transition-fast);
-    margin-top: auto;
-  }
-
-  .read-more:hover {
-    color: var(--primary-hover);
-  }
-
-  .dark .read-more {
-    color: var(--primary-light);
-  }
-
-  .dark .read-more:hover {
-    color: #90caf9;
-  }
-
-  .blogs-cta {
-    text-align: center;
-    margin-top: 2rem;
-  }
-
-  .view-all-blogs {
-    display: inline-block;
-    padding: 1rem 2rem;
-    background-color: var(--primary-color);
-    color: white;
-    text-decoration: none;
-    border-radius: var(--border-radius-md);
-    font-weight: 600;
-    transition:
-      background-color var(--transition-medium),
-      transform var(--transition-fast);
-  }
-
-  .view-all-blogs:hover {
-    background-color: var(--primary-hover);
-    transform: translateY(-2px);
-  }
-
-  /* Responsive Styling */
-  @media (max-width: 992px) {
-    .hero-content h1 {
-      font-size: 2.5rem;
-    }
-
-    .hero-content h2 {
-      font-size: 1.5rem;
-    }
-
-    .section-header h2 {
-      font-size: 2rem;
-    }
-
-    .benefits-grid {
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    }
-
-    .blogs-grid {
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    }
-  }
-
-  @media (max-width: 768px) {
-    .hero-banner {
-      height: 500px;
-      background-position: center center;
-    }
-
-    .hero-content {
-      padding: 0 0.5rem;
-    }
-
-    .hero-content h1 {
-      font-size: 1.8rem;
-      line-height: 1.15;
-    }
-
-    .hero-content h2 {
-      font-size: 1.2rem;
-      line-height: 1.25;
-    }
-
-    .hero-content p {
-      font-size: 0.95rem;
-      line-height: 1.4;
-      margin-bottom: 0.8rem;
-    }
-
-    .hero-social-proof {
-      font-size: 0.9rem !important;
-      margin-bottom: 0.8rem !important;
-    }
-
-    .section-header h2 {
-      font-size: 1.8rem;
-    }
-
-    .section-subtitle {
-      font-size: 1rem;
-    }
-
-    .benefit-stat {
-      font-size: 2rem;
-    }
-
-    .benefits-grid {
-      grid-template-columns: 1fr;
-      gap: 1rem;
-    }
-
-    .benefit-card {
-      padding: 1.5rem 0.5rem;
-    }
-
-    .blogs-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .blog-card {
-      padding: 1.5rem;
-    }
-  }
-
-  @media (max-width: 576px) {
-    .hero-banner {
-      height: 450px;
-      min-height: 450px;
-    }
-
-    .hero-content {
-      padding: 0 0.25rem;
-    }
-
-    .hero-content h1 {
-      font-size: 1.4rem;
-      line-height: 1.1;
-      margin-bottom: 0.5rem;
-    }
-
-    .hero-content h2 {
-      font-size: 1rem;
-      line-height: 1.2;
-      margin-bottom: 0.6rem;
-    }
-
-    .hero-content p {
-      font-size: 0.85rem;
-      line-height: 1.3;
-      margin-bottom: 0.6rem;
-    }
-
-    .hero-social-proof {
-      font-size: 0.8rem !important;
-      margin-bottom: 0.6rem !important;
-    }
-
-    .hero-features {
-      gap: 0.8rem;
-      margin-top: 0.8rem;
-    }
-
-    .hero-features span {
-      font-size: 0.75rem;
-      padding: 0.35rem 0.7rem;
-    }
-
-    .section-header h2 {
-      font-size: 1.5rem;
-    }
-
-    .benefit-stat {
-      font-size: 1.8rem;
-    }
-
-    .icon-emoji {
-      font-size: 2rem;
-    }
-
-    .benefit-icon {
-      width: 60px;
-      height: 60px;
-    }
-  }
-</style>

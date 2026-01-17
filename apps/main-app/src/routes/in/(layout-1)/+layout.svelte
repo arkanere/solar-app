@@ -208,6 +208,19 @@
   }
 </script>
 
+<style>
+  :global(body) {
+    font-family: "Georgia", serif;
+    margin: 0;
+    padding: 0;
+  }
+
+  :global(*) {
+    margin: 0;
+    padding: 0;
+  }
+</style>
+
 <!-- svelte-ignore a11y_img_redundant_alt -->
 <svelte:head>
   <!-- Umami Analytics - Layout 1 Only (kept as defer for minimal impact) -->
@@ -241,25 +254,25 @@
   <!-- Heavy analytics scripts moved to loadAnalytics() function for deferred loading -->
 </svelte:head>
 
-<nav class={$isDarkMode ? "dark" : "light"}>
-  <a href="/in">Solar Vipani</a>
-  <a href="/in/business-listing">List Business</a>
-  <a href="/in/recent-solar-installation-projects">Recent Projects</a>
-  <a href="/in/solar-panel-installer-directory">Directory</a>
-  <button class="stories-nav-btn" onclick={openStoriesModal}>Stories</button>
-  <a href="/in/about-us">About us</a>
+<nav class={`flex flex-wrap items-center gap-4 sm:gap-8 px-4 py-4 w-full box-border transition-colors duration-300 ${$isDarkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"}`}>
+  <a href="/in" class="no-underline text-lg sm:text-xl font-medium transition-colors duration-300 hover:text-blue-600 dark:hover:text-blue-400 whitespace-nowrap">Solar Vipani</a>
+  <a href="/in/business-listing" class="no-underline text-base sm:text-lg font-medium transition-colors duration-300 hover:text-blue-600 dark:hover:text-blue-400 whitespace-nowrap">List Business</a>
+  <a href="/in/recent-solar-installation-projects" class="no-underline text-base sm:text-lg font-medium transition-colors duration-300 hover:text-blue-600 dark:hover:text-blue-400 whitespace-nowrap">Recent Projects</a>
+  <a href="/in/solar-panel-installer-directory" class="no-underline text-base sm:text-lg font-medium transition-colors duration-300 hover:text-blue-600 dark:hover:text-blue-400 whitespace-nowrap">Directory</a>
+  <button class="bg-gradient-to-r from-[#f09433] via-[#dc2743] to-[#bc1888] hover:brightness-110 border-none text-white font-semibold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base transition-all duration-300 hover:translate-y-[-2px] hover:shadow-lg whitespace-nowrap" onclick={openStoriesModal}>Stories</button>
+  <a href="/in/about-us" class="no-underline text-base sm:text-lg font-medium transition-colors duration-300 hover:text-blue-600 dark:hover:text-blue-400 whitespace-nowrap">About us</a>
 
   <!-- Translate Dropdown -->
-  <div class="translate-container">
-    <button class="translate-btn" onclick={toggleTranslateDropdown}>
+  <div class="translate-container ml-auto relative inline-block">
+    <button class={`border rounded px-4 py-2 text-sm sm:text-base cursor-pointer transition-all duration-300 whitespace-nowrap ${$isDarkMode ? "border-white text-white hover:bg-gray-800 hover:border-blue-400 hover:text-blue-400" : "border-gray-900 text-gray-900 hover:bg-gray-100 hover:border-blue-600 hover:text-blue-600"}`} onclick={toggleTranslateDropdown}>
       🌐 Translate
     </button>
 
     {#if showTranslateDropdown}
-      <div class="translate-dropdown">
+      <div class={`absolute top-full left-0 min-w-[200px] rounded border z-[1000] mt-1 shadow-md ${$isDarkMode ? "bg-gray-800 border-gray-700 shadow-gray-950" : "bg-white border-gray-300"}`}>
         {#each indianLanguages as language}
           <button
-            class="language-option"
+            class={`block w-full text-left px-4 py-3 text-sm cursor-pointer transition-colors duration-200 border-b ${language === indianLanguages[indianLanguages.length - 1] ? "border-b-0" : ""} ${$isDarkMode ? "border-gray-700 text-white hover:bg-gray-700" : "border-gray-200 text-gray-900 hover:bg-gray-100"}`}
             onclick={() => selectLanguage(language)}
           >
             {language.flag}
@@ -270,7 +283,7 @@
     {/if}
   </div>
 
-  <button onclick={toggleTheme}>
+  <button class={`border rounded px-4 py-2 text-sm sm:text-base cursor-pointer transition-all duration-300 whitespace-nowrap ${$isDarkMode ? "border-white text-white hover:bg-white hover:text-gray-900" : "border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white"}`} onclick={toggleTheme}>
     {$isDarkMode ? "Light mode" : "Dark mode"}
   </button>
 </nav>
@@ -282,10 +295,10 @@
   {@render StoriesModalComponent()}
 {:else if storiesModalLoading && storiesOpen}
   <!-- Loading state for component import -->
-  <div class="stories-loading-backdrop">
-    <div class="stories-loading-container">
-      <div class="stories-loading-spinner"></div>
-      <p>Loading stories...</p>
+  <div class="fixed inset-0 w-full h-full bg-black bg-opacity-95 z-[2000] flex justify-center items-center">
+    <div class="flex flex-col items-center gap-4 text-white text-center">
+      <div class="w-12 h-12 border-4 border-opacity-20 border-white border-l-white rounded-full animate-spin"></div>
+      <p class="text-lg">Loading stories...</p>
     </div>
   </div>
 {/if}
@@ -294,78 +307,55 @@
 {#if showTranslationModal}
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="modal-backdrop" onclick={closeTranslationModal}>
+  <div class="fixed inset-0 w-full h-full bg-black bg-opacity-70 z-[2000] flex justify-center items-center" onclick={closeTranslationModal}>
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div class="modal-content" onclick={(e) => e.stopPropagation()}>
-      <div class="modal-header">
-        <h3>🌐 How to translate to {selectedLanguage}</h3>
-        <button class="modal-close" onclick={closeTranslationModal}>×</button>
+    <div class="bg-white rounded-lg max-w-2xl w-11/12 sm:w-full max-h-[80vh] overflow-y-auto shadow-2xl" onclick={(e) => e.stopPropagation()}>
+      <div class="flex justify-between items-center px-6 py-6 border-b border-gray-200">
+        <h3 class="text-xl text-gray-900 m-0">🌐 How to translate to {selectedLanguage}</h3>
+        <button class="bg-none border-0 text-2xl cursor-pointer p-0 text-gray-600 transition-colors duration-200 hover:text-gray-900" onclick={closeTranslationModal}>×</button>
       </div>
-      <div class="modal-body">
-        <div class="instruction-steps">
-          <h4>📱 On Mobile:</h4>
-          <div class="step">
-            <div class="step-number">1</div>
-            <div class="step-content">
-              <strong>Tap the three dots menu (⋮) in your browser</strong>
-            </div>
+      <div class="px-6 py-6">
+        <div class="mb-6">
+          <h4 class="text-blue-600 font-semibold text-base m-0 mb-3">📱 On Mobile:</h4>
+          <div class="flex gap-4 mb-4">
+            <div class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex-shrink-0 mt-0.5">1</div>
+            <div class="text-gray-900"><strong>Tap the three dots menu (⋮) in your browser</strong></div>
           </div>
-          <div class="step">
-            <div class="step-number">2</div>
-            <div class="step-content">
-              <strong>Look for "Translate" option</strong>
-            </div>
+          <div class="flex gap-4 mb-4">
+            <div class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex-shrink-0 mt-0.5">2</div>
+            <div class="text-gray-900"><strong>Look for "Translate" option</strong></div>
           </div>
-          <div class="step">
-            <div class="step-number">3</div>
-            <div class="step-content">
-              <strong>Select your language</strong>
-            </div>
+          <div class="flex gap-4">
+            <div class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex-shrink-0 mt-0.5">3</div>
+            <div class="text-gray-900"><strong>Select your language</strong></div>
           </div>
         </div>
 
-        <div class="instruction-steps">
-          <h4>💻 On Desktop:</h4>
-          <div class="step">
-            <div class="step-number">1</div>
-            <div class="step-content">
-              <strong>Right-click anywhere on this page</strong>
-            </div>
+        <div class="mb-6">
+          <h4 class="text-blue-600 font-semibold text-base m-0 mb-3">💻 On Desktop:</h4>
+          <div class="flex gap-4 mb-4">
+            <div class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex-shrink-0 mt-0.5">1</div>
+            <div class="text-gray-900"><strong>Right-click anywhere on this page</strong></div>
           </div>
-          <div class="step">
-            <div class="step-number">2</div>
-            <div class="step-content">
-              <strong
-                >Look for "Translate to {selectedLanguage !== "More Languages"
+          <div class="flex gap-4 mb-4">
+            <div class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex-shrink-0 mt-0.5">2</div>
+            <div class="text-gray-900"><strong>Look for "Translate to {selectedLanguage !== "More Languages"
                   ? selectedLanguage.split("(")[1]?.replace(")", "") ||
                     "your language"
-                  : "your language"}"</strong
-              >
-            </div>
+                  : "your language"}"</strong></div>
           </div>
-          <div class="step">
-            <div class="step-number">3</div>
-            <div class="step-content">
-              <strong>Click to translate</strong>
-            </div>
+          <div class="flex gap-4">
+            <div class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex-shrink-0 mt-0.5">3</div>
+            <div class="text-gray-900"><strong>Click to translate</strong></div>
           </div>
         </div>
 
-        <div class="alternative-method">
-          <h4>💡 Alternative methods:</h4>
-          <p>
-            <strong>Chrome users:</strong> Look for the translate icon 🌐 in your
-            address bar
-          </p>
-          <p>
-            <strong>Safari (iPhone/iPad):</strong> Tap the "aA" button in address
-            bar
-          </p>
-          <p>
-            <strong>Other browsers:</strong> Check browser settings for translation
-            options
-          </p>
+        <div class="border-t border-gray-200 pt-4">
+          <h4 class="text-base text-gray-900 m-0 mb-2 font-semibold">💡 Alternative methods:</h4>
+          <p class="text-sm text-gray-700 my-1"><strong>Chrome users:</strong> Look for the translate icon 🌐 in your address bar</p>
+          <p class="text-sm text-gray-700 my-1"><strong>Safari (iPhone/iPad):</strong> Tap the "aA" button in address bar</p>
+          <p class="text-sm text-gray-700 my-1"><strong>Other browsers:</strong> Check browser settings for translation options</p>
         </div>
       </div>
     </div>
@@ -375,420 +365,3 @@
 <!-- {#if browser && showChat}
   <ChatbotWidget messages={chatMessages} />
 {/if} -->
-
-<style>
-  :global(body) {
-    font-family: "Georgia", serif;
-    margin: 0;
-    padding: 0;
-  }
-
-  nav {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    padding: 1rem;
-    transition: background-color 0.3s ease;
-    width: 100%;
-    box-sizing: border-box;
-    gap: 2rem;
-  }
-
-  nav a {
-    text-decoration: none;
-    font-size: 1.1rem;
-    font-weight: 500;
-    transition: color 0.3s ease;
-    white-space: nowrap;
-  }
-
-  /* Light Mode */
-  .light {
-    background-color: #fafafa;
-    color: #333;
-  }
-
-  .light a {
-    color: #333;
-  }
-
-  .light a:hover {
-    color: #0077cc;
-  }
-
-  /* Dark Mode */
-  .dark {
-    background-color: #1a1a1a;
-    color: #fff;
-  }
-
-  .dark a {
-    color: #fff;
-  }
-
-  .dark a:hover {
-    color: #66b2ff;
-  }
-
-  /* Button style */
-  button {
-    background: none;
-    border: 1px solid;
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition:
-      background-color 0.3s ease,
-      color 0.3s ease;
-    white-space: nowrap;
-    border-radius: 4px;
-  }
-
-  /* Stories navigation button - special styling */
-  .stories-nav-btn {
-    background: linear-gradient(
-      45deg,
-      #f09433 0%,
-      #e6683c 25%,
-      #dc2743 50%,
-      #cc2366 75%,
-      #bc1888 100%
-    );
-    border: none;
-    color: white;
-    font-weight: 600;
-    border-radius: 20px;
-    padding: 0.6rem 1.2rem;
-    font-size: 0.95rem;
-    margin-left: 0;
-  }
-
-  .stories-nav-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    background: linear-gradient(
-      45deg,
-      #f09433 0%,
-      #e6683c 25%,
-      #dc2743 50%,
-      #cc2366 75%,
-      #bc1888 100%
-    );
-    filter: brightness(1.1);
-  }
-
-  /* Theme toggle button and translate container - move to right */
-  .translate-container {
-    margin-left: auto;
-  }
-
-  .light button {
-    border-color: #333;
-    color: #333;
-  }
-
-  .light button:hover {
-    background-color: #333;
-    color: white;
-  }
-
-  .dark button {
-    border-color: #fff;
-    color: #fff;
-  }
-
-  .dark button:hover {
-    background-color: #fff;
-    color: #333;
-  }
-
-  /* Translate button - different hover effect */
-  .light .translate-btn:hover {
-    background-color: #f0f8ff;
-    color: #0077cc;
-    border-color: #0077cc;
-  }
-
-  .dark .translate-btn:hover {
-    background-color: #1a2332;
-    color: #66b2ff;
-    border-color: #66b2ff;
-  }
-
-  /* Stories Modal Loading State */
-  .stories-loading-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.95);
-    z-index: 2000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .stories-loading-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    color: white;
-    text-align: center;
-  }
-
-  .stories-loading-spinner {
-    width: 50px;
-    height: 50px;
-    border: 4px solid rgba(255, 255, 255, 0.2);
-    border-left-color: white;
-    border-radius: 50%;
-    animation: stories-spin 1s linear infinite;
-  }
-
-  @keyframes stories-spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-
-  .stories-loading-container p {
-    font-size: 1.1rem;
-    margin: 0;
-  }
-
-  /* Translate container and dropdown */
-  .translate-container {
-    position: relative;
-    display: inline-block;
-  }
-
-  .translate-btn {
-    background: none;
-    border: 1px solid;
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition:
-      background-color 0.3s ease,
-      color 0.3s ease;
-    white-space: nowrap;
-    border-radius: 4px;
-  }
-
-  .translate-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    min-width: 200px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-    margin-top: 2px;
-  }
-
-  .dark .translate-dropdown {
-    background: #2a2a2a;
-    border-color: #555;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-  }
-
-  .language-option {
-    display: block;
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: none;
-    background: none;
-    text-align: left;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: background-color 0.2s ease;
-    border-bottom: 1px solid #eee;
-  }
-
-  .language-option:last-child {
-    border-bottom: none;
-  }
-
-  .language-option:hover {
-    background-color: #f5f5f5;
-  }
-
-  .dark .language-option {
-    color: #fff;
-    border-bottom-color: #444;
-  }
-
-  .dark .language-option:hover {
-    background-color: #3a3a3a;
-  }
-
-  /* Translation Modal */
-  .modal-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 2000;
-  }
-
-  .modal-content {
-    background: white;
-    border-radius: 8px;
-    max-width: 500px;
-    width: 90%;
-    max-height: 80vh;
-    overflow-y: auto;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  }
-
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.5rem;
-    border-bottom: 1px solid #eee;
-  }
-
-  .modal-header h3 {
-    margin: 0;
-    font-size: 1.2rem;
-    color: #333;
-  }
-
-  .modal-close {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: 0;
-    color: #666;
-    transition: color 0.2s ease;
-  }
-
-  .modal-close:hover {
-    color: #333;
-  }
-
-  .modal-body {
-    padding: 1.5rem;
-  }
-
-  .instruction-steps {
-    margin-bottom: 1.5rem;
-  }
-
-  .step {
-    display: flex;
-    margin-bottom: 1rem;
-    align-items: flex-start;
-  }
-
-  .step-number {
-    background: #0077cc;
-    color: white;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8rem;
-    font-weight: bold;
-    margin-right: 1rem;
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-
-  .step-content strong {
-    display: block;
-    margin-bottom: 0.25rem;
-    color: #333;
-  }
-
-  .alternative-method {
-    border-top: 1px solid #eee;
-    padding-top: 1rem;
-  }
-
-  .alternative-method h4 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1rem;
-    color: #333;
-  }
-
-  .alternative-method p {
-    margin: 0.25rem 0;
-    font-size: 0.9rem;
-    color: #666;
-  }
-
-  .instruction-steps h4 {
-    margin: 1rem 0 0.5rem 0;
-    color: #0077cc;
-    font-size: 1rem;
-  }
-
-  .instruction-steps:first-of-type h4 {
-    margin-top: 0;
-  }
-
-  /* Mobile responsiveness */
-  @media (max-width: 768px) {
-    nav {
-      justify-content: center;
-      padding: 0.75rem;
-      gap: 1rem;
-    }
-
-    nav a {
-      font-size: 0.9rem;
-    }
-
-    button {
-      padding: 0.25rem 0.5rem;
-      font-size: 0.8rem;
-      margin-left: 0;
-    }
-
-    .stories-nav-btn {
-      padding: 0.4rem 0.8rem;
-      font-size: 0.85rem;
-    }
-
-    .translate-btn {
-      padding: 0.4rem 0.8rem;
-      font-size: 0.8rem;
-    }
-
-    .translate-dropdown {
-      left: auto;
-      right: 0;
-      min-width: 180px;
-    }
-
-    .modal-content {
-      width: 95%;
-      margin: 1rem;
-    }
-
-    .modal-header {
-      padding: 1rem;
-    }
-
-    .modal-body {
-      padding: 1rem;
-    }
-  }
-</style>

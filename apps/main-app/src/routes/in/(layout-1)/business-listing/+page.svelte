@@ -310,9 +310,9 @@
   <meta name="robots" content="index, follow" />
 </svelte:head>
 
-<main class={darkMode ? "dark" : "light"}>
+<main class={`w-full transition-colors duration-300 overflow-x-hidden ${darkMode ? "bg-slate-900 text-white" : "bg-white text-slate-900"}`}>
   <!-- Hero Banner with Solar Panel Background -->
-  <div class="hero-banner">
+  <div class="relative w-full h-96 md:h-96 sm:h-80 flex items-center justify-center text-center overflow-hidden">
     <picture>
       <source
         media="(max-width: 768px)"
@@ -325,7 +325,7 @@
         type="image/avif"
       />
       <img
-        class="hero-image"
+        class="absolute top-0 left-0 w-full h-full object-cover object-center z-0"
         src="/header/header_mobile.avif"
         alt="Solar Panel Installation Business Growth"
         width="768"
@@ -334,25 +334,24 @@
         decoding="sync"
       />
     </picture>
-    <div class="overlay"></div>
-    <div class="hero-content">
-      <h1>GROW YOUR SOLAR BUSINESS</h1>
-      <h2>Get Discovered on Google & ChatGPT</h2>
-      <div class="hero-stats">
-        <div class="stat-item">
-          <strong>Join 450+ Solar Panel Installers</strong> who are listed on Solarvipani.com
+    <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-black/40 to-blue-900/70 z-10"></div>
+    <div class="relative z-20 max-w-3xl px-6">
+      <h1 class="text-4xl md:text-5xl font-bold mb-4 text-white uppercase tracking-wide">Grow Your Solar Business</h1>
+      <h2 class="text-2xl md:text-3xl font-medium mb-6 text-accent drop-shadow-lg">Get Discovered on Google & ChatGPT</h2>
+      <div class="my-6 p-3 md:p-3 bg-black/30 rounded-lg backdrop-blur-sm border border-white/10">
+        <div class="mb-3 text-sm md:text-base leading-relaxed opacity-95">
+          <strong class="text-accent drop-shadow">Join 450+ Solar Panel Installers</strong> who are listed on Solarvipani.com
         </div>
-        <div class="stat-item">
-          <strong>2000+ households and businesses</strong> have started their
+        <div class="text-sm md:text-base leading-relaxed opacity-95">
+          <strong class="text-accent drop-shadow">2000+ households and businesses</strong> have started their
           solar installation journey with Solarvipani.com.
-          <span class="highlight-text">Don't let your business miss out.</span>
+          <span class="text-yellow-300 font-semibold drop-shadow">Don't let your business miss out.</span>
         </div>
       </div>
-      <p>
-        Connect directly with customers seeking solar installation services in
-        your area
+      <p class="text-base md:text-lg mb-6 text-white/95 opacity-95 italic drop-shadow">
+        Connect directly with customers seeking solar installation services in your area
       </p>
-      <button class="cta-button pulse" onclick={navigateToBusinessForm}>
+      <button class="inline-flex items-center justify-center gap-2 px-6 md:px-8 py-3 md:py-3 bg-primary text-white rounded-md font-semibold hover:bg-primary hover:opacity-90 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg uppercase tracking-wider text-sm md:text-base pulse" onclick={navigateToBusinessForm}>
         <span>List My Business Now</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -364,6 +363,7 @@
           stroke-width="2"
           stroke-linecap="round"
           stroke-linejoin="round"
+          class="group-hover:translate-x-1 transition-transform"
           ><line x1="5" y1="12" x2="19" y2="12"></line><polyline
             points="12 5 19 12 12 19"
           ></polyline></svg
@@ -372,37 +372,37 @@
     </div>
   </div>
 
-  <div class="content">
+  <div class="max-w-5xl mx-auto px-4 py-8 md:py-12">
     <!-- Value Proposition Section -->
-    <section class="value-proposition">
-      <div class="section-header">
-        <h2>Why List Your Business with Solar Vipani?</h2>
-        <div class="section-divider">
-          <span class="divider-accent"></span>
+    <section class="rounded-lg bg-white dark:bg-slate-800 p-12 md:p-16 mb-8 shadow-md">
+      <div class="text-center mb-10">
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary dark:text-blue-300">Why List Your Business with Solar Vipani?</h2>
+        <div class="flex justify-center items-center my-4">
+          <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
-        <p class="section-subtitle">
+        <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
           Get discovered by customers ready to install solar panels - completely <span
-            class="highlight">FREE</span
+            class="text-accent font-bold">FREE</span
           >
         </p>
       </div>
 
-      <div class="benefits-grid">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {#each benefits as benefit}
-          <div class="benefit-card">
-            <div class="benefit-icon">{@html benefit.icon}</div>
-            <h3>{benefit.title}</h3>
-            <div class="benefit-description">
+          <div class="p-8 rounded-lg bg-white dark:bg-slate-700/50 shadow-md hover:shadow-lg hover:-translate-y-1 transition-all text-center flex flex-col items-center">
+            <div class="w-16 h-16 flex items-center justify-center mb-4 rounded-full bg-blue-100 dark:bg-blue-900/40 text-primary dark:text-blue-300">{@html benefit.icon}</div>
+            <h3 class="text-xl font-semibold mb-3 text-primary dark:text-blue-300">{benefit.title}</h3>
+            <div class="text-gray-600 dark:text-gray-400 text-sm">
               {#each benefit.descriptions as description}
-                <p>{description}</p>
+                <p class="mb-2">{description}</p>
               {/each}
             </div>
           </div>
         {/each}
       </div>
 
-      <div class="cta-center">
-        <button class="cta-button" onclick={navigateToBusinessForm}>
+      <div class="text-center mt-8">
+        <button class="inline-flex items-center justify-center gap-2 px-8 py-3 bg-primary text-white rounded-md font-semibold hover:bg-primary-hover hover:-translate-y-1 transition-all duration-300 hover:shadow-lg uppercase tracking-wider" onclick={navigateToBusinessForm}>
           <span>Get Started for Free</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -414,6 +414,7 @@
             stroke-width="2"
             stroke-linecap="round"
             stroke-linejoin="round"
+            class="hover:translate-x-1 transition-transform"
             ><line x1="5" y1="12" x2="19" y2="12"></line><polyline
               points="12 5 19 12 12 19"
             ></polyline></svg
@@ -423,25 +424,25 @@
     </section>
 
     <!-- Social Proof Section -->
-    <section class="social-proof">
-      <div class="section-header">
-        <h2>Join the Solar Installer Community</h2>
-        <div class="section-divider">
-          <span class="divider-accent"></span>
+    <section class="rounded-lg bg-blue-50 dark:bg-blue-950/15 p-12 md:p-16 mb-8 shadow-md">
+      <div class="text-center mb-10">
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary dark:text-blue-300">Join the Solar Installer Community</h2>
+        <div class="flex justify-center items-center my-4">
+          <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
       </div>
 
-      <div class="stats-container">
+      <div class="flex justify-center gap-12 flex-wrap mb-8">
         {#each stats as stat}
-          <div class="stat-card">
-            <div class="stat-number">{stat.number}</div>
-            <div class="stat-label">{stat.label}</div>
+          <div class="w-48 text-center p-6 rounded-lg bg-white dark:bg-slate-700/50 shadow-md hover:shadow-lg hover:scale-105 transition-all">
+            <div class="text-5xl font-bold text-primary dark:text-blue-300 mb-2">{stat.number}</div>
+            <div class="text-lg font-semibold text-gray-600 dark:text-gray-400">{stat.label}</div>
           </div>
         {/each}
       </div>
 
-      <div class="cta-center">
-        <button class="cta-button" onclick={navigateToBusinessForm}>
+      <div class="text-center mt-8">
+        <button class="inline-flex items-center justify-center gap-2 px-8 py-3 bg-primary text-white rounded-md font-semibold hover:bg-primary-hover hover:-translate-y-1 transition-all duration-300 hover:shadow-lg uppercase tracking-wider" onclick={navigateToBusinessForm}>
           <span>List My Business</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -453,6 +454,7 @@
             stroke-width="2"
             stroke-linecap="round"
             stroke-linejoin="round"
+            class="hover:translate-x-1 transition-transform"
             ><line x1="5" y1="12" x2="19" y2="12"></line><polyline
               points="12 5 19 12 12 19"
             ></polyline></svg
@@ -462,28 +464,28 @@
     </section>
 
     <!-- Recently Joined Verified Installers -->
-    <section class="recent-installers">
-      <div class="section-header">
-        <h2>Recently Joined Verified Installers</h2>
-        <div class="section-divider">
-          <span class="divider-accent"></span>
+    <section class="rounded-lg bg-slate-50 dark:bg-blue-950/5 p-12 md:p-16 mb-8 shadow-md">
+      <div class="text-center mb-10">
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary dark:text-blue-300">Recently Joined Verified Installers</h2>
+        <div class="flex justify-center items-center my-4">
+          <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
-        <p class="section-subtitle">
+        <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
           These solar professionals recently joined our growing community
         </p>
       </div>
 
-      <div class="installer-grid">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {#if data && data.businesses && data.businesses.length > 0}
           {#each data.businesses as business}
             <a
               href={`/solar-panel-installer/${business.slug}`}
               target="_blank"
               rel="noopener noreferrer"
-              class="installer-card-link"
+              class="no-underline text-inherit block transition-transform hover:-translate-y-1 duration-300"
             >
-              <div class="installer-card">
-                <div class="installer-badge">
+              <div class="relative p-6 rounded-lg bg-white dark:bg-slate-700/50 shadow-md hover:shadow-lg transition-shadow h-full flex flex-col overflow-hidden">
+                <div class="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-full bg-green-500 text-white text-xs font-semibold">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="18"
@@ -500,9 +502,9 @@
                   >
                   <span>Verified</span>
                 </div>
-                <h3>{business.businessname}</h3>
-                <div class="installer-details">
-                  <div class="installer-location">
+                <h3 class="text-lg font-semibold pr-16 text-primary dark:text-blue-300">{business.businessname}</h3>
+                <div class="flex flex-col gap-2 mt-auto">
+                  <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-sm">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
@@ -518,7 +520,7 @@
                     >
                     <span>{business.city}, {business.state}</span>
                   </div>
-                  <div class="installer-phone">
+                  <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-sm">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
@@ -571,7 +573,7 @@
     </section>
 
     <!-- How It Works Video Section -->
-    <section id="product-working">
+    <section class="rounded-lg bg-white dark:bg-slate-800 p-12 md:p-16 mb-8 shadow-md text-center" id="product-working">
       <div class="section-header">
         <h2>See How It Works</h2>
         <div class="section-divider">
@@ -583,7 +585,7 @@
         </p>
       </div>
 
-      <div class="video-container">
+      <div class="relative mx-auto max-w-2xl rounded-lg overflow-hidden shadow-lg">
         <iframe
           src="https://www.youtube.com/embed/8UZ-4XN8Vq8"
           title="How Solarvipani.com works"
@@ -617,34 +619,34 @@
     </section>
 
     <!-- FAQs Section -->
-    <section class="faqs">
-      <div class="section-header">
-        <h2>Frequently Asked Questions</h2>
-        <div class="section-divider">
-          <span class="divider-accent"></span>
+    <section class="rounded-lg bg-white dark:bg-slate-800 p-12 md:p-16 mb-8 shadow-md">
+      <div class="text-center mb-10">
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary dark:text-blue-300">Frequently Asked Questions</h2>
+        <div class="flex justify-center items-center my-4">
+          <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
       </div>
 
-      <div class="faq-grid">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         {#each faqs as faq}
-          <div class="faq-card">
-            <h3>{faq.question}</h3>
-            <p>{faq.answer}</p>
+          <div class="p-6 rounded-lg bg-white dark:bg-slate-700/50 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all">
+            <h3 class="text-lg font-semibold mb-3 text-primary dark:text-blue-300">{faq.question}</h3>
+            <p class="text-gray-600 dark:text-gray-400 text-sm">{faq.answer}</p>
           </div>
         {/each}
       </div>
     </section>
 
     <!-- Call to Action Section -->
-    <section class="final-cta">
-      <div class="cta-card">
-        <h2>Ready to Grow Your Solar Business?</h2>
-        <p>
+    <section class="rounded-lg bg-transparent p-0 mb-8 shadow-none">
+      <div class="bg-gradient-to-r from-primary to-blue-700 text-white p-12 md:p-16 rounded-lg shadow-lg text-center">
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4">Ready to Grow Your Solar Business?</h2>
+        <p class="text-lg mb-8 max-w-2xl mx-auto opacity-90">
           Join thousands of solar installation companies already benefiting from
           Solar Vipani's platform
         </p>
         <button
-          class="cta-button large pulse"
+          class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-primary rounded-md font-semibold hover:bg-gray-100 hover:-translate-y-1 transition-all duration-300 hover:shadow-lg uppercase tracking-wider pulse"
           onclick={navigateToBusinessForm}
         >
           <span>List My Business Now</span>
@@ -658,6 +660,7 @@
             stroke-width="2"
             stroke-linecap="round"
             stroke-linejoin="round"
+            class="hover:translate-x-1 transition-transform"
             ><line x1="5" y1="12" x2="19" y2="12"></line><polyline
               points="12 5 19 12 12 19"
             ></polyline></svg
@@ -667,17 +670,17 @@
     </section>
 
     <!-- Need Assistance Section -->
-    <section class="assistance">
-      <div class="section-header">
-        <h2>We're Here to Help</h2>
-        <div class="section-divider">
-          <span class="divider-accent"></span>
+    <section class="rounded-lg bg-white dark:bg-slate-800 p-12 md:p-16 mb-8 shadow-md">
+      <div class="text-center mb-10">
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary dark:text-blue-300">We're Here to Help</h2>
+        <div class="flex justify-center items-center my-4">
+          <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
       </div>
 
-      <div class="contact-container">
-        <div class="contact-card">
-          <div class="contact-icon">
+      <div class="flex justify-center gap-8 flex-wrap">
+        <div class="p-6 rounded-lg bg-white dark:bg-slate-700/50 shadow-sm text-center w-64 transition-transform hover:-translate-y-1">
+          <div class="text-primary dark:text-blue-300 mb-4 flex justify-center">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"
@@ -693,16 +696,16 @@
               ></path><polyline points="22,6 12,13 2,6"></polyline></svg
             >
           </div>
-          <p>Email us at</p>
+          <p class="mb-2 text-gray-600 dark:text-gray-400">Email us at</p>
           <a
             href="mailto:admin@solarvipani.com"
-            class="contact-link"
+            class="block text-lg font-semibold text-primary dark:text-blue-300 hover:underline transition-colors"
             rel="noopener">admin@solarvipani.com</a
           >
         </div>
 
-        <div class="contact-card">
-          <div class="contact-icon">
+        <div class="p-6 rounded-lg bg-white dark:bg-slate-700/50 shadow-sm text-center w-64 transition-transform hover:-translate-y-1">
+          <div class="text-primary dark:text-blue-300 mb-4 flex justify-center">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"
@@ -718,8 +721,8 @@
               ></path></svg
             >
           </div>
-          <p>Call us at</p>
-          <a href="tel:+918983066701" class="contact-link" rel="noopener"
+          <p class="mb-2 text-gray-600 dark:text-gray-400">Call us at</p>
+          <a href="tel:+918983066701" class="block text-lg font-semibold text-primary dark:text-blue-300 hover:underline transition-colors" rel="noopener"
             >+91 8983066701</a
           >
         </div>
@@ -733,719 +736,6 @@
 </main>
 
 <style>
-  /* Root variables using custom properties */
-  :root {
-    /* Colors */
-    --primary-color: #0056b3;
-    --primary-hover: #004494;
-    --primary-light: #e6f0ff;
-    --secondary-color: #4caf50;
-    --accent-color: #ffc107;
-
-    /* Text colors */
-    --text-dark: #2c3e50;
-    --text-medium: #546e7a;
-    --text-light: #ecf0f1;
-
-    /* Theme colors */
-    --light-bg-color: #f8f9fa;
-    --dark-bg-color: #1a202c;
-    --light-card-bg: #ffffff;
-    --dark-card-bg: #2d3748;
-
-    /* UI elements */
-    --border-radius-sm: 4px;
-    --border-radius-md: 8px;
-    --border-radius-lg: 16px;
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
-
-    /* Typography */
-    --font-family: "Poppins", "Helvetica Neue", Arial, sans-serif;
-    --heading-line-height: 1.2;
-    --body-line-height: 1.6;
-
-    /* Layout */
-    --section-padding: 4rem 1.5rem;
-    --container-width: 1140px;
-    --grid-gap: 1.5rem;
-
-    /* Transitions */
-    --transition-fast: 0.2s ease;
-    --transition-medium: 0.3s ease;
-    --transition-slow: 0.5s ease;
-  }
-
-  /* Base styles */
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-
-  main {
-    width: 100%;
-    font-family: var(--font-family);
-    line-height: var(--body-line-height);
-    overflow-x: hidden;
-    transition:
-      background-color var(--transition-medium),
-      color var(--transition-medium);
-  }
-
-  .light {
-    background-color: var(--light-bg-color);
-    color: var(--text-dark);
-  }
-
-  .dark {
-    background-color: var(--dark-bg-color);
-    color: var(--text-light);
-  }
-
-  /* Content container */
-  .content {
-    max-width: var(--container-width);
-    margin: 0 auto;
-    padding: 1rem;
-  }
-
-  /* Hero Banner */
-  .hero-banner {
-    position: relative;
-    height: 400px;
-    width: 100%;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    overflow: hidden;
-    contain: layout style paint;
-  }
-
-  .hero-image {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    z-index: 0;
-    will-change: transform;
-    transform: translateZ(0);
-  }
-
-  .overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 56, 146, 0.7));
-    z-index: 1;
-  }
-
-  .hero-content {
-    position: relative;
-    z-index: 2;
-    max-width: 800px;
-    padding: 0 1.5rem;
-  }
-
-  .hero-content h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 0.4rem;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
-
-  .hero-content h2 {
-    font-size: 1.4rem;
-    font-weight: 500;
-    margin-bottom: 1rem;
-    color: var(--accent-color);
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    background-color: rgba(0, 0, 0, 0.3);
-    padding: 6px 12px;
-    border-radius: 4px;
-    display: inline-block;
-  }
-
-  .hero-content p {
-    font-size: 1rem;
-    margin-bottom: 1.5rem;
-    opacity: 0.9;
-  }
-
-  /* Hero Statistics Styling */
-  .hero-stats {
-    margin: 1rem 0;
-    padding: 0.8rem;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .stat-item {
-    margin-bottom: 0.8rem;
-    font-size: 0.95rem;
-    line-height: 1.4;
-    opacity: 0.95;
-  }
-
-  .stat-item:last-child {
-    margin-bottom: 0;
-  }
-
-  .stat-item strong {
-    color: var(--accent-color);
-    font-weight: 600;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-  }
-
-  .highlight-text {
-    color: #ffd700;
-    font-weight: 600;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
-  }
-
-  /* Section styling */
-  section {
-    padding: var(--section-padding);
-    margin-bottom: 2rem;
-    border-radius: var(--border-radius-lg);
-    background-color: var(--light-card-bg);
-    box-shadow: var(--shadow-md);
-    transition: background-color var(--transition-medium);
-  }
-
-  .dark section {
-    background-color: var(--dark-card-bg);
-  }
-
-  .section-header {
-    text-align: center;
-    margin-bottom: 2.5rem;
-  }
-
-  .section-header h2 {
-    font-size: 2.2rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: var(--primary-color);
-  }
-
-  .dark .section-header h2 {
-    color: var(--primary-light);
-  }
-
-  .section-divider {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 1rem auto;
-  }
-
-  .divider-accent {
-    width: 80px;
-    height: 4px;
-    background: var(--accent-color);
-    border-radius: 2px;
-  }
-
-  .section-subtitle {
-    font-size: 1.2rem;
-    color: var(--text-medium);
-    max-width: 700px;
-    margin: 0 auto;
-  }
-
-  .dark .section-subtitle {
-    color: #a0aec0;
-  }
-
-  .highlight {
-    color: var(--accent-color);
-    font-weight: 700;
-  }
-
-  /* Benefits Grid */
-  .benefits-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: var(--grid-gap);
-    margin-bottom: 2rem;
-    contain: layout;
-  }
-
-  .benefit-card {
-    padding: 1.5rem;
-    border-radius: var(--border-radius-md);
-    background-color: var(--light-card-bg);
-    box-shadow: var(--shadow-sm);
-    transition:
-      transform var(--transition-medium),
-      box-shadow var(--transition-medium);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-
-  .benefit-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-lg);
-  }
-
-  .dark .benefit-card {
-    background-color: rgba(255, 255, 255, 0.05);
-  }
-
-  .benefit-icon {
-    width: 64px;
-    height: 64px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 1rem;
-    border-radius: 50%;
-    background-color: var(--primary-light);
-    color: var(--primary-color);
-  }
-
-  .dark .benefit-icon {
-    background-color: rgba(0, 86, 179, 0.2);
-    color: #90caf9;
-  }
-
-  .benefit-card h3 {
-    font-size: 1.4rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: var(--primary-color);
-  }
-
-  .dark .benefit-card h3 {
-    color: #90caf9;
-  }
-
-  .benefit-description p {
-    margin-bottom: 0.5rem;
-    font-size: 0.95rem;
-    color: var(--text-medium);
-  }
-
-  .dark .benefit-description p {
-    color: #cbd5e0;
-  }
-
-  /* Social Proof */
-  .social-proof {
-    background-color: var(--primary-light);
-  }
-
-  .dark .social-proof {
-    background-color: rgba(0, 86, 179, 0.15);
-  }
-
-  .stats-container {
-    display: flex;
-    justify-content: center;
-    gap: 3rem;
-    flex-wrap: wrap;
-    margin-bottom: 2rem;
-  }
-
-  .stat-card {
-    width: 200px;
-    text-align: center;
-    padding: 1.5rem;
-    border-radius: var(--border-radius-md);
-    background-color: white;
-    box-shadow: var(--shadow-md);
-    transition: transform var(--transition-medium);
-  }
-
-  .stat-card:hover {
-    transform: scale(1.05);
-  }
-
-  .dark .stat-card {
-    background-color: rgba(255, 255, 255, 0.05);
-  }
-
-  .stat-number {
-    font-size: 3rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    margin-bottom: 0.5rem;
-  }
-
-  .dark .stat-number {
-    color: #90caf9;
-  }
-
-  .stat-label {
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: var(--text-medium);
-  }
-
-  .dark .stat-label {
-    color: #cbd5e0;
-  }
-
-  /* Recent Installers Section */
-
-  /* Add these styles to your existing stylesheet */
-  .installer-card-link {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    transition: transform var(--transition-medium);
-  }
-
-  .installer-card-link:hover {
-    transform: translateY(-5px);
-  }
-
-  .installer-card-link:hover .installer-card {
-    box-shadow: var(--shadow-lg);
-  }
-
-  /* Make sure installer cards don't have their own hover transform now */
-  .installer-card {
-    position: relative;
-    padding: 1.5rem;
-    border-radius: var(--border-radius-md);
-    background-color: white;
-    box-shadow: var(--shadow-sm);
-    transition: box-shadow var(--transition-medium);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  .recent-installers {
-    background-color: #f8f9fa;
-  }
-
-  .dark .recent-installers {
-    background-color: rgba(0, 86, 179, 0.05);
-  }
-
-  .installer-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: var(--grid-gap);
-    margin-bottom: 2rem;
-    contain: layout;
-  }
-
-  .installer-card {
-    position: relative;
-    padding: 1.5rem;
-    border-radius: var(--border-radius-md);
-    background-color: white;
-    box-shadow: var(--shadow-sm);
-    transition:
-      transform var(--transition-medium),
-      box-shadow var(--transition-medium);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  .dark .installer-card {
-    background-color: rgba(255, 255, 255, 0.05);
-  }
-
-  .installer-badge {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 8px;
-    border-radius: 16px;
-    background-color: var(--secondary-color);
-    color: white;
-    font-size: 0.8rem;
-    font-weight: 500;
-  }
-
-  .installer-card h3 {
-    font-size: 1.3rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: var(--primary-color);
-    padding-right: 70px; /* Make room for badge */
-  }
-
-  .dark .installer-card h3 {
-    color: #90caf9;
-  }
-
-  .installer-details {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: auto;
-  }
-
-  .installer-location,
-  .installer-phone {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--text-medium);
-    font-size: 0.9rem;
-  }
-
-  .dark .installer-location,
-  .dark .installer-phone {
-    color: #cbd5e0;
-  }
-
-  .no-installers {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 2rem;
-    background-color: rgba(0, 86, 179, 0.05);
-    border-radius: var(--border-radius-md);
-  }
-
-  .dark .no-installers {
-    background-color: rgba(255, 255, 255, 0.05);
-  }
-
-  .no-installers p {
-    font-size: 1.1rem;
-    color: var(--text-medium);
-  }
-
-  .dark .no-installers p {
-    color: #cbd5e0;
-  }
-
-  /* Video Section */
-  #product-working {
-    text-align: center;
-  }
-
-  .video-container {
-    position: relative;
-    margin: 0 auto;
-    max-width: 700px;
-    border-radius: var(--border-radius-md);
-    overflow: hidden;
-    box-shadow: var(--shadow-lg);
-  }
-
-  iframe {
-    width: 100%;
-    height: 400px;
-    display: block;
-    border: none;
-  }
-
-  /* FAQs Section */
-  .faq-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: var(--grid-gap);
-    contain: layout;
-  }
-
-  .faq-card {
-    padding: 1.5rem;
-    border-radius: var(--border-radius-md);
-    background-color: white;
-    box-shadow: var(--shadow-sm);
-    transition:
-      transform var(--transition-medium),
-      box-shadow var(--transition-medium);
-  }
-
-  .faq-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-md);
-  }
-
-  .dark .faq-card {
-    background-color: rgba(255, 255, 255, 0.05);
-  }
-
-  .faq-card h3 {
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: var(--primary-color);
-  }
-
-  .dark .faq-card h3 {
-    color: #90caf9;
-  }
-
-  .faq-card p {
-    font-size: 1rem;
-    color: var(--text-medium);
-  }
-
-  .dark .faq-card p {
-    color: #cbd5e0;
-  }
-
-  /* Final CTA Section */
-  .final-cta {
-    padding: 0;
-    box-shadow: none;
-    background-color: transparent;
-  }
-
-  .cta-card {
-    background: linear-gradient(135deg, var(--primary-color), #0a4b9e);
-    color: white;
-    padding: 3rem 2rem;
-    border-radius: var(--border-radius-lg);
-    text-align: center;
-    box-shadow: var(--shadow-lg);
-  }
-
-  .cta-card h2 {
-    font-size: 2.2rem;
-    margin-bottom: 1rem;
-    color: white;
-  }
-
-  .cta-card p {
-    font-size: 1.2rem;
-    margin-bottom: 2rem;
-    opacity: 0.9;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  /* Contact Information */
-  .contact-container {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-    flex-wrap: wrap;
-  }
-
-  .contact-card {
-    padding: 1.5rem;
-    border-radius: var(--border-radius-md);
-    background-color: white;
-    box-shadow: var(--shadow-sm);
-    text-align: center;
-    width: 250px;
-    transition: transform var(--transition-medium);
-  }
-
-  .contact-card:hover {
-    transform: translateY(-5px);
-  }
-
-  .dark .contact-card {
-    background-color: rgba(255, 255, 255, 0.05);
-  }
-
-  .contact-icon {
-    margin-bottom: 1rem;
-    color: var(--primary-color);
-  }
-
-  .dark .contact-icon {
-    color: #90caf9;
-  }
-
-  .contact-card p {
-    margin-bottom: 0.5rem;
-    color: var(--text-medium);
-  }
-
-  .dark .contact-card p {
-    color: #cbd5e0;
-  }
-
-  .contact-link {
-    display: block;
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: var(--primary-color);
-    text-decoration: none;
-    transition: color var(--transition-fast);
-  }
-
-  .contact-link:hover {
-    color: var(--primary-hover);
-    text-decoration: underline;
-  }
-
-  .dark .contact-link {
-    color: #90caf9;
-  }
-
-  .dark .contact-link:hover {
-    color: #64b5f6;
-  }
-
-  /* CTA Button Styling */
-  .cta-center {
-    text-align: center;
-    margin-top: 2rem;
-  }
-
-  .cta-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition:
-      background-color var(--transition-fast),
-      transform var(--transition-fast);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .cta-button:hover {
-    background-color: var(--primary-hover);
-    transform: translateY(-3px);
-  }
-
-  .cta-button.large {
-    padding: 1rem 2rem;
-    font-size: 1.2rem;
-  }
-
-  .cta-button svg {
-    transition: transform var(--transition-fast);
-  }
-
-  .cta-button:hover svg {
-    transform: translateX(4px);
-  }
-
   /* Pulse animation for CTA buttons */
   @keyframes pulse {
     0% {
@@ -1459,150 +749,27 @@
     }
   }
 
-  .pulse {
+  :global(.pulse) {
     animation: pulse 2s infinite;
   }
 
-  /* Responsive Styling */
-  @media (max-width: 992px) {
-    .hero-content h1 {
-      font-size: 2rem;
-    }
-
-    .hero-content h2 {
-      font-size: 1.2rem;
-    }
-
-    .section-header h2 {
-      font-size: 2rem;
-    }
-
-    .contact-container {
-      gap: 1rem;
-    }
-
-    .contact-card {
-      width: 100%;
-      max-width: 300px;
-    }
+  /* iframe styling */
+  :global(iframe) {
+    width: 100%;
+    height: 400px;
+    display: block;
+    border: none;
   }
 
   @media (max-width: 768px) {
-    .hero-banner {
-      height: 350px;
-    }
-
-    .hero-content h1 {
-      font-size: 1.7rem;
-    }
-
-    .hero-content h2 {
-      font-size: 1.1rem;
-    }
-
-    .hero-content p {
-      font-size: 0.9rem;
-    }
-
-    .hero-stats {
-      margin: 0.8rem 0;
-      padding: 0.6rem;
-    }
-
-    .stat-item {
-      font-size: 0.85rem;
-      margin-bottom: 0.6rem;
-    }
-
-    .section-header h2 {
-      font-size: 1.8rem;
-    }
-
-    .section-subtitle {
-      font-size: 1rem;
-    }
-
-    .stats-container {
-      gap: 1rem;
-    }
-
-    .stat-card {
-      width: 150px;
-    }
-
-    .stat-number {
-      font-size: 2.5rem;
-    }
-
-    iframe {
+    :global(iframe) {
       height: 300px;
-    }
-
-    .cta-card h2 {
-      font-size: 1.8rem;
-    }
-
-    .cta-card p {
-      font-size: 1rem;
     }
   }
 
   @media (max-width: 576px) {
-    .hero-banner {
-      height: 300px;
-    }
-
-    .hero-content h1 {
-      font-size: 1.4rem;
-    }
-
-    .hero-content h2 {
-      font-size: 1rem;
-    }
-
-    .hero-stats {
-      margin: 0.6rem 0;
-      padding: 0.5rem;
-    }
-
-    .stat-item {
-      font-size: 0.8rem;
-      margin-bottom: 0.6rem;
-    }
-
-    .section-header h2 {
-      font-size: 1.4rem;
-    }
-
-    .benefits-grid {
-      grid-template-columns: 1fr;
-      gap: 1rem;
-    }
-
-    .stats-container {
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .stat-card {
-      width: 100%;
-      max-width: 200px;
-      padding: 1rem;
-    }
-
-    iframe {
+    :global(iframe) {
       height: 220px;
-    }
-
-    .faq-grid {
-      grid-template-columns: 1fr;
-      gap: 1rem;
-    }
-
-    .installer-grid {
-      grid-template-columns: 1fr;
-      gap: 1rem;
     }
   }
 </style>

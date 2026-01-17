@@ -5,241 +5,72 @@
 	let darkMode = $derived($isDarkMode);
 </script>
 
-<main class={darkMode ? 'dark' : 'light'}>
-	<h1>Power Up Your Solar Project—No More Searching, Just Solutions!</h1>
+<main class={`flex flex-col items-center justify-center px-4 md:px-8 py-8 transition-colors duration-300 min-h-screen ${darkMode ? 'dark bg-background text-foreground' : 'light bg-background text-foreground'}`}>
+	<div class="max-w-2xl w-full">
+		<h1 class="text-3xl md:text-4xl font-semibold mb-6 leading-snug text-center">Power Up Your Solar Project—No More Searching, Just Solutions!</h1>
 
-	<p>
-		Tired of endless searching to find the right solar solution? We get it—sourcing reliable,
-		large-scale solar providers for <strong>medium to large projects (50 kW and above)</strong> can
-		be overwhelming. That’s why we’ve streamlined the process, connecting you directly with top-tier
-		experts from our <strong>network of 5,000+ installers across 5,000+ cities and towns</strong> nationwide.
-	</p>
+		<p class="text-base md:text-lg mb-6 leading-relaxed">
+			Tired of endless searching to find the right solar solution? We get it—sourcing reliable,
+			large-scale solar providers for <strong>medium to large projects (50 kW and above)</strong> can
+			be overwhelming. That's why we've streamlined the process, connecting you directly with top-tier
+			experts from our <strong>network of 5,000+ installers across 5,000+ cities and towns</strong> nationwide.
+		</p>
 
-	<h2>This is a Premium Access service (₹1000 flat fee), Here’s What You Gain:</h2>
-	<ul>
-		<li>
-			<strong>Skip the Search:</strong> Forget sifting through endless providers. Submit your requirements,
-			and qualified experts will reach out with competitive proposals.
-		</li>
-		<li>
-			<strong>Tailored Solutions</strong> Receive customized proposals from verified solar providers
-			who specialize in large-scale installations, tailored to your unique needs.
-		</li>
-		<li>
-			<strong>Complete Control:</strong> Review, compare, and select from competitive proposals — only
-			the best make the cut.
-		</li>
-	</ul>
+		<h2 class="text-2xl md:text-3xl font-semibold mb-6 leading-snug">This is a Premium Access service (₹1000 flat fee), Here's What You Gain:</h2>
+		<ul class="ml-4 md:ml-6 mb-6 text-base md:text-lg space-y-4">
+			<li class="leading-relaxed">
+				<strong>Skip the Search:</strong> Forget sifting through endless providers. Submit your requirements,
+				and qualified experts will reach out with competitive proposals.
+			</li>
+			<li class="leading-relaxed">
+				<strong>Tailored Solutions</strong> Receive customized proposals from verified solar providers
+				who specialize in large-scale installations, tailored to your unique needs.
+			</li>
+			<li class="leading-relaxed">
+				<strong>Complete Control:</strong> Review, compare, and select from competitive proposals — only
+				the best make the cut.
+			</li>
+		</ul>
 
-	<p>
-		Whether you're a business, educational institution, corporate office, or housing complex, our
-		expansive network ensures you’ll find the right fit. With a focus on large-scale needs, we make
-		sure your project receives the dedicated expertise it deserves.
-	</p>
+		<p class="text-base md:text-lg mb-6 leading-relaxed">
+			Whether you're a business, educational institution, corporate office, or housing complex, our
+			expansive network ensures you'll find the right fit. With a focus on large-scale needs, we make
+			sure your project receives the dedicated expertise it deserves.
+		</p>
 
-	<p>
-		<strong>Ready to Go Solar?</strong> Submit your requirements today, and our experts will call to
-		get your project moving—quickly, smoothly, and professionally.
-	</p>
+		<p class="text-base md:text-lg mb-8 leading-relaxed">
+			<strong>Ready to Go Solar?</strong> Submit your requirements today, and our experts will call to
+			get your project moving—quickly, smoothly, and professionally.
+		</p>
 
-	<!-- Form inside a box container -->
-	<div class="form-container">
-		<h2>Share Your Details Below:</h2>
-		<QueryForm />
-	</div>
-	<div class="social-media">
-		Please contact us at
-		<a href="mailto:admin@solarvipani.com">admin@solarvipani.com</a>
-		<br />
-		or call us at <a href="tel:+918983066701">+91 8983066701</a>
-		<p></p>
+		<!-- Form inside a box container -->
+		<div class="w-full p-6 md:p-8 rounded-lg shadow-md dark:shadow-card bg-card dark:bg-card mb-8 transition-colors duration-300">
+			<h2 class="text-2xl md:text-3xl font-semibold mb-6 text-center">Share Your Details Below:</h2>
+			<QueryForm />
+		</div>
 
-		<h4>Follow us on:</h4>
-		<a
-			href="https://www.facebook.com/p/Solar-Vipani-61556033262509/"
-			target="_blank"
-			aria-label="Facebook">Facebook</a
-		>
-		<a href="https://x.com/Solarvipani" target="_blank" aria-label="Twitter">Twitter</a>
-		<a href="https://www.linkedin.com/company/solar-vipani/" target="_blank" aria-label="LinkedIn"
-			>LinkedIn</a
-		>
-		<a href="https://www.instagram.com/solar.vipani/" target="_blank" aria-label="Instagram"
-			>Instagram</a
-		>
-		<a href="https://wa.me/918983066701" target="_blank" aria-label="Whatsapp">Whatsapp</a>
+		<div class="text-left">
+			<p class="text-base md:text-lg mb-2">
+				Please contact us at
+				<a href="mailto:admin@solarvipani.com" class="text-primary dark:text-primary underline hover:no-underline">admin@solarvipani.com</a>
+			</p>
+			<p class="text-base md:text-lg mb-6">
+				or call us at <a href="tel:+918983066701" class="text-primary dark:text-primary underline hover:no-underline">+91 8983066701</a>
+			</p>
+
+			<h4 class="text-lg font-semibold mb-4">Follow us on:</h4>
+			<div class="flex flex-col md:flex-row gap-4 md:gap-6">
+				<a
+					href="https://www.facebook.com/p/Solar-Vipani-61556033262509/"
+					target="_blank"
+					aria-label="Facebook"
+					class="text-primary dark:text-primary font-semibold text-lg hover:underline">Facebook</a
+				>
+				<a href="https://x.com/Solarvipani" target="_blank" aria-label="Twitter" class="text-primary dark:text-primary font-semibold text-lg hover:underline">Twitter</a>
+				<a href="https://www.linkedin.com/company/solar-vipani/" target="_blank" aria-label="LinkedIn" class="text-primary dark:text-primary font-semibold text-lg hover:underline">LinkedIn</a>
+				<a href="https://www.instagram.com/solar.vipani/" target="_blank" aria-label="Instagram" class="text-primary dark:text-primary font-semibold text-lg hover:underline">Instagram</a>
+				<a href="https://wa.me/918983066701" target="_blank" aria-label="Whatsapp" class="text-primary dark:text-primary font-semibold text-lg hover:underline">Whatsapp</a>
+			</div>
+		</div>
 	</div>
 </main>
-
-<style>
-	/* Root variables for light and dark modes */
-	:root {
-		--light-bg-color: #f8f9fa; /* Soft light background */
-		--dark-bg-color: #1a1a1a; /* Dark background */
-		--light-primary-text-color: #333; /* Dark text for light mode */
-		--dark-primary-text-color: #f0f0f0; /* Light text for dark mode */
-		--accent-color: #ffc107; /* Accent color similar to aeon.co */
-		--font-family: 'Helvetica Neue', Arial, sans-serif;
-		--light-form-bg: white; /* Form background in light mode */
-		--dark-form-bg: #333; /* Form background in dark mode */
-		--box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-	}
-
-	/* Main layout styling */
-	main {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: 2rem;
-		font-family: var(--font-family);
-		transition:
-			background-color 0.3s ease,
-			color 0.3s ease;
-	}
-
-	main > * {
-		max-width: 600px;
-	}
-
-	/* Light mode */
-	.light {
-		background-color: var(--light-bg-color);
-		color: var(--light-primary-text-color);
-	}
-
-	/* Dark mode */
-	.dark {
-		background-color: var(--dark-bg-color);
-		color: var(--dark-primary-text-color);
-	}
-
-	/* Heading styling */
-	h1 {
-		font-size: 2.2rem;
-		margin-bottom: 1.5rem;
-		font-weight: 600;
-		line-height: 1.3;
-	}
-
-	h1 {
-		text-align: center; /* Center the main heading */
-	}
-	h2 {
-		font-size: 1.5rem;
-		margin-bottom: 1.5rem;
-		font-weight: 600;
-		line-height: 1.3;
-	}
-
-	.light h1,
-	.light p,
-	.light li {
-		color: var(--light-primary-text-color);
-	}
-
-	.dark h1,
-	.dark p,
-	.dark li {
-		color: var(--dark-primary-text-color);
-	}
-
-	/* Paragraph styling */
-	p {
-		font-size: 1.1rem;
-		margin-bottom: 1.8rem;
-		line-height: 1.6;
-	}
-
-	/* List styling */
-	ul {
-		margin-left: 1.5rem;
-		margin-bottom: 1.5rem;
-		font-size: 1.1rem;
-	}
-
-	ul li {
-		margin-bottom: 1rem;
-		line-height: 1.6;
-	}
-
-	strong {
-		font-weight: 600;
-	}
-
-	/* Form container styling */
-	.form-container {
-		width: 100%;
-		max-width: 600px;
-		padding: 2rem;
-		border-radius: 8px;
-		box-shadow: var(--box-shadow);
-		transition: background-color 0.3s ease;
-	}
-
-	.form-container h2 {
-		text-align: center;
-	}
-
-	/* Light mode form container */
-	.light .form-container {
-		background-color: var(--light-form-bg);
-	}
-
-	/* Dark mode form container */
-	.dark .form-container {
-		background-color: var(--dark-form-bg);
-	}
-
-	/* Responsive styling */
-	@media (max-width: 768px) {
-		main {
-			padding: 1.5rem;
-		}
-
-		h1,
-		h2 {
-			font-size: 2rem;
-		}
-
-		p,
-		ul li {
-			font-size: 1rem;
-		}
-	}
-	/* Social media section styling */
-	.social-media {
-		margin-top: 1.5rem;
-		text-align: left;
-	}
-
-	.social-media a {
-		display: inline-block;
-		margin-right: 1rem;
-		color: var(--accent-color);
-		font-weight: bold;
-		text-decoration: none;
-		font-size: 1.2rem;
-	}
-
-	.social-media a:hover {
-		text-decoration: underline;
-	}
-
-	/* Dark mode for social media links */
-	.dark .social-media a {
-		color: var(--dark-primary-text-color);
-	}
-
-	a {
-		color: #0066cc;
-	}
-
-	/* Responsive styling for mobile */
-	@media (max-width: 768px) {
-		.social-media a {
-			display: block;
-			margin-bottom: 0.5rem;
-		}
-	}
-</style>
