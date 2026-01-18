@@ -43,22 +43,22 @@
 <main class="w-full bg-background text-foreground transition-colors duration-300 overflow-x-hidden dark:bg-background dark:text-foreground">
   <div class="mx-auto max-w-[1140px] p-4 md:p-4">
     <!-- Hero Section -->
-    <section class="rounded-lg bg-gradient-to-r from-primary to-blue-700 text-white p-16 md:p-24 mb-0 shadow-md">
+    <section class="rounded-lg bg-gradient-to-r from-primary to-primary text-primary-foreground p-16 md:p-24 mb-0 shadow-md">
       <div class="text-center mb-10">
-        <h1 class="text-4xl md:text-5xl font-bold mb-4 text-white">About Solar Vipani</h1>
+        <h1 class="text-4xl md:text-5xl font-bold mb-4 text-primary-foreground">About Solar Vipani</h1>
         <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
-        <p class="text-xl text-white max-w-2xl mx-auto">
+        <p class="text-xl text-primary-foreground max-w-2xl mx-auto">
           Your trusted marketplace for solar energy solutions
         </p>
       </div>
     </section>
 
     <!-- Introduction Section -->
-    <section class="rounded-lg bg-blue-50 dark:bg-blue-950/15 p-16 md:p-24 mb-8 shadow-md">
+    <section class="rounded-lg bg-accent-muted p-16 md:p-24 mb-8 shadow-md">
       <div>
-        <p class="text-lg font-medium text-primary dark:text-blue-300 mb-6">
+        <p class="text-lg font-medium text-primary text-primary mb-6">
           Our platform is designed for homeowners and businesses ready to go
           solar but unsure where to start.
         </p>
@@ -90,30 +90,30 @@
     </section>
 
     <!-- Stats Grid -->
-    <section class="rounded-lg bg-card dark:bg-card p-12 md:p-12 mb-8 shadow-md">
+    <section class="rounded-lg bg-card  p-12 md:p-12 mb-8 shadow-md">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="p-8 rounded-lg bg-background dark:bg-slate-800/50 border-t-4 border-accent shadow-md hover:shadow-lg hover:-translate-y-2 transition-all">
-          <div class="text-4xl font-bold text-primary dark:text-blue-300 mb-2">450+</div>
-          <h3 class="text-xl font-semibold text-primary dark:text-blue-300 mb-2">Verified Businesses</h3>
+        <div class="p-8 rounded-lg bg-background  border-t-4 border-accent shadow-md hover:shadow-lg hover:-translate-y-2 transition-all">
+          <div class="text-4xl font-bold text-primary text-primary mb-2">450+</div>
+          <h3 class="text-xl font-semibold text-primary text-primary mb-2">Verified Businesses</h3>
           <p class="text-foreground dark:text-foreground-secondary">Listed across India</p>
         </div>
-        <div class="p-8 rounded-lg bg-background dark:bg-slate-800/50 border-t-4 border-accent shadow-md hover:shadow-lg hover:-translate-y-2 transition-all">
-          <div class="text-4xl font-bold text-primary dark:text-blue-300 mb-2">5,000+</div>
-          <h3 class="text-xl font-semibold text-primary dark:text-blue-300 mb-2">Cities & Towns</h3>
+        <div class="p-8 rounded-lg bg-background  border-t-4 border-accent shadow-md hover:shadow-lg hover:-translate-y-2 transition-all">
+          <div class="text-4xl font-bold text-primary text-primary mb-2">5,000+</div>
+          <h3 class="text-xl font-semibold text-primary text-primary mb-2">Cities & Towns</h3>
           <p class="text-foreground dark:text-foreground-secondary">Nationwide coverage</p>
         </div>
-        <div class="p-8 rounded-lg bg-background dark:bg-slate-800/50 border-t-4 border-accent shadow-md hover:shadow-lg hover:-translate-y-2 transition-all">
-          <div class="text-4xl font-bold text-primary dark:text-blue-300 mb-2">100%</div>
-          <h3 class="text-xl font-semibold text-primary dark:text-blue-300 mb-2">Quality Assured</h3>
+        <div class="p-8 rounded-lg bg-background  border-t-4 border-accent shadow-md hover:shadow-lg hover:-translate-y-2 transition-all">
+          <div class="text-4xl font-bold text-primary text-primary mb-2">100%</div>
+          <h3 class="text-xl font-semibold text-primary text-primary mb-2">Quality Assured</h3>
           <p class="text-foreground dark:text-foreground-secondary">Verified solar providers</p>
         </div>
       </div>
     </section>
 
     <!-- Purpose Section -->
-    <section class="rounded-lg bg-card dark:bg-card p-16 md:p-24 mb-8 shadow-md">
+    <section class="rounded-lg bg-card  p-16 md:p-24 mb-8 shadow-md">
       <div class="text-center mb-10">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary dark:text-blue-300">Our Purpose</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary text-primary">Our Purpose</h2>
         <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
@@ -130,9 +130,9 @@
     </section>
 
     <!-- Expertise Section -->
-    <section class="rounded-lg bg-card dark:bg-card p-16 md:p-24 mb-8 shadow-md">
+    <section class="rounded-lg bg-card  p-16 md:p-24 mb-8 shadow-md">
       <div class="text-center mb-10">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary dark:text-blue-300">Our Digital Expertise</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary text-primary">Our Digital Expertise</h2>
         <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
@@ -149,41 +149,41 @@
     </section>
 
     <!-- Why Choose Us Section -->
-    <section class="rounded-lg bg-card dark:bg-card p-16 md:p-24 mb-8 shadow-md">
+    <section class="rounded-lg bg-card  p-16 md:p-24 mb-8 shadow-md">
       <div class="text-center mb-10">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary dark:text-blue-300">Why Choose Solar Vipani?</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary text-primary">Why Choose Solar Vipani?</h2>
         <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="p-8 rounded-lg bg-background dark:bg-slate-800/50 border border-border hover:shadow-lg hover:-translate-y-1 transition-all text-center">
+        <div class="p-8 rounded-lg bg-background  border border-border hover:shadow-lg hover:-translate-y-1 transition-all text-center">
           <div class="text-4xl mb-4 block">⚡</div>
-          <h3 class="text-lg font-semibold text-primary dark:text-blue-300 mb-3">Quality Assurance</h3>
+          <h3 class="text-lg font-semibold text-primary text-primary mb-3">Quality Assurance</h3>
           <p class="text-foreground dark:text-foreground-secondary text-sm">
             We rigorously screen every Solar EPC company on our platform, so
             you're only matched with trusted industry leaders.
           </p>
         </div>
-        <div class="p-8 rounded-lg bg-background dark:bg-slate-800/50 border border-border hover:shadow-lg hover:-translate-y-1 transition-all text-center">
+        <div class="p-8 rounded-lg bg-background  border border-border hover:shadow-lg hover:-translate-y-1 transition-all text-center">
           <div class="text-4xl mb-4 block">📊</div>
-          <h3 class="text-lg font-semibold text-primary dark:text-blue-300 mb-3">Unbiased Information</h3>
+          <h3 class="text-lg font-semibold text-primary text-primary mb-3">Unbiased Information</h3>
           <p class="text-foreground dark:text-foreground-secondary text-sm">
             Solar Vipani is built to inform, not sell. Our platform provides
             objective, detailed information on each solar provider.
           </p>
         </div>
-        <div class="p-8 rounded-lg bg-background dark:bg-slate-800/50 border border-border hover:shadow-lg hover:-translate-y-1 transition-all text-center">
+        <div class="p-8 rounded-lg bg-background  border border-border hover:shadow-lg hover:-translate-y-1 transition-all text-center">
           <div class="text-4xl mb-4 block">🔍</div>
-          <h3 class="text-lg font-semibold text-primary dark:text-blue-300 mb-3">Effortless Comparisons</h3>
+          <h3 class="text-lg font-semibold text-primary text-primary mb-3">Effortless Comparisons</h3>
           <p class="text-foreground dark:text-foreground-secondary text-sm">
             Comparing options is as easy as browsing. Get insights on service
             quality, equipment standards, and financial benefits at a glance.
           </p>
         </div>
-        <div class="p-8 rounded-lg bg-background dark:bg-slate-800/50 border border-border hover:shadow-lg hover:-translate-y-1 transition-all text-center">
+        <div class="p-8 rounded-lg bg-background  border border-border hover:shadow-lg hover:-translate-y-1 transition-all text-center">
           <div class="text-4xl mb-4 block">🎯</div>
-          <h3 class="text-lg font-semibold text-primary dark:text-blue-300 mb-3">Customer-First Support</h3>
+          <h3 class="text-lg font-semibold text-primary text-primary mb-3">Customer-First Support</h3>
           <p class="text-foreground dark:text-foreground-secondary text-sm">
             Our support team is dedicated to guiding you through every step,
             from initial inquiries to post-installation feedback.
@@ -193,9 +193,9 @@
     </section>
 
     <!-- Call to Action Section -->
-    <section class="rounded-lg bg-card dark:bg-card p-16 md:p-24 mb-8 shadow-md">
+    <section class="rounded-lg bg-card  p-16 md:p-24 mb-8 shadow-md">
       <div class="text-center mb-10">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary dark:text-blue-300">Building a Brighter Future, Together</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary text-primary">Building a Brighter Future, Together</h2>
         <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
@@ -219,13 +219,13 @@
 
     <!-- Contact Form Section -->
     <section class="mb-8">
-      <div class="bg-gradient-to-r from-primary to-blue-700 text-white p-12 md:p-12 rounded-lg shadow-lg">
+      <div class="bg-gradient-to-r from-primary to-primary text-primary-foreground p-12 md:p-12 rounded-lg shadow-lg">
         <div class="text-center mb-10">
-          <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-white">Feel Free to Reach Us</h2>
+          <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary-foreground">Feel Free to Reach Us</h2>
           <div class="flex justify-center items-center my-4">
             <span class="w-20 h-1 bg-accent rounded"></span>
           </div>
-          <p class="text-lg text-white/90">Get in touch with our solar experts</p>
+          <p class="text-lg text-primary-foreground/90">Get in touch with our solar experts</p>
         </div>
         <QueryForm />
       </div>
@@ -236,9 +236,9 @@
       <div class="mb-8">
         <p class="text-base mb-2">
           Write to us at
-          <a href="mailto:admin@solarvipani.com" class="font-semibold text-primary dark:text-blue-300 hover:underline">admin@solarvipani.com</a>
+          <a href="mailto:admin@solarvipani.com" class="font-semibold text-primary text-primary hover:underline">admin@solarvipani.com</a>
           <br />
-          or call us at <a href="tel:+918983066701" class="font-semibold text-primary dark:text-blue-300 hover:underline">+91 8983066701</a>
+          or call us at <a href="tel:+918983066701" class="font-semibold text-primary text-primary hover:underline">+91 8983066701</a>
         </p>
       </div>
 
@@ -250,7 +250,7 @@
               href={link.url}
               target="_blank"
               aria-label={link.label}
-              class="flex items-center gap-2 text-primary dark:text-blue-300 hover:text-primary-hover dark:hover:text-blue-400 font-medium transition-colors hover:-translate-y-1 transform"
+              class="flex items-center gap-2 text-primary text-primary hover:text-primary-hover dark:hover:text-blue-400 font-medium transition-colors hover:-translate-y-1 transform"
             >
               {@html link.icon}
               <span>{link.label}</span>
@@ -261,8 +261,8 @@
 
       <div class="border-t border-border pt-8 dark:border-slate-600">
         <p class="text-foreground dark:text-foreground-secondary">
-          <a href="/in/terms-of-use" class="text-primary dark:text-blue-300 hover:underline">Terms of Use</a> |
-          <a href="/in/privacy-policy" class="text-primary dark:text-blue-300 hover:underline">Privacy Policy</a>
+          <a href="/in/terms-of-use" class="text-primary text-primary hover:underline">Terms of Use</a> |
+          <a href="/in/privacy-policy" class="text-primary text-primary hover:underline">Privacy Policy</a>
         </p>
       </div>
     </section>

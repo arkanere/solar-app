@@ -310,7 +310,7 @@
   <meta name="robots" content="index, follow" />
 </svelte:head>
 
-<main class={`w-full transition-colors duration-300 overflow-x-hidden ${darkMode ? "bg-slate-900 text-white" : "bg-white text-slate-900"}`}>
+<main class={`w-full transition-colors duration-300 overflow-x-hidden ${darkMode ? "bg-slate-900 text-primary-foreground" : "bg-white text-slate-900"}`}>
   <!-- Hero Banner with Solar Panel Background -->
   <div class="relative w-full h-96 md:h-96 sm:h-80 flex items-center justify-center text-center overflow-hidden">
     <picture>
@@ -336,7 +336,7 @@
     </picture>
     <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-black/40 to-blue-900/70 z-10"></div>
     <div class="relative z-20 max-w-3xl px-6">
-      <h1 class="text-4xl md:text-5xl font-bold mb-4 text-white uppercase tracking-wide">Grow Your Solar Business</h1>
+      <h1 class="text-4xl md:text-5xl font-bold mb-4 text-primary-foreground uppercase tracking-wide">Grow Your Solar Business</h1>
       <h2 class="text-2xl md:text-3xl font-medium mb-6 text-accent drop-shadow-lg">Get Discovered on Google & ChatGPT</h2>
       <div class="my-6 p-3 md:p-3 bg-black/30 rounded-lg backdrop-blur-sm border border-white/10">
         <div class="mb-3 text-sm md:text-base leading-relaxed opacity-95">
@@ -348,10 +348,10 @@
           <span class="text-yellow-300 font-semibold drop-shadow">Don't let your business miss out.</span>
         </div>
       </div>
-      <p class="text-base md:text-lg mb-6 text-white/95 opacity-95 italic drop-shadow">
+      <p class="text-base md:text-lg mb-6 text-primary-foreground/95 opacity-95 italic drop-shadow">
         Connect directly with customers seeking solar installation services in your area
       </p>
-      <button class="inline-flex items-center justify-center gap-2 px-6 md:px-8 py-3 md:py-3 bg-primary text-white rounded-md font-semibold hover:bg-primary hover:opacity-90 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg uppercase tracking-wider text-sm md:text-base pulse" onclick={navigateToBusinessForm}>
+      <button class="inline-flex items-center justify-center gap-2 px-6 md:px-8 py-3 md:py-3 bg-primary text-primary-foreground rounded-md font-semibold hover:bg-primary hover:opacity-90 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg uppercase tracking-wider text-sm md:text-base pulse" onclick={navigateToBusinessForm}>
         <span>List My Business Now</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -374,9 +374,9 @@
 
   <div class="max-w-5xl mx-auto px-4 py-8 md:py-12">
     <!-- Value Proposition Section -->
-    <section class="rounded-lg bg-white dark:bg-slate-800 p-12 md:p-16 mb-8 shadow-md">
+    <section class="rounded-lg bg-card p-12 md:p-16 mb-8 shadow-md">
       <div class="text-center mb-10">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary dark:text-blue-300">Why List Your Business with Solar Vipani?</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary text-primary">Why List Your Business with Solar Vipani?</h2>
         <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
@@ -390,8 +390,8 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {#each benefits as benefit}
           <div class="p-8 rounded-lg bg-white dark:bg-slate-700/50 shadow-md hover:shadow-lg hover:-translate-y-1 transition-all text-center flex flex-col items-center">
-            <div class="w-16 h-16 flex items-center justify-center mb-4 rounded-full bg-blue-100 dark:bg-blue-900/40 text-primary dark:text-blue-300">{@html benefit.icon}</div>
-            <h3 class="text-xl font-semibold mb-3 text-primary dark:text-blue-300">{benefit.title}</h3>
+            <div class="w-16 h-16 flex items-center justify-center mb-4 rounded-full bg-blue-100 dark:bg-blue-900/40 text-primary text-primary">{@html benefit.icon}</div>
+            <h3 class="text-xl font-semibold mb-3 text-primary text-primary">{benefit.title}</h3>
             <div class="text-gray-600 dark:text-gray-400 text-sm">
               {#each benefit.descriptions as description}
                 <p class="mb-2">{description}</p>
@@ -402,7 +402,7 @@
       </div>
 
       <div class="text-center mt-8">
-        <button class="inline-flex items-center justify-center gap-2 px-8 py-3 bg-primary text-white rounded-md font-semibold hover:bg-primary-hover hover:-translate-y-1 transition-all duration-300 hover:shadow-lg uppercase tracking-wider" onclick={navigateToBusinessForm}>
+        <button class="inline-flex items-center justify-center gap-2 px-8 py-3 bg-primary text-primary-foreground rounded-md font-semibold hover:bg-primary-hover hover:-translate-y-1 transition-all duration-300 hover:shadow-lg uppercase tracking-wider" onclick={navigateToBusinessForm}>
           <span>Get Started for Free</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -424,9 +424,9 @@
     </section>
 
     <!-- Social Proof Section -->
-    <section class="rounded-lg bg-blue-50 dark:bg-blue-950/15 p-12 md:p-16 mb-8 shadow-md">
+    <section class="rounded-lg bg-accent-muted p-12 md:p-16 mb-8 shadow-md">
       <div class="text-center mb-10">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary dark:text-blue-300">Join the Solar Installer Community</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary text-primary">Join the Solar Installer Community</h2>
         <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
@@ -435,14 +435,14 @@
       <div class="flex justify-center gap-12 flex-wrap mb-8">
         {#each stats as stat}
           <div class="w-48 text-center p-6 rounded-lg bg-white dark:bg-slate-700/50 shadow-md hover:shadow-lg hover:scale-105 transition-all">
-            <div class="text-5xl font-bold text-primary dark:text-blue-300 mb-2">{stat.number}</div>
+            <div class="text-5xl font-bold text-primary text-primary mb-2">{stat.number}</div>
             <div class="text-lg font-semibold text-gray-600 dark:text-gray-400">{stat.label}</div>
           </div>
         {/each}
       </div>
 
       <div class="text-center mt-8">
-        <button class="inline-flex items-center justify-center gap-2 px-8 py-3 bg-primary text-white rounded-md font-semibold hover:bg-primary-hover hover:-translate-y-1 transition-all duration-300 hover:shadow-lg uppercase tracking-wider" onclick={navigateToBusinessForm}>
+        <button class="inline-flex items-center justify-center gap-2 px-8 py-3 bg-primary text-primary-foreground rounded-md font-semibold hover:bg-primary-hover hover:-translate-y-1 transition-all duration-300 hover:shadow-lg uppercase tracking-wider" onclick={navigateToBusinessForm}>
           <span>List My Business</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -464,9 +464,9 @@
     </section>
 
     <!-- Recently Joined Verified Installers -->
-    <section class="rounded-lg bg-slate-50 dark:bg-blue-950/5 p-12 md:p-16 mb-8 shadow-md">
+    <section class="rounded-lg bg-slate-50 dark:bg-accent-muted/50 p-12 md:p-16 mb-8 shadow-md">
       <div class="text-center mb-10">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary dark:text-blue-300">Recently Joined Verified Installers</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary text-primary">Recently Joined Verified Installers</h2>
         <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
@@ -485,7 +485,7 @@
               class="no-underline text-inherit block transition-transform hover:-translate-y-1 duration-300"
             >
               <div class="relative p-6 rounded-lg bg-white dark:bg-slate-700/50 shadow-md hover:shadow-lg transition-shadow h-full flex flex-col overflow-hidden">
-                <div class="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-full bg-green-500 text-white text-xs font-semibold">
+                <div class="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-full bg-success text-primary-foreground text-xs font-semibold">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="18"
@@ -502,7 +502,7 @@
                   >
                   <span>Verified</span>
                 </div>
-                <h3 class="text-lg font-semibold pr-16 text-primary dark:text-blue-300">{business.businessname}</h3>
+                <h3 class="text-lg font-semibold pr-16 text-primary text-primary">{business.businessname}</h3>
                 <div class="flex flex-col gap-2 mt-auto">
                   <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-sm">
                     <svg
@@ -573,7 +573,7 @@
     </section>
 
     <!-- How It Works Video Section -->
-    <section class="rounded-lg bg-white dark:bg-slate-800 p-12 md:p-16 mb-8 shadow-md text-center" id="product-working">
+    <section class="rounded-lg bg-card p-12 md:p-16 mb-8 shadow-md text-center" id="product-working">
       <div class="section-header">
         <h2>See How It Works</h2>
         <div class="section-divider">
@@ -619,9 +619,9 @@
     </section>
 
     <!-- FAQs Section -->
-    <section class="rounded-lg bg-white dark:bg-slate-800 p-12 md:p-16 mb-8 shadow-md">
+    <section class="rounded-lg bg-card p-12 md:p-16 mb-8 shadow-md">
       <div class="text-center mb-10">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary dark:text-blue-300">Frequently Asked Questions</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary text-primary">Frequently Asked Questions</h2>
         <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
@@ -630,7 +630,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         {#each faqs as faq}
           <div class="p-6 rounded-lg bg-white dark:bg-slate-700/50 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all">
-            <h3 class="text-lg font-semibold mb-3 text-primary dark:text-blue-300">{faq.question}</h3>
+            <h3 class="text-lg font-semibold mb-3 text-primary text-primary">{faq.question}</h3>
             <p class="text-gray-600 dark:text-gray-400 text-sm">{faq.answer}</p>
           </div>
         {/each}
@@ -639,7 +639,7 @@
 
     <!-- Call to Action Section -->
     <section class="rounded-lg bg-transparent p-0 mb-8 shadow-none">
-      <div class="bg-gradient-to-r from-primary to-blue-700 text-white p-12 md:p-16 rounded-lg shadow-lg text-center">
+      <div class="bg-gradient-to-r from-primary to-primary text-primary-foreground p-12 md:p-16 rounded-lg shadow-lg text-center">
         <h2 class="text-3xl md:text-4xl font-semibold mb-4">Ready to Grow Your Solar Business?</h2>
         <p class="text-lg mb-8 max-w-2xl mx-auto opacity-90">
           Join thousands of solar installation companies already benefiting from
@@ -670,9 +670,9 @@
     </section>
 
     <!-- Need Assistance Section -->
-    <section class="rounded-lg bg-white dark:bg-slate-800 p-12 md:p-16 mb-8 shadow-md">
+    <section class="rounded-lg bg-card p-12 md:p-16 mb-8 shadow-md">
       <div class="text-center mb-10">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary dark:text-blue-300">We're Here to Help</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary text-primary">We're Here to Help</h2>
         <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
@@ -680,7 +680,7 @@
 
       <div class="flex justify-center gap-8 flex-wrap">
         <div class="p-6 rounded-lg bg-white dark:bg-slate-700/50 shadow-sm text-center w-64 transition-transform hover:-translate-y-1">
-          <div class="text-primary dark:text-blue-300 mb-4 flex justify-center">
+          <div class="text-primary text-primary mb-4 flex justify-center">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"
@@ -699,13 +699,13 @@
           <p class="mb-2 text-gray-600 dark:text-gray-400">Email us at</p>
           <a
             href="mailto:admin@solarvipani.com"
-            class="block text-lg font-semibold text-primary dark:text-blue-300 hover:underline transition-colors"
+            class="block text-lg font-semibold text-primary text-primary hover:underline transition-colors"
             rel="noopener">admin@solarvipani.com</a
           >
         </div>
 
         <div class="p-6 rounded-lg bg-white dark:bg-slate-700/50 shadow-sm text-center w-64 transition-transform hover:-translate-y-1">
-          <div class="text-primary dark:text-blue-300 mb-4 flex justify-center">
+          <div class="text-primary text-primary mb-4 flex justify-center">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"
@@ -722,7 +722,7 @@
             >
           </div>
           <p class="mb-2 text-gray-600 dark:text-gray-400">Call us at</p>
-          <a href="tel:+918983066701" class="block text-lg font-semibold text-primary dark:text-blue-300 hover:underline transition-colors" rel="noopener"
+          <a href="tel:+918983066701" class="block text-lg font-semibold text-primary text-primary hover:underline transition-colors" rel="noopener"
             >+91 8983066701</a
           >
         </div>

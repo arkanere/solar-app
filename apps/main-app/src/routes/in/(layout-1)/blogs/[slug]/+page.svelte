@@ -97,11 +97,11 @@
 
 <main class="w-full min-h-screen bg-background text-foreground transition-colors duration-300 dark:bg-background dark:text-foreground flex flex-col items-center py-8 px-4 md:py-12">
 	<div class="max-w-3xl w-full mb-12">
-		<header class="mb-8 pb-6 border-b border-border dark:border-slate-600">
+		<header class="mb-8 pb-6 border-b border-border">
 			<h1 class="text-4xl md:text-5xl font-bold mb-4 leading-tight">{blog.title}</h1>
 			{#if blog.author_name}
 				<p class="text-base mb-2">
-					By <a href="/about-us" class="text-primary dark:text-blue-300 hover:underline">
+					By <a href="/about-us" class="text-primary text-primary hover:underline">
 						{blog.author_name}
 					</a>
 				</p>
@@ -131,7 +131,7 @@
 		{#if blog.tags && blog.tags.length > 0}
 			<div class="flex gap-2 flex-wrap mb-8">
 				{#each blog.tags as tag}
-					<span class="inline-block px-3 py-1 bg-primary text-white rounded-full text-sm font-medium">
+					<span class="inline-block px-3 py-1 bg-primary text-primary-foreground rounded-full text-sm font-medium">
 						{tag}
 					</span>
 				{/each}
@@ -143,7 +143,7 @@
 		</div>
 
 		{#if blog.categories && blog.categories.length > 0}
-			<div class="mt-8 pt-4 border-t border-border dark:border-slate-600 opacity-80 text-base">
+			<div class="mt-8 pt-4 border-t border-border opacity-80 text-base">
 				<strong>Categories:</strong>
 				{#each blog.categories as category, index}
 					<span>{category}{index < blog.categories.length - 1 ? ', ' : ''}</span>
@@ -152,9 +152,9 @@
 		{/if}
 	</div>
 
-	<section id="lead-form-sv" class="w-full max-w-3xl rounded-2xl bg-gradient-to-r from-primary to-blue-700 text-white p-8 md:p-12 text-center shadow-lg">
-		<h2 class="text-3xl md:text-4xl font-semibold mb-4 text-white">Get Your Free Solar Quote Today</h2>
-		<p class="text-base md:text-lg mb-8 text-white/90 max-w-2xl mx-auto">
+	<section id="lead-form-sv" class="w-full max-w-3xl rounded-2xl bg-gradient-to-r from-primary to-primary text-primary-foreground p-8 md:p-12 text-center shadow-lg">
+		<h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary-foreground">Get Your Free Solar Quote Today</h2>
+		<p class="text-base md:text-lg mb-8 text-primary-foreground/90 max-w-2xl mx-auto">
 			Connect with verified solar installers in your area and receive personalized quotes.
 			Free consultation and competitive pricing guaranteed.
 		</p>

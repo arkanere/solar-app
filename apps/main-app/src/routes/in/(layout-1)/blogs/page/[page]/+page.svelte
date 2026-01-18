@@ -47,7 +47,7 @@
     {:else}
       <ul class="space-y-6">
         {#each blogs as blog}
-          <li class="rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden border border-border dark:border-slate-600">
+          <li class="rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden border border-border">
             <a href="/in/blogs/{blog.slug}" class="no-underline text-foreground dark:text-foreground block hover:no-underline">
               {#if getFeaturedImageUrl(blog.featured_image)}
                 <div class="w-full h-48 md:h-64 overflow-hidden">
@@ -84,7 +84,7 @@
       {#if pagination && pagination.totalPages > 1}
         <div class="flex justify-center items-center gap-2 md:gap-4 mt-12 pt-8 flex-wrap">
           {#if pagination.page > 1}
-            <a href="/in/blogs/page/{pagination.page - 1}" class="px-4 md:px-6 py-2 md:py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary-hover transition-colors text-sm md:text-base">
+            <a href="/in/blogs/page/{pagination.page - 1}" class="px-4 md:px-6 py-2 md:py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary-hover transition-colors text-sm md:text-base">
               ← Previous
             </a>
           {/if}
@@ -92,7 +92,7 @@
           <div class="flex gap-1 items-center">
             {#each Array(pagination.totalPages) as _, i}
               {#if i + 1 === pagination.page}
-                <span class="px-2 md:px-3 py-1 md:py-2 bg-primary text-white rounded font-semibold text-sm md:text-base w-8 md:w-10 text-center">{i + 1}</span>
+                <span class="px-2 md:px-3 py-1 md:py-2 bg-primary text-primary-foreground rounded font-semibold text-sm md:text-base w-8 md:w-10 text-center">{i + 1}</span>
               {:else if Math.abs(i + 1 - pagination.page) <= 2 || i === 0 || i === pagination.totalPages - 1}
                 <a href="/in/blogs/page/{i + 1}" class="px-2 md:px-3 py-1 md:py-2 rounded text-foreground dark:text-foreground hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors text-sm md:text-base w-8 md:w-10 text-center">
                   {i + 1}
@@ -104,7 +104,7 @@
           </div>
 
           {#if pagination.page < pagination.totalPages}
-            <a href="/in/blogs/page/{pagination.page + 1}" class="px-4 md:px-6 py-2 md:py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary-hover transition-colors text-sm md:text-base">
+            <a href="/in/blogs/page/{pagination.page + 1}" class="px-4 md:px-6 py-2 md:py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary-hover transition-colors text-sm md:text-base">
               Next →
             </a>
           {/if}

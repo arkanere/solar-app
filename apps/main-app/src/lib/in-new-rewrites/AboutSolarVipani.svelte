@@ -14,7 +14,7 @@
 <Card class="w-full mb-8 border-0 shadow-md">
 	<CardHeader class="text-center">
 		<CardTitle class="text-3xl md:text-2xl sm:text-xl">About Solarvipani</CardTitle>
-		<div class="h-1 w-20 bg-yellow-500 mx-auto mt-4"></div>
+		<div class="h-1 w-20 bg-secondary mx-auto mt-4"></div>
 	</CardHeader>
 
 	<CardContent class="space-y-6">
@@ -33,7 +33,7 @@
 					customers with
 					<a
 						href="/in/blogs/hiring-verified-solar-installer-in-india-is-essential"
-						class="font-semibold text-blue-600 hover:underline dark:text-blue-400"
+						class="font-semibold text-primary hover:underline"
 					>
 						Best Local Solar Panel Installation
 					</a>
@@ -65,7 +65,7 @@
 						target="_blank"
 						rel="noopener noreferrer"
 						aria-label={link.label}
-						class="flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:-translate-y-1 transition-all dark:text-blue-400 dark:hover:text-blue-300"
+						class="flex items-center gap-2 text-primary hover:text-primary/80 hover:-translate-y-1 transition-all"
 					>
 						<link.icon size={20} />
 						<span class="text-sm font-medium">{link.label}</span>

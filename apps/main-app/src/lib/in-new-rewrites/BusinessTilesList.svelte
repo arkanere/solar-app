@@ -53,14 +53,14 @@
 					<h2 class="text-xl font-semibold">
 						<a
 							href={`/in/solar-panel-installer/${business.slug}`}
-							class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline-offset-2 hover:underline"
+							class="text-primary hover:text-primary/80 underline-offset-2 hover:underline"
 						>
 							{business.businessname}
 						</a>
 					</h2>
 					{#if business.tag}
 						<Badge variant="secondary" class="whitespace-nowrap">
-							<span class="inline-flex items-center justify-center w-4 h-4 mr-1 rounded-full text-xs font-bold text-white bg-green-600">
+							<span class="inline-flex items-center justify-center w-4 h-4 mr-1 rounded-full text-xs font-bold text-success-foreground bg-success">
 								✓
 							</span>
 							{business.tag}
@@ -71,26 +71,26 @@
 				<Card.Content class="space-y-3">
 					{#if business.businessfilled}
 						{#if business.description}
-							<p class="text-gray-700 dark:text-gray-300">{business.description}</p>
+							<p class="text-foreground">{business.description}</p>
 						{/if}
 
-						<div class="flex items-center gap-3 text-gray-600 dark:text-gray-400">
-							<Phone class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+						<div class="flex items-center gap-3 text-foreground-secondary">
+							<Phone class="w-5 h-5 text-primary flex-shrink-0" />
 							<span>{business.phonenumber}</span>
 						</div>
 
-						<div class="flex items-start gap-3 text-gray-600 dark:text-gray-400">
-							<MapPin class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+						<div class="flex items-start gap-3 text-foreground-secondary">
+							<MapPin class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
 							<span>{business.address}</span>
 						</div>
 					{:else}
-						<div class="flex items-start gap-3 text-gray-600 dark:text-gray-400">
-							<MapPin class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+						<div class="flex items-start gap-3 text-foreground-secondary">
+							<MapPin class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
 							<span>{business.address || `${business.city}, ${business.state}`}</span>
 						</div>
 						{#if business.phonenumber}
-							<div class="flex items-center gap-3 text-gray-600 dark:text-gray-400">
-								<Phone class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+							<div class="flex items-center gap-3 text-foreground-secondary">
+								<Phone class="w-5 h-5 text-primary flex-shrink-0" />
 								<a
 									href={`tel:${business.phonenumber}`}
 									class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline"
@@ -102,10 +102,10 @@
 					{/if}
 				</Card.Content>
 
-				<div class="flex flex-col sm:flex-row gap-3 px-6 py-4 bg-gray-50 dark:bg-gray-900/50">
+				<div class="flex flex-col sm:flex-row gap-3 px-6 py-4 bg-muted">
 					<Button
 						variant="default"
-						class="bg-red-600 hover:bg-red-700 flex-1 sm:flex-none"
+						class="bg-destructive hover:bg-destructive/80 flex-1 sm:flex-none"
 						onclick={() => makeCall(business.phonenumber, business.city, business.slug)}
 					>
 						<Phone class="w-4 h-4" />
@@ -114,7 +114,7 @@
 					{#if business.businessfilled || business.phonenumber}
 						<Button
 							variant="default"
-							class="bg-green-600 hover:bg-green-700 flex-1 sm:flex-none"
+							class="bg-success hover:bg-success/80 flex-1 sm:flex-none"
 							onclick={() => openWhatsApp(business.phonenumber, business.city, business.slug)}
 						>
 							<MessageCircle class="w-4 h-4" />
@@ -141,7 +141,7 @@
 				<X class="w-4 h-4" />
 			</Dialog.Close>
 		</div>
-		<p class="text-sm text-gray-600 dark:text-gray-400">From {selectedBusinessName}</p>
+		<p class="text-sm text-foreground-secondary">From {selectedBusinessName}</p>
 		<LeadFormModal businessName={selectedBusinessName} businessSlug={selectedBusinessSlug} />
 	</Dialog.Content>
 </Dialog.Root>

@@ -738,10 +738,10 @@
   });
 </script>
 
-<div class={`w-full max-w-full flex flex-col h-[700px] min-h-[600px] max-h-screen rounded-lg border ${$isDarkMode ? "dark bg-slate-900 border-slate-700" : "bg-white border-slate-200"}`}>
+<div class={`w-full max-w-full flex flex-col h-[700px] min-h-[600px] max-h-screen rounded-lg border bg-card border-border`}>
   <!-- Header -->
-  <div class={`flex justify-between items-center p-4 border-b ${$isDarkMode ? "bg-slate-800 border-slate-700" : "bg-blue-600 text-white border-slate-200"}`}>
-    <h3 class={`text-lg font-semibold ${!$isDarkMode && "text-white"}`}>Calculate Price and Savings</h3>
+  <div class="flex justify-between items-center p-4 border-b bg-primary border-border">
+    <h3 class="text-lg font-semibold text-primary-foreground">Calculate Price and Savings</h3>
     {#if onClose}
       <Button variant="ghost" size="sm" onclick={onClose} class="rounded-full w-8 h-8 p-0">
         <X class="w-5 h-5" />
@@ -750,14 +750,14 @@
   </div>
 
   <!-- Chat History -->
-  <div class={`flex-1 overflow-y-auto p-4 space-y-4 ${$isDarkMode ? "bg-slate-900" : "bg-slate-100"}`} bind:this={chatHistoryContainer} onscroll={handleScroll}>
+  <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-background" bind:this={chatHistoryContainer} onscroll={handleScroll}>
     {#each $messages as message, i}
       <div class={`flex ${message.role === "user" ? "justify-end" : "justify-start"} gap-3`}>
         {#if message.role === "assistant"}
           <img src="https://api.dicebear.com/9.x/bottts/svg?seed=SolarBot" alt="Bot" class="w-8 h-8 rounded-full flex-shrink-0 mt-1" />
         {/if}
-        <Card class={`max-w-[85%] ${message.role === "user" ? ($isDarkMode ? "bg-blue-700" : "bg-blue-600") : $isDarkMode ? "bg-slate-800" : "bg-white"}`}>
-          <CardContent class={`pt-4 text-sm ${message.role === "user" ? "text-white" : $isDarkMode ? "text-slate-100" : "text-slate-900"}`}>
+        <Card class={`max-w-[85%] ${message.role === "user" ? "bg-primary" : "bg-card"}`}>
+          <CardContent class={`pt-4 text-sm ${message.role === "user" ? "text-primary-foreground" : "text-foreground"}`}>
             <p class="whitespace-pre-wrap break-words">{@html message.content}</p>
 
             <!-- Guided flow suggestion -->
@@ -811,27 +811,27 @@
 
             <!-- Form display -->
             {#if message.role === "assistant" && i === $messages.length - 1 && conversationFlows.flows[currentFlowId]?.flowType === "form" && conversationFlows.flows[currentFlowId]?.inputs?.length > 0 && !message.showGuidedOption}
-              <div class={`mt-4 p-4 rounded-lg space-y-3 ${$isDarkMode ? "bg-slate-700" : "bg-slate-50"}`}>
+              <div class="mt-4 p-4 rounded-lg space-y-3 bg-background-secondary">
                 {#each conversationFlows.flows[currentFlowId].inputs as input}
                   <div class="space-y-1">
-                    <Label class={$isDarkMode ? "text-slate-200" : "text-slate-700"}>
+                    <Label class="text-foreground">
                       {input.label}{input.required ? " *" : ""}
                     </Label>
 
                     {#if input.type === "text"}
-                      <Input id={input.id} type="text" bind:value={formValues[input.id]} placeholder={input.placeholder || ""} class={formErrors[input.id] ? "border-red-500" : ""} />
+                      <Input id={input.id} type="text" bind:value={formValues[input.id]} placeholder={input.placeholder || ""} class={formErrors[input.id] ? "border-destructive" : ""} />
                     {:else if input.type === "tel"}
-                      <Input id={input.id} type="tel" bind:value={formValues[input.id]} placeholder={input.placeholder || ""} class={formErrors[input.id] ? "border-red-500" : ""} />
+                      <Input id={input.id} type="tel" bind:value={formValues[input.id]} placeholder={input.placeholder || ""} class={formErrors[input.id] ? "border-destructive" : ""} />
                     {:else if input.type === "email"}
-                      <Input id={input.id} type="email" bind:value={formValues[input.id]} placeholder={input.placeholder || ""} class={formErrors[input.id] ? "border-red-500" : ""} />
+                      <Input id={input.id} type="email" bind:value={formValues[input.id]} placeholder={input.placeholder || ""} class={formErrors[input.id] ? "border-destructive" : ""} />
                     {:else if input.type === "number"}
-                      <Input id={input.id} type="number" bind:value={formValues[input.id]} placeholder={input.placeholder || ""} class={formErrors[input.id] ? "border-red-500" : ""} />
+                      <Input id={input.id} type="number" bind:value={formValues[input.id]} placeholder={input.placeholder || ""} class={formErrors[input.id] ? "border-destructive" : ""} />
                     {:else}
-                      <Input id={input.id} type="text" bind:value={formValues[input.id]} placeholder={input.placeholder || ""} class={formErrors[input.id] ? "border-red-500" : ""} />
+                      <Input id={input.id} type="text" bind:value={formValues[input.id]} placeholder={input.placeholder || ""} class={formErrors[input.id] ? "border-destructive" : ""} />
                     {/if}
 
                     {#if formErrors[input.id]}
-                      <span class="text-xs text-red-500">{formErrors[input.id]}</span>
+                      <span class="text-xs text-destructive">{formErrors[input.id]}</span>
                     {/if}
                   </div>
                 {/each}
@@ -854,7 +854,7 @@
 
     {#if isLoading}
       <div class="flex gap-2 items-center">
-        <Badge variant="outline" class={`animate-pulse ${$isDarkMode ? "bg-slate-700" : ""}`}>●</Badge>
+        <Badge variant="outline" class="animate-pulse bg-background-secondary">●</Badge>
         <Badge variant="outline" class={`animate-pulse delay-200 ${$isDarkMode ? "bg-slate-700" : ""}`}>●</Badge>
         <Badge variant="outline" class={`animate-pulse delay-400 ${$isDarkMode ? "bg-slate-700" : ""}`}>●</Badge>
       </div>
@@ -865,7 +865,7 @@
 
   <!-- Chat Input -->
   {#if conversationFlows.flows[currentFlowId]?.flowType === "freeform"}
-    <div class={`flex gap-2 p-4 border-t ${$isDarkMode ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-white"}`}>
+    <div class="flex gap-2 p-4 border-t border-border bg-card">
       <Input bind:value={userInput} placeholder="Ask a question about solar installation..." onkeypress={(e) => e.key === "Enter" && sendMessage()} />
       <Button onclick={sendMessage} disabled={isLoading || !userInput.trim()} variant="default" size="sm">
         <Send class="w-4 h-4" />
@@ -874,7 +874,7 @@
   {/if}
 
   <!-- Reset Button -->
-  <div class={`p-2 border-t text-center ${$isDarkMode ? "border-slate-700 bg-slate-800" : "border-slate-200 bg-white"}`}>
+  <div class="p-2 border-t text-center border-border bg-card">
     <Button onclick={resetChat} variant="outline" size="sm">Reset Chat</Button>
   </div>
 </div>

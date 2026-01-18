@@ -143,7 +143,7 @@
       <h2 class="text-2xl md:text-3xl font-bold mb-6 text-primary dark:text-primary">Why Contribute to Solar Vipani?</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {#each benefits as benefit}
-          <div class="bg-card dark:bg-card rounded-lg shadow-md dark:shadow-card p-6 text-center hover:shadow-lg dark:hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300">
+          <div class="bg-card  rounded-lg shadow-md dark:shadow-card p-6 text-center hover:shadow-lg dark:hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300">
             <div class="text-4xl mb-4">{benefit.icon}</div>
             <h3 class="text-lg font-semibold mb-3 text-foreground dark:text-foreground">{benefit.title}</h3>
             <p class="text-sm leading-relaxed text-foreground-secondary dark:text-foreground-secondary">{benefit.description}</p>
@@ -155,7 +155,7 @@
     <!-- Who We're Looking For -->
     <section class="mb-16 md:mb-20">
       <h2 class="text-2xl md:text-3xl font-bold mb-6 text-primary dark:text-primary">Who We're Looking For</h2>
-      <div class="bg-card dark:bg-card rounded-lg shadow-md dark:shadow-card p-6 md:p-8">
+      <div class="bg-card  rounded-lg shadow-md dark:shadow-card p-6 md:p-8">
         <p class="text-base md:text-lg mb-6 text-foreground-secondary dark:text-foreground-secondary">We welcome contributions from credentialed professionals in the solar and renewable energy industry:</p>
         <div class="space-y-6">
           <div class="flex gap-4 items-start">
@@ -212,7 +212,7 @@
       </p>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         {#each acceptedTopics as topic}
-          <div class="bg-card dark:bg-card rounded-lg p-4 shadow-sm border-l-4 border-primary">
+          <div class="bg-card  rounded-lg p-4 shadow-sm border-l-4 border-primary">
             <h3 class="text-lg font-semibold mb-2 text-primary dark:text-primary">{topic.title}</h3>
             <p class="text-sm text-foreground-secondary dark:text-foreground-secondary"><strong>Examples:</strong> {topic.examples}</p>
           </div>
@@ -231,7 +231,7 @@
       </p>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         {#each guidelines as guideline}
-          <div class="bg-card dark:bg-card rounded-lg p-4 shadow-sm">
+          <div class="bg-card  rounded-lg p-4 shadow-sm">
             <h3 class="text-base font-semibold mb-2 text-foreground dark:text-foreground">{guideline.title}</h3>
             <p class="text-sm text-foreground-secondary dark:text-foreground-secondary">{guideline.description}</p>
           </div>
@@ -243,7 +243,7 @@
     <section class="mb-16 md:mb-20">
       <h2 class="text-2xl md:text-3xl font-bold mb-6 text-primary dark:text-primary">Link Policy</h2>
       <div class="space-y-6">
-        <div class="bg-card dark:bg-card rounded-lg p-6 shadow-md border-l-4 border-success">
+        <div class="bg-card  rounded-lg p-6 shadow-md border-l-4 border-success">
           <h3 class="text-lg font-semibold mb-4 text-foreground dark:text-foreground">✓ What We Allow</h3>
           <ul class="space-y-2">
             <li class="text-sm pl-4 text-foreground-secondary dark:text-foreground-secondary">
@@ -260,7 +260,7 @@
             </li>
           </ul>
         </div>
-        <div class="bg-card dark:bg-card rounded-lg p-6 shadow-md border-l-4 border-destructive">
+        <div class="bg-card  rounded-lg p-6 shadow-md border-l-4 border-destructive">
           <h3 class="text-lg font-semibold mb-4 text-foreground dark:text-foreground">✗ What We Reject</h3>
           <ul class="space-y-2">
             <li class="text-sm pl-4 text-foreground-secondary dark:text-foreground-secondary">
@@ -300,10 +300,10 @@
           {num: 4, title: 'Review & Publication', content: 'We will:', items: ['Review for accuracy, clarity, and editorial standards', 'Request revisions if needed (you retain final approval)', 'Publish approved articles within 2-3 weeks', 'Notify you when your article goes live']}
         ] as step}
           <div class="flex gap-4 md:gap-6 items-start">
-            <div class="bg-primary text-white w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-lg">
+            <div class="bg-primary text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-lg">
               {step.num}
             </div>
-            <div class="bg-card dark:bg-card rounded-lg p-4 md:p-6 shadow-sm flex-1">
+            <div class="bg-card  rounded-lg p-4 md:p-6 shadow-sm flex-1">
               <h3 class="text-lg font-semibold mb-3 text-foreground dark:text-foreground">{step.title}</h3>
               <p class="text-sm mb-3 text-foreground-secondary dark:text-foreground-secondary">{@html step.content}</p>
               <ul class="list-disc list-inside space-y-1">
@@ -320,7 +320,7 @@
     <!-- Important Disclaimers -->
     <section class="mb-16 md:mb-20">
       <h2 class="text-2xl md:text-3xl font-bold mb-6 text-primary dark:text-primary">Important Notes</h2>
-      <div class="bg-card dark:bg-card rounded-lg p-6 md:p-8 shadow-md">
+      <div class="bg-card  rounded-lg p-6 md:p-8 shadow-md">
         <ul class="space-y-4 divide-y divide-border dark:divide-border">
           <li class="pt-4 first:pt-0 text-sm text-foreground-secondary dark:text-foreground-secondary">
             <strong class="text-foreground dark:text-foreground">Editorial Control:</strong> We reserve the right to edit submissions for clarity, length, grammar, and style. Major changes will be shared with you for approval.
@@ -342,8 +342,8 @@
     </section>
 
     <!-- CTA Section -->
-    <section class="text-center bg-gradient-to-r from-primary to-primary/90 dark:from-primary dark:to-primary/80 rounded-lg p-8 md:p-12 text-white shadow-lg mb-16">
-      <h2 class="text-2xl md:text-3xl font-bold mb-4 text-white">Ready to Share Your Expertise?</h2>
+    <section class="text-center bg-gradient-to-r from-primary to-primary/90 dark:from-primary dark:to-primary/80 rounded-lg p-8 md:p-12 text-primary-foreground shadow-lg mb-16">
+      <h2 class="text-2xl md:text-3xl font-bold mb-4 text-primary-foreground">Ready to Share Your Expertise?</h2>
       <p class="text-base md:text-lg mb-6 max-w-xl mx-auto">
         Help homeowners and businesses across India make informed solar decisions.
         Your insights can accelerate the clean energy transition.

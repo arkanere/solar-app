@@ -77,12 +77,12 @@
   />
 </svelte:head>
 
-<main class={`w-full font-sans leading-relaxed overflow-x-hidden transition-colors duration-300 flex flex-col items-center px-4 py-8 min-h-screen ${darkMode ? 'dark bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'}`}>
+<main class={`w-full font-sans leading-relaxed overflow-x-hidden transition-colors duration-300 flex flex-col items-center px-4 py-8 min-h-screen ${darkMode ? 'dark bg-gray-900 text-primary-foreground' : 'bg-muted text-foreground'}`}>
   {#if business}
     <!-- Business Login (for business owners) -->
     <div class="flex justify-end mb-4 px-4">
       <button
-        class="bg-transparent text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 text-xs font-normal px-4 py-2 rounded transition-all opacity-70 hover:opacity-100 hover:bg-gray-50 dark:hover:bg-gray-800"
+        class="bg-transparent text-gray-600 dark:text-gray-400 border border-border dark:border-gray-600 text-xs font-normal px-4 py-2 rounded transition-all opacity-70 hover:opacity-100 hover:bg-gray-50 dark:hover:bg-gray-800"
         onclick={business.businessfilled ? navigateToLogin : navigateToClaim}
         title={business.businessfilled
           ? "Business owner login"
@@ -93,18 +93,18 @@
     </div>
 
     <!-- Hero Section -->
-    <div class="text-center px-8 py-12 bg-gradient-to-br from-blue-600 to-blue-700 dark:from-gray-700 dark:to-gray-900 rounded-2xl text-white mb-8 relative overflow-hidden">
+    <div class="text-center px-8 py-12 bg-gradient-to-br from-blue-600 to-primary dark:from-gray-700 dark:to-gray-900 rounded-2xl text-primary-foreground mb-8 relative overflow-hidden">
       <h1 class="text-3xl md:text-4xl font-bold mb-2">{business.businessname}</h1>
       {#if business.businessfilled && business.tag !== "Blank"}
         <div class="inline-flex items-center text-xs font-medium uppercase tracking-wide mb-6">
-          <span class="inline-flex items-center justify-center w-3.5 h-3.5 bg-green-500 text-white rounded-full text-xs font-bold mr-1">✓</span>
+          <span class="inline-flex items-center justify-center w-3.5 h-3.5 bg-success text-primary-foreground rounded-full text-xs font-bold mr-1">✓</span>
           <span class="text-green-500">{business.tag}</span>
         </div>
       {/if}
       {#if business.phonenumber}
         <div class="flex justify-center gap-4 flex-wrap">
           <button
-            class="flex items-center gap-2 bg-gradient-to-br from-red-500 to-red-600 text-white font-bold text-sm uppercase tracking-wide px-8 py-4 rounded-lg transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 w-40 justify-center md:w-auto"
+            class="flex items-center gap-2 bg-gradient-to-br from-red-500 to-red-600 text-primary-foreground font-bold text-sm uppercase tracking-wide px-8 py-4 rounded-lg transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 w-40 justify-center md:w-auto"
             onclick={() => makeCall(business.phonenumber, business.slug)}
           >
             <span class="flex items-center">
@@ -127,7 +127,7 @@
             <span>CALL NOW</span>
           </button>
           <button
-            class="flex items-center gap-2 bg-gradient-to-br from-green-500 to-green-600 text-white font-bold text-sm uppercase tracking-wide px-8 py-4 rounded-lg transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 w-40 justify-center md:w-auto"
+            class="flex items-center gap-2 bg-gradient-to-br from-green-500 to-green-600 text-primary-foreground font-bold text-sm uppercase tracking-wide px-8 py-4 rounded-lg transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 w-40 justify-center md:w-auto"
             onclick={() => openWhatsApp(business.phonenumber, business.slug)}
           >
             <span class="flex items-center">
@@ -151,9 +151,9 @@
 
     <!-- Business Details - Single Combined Card -->
     <div class="mb-8">
-      <div class="bg-white dark:bg-gray-800 rounded-2xl px-8 py-6 shadow-md border border-gray-200 dark:border-gray-700 transition-all hover:shadow-lg hover:-translate-y-0.5">
+      <div class="bg-white bg-card rounded-2xl px-8 py-6 shadow-md border border-gray-200 dark:border-gray-700 transition-all hover:shadow-lg hover:-translate-y-0.5">
         <div class="flex items-center gap-3 mb-4 pb-3 border-b-2 border-blue-100 dark:border-gray-700">
-          <div class="flex items-center justify-center w-10 h-10 bg-blue-100 dark:bg-gray-700 rounded-full text-blue-600 dark:text-blue-400">
+          <div class="flex items-center justify-center w-10 h-10 bg-accent-muted rounded-full text-primary">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="22"
@@ -169,14 +169,14 @@
               <polyline points="9,22 9,12 15,12 15,22"></polyline>
             </svg>
           </div>
-          <h3 class="m-0 text-xl font-semibold text-blue-600 dark:text-blue-400">Business Information</h3>
+          <h3 class="m-0 text-xl font-semibold text-primary">Business Information</h3>
         </div>
 
         <div class="flex flex-col gap-6">
           <!-- Description Section -->
           {#if business.businessfilled && business.description}
             <div class="flex flex-col gap-3">
-              <h4 class="text-lg font-semibold text-blue-600 dark:text-blue-400 m-0 pb-2 border-b-2 border-blue-100 dark:border-gray-700">About</h4>
+              <h4 class="text-lg font-semibold text-primary m-0 pb-2 border-b-2 border-blue-100 dark:border-gray-700">About</h4>
               <p class="m-0 leading-relaxed text-gray-600 dark:text-gray-300">{business.description}</p>
             </div>
           {/if}
@@ -184,10 +184,10 @@
           <!-- Services Section -->
           {#if business.businessfilled && business.services && business.services.length > 0}
             <div class="flex flex-col gap-3">
-              <h4 class="text-lg font-semibold text-blue-600 dark:text-blue-400 m-0 pb-2 border-b-2 border-blue-100 dark:border-gray-700">Services</h4>
+              <h4 class="text-lg font-semibold text-primary m-0 pb-2 border-b-2 border-blue-100 dark:border-gray-700">Services</h4>
               <div class="flex flex-wrap gap-2">
                 {#each business.services as serviceId}
-                  <span class="bg-blue-100 dark:bg-gray-700 text-blue-600 dark:text-blue-400 px-3 py-1 rounded-full text-sm font-medium"
+                  <span class="bg-accent-muted text-primary px-3 py-1 rounded-full text-sm font-medium"
                     >{SERVICE_MAPPING[serviceId] || "Unknown Service"}</span
                   >
                 {/each}
@@ -199,7 +199,7 @@
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <!-- Contact Information -->
             <div class="flex flex-col gap-3">
-              <h4 class="text-lg font-semibold text-blue-600 dark:text-blue-400 m-0 pb-2 border-b-2 border-blue-100 dark:border-gray-700">Contact Information</h4>
+              <h4 class="text-lg font-semibold text-primary m-0 pb-2 border-b-2 border-blue-100 dark:border-gray-700">Contact Information</h4>
               <div class="flex flex-col gap-3">
                 {#if business.phonenumber}
                   <div class="flex items-start gap-3">
@@ -208,7 +208,7 @@
                       <span class="font-semibold text-sm text-gray-600 dark:text-gray-400">Phone:</span>
                       <a
                         href="tel:{business.phonenumber}"
-                        class="text-blue-600 dark:text-blue-400 no-underline transition-colors hover:text-blue-800 dark:hover:text-blue-300 hover:underline break-all"
+                        class="text-primary no-underline transition-colors hover:text-blue-800 dark:hover:text-blue-300 hover:underline break-all"
                         >{business.phonenumber}</a
                       >
                     </div>
@@ -221,7 +221,7 @@
                       <span class="font-semibold text-sm text-gray-600 dark:text-gray-400">Email:</span>
                       <a
                         href="mailto:{business.email}"
-                        class="text-blue-600 dark:text-blue-400 no-underline transition-colors hover:text-blue-800 dark:hover:text-blue-300 hover:underline break-all">{business.email}</a
+                        class="text-primary no-underline transition-colors hover:text-blue-800 dark:hover:text-blue-300 hover:underline break-all">{business.email}</a
                       >
                     </div>
                   </div>
@@ -235,7 +235,7 @@
                         href={business.website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="text-blue-600 dark:text-blue-400 no-underline transition-colors hover:text-blue-800 dark:hover:text-blue-300 hover:underline break-all">{business.website}</a
+                        class="text-primary no-underline transition-colors hover:text-blue-800 dark:hover:text-blue-300 hover:underline break-all">{business.website}</a
                       >
                     </div>
                   </div>
@@ -252,7 +252,7 @@
                         )}"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="text-blue-600 dark:text-blue-400 no-underline transition-colors hover:text-blue-800 dark:hover:text-blue-300 hover:underline break-all"
+                        class="text-primary no-underline transition-colors hover:text-blue-800 dark:hover:text-blue-300 hover:underline break-all"
                         >{business.instagram_id}</a
                       >
                     </div>
@@ -263,14 +263,14 @@
 
             <!-- Location Information -->
             <div class="flex flex-col gap-3">
-              <h4 class="text-lg font-semibold text-blue-600 dark:text-blue-400 m-0 pb-2 border-b-2 border-blue-100 dark:border-gray-700">Location</h4>
+              <h4 class="text-lg font-semibold text-primary m-0 pb-2 border-b-2 border-blue-100 dark:border-gray-700">Location</h4>
               <div class="flex flex-col gap-3">
                 {#if business.address}
                   <div class="flex items-start gap-3">
                     <span class="text-lg flex-shrink-0 mt-0.5">📍</span>
                     <div class="flex flex-col gap-0.5 min-w-0">
                       <span class="font-semibold text-sm text-gray-600 dark:text-gray-400">Address:</span>
-                      <span class="text-blue-600 dark:text-blue-400">{business.address}</span>
+                      <span class="text-primary">{business.address}</span>
                     </div>
                   </div>
                 {/if}
@@ -279,7 +279,7 @@
                     <span class="text-lg flex-shrink-0 mt-0.5">🏙️</span>
                     <div class="flex flex-col gap-0.5 min-w-0">
                       <span class="font-semibold text-sm text-gray-600 dark:text-gray-400">City:</span>
-                      <span class="text-blue-600 dark:text-blue-400">{business.city}</span>
+                      <span class="text-primary">{business.city}</span>
                     </div>
                   </div>
                 {/if}
@@ -288,7 +288,7 @@
                     <span class="text-lg flex-shrink-0 mt-0.5">🗺️</span>
                     <div class="flex flex-col gap-0.5 min-w-0">
                       <span class="font-semibold text-sm text-gray-600 dark:text-gray-400">State:</span>
-                      <span class="text-blue-600 dark:text-blue-400">{business.state}</span>
+                      <span class="text-primary">{business.state}</span>
                     </div>
                   </div>
                 {/if}
@@ -301,7 +301,7 @@
                         href={business.google_maps_link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="text-blue-600 dark:text-blue-400 no-underline transition-colors hover:text-blue-800 dark:hover:text-blue-300 hover:underline">View on Map</a
+                        class="text-primary no-underline transition-colors hover:text-blue-800 dark:hover:text-blue-300 hover:underline">View on Map</a
                       >
                     </div>
                   </div>
@@ -315,8 +315,8 @@
 
     <!-- Recent Projects Section -->
     {#if showProjects}
-      <section class="px-6 py-8 bg-white dark:bg-gray-800 rounded-2xl shadow-md mb-8 transition-all">
-        <h2 class="text-2xl md:text-3xl font-bold mb-4 text-blue-600 dark:text-blue-400 text-center">Recent Solar Panel Installation Projects</h2>
+      <section class="px-6 py-8 bg-white bg-card rounded-2xl shadow-md mb-8 transition-all">
+        <h2 class="text-2xl md:text-3xl font-bold mb-4 text-primary text-center">Recent Solar Panel Installation Projects</h2>
 
         {#if projects.length === 0}
           <div class="text-center py-8 bg-white dark:bg-gray-700 rounded-lg mb-6 text-gray-600 dark:text-gray-400">
@@ -351,13 +351,13 @@
                   </div>
 
                   <div class="px-6 py-4">
-                    <h3 class="mt-0 mb-3 text-xl text-blue-600 dark:text-blue-400 font-semibold">{project.title}</h3>
+                    <h3 class="mt-0 mb-3 text-xl text-primary font-semibold">{project.title}</h3>
                     <p class="m-2 text-sm text-gray-600 dark:text-gray-300">Pincode: {project.pincode}</p>
                     <p class="m-2 text-sm text-gray-600 dark:text-gray-300">
                       Completed on: {formatDate(project.project_date)}
                     </p>
                     {#if project.system_size}
-                      <p class="m-0 text-blue-600 dark:text-blue-400 font-semibold">
+                      <p class="m-0 text-primary font-semibold">
                         System Size: {project.system_size} kW
                       </p>
                     {/if}
@@ -369,7 +369,7 @@
         {/if}
       </section>
 
-      <h2 class="text-2xl md:text-3xl font-bold mb-4 text-blue-600 dark:text-blue-400 text-center">Book Free Consultation To Know Price from {business.businessname}</h2>
+      <h2 class="text-2xl md:text-3xl font-bold mb-4 text-primary text-center">Book Free Consultation To Know Price from {business.businessname}</h2>
       <LeadFormBusiness />
     {/if}
 
@@ -378,13 +378,13 @@
 
     <!-- Other Businesses in the City -->
     {#if business.city}
-      <section class="mt-8 text-center px-6 py-8 bg-white dark:bg-gray-800 rounded-2xl shadow-md transition-all">
-        <h2 class="text-2xl md:text-3xl font-bold mb-4 text-blue-600 dark:text-blue-400">Find Other Solar Businesses in {business.city}</h2>
+      <section class="mt-8 text-center px-6 py-8 bg-white bg-card rounded-2xl shadow-md transition-all">
+        <h2 class="text-2xl md:text-3xl font-bold mb-4 text-primary">Find Other Solar Businesses in {business.city}</h2>
         <p class="text-lg mb-4 text-gray-600 dark:text-gray-300">
           If you're interested in exploring other solar businesses in {business.city},
           visit our directory page.
         </p>
-        <button onclick={navigateToDirectory} class="bg-transparent border-2 border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 font-semibold px-6 py-3 min-w-max transition-all hover:bg-blue-50 dark:hover:bg-gray-700 hover:-translate-y-0.5">
+        <button onclick={navigateToDirectory} class="bg-transparent border-2 border-primary text-primary font-semibold px-6 py-3 min-w-max transition-all hover:bg-blue-50 dark:hover:bg-gray-700 hover:-translate-y-0.5">
           View Solar Businesses in {business.city}
         </button>
       </section>

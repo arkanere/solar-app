@@ -44,7 +44,7 @@
 		</p>
 
 		<!-- Form inside a box container -->
-		<div class="w-full p-6 md:p-8 rounded-lg shadow-md dark:shadow-card bg-card dark:bg-card mb-8 transition-colors duration-300">
+		<div class="w-full p-6 md:p-8 rounded-lg shadow-md dark:shadow-card bg-card  mb-8 transition-colors duration-300">
 			<h2 class="text-2xl md:text-3xl font-semibold mb-6 text-center">Share Your Details Below:</h2>
 			<QueryForm />
 		</div>

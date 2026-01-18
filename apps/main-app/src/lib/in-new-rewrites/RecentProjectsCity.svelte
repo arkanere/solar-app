@@ -43,7 +43,7 @@
 			{#each projects as project (project.id)}
 				<Card.Root class="overflow-hidden hover:shadow-lg transition-shadow duration-200">
 					<a
-						href="/solar-panel-installer/{project.business_slug}/project/{project.project_slug}"
+						href="/in/solar-panel-installer/{project.business_slug}/project/{project.project_slug}"
 						class="block text-inherit no-underline"
 					>
 						<div class="h-48 bg-muted overflow-hidden">
