@@ -66,7 +66,7 @@
 			type="text"
 			bind:value={name}
 			placeholder="Your Name"
-			class={errors.name ? 'border-red-500' : ''}
+			class={errors.name ? 'border-destructive' : ''}
 		/>
 		{#if errors.name}
 			<p class="text-red-500 text-sm">{errors.name}</p>
@@ -81,7 +81,7 @@
 			type="text"
 			bind:value={phone}
 			placeholder="Phone Number"
-			class={errors.phone ? 'border-red-500' : ''}
+			class={errors.phone ? 'border-destructive' : ''}
 		/>
 		{#if errors.phone}
 			<p class="text-red-500 text-sm">{errors.phone}</p>
@@ -96,7 +96,7 @@
 			type="text"
 			bind:value={pincode}
 			placeholder="6-digit Pincode"
-			class={errors.pincode ? 'border-red-500' : ''}
+			class={errors.pincode ? 'border-destructive' : ''}
 		/>
 		{#if errors.pincode}
 			<p class="text-red-500 text-sm">{errors.pincode}</p>
@@ -110,7 +110,7 @@
 			id="message"
 			bind:value={message}
 			placeholder="Your requirement"
-			class={errors.message ? 'border-red-500' : ''}
+			class={errors.message ? 'border-destructive' : ''}
 		/>
 		{#if errors.message}
 			<p class="text-red-500 text-sm">{errors.message}</p>

@@ -48,7 +48,7 @@
 
 <main class={`min-h-screen flex flex-col items-center justify-center px-4 md:px-8 py-8 transition-colors duration-300 ${darkMode ? 'dark bg-background text-foreground' : 'light bg-background text-foreground'}`}>
 	<!-- Business Form Component -->
-	<div class="w-full max-w-2xl p-6 md:p-8 rounded-lg shadow-md dark:shadow-card bg-card dark:bg-card transition-colors duration-300">
+	<div class="w-full max-w-2xl p-6 md:p-8 rounded-lg shadow-md dark:shadow-card bg-card  transition-colors duration-300">
 		<BusinessForm />
 	</div>
 </main>

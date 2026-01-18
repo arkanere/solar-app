@@ -143,11 +143,11 @@
             startStoryProgress();
           }}
           variant="outline"
-          class="bg-green-600 text-white border-green-600 hover:bg-green-700"
+          class="bg-success text-success-foreground border-success"
         >
           ▶️ Replay Stories
         </Button>
-        <Button onclick={closeStory} variant="outline" class="bg-gray-600 text-white border-gray-600">
+        <Button onclick={closeStory} variant="outline" class="bg-muted text-muted-foreground border-muted">
           Close
         </Button>
       </div>
@@ -173,14 +173,14 @@
         <!-- Story Header -->
         <div class="flex items-center justify-between p-4 pt-16 relative z-30">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-sm">
+            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold text-sm">
               {formatBusinessName($storiesData[currentStoryIndex].business_slug).charAt(0)}
             </div>
             <div>
               <h3 class="text-white text-sm font-semibold">
                 <a
                   href="/in/solar-panel-installer/{$storiesData[currentStoryIndex].business_slug}"
-                  class="hover:text-yellow-300 transition-colors"
+                  class="hover:text-secondary transition-colors"
                   onclick={closeStory}
                 >
                   {formatBusinessName($storiesData[currentStoryIndex].business_slug)}

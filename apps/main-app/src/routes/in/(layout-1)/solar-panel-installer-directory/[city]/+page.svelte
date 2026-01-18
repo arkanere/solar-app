@@ -5,8 +5,8 @@
   import { generateCityJsonLD, injectJsonLDScripts } from "$lib/in/jsonLD";
   import { generateFAQ } from "$lib/in/faqData";
   import { services } from "$lib/in/servicesData";
-  import LeadFormSection from "$lib/in/LeadFormSection.svelte";
-  import QuoteModal from "$lib/in/QuoteModal.svelte";
+  import LeadFormSection from "$lib/in-new-rewrites/LeadFormSection.svelte";
+  import QuoteModal from "$lib/in-new-rewrites/QuoteModal.svelte";
   import BusinessTilesList from "$lib/in-new-rewrites/BusinessTilesList.svelte";
   import RecommendedSolarSystems from "$lib/in-new-rewrites/RecommendedSolarSystems.svelte";
   import SolarComparisonTable from "$lib/in-new-rewrites/SolarComparisonTable.svelte";
@@ -237,14 +237,14 @@
   {/if}
 
   {#if businesses.length === 0}
-    <section id="no-installers" class="w-full max-w-4xl mb-10 mt-12 p-8 rounded-2xl bg-white dark:bg-slate-800 shadow-md dark:shadow-lg flex flex-col items-center">
+    <section id="no-installers" class="w-full max-w-4xl mb-10 mt-12 p-8 rounded-2xl bg-card shadow-md dark:shadow-lg flex flex-col items-center">
       <div class="w-full text-center">
-        <h2 class="text-3xl font-semibold mb-4 text-blue-600 dark:text-blue-300">We're Expanding to {cityName} - Join Us!</h2>
+        <h2 class="text-3xl font-semibold mb-4 text-primary text-primary">We're Expanding to {cityName} - Join Us!</h2>
         <p class="text-lg leading-relaxed text-slate-600 dark:text-slate-300 mb-8 max-w-2xl mx-auto">
           <strong>Are you a solar installer in this area? </strong>
         </p>
         <button
-          class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-lg px-8 py-4 rounded transition-transform -translate-y-0 hover:-translate-y-1 uppercase tracking-wider"
+          class="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-lg px-8 py-4 rounded transition-transform -translate-y-0 hover:-translate-y-1 uppercase tracking-wider"
           onclick={() => (window.location.href = "/in/business-form")}
         >
           Join Our Network - Register Your Business
@@ -266,19 +266,19 @@
   </section>
 
   <section id="services" class="w-full max-w-4xl mb-10 p-8">
-    <h2 class="text-3xl font-bold mb-4 text-blue-600 dark:text-blue-300">Services Provided by Solar Panel Installers</h2>
-    <div class="p-8 rounded-2xl bg-white dark:bg-slate-800/10 dark:border dark:border-slate-700 shadow-md hover:shadow-lg transition-shadow">
+    <h2 class="text-3xl font-bold mb-4 text-primary text-primary">Services Provided by Solar Panel Installers</h2>
+    <div class="p-8 rounded-2xl bg-card dark:border border-border shadow-md hover:shadow-lg transition-shadow">
       {#each services as service (service.title)}
-        <div class="mb-6 pb-6 border-b border-slate-200 dark:border-slate-700 last:mb-0 last:pb-0 last:border-b-0">
-          <strong class="block text-xl text-blue-600 dark:text-blue-400 mb-2">{service.title}</strong>
+        <div class="mb-6 pb-6 border-b border-slate-200 border-border last:mb-0 last:pb-0 last:border-b-0">
+          <strong class="block text-xl text-primary mb-2">{service.title}</strong>
           <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
             {service.description}
             {#if service.links}
               {#each service.links as link, i}
                 {#if i === 0}
-                  <strong><a href={link.href} class="text-blue-600 dark:text-blue-400 hover:underline">{link.text}</a></strong>
+                  <strong><a href={link.href} class="text-primary hover:underline">{link.text}</a></strong>
                 {:else}
-                  , <strong><a href={link.href} class="text-blue-600 dark:text-blue-400 hover:underline">{link.text}</a></strong>
+                  , <strong><a href={link.href} class="text-primary hover:underline">{link.text}</a></strong>
                 {/if}
               {/each}.
             {/if}
@@ -293,17 +293,17 @@
 
     <!-- Get Quotation Button after Recommended Solar Systems -->
     <div class="text-center my-8">
-      <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-lg px-10 py-4 rounded-lg transition-all hover:-translate-y-1 shadow-md hover:shadow-lg uppercase tracking-wide" onclick={scrollToLeadForm}>
+      <button class="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-lg px-10 py-4 rounded-lg transition-all hover:-translate-y-1 shadow-md hover:shadow-lg uppercase tracking-wide" onclick={scrollToLeadForm}>
         Get Quotation
       </button>
     </div>
 
     <section id="people-also-ask" class="w-full max-w-4xl mb-10 p-8">
-      <h2 class="text-3xl font-bold mb-6 text-blue-600 dark:text-blue-300">Frequently Asked Questions</h2>
+      <h2 class="text-3xl font-bold mb-6 text-primary text-primary">Frequently Asked Questions</h2>
       <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
         {#each faqList as faq (faq.question)}
-          <li class="p-6 rounded-lg bg-white dark:bg-slate-800/10 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
-            <strong class="block text-xl text-blue-600 dark:text-blue-400 mb-2">{faq.question}</strong>
+          <li class="p-6 rounded-lg bg-card shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
+            <strong class="block text-xl text-primary mb-2">{faq.question}</strong>
             <p class="text-slate-600 dark:text-slate-300">{faq.answer}</p>
           </li>
         {/each}
@@ -312,11 +312,11 @@
   {/if}
 
   {#if district}
-    <section class="w-full max-w-4xl mb-10 mt-8 text-center p-8 bg-white dark:bg-slate-800 rounded-2xl shadow-md">
-      <h2 class="text-3xl font-bold mb-4 text-blue-600 dark:text-blue-300">Find Other Solar Businesses in {district} district</h2>
+    <section class="w-full max-w-4xl mb-10 mt-8 text-center p-8 bg-card rounded-2xl shadow-md">
+      <h2 class="text-3xl font-bold mb-4 text-primary text-primary">Find Other Solar Businesses in {district} district</h2>
       <p class="text-slate-600 dark:text-slate-300 mb-6">If you're interested in exploring other solar businesses in {district}, visit our district directory page.</p>
       <button
-        class="border-2 border-blue-600 text-blue-600 dark:border-blue-300 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-slate-700/50 font-semibold px-6 py-3 rounded-lg transition-all hover:-translate-y-1 min-w-max"
+        class="border-2 border-blue-600 text-primary dark:border-blue-300 text-primary hover:bg-blue-50 dark:hover:bg-slate-700/50 font-semibold px-6 py-3 rounded-lg transition-all hover:-translate-y-1 min-w-max"
         onclick={() =>
           (window.location.href = `/in/district/${district.toLowerCase().replace(/\s+/g, "-")}`)}
       >
@@ -331,7 +331,7 @@
 
     <!-- Get Quotation Button after Solar Comparison Table -->
     <div class="text-center my-8">
-      <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-lg px-10 py-4 rounded-lg transition-all hover:-translate-y-1 shadow-md hover:shadow-lg uppercase tracking-wide" onclick={scrollToLeadForm}>
+      <button class="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-lg px-10 py-4 rounded-lg transition-all hover:-translate-y-1 shadow-md hover:shadow-lg uppercase tracking-wide" onclick={scrollToLeadForm}>
         Get Quotation
       </button>
     </div>

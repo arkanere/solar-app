@@ -80,7 +80,7 @@
 		<!-- Customer details section -->
 		{#if customerDetails}
 		<div class="w-full max-w-2xl mx-auto mb-6 px-4 text-left">
-			<div class="bg-card dark:bg-card rounded-lg shadow-md dark:shadow-card p-4 md:p-6 border border-border dark:border-border">
+			<div class="bg-card  rounded-lg shadow-md dark:shadow-card p-4 md:p-6 border border-border dark:border-border">
 				<div class="space-y-3">
 					<div class="flex flex-col md:flex-row md:justify-between md:items-start pb-3 border-b border-border dark:border-border last:border-b-0">
 						<span class="font-semibold text-foreground-secondary dark:text-foreground-secondary md:min-w-[140px] flex-shrink-0">Name:</span>

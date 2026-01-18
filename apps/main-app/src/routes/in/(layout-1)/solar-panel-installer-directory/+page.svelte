@@ -134,22 +134,22 @@
 <main class="w-full bg-background text-foreground transition-colors duration-300 overflow-x-hidden dark:bg-background dark:text-foreground">
   <div class="mx-auto max-w-[1140px] p-4">
     <!-- Hero Section -->
-    <section class="rounded-2xl bg-gradient-to-r from-primary to-blue-700 text-white p-12 md:p-16 mb-8 shadow-md">
+    <section class="rounded-2xl bg-gradient-to-r from-primary to-primary text-primary-foreground p-12 md:p-16 mb-8 shadow-md">
       <div class="text-center mb-8">
-        <h1 class="text-4xl md:text-5xl font-bold mb-4 text-white leading-tight">Solar Panel Installer Directory</h1>
+        <h1 class="text-4xl md:text-5xl font-bold mb-4 text-primary-foreground leading-tight">Solar Panel Installer Directory</h1>
         <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
-        <p class="text-lg md:text-xl text-white/90 max-w-2xl mx-auto">
+        <p class="text-lg md:text-xl text-primary-foreground/90 max-w-2xl mx-auto">
           Find trusted local solar installers across India
         </p>
       </div>
     </section>
 
     <!-- Solar Panel Installers by State Section -->
-    <section class="rounded-2xl bg-card dark:bg-card p-12 md:p-16 mb-8 shadow-md">
+    <section class="rounded-2xl bg-card  p-12 md:p-16 mb-8 shadow-md">
       <div class="text-center mb-12">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary dark:text-blue-300">Solar Panel Installers by State</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary text-primary">Solar Panel Installers by State</h2>
         <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
@@ -162,10 +162,10 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {#each states as state}
           <div class="h-full transition-transform duration-300 hover:-translate-y-2">
-            <a href={`/in/state/${formatStateSlug(state)}`} class="flex flex-col h-full p-6 rounded-lg bg-background dark:bg-slate-800/50 border border-border dark:border-slate-600 hover:border-primary dark:hover:border-blue-300 hover:shadow-lg transition-all no-underline text-foreground dark:text-foreground">
-              <h3 class="text-xl font-semibold mb-2 text-center text-primary dark:text-blue-300">{state}</h3>
+            <a href={`/in/state/${formatStateSlug(state)}`} class="flex flex-col h-full p-6 rounded-lg bg-background  border border-border hover:border-primary hover:shadow-lg transition-all no-underline text-foreground dark:text-foreground">
+              <h3 class="text-xl font-semibold mb-2 text-center text-primary text-primary">{state}</h3>
               <p class="text-base text-foreground dark:text-foreground-secondary text-center flex-grow mb-4">Find verified solar installers in {state}</p>
-              <div class="flex items-center justify-center font-medium text-primary dark:text-blue-300 mt-auto gap-2 group">
+              <div class="flex items-center justify-center font-medium text-primary text-primary mt-auto gap-2 group">
                 <span>View Districts</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

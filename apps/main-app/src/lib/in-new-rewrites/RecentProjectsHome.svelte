@@ -21,7 +21,7 @@
 <Card.Root class="border-0 shadow-lg">
   <Card.Header class="text-center pb-8">
     <div class="flex justify-center mb-4">
-      <div class="h-1 w-20 bg-amber-400 rounded-full"></div>
+      <div class="h-1 w-20 bg-secondary rounded-full"></div>
     </div>
     <Card.Title class="text-2xl sm:text-3xl mb-2">
       Recent Solar Installation Projects

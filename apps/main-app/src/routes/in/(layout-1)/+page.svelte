@@ -262,28 +262,28 @@
     </picture>
     <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-black/40 to-blue-900/70 z-10"></div>
     <div class="relative z-20 max-w-3xl px-6">
-      <h1 class="text-4xl md:text-5xl font-bold mb-6 text-white leading-tight">
+      <h1 class="text-4xl md:text-5xl font-bold mb-6 text-primary-foreground leading-tight">
         Get 2-3 Free Quotes from Verified Installers in Your Area
       </h1>
       <h2 class="text-2xl md:text-3xl font-medium mb-6 text-accent drop-shadow-lg leading-snug">
         Compare prices and save 50-80% on electricity bills with PM Surya Ghar Yojana subsidies.
       </h2>
-      <p class="text-base md:text-lg mb-6 text-white/95 opacity-95 italic drop-shadow-md leading-relaxed">
+      <p class="text-base md:text-lg mb-6 text-primary-foreground/95 opacity-95 italic drop-shadow-md leading-relaxed">
         2,000+ homeowners have begun their switch to solar through our platform.
       </p>
       <div class="flex justify-center gap-4 md:gap-8 flex-wrap mt-8">
-        <span class="bg-white/15 px-4 py-2 rounded-full text-white text-sm md:text-base font-medium backdrop-blur border border-white/20">✓ 450+ Pre-Vetted Installers</span>
-        <span class="bg-white/15 px-4 py-2 rounded-full text-white text-sm md:text-base font-medium backdrop-blur border border-white/20">✓ Zero Cost Consultation</span>
-        <span class="bg-white/15 px-4 py-2 rounded-full text-white text-sm md:text-base font-medium backdrop-blur border border-white/20">✓ Full Subsidy Guidance</span>
+        <span class="bg-white/15 px-4 py-2 rounded-full text-primary-foreground text-sm md:text-base font-medium backdrop-blur border border-white/20">✓ 450+ Pre-Vetted Installers</span>
+        <span class="bg-white/15 px-4 py-2 rounded-full text-primary-foreground text-sm md:text-base font-medium backdrop-blur border border-white/20">✓ Zero Cost Consultation</span>
+        <span class="bg-white/15 px-4 py-2 rounded-full text-primary-foreground text-sm md:text-base font-medium backdrop-blur border border-white/20">✓ Full Subsidy Guidance</span>
       </div>
     </div>
   </div>
 
   <div class="mx-auto max-w-[1140px] p-4 md:p-4">
     <!-- Benefits Section -->
-    <section class="rounded-lg bg-blue-50 dark:bg-blue-950/15 p-12 md:p-24 mb-8 shadow-md">
+    <section class="rounded-lg bg-accent-muted p-12 md:p-24 mb-8 shadow-md">
       <div class="text-center mb-10">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary dark:text-blue-300">Why Now is the Right Time to Install Solar in India</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary text-primary">Why Now is the Right Time to Install Solar in India</h2>
         <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
@@ -293,26 +293,26 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div class="p-8 rounded-lg bg-card dark:bg-slate-800/50 border-t-4 border-accent shadow-md flex flex-col items-center text-center hover:shadow-lg hover:-translate-y-2 transition-all">
+        <div class="p-8 rounded-lg bg-card  border-t-4 border-accent shadow-md flex flex-col items-center text-center hover:shadow-lg hover:-translate-y-2 transition-all">
           <div class="text-5xl mb-4">💰</div>
-          <div class="text-3xl font-bold text-primary dark:text-blue-300 mb-2">Up to ₹78,000</div>
-          <h3 class="text-xl font-semibold text-primary dark:text-blue-300 mb-3">Government Subsidy</h3>
+          <div class="text-3xl font-bold text-primary text-primary mb-2">Up to ₹78,000</div>
+          <h3 class="text-xl font-semibold text-primary text-primary mb-3">Government Subsidy</h3>
           <p class="text-foreground dark:text-foreground-secondary">
             Get up to ₹78,000 in direct subsidy under PM Surya Ghar Yojana - available for limited time
           </p>
         </div>
 
-        <div class="p-8 rounded-lg bg-card dark:bg-slate-800/50 border-t-4 border-accent shadow-md flex flex-col items-center text-center hover:shadow-lg hover:-translate-y-2 transition-all">
+        <div class="p-8 rounded-lg bg-card  border-t-4 border-accent shadow-md flex flex-col items-center text-center hover:shadow-lg hover:-translate-y-2 transition-all">
           <div class="text-5xl mb-4">🏦</div>
-          <div class="text-3xl font-bold text-primary dark:text-blue-300 mb-2">0% Interest</div>
-          <h3 class="text-xl font-semibold text-primary dark:text-blue-300 mb-3">Easy Financing Options</h3>
+          <div class="text-3xl font-bold text-primary text-primary mb-2">0% Interest</div>
+          <h3 class="text-xl font-semibold text-primary text-primary mb-3">Easy Financing Options</h3>
           <p class="text-foreground dark:text-foreground-secondary">Zero-cost EMI and attractive loan schemes from leading banks and NBFCs make solar affordable</p>
         </div>
 
-        <div class="p-8 rounded-lg bg-card dark:bg-slate-800/50 border-t-4 border-accent shadow-md flex flex-col items-center text-center hover:shadow-lg hover:-translate-y-2 transition-all">
+        <div class="p-8 rounded-lg bg-card  border-t-4 border-accent shadow-md flex flex-col items-center text-center hover:shadow-lg hover:-translate-y-2 transition-all">
           <div class="text-5xl mb-4">⚡</div>
-          <div class="text-3xl font-bold text-primary dark:text-blue-300 mb-2">50-80%</div>
-          <h3 class="text-xl font-semibold text-primary dark:text-blue-300 mb-3">Electricity Bill Savings</h3>
+          <div class="text-3xl font-bold text-primary text-primary mb-2">50-80%</div>
+          <h3 class="text-xl font-semibold text-primary text-primary mb-3">Electricity Bill Savings</h3>
           <p class="text-foreground dark:text-foreground-secondary">
             Save up to 80% on rising electricity costs with net metering and reduce dependency on the grid
           </p>
@@ -324,45 +324,45 @@
     <SolarComparisonTable />
 
     <!-- How It Works Section -->
-    <section class="rounded-lg bg-card dark:bg-card p-12 md:p-24 mb-8 shadow-md">
+    <section class="rounded-lg bg-card  p-12 md:p-24 mb-8 shadow-md">
       <div class="text-center mb-10">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary dark:text-blue-300">How Solar Vipani Works</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary text-primary">How Solar Vipani Works</h2>
         <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
-        <div class="p-8 rounded-lg bg-background dark:bg-slate-800/50 border border-border hover:shadow-lg hover:-translate-y-1 transition-all text-center">
-          <div class="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4">1</div>
-          <h3 class="text-lg font-semibold text-primary dark:text-blue-300 mb-3">Fill the Inquiry Form</h3>
+        <div class="p-8 rounded-lg bg-background  border border-border hover:shadow-lg hover:-translate-y-1 transition-all text-center">
+          <div class="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4">1</div>
+          <h3 class="text-lg font-semibold text-primary text-primary mb-3">Fill the Inquiry Form</h3>
           <p class="text-foreground dark:text-foreground-secondary">
             Share your basic details and energy requirements to help us understand your needs.
           </p>
         </div>
-        <div class="p-8 rounded-lg bg-background dark:bg-slate-800/50 border border-border hover:shadow-lg hover:-translate-y-1 transition-all text-center">
-          <div class="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4">2</div>
-          <h3 class="text-lg font-semibold text-primary dark:text-blue-300 mb-3">Connect with Experts</h3>
+        <div class="p-8 rounded-lg bg-background  border border-border hover:shadow-lg hover:-translate-y-1 transition-all text-center">
+          <div class="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4">2</div>
+          <h3 class="text-lg font-semibold text-primary text-primary mb-3">Connect with Experts</h3>
           <p class="text-foreground dark:text-foreground-secondary">
             Reach out to vetted, local solar providers who understand your unique needs.
           </p>
         </div>
-        <div class="p-8 rounded-lg bg-background dark:bg-slate-800/50 border border-border hover:shadow-lg hover:-translate-y-1 transition-all text-center">
-          <div class="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4">3</div>
-          <h3 class="text-lg font-semibold text-primary dark:text-blue-300 mb-3">Receive Competitive Quotes</h3>
+        <div class="p-8 rounded-lg bg-background  border border-border hover:shadow-lg hover:-translate-y-1 transition-all text-center">
+          <div class="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4">3</div>
+          <h3 class="text-lg font-semibold text-primary text-primary mb-3">Receive Competitive Quotes</h3>
           <p class="text-foreground dark:text-foreground-secondary">
             Review quotes from 2-3 solar companies, comparing costs, equipment, and terms to find the perfect match.
           </p>
         </div>
-        <div class="p-8 rounded-lg bg-background dark:bg-slate-800/50 border border-border hover:shadow-lg hover:-translate-y-1 transition-all text-center">
-          <div class="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4">4</div>
-          <h3 class="text-lg font-semibold text-primary dark:text-blue-300 mb-3">Make an Informed Choice</h3>
+        <div class="p-8 rounded-lg bg-background  border border-border hover:shadow-lg hover:-translate-y-1 transition-all text-center">
+          <div class="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4">4</div>
+          <h3 class="text-lg font-semibold text-primary text-primary mb-3">Make an Informed Choice</h3>
           <p class="text-foreground dark:text-foreground-secondary">
             Select a provider with complete confidence, backed by transparent, verified information.
           </p>
         </div>
-        <div class="p-8 rounded-lg bg-background dark:bg-slate-800/50 border border-border hover:shadow-lg hover:-translate-y-1 transition-all text-center">
-          <div class="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4">5</div>
-          <h3 class="text-lg font-semibold text-primary dark:text-blue-300 mb-3">Share Your Success</h3>
+        <div class="p-8 rounded-lg bg-background  border border-border hover:shadow-lg hover:-translate-y-1 transition-all text-center">
+          <div class="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4">5</div>
+          <h3 class="text-lg font-semibold text-primary text-primary mb-3">Share Your Success</h3>
           <p class="text-foreground dark:text-foreground-secondary">
             Join our community of solar adopters by sharing your experience, helping others on their journey to clean energy.
           </p>
@@ -372,13 +372,13 @@
 
     <!-- Lead Form Section -->
     <section id="lead-form-sv" class="mb-8">
-      <div class="bg-gradient-to-r from-primary to-blue-700 text-white p-12 md:p-12 rounded-lg shadow-lg">
+      <div class="bg-gradient-to-r from-primary to-primary text-primary-foreground p-12 md:p-12 rounded-lg shadow-lg">
         <div class="text-center mb-10">
-          <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-white">Book A Free Consultation</h2>
+          <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary-foreground">Book A Free Consultation</h2>
           <div class="flex justify-center items-center my-4">
             <span class="w-20 h-1 bg-accent rounded"></span>
           </div>
-          <p class="text-lg text-white/90">
+          <p class="text-lg text-primary-foreground/90">
             Get personalized solar recommendations from our experts
           </p>
         </div>
@@ -386,9 +386,9 @@
       </div>
     </section>
     <!-- Business Directory Section -->
-    <section class="rounded-lg bg-slate-50 dark:bg-blue-950/5 p-12 md:p-24 mb-8 shadow-md">
+    <section class="rounded-lg bg-slate-50 dark:bg-accent-muted/50 p-12 md:p-24 mb-8 shadow-md">
       <div class="text-center mb-10">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary dark:text-blue-300">Solar Panel Installer Directory</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary text-primary">Solar Panel Installer Directory</h2>
         <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
@@ -400,9 +400,9 @@
     </section>
 
     <!-- Blogs Section -->
-    <section class="rounded-lg bg-card dark:bg-card p-12 md:p-24 mb-8 shadow-md">
+    <section class="rounded-lg bg-card  p-12 md:p-24 mb-8 shadow-md">
       <div class="text-center mb-10">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary dark:text-blue-300">Latest Solar Insights</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary text-primary">Latest Solar Insights</h2>
         <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
@@ -412,11 +412,11 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div class="p-8 rounded-lg bg-background dark:bg-slate-800/50 border border-border hover:shadow-lg hover:-translate-y-1 transition-all flex flex-col">
+        <div class="p-8 rounded-lg bg-background  border border-border hover:shadow-lg hover:-translate-y-1 transition-all flex flex-col">
           <h3 class="text-lg font-semibold mb-3">
             <a
               href="/in/blogs/hiring-verified-solar-installer-in-india-is-essential"
-              class="text-primary dark:text-blue-300 hover:text-primary-hover dark:hover:text-blue-400 transition-colors"
+              class="text-primary text-primary hover:text-primary-hover dark:hover:text-blue-400 transition-colors"
             >Why Hiring a Verified Solar Installer in India Is Essential</a
             >
           </h3>
@@ -427,16 +427,16 @@
           </p>
           <a
             href="/in/blogs/hiring-verified-solar-installer-in-india-is-essential"
-            class="text-primary dark:text-blue-300 font-semibold text-sm hover:text-primary-hover dark:hover:text-blue-400 transition-colors"
+            class="text-primary text-primary font-semibold text-sm hover:text-primary-hover dark:hover:text-blue-400 transition-colors"
           >Read More →</a
           >
         </div>
 
-        <div class="p-8 rounded-lg bg-background dark:bg-slate-800/50 border border-border hover:shadow-lg hover:-translate-y-1 transition-all flex flex-col">
+        <div class="p-8 rounded-lg bg-background  border border-border hover:shadow-lg hover:-translate-y-1 transition-all flex flex-col">
           <h3 class="text-lg font-semibold mb-3">
             <a
               href="/in/blogs/pm-surya-ghar-yojana"
-              class="text-primary dark:text-blue-300 hover:text-primary-hover dark:hover:text-blue-400 transition-colors"
+              class="text-primary text-primary hover:text-primary-hover dark:hover:text-blue-400 transition-colors"
             >PM Surya Ghar Yojana: Your Guide to Check Eligibility</a
             >
           </h3>
@@ -447,16 +447,16 @@
           </p>
           <a
             href="/in/blogs/pm-surya-ghar-yojana"
-            class="text-primary dark:text-blue-300 font-semibold text-sm hover:text-primary-hover dark:hover:text-blue-400 transition-colors"
+            class="text-primary text-primary font-semibold text-sm hover:text-primary-hover dark:hover:text-blue-400 transition-colors"
           >Read More →</a
           >
         </div>
 
-        <div class="p-8 rounded-lg bg-background dark:bg-slate-800/50 border border-border hover:shadow-lg hover:-translate-y-1 transition-all flex flex-col">
+        <div class="p-8 rounded-lg bg-background  border border-border hover:shadow-lg hover:-translate-y-1 transition-all flex flex-col">
           <h3 class="text-lg font-semibold mb-3">
             <a
               href="/in/blogs/cost-of-solar-on-grid-system"
-              class="text-primary dark:text-blue-300 hover:text-primary-hover dark:hover:text-blue-400 transition-colors"
+              class="text-primary text-primary hover:text-primary-hover dark:hover:text-blue-400 transition-colors"
             >What is the Approximate Cost of a Solar On Grid System?</a
             >
           </h3>
@@ -466,14 +466,14 @@
           </p>
           <a
             href="/in/blogs/cost-of-solar-on-grid-system"
-            class="text-primary dark:text-blue-300 font-semibold text-sm hover:text-primary-hover dark:hover:text-blue-400 transition-colors"
+            class="text-primary text-primary font-semibold text-sm hover:text-primary-hover dark:hover:text-blue-400 transition-colors"
           >Read More →</a
           >
         </div>
       </div>
 
       <div class="text-center">
-        <a href="/in/blogs" class="inline-block px-8 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary-hover hover:-translate-y-1 transition-all">View All Blogs</a>
+        <a href="/in/blogs" class="inline-block px-8 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary-hover hover:-translate-y-1 transition-all">View All Blogs</a>
       </div>
     </section>
 
