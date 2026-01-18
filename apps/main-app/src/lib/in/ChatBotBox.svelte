@@ -4,17 +4,25 @@
   import { isDarkMode } from "$lib/themeStore";
   import conversationFlows from "$lib/in/conversationFlows.json";
   import { page } from "$app/stores";
-  import { goto } from "$app/navigation";
+
+  // Import utility modules
+  import * as leadProfileMgr from "$lib/in/chatbot/leadProfileManager";
+  import * as validation from "$lib/in/chatbot/chatbotValidation";
+  import * as scrollMgr from "$lib/in/chatbot/scrollManager";
+  import * as messageMgr from "$lib/in/chatbot/messageProcessor";
+  import * as conversationMgr from "$lib/in/chatbot/conversationManager";
+  import * as api from "$lib/in/chatbot/chatbotApi";
+  import * as stateMgr from "$lib/in/chatbot/stateManager";
 
   let { messages = writable([]), onClose = null } = $props();
 
   // Chat state
   let userInput = $state("");
   let isLoading = $state(false);
-  let currentFlowId = $state("initial"); // Start with freeform initial
+  let currentFlowId = $state("initial");
   let inputValues = $state({});
 
-  // Form state for new form flow type
+  // Form state
   let formValues = $state({});
   let formErrors = $state({});
   let isFormValid = $state(false);
@@ -34,315 +42,61 @@
   // Reference to chat history container for scrolling
   let chatHistoryContainer;
 
-  // Track if user has manually scrolled up
-  let isUserScrolledUp = $state(false);
-  let lastScrollHeight = $state(0);
-  let lastScrollTop = $state(0);
+  // Scroll state management
+  let scrollState = $state(scrollMgr.createScrollState());
 
   // Animation state management
   let hasUserInteracted = $state(false);
 
-  // Function to stop background animation on user interaction
-  function stopBackgroundAnimation() {
-    hasUserInteracted = true;
-  }
-
-  // Lead Profile Data Structure
-  let leadProfile = {
-    // Personal (from form)
-    name: null,
-    phone: null,
-    email: null,
-    pincode: null,
-
-    // Property Details
-    propertyType: null, // residential/commercial/agriculture
-    propertySubtype: null, // bungalow/apartment/society
-
-    // Electricity Profile
-    monthlyConsumption: null,
-    monthlyBill: null,
-    powerCutHours: null,
-
-    // System Recommendation
-    recommendedSystemSize: null,
-    systemType: null, // on-grid/hybrid/off-grid
-
-    // Financial
-    systemCost: null,
-    subsidyAmount: null,
-    netInvestment: null,
-  };
+  // Lead profile state
+  let leadProfile = $state(leadProfileMgr.createLeadProfile());
 
   // Reactive statement to get URL parameter
   $effect(() => {
     urlParam = $page.url.pathname;
   });
 
-  // Function to update lead profile
-  function updateLeadProfile(field, value) {
-    leadProfile[field] = value;
-
-    // Log profile update for debugging
-    console.log(`Lead Profile Updated: ${field} = ${value}`);
-    console.log("Current Lead Profile:", leadProfile);
-
-    // Save to localStorage
-    saveLeadProfile();
+  // Orchestration: Update lead profile and save
+  function updateLeadProfileLocal(field, value) {
+    leadProfile = leadProfileMgr.updateLeadProfile(leadProfile, field, value);
+    leadProfileMgr.saveLeadProfile(leadProfile);
   }
 
-  // Function to save lead profile to localStorage
-  function saveLeadProfile() {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("leadProfile", JSON.stringify(leadProfile));
-    }
+  // Orchestration: Add to user journey
+  function addToUserJourneyLocal(type, value) {
+    userJourney = leadProfileMgr.addToUserJourney(userJourney, type, value);
   }
 
-  // Function to load lead profile from localStorage
-  function loadLeadProfile() {
-    if (typeof window !== "undefined") {
-      const savedProfile = localStorage.getItem("leadProfile");
-      if (savedProfile) {
-        leadProfile = JSON.parse(savedProfile);
-      }
-    }
+  // Orchestration: Stop background animation
+  function stopBackgroundAnimationLocal() {
+    scrollState = scrollMgr.stopBackgroundAnimation(scrollState);
+    hasUserInteracted = scrollState.hasUserInteracted;
   }
 
-  // Function to add to user journey (excluding form inputs)
-  function addToUserJourney(type, value) {
-    // Don't track form submission details or form field inputs
-    if (
-      type === "formSubmission" ||
-      (type === "input" &&
-        [
-          "customerName",
-          "customerPhone",
-          "customerPinCode",
-          "customerEmail",
-          "customerComment",
-        ].includes(value))
-    ) {
-      return;
-    }
-
-    const journeyEntry = type === "input" ? `${value}` : value;
-    userJourney.push(journeyEntry);
-  }
-
-  // Enhanced function to serialize conversation context for LLM handoff
-  function serializeConversationContext() {
-    let contextLines = [];
-
-    // Add lead profile information
-    contextLines.push("=== Lead Profile ===");
-    Object.entries(leadProfile).forEach(([key, value]) => {
-      if (value !== null && value !== undefined) {
-        const formattedKey = key
-          .replace(/([A-Z])/g, " $1")
-          .replace(/^./, (str) => str.toUpperCase());
-        contextLines.push(`${formattedKey}: ${value}`);
-      }
-    });
-    contextLines.push("");
-
-    // Add current flow information
-    const currentFlow = conversationFlows.flows[currentFlowId];
-    if (
-      currentFlow &&
-      currentFlowId !== "initial" &&
-      currentFlowId !== "welcome"
-    ) {
-      contextLines.push(`Current Flow: ${currentFlowId}`);
-      if (currentFlow.message) {
-        contextLines.push(
-          `Current Context: ${processMessageText(currentFlow.message)}`,
-        );
-      }
-    }
-
-    return contextLines.join("\n");
-  }
-
-  // Form validation functions
-  function validatePhoneNumber(phone) {
-    if (!phone || !/^\+?\d{10,16}$/.test(phone)) {
-      return "Phone number must be between 10 and 16 digits, optionally starting with +";
-    }
-    return "";
-  }
-
-  function validateEmail(email) {
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return "Invalid email address";
-    }
-    return "";
-  }
-
-  function validatePinCode(pinCode) {
-    if (!pinCode || !/^\d{6}$/.test(pinCode)) {
-      return "Pin code must be exactly 6 digits";
-    }
-    return "";
-  }
-
-  function validateRequired(value, fieldName) {
-    if (!value || value.trim() === "") {
-      return `${fieldName} is required`;
-    }
-    return "";
-  }
-
-  function validateForm(showAllErrors = true) {
-    const currentFlow = conversationFlows.flows[currentFlowId];
-    if (!currentFlow || !currentFlow.inputs) {
-      return false;
-    }
-
-    let isValid = true;
-    const errors = {};
-
-    currentFlow.inputs.forEach((input) => {
-      const value = formValues[input.id] || "";
-      let error = "";
-
-      // Required field validation (only show if showAllErrors is true or hasAttemptedSubmit)
-      if (input.required && (showAllErrors || hasAttemptedSubmit)) {
-        error = validateRequired(value, input.label);
-      }
-
-      // Specific field validations (always show format errors if field has value)
-      if (!error && value) {
-        switch (input.id) {
-          case "customerPhone":
-            error = validatePhoneNumber(value);
-            break;
-          case "customerEmail":
-            error = validateEmail(value);
-            break;
-          case "customerPinCode":
-            error = validatePinCode(value);
-            break;
-        }
-      }
-
-      // For form validity check, consider all errors regardless of display
-      let allErrors = "";
-      if (input.required) {
-        allErrors = validateRequired(value, input.label);
-      }
-      if (!allErrors && value) {
-        switch (input.id) {
-          case "customerPhone":
-            allErrors = validatePhoneNumber(value);
-            break;
-          case "customerEmail":
-            allErrors = validateEmail(value);
-            break;
-          case "customerPinCode":
-            allErrors = validatePinCode(value);
-            break;
-        }
-      }
-
-      errors[input.id] = error;
-      if (allErrors) {
-        isValid = false;
-      }
-    });
-
-    formErrors = errors;
-    isFormValid = isValid;
-
-    return isValid;
-  }
-
-  // Function to scroll to bottom
-  async function scrollToBottom() {
-    await tick(); // Wait for DOM update
-
-    // Only auto-scroll if user is already at the bottom or hasn't manually scrolled up
-    if (!isUserScrolledUp && chatHistoryContainer) {
-      chatHistoryContainer.scrollTo({
-        top: chatHistoryContainer.scrollHeight,
-        behavior: "smooth",
-      });
-    }
-  }
-
-  // Handle scroll events to detect manual scrolling
-  function handleScroll() {
-    if (!chatHistoryContainer) return;
-
-    // Calculate how far from bottom (in pixels)
-    const scrollBottom =
-      chatHistoryContainer.scrollHeight -
-      chatHistoryContainer.scrollTop -
-      chatHistoryContainer.clientHeight;
-
-    // Consider user scrolled up if more than 100px from bottom
-    isUserScrolledUp = scrollBottom > 100;
-
-    // If user scrolls to bottom, reset the flag
-    if (scrollBottom < 20) {
-      isUserScrolledUp = false;
-    }
-
-    // Save last positions
-    lastScrollHeight = chatHistoryContainer.scrollHeight;
-    lastScrollTop = chatHistoryContainer.scrollTop;
-  }
-
-  // Function to start guided assessment flow
+  // Orchestration: Start guided assessment flow
   async function startGuidedFlow() {
-    // Stop background animation on user interaction
-    stopBackgroundAnimation();
+    stopBackgroundAnimationLocal();
 
-    // Track guided flow start in Umami
     if (typeof window !== "undefined" && window.umami) {
       window.umami.track("chatbot-guided-flow-started");
     }
 
-    console.log("Starting guided flow transition to: guidedAssessmentStart");
-    console.log("Available flows:", Object.keys(conversationFlows.flows));
-
-    // Add this debug line
-    console.log("About to call transitionToFlow with: guidedAssessmentStart");
-    console.log(
-      "guidedAssessmentStart flow:",
-      conversationFlows.flows.guidedAssessmentStart,
-    );
-
-    // Add message showing user chose guided flow
     messages.update((m) => [
       ...m,
-      {
-        role: "user",
-        content: "Yes, start assessment",
-      },
+      { role: "user", content: "Yes, start assessment" },
     ]);
 
-    await scrollToBottom();
-
-    // Set loading state
+    await scrollMgr.scrollToBottom(chatHistoryContainer, scrollState);
     isLoading = true;
-
-    // Simulate delay for natural feel
     await simulateDelay(800 + Math.random() * 1200);
-
-    // Add this debug line too
-    console.log("Now calling transitionToFlow...");
-
-    // Transition to guided assessment start flow
-    await transitionToFlow("guidedAssessmentStart");
-
+    await transitionToFlowWrapper("guidedAssessmentStart");
     isLoading = false;
-    await scrollToBottom();
+    await scrollMgr.scrollToBottom(chatHistoryContainer, scrollState);
   }
 
-  // Function to dismiss guided flow suggestion
+  // Orchestration: Dismiss guided flow suggestion
   function dismissGuidedSuggestion(messageIndex) {
-    // Stop background animation on user interaction
-    stopBackgroundAnimation();
+    stopBackgroundAnimationLocal();
 
     messages.update((m) => {
       const updated = [...m];
@@ -356,85 +110,64 @@
     });
   }
 
-  // Function to send free-form user message to the backend
+  // Orchestration: Send free-form user message to backend
   async function sendMessage() {
     if (!userInput.trim()) return;
 
-    // Stop background animation on user interaction
-    stopBackgroundAnimation();
+    stopBackgroundAnimationLocal();
 
-    // Track freeform message in Umami
     if (typeof window !== "undefined" && window.umami) {
-      window.umami.track("chatbot-freeform-message", {
-        flow: currentFlowId,
-      });
+      window.umami.track("chatbot-freeform-message", { flow: currentFlowId });
     }
 
-    // Add the user's message to the message history
     messages.update((m) => [...m, { role: "user", content: userInput }]);
-
-    // Set loading state
     isLoading = true;
-
-    // Scroll to bottom after adding user message
-    await scrollToBottom();
+    await scrollMgr.scrollToBottom(chatHistoryContainer, scrollState);
 
     try {
-      // Prepare request payload
-      let requestPayload = {
-        userMessage: userInput,
-        leadProfile: leadProfile, // Include lead profile in every request
-      };
-
-      // Include conversation context if this is the first freeform message
       if (!contextSent) {
-        conversationContext = serializeConversationContext();
-        if (conversationContext.trim()) {
-          requestPayload.conversationContext = conversationContext;
-        }
-        contextSent = true; // Mark context as sent
+        conversationContext = conversationMgr.serializeConversationContext(
+          leadProfile,
+          currentFlowId,
+          conversationFlows
+        );
+        contextSent = true;
       }
 
-      // Send message to backend
-      const response = await fetch("/chatbot121212", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestPayload),
+      const response = await api.sendChatMessage({
+        userMessage: userInput,
+        leadProfile,
+        conversationContext: contextSent ? conversationContext : undefined,
       });
 
-      const { reply } = await response.json();
-
-      // Check if AI suggests guided flow
-      if (reply.includes("SUGGEST_GUIDED_FLOW:")) {
-        const [mainReply, suggestion] = reply.split("SUGGEST_GUIDED_FLOW:");
-
-        // Add main reply
-        messages.update((m) => [
-          ...m,
-          { role: "assistant", content: mainReply.trim() },
-        ]);
-        await scrollToBottom();
-
-        // Add slight delay before showing suggestion
-        setTimeout(async () => {
-          // Add suggestion with guided flow option
+      if (response.success) {
+        const reply = response.reply;
+        if (reply.includes("SUGGEST_GUIDED_FLOW:")) {
+          const [mainReply, suggestion] = reply.split("SUGGEST_GUIDED_FLOW:");
           messages.update((m) => [
             ...m,
-            {
-              role: "assistant",
-              content: suggestion.trim(),
-              showGuidedOption: true,
-            },
+            { role: "assistant", content: mainReply.trim() },
           ]);
-          await scrollToBottom();
-        }, 1000);
-      } else {
-        messages.update((m) => [...m, { role: "assistant", content: reply }]);
-        await scrollToBottom();
+          await scrollMgr.scrollToBottom(chatHistoryContainer, scrollState);
+
+          setTimeout(async () => {
+            messages.update((m) => [
+              ...m,
+              {
+                role: "assistant",
+                content: suggestion.trim(),
+                showGuidedOption: true,
+              },
+            ]);
+            await scrollMgr.scrollToBottom(chatHistoryContainer, scrollState);
+          }, 1000);
+        } else {
+          messages.update((m) => [...m, { role: "assistant", content: reply }]);
+          await scrollMgr.scrollToBottom(chatHistoryContainer, scrollState);
+        }
       }
     } catch (err) {
       console.error("Error communicating with chatbot:", err);
-
       messages.update((m) => [
         ...m,
         {
@@ -442,11 +175,9 @@
           content: "Something went wrong. Please try again later.",
         },
       ]);
-
-      // Scroll to bottom after error message
-      await scrollToBottom();
+      await scrollMgr.scrollToBottom(chatHistoryContainer, scrollState);
     } finally {
-      userInput = ""; // Clear input field
+      userInput = "";
       isLoading = false;
     }
   }
@@ -456,76 +187,78 @@
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  // Function to handle form submission
+  // Orchestration: Handle form submission
   async function submitForm() {
-    // Stop background animation on user interaction
-    stopBackgroundAnimation();
-
-    // Set the flag to show validation errors from now on
+    stopBackgroundAnimationLocal();
     hasAttemptedSubmit = true;
 
-    if (!validateForm()) {
-      // Track validation failure
+    const currentFlow = conversationFlows.flows[currentFlowId];
+    const validationResult = validation.validateChatbotForm(
+      currentFlow,
+      formValues,
+      hasAttemptedSubmit
+    );
+
+    formErrors = validationResult.errors;
+    isFormValid = validationResult.isValid;
+
+    if (!validationResult.isValid) {
       if (typeof window !== "undefined" && window.umami) {
         window.umami.track("chatbot-form-validation-failed", {
           flow: currentFlowId,
         });
       }
-      return; // Don't submit if validation fails
-    }
-
-    // Get current flow
-    const currentFlow = conversationFlows.flows[currentFlowId];
-    if (!currentFlow) {
       return;
     }
 
-    // Set submitting state
     isSubmittingForm = true;
 
-    // Track form submission attempt
     if (typeof window !== "undefined" && window.umami) {
-      window.umami.track("chatbot-form-submitted", {
-        flow: currentFlowId,
-      });
+      window.umami.track("chatbot-form-submitted", { flow: currentFlowId });
     }
 
     try {
       // Update lead profile with form values
       if (formValues.customerName)
-        updateLeadProfile("name", formValues.customerName);
+        leadProfile = leadProfileMgr.updateLeadProfile(
+          leadProfile,
+          "name",
+          formValues.customerName
+        );
       if (formValues.customerPhone)
-        updateLeadProfile("phone", formValues.customerPhone);
+        leadProfile = leadProfileMgr.updateLeadProfile(
+          leadProfile,
+          "phone",
+          formValues.customerPhone
+        );
       if (formValues.customerEmail)
-        updateLeadProfile("email", formValues.customerEmail);
+        leadProfile = leadProfileMgr.updateLeadProfile(
+          leadProfile,
+          "email",
+          formValues.customerEmail
+        );
       if (formValues.customerPinCode)
-        updateLeadProfile("pincode", formValues.customerPinCode);
+        leadProfile = leadProfileMgr.updateLeadProfile(
+          leadProfile,
+          "pincode",
+          formValues.customerPinCode
+        );
 
-      // Create user journey string from tracked interactions
+      leadProfileMgr.saveLeadProfile(leadProfile);
+
       const userJourneyString = userJourney.join(", ");
 
-      // Prepare data for API submission
-      const formData = {
+      const result = await api.submitLeadForm({
         name: formValues.customerName || "",
         phone: formValues.customerPhone || "",
         pinCode: formValues.customerPinCode || "",
         email: formValues.customerEmail || "",
         comment: formValues.customerComment || "",
-        type: userJourneyString, // Save user journey instead of conversation
+        type: userJourneyString,
         urlParam: urlParam,
-      };
-
-      // Submit to API
-      const response = await fetch("/api/submitLead", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
       });
 
-      const result = await response.json();
-
       if (result.success) {
-        // Create a summary message for user
         const formSummary = Object.entries(formValues)
           .filter(([key, value]) => value && value.trim())
           .map(([key, value]) => {
@@ -534,46 +267,31 @@
           })
           .join("\n");
 
-        // Add user form submission as a message
         messages.update((m) => [
           ...m,
-          {
-            role: "user",
-            content: `Form submitted:\n${formSummary}`,
-          },
+          { role: "user", content: `Form submitted:\n${formSummary}` },
         ]);
 
-        // Scroll after adding the message
-        await scrollToBottom();
+        await scrollMgr.scrollToBottom(chatHistoryContainer, scrollState);
 
-        // Store form values in inputValues for template processing
         Object.keys(formValues).forEach((key) => {
           inputValues[key] = formValues[key];
         });
 
-        // Set loading state for transition
         isLoading = true;
-
-        // Simulate delay for natural feel
         await simulateDelay(800 + Math.random() * 1200);
 
-        // Clear form values
         formValues = {};
         formErrors = {};
         hasAttemptedSubmit = false;
 
-        // If there's a next flow, transition to it
         if (currentFlow.nextFlow) {
-          await transitionToFlow(currentFlow.nextFlow);
+          await transitionToFlowWrapper(currentFlow.nextFlow);
         }
 
-        // End loading state
         isLoading = false;
-
-        // Scroll after response
-        await scrollToBottom();
+        await scrollMgr.scrollToBottom(chatHistoryContainer, scrollState);
       } else {
-        // Show error message to user
         messages.update((m) => [
           ...m,
           {
@@ -582,11 +300,9 @@
               "Sorry, there was an error submitting your form. Please try again or contact us directly.",
           },
         ]);
-
-        await scrollToBottom();
+        await scrollMgr.scrollToBottom(chatHistoryContainer, scrollState);
       }
     } catch (error) {
-      // Show error message to user
       messages.update((m) => [
         ...m,
         {
@@ -595,19 +311,16 @@
             "Sorry, there was a network error. Please check your connection and try again.",
         },
       ]);
-
-      await scrollToBottom();
+      await scrollMgr.scrollToBottom(chatHistoryContainer, scrollState);
     } finally {
       isSubmittingForm = false;
     }
   }
 
-  // Enhanced function to handle option selection (button clicks)
+  // Orchestration: Handle option selection
   async function selectOption(optionId) {
-    // Stop background animation on user interaction
-    stopBackgroundAnimation();
+    stopBackgroundAnimationLocal();
 
-    // Track event in Umami
     if (typeof window !== "undefined" && window.umami) {
       window.umami.track("chatbot-option-selected", {
         flow: currentFlowId,
@@ -615,71 +328,56 @@
       });
     }
 
-    // Add to user journey tracking
-    addToUserJourney("option", optionId);
+    addToUserJourneyLocal("option", optionId);
 
-    // Update lead profile based on option selection
-    // Property type selection
     if (currentFlowId === "guidedAssessmentStart") {
       if (["residential", "business", "agriculture"].includes(optionId)) {
-        updateLeadProfile("propertyType", optionId);
+        leadProfile = leadProfileMgr.updateLeadProfile(
+          leadProfile,
+          "propertyType",
+          optionId
+        );
       }
     }
 
-    // Property subtype selection
     if (currentFlowId === "residentialType") {
-      updateLeadProfile("propertySubtype", optionId);
+      leadProfile = leadProfileMgr.updateLeadProfile(
+        leadProfile,
+        "propertySubtype",
+        optionId
+      );
     }
 
-    // Get current flow
     const currentFlow = conversationFlows.flows[currentFlowId];
     if (!currentFlow || !currentFlow.options) return;
 
-    // Find the selected option
     const selectedOption = currentFlow.options.find(
-      (opt) => opt.id === optionId,
+      (opt) => opt.id === optionId
     );
     if (!selectedOption) return;
 
-    // Add user selection as a message
     messages.update((m) => [
       ...m,
-      {
-        role: "user",
-        content: selectedOption.label,
-      },
+      { role: "user", content: selectedOption.label },
     ]);
 
-    // Scroll after adding the message
-    await scrollToBottom();
-
-    // Store the selection if needed
+    await scrollMgr.scrollToBottom(chatHistoryContainer, scrollState);
     inputValues[currentFlowId] = optionId;
-
-    // Set loading state
     isLoading = true;
-
-    // Simulate delay for natural feel
     await simulateDelay(800 + Math.random() * 1200);
 
-    // If there's a next flow, transition to it
     if (selectedOption.nextFlow) {
-      await transitionToFlow(selectedOption.nextFlow);
+      await transitionToFlowWrapper(selectedOption.nextFlow);
     }
 
-    // End loading state
     isLoading = false;
-
-    // Scroll after response
-    await scrollToBottom();
+    await scrollMgr.scrollToBottom(chatHistoryContainer, scrollState);
   }
 
-  // Enhanced function to handle input submission
+  // Orchestration: Handle input submission
   async function submitInput(inputId, value) {
-    // Stop background animation on user interaction
-    stopBackgroundAnimation();
+    stopBackgroundAnimationLocal();
 
-    // Track event in Umami (without sensitive values)
     if (typeof window !== "undefined" && window.umami) {
       window.umami.track("chatbot-input-submitted", {
         flow: currentFlowId,
@@ -687,417 +385,193 @@
       });
     }
 
-    // Add to user journey tracking (with value for non-form inputs)
-    addToUserJourney("input", `${inputId} = ${value}`);
+    addToUserJourneyLocal("input", `${inputId} = ${value}`);
 
-    // Update lead profile based on input
     if (inputId === "monthlyConsumption") {
-      updateLeadProfile("monthlyConsumption", Number(value));
+      leadProfile = leadProfileMgr.updateLeadProfile(
+        leadProfile,
+        "monthlyConsumption",
+        Number(value)
+      );
     } else if (inputId === "monthlyBill") {
-      updateLeadProfile("monthlyBill", Number(value));
+      leadProfile = leadProfileMgr.updateLeadProfile(
+        leadProfile,
+        "monthlyBill",
+        Number(value)
+      );
     } else if (inputId === "powerCuts") {
-      updateLeadProfile("powerCutHours", Number(value));
+      leadProfile = leadProfileMgr.updateLeadProfile(
+        leadProfile,
+        "powerCutHours",
+        Number(value)
+      );
     }
 
-    // Get current flow
     const currentFlow = conversationFlows.flows[currentFlowId];
     if (!currentFlow || !currentFlow.inputs) return;
 
-    // Find the input definition
     const inputDef = currentFlow.inputs.find((inp) => inp.id === inputId);
     if (!inputDef) return;
 
-    // Format the user message based on input type
     let userMessage = inputDef.label
       ? `${inputDef.label}: ${value}`
       : `${value}`;
     if (inputDef.unit) userMessage += ` ${inputDef.unit}`;
 
-    // Add user input as a message
-    messages.update((m) => [
-      ...m,
-      {
-        role: "user",
-        content: userMessage,
-      },
-    ]);
+    messages.update((m) => [...m, { role: "user", content: userMessage }]);
+    await scrollMgr.scrollToBottom(chatHistoryContainer, scrollState);
 
-    // Scroll after adding the message
-    await scrollToBottom();
-
-    // Store the input value for potential later use
-    // Convert to number if numeric input
     if (inputDef.type === "number") {
       inputValues[inputId] = Number(value);
     } else {
       inputValues[inputId] = value;
     }
 
-    // Set loading state
     isLoading = true;
-
-    // Simulate delay for natural feel
     await simulateDelay(800 + Math.random() * 1200);
 
-    // If there's a next flow, transition to it
     if (inputDef.nextFlow) {
-      await transitionToFlow(inputDef.nextFlow);
+      await transitionToFlowWrapper(inputDef.nextFlow);
     }
 
-    // End loading state
     isLoading = false;
-
-    // Scroll after response
-    await scrollToBottom();
+    await scrollMgr.scrollToBottom(chatHistoryContainer, scrollState);
   }
 
-  // Save state to localStorage
-  function saveState() {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("chatMessages", JSON.stringify(get(messages)));
-      localStorage.setItem("currentFlowId", currentFlowId);
-      localStorage.setItem("inputValues", JSON.stringify(inputValues));
-      localStorage.setItem("conversationContext", conversationContext);
-      localStorage.setItem("contextSent", JSON.stringify(contextSent));
-      localStorage.setItem("leadProfile", JSON.stringify(leadProfile));
-    }
-  }
-
-
-  // Enhanced process message text function to update lead profile
-  function processMessageText(text) {
-    if (!text || typeof text !== "string") {
-      return text;
-    }
-
-    // Get the current flow
-    const currentFlow = conversationFlows.flows[currentFlowId];
-    if (!currentFlow) {
-      return text;
-    }
-
-    // Regular expression to find all placeholders like {variableName}
-    const regex = /\{([^}]+)\}/g;
-
-    // First, get all variables that need to be replaced
-    let match;
-    let processedText = text;
-    const variables = [];
-    while ((match = regex.exec(text)) !== null) {
-      variables.push(match[1]);
-    }
-
-    // Process each variable
-    for (const variableName of variables) {
-      let variableValue;
-
-      // Check if variable exists in inputValues
-      if (inputValues[variableName] !== undefined) {
-        variableValue = inputValues[variableName];
-      }
-      // If not in inputValues, check if it has a formula
-      else if (currentFlow[variableName]) {
-        const formula = currentFlow[variableName];
-
-        // Replace any nested variables in the formula
-        let processedFormula = formula;
-        const nestedVars = [];
-        let nestedMatch;
-        const nestedRegex = /\{([^}]+)\}/g;
-
-        while ((nestedMatch = nestedRegex.exec(formula)) !== null) {
-          nestedVars.push(nestedMatch[1]);
-        }
-
-        // Process each nested variable first
-        for (const nestedVar of nestedVars) {
-          let nestedValue;
-
-          if (inputValues[nestedVar] !== undefined) {
-            nestedValue = inputValues[nestedVar];
-          } else if (currentFlow[nestedVar]) {
-            // Recursively process the nested variable's formula
-            const tempText = `{${nestedVar}}`;
-            processMessageText(tempText);
-
-            if (inputValues[nestedVar] !== undefined) {
-              nestedValue = inputValues[nestedVar];
-            } else {
-              nestedValue = 0;
-              inputValues[nestedVar] = 0;
-            }
-          } else {
-            nestedValue = 0;
-          }
-
-          // Replace in the formula
-          processedFormula = processedFormula.replace(
-            `{${nestedVar}}`,
-            nestedValue,
-          );
-        }
-
-        // Evaluate the formula
-        try {
-          // Use Function for safer evaluation
-          variableValue = Function(
-            '"use strict"; return (' + processedFormula + ")",
-          )();
-
-          // Store for future calculations
-          inputValues[variableName] = variableValue;
-
-          // Update lead profile with calculated values
-          if (variableName === "systemSize") {
-            updateLeadProfile("recommendedSystemSize", variableValue);
-          } else if (variableName === "systemCost") {
-            updateLeadProfile("systemCost", variableValue);
-          } else if (variableName === "subsidyAmount") {
-            updateLeadProfile("subsidyAmount", variableValue);
-          } else if (
-            variableName === "netCost" ||
-            variableName === "totalCost"
-          ) {
-            updateLeadProfile("netInvestment", variableValue);
-          }
-        } catch (e) {
-          variableValue = 0;
-          inputValues[variableName] = 0;
-        }
-      } else {
-        variableValue = 0;
-      }
-
-      // Format the value for display
-      const formattedValue =
-        typeof variableValue === "number"
-          ? Number.isInteger(variableValue)
-            ? variableValue
-            : parseFloat(variableValue.toFixed(2))
-          : variableValue;
-
-      // Replace in the text
-      processedText = processedText.replace(
-        `{${variableName}}`,
-        formattedValue,
+  // Orchestration: Wrapper for transitionToFlow from conversationManager
+  async function transitionToFlowWrapper(flowId) {
+    try {
+      const result = conversationMgr.transitionToFlow(
+        flowId,
+        conversationFlows,
+        { currentFlowId, conversationContext, contextSent },
+        leadProfile,
+        inputValues,
+        userJourney
       );
-    }
 
-    return processedText;
+      currentFlowId = result.updatedState.currentFlowId;
+      contextSent = result.updatedState.contextSent;
+      conversationContext = result.updatedState.conversationContext;
+      leadProfile = result.updatedProfile;
+      inputValues = result.updatedInputValues;
+      userJourney = result.updatedJourney;
+
+      messages.update((m) => [
+        ...m,
+        { role: "assistant", content: result.processedMessage },
+      ]);
+
+      stateMgr.saveChatState({
+        messages: get(messages),
+        currentFlowId,
+        inputValues,
+        conversationContext,
+        contextSent,
+        leadProfile,
+        formValues,
+        userJourney,
+      });
+
+      await scrollMgr.scrollToBottom(chatHistoryContainer, scrollState);
+    } catch (error) {
+      console.error("Error transitioning to flow:", error);
+    }
   }
 
-  // Enhanced function to transition to a specific flow
-  async function transitionToFlow(flowId) {
-    console.log(`Transitioning to flow: ${flowId}`);
-
-    // Enhanced debugging version
-    const flow = conversationFlows.flows[flowId];
-    console.log(`Looking for flow: ${flowId}`);
-    console.log(`Flow found:`, flow);
-    console.log(`Flow type:`, typeof flow);
-    console.log(`All available flows:`, Object.keys(conversationFlows.flows));
-
-    if (!flow) {
-      console.error(`❌ Flow '${flowId}' not found or is undefined!`);
-      console.log(`Available flows:`, conversationFlows.flows);
-      return;
-    }
-
-    console.log(`Flow message:`, flow.message);
-
-    // Add flow transition to user journey (exclude initial and welcome flows)
-    if (flowId !== "initial" && flowId !== "welcome") {
-      addToUserJourney("flow", flowId);
-    }
-
-    // Update system type based on flow transitions
-    if (
-      flowId === "residentialResultOnGrid" ||
-      flowId === "noResidentialBatteryNeeded"
-    ) {
-      updateLeadProfile("systemType", "on-grid");
-    } else if (flowId === "residentialResultHybrid") {
-      updateLeadProfile("systemType", "hybrid");
-    }
-
-    // Reset context sent flag when transitioning to freeform
-    if (
-      flowId === "welcome" ||
-      flowId === "initial" ||
-      conversationFlows.flows[flowId]?.flowType === "freeform"
-    ) {
-      contextSent = false;
-    }
-
-    // Update current flow
-    currentFlowId = flowId;
-
-    // Process the message text to replace variables with calculated values
-    const processedMessage = processMessageText(flow.message);
-
-    console.log(`Processed message:`, processedMessage);
-
-    // Add bot message with processed text
-    messages.update((m) => [
-      ...m,
-      {
-        role: "assistant",
-        content: processedMessage,
-      },
-    ]);
-
-    // Save state to localStorage
-    saveState();
-
-    // Scroll to bottom after adding the message
-    await scrollToBottom();
-  }
-
-  // Function to clear chat and reset to initial state
+  // Orchestration: Reset chat to initial state
   async function resetChat() {
-    // Track chat reset in Umami
     if (typeof window !== "undefined" && window.umami) {
       window.umami.track("chatbot-reset");
     }
 
     messages.set([]);
-    currentFlowId = "initial"; // Start with freeform initial
+    currentFlowId = "initial";
     inputValues = {};
     formValues = {};
     formErrors = {};
     hasAttemptedSubmit = false;
-    userJourney = []; // Reset user journey tracking
-    conversationContext = ""; // Reset conversation context
-    contextSent = false; // Reset context sent flag
+    userJourney = [];
+    conversationContext = "";
+    contextSent = false;
+    leadProfile = leadProfileMgr.createLeadProfile();
+    scrollState = scrollMgr.createScrollState();
 
-    // Reset lead profile
-    leadProfile = {
-      name: null,
-      phone: null,
-      email: null,
-      pincode: null,
-      propertyType: null,
-      propertySubtype: null,
-      monthlyConsumption: null,
-      monthlyBill: null,
-      powerCutHours: null,
-      recommendedSystemSize: null,
-      systemType: null,
-      systemCost: null,
-      subsidyAmount: null,
-      netInvestment: null,
-    };
+    stateMgr.clearChatState();
+    leadProfileMgr.clearLeadProfile();
 
-    // Clear localStorage
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("chatMessages");
-      localStorage.removeItem("currentFlowId");
-      localStorage.removeItem("inputValues");
-      localStorage.removeItem("conversationContext");
-      localStorage.removeItem("contextSent");
-      localStorage.removeItem("leadProfile");
-    }
-
-    // Start with initial flow (freeform)
-    await transitionToFlow("initial");
-
-    // Ensure we scroll to bottom after resetting
-    isUserScrolledUp = false;
-    await scrollToBottom();
+    await transitionToFlowWrapper("initial");
+    await scrollMgr.scrollToBottom(chatHistoryContainer, scrollState);
   }
 
-  // Initialize the chat
-  function initializeChat() {
-    if (typeof window !== "undefined") {
-      // Load lead profile
-      loadLeadProfile();
+  // Orchestration: Initialize chat from localStorage
+  async function initializeChat() {
+    if (typeof window === "undefined") return;
 
-      // Attempt to restore from localStorage
-      const savedMessages = localStorage.getItem("chatMessages");
-      const savedFlowId = localStorage.getItem("currentFlowId");
-      const savedInputs = localStorage.getItem("inputValues");
-      const savedContext = localStorage.getItem("conversationContext");
-      const savedContextSent = localStorage.getItem("contextSent");
+    const savedProfile = leadProfileMgr.loadLeadProfile();
+    if (savedProfile) {
+      leadProfile = savedProfile;
+    }
 
-      if (savedMessages && savedFlowId) {
-        messages.set(JSON.parse(savedMessages));
-        currentFlowId = savedFlowId;
-
-        // Restore conversation context state
-        if (savedContext) {
-          conversationContext = savedContext;
-        }
-        if (savedContextSent) {
-          contextSent = JSON.parse(savedContextSent);
-        }
-
-        // Parse and convert numeric values correctly
-        if (savedInputs) {
-          const parsedInputs = JSON.parse(savedInputs);
-
-          // Convert numeric strings to numbers
-          Object.keys(parsedInputs).forEach((key) => {
-            const value = parsedInputs[key];
-            if (typeof value === "string" && !isNaN(Number(value))) {
-              inputValues[key] = Number(value);
-            } else {
-              inputValues[key] = value;
-            }
-          });
-        } else {
-          inputValues = {};
-        }
-      } else {
-        // Start fresh with initial flow (freeform)
-        transitionToFlow("initial");
-      }
+    const savedState = stateMgr.loadChatState();
+    if (savedState && savedState.messages.length > 0) {
+      messages.set(savedState.messages);
+      currentFlowId = savedState.currentFlowId;
+      inputValues = savedState.inputValues;
+      conversationContext = savedState.conversationContext;
+      contextSent = savedState.contextSent;
+      leadProfile = savedState.leadProfile;
+      formValues = savedState.formValues;
+      userJourney = savedState.userJourney;
+    } else {
+      await transitionToFlowWrapper("initial");
     }
   }
 
-  // Load state from localStorage on mount and set up scroll handler
+  // Load state and set up scroll handler on mount
   $effect(() => {
     if (typeof window !== "undefined") {
       window.resetChat = resetChat;
-
       initializeChat();
-
-      // Initial scroll to bottom on startup
-      scrollToBottom();
+      scrollMgr.scrollToBottom(chatHistoryContainer, scrollState);
     }
   });
 
-  // After any update, check if we should scroll
+  // Check if we should auto-scroll after new content
   $effect(() => {
-    // If new content was added (scrollHeight increased), and user was at bottom before
-    if (
-      chatHistoryContainer &&
-      chatHistoryContainer.scrollHeight > lastScrollHeight &&
-      !isUserScrolledUp
-    ) {
-      scrollToBottom();
+    if (chatHistoryContainer) {
+      scrollState = scrollMgr.handleScroll(chatHistoryContainer, scrollState);
+      if (
+        chatHistoryContainer.scrollHeight > scrollState.lastScrollHeight &&
+        !scrollState.isUserScrolledUp
+      ) {
+        scrollMgr.scrollToBottom(chatHistoryContainer, scrollState);
+      }
     }
   });
 
-  // Reactive statement to validate form whenever formValues change
+  // Validate form whenever formValues change
   $effect(() => {
     if (
       conversationFlows.flows[currentFlowId]?.flowType === "form" &&
       formValues
     ) {
-      // Always validate, but control which errors to show based on hasAttemptedSubmit
-      validateForm(false); // Don't show required field errors until submit attempt
+      const result = validation.validateChatbotForm(
+        conversationFlows.flows[currentFlowId],
+        formValues,
+        hasAttemptedSubmit
+      );
+      formErrors = result.errors;
+      isFormValid = result.isValid;
     }
   });
 
-  // Also reactive on hasAttemptedSubmit to show all errors when user attempts submit
-  $effect(() => {
-    if (
-      hasAttemptedSubmit &&
-      conversationFlows.flows[currentFlowId]?.flowType === "form"
-    ) {
-      validateForm(true); // Show all errors including required field errors
+  // Handle scroll events
+  function handleScroll() {
+    if (chatHistoryContainer) {
+      scrollState = scrollMgr.handleScroll(chatHistoryContainer, scrollState);
     }
-  });
+  }
 </script>
 
 <div class="chatbot-container {$isDarkMode ? 'dark-theme' : 'light-theme'}">

@@ -77,12 +77,12 @@
   />
 </svelte:head>
 
-<main class={darkMode ? "dark" : "light"}>
+<main class={`w-full font-sans leading-relaxed overflow-x-hidden transition-colors duration-300 flex flex-col items-center px-4 py-8 min-h-screen ${darkMode ? 'dark bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'}`}>
   {#if business}
     <!-- Business Login (for business owners) -->
-    <div class="business-owner-section">
+    <div class="flex justify-end mb-4 px-4">
       <button
-        class="business-login-btn"
+        class="bg-transparent text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 text-xs font-normal px-4 py-2 rounded transition-all opacity-70 hover:opacity-100 hover:bg-gray-50 dark:hover:bg-gray-800"
         onclick={business.businessfilled ? navigateToLogin : navigateToClaim}
         title={business.businessfilled
           ? "Business owner login"
@@ -93,18 +93,21 @@
     </div>
 
     <!-- Hero Section -->
-    <div class="hero-section">
-      <h1>{business.businessname}</h1>
+    <div class="text-center px-8 py-12 bg-gradient-to-br from-blue-600 to-blue-700 dark:from-gray-700 dark:to-gray-900 rounded-2xl text-white mb-8 relative overflow-hidden">
+      <h1 class="text-3xl md:text-4xl font-bold mb-2">{business.businessname}</h1>
       {#if business.businessfilled && business.tag !== "Blank"}
-        <div class="business-tag">{business.tag}</div>
+        <div class="inline-flex items-center text-xs font-medium uppercase tracking-wide mb-6">
+          <span class="inline-flex items-center justify-center w-3.5 h-3.5 bg-green-500 text-white rounded-full text-xs font-bold mr-1">✓</span>
+          <span class="text-green-500">{business.tag}</span>
+        </div>
       {/if}
       {#if business.phonenumber}
-        <div class="hero-actions">
+        <div class="flex justify-center gap-4 flex-wrap">
           <button
-            class="call-now-button-hero"
+            class="flex items-center gap-2 bg-gradient-to-br from-red-500 to-red-600 text-white font-bold text-sm uppercase tracking-wide px-8 py-4 rounded-lg transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 w-40 justify-center md:w-auto"
             onclick={() => makeCall(business.phonenumber, business.slug)}
           >
-            <span class="button-icon phone-button-icon">
+            <span class="flex items-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="18"
@@ -124,10 +127,10 @@
             <span>CALL NOW</span>
           </button>
           <button
-            class="whatsapp-button-hero"
+            class="flex items-center gap-2 bg-gradient-to-br from-green-500 to-green-600 text-white font-bold text-sm uppercase tracking-wide px-8 py-4 rounded-lg transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 w-40 justify-center md:w-auto"
             onclick={() => openWhatsApp(business.phonenumber, business.slug)}
           >
-            <span class="button-icon whatsapp-button-icon">
+            <span class="flex items-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="18"
@@ -147,10 +150,10 @@
     </div>
 
     <!-- Business Details - Single Combined Card -->
-    <div class="business-details-container">
-      <div class="business-info-card">
-        <div class="card-header">
-          <div class="card-icon">
+    <div class="mb-8">
+      <div class="bg-white dark:bg-gray-800 rounded-2xl px-8 py-6 shadow-md border border-gray-200 dark:border-gray-700 transition-all hover:shadow-lg hover:-translate-y-0.5">
+        <div class="flex items-center gap-3 mb-4 pb-3 border-b-2 border-blue-100 dark:border-gray-700">
+          <div class="flex items-center justify-center w-10 h-10 bg-blue-100 dark:bg-gray-700 rounded-full text-blue-600 dark:text-blue-400">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="22"
@@ -166,25 +169,25 @@
               <polyline points="9,22 9,12 15,12 15,22"></polyline>
             </svg>
           </div>
-          <h3>Business Information</h3>
+          <h3 class="m-0 text-xl font-semibold text-blue-600 dark:text-blue-400">Business Information</h3>
         </div>
 
-        <div class="business-info-content">
+        <div class="flex flex-col gap-6">
           <!-- Description Section -->
           {#if business.businessfilled && business.description}
-            <div class="info-section">
-              <h4 class="section-title">About</h4>
-              <p class="description-text">{business.description}</p>
+            <div class="flex flex-col gap-3">
+              <h4 class="text-lg font-semibold text-blue-600 dark:text-blue-400 m-0 pb-2 border-b-2 border-blue-100 dark:border-gray-700">About</h4>
+              <p class="m-0 leading-relaxed text-gray-600 dark:text-gray-300">{business.description}</p>
             </div>
           {/if}
 
           <!-- Services Section -->
           {#if business.businessfilled && business.services && business.services.length > 0}
-            <div class="info-section">
-              <h4 class="section-title">Services</h4>
-              <div class="services-list">
+            <div class="flex flex-col gap-3">
+              <h4 class="text-lg font-semibold text-blue-600 dark:text-blue-400 m-0 pb-2 border-b-2 border-blue-100 dark:border-gray-700">Services</h4>
+              <div class="flex flex-wrap gap-2">
                 {#each business.services as serviceId}
-                  <span class="service-tag"
+                  <span class="bg-blue-100 dark:bg-gray-700 text-blue-600 dark:text-blue-400 px-3 py-1 rounded-full text-sm font-medium"
                     >{SERVICE_MAPPING[serviceId] || "Unknown Service"}</span
                   >
                 {/each}
@@ -193,55 +196,55 @@
           {/if}
 
           <!-- Contact & Location Combined -->
-          <div class="contact-location-grid">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <!-- Contact Information -->
-            <div class="info-section">
-              <h4 class="section-title">Contact Information</h4>
-              <div class="contact-details">
+            <div class="flex flex-col gap-3">
+              <h4 class="text-lg font-semibold text-blue-600 dark:text-blue-400 m-0 pb-2 border-b-2 border-blue-100 dark:border-gray-700">Contact Information</h4>
+              <div class="flex flex-col gap-3">
                 {#if business.phonenumber}
-                  <div class="detail-item">
-                    <span class="detail-icon">📞</span>
-                    <div class="detail-content">
-                      <span class="detail-label">Phone:</span>
+                  <div class="flex items-start gap-3">
+                    <span class="text-lg flex-shrink-0 mt-0.5">📞</span>
+                    <div class="flex flex-col gap-0.5 min-w-0">
+                      <span class="font-semibold text-sm text-gray-600 dark:text-gray-400">Phone:</span>
                       <a
                         href="tel:{business.phonenumber}"
-                        class="detail-value phone-link"
+                        class="text-blue-600 dark:text-blue-400 no-underline transition-colors hover:text-blue-800 dark:hover:text-blue-300 hover:underline break-all"
                         >{business.phonenumber}</a
                       >
                     </div>
                   </div>
                 {/if}
                 {#if business.email}
-                  <div class="detail-item">
-                    <span class="detail-icon">📧</span>
-                    <div class="detail-content">
-                      <span class="detail-label">Email:</span>
+                  <div class="flex items-start gap-3">
+                    <span class="text-lg flex-shrink-0 mt-0.5">📧</span>
+                    <div class="flex flex-col gap-0.5 min-w-0">
+                      <span class="font-semibold text-sm text-gray-600 dark:text-gray-400">Email:</span>
                       <a
                         href="mailto:{business.email}"
-                        class="detail-value email-link">{business.email}</a
+                        class="text-blue-600 dark:text-blue-400 no-underline transition-colors hover:text-blue-800 dark:hover:text-blue-300 hover:underline break-all">{business.email}</a
                       >
                     </div>
                   </div>
                 {/if}
                 {#if business.website}
-                  <div class="detail-item">
-                    <span class="detail-icon">🌐</span>
-                    <div class="detail-content">
-                      <span class="detail-label">Website:</span>
+                  <div class="flex items-start gap-3">
+                    <span class="text-lg flex-shrink-0 mt-0.5">🌐</span>
+                    <div class="flex flex-col gap-0.5 min-w-0">
+                      <span class="font-semibold text-sm text-gray-600 dark:text-gray-400">Website:</span>
                       <a
                         href={business.website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="detail-value website-link">{business.website}</a
+                        class="text-blue-600 dark:text-blue-400 no-underline transition-colors hover:text-blue-800 dark:hover:text-blue-300 hover:underline break-all">{business.website}</a
                       >
                     </div>
                   </div>
                 {/if}
                 {#if business.instagram_id}
-                  <div class="detail-item">
-                    <span class="detail-icon">📷</span>
-                    <div class="detail-content">
-                      <span class="detail-label">Instagram:</span>
+                  <div class="flex items-start gap-3">
+                    <span class="text-lg flex-shrink-0 mt-0.5">📷</span>
+                    <div class="flex flex-col gap-0.5 min-w-0">
+                      <span class="font-semibold text-sm text-gray-600 dark:text-gray-400">Instagram:</span>
                       <a
                         href="https://instagram.com/{business.instagram_id.replace(
                           '@',
@@ -249,7 +252,7 @@
                         )}"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="detail-value instagram-link"
+                        class="text-blue-600 dark:text-blue-400 no-underline transition-colors hover:text-blue-800 dark:hover:text-blue-300 hover:underline break-all"
                         >{business.instagram_id}</a
                       >
                     </div>
@@ -259,46 +262,46 @@
             </div>
 
             <!-- Location Information -->
-            <div class="info-section">
-              <h4 class="section-title">Location</h4>
-              <div class="location-details">
+            <div class="flex flex-col gap-3">
+              <h4 class="text-lg font-semibold text-blue-600 dark:text-blue-400 m-0 pb-2 border-b-2 border-blue-100 dark:border-gray-700">Location</h4>
+              <div class="flex flex-col gap-3">
                 {#if business.address}
-                  <div class="detail-item">
-                    <span class="detail-icon">📍</span>
-                    <div class="detail-content">
-                      <span class="detail-label">Address:</span>
-                      <span class="detail-value">{business.address}</span>
+                  <div class="flex items-start gap-3">
+                    <span class="text-lg flex-shrink-0 mt-0.5">📍</span>
+                    <div class="flex flex-col gap-0.5 min-w-0">
+                      <span class="font-semibold text-sm text-gray-600 dark:text-gray-400">Address:</span>
+                      <span class="text-blue-600 dark:text-blue-400">{business.address}</span>
                     </div>
                   </div>
                 {/if}
                 {#if business.city}
-                  <div class="detail-item">
-                    <span class="detail-icon">🏙️</span>
-                    <div class="detail-content">
-                      <span class="detail-label">City:</span>
-                      <span class="detail-value">{business.city}</span>
+                  <div class="flex items-start gap-3">
+                    <span class="text-lg flex-shrink-0 mt-0.5">🏙️</span>
+                    <div class="flex flex-col gap-0.5 min-w-0">
+                      <span class="font-semibold text-sm text-gray-600 dark:text-gray-400">City:</span>
+                      <span class="text-blue-600 dark:text-blue-400">{business.city}</span>
                     </div>
                   </div>
                 {/if}
                 {#if business.state}
-                  <div class="detail-item">
-                    <span class="detail-icon">🗺️</span>
-                    <div class="detail-content">
-                      <span class="detail-label">State:</span>
-                      <span class="detail-value">{business.state}</span>
+                  <div class="flex items-start gap-3">
+                    <span class="text-lg flex-shrink-0 mt-0.5">🗺️</span>
+                    <div class="flex flex-col gap-0.5 min-w-0">
+                      <span class="font-semibold text-sm text-gray-600 dark:text-gray-400">State:</span>
+                      <span class="text-blue-600 dark:text-blue-400">{business.state}</span>
                     </div>
                   </div>
                 {/if}
                 {#if business.google_maps_link}
-                  <div class="detail-item">
-                    <span class="detail-icon">🗺️</span>
-                    <div class="detail-content">
-                      <span class="detail-label">Google Maps:</span>
+                  <div class="flex items-start gap-3">
+                    <span class="text-lg flex-shrink-0 mt-0.5">🗺️</span>
+                    <div class="flex flex-col gap-0.5 min-w-0">
+                      <span class="font-semibold text-sm text-gray-600 dark:text-gray-400">Google Maps:</span>
                       <a
                         href={business.google_maps_link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="detail-value maps-link">View on Map</a
+                        class="text-blue-600 dark:text-blue-400 no-underline transition-colors hover:text-blue-800 dark:hover:text-blue-300 hover:underline">View on Map</a
                       >
                     </div>
                   </div>
@@ -312,47 +315,49 @@
 
     <!-- Recent Projects Section -->
     {#if showProjects}
-      <section class="recent-projects">
-        <h2>Recent Solar Panel Installation Projects</h2>
+      <section class="px-6 py-8 bg-white dark:bg-gray-800 rounded-2xl shadow-md mb-8 transition-all">
+        <h2 class="text-2xl md:text-3xl font-bold mb-4 text-blue-600 dark:text-blue-400 text-center">Recent Solar Panel Installation Projects</h2>
 
         {#if projects.length === 0}
-          <div class="no-projects">
+          <div class="text-center py-8 bg-white dark:bg-gray-700 rounded-lg mb-6 text-gray-600 dark:text-gray-400">
             No recent projects found for this business.
           </div>
         {:else}
-          <div class="projects-grid">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
             {#each projects as project (project.id)}
-              <div class="project-card">
+              <div class="rounded-lg overflow-hidden shadow-md transition-all hover:shadow-lg hover:-translate-y-1 bg-white dark:bg-gray-700 h-full">
                 <a
                   href="/in/solar-panel-installer/{businessSlug}/project/{project.project_slug}"
-                  class="project-link"
+                  class="block no-underline text-inherit transition-all"
                 >
-                  <div class="project-image">
+                  <div class="h-48 overflow-hidden relative">
                     {#if project.cloudinary_public_id}
                       <img
                         src={`https://res.cloudinary.com/${PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_fill,w_300,h_200,q_auto,f_auto/${project.cloudinary_public_id}`}
                         alt={project.title}
                         loading="lazy"
+                        class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                       />
                     {:else if project.image_url}
                       <img
                         src={project.image_url}
                         alt={project.title}
                         loading="lazy"
+                        class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                       />
                     {:else}
-                      <div class="no-image">No Image</div>
+                      <div class="flex items-center justify-center h-full bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 font-medium">No Image</div>
                     {/if}
                   </div>
 
-                  <div class="project-details">
-                    <h3>{project.title}</h3>
-                    <p class="location">Pincode: {project.pincode}</p>
-                    <p class="date">
+                  <div class="px-6 py-4">
+                    <h3 class="mt-0 mb-3 text-xl text-blue-600 dark:text-blue-400 font-semibold">{project.title}</h3>
+                    <p class="m-2 text-sm text-gray-600 dark:text-gray-300">Pincode: {project.pincode}</p>
+                    <p class="m-2 text-sm text-gray-600 dark:text-gray-300">
                       Completed on: {formatDate(project.project_date)}
                     </p>
                     {#if project.system_size}
-                      <p class="system-size">
+                      <p class="m-0 text-blue-600 dark:text-blue-400 font-semibold">
                         System Size: {project.system_size} kW
                       </p>
                     {/if}
@@ -364,7 +369,7 @@
         {/if}
       </section>
 
-      <h2>Book Free Consultation To Know Price from {business.businessname}</h2>
+      <h2 class="text-2xl md:text-3xl font-bold mb-4 text-blue-600 dark:text-blue-400 text-center">Book Free Consultation To Know Price from {business.businessname}</h2>
       <LeadFormBusiness />
     {/if}
 
@@ -373,892 +378,31 @@
 
     <!-- Other Businesses in the City -->
     {#if business.city}
-      <section class="other-businesses">
-        <h2>Find Other Solar Businesses in {business.city}</h2>
-        <p>
+      <section class="mt-8 text-center px-6 py-8 bg-white dark:bg-gray-800 rounded-2xl shadow-md transition-all">
+        <h2 class="text-2xl md:text-3xl font-bold mb-4 text-blue-600 dark:text-blue-400">Find Other Solar Businesses in {business.city}</h2>
+        <p class="text-lg mb-4 text-gray-600 dark:text-gray-300">
           If you're interested in exploring other solar businesses in {business.city},
           visit our directory page.
         </p>
-        <button onclick={navigateToDirectory}>
+        <button onclick={navigateToDirectory} class="bg-transparent border-2 border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 font-semibold px-6 py-3 min-w-max transition-all hover:bg-blue-50 dark:hover:bg-gray-700 hover:-translate-y-0.5">
           View Solar Businesses in {business.city}
         </button>
       </section>
     {/if}
   {:else if errorMessage}
-    <p class="error-message">{errorMessage}</p>
+    <p class="text-red-600 text-lg font-semibold">{errorMessage}</p>
   {:else}
     <p>Loading...</p>
   {/if}
 
   <!-- About Solarvipani -->
-  <div class="about-container">
+  <div class="max-w-4xl w-full mb-8">
     <AboutSolarVipani />
   </div>
 </main>
 
 <style>
-  /* Root variables using custom properties */
-  :root {
-    /* Colors */
-    --primary-color: #0056b3;
-    --primary-hover: #004494;
-    --primary-light: #e6f0ff;
-    --secondary-color: #4caf50;
-    --accent-color: #ffc107;
-
-    /* Text colors */
-    --text-dark: #2c3e50;
-    --text-medium: #546e7a;
-    --text-light: #ecf0f1;
-
-    /* Theme colors */
-    --light-bg-color: #f8f9fa;
-    --dark-bg-color: #1a202c;
-    --light-card-bg: #ffffff;
-    --dark-card-bg: #2d3748;
-
-    /* UI elements */
-    --border-radius-sm: 4px;
-    --border-radius-md: 8px;
-    --border-radius-lg: 16px;
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
-
-    /* Typography */
-    --font-family: "Poppins", "Helvetica Neue", Arial, sans-serif;
-    --heading-line-height: 1.2;
-    --body-line-height: 1.6;
-
-    /* Layout */
-    --section-padding: 2rem 1.5rem;
-    --container-width: 1140px;
-    --grid-gap: 1.5rem;
-
-    /* Transitions */
-    --transition-fast: 0.2s ease;
-    --transition-medium: 0.3s ease;
-    --transition-slow: 0.5s ease;
-  }
-
-  /* Base styles */
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-
-  main {
-    width: 100%;
-    font-family: var(--font-family);
-    line-height: var(--body-line-height);
-    overflow-x: hidden;
-    transition:
-      background-color var(--transition-medium),
-      color var(--transition-medium);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 2rem 1rem;
-    min-height: 100vh;
-  }
-
-  main > * {
-    max-width: var(--container-width);
-    width: 100%;
-    margin-bottom: 2rem;
-  }
-
-  /* Theme styling */
-  .light {
-    background-color: var(--light-bg-color);
-    color: var(--text-dark);
-  }
-
-  .dark {
-    background-color: var(--dark-bg-color);
-    color: var(--text-light);
-  }
-
-  /* Section styling */
-  section {
-    padding: var(--section-padding);
-    transition: background-color var(--transition-medium);
-    background-color: var(--light-card-bg);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-md);
-  }
-
-  .dark section {
-    background-color: var(--dark-card-bg);
-  }
-
-  /* Typography */
-  h1 {
-    font-size: 2.2rem;
-    margin-bottom: 1rem;
-    font-weight: 600;
-    text-align: center;
-    color: var(--primary-color);
-  }
-
-  .dark h1 {
-    color: var(--primary-light);
-  }
-
-  h2 {
-    font-size: 1.8rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: var(--primary-color);
-    text-align: center;
-  }
-
-  .dark h2 {
-    color: var(--primary-light);
-  }
-
-  p {
-    font-size: 1rem;
-    margin-bottom: 0.75rem;
-    line-height: 1.6;
-    color: var(--text-medium);
-  }
-
-  .dark p {
-    color: #cbd5e0;
-  }
-
-  /* Button styling */
-  button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    border: none;
-    border-radius: var(--border-radius-sm);
-    cursor: pointer;
-    transition:
-      background-color var(--transition-fast),
-      transform var(--transition-fast);
-    background-color: var(--accent-color);
-    color: white;
-    margin-bottom: 1rem;
-  }
-
-  button:hover {
-    background-color: var(--primary-hover);
-    transform: translateY(-2px);
-  }
-
-  /* Utility classes */
-  .error-message {
-    color: #e53e3e;
-    font-size: 1.1rem;
-    font-weight: 600;
-  }
-
-  /* Business Owner Section - Subtle and unobtrusive */
-  .business-owner-section {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 1rem;
-    padding: 0 1rem;
-  }
-
-  .business-login-btn {
-    background-color: transparent;
-    color: var(--text-medium);
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    font-size: 0.85rem;
-    font-weight: 400;
-    padding: 0.5rem 1rem;
-    border-radius: var(--border-radius-sm);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    opacity: 0.7;
-  }
-
-  .dark .business-login-btn {
-    color: #a0aec0;
-    border-color: rgba(255, 255, 255, 0.2);
-  }
-
-  .business-login-btn:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-    opacity: 1;
-    transform: none;
-  }
-
-  .dark .business-login-btn:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-  }
-
-  /* Hero Section */
-  .hero-section {
-    text-align: center;
-    padding: 3rem 2rem;
-    background: linear-gradient(
-      135deg,
-      var(--primary-color) 0%,
-      var(--primary-hover) 100%
-    );
-    border-radius: var(--border-radius-lg);
-    color: white;
-    margin-bottom: 2rem;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .hero-section::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-    pointer-events: none;
-  }
-
-  .dark .hero-section {
-    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
-  }
-
-  .hero-section h1 {
-    color: white;
-    font-size: 2.5rem;
-    margin-bottom: 0.5rem;
-    position: relative;
-    z-index: 1;
-  }
-
-  .business-tag {
-    display: inline-flex;
-    align-items: center;
-    color: #22c55e;
-    font-size: 0.75rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 1.5rem;
-    position: relative;
-  }
-
-  .business-tag::before {
-    content: "✓";
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 14px;
-    height: 14px;
-    background-color: #22c55e;
-    color: white;
-    border-radius: 50%;
-    font-size: 0.6rem;
-    font-weight: bold;
-    margin-right: 0.4rem;
-  }
-
-  .dark .business-tag {
-    color: #4ade80;
-  }
-
-  .dark .business-tag::before {
-    background-color: #4ade80;
-  }
-
-  .hero-actions {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    position: relative;
-    z-index: 1;
-    flex-wrap: wrap;
-  }
-
-  .call-now-button-hero {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: linear-gradient(135deg, #ff6b35 0%, #f94449 100%);
-    color: white;
-    font-weight: 700;
-    font-size: 0.9rem;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-    padding: 1rem 2rem;
-    border-radius: var(--border-radius-md);
-    border: none;
-    cursor: pointer;
-    transition: all var(--transition-medium);
-    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
-    width: 160px;
-    justify-content: center;
-  }
-
-  .call-now-button-hero:hover {
-    background: linear-gradient(135deg, #f94449 0%, #ff6b35 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
-  }
-
-  .phone-button-icon,
-  .whatsapp-button-icon {
-    display: flex;
-    align-items: center;
-  }
-
-  .whatsapp-button-hero {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: linear-gradient(135deg, #25d366 0%, #20c858 100%);
-    color: white;
-    font-weight: 700;
-    font-size: 0.9rem;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-    padding: 1rem 2rem;
-    border-radius: var(--border-radius-md);
-    border: none;
-    cursor: pointer;
-    transition: all var(--transition-medium);
-    box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
-    width: 160px;
-    justify-content: center;
-  }
-
-  .whatsapp-button-hero:hover {
-    background: linear-gradient(135deg, #20c858 0%, #25d366 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
-  }
-
-  /* Business Details - Combined Card */
-  .business-details-container {
-    margin-bottom: 2rem;
-  }
-
-  .business-info-card {
-    background-color: var(--light-card-bg);
-    border-radius: var(--border-radius-lg);
-    padding: 2rem;
-    box-shadow: var(--shadow-md);
-    transition: all var(--transition-medium);
-    border: 1px solid rgba(0, 0, 0, 0.08);
-  }
-
-  .dark .business-info-card {
-    background-color: var(--dark-card-bg);
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .business-info-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-  }
-
-  .business-info-content {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .info-section {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .section-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--primary-color);
-    margin: 0;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid var(--primary-light);
-  }
-
-  .dark .section-title {
-    color: var(--primary-light);
-    border-bottom-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .description-text {
-    margin: 0;
-    line-height: 1.6;
-    color: var(--text-medium);
-  }
-
-  .dark .description-text {
-    color: #a0aec0;
-  }
-
-  /* Contact & Location Grid */
-  .contact-location-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-  }
-
-  .contact-details,
-  .location-details {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .detail-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-  }
-
-  .detail-icon {
-    font-size: 1.1rem;
-    flex-shrink: 0;
-    margin-top: 0.1rem;
-  }
-
-  .detail-content {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-    min-width: 0;
-  }
-
-  .detail-label {
-    font-weight: 600;
-    font-size: 0.9rem;
-    color: var(--text-medium);
-  }
-
-  .dark .detail-label {
-    color: #a0aec0;
-  }
-
-  .detail-value {
-    color: var(--primary-color);
-    text-decoration: none;
-    transition: color var(--transition-fast);
-    word-break: break-all;
-  }
-
-  .dark .detail-value {
-    color: var(--primary-light);
-  }
-
-  .detail-value:hover {
-    color: var(--primary-hover);
-    text-decoration: underline;
-  }
-
-  .phone-link:hover {
-    color: var(--secondary-color);
-  }
-
-  .card-header {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 2px solid var(--primary-light);
-  }
-
-  .dark .card-header {
-    border-bottom-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .card-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    background-color: var(--primary-light);
-    border-radius: 50%;
-    color: var(--primary-color);
-  }
-
-  .dark .card-icon {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: var(--primary-light);
-  }
-
-  .card-header h3 {
-    margin: 0;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--primary-color);
-  }
-
-  .dark .card-header h3 {
-    color: var(--primary-light);
-  }
-
-  /* Services Styling */
-  .services-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .service-tag {
-    background-color: var(--primary-light);
-    color: var(--primary-color);
-    padding: 0.4rem 0.8rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 500;
-  }
-
-  .dark .service-tag {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: var(--primary-light);
-  }
-
-  /* Project cards */
-  .recent-projects {
-    margin: 1rem 0;
-  }
-
-  .projects-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: var(--grid-gap);
-    margin-top: 1.5rem;
-  }
-
-  .project-card {
-    border-radius: var(--border-radius-md);
-    overflow: hidden;
-    box-shadow: var(--shadow-md);
-    transition:
-      transform var(--transition-medium),
-      box-shadow var(--transition-medium);
-    background-color: var(--light-card-bg);
-    height: 100%;
-  }
-
-  .dark .project-card {
-    background-color: rgba(255, 255, 255, 0.05);
-  }
-
-  .project-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-lg);
-  }
-
-  .project-image {
-    height: 200px;
-    overflow: hidden;
-    position: relative;
-  }
-
-  .project-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform var(--transition-slow);
-  }
-
-  .project-card:hover .project-image img {
-    transform: scale(1.05);
-  }
-
-  .no-image {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    background-color: #f1f1f1;
-    color: var(--text-medium);
-    font-weight: 500;
-  }
-
-  .dark .no-image {
-    background-color: #2a2a2a;
-    color: #999;
-  }
-
-  .project-details {
-    padding: 1.5rem;
-  }
-
-  .project-details h3 {
-    margin-top: 0;
-    margin-bottom: 0.75rem;
-    font-size: 1.3rem;
-    color: var(--primary-color);
-    font-weight: 600;
-  }
-
-  .dark .project-details h3 {
-    color: var(--primary-light);
-  }
-
-  .project-details p {
-    margin: 0.5rem 0;
-    font-size: 0.95rem;
-    color: var(--text-medium);
-  }
-
-  .dark .project-details p {
-    color: #a0aec0;
-  }
-
-  .location,
-  .date {
-    color: var(--text-medium);
-    font-size: 0.9rem;
-  }
-
-  .dark .location,
-  .dark .date {
-    color: #a0aec0;
-  }
-
-  .system-size {
-    color: var(--primary-color);
-    font-weight: 600;
-    margin: 0;
-  }
-
-  .dark .system-size {
-    color: var(--primary-light);
-  }
-
-  .no-projects {
-    text-align: center;
-    padding: 2rem;
-    background-color: var(--light-card-bg);
-    border-radius: var(--border-radius-md);
-    margin: 1rem 0;
-    color: var(--text-medium);
-  }
-
-  .dark .no-projects {
-    background-color: rgba(255, 255, 255, 0.05);
-    color: #a0aec0;
-  }
-
-  /* Other businesses section */
-  .other-businesses {
-    margin-top: 2rem;
-    text-align: center;
-    padding: var(--section-padding);
-    background-color: var(--light-card-bg);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-md);
-  }
-
-  .dark .other-businesses {
-    background-color: var(--dark-card-bg);
-  }
-
-  .other-businesses p {
-    font-size: 1rem;
-    margin-bottom: 1rem;
-    color: var(--text-medium);
-  }
-
-  .dark .other-businesses p {
-    color: #a0aec0;
-  }
-
-  .other-businesses button {
-    background-color: transparent;
-    border: 1px solid var(--primary-color);
-    color: var(--primary-color);
-    min-width: 180px;
-    padding: 0.75rem 1.5rem;
-    font-weight: 600;
-    transition: all var(--transition-fast);
-  }
-
-  .other-businesses button:hover {
-    background-color: rgba(45, 130, 199, 0.05);
-    transform: translateY(-2px);
-  }
-
-  .dark .other-businesses button {
-    border-color: var(--primary-light);
-    color: var(--primary-light);
-  }
-
-  .dark .other-businesses button:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-  }
-
-  /* Project link styling */
-  .project-link {
-    display: block;
-    text-decoration: none;
-    color: inherit;
-    transition:
-      transform var(--transition-fast),
-      box-shadow var(--transition-fast);
-  }
-
-  .project-link:hover {
-    transform: translateY(-2px);
-  }
-
-  /* About container - width constraint without card styling */
-  .about-container {
-    max-width: var(--container-width);
-    width: 100%;
-    margin-bottom: 2rem;
-  }
-
-  /* Responsive design */
-  @media (max-width: 992px) {
-    main {
-      padding: 1.5rem 1rem;
-    }
-
-    .hero-section {
-      padding: 2.5rem 1.5rem;
-    }
-
-    .hero-section h1 {
-      font-size: 2.2rem;
-    }
-
-    .business-info-card {
-      padding: 1.5rem;
-    }
-
-    .contact-location-grid {
-      gap: 1.5rem;
-    }
-
-    h2 {
-      font-size: 1.6rem;
-    }
-
-    .projects-grid {
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    }
-  }
-
-  @media (max-width: 768px) {
-    main {
-      padding: 1rem 0.5rem;
-    }
-
-    .hero-section {
-      padding: 2rem 1rem;
-    }
-
-    .hero-section h1 {
-      font-size: 2rem;
-    }
-
-    .call-now-button-hero,
-    .whatsapp-button-hero {
-      width: 100%;
-      max-width: 300px;
-      padding: 0.9rem 1.5rem;
-      font-size: 0.9rem;
-    }
-
-    .hero-actions {
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .business-info-card {
-      padding: 1.25rem;
-    }
-
-    .contact-location-grid {
-      grid-template-columns: 1fr;
-      gap: 1.5rem;
-    }
-
-    section {
-      padding: 1.5rem 1rem;
-    }
-
-    h2 {
-      font-size: 1.4rem;
-    }
-
-    .projects-grid {
-      grid-template-columns: 1fr;
-      gap: 1rem;
-    }
-
-    .project-details {
-      padding: 1rem;
-    }
-
-    button {
-      padding: 0.6rem 1.2rem;
-      font-size: 0.9rem;
-    }
-  }
-
-  @media (max-width: 576px) {
-    .hero-section {
-      padding: 1.5rem 0.75rem;
-    }
-
-    .hero-section h1 {
-      font-size: 1.8rem;
-    }
-
-    .business-tag {
-      font-size: 0.8rem;
-      padding: 0.4rem 0.8rem;
-    }
-
-    .call-now-button-hero,
-    .whatsapp-button-hero {
-      font-size: 0.8rem;
-      padding: 0.8rem 1.2rem;
-      width: auto;
-      min-width: 140px;
-    }
-
-    .business-login-btn {
-      font-size: 0.8rem;
-      padding: 0.4rem 0.8rem;
-    }
-
-    .business-info-card {
-      padding: 1rem;
-    }
-
-    .card-header {
-      gap: 0.5rem;
-    }
-
-    .card-icon {
-      width: 35px;
-      height: 35px;
-    }
-
-    .card-header h3 {
-      font-size: 1.1rem;
-    }
-
-    h2 {
-      font-size: 1.3rem;
-    }
-
-    .project-image {
-      height: 160px;
-    }
-
-    .service-tag {
-      font-size: 0.8rem;
-      padding: 0.3rem 0.6rem;
-    }
+  :global(main > *) {
+    @apply max-w-4xl w-full;
   }
 </style>

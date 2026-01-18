@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { isDarkMode } from '$lib/themeStore';
-	import { Card } from '$lib/components/ui/card';
+	import { Root as Card, CardContent } from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import * as Table from '$lib/components/ui/table';
 	import { Check, X } from '@lucide/svelte';
@@ -44,8 +44,8 @@
 	</div>
 
 	<div class="flex justify-center">
-		<Card.Root class="w-full max-w-4xl">
-			<Card.Content class="pt-6">
+		<Card class="w-full max-w-4xl">
+			<CardContent class="pt-6">
 				<div class="overflow-x-auto">
 					<Table.Root>
 						<Table.Header>
@@ -76,7 +76,7 @@
 						</Table.Body>
 					</Table.Root>
 				</div>
-			</Card.Content>
-		</Card.Root>
+			</CardContent>
+		</Card>
 	</div>
 </section>
