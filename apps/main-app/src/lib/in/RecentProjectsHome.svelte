@@ -1,6 +1,6 @@
 <script>
   import { PUBLIC_CLOUDINARY_CLOUD_NAME } from "$env/static/public";
-  import { isDarkMode } from "$lib/themeStore";
+  import { isDarkMode } from "$lib/themeStore.svelte";
 
   // Props
   let { projects = [] } = $props();

@@ -363,6 +363,11 @@ body {
   font-feature-settings: "rlig" 1, "calt" 1;
 }
 
+/* Remove default link underlines */
+a {
+  text-decoration: none;
+}
+
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;

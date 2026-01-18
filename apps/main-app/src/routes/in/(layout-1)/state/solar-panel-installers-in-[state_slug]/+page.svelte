@@ -1,7 +1,7 @@
 <script>
   import { onMount } from "svelte";
   import { page } from "$app/stores";
-  import { isDarkMode } from "$lib/themeStore";
+  import { isDarkMode } from "$lib/themeStore.svelte";
 
   // Get reactive data from the page store using derived
   const state = $derived($page.data.state);

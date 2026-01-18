@@ -1,5 +1,5 @@
 <script>
-	import { isDarkMode } from '$lib/themeStore';
+	import { isDarkMode } from '$lib/themeStore.svelte';
 
 	// Reactive statement for dark mode
 	const darkMode = isDarkMode;

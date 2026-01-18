@@ -1,5 +1,5 @@
 <script>
-  import { isDarkMode, toggleTheme, initializeTheme } from "$lib/themeStore";
+  import { isDarkMode, toggleTheme, initializeTheme } from "$lib/themeStore.svelte";
   import { writable } from "svelte/store";
   import { storiesModalOpen } from "$lib/storiesStore.js";
   import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
@@ -367,12 +367,6 @@
 {/if} -->
 
 <style>
-  :global(body) {
-    font-family: "Georgia", serif;
-    margin: 0;
-    padding: 0;
-  }
-
   nav {
     display: flex;
     flex-wrap: wrap;

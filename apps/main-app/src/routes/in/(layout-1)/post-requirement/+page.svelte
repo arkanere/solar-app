@@ -1,6 +1,6 @@
 <script>
 	import QueryForm from '$lib/in-new-rewrites/QueryForm.svelte';
-	import { isDarkMode } from '$lib/themeStore'; // Import from store if globally managed
+	import { isDarkMode } from '$lib/themeStore.svelte'; // Import from store if globally managed
 	// Use the global theme store
 	let darkMode = $derived($isDarkMode);
 </script>

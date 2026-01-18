@@ -8,7 +8,7 @@
     loadStoriesData,
   } from "./storiesStore.js";
   import { PUBLIC_CLOUDINARY_CLOUD_NAME } from "$env/static/public";
-  import { isDarkMode } from "$lib/themeStore";
+  import { isDarkMode } from "$lib/themeStore.svelte";
 
   let darkMode = $derived($isDarkMode);
 

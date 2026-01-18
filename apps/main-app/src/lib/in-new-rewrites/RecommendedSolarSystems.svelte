@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { isDarkMode } from '$lib/themeStore';
+	import { isDarkMode } from '$lib/themeStore.svelte';
 	import * as Table from '$lib/components/ui/table';
 	import * as Card from '$lib/components/ui/card';
 	import { RECOMMENDED_SYSTEMS } from '$lib/constants/solarSystems';

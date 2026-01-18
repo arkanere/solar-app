@@ -1,6 +1,6 @@
 <script>
   import { page } from "$app/stores";
-  import { isDarkMode } from "$lib/themeStore";
+  import { isDarkMode } from "$lib/themeStore.svelte";
   import { goto } from "$app/navigation";
   import LeadFormBusiness from "$lib/in-new-rewrites/LeadFormBusiness.svelte";
   import SolarSizeCalculator from "$lib/in-new-rewrites/SolarSizeCalculator.svelte";

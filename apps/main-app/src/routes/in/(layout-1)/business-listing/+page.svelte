@@ -71,7 +71,7 @@
 </script>
 
 <script>
-  import { isDarkMode } from "$lib/themeStore";
+  import { isDarkMode } from "$lib/themeStore.svelte";
   import { goto } from "$app/navigation";
   import AboutSolarVipani from "$lib/in-new-rewrites/AboutSolarVipani.svelte";
 

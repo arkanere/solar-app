@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { isDarkMode } from '$lib/themeStore'; // Assuming this store is globally managed
+	import { isDarkMode } from '$lib/themeStore.svelte'; // Assuming this store is globally managed
 
 	let currentBill = $state(1500); // Initial value for current electricity bill in Rupees
 	let ratePerUnit = $state(9); // Initial value for electricity rate per unit in Rupees
