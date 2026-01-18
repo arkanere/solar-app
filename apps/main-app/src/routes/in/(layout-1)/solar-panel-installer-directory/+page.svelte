@@ -1,5 +1,5 @@
 <script>
-  import { isDarkMode } from "$lib/themeStore"; // Import the dark mode store
+  import { isDarkMode } from "$lib/themeStore.svelte"; // Import the dark mode store
   import { goto } from "$app/navigation";
   import BusinessDirectory from "$lib/in-new-rewrites/BusinessDirectory.svelte";
 

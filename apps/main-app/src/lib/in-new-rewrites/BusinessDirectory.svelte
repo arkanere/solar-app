@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { isDarkMode } from '$lib/themeStore';
+	import { isDarkMode } from '$lib/themeStore.svelte';
 	import { goto } from '$app/navigation';
 	import * as Select from '$lib/components/ui/select';
 	import * as Card from '$lib/components/ui/card';

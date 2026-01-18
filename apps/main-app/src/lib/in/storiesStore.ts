@@ -24,7 +24,7 @@ export async function loadStoriesData(): Promise<void> {
 	storiesError.set(null);
 
 	try {
-		const response = await fetch('/api/stories');
+		const response = await fetch('/in/api/stories');
 		if (!response.ok) {
 			throw new Error('Failed to load stories');
 		}

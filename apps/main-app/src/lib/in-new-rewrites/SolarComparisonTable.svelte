@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { isDarkMode } from '$lib/themeStore';
+	import { isDarkMode } from '$lib/themeStore.svelte';
 	import { Root as Card, CardContent } from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import * as Table from '$lib/components/ui/table';

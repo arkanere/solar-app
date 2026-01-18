@@ -1,5 +1,5 @@
 <script>
-  import { isDarkMode, toggleTheme, initializeTheme } from "$lib/themeStore";
+  import { isDarkMode, toggleTheme, initializeTheme } from "$lib/themeStore.svelte";
   import { writable } from "svelte/store";
   import { storiesModalOpen } from "$lib/in/storiesStore.js";
   import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
@@ -208,18 +208,6 @@
   }
 </script>
 
-<style>
-  :global(body) {
-    font-family: "Georgia", serif;
-    margin: 0;
-    padding: 0;
-  }
-
-  :global(*) {
-    margin: 0;
-    padding: 0;
-  }
-</style>
 
 <!-- svelte-ignore a11y_img_redundant_alt -->
 <svelte:head>

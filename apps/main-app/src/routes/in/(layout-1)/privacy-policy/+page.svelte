@@ -1,5 +1,5 @@
 <script>
-	import { isDarkMode } from '$lib/themeStore'; // Import dark mode state
+	import { isDarkMode } from '$lib/themeStore.svelte'; // Import dark mode state
 
 	// Use the global theme store
 	let darkMode = $derived($isDarkMode);
