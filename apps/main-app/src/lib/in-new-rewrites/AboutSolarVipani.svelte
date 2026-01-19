@@ -45,7 +45,7 @@
 					start.
 					<Button
 						variant="ghost"
-						class="p-0 h-auto font-semibold text-blue-600 hover:bg-transparent hover:underline dark:text-blue-400"
+						class="p-0 h-auto font-semibold text-primary hover:bg-transparent hover:underline"
 						on:click={handleScroll}
 					>
 						Get 2-3 free quotes from verified installers in your area
