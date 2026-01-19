@@ -69,7 +69,7 @@
 			class={errors.name ? 'border-destructive' : ''}
 		/>
 		{#if errors.name}
-			<p class="text-red-500 text-sm">{errors.name}</p>
+			<p class="text-destructive text-sm">{errors.name}</p>
 		{/if}
 	</div>
 
@@ -84,7 +84,7 @@
 			class={errors.phone ? 'border-destructive' : ''}
 		/>
 		{#if errors.phone}
-			<p class="text-red-500 text-sm">{errors.phone}</p>
+			<p class="text-destructive text-sm">{errors.phone}</p>
 		{/if}
 	</div>
 
@@ -99,7 +99,7 @@
 			class={errors.pincode ? 'border-destructive' : ''}
 		/>
 		{#if errors.pincode}
-			<p class="text-red-500 text-sm">{errors.pincode}</p>
+			<p class="text-destructive text-sm">{errors.pincode}</p>
 		{/if}
 	</div>
 
@@ -113,7 +113,7 @@
 			class={errors.message ? 'border-destructive' : ''}
 		/>
 		{#if errors.message}
-			<p class="text-red-500 text-sm">{errors.message}</p>
+			<p class="text-destructive text-sm">{errors.message}</p>
 		{/if}
 	</div>
 

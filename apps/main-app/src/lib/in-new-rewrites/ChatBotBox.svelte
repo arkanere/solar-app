@@ -763,7 +763,7 @@
             <!-- Guided flow suggestion -->
             {#if message.showGuidedOption && message.role === "assistant"}
               <div class="mt-4 space-y-2">
-                <Button onclick={startGuidedFlow} class="w-full" variant={$isDarkMode ? "default" : "default"}>Yes, start assessment</Button>
+                <Button onclick={startGuidedFlow} class="w-full" variant="default">Yes, start assessment</Button>
                 <Button onclick={() => dismissGuidedSuggestion(i)} variant="outline" class="w-full">No, continue chatting</Button>
               </div>
             {/if}
@@ -785,7 +785,7 @@
                 {#each conversationFlows.flows[currentFlowId].inputs as input}
                   <div class="space-y-1">
                     {#if input.label}
-                      <Label class={$isDarkMode ? "text-slate-200" : "text-slate-700"}>{input.label}</Label>
+                      <Label class="text-foreground">{input.label}</Label>
                     {/if}
                     <div class="flex gap-2 items-center">
                       {#if input.type === "number"}
@@ -798,7 +798,7 @@
                         <Input type="text" bind:value={inputValues[input.id]} placeholder={input.placeholder || ""} class="flex-1" />
                       {/if}
                       {#if input.unit}
-                        <span class={`text-sm ${$isDarkMode ? "text-slate-400" : "text-slate-600"}`}>{input.unit}</span>
+                        <span class="text-sm text-muted-foreground">{input.unit}</span>
                       {/if}
                     </div>
                     <Button onclick={() => submitInput(input.id, inputValues[input.id])} disabled={!inputValues[input.id]} class="w-full" variant="default">
@@ -855,8 +855,8 @@
     {#if isLoading}
       <div class="flex gap-2 items-center">
         <Badge variant="outline" class="animate-pulse bg-background-secondary">●</Badge>
-        <Badge variant="outline" class={`animate-pulse delay-200 ${$isDarkMode ? "bg-slate-700" : ""}`}>●</Badge>
-        <Badge variant="outline" class={`animate-pulse delay-400 ${$isDarkMode ? "bg-slate-700" : ""}`}>●</Badge>
+        <Badge variant="outline" class="animate-pulse delay-200 bg-muted">●</Badge>
+        <Badge variant="outline" class="animate-pulse delay-400 bg-muted">●</Badge>
       </div>
     {/if}
 

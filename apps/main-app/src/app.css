@@ -163,6 +163,14 @@
   --color-warning: hsl(var(--warning));
   --color-warning-foreground: hsl(var(--warning-foreground));
   --color-warning-muted: hsl(var(--warning-muted));
+
+  /* Overlay */
+  --color-overlay: rgba(0, 0, 0, 0.5);
+  --color-overlay-light: rgba(255, 255, 255, 0.7);
+
+  /* Link */
+  --color-link: hsl(var(--primary));
+  --color-link-hover: hsl(var(--primary) / 0.8);
 }
 
 /* ===== KEYFRAMES ===== */
@@ -221,6 +229,19 @@
   to {
     transform: translateY(0);
     opacity: 1;
+  }
+}
+
+/* ===== COMPONENT UTILITIES ===== */
+@layer components {
+  .overlay-dark {
+    @apply bg-[rgba(0,0,0,0.5)];
+  }
+  .overlay-light {
+    @apply bg-[rgba(255,255,255,0.7)];
+  }
+  .text-link {
+    @apply text-primary hover:opacity-80;
   }
 }
 
