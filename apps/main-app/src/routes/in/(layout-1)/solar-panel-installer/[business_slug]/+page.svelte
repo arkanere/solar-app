@@ -77,12 +77,12 @@
   />
 </svelte:head>
 
-<main class={`w-full font-sans leading-relaxed overflow-x-hidden transition-colors duration-300 flex flex-col items-center px-4 py-8 min-h-screen ${darkMode ? 'dark bg-gray-900 text-primary-foreground' : 'bg-muted text-foreground'}`}>
+<main class="w-full font-sans leading-relaxed overflow-x-hidden transition-colors duration-300 flex flex-col items-center px-4 py-8 min-h-screen bg-background text-foreground">
   {#if business}
     <!-- Business Login (for business owners) -->
     <div class="flex justify-end mb-4 px-4">
       <button
-        class="bg-transparent text-gray-600 dark:text-gray-400 border border-border dark:border-gray-600 text-xs font-normal px-4 py-2 rounded transition-all opacity-70 hover:opacity-100 hover:bg-gray-50 dark:hover:bg-gray-800"
+        class="bg-transparent text-muted-foreground border border-border text-xs font-normal px-4 py-2 rounded transition-all opacity-70 hover:opacity-100 hover:bg-muted"
         onclick={business.businessfilled ? navigateToLogin : navigateToClaim}
         title={business.businessfilled
           ? "Business owner login"
@@ -151,8 +151,8 @@
 
     <!-- Business Details - Single Combined Card -->
     <div class="mb-8">
-      <div class="bg-white bg-card rounded-2xl px-8 py-6 shadow-md border border-gray-200 dark:border-gray-700 transition-all hover:shadow-lg hover:-translate-y-0.5">
-        <div class="flex items-center gap-3 mb-4 pb-3 border-b-2 border-blue-100 dark:border-gray-700">
+      <div class="bg-card rounded-2xl px-8 py-6 shadow-md border border-border transition-all hover:shadow-lg hover:-translate-y-0.5">
+        <div class="flex items-center gap-3 mb-4 pb-3 border-b-2 border-border">
           <div class="flex items-center justify-center w-10 h-10 bg-accent-muted rounded-full text-primary">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -176,15 +176,15 @@
           <!-- Description Section -->
           {#if business.businessfilled && business.description}
             <div class="flex flex-col gap-3">
-              <h4 class="text-lg font-semibold text-primary m-0 pb-2 border-b-2 border-blue-100 dark:border-gray-700">About</h4>
-              <p class="m-0 leading-relaxed text-gray-600 dark:text-gray-300">{business.description}</p>
+              <h4 class="text-lg font-semibold text-primary m-0 pb-2 border-b-2 border-border">About</h4>
+              <p class="m-0 leading-relaxed text-muted-foreground">{business.description}</p>
             </div>
           {/if}
 
           <!-- Services Section -->
           {#if business.businessfilled && business.services && business.services.length > 0}
             <div class="flex flex-col gap-3">
-              <h4 class="text-lg font-semibold text-primary m-0 pb-2 border-b-2 border-blue-100 dark:border-gray-700">Services</h4>
+              <h4 class="text-lg font-semibold text-primary m-0 pb-2 border-b-2 border-border">Services</h4>
               <div class="flex flex-wrap gap-2">
                 {#each business.services as serviceId}
                   <span class="bg-accent-muted text-primary px-3 py-1 rounded-full text-sm font-medium"
@@ -199,16 +199,16 @@
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <!-- Contact Information -->
             <div class="flex flex-col gap-3">
-              <h4 class="text-lg font-semibold text-primary m-0 pb-2 border-b-2 border-blue-100 dark:border-gray-700">Contact Information</h4>
+              <h4 class="text-lg font-semibold text-primary m-0 pb-2 border-b-2 border-border">Contact Information</h4>
               <div class="flex flex-col gap-3">
                 {#if business.phonenumber}
                   <div class="flex items-start gap-3">
                     <span class="text-lg flex-shrink-0 mt-0.5">📞</span>
                     <div class="flex flex-col gap-0.5 min-w-0">
-                      <span class="font-semibold text-sm text-gray-600 dark:text-gray-400">Phone:</span>
+                      <span class="font-semibold text-sm text-muted-foreground">Phone:</span>
                       <a
                         href="tel:{business.phonenumber}"
-                        class="text-primary no-underline transition-colors hover:text-blue-800 dark:hover:text-blue-300 hover:underline break-all"
+                        class="text-primary no-underline transition-colors hover:text-primary/80 hover:underline break-all"
                         >{business.phonenumber}</a
                       >
                     </div>
@@ -218,10 +218,10 @@
                   <div class="flex items-start gap-3">
                     <span class="text-lg flex-shrink-0 mt-0.5">📧</span>
                     <div class="flex flex-col gap-0.5 min-w-0">
-                      <span class="font-semibold text-sm text-gray-600 dark:text-gray-400">Email:</span>
+                      <span class="font-semibold text-sm text-muted-foreground">Email:</span>
                       <a
                         href="mailto:{business.email}"
-                        class="text-primary no-underline transition-colors hover:text-blue-800 dark:hover:text-blue-300 hover:underline break-all">{business.email}</a
+                        class="text-primary no-underline transition-colors hover:text-primary/80 hover:underline break-all">{business.email}</a
                       >
                     </div>
                   </div>
@@ -230,12 +230,12 @@
                   <div class="flex items-start gap-3">
                     <span class="text-lg flex-shrink-0 mt-0.5">🌐</span>
                     <div class="flex flex-col gap-0.5 min-w-0">
-                      <span class="font-semibold text-sm text-gray-600 dark:text-gray-400">Website:</span>
+                      <span class="font-semibold text-sm text-muted-foreground">Website:</span>
                       <a
                         href={business.website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="text-primary no-underline transition-colors hover:text-blue-800 dark:hover:text-blue-300 hover:underline break-all">{business.website}</a
+                        class="text-primary no-underline transition-colors hover:text-primary/80 hover:underline break-all">{business.website}</a
                       >
                     </div>
                   </div>
@@ -244,7 +244,7 @@
                   <div class="flex items-start gap-3">
                     <span class="text-lg flex-shrink-0 mt-0.5">📷</span>
                     <div class="flex flex-col gap-0.5 min-w-0">
-                      <span class="font-semibold text-sm text-gray-600 dark:text-gray-400">Instagram:</span>
+                      <span class="font-semibold text-sm text-muted-foreground">Instagram:</span>
                       <a
                         href="https://instagram.com/{business.instagram_id.replace(
                           '@',
@@ -252,7 +252,7 @@
                         )}"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="text-primary no-underline transition-colors hover:text-blue-800 dark:hover:text-blue-300 hover:underline break-all"
+                        class="text-primary no-underline transition-colors hover:text-primary/80 hover:underline break-all"
                         >{business.instagram_id}</a
                       >
                     </div>
@@ -263,13 +263,13 @@
 
             <!-- Location Information -->
             <div class="flex flex-col gap-3">
-              <h4 class="text-lg font-semibold text-primary m-0 pb-2 border-b-2 border-blue-100 dark:border-gray-700">Location</h4>
+              <h4 class="text-lg font-semibold text-primary m-0 pb-2 border-b-2 border-border">Location</h4>
               <div class="flex flex-col gap-3">
                 {#if business.address}
                   <div class="flex items-start gap-3">
                     <span class="text-lg flex-shrink-0 mt-0.5">📍</span>
                     <div class="flex flex-col gap-0.5 min-w-0">
-                      <span class="font-semibold text-sm text-gray-600 dark:text-gray-400">Address:</span>
+                      <span class="font-semibold text-sm text-muted-foreground">Address:</span>
                       <span class="text-primary">{business.address}</span>
                     </div>
                   </div>
@@ -278,7 +278,7 @@
                   <div class="flex items-start gap-3">
                     <span class="text-lg flex-shrink-0 mt-0.5">🏙️</span>
                     <div class="flex flex-col gap-0.5 min-w-0">
-                      <span class="font-semibold text-sm text-gray-600 dark:text-gray-400">City:</span>
+                      <span class="font-semibold text-sm text-muted-foreground">City:</span>
                       <span class="text-primary">{business.city}</span>
                     </div>
                   </div>
@@ -287,7 +287,7 @@
                   <div class="flex items-start gap-3">
                     <span class="text-lg flex-shrink-0 mt-0.5">🗺️</span>
                     <div class="flex flex-col gap-0.5 min-w-0">
-                      <span class="font-semibold text-sm text-gray-600 dark:text-gray-400">State:</span>
+                      <span class="font-semibold text-sm text-muted-foreground">State:</span>
                       <span class="text-primary">{business.state}</span>
                     </div>
                   </div>
@@ -296,12 +296,12 @@
                   <div class="flex items-start gap-3">
                     <span class="text-lg flex-shrink-0 mt-0.5">🗺️</span>
                     <div class="flex flex-col gap-0.5 min-w-0">
-                      <span class="font-semibold text-sm text-gray-600 dark:text-gray-400">Google Maps:</span>
+                      <span class="font-semibold text-sm text-muted-foreground">Google Maps:</span>
                       <a
                         href={business.google_maps_link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="text-primary no-underline transition-colors hover:text-blue-800 dark:hover:text-blue-300 hover:underline">View on Map</a
+                        class="text-primary no-underline transition-colors hover:text-primary dark:hover:text-primary hover:underline">View on Map</a
                       >
                     </div>
                   </div>
@@ -315,17 +315,17 @@
 
     <!-- Recent Projects Section -->
     {#if showProjects}
-      <section class="px-6 py-8 bg-white bg-card rounded-2xl shadow-md mb-8 transition-all">
+      <section class="px-6 py-8 bg-card rounded-2xl shadow-md mb-8 transition-all">
         <h2 class="text-2xl md:text-3xl font-bold mb-4 text-primary text-center">Recent Solar Panel Installation Projects</h2>
 
         {#if projects.length === 0}
-          <div class="text-center py-8 bg-white dark:bg-gray-700 rounded-lg mb-6 text-gray-600 dark:text-gray-400">
+          <div class="text-center py-8 bg-card rounded-lg mb-6 text-muted-foreground">
             No recent projects found for this business.
           </div>
         {:else}
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
             {#each projects as project (project.id)}
-              <div class="rounded-lg overflow-hidden shadow-md transition-all hover:shadow-lg hover:-translate-y-1 bg-white dark:bg-gray-700 h-full">
+              <div class="rounded-lg overflow-hidden shadow-md transition-all hover:shadow-lg hover:-translate-y-1 bg-card h-full">
                 <a
                   href="/in/solar-panel-installer/{businessSlug}/project/{project.project_slug}"
                   class="block no-underline text-inherit transition-all"
@@ -346,14 +346,14 @@
                         class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                       />
                     {:else}
-                      <div class="flex items-center justify-center h-full bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 font-medium">No Image</div>
+                      <div class="flex items-center justify-center h-full bg-muted text-muted-foreground font-medium">No Image</div>
                     {/if}
                   </div>
 
                   <div class="px-6 py-4">
                     <h3 class="mt-0 mb-3 text-xl text-primary font-semibold">{project.title}</h3>
-                    <p class="m-2 text-sm text-gray-600 dark:text-gray-300">Pincode: {project.pincode}</p>
-                    <p class="m-2 text-sm text-gray-600 dark:text-gray-300">
+                    <p class="m-2 text-sm text-muted-foreground">Pincode: {project.pincode}</p>
+                    <p class="m-2 text-sm text-muted-foreground">
                       Completed on: {formatDate(project.project_date)}
                     </p>
                     {#if project.system_size}
@@ -380,17 +380,17 @@
     {#if business.city}
       <section class="mt-8 text-center px-6 py-8 bg-white bg-card rounded-2xl shadow-md transition-all">
         <h2 class="text-2xl md:text-3xl font-bold mb-4 text-primary">Find Other Solar Businesses in {business.city}</h2>
-        <p class="text-lg mb-4 text-gray-600 dark:text-gray-300">
+        <p class="text-lg mb-4 text-muted-foreground">
           If you're interested in exploring other solar businesses in {business.city},
           visit our directory page.
         </p>
-        <button onclick={navigateToDirectory} class="bg-transparent border-2 border-primary text-primary font-semibold px-6 py-3 min-w-max transition-all hover:bg-blue-50 dark:hover:bg-gray-700 hover:-translate-y-0.5">
+        <button onclick={navigateToDirectory} class="bg-transparent border-2 border-primary text-primary font-semibold px-6 py-3 min-w-max transition-all hover:bg-primary/10 hover:-translate-y-0.5">
           View Solar Businesses in {business.city}
         </button>
       </section>
     {/if}
   {:else if errorMessage}
-    <p class="text-red-600 text-lg font-semibold">{errorMessage}</p>
+    <p class="text-destructive text-lg font-semibold">{errorMessage}</p>
   {:else}
     <p>Loading...</p>
   {/if}

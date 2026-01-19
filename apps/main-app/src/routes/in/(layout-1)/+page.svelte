@@ -386,7 +386,7 @@
       </div>
     </section>
     <!-- Business Directory Section -->
-    <section class="rounded-lg bg-slate-50 dark:bg-accent-muted/50 p-12 md:p-24 mb-8 shadow-md">
+    <section class="rounded-lg bg-accent/10 p-12 md:p-24 mb-8 shadow-md">
       <div class="text-center mb-10">
         <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary text-primary">Solar Panel Installer Directory</h2>
         <div class="flex justify-center items-center my-4">
@@ -416,7 +416,7 @@
           <h3 class="text-lg font-semibold mb-3">
             <a
               href="/in/blogs/hiring-verified-solar-installer-in-india-is-essential"
-              class="text-primary text-primary hover:text-primary-hover dark:hover:text-blue-400 transition-colors"
+              class="text-primary text-primary hover:text-primary-hover dark:hover:text-primary transition-colors"
             >Why Hiring a Verified Solar Installer in India Is Essential</a
             >
           </h3>
@@ -427,7 +427,7 @@
           </p>
           <a
             href="/in/blogs/hiring-verified-solar-installer-in-india-is-essential"
-            class="text-primary text-primary font-semibold text-sm hover:text-primary-hover dark:hover:text-blue-400 transition-colors"
+            class="text-primary text-primary font-semibold text-sm hover:text-primary-hover dark:hover:text-primary transition-colors"
           >Read More →</a
           >
         </div>
@@ -436,7 +436,7 @@
           <h3 class="text-lg font-semibold mb-3">
             <a
               href="/in/blogs/pm-surya-ghar-yojana"
-              class="text-primary text-primary hover:text-primary-hover dark:hover:text-blue-400 transition-colors"
+              class="text-primary text-primary hover:text-primary-hover dark:hover:text-primary transition-colors"
             >PM Surya Ghar Yojana: Your Guide to Check Eligibility</a
             >
           </h3>
@@ -447,7 +447,7 @@
           </p>
           <a
             href="/in/blogs/pm-surya-ghar-yojana"
-            class="text-primary text-primary font-semibold text-sm hover:text-primary-hover dark:hover:text-blue-400 transition-colors"
+            class="text-primary text-primary font-semibold text-sm hover:text-primary-hover dark:hover:text-primary transition-colors"
           >Read More →</a
           >
         </div>
@@ -456,7 +456,7 @@
           <h3 class="text-lg font-semibold mb-3">
             <a
               href="/in/blogs/cost-of-solar-on-grid-system"
-              class="text-primary text-primary hover:text-primary-hover dark:hover:text-blue-400 transition-colors"
+              class="text-primary text-primary hover:text-primary-hover dark:hover:text-primary transition-colors"
             >What is the Approximate Cost of a Solar On Grid System?</a
             >
           </h3>
@@ -466,7 +466,7 @@
           </p>
           <a
             href="/in/blogs/cost-of-solar-on-grid-system"
-            class="text-primary text-primary font-semibold text-sm hover:text-primary-hover dark:hover:text-blue-400 transition-colors"
+            class="text-primary text-primary font-semibold text-sm hover:text-primary-hover dark:hover:text-primary transition-colors"
           >Read More →</a
           >
         </div>
