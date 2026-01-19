@@ -1,12 +1,9 @@
 <script>
 	import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
-	import { isDarkMode } from '$lib/themeStore.svelte';
 	import { onMount } from 'svelte';
 
 	/** @type {import('./$types').PageData} */
 	let { data } = $props();
-
-	let darkMode = $derived($isDarkMode);
 
 	let projects = $derived(data.projects || []);
 
@@ -315,24 +312,24 @@
 
 <style>
 	:root {
-		--primary-color: #0056b3;
-		--primary-hover: #004494;
-		--primary-light: #e6f0ff;
-		--secondary-color: #4caf50;
-		--accent-color: #ffc107;
-		--text-dark: #2c3e50;
-		--text-medium: #546e7a;
-		--text-light: #ecf0f1;
-		--light-bg-color: #f8f9fa;
-		--dark-bg-color: #1a202c;
-		--light-card-bg: #ffffff;
-		--dark-card-bg: #2d3748;
+		--primary-color: hsl(var(--primary));
+		--primary-hover: hsl(var(--primary) / 0.9);
+		--primary-light: hsl(var(--accent-muted));
+		--secondary-color: hsl(var(--success));
+		--accent-color: hsl(var(--accent));
+		--text-dark: var(--color-text-primary);
+		--text-medium: var(--color-text-secondary);
+		--text-light: var(--color-text-muted);
+		--light-bg-color: hsl(var(--background));
+		--dark-bg-color: hsl(var(--background));
+		--light-card-bg: hsl(var(--card));
+		--dark-card-bg: hsl(var(--card));
 		--border-radius-sm: 4px;
 		--border-radius-md: 8px;
 		--border-radius-lg: 16px;
-		--shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-		--shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-		--shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+		--shadow-sm: var(--shadow-sm);
+		--shadow-md: var(--shadow-md);
+		--shadow-lg: var(--shadow-lg);
 		--font-family: 'Poppins', 'Helvetica Neue', Arial, sans-serif;
 	}
 
@@ -387,7 +384,7 @@
 	}
 
 	.dark .subtitle {
-		color: #cbd5e0;
+		color: var(--color-text-secondary);
 	}
 
 	/* Loading Animation */
@@ -402,14 +399,14 @@
 	.loading-spinner {
 		width: 50px;
 		height: 50px;
-		border: 4px solid rgba(0, 0, 0, 0.1);
+		border: 4px solid hsl(var(--border) / 0.3);
 		border-left-color: var(--primary-color);
 		border-radius: 50%;
 		animation: spin 1s linear infinite;
 	}
 
 	.dark .loading-spinner {
-		border-color: rgba(255, 255, 255, 0.1);
+		border-color: hsl(var(--border) / 0.3);
 		border-left-color: var(--primary-light);
 	}
 
@@ -428,7 +425,7 @@
 	}
 
 	.dark .loading-container p {
-		color: #cbd5e0;
+		color: var(--color-text-secondary);
 	}
 
 	/* View All Container */
@@ -453,7 +450,7 @@
 		gap: 0.5rem;
 		padding: 0.75rem 1.5rem;
 		background-color: var(--primary-color);
-		color: white;
+		color: hsl(var(--foreground));
 		text-decoration: none;
 		border-radius: var(--border-radius-md);
 		font-weight: 500;
@@ -474,7 +471,7 @@
 		gap: 0.5rem;
 		padding: 0.75rem 1.5rem;
 		background-color: var(--secondary-color);
-		color: white;
+		color: hsl(var(--foreground));
 		border: none;
 		border-radius: var(--border-radius-md);
 		font-weight: 500;
@@ -485,7 +482,7 @@
 	}
 
 	.replay-btn:hover {
-		background-color: #45a049;
+		background-color: hsl(var(--success) / 0.85);
 		transform: translateY(-2px);
 		box-shadow: var(--shadow-md);
 	}
@@ -497,7 +494,7 @@
 		left: 0;
 		width: 100%;
 		height: 100%;
-		background: rgba(0, 0, 0, 0.9);
+		background: hsl(var(--destructive) / 0.95);
 		z-index: 1000;
 		display: flex;
 		justify-content: center;
@@ -512,7 +509,7 @@
 		max-width: 400px;
 		height: 100%;
 		max-height: 700px;
-		background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.4));
+		background: linear-gradient(135deg, hsl(var(--destructive) / 0.9), hsl(var(--destructive) / 0.5));
 		border-radius: var(--border-radius-lg);
 		overflow: hidden;
 		display: flex;
@@ -534,14 +531,14 @@
 	.progress-bar {
 		flex: 1;
 		height: 3px;
-		background: rgba(255, 255, 255, 0.3);
+		background: hsl(var(--foreground) / 0.3);
 		border-radius: 1.5px;
 		overflow: hidden;
 	}
 
 	.progress-fill {
 		height: 100%;
-		background: white;
+		background: hsl(var(--foreground));
 		width: 0%;
 		transition: width 0.1s linear;
 	}
@@ -551,7 +548,7 @@
 	}
 
 	.progress-fill.active {
-		background: white;
+		background: hsl(var(--foreground));
 	}
 
 	/* Story Header */
@@ -578,26 +575,26 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		color: white;
+		color: hsl(var(--foreground));
 		font-weight: 600;
 		font-size: 1.1rem;
 	}
 
 	.installer-details h3 {
-		color: white;
+		color: hsl(var(--foreground));
 		font-size: 1rem;
 		font-weight: 600;
 		margin: 0;
 	}
 
 	.installer-link {
-		color: white;
+		color: hsl(var(--foreground));
 		text-decoration: none;
 		transition: color 0.2s ease;
 	}
 
 	.installer-link:hover {
-		color: #ffd700;
+		color: hsl(var(--accent));
 		text-decoration: underline;
 	}
 
@@ -605,8 +602,8 @@
 		width: 32px;
 		height: 32px;
 		border: none;
-		background: rgba(255, 255, 255, 0.2);
-		color: white;
+		background: hsl(var(--foreground) / 0.2);
+		color: hsl(var(--foreground));
 		border-radius: 50%;
 		cursor: pointer;
 		display: flex;
@@ -617,7 +614,7 @@
 	}
 
 	.close-btn:hover {
-		background: rgba(255, 255, 255, 0.3);
+		background: hsl(var(--foreground) / 0.3);
 	}
 
 	/* Story Image */
@@ -626,7 +623,7 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		background: rgba(0, 0, 0, 0.3);
+		background: hsl(var(--destructive) / 0.3);
 		min-height: 0; /* Allow container to shrink */
 		flex-grow: 1;
 	}
@@ -645,7 +642,7 @@
 		align-items: center;
 		justify-content: center;
 		height: 100%;
-		color: rgba(255, 255, 255, 0.8);
+		color: hsl(var(--foreground) / 0.8);
 		font-size: 3rem;
 	}
 
@@ -655,9 +652,9 @@
 		bottom: 0;
 		left: 0;
 		right: 0;
-		background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+		background: linear-gradient(transparent, hsl(var(--destructive) / 0.95));
 		padding: 3rem 1rem 1.5rem;
-		color: white;
+		color: hsl(var(--foreground));
 		z-index: 10;
 	}
 
@@ -722,27 +719,27 @@
 	}
 
 	.error-message {
-		background-color: #ffebee;
-		border: 1px solid #f44336;
-		color: #b71c1c;
+		background-color: hsl(var(--destructive-muted));
+		border: 1px solid hsl(var(--destructive));
+		color: hsl(var(--destructive-foreground));
 	}
 
 	.dark .error-message {
-		background-color: rgba(244, 67, 54, 0.2);
-		border-color: #f44336;
-		color: #ef9a9a;
+		background-color: hsl(var(--destructive) / 0.15);
+		border-color: hsl(var(--destructive));
+		color: hsl(var(--destructive-foreground) / 0.9);
 	}
 
 	.warning-message {
-		background-color: #fff8e1;
-		border: 1px solid #ffc107;
-		color: #ff6f00;
+		background-color: hsl(var(--warning-muted));
+		border: 1px solid hsl(var(--warning));
+		color: hsl(var(--warning-foreground));
 	}
 
 	.dark .warning-message {
-		background-color: rgba(255, 193, 7, 0.2);
-		border-color: #ffc107;
-		color: #ffcc80;
+		background-color: hsl(var(--warning) / 0.15);
+		border-color: hsl(var(--warning));
+		color: hsl(var(--warning-foreground) / 0.9);
 	}
 
 	/* Responsive Design */

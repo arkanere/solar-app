@@ -1,8 +1,6 @@
 <script>
-  import { isDarkMode } from "$lib/themeStore.svelte";
   import { goto } from "$app/navigation";
 
-  let darkMode = $derived($isDarkMode);
 
   const countries = [
     {

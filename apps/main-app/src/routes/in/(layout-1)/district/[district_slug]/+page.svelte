@@ -1,13 +1,11 @@
 <script>
   import { onMount } from "svelte";
   import { page } from "$app/stores";
-  import { isDarkMode } from "$lib/themeStore.svelte";
 
   // Get reactive data from the page store using derived
   const district = $derived($page.data.district);
   const cities = $derived($page.data.cities || []);
   const errorMessage = $derived($page.data.errorMessage);
-  const darkMode = $derived($isDarkMode);
 
   // Function to format city name for URL
   function formatCitySlug(city) {
@@ -25,7 +23,7 @@
   />
 </svelte:head>
 
-<main class={darkMode ? "dark" : "light"}>
+<main>
   <h1>Solar Panel Installers in {district}</h1>
 
   {#if errorMessage}
@@ -75,31 +73,31 @@
 </main>
 
 <style>
-  /* Root variables using custom properties */
+  /* Root variables using semantic tokens */
   :root {
-    /* Colors */
-    --primary-color: #0056b3;
-    --primary-hover: #004494;
-    --primary-light: #e6f0ff;
+    /* Colors - Using semantic tokens from app.css */
+    --primary-color: var(--color-primary);
+    --primary-hover: var(--color-primary);
+    --primary-light: hsl(var(--primary) / 0.1);
 
-    /* Text colors */
-    --text-dark: #2c3e50;
-    --text-medium: #546e7a;
-    --text-light: #ecf0f1;
+    /* Text colors - Using semantic tokens */
+    --text-dark: var(--color-text-primary);
+    --text-medium: var(--color-text-secondary);
+    --text-light: var(--color-text-secondary);
 
-    /* Theme colors */
-    --light-bg-color: #f8f9fa;
-    --dark-bg-color: #1a202c;
-    --light-card-bg: #ffffff;
-    --dark-card-bg: #2d3748;
+    /* Theme colors - Using semantic tokens */
+    --light-bg-color: var(--color-background);
+    --dark-bg-color: var(--color-background);
+    --light-card-bg: var(--color-card);
+    --dark-card-bg: var(--color-card);
 
     /* UI elements */
     --border-radius-sm: 4px;
     --border-radius-md: 8px;
     --border-radius-lg: 16px;
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --shadow-sm: var(--shadow-sm);
+    --shadow-md: var(--shadow-md);
+    --shadow-lg: var(--shadow-lg);
 
     /* Typography */
     --font-family: "Poppins", "Helvetica Neue", Arial, sans-serif;
@@ -189,7 +187,7 @@
   }
 
   .dark p {
-    color: #cbd5e0;
+    color: var(--color-text-secondary);
   }
 
   .intro-text {
@@ -206,27 +204,27 @@
   }
 
   .error-message {
-    background-color: #ffebee;
-    border: 1px solid #f44336;
-    color: #b71c1c;
+    background-color: hsl(var(--destructive) / 0.1);
+    border: 1px solid var(--color-destructive);
+    color: var(--color-destructive);
   }
 
   .dark .error-message {
-    background-color: rgba(244, 67, 54, 0.2);
-    border-color: #f44336;
-    color: #ef9a9a;
+    background-color: hsl(var(--destructive) / 0.15);
+    border-color: var(--color-destructive);
+    color: hsl(var(--destructive) / 0.8);
   }
 
   .warning-message {
-    background-color: #fff8e1;
-    border: 1px solid #ffc107;
-    color: #ff6f00;
+    background-color: hsl(var(--warning) / 0.1);
+    border: 1px solid var(--color-warning);
+    color: var(--color-warning);
   }
 
   .dark .warning-message {
-    background-color: rgba(255, 193, 7, 0.2);
-    border-color: #ffc107;
-    color: #ffcc80;
+    background-color: hsl(var(--warning) / 0.15);
+    border-color: var(--color-warning);
+    color: hsl(var(--warning) / 0.8);
   }
 
   /* Cities grid */
@@ -250,12 +248,12 @@
     text-decoration: none;
     height: 100%;
     background-color: var(--light-card-bg);
-    border: 1px solid rgba(0, 0, 0, 0.08);
+    border: 1px solid hsl(var(--border) / 0.3);
   }
 
   .dark .city-card {
     background-color: var(--dark-card-bg);
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: hsl(var(--border) / 0.3);
   }
 
   .city-card:hover {
@@ -282,7 +280,7 @@
   }
 
   .dark .city-card p {
-    color: #a0aec0;
+    color: var(--color-text-secondary);
   }
 
   .view-more {

@@ -1,10 +1,7 @@
 <script>
-	import { isDarkMode } from '$lib/themeStore.svelte';
 	import LeadFormBusiness from '$lib/in-new-rewrites/LeadFormBusiness.svelte';
 
 	const { data } = $props();
-
-	let darkMode = $derived($isDarkMode);
 	let blog = $derived(data.blog);
 
 	function formatDate(dateString) {

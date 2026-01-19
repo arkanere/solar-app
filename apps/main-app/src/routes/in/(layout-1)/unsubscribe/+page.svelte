@@ -103,14 +103,14 @@
 		justify-content: center;
 		align-items: center;
 		min-height: 100vh;
-		background-color: #f5f5f5;
+		background-color: hsl(var(--background));
 		padding: 1rem;
 	}
 
 	.unsubscribe-card {
-		background: white;
+		background: hsl(var(--card));
 		border-radius: 12px;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+		box-shadow: var(--shadow-md);
 		padding: 3rem 2rem;
 		text-align: center;
 		max-width: 450px;
@@ -121,19 +121,19 @@
 		width: 80px;
 		height: 80px;
 		margin: 0 auto 1.5rem;
-		color: #4caf50;
+		color: hsl(var(--success));
 	}
 
 	h1 {
 		font-size: 1.8rem;
 		margin-bottom: 1.5rem;
-		color: #333;
+		color: var(--color-text-primary);
 	}
 
 	p {
 		font-size: 1rem;
 		line-height: 1.5;
-		color: #666;
+		color: var(--color-text-secondary);
 		margin-bottom: 1.5rem;
 	}
 
@@ -142,8 +142,8 @@
 	}
 
 	.confirm-button {
-		background-color: #4caf50;
-		color: white;
+		background-color: hsl(var(--success));
+		color: hsl(var(--success-foreground));
 		border: none;
 		border-radius: 6px;
 		padding: 0.75rem 1.5rem;
@@ -153,19 +153,19 @@
 	}
 
 	.confirm-button:hover {
-		background-color: #3d8b40;
+		background-color: hsl(var(--success) / 0.85);
 	}
 
 	.confirm-button:disabled {
-		background-color: #cccccc;
+		background-color: hsl(var(--muted));
 		cursor: not-allowed;
 	}
 
 	.error-message {
-		color: #d32f2f;
+		color: hsl(var(--destructive-foreground));
 		margin: 1rem 0;
 		padding: 0.5rem;
-		background-color: #ffebee;
+		background-color: hsl(var(--destructive-muted));
 		border-radius: 4px;
 	}
 </style>

@@ -1,8 +1,6 @@
 <script>
-  import { isDarkMode } from "$lib/themeStore.svelte";
   import { enhance } from "$app/forms";
 
-  let darkMode = $derived($isDarkMode);
 
   let formData = $state({
     email: "",
@@ -180,19 +178,19 @@
 <style>
   /* Root variables for light and dark modes */
   :root {
-    --light-bg-color: #f8f9fa;
-    --dark-bg-color: #1a1a1a;
-    --light-primary-text-color: #333;
-    --dark-primary-text-color: #f0f0f0;
-    --accent-color: #ffc107;
-    --success-color: #28a745;
-    --error-color: #dc3545;
+    --light-bg-color: hsl(var(--background));
+    --dark-bg-color: hsl(var(--background));
+    --light-primary-text-color: var(--color-text-primary);
+    --dark-primary-text-color: var(--color-text-primary);
+    --accent-color: hsl(var(--accent));
+    --success-color: hsl(var(--success));
+    --error-color: hsl(var(--destructive));
     --font-family: "Helvetica Neue", Arial, sans-serif;
-    --light-form-bg: white;
-    --dark-form-bg: #333;
-    --light-info-bg: #e9ecef;
-    --dark-info-bg: #2c2c2c;
-    --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --light-form-bg: hsl(var(--card));
+    --dark-form-bg: hsl(var(--card));
+    --light-info-bg: hsl(var(--muted));
+    --dark-info-bg: hsl(var(--muted));
+    --box-shadow: var(--shadow-md);
   }
 
   main {
@@ -316,7 +314,7 @@
   textarea {
     width: 100%;
     padding: 0.75rem;
-    border: 1px solid #ddd;
+    border: 1px solid hsl(var(--border));
     border-radius: 4px;
     font-size: 1rem;
     transition: border-color 0.3s ease;
@@ -325,8 +323,8 @@
 
   .dark input,
   .dark textarea {
-    background-color: #2c2c2c;
-    border-color: #555;
+    background-color: hsl(var(--background-secondary));
+    border-color: hsl(var(--border));
     color: var(--dark-primary-text-color);
   }
 
@@ -343,7 +341,7 @@
 
   .submit-btn {
     background-color: var(--accent-color);
-    color: #333;
+    color: var(--color-text-primary);
     padding: 0.75rem 2rem;
     border: none;
     border-radius: 4px;
@@ -355,7 +353,7 @@
   }
 
   .submit-btn:hover:not(:disabled) {
-    background-color: #e6ac00;
+    background-color: hsl(var(--accent-hover));
   }
 
   .submit-btn:disabled {
@@ -365,7 +363,7 @@
 
   .success-message {
     background-color: var(--success-color);
-    color: white;
+    color: var(--color-success-foreground);
     padding: 2rem;
     border-radius: 8px;
     text-align: center;
@@ -378,13 +376,13 @@
   }
 
   .success-message a {
-    color: white;
+    color: var(--color-success-foreground);
     text-decoration: underline;
   }
 
   .error-message {
     background-color: var(--error-color);
-    color: white;
+    color: var(--color-destructive-foreground);
     padding: 1rem;
     border-radius: 4px;
     margin-bottom: 1rem;

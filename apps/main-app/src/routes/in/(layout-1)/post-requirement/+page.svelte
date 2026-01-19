@@ -1,11 +1,8 @@
 <script>
 	import QueryForm from '$lib/in-new-rewrites/QueryForm.svelte';
-	import { isDarkMode } from '$lib/themeStore.svelte'; // Import from store if globally managed
-	// Use the global theme store
-	let darkMode = $derived($isDarkMode);
 </script>
 
-<main class={`flex flex-col items-center justify-center px-4 md:px-8 py-8 transition-colors duration-300 min-h-screen ${darkMode ? 'dark bg-background text-foreground' : 'light bg-background text-foreground'}`}>
+<main class="flex flex-col items-center justify-center px-4 md:px-8 py-8 transition-colors duration-300 min-h-screen bg-background text-foreground">
 	<div class="max-w-2xl w-full">
 		<h1 class="text-3xl md:text-4xl font-semibold mb-6 leading-snug text-center">Power Up Your Solar Project—No More Searching, Just Solutions!</h1>
 

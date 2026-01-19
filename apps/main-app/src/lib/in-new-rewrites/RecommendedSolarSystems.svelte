@@ -1,10 +1,7 @@
 <script lang="ts">
-	import { isDarkMode } from '$lib/themeStore.svelte';
 	import * as Table from '$lib/components/ui/table';
 	import * as Card from '$lib/components/ui/card';
 	import { RECOMMENDED_SYSTEMS } from '$lib/constants/solarSystems';
-
-	let darkMode = $derived($isDarkMode);
 </script>
 
 <section class="py-8 px-4 sm:px-6 lg:px-8">

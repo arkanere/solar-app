@@ -1,10 +1,7 @@
 <script lang="ts">
-	import { isDarkMode } from '$lib/themeStore.svelte';
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { SOCIAL_LINKS, scrollToElement } from '$lib/constants/social';
-
-	const darkMode = isDarkMode;
 
 	function handleScroll() {
 		scrollToElement('lead-form-sv');

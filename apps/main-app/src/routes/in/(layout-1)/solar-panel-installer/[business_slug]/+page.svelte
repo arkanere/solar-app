@@ -1,6 +1,5 @@
 <script>
   import { page } from "$app/stores";
-  import { isDarkMode } from "$lib/themeStore.svelte";
   import { goto } from "$app/navigation";
   import LeadFormBusiness from "$lib/in-new-rewrites/LeadFormBusiness.svelte";
   import SolarSizeCalculator from "$lib/in-new-rewrites/SolarSizeCalculator.svelte";
@@ -9,7 +8,6 @@
 
   // Destructure page data using derived
   const { business, projects = [], errorMessage } = $derived($page.data);
-  const darkMode = $derived($isDarkMode);
   const businessSlug = $derived(business?.slug || "");
   const showProjects = $derived(business?.businessfilled && business?.tier3);
 

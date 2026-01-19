@@ -1,12 +1,9 @@
 <script lang="ts">
-	import { isDarkMode } from '$lib/themeStore.svelte';
 	import { goto } from '$app/navigation';
 	import * as Select from '$lib/components/ui/select';
 	import * as Card from '$lib/components/ui/card';
 	import * as Label from '$lib/components/ui/label';
 	import { INDIA_STATES } from '$lib/constants/solarSystems';
-
-	let darkMode = $derived($isDarkMode);
 
 	let selectedState = $state('');
 	let selectedDistrict = $state('');

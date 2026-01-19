@@ -1,12 +1,10 @@
 <script>
   import { page } from "$app/stores";
-  import { isDarkMode } from "$lib/themeStore.svelte";
   import { goto } from "$app/navigation";
   import { PUBLIC_CLOUDINARY_CLOUD_NAME } from "$env/static/public";
 
   // Destructure page data using derived
   const { project, business } = $derived($page.data);
-  const darkMode = $derived($isDarkMode);
 
   // Helper functions
 

@@ -45,7 +45,7 @@ export const POST: RequestHandler = async ({ request }) => {
         <p><strong>Created At:</strong> ${createdAtISTString}</p>
         <p>To access your account and check this lead, click the link below:</p>
         <p style="margin-bottom: 2rem;">
-          <a href="${magicLink}" style="color: blue; text-decoration: underline;">Access your account</a>
+          <a href="${magicLink}" style="color: hsl(209 100% 35%); text-decoration: underline;">Access your account</a>
         </p>
         <p>If you have any questions or need assistance, call us at <a href="tel:+918983066701"> +91 8983066701 </a></p>
         <p>Team</p>
