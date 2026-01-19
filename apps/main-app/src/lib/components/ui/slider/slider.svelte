@@ -46,7 +46,7 @@
 	value={Array.isArray(value) ? value[0] : value}
 	onchange={handleChange}
 	class={cn(
-		"w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary",
+		"w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary",
 		"hover:accent-primary/90",
 		disabled && "opacity-50 cursor-not-allowed",
 		className

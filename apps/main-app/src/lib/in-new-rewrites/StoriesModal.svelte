@@ -1,6 +1,11 @@
 <script lang="ts">
   import { Dialog } from "bits-ui";
   import { Button } from "$lib/components/ui/button";
+  import { Progress } from "$lib/components/ui/progress";
+  import { Badge } from "$lib/components/ui/badge";
+  import { Card, CardContent, CardHeader, CardTitle } from "$lib/components/ui/card";
+  import { Skeleton } from "$lib/components/ui/skeleton";
+  import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "$lib/components/ui/tooltip";
   import { X, ChevronLeft, ChevronRight } from "@lucide/svelte";
   import { PUBLIC_CLOUDINARY_CLOUD_NAME } from "$env/static/public";
   import {
@@ -12,6 +17,8 @@
     loadStoriesData,
   } from "../in/storiesStore.js";
   import { formatBusinessName, formatDate, getImageUrl } from "$lib/constants/projectFormatters";
+
+  console.log('[DEBUG StoriesModal.svelte] storiesModalOpen store imported:', storiesModalOpen);
 
   let currentStoryIndex = $state(0);
   let storyProgress = $state(0);
@@ -83,6 +90,9 @@
   }
 
   $effect(() => {
+    console.log('[DEBUG StoriesModal] $storiesModalOpen changed:', $storiesModalOpen);
+    console.log('[DEBUG StoriesModal] $storiesData.length:', $storiesData.length);
+    console.log('[DEBUG StoriesModal] $storiesLoading:', $storiesLoading);
     if ($storiesModalOpen && $storiesData.length > 0 && !$storiesLoading) {
       showViewAll = false;
       currentStoryIndex = 0;
@@ -93,7 +103,9 @@
   });
 
   $effect(() => {
+    console.log('[DEBUG StoriesModal] Data load check - modalOpen:', $storiesModalOpen, 'dataLength:', $storiesData.length, 'loading:', $storiesLoading);
     if ($storiesModalOpen && $storiesData.length === 0 && !$storiesLoading) {
+      console.log('[DEBUG StoriesModal] Loading stories data...');
       loadStoriesData();
     }
   });
@@ -107,65 +119,85 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<Dialog.Root bind:open={$storiesModalOpen}>
+<TooltipProvider>
+<Dialog.Root bind:open={$storiesModalOpen} onOpenChange={(open) => {
+    console.log('[DEBUG StoriesModal] Dialog.Root onOpenChange:', open);
+  }}>
   <Dialog.Content class="fixed inset-0 z-50 flex items-center justify-center bg-black/95 border-0 p-0 rounded-0 w-full max-w-none h-full max-h-none">
     <!-- Loading State -->
     {#if $storiesLoading}
-      <div class="flex flex-col items-center justify-center gap-4">
-        <div class="w-12 h-12 border-4 border-white/20 border-l-white rounded-full animate-spin"></div>
-        <p class="text-white">Loading stories...</p>
+      <div class="flex flex-col items-center justify-center gap-6 w-full max-w-sm px-4">
+        <Skeleton class="h-96 w-full rounded-lg bg-white/10" />
+        <Skeleton class="h-12 w-full rounded bg-white/10" />
+        <Skeleton class="h-8 w-2/3 rounded bg-white/10" />
+        <p class="text-white text-center">Loading stories...</p>
       </div>
     {:else if $storiesError}
-      <div class="flex flex-col items-center justify-center gap-4">
-        <p class="text-white">Error: {$storiesError}</p>
-        <Button onclick={closeStory} variant="default">Close</Button>
-      </div>
+      <Card class="w-full max-w-md bg-destructive/10 border-destructive/20">
+        <CardHeader>
+          <CardTitle class="text-destructive">Error Loading Stories</CardTitle>
+        </CardHeader>
+        <CardContent class="flex flex-col gap-4">
+          <p class="text-destructive/90">{$storiesError}</p>
+          <Button onclick={closeStory} variant="default">Close</Button>
+        </CardContent>
+      </Card>
     {:else if $storiesData.length === 0}
-      <div class="flex flex-col items-center justify-center gap-4">
-        <p class="text-white">No stories available at the moment.</p>
-        <Button onclick={closeStory} variant="default">Close</Button>
-      </div>
+      <Card class="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>No Stories Available</CardTitle>
+        </CardHeader>
+        <CardContent class="flex flex-col gap-4">
+          <p class="text-foreground/90">No stories available at the moment.</p>
+          <Button onclick={closeStory} variant="default">Close</Button>
+        </CardContent>
+      </Card>
     {:else if showViewAll}
       <!-- View All Screen -->
-      <div class="flex flex-col items-center justify-center gap-6 text-center px-4">
-        <h2 class="text-white text-2xl font-semibold">You've seen all our latest solar stories!</h2>
-        <Button
-          onclick={closeStory}
-          on:click={() => window.location.href = "/in/recent-solar-installation-projects"}
-          variant="default"
-        >
-          View All Solar Projects →
-        </Button>
-        <Button
-          onclick={() => {
-            showViewAll = false;
-            currentStoryIndex = 0;
-            startStoryProgress();
-          }}
-          variant="outline"
-          class="bg-success text-success-foreground border-success"
-        >
-          ▶️ Replay Stories
-        </Button>
-        <Button onclick={closeStory} variant="outline" class="bg-muted text-muted-foreground border-muted">
-          Close
-        </Button>
-      </div>
+      <Card class="w-full max-w-md">
+        <CardHeader>
+          <CardTitle class="text-center">You've seen all our latest solar stories!</CardTitle>
+        </CardHeader>
+        <CardContent class="flex flex-col gap-3">
+          <Button
+            on:click={() => window.location.href = "/in/recent-solar-installation-projects"}
+            variant="default"
+            class="w-full"
+          >
+            View All Solar Projects →
+          </Button>
+          <Button
+            on:click={() => {
+              showViewAll = false;
+              currentStoryIndex = 0;
+              startStoryProgress();
+            }}
+            variant="outline"
+            class="w-full"
+          >
+            ▶️ Replay Stories
+          </Button>
+          <Button onclick={closeStory} variant="outline" class="w-full">
+            Close
+          </Button>
+        </CardContent>
+      </Card>
     {:else}
       <!-- Story Viewer -->
       <div class="relative w-full max-w-sm h-full max-h-[700px] bg-gradient-to-b from-black/80 to-black/40 overflow-hidden flex flex-col">
         <!-- Progress Bars -->
         <div class="flex gap-0.5 p-4 absolute top-0 left-0 right-0 z-40">
           {#each $storiesData as _, index}
-            <div class="flex-1 h-0.5 bg-white/30 rounded-full overflow-hidden">
-              <div
-                class="h-full bg-white transition-all duration-100 linear"
-                style={index < currentStoryIndex
-                  ? "width: 100%"
+            <div class="flex-1">
+              <Progress
+                value={index < currentStoryIndex
+                  ? 100
                   : index === currentStoryIndex
-                    ? `width: ${storyProgress}%`
-                    : "width: 0%"}
-              ></div>
+                    ? storyProgress
+                    : 0}
+                max={100}
+                class="h-0.5"
+              />
             </div>
           {/each}
         </div>
@@ -188,14 +220,20 @@
               </h3>
             </div>
           </div>
-          <Button
-            onclick={closeStory}
-            variant="ghost"
-            size="sm"
-            class="text-white hover:bg-white/20 h-8 w-8 p-0"
-          >
-            <X size={20} />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger>
+              <Button
+                onclick={closeStory}
+                variant="ghost"
+                size="icon-sm"
+                class="text-white hover:bg-white/20"
+                aria-label="Close stories"
+              >
+                <X size={20} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="left">Close (Esc key)</TooltipContent>
+          </Tooltip>
         </div>
 
         <!-- Story Image -->
@@ -221,31 +259,53 @@
         <!-- Story Details Overlay -->
         <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 z-30">
           <h2 class="text-white text-lg font-semibold mb-3">{$storiesData[currentStoryIndex].title}</h2>
-          <div class="flex flex-col gap-2">
-            <div class="flex items-center gap-2">
-              <span class="text-white text-sm">📍 Location:</span>
-              <span class="text-white font-medium text-sm">{$storiesData[currentStoryIndex].pincode || "N/A"}</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="text-white text-sm">📅 Completed:</span>
-              <span class="text-white font-medium text-sm">{formatDate($storiesData[currentStoryIndex].project_date)}</span>
-            </div>
+          <div class="flex flex-wrap gap-2">
+            <Badge variant="secondary" class="bg-white/20 text-white border-white/30 hover:bg-white/30">
+              📍 {$storiesData[currentStoryIndex].pincode || "N/A"}
+            </Badge>
+            <Badge variant="secondary" class="bg-white/20 text-white border-white/30 hover:bg-white/30">
+              📅 {formatDate($storiesData[currentStoryIndex].project_date)}
+            </Badge>
           </div>
         </div>
 
         <!-- Navigation Areas -->
-        <button
-          onclick={() => handleStoryClick("left")}
-          disabled={currentStoryIndex === 0}
-          class="absolute left-0 top-0 bottom-0 w-1/2 z-20 cursor-pointer disabled:cursor-not-allowed"
-          aria-label="Previous story"
-        ></button>
-        <button
-          onclick={() => handleStoryClick("right")}
-          class="absolute right-0 top-0 bottom-0 w-1/2 z-20 cursor-pointer"
-          aria-label="Next story"
-        ></button>
+        <div class="absolute left-0 top-1/2 -translate-y-1/2 z-20 ml-4">
+          <Tooltip>
+            <TooltipTrigger>
+              <Button
+                on:click={() => handleStoryClick("left")}
+                disabled={currentStoryIndex === 0}
+                variant="ghost"
+                size="icon"
+                class="text-white hover:bg-white/20 disabled:opacity-50"
+                aria-label="Previous story"
+              >
+                <ChevronLeft size={28} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">Previous story (← key)</TooltipContent>
+          </Tooltip>
+        </div>
+
+        <div class="absolute right-0 top-1/2 -translate-y-1/2 z-20 mr-4">
+          <Tooltip>
+            <TooltipTrigger>
+              <Button
+                on:click={() => handleStoryClick("right")}
+                variant="ghost"
+                size="icon"
+                class="text-white hover:bg-white/20"
+                aria-label="Next story"
+              >
+                <ChevronRight size={28} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="left">Next story (→ key)</TooltipContent>
+          </Tooltip>
+        </div>
       </div>
     {/if}
   </Dialog.Content>
 </Dialog.Root>
+</TooltipProvider>

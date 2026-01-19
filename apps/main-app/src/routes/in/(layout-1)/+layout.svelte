@@ -4,13 +4,13 @@
   import { storiesModalOpen } from "$lib/in/storiesStore.js";
   import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
   import { page } from "$app/stores";
+  import StoriesModal from "$lib/in-new-rewrites/StoriesModal.svelte";
+
+  console.log('[DEBUG +layout.svelte] storiesModalOpen store imported:', storiesModalOpen);
 
   // Accept children snippet from SvelteKit
   let { children } = $props();
 
-  // Lazy loading for StoriesModal
-  let StoriesModalComponent = $state(null);
-  let storiesModalLoading = $state(false);
 
   // Create a shared store for chat messages
   const chatMessages = writable([]);
@@ -99,35 +99,13 @@
     });
   }
 
-  // Lazy load StoriesModal component when modal should open
-  async function loadStoriesModal() {
-    if (storiesModalLoading || StoriesModalComponent) return;
-
-    try {
-      storiesModalLoading = true;
-      const module = await import("$lib/in-new-rewrites/StoriesModal.svelte");
-      StoriesModalComponent = module.default;
-    } catch (error) {
-      console.error("Failed to load StoriesModal:", error);
-    } finally {
-      storiesModalLoading = false;
-    }
+  // Function to open stories modal
+  function openStoriesModal() {
+    console.log('[DEBUG] openStoriesModal called');
+    console.log('[DEBUG] Before set - storiesModalOpen value:', $storiesModalOpen);
+    storiesModalOpen.set(true);
+    console.log('[DEBUG] After set - storiesModalOpen value:', $storiesModalOpen);
   }
-
-  // Function to open stories modal with lazy loading
-  async function openStoriesModal() {
-    await loadStoriesModal();
-    if (StoriesModalComponent) {
-      storiesModalOpen.set(true);
-    }
-  }
-
-  // Watch for modal open state changes to trigger lazy loading
-  $effect(() => {
-    if (storiesOpen && !StoriesModalComponent && !storiesModalLoading) {
-      loadStoriesModal();
-    }
-  });
 
   // Handle translate dropdown toggle
   function toggleTranslateDropdown() {
@@ -242,25 +220,25 @@
   <!-- Heavy analytics scripts moved to loadAnalytics() function for deferred loading -->
 </svelte:head>
 
-<nav class={`flex flex-wrap items-center gap-4 sm:gap-8 px-4 py-4 w-full box-border transition-colors duration-300 ${$isDarkMode ? "bg-background text-foreground" : "bg-background text-foreground"}`}>
+<nav class="flex flex-wrap items-center gap-4 sm:gap-8 px-4 py-4 w-full box-border transition-colors duration-300 bg-background text-foreground">
   <a href="/in" class="no-underline text-lg sm:text-xl font-medium transition-colors duration-300 hover:text-primary whitespace-nowrap">Solar Vipani</a>
   <a href="/in/business-listing" class="no-underline text-base sm:text-lg font-medium transition-colors duration-300 hover:text-primary whitespace-nowrap">List Business</a>
   <a href="/in/recent-solar-installation-projects" class="no-underline text-base sm:text-lg font-medium transition-colors duration-300 hover:text-primary whitespace-nowrap">Recent Projects</a>
   <a href="/in/solar-panel-installer-directory" class="no-underline text-base sm:text-lg font-medium transition-colors duration-300 hover:text-primary whitespace-nowrap">Directory</a>
-  <button class="bg-gradient-to-r from-[#f09433] via-[#dc2743] to-[#bc1888] hover:brightness-110 border-none text-white font-semibold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base transition-all duration-300 hover:translate-y-[-2px] hover:shadow-lg whitespace-nowrap" onclick={openStoriesModal}>Stories</button>
+  <button class="bg-gradient-to-r from-[#f09433] via-[#dc2743] to-[#bc1888] hover:brightness-110 border-none text-white font-semibold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base transition-all duration-300 hover:translate-y-[-2px] hover:shadow-lg whitespace-nowrap" onclick={() => { console.log('[DEBUG] Stories button clicked'); openStoriesModal(); }}>Stories</button>
   <a href="/in/about-us" class="no-underline text-base sm:text-lg font-medium transition-colors duration-300 hover:text-primary whitespace-nowrap">About us</a>
 
   <!-- Translate Dropdown -->
   <div class="translate-container ml-auto relative inline-block">
-    <button class={`border rounded px-4 py-2 text-sm sm:text-base cursor-pointer transition-all duration-300 whitespace-nowrap ${$isDarkMode ? "border-white text-white hover:bg-background-secondary hover:border-primary hover:text-primary" : "border-foreground text-foreground hover:bg-muted hover:border-primary hover:text-primary"}`} onclick={toggleTranslateDropdown}>
+    <button class="border rounded px-4 py-2 text-sm sm:text-base cursor-pointer transition-all duration-300 whitespace-nowrap border-foreground dark:border-white text-foreground dark:text-white hover:bg-muted dark:hover:bg-background-secondary hover:border-primary dark:hover:border-primary hover:text-primary dark:hover:text-primary" onclick={toggleTranslateDropdown}>
       🌐 Translate
     </button>
 
     {#if showTranslateDropdown}
-      <div class={`absolute top-full left-0 min-w-[200px] rounded border z-[1000] mt-1 shadow-md ${$isDarkMode ? "bg-card border-border shadow-black/20" : "bg-card border-border"}`}>
+      <div class="absolute top-full left-0 min-w-[200px] rounded border z-[1000] mt-1 shadow-md bg-card border-border dark:shadow-black/20">
         {#each indianLanguages as language}
           <button
-            class={`block w-full text-left px-4 py-3 text-sm cursor-pointer transition-colors duration-200 border-b ${language === indianLanguages[indianLanguages.length - 1] ? "border-b-0" : ""} ${$isDarkMode ? "border-border text-white hover:bg-background-secondary" : "border-border text-foreground hover:bg-muted"}`}
+            class={`block w-full text-left px-4 py-3 text-sm cursor-pointer transition-colors duration-200 border-b border-border text-foreground dark:text-white hover:bg-muted dark:hover:bg-background-secondary ${language === indianLanguages[indianLanguages.length - 1] ? "border-b-0" : ""}`}
             onclick={() => selectLanguage(language)}
           >
             {language.flag}
@@ -271,25 +249,15 @@
     {/if}
   </div>
 
-  <button class={`border rounded px-4 py-2 text-sm sm:text-base cursor-pointer transition-all duration-300 whitespace-nowrap ${$isDarkMode ? "border-white text-white hover:bg-white hover:text-foreground" : "border-foreground text-foreground hover:bg-foreground hover:text-background"}`} onclick={toggleTheme}>
+  <button class="border rounded px-4 py-2 text-sm sm:text-base cursor-pointer transition-all duration-300 whitespace-nowrap border-foreground dark:border-white text-foreground dark:text-white hover:bg-foreground hover:text-background dark:hover:bg-white dark:hover:text-foreground" onclick={toggleTheme}>
     {$isDarkMode ? "Light mode" : "Dark mode"}
   </button>
 </nav>
 
 {@render children?.()}
 
-<!-- Stories Modal - Lazy Loaded -->
-{#if StoriesModalComponent}
-  {@render StoriesModalComponent()}
-{:else if storiesModalLoading && storiesOpen}
-  <!-- Loading state for component import -->
-  <div class="fixed inset-0 w-full h-full bg-black bg-opacity-95 z-[2000] flex justify-center items-center">
-    <div class="flex flex-col items-center gap-4 text-white text-center">
-      <div class="w-12 h-12 border-4 border-opacity-20 border-white border-l-white rounded-full animate-spin"></div>
-      <p class="text-lg">Loading stories...</p>
-    </div>
-  </div>
-{/if}
+<!-- Stories Modal -->
+<StoriesModal />
 
 <!-- Translation Instructions Modal -->
 {#if showTranslationModal}

@@ -224,10 +224,10 @@
   />
 </svelte:head>
 
-<main class={`w-full flex flex-col items-center p-4 md:p-8 min-h-screen overflow-x-hidden transition-colors duration-300 ${darkMode ? "dark bg-slate-900 text-slate-100" : "bg-slate-50 text-slate-900"}`}>
+<main class="w-full flex flex-col items-center p-4 md:p-8 min-h-screen overflow-x-hidden transition-colors duration-300 bg-background text-foreground">
   <h1 class="text-center text-2xl md:text-3xl font-bold mb-4 w-full max-w-4xl">Best Solar Panel Installers in {cityName} - Top Rated Companies Near You</h1>
   {#if lastUpdated}
-    <p class="text-left text-sm text-slate-500 dark:text-slate-400 mb-8 italic">
+    <p class="text-left text-sm text-muted-foreground mb-8 italic">
       Last Update: {new Date(lastUpdated).toLocaleDateString("en-IN", {
         day: "numeric",
         month: "long",
@@ -240,7 +240,7 @@
     <section id="no-installers" class="w-full max-w-4xl mb-10 mt-12 p-8 rounded-2xl bg-card shadow-md dark:shadow-lg flex flex-col items-center">
       <div class="w-full text-center">
         <h2 class="text-3xl font-semibold mb-4 text-primary text-primary">We're Expanding to {cityName} - Join Us!</h2>
-        <p class="text-lg leading-relaxed text-slate-600 dark:text-slate-300 mb-8 max-w-2xl mx-auto">
+        <p class="text-lg leading-relaxed text-muted-foreground mb-8 max-w-2xl mx-auto">
           <strong>Are you a solar installer in this area? </strong>
         </p>
         <button
@@ -269,9 +269,9 @@
     <h2 class="text-3xl font-bold mb-4 text-primary text-primary">Services Provided by Solar Panel Installers</h2>
     <div class="p-8 rounded-2xl bg-card dark:border border-border shadow-md hover:shadow-lg transition-shadow">
       {#each services as service (service.title)}
-        <div class="mb-6 pb-6 border-b border-slate-200 border-border last:mb-0 last:pb-0 last:border-b-0">
+        <div class="mb-6 pb-6 border-b border-border last:mb-0 last:pb-0 last:border-b-0">
           <strong class="block text-xl text-primary mb-2">{service.title}</strong>
-          <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+          <p class="text-muted-foreground leading-relaxed">
             {service.description}
             {#if service.links}
               {#each service.links as link, i}
@@ -304,7 +304,7 @@
         {#each faqList as faq (faq.question)}
           <li class="p-6 rounded-lg bg-card shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all">
             <strong class="block text-xl text-primary mb-2">{faq.question}</strong>
-            <p class="text-slate-600 dark:text-slate-300">{faq.answer}</p>
+            <p class="text-muted-foreground">{faq.answer}</p>
           </li>
         {/each}
       </ul>
@@ -314,9 +314,9 @@
   {#if district}
     <section class="w-full max-w-4xl mb-10 mt-8 text-center p-8 bg-card rounded-2xl shadow-md">
       <h2 class="text-3xl font-bold mb-4 text-primary text-primary">Find Other Solar Businesses in {district} district</h2>
-      <p class="text-slate-600 dark:text-slate-300 mb-6">If you're interested in exploring other solar businesses in {district}, visit our district directory page.</p>
+      <p class="text-muted-foreground mb-6">If you're interested in exploring other solar businesses in {district}, visit our district directory page.</p>
       <button
-        class="border-2 border-blue-600 text-primary dark:border-blue-300 text-primary hover:bg-blue-50 dark:hover:bg-slate-700/50 font-semibold px-6 py-3 rounded-lg transition-all hover:-translate-y-1 min-w-max"
+        class="border-2 border-primary text-primary hover:bg-primary/10 font-semibold px-6 py-3 rounded-lg transition-all hover:-translate-y-1 min-w-max"
         onclick={() =>
           (window.location.href = `/in/district/${district.toLowerCase().replace(/\s+/g, "-")}`)}
       >

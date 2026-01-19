@@ -4,13 +4,11 @@
   import { storiesModalOpen } from "$lib/storiesStore.js";
   import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
   import { page } from "$app/stores";
+  import StoriesModal from "$lib/in-new-rewrites/StoriesModal.svelte";
 
   // Accept children snippet from SvelteKit
   let { children } = $props();
 
-  // Lazy loading for StoriesModal
-  let StoriesModalComponent = $state(null);
-  let storiesModalLoading = $state(false);
 
   // Create a shared store for chat messages
   const chatMessages = writable([]);
@@ -100,35 +98,10 @@
     });
   }
 
-  // Lazy load StoriesModal component when modal should open
-  async function loadStoriesModal() {
-    if (storiesModalLoading || StoriesModalComponent) return;
-
-    try {
-      storiesModalLoading = true;
-      const module = await import("$lib/in-new-rewrites/StoriesModal.svelte");
-      StoriesModalComponent = module.default;
-    } catch (error) {
-      console.error("Failed to load StoriesModal:", error);
-    } finally {
-      storiesModalLoading = false;
-    }
+  // Function to open stories modal
+  function openStoriesModal() {
+    storiesModalOpen.set(true);
   }
-
-  // Function to open stories modal with lazy loading
-  async function openStoriesModal() {
-    await loadStoriesModal();
-    if (StoriesModalComponent) {
-      storiesModalOpen.set(true);
-    }
-  }
-
-  // Watch for modal open state changes to trigger lazy loading
-  $effect(() => {
-    if (storiesOpen && !StoriesModalComponent && !storiesModalLoading) {
-      loadStoriesModal();
-    }
-  });
 
   // Handle translate dropdown toggle
   function toggleTranslateDropdown() {
@@ -267,18 +240,8 @@
 
 {@render children?.()}
 
-<!-- Stories Modal - Lazy Loaded -->
-{#if StoriesModalComponent}
-  {@render StoriesModalComponent()}
-{:else if storiesModalLoading && storiesOpen}
-  <!-- Loading state for component import -->
-  <div class="stories-loading-backdrop">
-    <div class="stories-loading-container">
-      <div class="stories-loading-spinner"></div>
-      <p>Loading stories...</p>
-    </div>
-  </div>
-{/if}
+<!-- Stories Modal -->
+<StoriesModal />
 
 <!-- Translation Instructions Modal -->
 {#if showTranslationModal}

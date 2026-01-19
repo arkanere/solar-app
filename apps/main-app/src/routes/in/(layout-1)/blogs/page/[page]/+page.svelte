@@ -94,7 +94,7 @@
               {#if i + 1 === pagination.page}
                 <span class="px-2 md:px-3 py-1 md:py-2 bg-primary text-primary-foreground rounded font-semibold text-sm md:text-base w-8 md:w-10 text-center">{i + 1}</span>
               {:else if Math.abs(i + 1 - pagination.page) <= 2 || i === 0 || i === pagination.totalPages - 1}
-                <a href="/in/blogs/page/{i + 1}" class="px-2 md:px-3 py-1 md:py-2 rounded text-foreground dark:text-foreground hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors text-sm md:text-base w-8 md:w-10 text-center">
+                <a href="/in/blogs/page/{i + 1}" class="px-2 md:px-3 py-1 md:py-2 rounded text-foreground dark:text-foreground hover:bg-muted dark:hover:bg-muted transition-colors text-sm md:text-base w-8 md:w-10 text-center">
                   {i + 1}
                 </a>
               {:else if Math.abs(i + 1 - pagination.page) === 3}

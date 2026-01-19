@@ -67,7 +67,7 @@
           simplify this process by connecting you with verified installers,
           ensuring competitive pricing, and giving you peace of mind.
         </p>
-        <div class="bg-accent text-gray-900 p-6 rounded-lg mb-6 text-center">
+        <div class="bg-accent text-foreground p-6 rounded-lg mb-6 text-center">
           <p class="text-base">
             <strong
               >We make solar panel installation easy, affordable, and secure by
@@ -207,7 +207,7 @@
         you're exploring options for the first time or ready to dive in, we're
         here to guide you every step of the way.
       </p>
-      <div class="bg-accent text-gray-900 p-6 rounded-lg text-center">
+      <div class="bg-accent text-foreground p-6 rounded-lg text-center">
         <p>
           <strong
             >Step into a Greener Future with Solar Vipani — where High
@@ -250,7 +250,7 @@
               href={link.url}
               target="_blank"
               aria-label={link.label}
-              class="flex items-center gap-2 text-primary text-primary hover:text-primary-hover dark:hover:text-blue-400 font-medium transition-colors hover:-translate-y-1 transform"
+              class="flex items-center gap-2 text-primary text-primary hover:text-primary-hover dark:hover:text-primary font-medium transition-colors hover:-translate-y-1 transform"
             >
               {@html link.icon}
               <span>{link.label}</span>
@@ -259,7 +259,7 @@
         </div>
       </div>
 
-      <div class="border-t border-border pt-8 dark:border-slate-600">
+      <div class="border-t border-border pt-8">
         <p class="text-foreground dark:text-foreground-secondary">
           <a href="/in/terms-of-use" class="text-primary text-primary hover:underline">Terms of Use</a> |
           <a href="/in/privacy-policy" class="text-primary text-primary hover:underline">Privacy Policy</a>

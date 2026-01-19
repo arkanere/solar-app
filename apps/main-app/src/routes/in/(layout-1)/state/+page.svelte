@@ -1,6 +1,4 @@
 <script>
-	import { isDarkMode } from '$lib/themeStore.svelte';
-
 	// States array defined directly in the component
 	const states = [
 		'Andaman and Nicobar Islands',
@@ -41,8 +39,6 @@
 		'West Bengal'
 	];
 
-	let darkMode = $derived($isDarkMode);
-
 	// Function to format state name for URL
 	function formatStateSlug(state) {
 		return `solar-panel-installers-in-${state.toLowerCase().replace(/\s+/g, '-')}`;
@@ -57,27 +53,37 @@
 	/>
 </svelte:head>
 
-<main class={darkMode ? 'dark' : 'light'}>
-	<section id="state-list">
-		<h1>Solar Panel Installers by State</h1>
+<main class="w-full bg-background text-foreground overflow-x-hidden transition-colors duration-300 flex flex-col items-center px-4 py-8 min-h-screen">
+	<!-- State List Section -->
+	<div class="max-w-4xl w-full mb-12">
+		<h1 class="text-3xl md:text-4xl font-semibold text-center mb-4 text-primary">
+			Solar Panel Installers by State
+		</h1>
 
-		<p class="intro-text">
-			Browse solar panel installers by state. We have listings in {states.length} states across India.
+		<p class="text-center text-muted-foreground mb-8 text-lg">
+			Browse solar panel installers by state. We have listings in <span class="font-semibold text-foreground">{states.length} states</span> across India.
 		</p>
 
-		<ul class="states-grid">
+		<ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full list-none p-0">
 			{#each states as state}
 				<li>
-					<a href={`/state/${formatStateSlug(state)}`} class="state-card">
-						<h2>{state}</h2>
-						<p>Find solar installers in {state}</p>
-						<div class="view-more">
+					<a
+						href={`/in/state/${formatStateSlug(state)}`}
+						class="block h-full bg-card rounded-xl p-6 border border-border hover:shadow-lg hover:border-primary/50 transition-all duration-300 hover:-translate-y-1"
+					>
+						<h2 class="text-xl font-semibold mb-2 text-primary">
+							{state}
+						</h2>
+						<p class="text-muted-foreground mb-4 flex-grow">
+							Find solar installers in {state}
+						</p>
+						<div class="flex items-center text-primary font-medium">
 							<span>View districts</span>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
 								viewBox="0 0 20 20"
 								fill="currentColor"
-								class="arrow-icon"
+								class="w-5 h-5 ml-2 transition-transform duration-300 group-hover:translate-x-1"
 							>
 								<path
 									fill-rule="evenodd"
@@ -90,14 +96,17 @@
 				</li>
 			{/each}
 		</ul>
-	</section>
+	</div>
 
-	<section id="services">
-		<h2>Services Provided by Solar Panel Installers</h2>
-		<ul>
-			<li>
-				<strong>Solar panel installations at Homes, Apartments, and Businesses</strong>
-				<p>
+	<!-- Services Section -->
+	<div class="max-w-4xl w-full mb-12">
+		<h2 class="text-2xl font-semibold text-center mb-8 text-secondary">
+			Services Provided by Solar Panel Installers
+		</h2>
+		<ul class="grid grid-cols-1 md:grid-cols-2 gap-6 list-none p-0">
+			<li class="bg-card rounded-xl p-6 border border-border hover:shadow-md transition-all duration-300">
+				<strong class="block text-lg text-primary mb-3">Solar panel installations at Homes, Apartments, and Businesses</strong>
+				<p class="text-muted-foreground leading-relaxed">
 					Professional installation of solar panels tailored to residential, commercial, and
 					industrial needs. Commonly used systems for independant homes and bunglows are <strong
 						>1kW ongrid solar system, 3kW ongrid solar system,</strong
@@ -105,475 +114,159 @@
 					and <strong> 5kW ongrid solar system.</strong>
 				</p>
 			</li>
-			<li>
-				<strong>Solar Modules and Inverters</strong>
-				<p>
+			<li class="bg-card rounded-xl p-6 border border-border hover:shadow-md transition-all duration-300">
+				<strong class="block text-lg text-primary mb-3">Solar Modules and Inverters</strong>
+				<p class="text-muted-foreground leading-relaxed">
 					Supply and installation of high-quality solar modules and inverters to ensure efficient
 					energy generation.
 				</p>
 			</li>
-			<li>
-				<strong
-					>Documentation and Permissions for Subsidy under <a
-						href="/blogs/pm-surya-ghar-yojana"
+			<li class="bg-card rounded-xl p-6 border border-border hover:shadow-md transition-all duration-300">
+				<strong class="block text-lg text-primary mb-3">
+					Documentation and Permissions for Subsidy under <a
+						href="/in/blogs/pm-surya-ghar-yojana"
 						target="_blank"
+						class="text-primary hover:underline"
 					>
 						PM Surya Ghar Yojana
 					</a>
 				</strong>
-				<p>
+				<p class="text-muted-foreground leading-relaxed">
 					Assistance with the necessary paperwork and approvals to avail government solar subsidies
 					and benefits.
 				</p>
 			</li>
-			<li>
-				<strong>Net Metering</strong>
-				<p>
+			<li class="bg-card rounded-xl p-6 border border-border hover:shadow-md transition-all duration-300">
+				<strong class="block text-lg text-primary mb-3">Net Metering</strong>
+				<p class="text-muted-foreground leading-relaxed">
 					Setup of net metering systems to help you save on electricity bills by feeding surplus
 					power back into the grid.
 				</p>
 			</li>
-			<li>
-				<strong>Solar Financing through Banks and NBFCs</strong>
-				<p>
+			<li class="bg-card rounded-xl p-6 border border-border hover:shadow-md transition-all duration-300">
+				<strong class="block text-lg text-primary mb-3">Solar Financing through Banks and NBFCs</strong>
+				<p class="text-muted-foreground leading-relaxed">
 					Guidance on financing options, loans, and schemes offered by banks and non-banking
 					financial companies. Nowadays <strong> Zero cost EMI schemes </strong>have become popular.
 				</p>
 			</li>
-			<li>
-				<strong>Routine Maintenance and Cleaning</strong>
-				<p>
+			<li class="bg-card rounded-xl p-6 border border-border hover:shadow-md transition-all duration-300">
+				<strong class="block text-lg text-primary mb-3">Routine Maintenance and Cleaning</strong>
+				<p class="text-muted-foreground leading-relaxed">
 					Regular maintenance and cleaning services to keep your solar system running efficiently.
 				</p>
 			</li>
 		</ul>
-	</section>
+	</div>
 
-	<section id="people-also-ask">
-		<h2>Frequently Asked Questions</h2>
-		<ul>
-			<li>
-				<strong>How much does it cost to install solar panels in India?</strong>
-				<p>
+	<!-- FAQ Section -->
+	<div class="max-w-4xl w-full mb-12">
+		<h2 class="text-2xl font-semibold text-center mb-8 text-secondary">
+			Frequently Asked Questions
+		</h2>
+		<ul class="grid grid-cols-1 md:grid-cols-2 gap-6 list-none p-0">
+			<li class="bg-card rounded-xl p-6 border border-border">
+				<strong class="block text-primary mb-3">How much does it cost to install solar panels in India?</strong>
+				<p class="text-muted-foreground text-sm leading-relaxed">
 					The cost of installing solar panels in India varies based on system size and components.
 					For instance, a 3kW system typically ranges from ₹1.5 lakhs to ₹2.5 lakhs, including
 					installation and related expenses.
 				</p>
 			</li>
-			<li>
-				<strong>How much should I budget for solar panel installation?</strong>
-				<p>
+			<li class="bg-card rounded-xl p-6 border border-border">
+				<strong class="block text-primary mb-3">How much should I budget for solar panel installation?</strong>
+				<p class="text-muted-foreground text-sm leading-relaxed">
 					Budgeting for solar panel installation depends on your energy needs and system size. On
 					average, residential installations can cost between ₹65,000 to ₹95,000 per kW, covering
 					installation, transportation, and related expenses.
 				</p>
 			</li>
-			<li>
-				<strong>How much solar panel is required for a 1.5-ton AC?</strong>
-				<p>
+			<li class="bg-card rounded-xl p-6 border border-border">
+				<strong class="block text-primary mb-3">How much solar panel is required for a 1.5-ton AC?</strong>
+				<p class="text-muted-foreground text-sm leading-relaxed">
 					To run a 1.5-ton air conditioner, you would need a solar system capable of generating
 					approximately 3kW of power. This typically involves installing around 10-12 solar panels
 					of 250 watts each.
 				</p>
 			</li>
-			<li>
-				<strong>What are the benefits of solar panels in India?</strong>
-				<p>
+			<li class="bg-card rounded-xl p-6 border border-border">
+				<strong class="block text-primary mb-3">What are the benefits of solar panels in India?</strong>
+				<p class="text-muted-foreground text-sm leading-relaxed">
 					Installing solar panels in India offers multiple benefits, including reduced electricity
 					bills, government subsidies through schemes like PM Surya Ghar Yojana, energy
 					independence, and contributing to a greener environment with reduced carbon footprint.
 				</p>
 			</li>
-			<li>
-				<strong>How much money will I save if I install solar panels?</strong>
-				<p>
+			<li class="bg-card rounded-xl p-6 border border-border">
+				<strong class="block text-primary mb-3">How much money will I save if I install solar panels?</strong>
+				<p class="text-muted-foreground text-sm leading-relaxed">
 					If you install solar panels with net metering, you'll save approximately ₹5.5 to ₹6.5 per
 					unit compared to the ₹8-₹9 per unit cost from the DISCOM. Over 25 years, this translates
 					to substantial savings, making solar energy a cost-effective and sustainable choice.
 				</p>
 			</li>
 		</ul>
-	</section>
+	</div>
 
-	<!-- About Solarvipani section -->
-	<section class="additional-info-solarvipani">
-		<h2>About Solarvipani</h2>
+	<!-- About Section -->
+	<div class="max-w-4xl w-full">
+		<h2 class="text-2xl font-semibold text-center mb-8 text-secondary">
+			About Solarvipani
+		</h2>
 
-		<div class="about-container">
-			<!-- Logo on the left -->
-			<img src="/logo.webp" alt="Solarvipani Logo" class="about-logo" width="200" height="100" loading="lazy" />
+		<div class="flex flex-col md:flex-row gap-8 items-center mb-8 bg-card rounded-xl p-8 border border-border">
+			<!-- Logo -->
+			<img
+				src="/logo.webp"
+				alt="Solarvipani Logo"
+				class="w-48 h-auto flex-shrink-0"
+				width="200"
+				height="100"
+				loading="lazy"
+			/>
 
-			<!-- Text on the right -->
-			<div class="about-text">
-				<p>
+			<!-- Text -->
+			<div class="flex-grow">
+				<p class="text-muted-foreground text-lg leading-relaxed">
 					We are your premier marketplace aggregator dedicated to connecting residential and
-					business customers with <strong>
-						<a href="/blogs/hiring-verified-solar-installer-in-india-is-essential" target="_blank">
-							Best Local Solar Panel Installation
-						</a>
-					</strong> companies, ensuring that you make smart decisions backed by credible information
+					business customers with <a
+						href="/in/blogs/hiring-verified-solar-installer-in-india-is-essential"
+						target="_blank"
+						class="text-primary hover:underline font-semibold"
+					>
+						Best Local Solar Panel Installation
+					</a>
+					companies, ensuring that you make smart decisions backed by credible information
 					and have a hassle-free experience.
 				</p>
 			</div>
 		</div>
 
 		<!-- Social Media Links -->
-		<div class="social-media">
-			<h4>Follow us on:</h4>
-			<a
-				href="https://www.facebook.com/p/Solar-Vipani-61556033262509/"
-				target="_blank"
-				aria-label="Facebook">Facebook</a
-			>
-			<a href="https://x.com/Solarvipani" target="_blank" aria-label="Twitter">Twitter</a>
-			<a href="https://www.linkedin.com/company/solar-vipani/" target="_blank" aria-label="LinkedIn"
-				>LinkedIn</a
-			>
-			<a href="https://www.instagram.com/solar.vipani/" target="_blank" aria-label="Instagram"
-				>Instagram</a
-			>
-			<a href="https://wa.me/918983066701" target="_blank" aria-label="Whatsapp">Whatsapp</a>
+		<div class="text-center">
+			<h4 class="text-lg font-semibold text-foreground mb-4">Follow us on:</h4>
+			<div class="flex flex-wrap justify-center gap-4">
+				<a
+					href="https://www.facebook.com/p/Solar-Vipani-61556033262509/"
+					target="_blank"
+					aria-label="Facebook"
+					class="text-primary hover:text-primary/80 font-medium transition-colors"
+				>
+					Facebook
+				</a>
+				<a href="https://x.com/Solarvipani" target="_blank" aria-label="Twitter" class="text-primary hover:text-primary/80 font-medium transition-colors"
+					>Twitter</a
+				>
+				<a href="https://www.linkedin.com/company/solar-vipani/" target="_blank" aria-label="LinkedIn" class="text-primary hover:text-primary/80 font-medium transition-colors"
+					>LinkedIn</a
+				>
+				<a href="https://www.instagram.com/solar.vipani/" target="_blank" aria-label="Instagram" class="text-primary hover:text-primary/80 font-medium transition-colors"
+					>Instagram</a
+				>
+				<a href="https://wa.me/918983066701" target="_blank" aria-label="Whatsapp" class="text-primary hover:text-primary/80 font-medium transition-colors"
+					>Whatsapp</a
+				>
+			</div>
 		</div>
-	</section>
+	</div>
 </main>
-
-<style>
-	/* Root variables for light and dark modes */
-	:root {
-		--light-bg-color: #f8f9fa;
-		--dark-bg-color: #1a1a1a;
-		--light-primary-text-color: #333;
-		--dark-primary-text-color: #f0f0f0;
-		--light-secondary-text-color: #666;
-		--dark-secondary-text-color: #ccc;
-		--accent-color: #ffc107;
-		--border-color-light: #ddd;
-		--border-color-dark: #444;
-		--font-family: 'Helvetica Neue', Arial, sans-serif;
-	}
-
-	/* Main layout styling */
-	main {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: 0rem 1rem;
-		font-family: var(--font-family);
-		min-height: 100vh;
-		transition:
-			background-color 0.3s ease,
-			color 0.3s ease;
-	}
-
-	main > * {
-		max-width: 600px;
-		width: 100%;
-	}
-
-	/* Light mode */
-	.light {
-		background-color: var(--light-bg-color);
-		color: var(--light-primary-text-color);
-	}
-
-	/* Dark mode */
-	.dark {
-		background-color: var(--dark-bg-color);
-		color: var(--dark-primary-text-color);
-	}
-
-	/* SECTION - STATE-LIST */
-	#state-list h1 {
-		font-size: 2.2rem;
-		margin-top: 2rem;
-		margin-bottom: 1rem;
-		font-weight: 600;
-		text-align: center;
-	}
-
-	.light #state-list h1 {
-		color: var(--light-primary-text-color);
-	}
-
-	.dark #state-list h1 {
-		color: var(--dark-primary-text-color);
-	}
-
-	.intro-text {
-		text-align: center;
-		margin-bottom: 2rem;
-		font-size: 1.1rem;
-	}
-
-	/* States grid */
-	.states-grid {
-		list-style-type: none;
-		padding: 0;
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-		gap: 1.5rem;
-		width: 100%;
-		margin-bottom: 2rem;
-	}
-
-	/* State card styling */
-	.state-card {
-		display: block;
-		padding: 1.5rem;
-		border-radius: 8px;
-		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-		transition: all 0.3s ease;
-		text-decoration: none;
-		height: 100%;
-	}
-
-	.light .state-card {
-		background-color: #fff;
-		border: 1px solid var(--border-color-light);
-		color: var(--light-primary-text-color);
-	}
-
-	.dark .state-card {
-		background-color: #333;
-		border: 1px solid var(--border-color-dark);
-		color: var(--dark-primary-text-color);
-	}
-
-	.state-card:hover {
-		transform: translateY(-5px);
-		box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-	}
-
-	.light .state-card:hover {
-		background-color: #f8f9fa;
-	}
-
-	.dark .state-card:hover {
-		background-color: #444;
-	}
-
-	.state-card h2 {
-		font-size: 1.5rem;
-		font-weight: 600;
-		margin-bottom: 0.5rem;
-		color: var(--accent-color);
-	}
-
-	.state-card p {
-		font-size: 1rem;
-		margin-bottom: 1rem;
-	}
-
-	.light .state-card p {
-		color: var(--light-secondary-text-color);
-	}
-
-	.dark .state-card p {
-		color: var(--dark-secondary-text-color);
-	}
-
-	.view-more {
-		display: flex;
-		align-items: center;
-		font-size: 1rem;
-		font-weight: 500;
-		color: var(--accent-color);
-		margin-top: auto;
-	}
-
-	.arrow-icon {
-		width: 20px;
-		height: 20px;
-		margin-left: 0.5rem;
-	}
-
-	/* SECTION - PEOPLE-ALSO-ASK  */
-	#people-also-ask h2 {
-		font-size: 1.5rem;
-		margin-bottom: 0.5rem;
-		font-weight: 600;
-	}
-
-	.light #people-also-ask h2,
-	.dark #people-also-ask h2 {
-		color: var(--accent-color);
-	}
-
-	/* List styling */
-	#people-also-ask ul {
-		list-style-type: none;
-		margin-bottom: 1.5rem;
-		padding: 1.5rem;
-		width: 100%;
-		border: 1px solid var(--border-color-light);
-		border-radius: 8px;
-		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-		transition:
-			background-color 0.3s ease,
-			border-color 0.3s ease;
-	}
-
-	/* List item styling */
-	#people-also-ask li {
-		padding: 0.5rem;
-		transition:
-			background-color 0.3s ease,
-			border-color 0.3s ease;
-	}
-
-	/* Light Mode List Item */
-	.light #people-also-ask ul {
-		background-color: #fff;
-	}
-
-	/* Dark Mode List Item */
-	.dark #people-also-ask ul {
-		background-color: #333;
-		border: 1px solid var(--border-color-dark);
-	}
-
-	#services {
-		margin-bottom: 1.5rem;
-	}
-
-	#services h2 {
-		font-size: 1.5rem;
-		margin-bottom: 0.5rem;
-		font-weight: 600;
-	}
-
-	.light #services h2,
-	.dark #services h2 {
-		color: var(--accent-color);
-	}
-
-	/* Services section styling */
-	#services ul {
-		list-style-type: none;
-		padding: 0;
-		width: 100%;
-	}
-
-	#services li {
-		margin-bottom: 1rem;
-		padding: 1rem;
-		border-radius: 8px;
-		transition: background-color 0.3s ease;
-	}
-
-	.light #services li {
-		background-color: #fff;
-		border: 1px solid var(--border-color-light);
-	}
-
-	.dark #services li {
-		background-color: #333;
-		border: 1px solid var(--border-color-dark);
-	}
-
-	#services strong {
-		display: block;
-		margin-bottom: 0.5rem;
-		font-size: 1.1rem;
-	}
-
-	#services p {
-		margin: 0;
-		font-size: 1rem;
-	}
-
-	/* Additional info solarvipani section styling  */
-	.additional-info-solarvipani {
-		max-width: 650px;
-		width: 100%;
-		text-align: center;
-		padding: 1.5rem;
-		margin-bottom: 2rem;
-		background-color: transparent;
-		border-radius: 0;
-		box-shadow: none;
-	}
-
-	.additional-info-solarvipani h2 {
-		font-size: 2rem;
-		text-align: left;
-	}
-
-	p {
-		font-size: 1.1rem;
-		margin-bottom: 1.8rem;
-		line-height: 1.6;
-		text-align: left;
-	}
-
-	/* Dark mode for additional info solarvipani */
-	.dark .additional-info-solarvipani {
-		background-color: transparent;
-		color: var(--dark-primary-text-color);
-	}
-
-	/* Social media section styling */
-	.social-media {
-		margin-top: 1.5rem;
-		text-align: left;
-	}
-
-	.social-media a {
-		display: inline-block;
-		margin-right: 1rem;
-		color: var(--accent-color);
-		font-weight: bold;
-		text-decoration: none;
-		font-size: 1.2rem;
-	}
-
-	.social-media a:hover {
-		text-decoration: underline;
-	}
-
-	/* Dark mode for social media links */
-	.dark .social-media a {
-		color: var(--dark-primary-text-color);
-	}
-
-	.about-container {
-		display: flex;
-		align-items: center;
-		gap: 15px; /* Space between logo and text */
-	}
-
-	.about-logo {
-		width: 200px; /* Adjust size */
-		height: auto;
-	}
-
-	.about-text {
-		flex: 1;
-		font-size: 16px;
-		line-height: 1.6;
-	}
-
-	/* 📱 Responsive Design for Mobile */
-	@media (max-width: 768px) {
-		.states-grid {
-			grid-template-columns: 1fr; /* Single column on mobile */
-		}
-
-		.about-container {
-			flex-direction: column; /* Stack logo and text vertically */
-			align-items: center; /* Center align on mobile */
-			text-align: center;
-		}
-
-		.about-logo {
-			width: 200px; /* Slightly larger logo for better visibility */
-			margin-top: 5px;
-			margin-bottom: 5px; /* Space between logo and text */
-		}
-
-		.about-text {
-			text-align: center;
-		}
-	}
-</style>
