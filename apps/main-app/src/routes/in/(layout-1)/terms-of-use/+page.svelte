@@ -1,8 +1,4 @@
 <script>
-	import { isDarkMode } from '$lib/themeStore.svelte';
-
-	// Initialize dark mode state
-	let darkMode = $derived($isDarkMode);
 </script>
 
 <svelte:head>
@@ -13,7 +9,7 @@
 	/>
 </svelte:head>
 
-<main class={`flex flex-col items-center px-4 md:px-8 py-8 transition-colors duration-300 ${darkMode ? 'dark bg-background text-foreground' : 'light bg-background text-foreground'}`}>
+<main class="flex flex-col items-center px-4 md:px-8 py-8 transition-colors duration-300 bg-background text-foreground">
 	<div class="max-w-2xl w-full">
 		<h1 class="text-3xl md:text-4xl font-semibold mb-6">Terms of Use</h1>
 

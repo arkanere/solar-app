@@ -1,5 +1,5 @@
 <script>
-  import { isDarkMode, toggleTheme, initializeTheme } from "$lib/themeStore.svelte";
+  import { toggleTheme, initializeTheme } from "$lib/themeStore.svelte";
   import { writable } from "svelte/store";
   import { storiesModalOpen } from "$lib/storiesStore.js";
   import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
@@ -34,7 +34,6 @@
 
   // Reactive variables for store subscriptions
   let storiesOpen = $derived($storiesModalOpen);
-  let isDarkModeValue = $derived($isDarkMode);
 
   // Reactive variable for current page path - format for CallSafe (only a-z, A-Z, 0-9, -, _)
   const currentPath = $derived(

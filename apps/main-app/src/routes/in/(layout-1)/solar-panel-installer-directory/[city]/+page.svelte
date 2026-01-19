@@ -1,7 +1,6 @@
 <script>
   import { onMount } from "svelte";
   import { page } from "$app/stores";
-  import { isDarkMode } from "$lib/themeStore.svelte";
   import { generateCityJsonLD, injectJsonLDScripts } from "$lib/in/jsonLD";
   import { generateFAQ } from "$lib/in/faqData";
   import { services } from "$lib/in/servicesData";
@@ -32,7 +31,6 @@
   const subset_cities_localities = $derived($page.data.subset_cities_localities || []);
   const district = $derived($page.data.district || "");
   const lastUpdated = $derived($page.data.lastUpdated);
-  const darkMode = $derived($isDarkMode);
 
   // Derived FAQ list for current city
   const faqList = $derived(generateFAQ(city));

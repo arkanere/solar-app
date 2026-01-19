@@ -1,7 +1,6 @@
 <script lang="ts">
   import { tick } from "svelte";
   import { writable, get } from "svelte/store";
-  import { isDarkMode } from "$lib/themeStore.svelte";
   import conversationFlows from "$lib/in/conversationFlows.json";
   import { page } from "$app/stores";
   import { goto } from "$app/navigation";

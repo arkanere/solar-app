@@ -60,11 +60,20 @@
 </main>
 
 <style>
+	:root {
+		--primary-color: var(--color-primary);
+		--border-color: var(--color-border);
+		--bg-color: var(--color-background);
+		--text-color: var(--color-text-primary);
+		--text-foreground: var(--color-foreground);
+	}
+
 	main {
 		max-width: 600px;
 		margin: 0 auto;
 		padding: 20px;
 		font-family: Arial, sans-serif;
+		color: var(--text-color);
 	}
 
 	.chat-history {
@@ -72,9 +81,9 @@
 		overflow-y: auto;
 		margin-bottom: 20px;
 		padding: 10px;
-		border: 1px solid #ccc;
+		border: 1px solid var(--border-color);
 		border-radius: 5px;
-		background: #f9f9f9;
+		background: var(--bg-color);
 	}
 
 	.message {
@@ -98,21 +107,24 @@
 		flex: 1;
 		padding: 10px;
 		font-size: 16px;
-		border: 1px solid #ccc;
+		border: 1px solid var(--border-color);
 		border-radius: 5px;
+		background: var(--bg-color);
+		color: var(--text-color);
 	}
 
 	button {
 		padding: 10px 20px;
 		font-size: 16px;
-		background-color: #007bff;
-		color: white;
+		background-color: var(--primary-color);
+		color: var(--color-primary-foreground);
 		border: none;
 		border-radius: 5px;
 		cursor: pointer;
+		transition: opacity 150ms ease;
 	}
 
 	button:hover {
-		background-color: #0056b3;
+		opacity: 0.9;
 	}
 </style>

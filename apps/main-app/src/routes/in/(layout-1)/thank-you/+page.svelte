@@ -1,8 +1,5 @@
 <script>
-	import { isDarkMode } from '$lib/themeStore.svelte'; // Import dark mode state from your store
 	let { data } = $props();
-
-	let darkMode = $derived($isDarkMode);
 
 	// Extract customer details from server data
 	let customerDetails = $derived(data?.customerDetails || null);
@@ -63,7 +60,7 @@
 	/>
 </svelte:head>
 
-<main class={`min-h-screen pt-4 flex flex-col items-center justify-start text-center transition-colors duration-300 ${darkMode ? 'dark bg-background dark:bg-background text-foreground dark:text-foreground' : 'light bg-background text-foreground'}`}>
+<main class="min-h-screen pt-4 flex flex-col items-center justify-start text-center transition-colors duration-300 bg-background text-foreground">
 	{#if error}
 		<h1 class="text-2xl md:text-4xl font-bold mb-2">Details not found</h1>
 		<p class="text-base md:text-lg max-w-2xl mx-auto mb-3">The requested information could not be found. Please contact us if you need assistance.</p>

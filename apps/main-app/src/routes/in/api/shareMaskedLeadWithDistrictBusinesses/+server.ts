@@ -97,7 +97,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		let emailsSentCount = 0;
 
 		const svCommentHtml = lead.sv_comment_for_businesses 
-			? `<p style="margin-top: 0.75rem; font-style: italic; color: #0056b3; background-color: rgba(0, 86, 179, 0.05); padding: 0.5rem; border-radius: 4px; border-left: 3px solid #0056b3;"><strong>Solarvipani.com Comment:</strong> ${lead.sv_comment_for_businesses}</p>`
+			? `<p style="margin-top: 0.75rem; font-style: italic; color: hsl(209 100% 35%); background-color: rgba(74, 144, 226, 0.1); padding: 0.5rem; border-radius: 4px; border-left: 3px solid hsl(209 100% 35%);"><strong>Solarvipani.com Comment:</strong> ${lead.sv_comment_for_businesses}</p>`
 			: '';
 
 		const emailTemplate = `

@@ -1,9 +1,7 @@
 <script>
-  import { isDarkMode } from "$lib/themeStore.svelte";
 
   let { data } = $props();
 
-  let darkMode = $derived($isDarkMode);
   let { blogs, error, pagination } = $derived(data);
 
   function formatDate(dateString) {

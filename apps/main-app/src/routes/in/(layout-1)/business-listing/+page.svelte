@@ -71,7 +71,6 @@
 </script>
 
 <script>
-  import { isDarkMode } from "$lib/themeStore.svelte";
   import { goto } from "$app/navigation";
   import AboutSolarVipani from "$lib/in-new-rewrites/AboutSolarVipani.svelte";
 
@@ -79,7 +78,6 @@
   let { data } = $props();
 
   // Reactive statement for dark mode
-  let darkMode = $derived($isDarkMode);
 
   // Navigation function
   const navigateToBusinessForm = () => goto("/in/business-form");
@@ -739,13 +737,13 @@
   /* Pulse animation for CTA buttons */
   @keyframes pulse {
     0% {
-      box-shadow: 0 0 0 0 rgba(0, 86, 179, 0.7);
+      box-shadow: 0 0 0 0 hsl(var(--primary) / 0.7);
     }
     70% {
-      box-shadow: 0 0 0 10px rgba(0, 86, 179, 0);
+      box-shadow: 0 0 0 10px hsl(var(--primary) / 0);
     }
     100% {
-      box-shadow: 0 0 0 0 rgba(0, 86, 179, 0);
+      box-shadow: 0 0 0 0 hsl(var(--primary) / 0);
     }
   }
 

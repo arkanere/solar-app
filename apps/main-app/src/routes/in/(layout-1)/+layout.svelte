@@ -1,5 +1,5 @@
 <script>
-  import { isDarkMode, toggleTheme, initializeTheme } from "$lib/themeStore.svelte";
+  import { toggleTheme, initializeTheme } from "$lib/themeStore.svelte";
   import { writable } from "svelte/store";
   import { storiesModalOpen } from "$lib/in/storiesStore.js";
   import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
@@ -250,7 +250,7 @@
   </div>
 
   <button class="border rounded px-4 py-2 text-sm sm:text-base cursor-pointer transition-all duration-300 whitespace-nowrap border-foreground dark:border-white text-foreground dark:text-white hover:bg-foreground hover:text-background dark:hover:bg-white dark:hover:text-foreground" onclick={toggleTheme}>
-    {$isDarkMode ? "Light mode" : "Dark mode"}
+    🌙 Theme
   </button>
 </nav>
 

@@ -82,7 +82,7 @@ export const POST: RequestHandler = async ({ request }) => {
         <p><strong>Created At:</strong> ${createdAtISTString}</p>
         <p>If you're interested in claiming this lead, get listed on SolarVipani.com using the link below:</p>
         <p style="margin-bottom: 2rem;">
-        <a href="${businessListingLink}" style="color: blue; text-decoration: underline;">List your Business on Solar Vipani</a>
+        <a href="${businessListingLink}" style="color: hsl(209 100% 35%); text-decoration: underline;">List your Business on Solar Vipani</a>
         </p>
         <p> Few more businesses are invited to show interest. Therefore, the allotment is subject to certain conditions. </p>
         <p>For assistance, call us at <a href="tel:+918983066701">+91 8983066701</a></p>

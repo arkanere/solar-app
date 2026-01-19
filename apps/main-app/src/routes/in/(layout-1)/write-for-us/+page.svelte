@@ -1,7 +1,5 @@
 <script>
-  import { isDarkMode } from "$lib/themeStore.svelte";
 
-  let darkMode = $derived($isDarkMode);
 
   // Email for submissions
   const submissionEmail = "admin@solarvipani.com";

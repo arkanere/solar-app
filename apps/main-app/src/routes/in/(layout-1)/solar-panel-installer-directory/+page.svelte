@@ -1,5 +1,4 @@
 <script>
-  import { isDarkMode } from "$lib/themeStore.svelte"; // Import the dark mode store
   import { goto } from "$app/navigation";
   import BusinessDirectory from "$lib/in-new-rewrites/BusinessDirectory.svelte";
 
@@ -98,7 +97,6 @@
   }
 
   // Use the global theme store
-  let darkMode = $derived($isDarkMode);
 
   // Function to format state name for URL
   function formatStateSlug(state) {

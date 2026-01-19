@@ -82,7 +82,7 @@ export const POST: RequestHandler = async ({ request }) => {
         <p><strong>Pin Code:</strong> ${lead.pin_code}</p>
         <p><strong>District:</strong> ${lead.district}</p>
         <p><strong>Customer Comment:</strong> ${lead.comment}</p>
-        ${lead.sv_comment_for_businesses ? `<p style="margin-top: 0.75rem; font-style: italic; color: #0056b3; background-color: rgba(0, 86, 179, 0.05); padding: 0.5rem; border-radius: 4px; border-left: 3px solid #0056b3;"><strong>Solarvipani.com Comment:</strong> ${lead.sv_comment_for_businesses}</p>` : ''}
+        ${lead.sv_comment_for_businesses ? `<p style="margin-top: 0.75rem; font-style: italic; color: hsl(209 100% 35%); background-color: rgba(74, 144, 226, 0.1); padding: 0.5rem; border-radius: 4px; border-left: 3px solid hsl(209 100% 35%);"><strong>Solarvipani.com Comment:</strong> ${lead.sv_comment_for_businesses}</p>` : ''}
         <p><strong>Created At:</strong> ${createdAtISTString}</p>
         
         <p><strong>Important:</strong> Businesses that have either main branch or branch office in <a href="https://solarvipani.com/solar-panel-installer-directory/${lead.district.toLowerCase().replace(/\s+/g, '-')}" style="font-weight: bold;">${lead.district}</a> district can claim this lead by logging into their account.</p>
