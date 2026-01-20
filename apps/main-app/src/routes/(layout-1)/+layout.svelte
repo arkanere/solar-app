@@ -1,5 +1,5 @@
 <script>
-  import { toggleTheme, initializeTheme } from "$lib/themeStore.svelte";
+  import { toggleTheme, initializeTheme, isDarkMode } from "$lib/themeStore.svelte";
   import { writable } from "svelte/store";
   import { storiesModalOpen } from "$lib/storiesStore.js";
   import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
@@ -214,14 +214,14 @@
   <!-- Heavy analytics scripts moved to loadAnalytics() function for deferred loading -->
 </svelte:head>
 
-<nav class={isDarkModeValue ? "dark" : "light"}>
+<nav class="flex flex-wrap items-center p-4 md:p-4 transition-colors duration-300 w-full gap-8 md:gap-8 bg-background text-foreground md:justify-start justify-center border-b border-border">
   <!-- Translate Dropdown -->
-  <div class="translate-container">
+  <div class="relative inline-block ml-auto">
     {#if showTranslateDropdown}
-      <div class="translate-dropdown">
+      <div class="absolute top-full left-0 md:left-0 sm:right-0 bg-popover border border-border rounded min-w-[200px] md:min-w-[200px] sm:min-w-[180px] shadow-md z-50 mt-0.5">
         {#each indianLanguages as language}
           <button
-            class="language-option"
+            class="block w-full px-4 py-3 border-b border-border last:border-b-0 text-left text-sm hover:bg-muted transition-colors duration-200"
             onclick={() => selectLanguage(language)}
           >
             {language.flag}
@@ -232,8 +232,8 @@
     {/if}
   </div>
 
-  <button onclick={toggleTheme}>
-    {isDarkModeValue ? "Light mode" : "Dark mode"}
+  <button class="border border-border px-4 py-2 md:px-4 md:py-2 text-sm md:text-sm rounded cursor-pointer transition-all duration-300 whitespace-nowrap hover:bg-muted hover:text-foreground sm:px-2 sm:py-1 sm:text-xs" onclick={toggleTheme}>
+    {$isDarkMode ? "Light mode" : "Dark mode"}
   </button>
 </nav>
 
@@ -246,75 +246,73 @@
 {#if showTranslationModal}
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="modal-backdrop" onclick={closeTranslationModal}>
+  <div class="fixed inset-0 bg-overlay flex justify-center items-center z-[2000]" onclick={closeTranslationModal}>
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div class="modal-content" onclick={(e) => e.stopPropagation()}>
-      <div class="modal-header">
-        <h3>🌐 How to translate to {selectedLanguage}</h3>
-        <button class="modal-close" onclick={closeTranslationModal}>×</button>
+    <div class="bg-popover text-popover-foreground rounded-lg max-w-[500px] w-[90%] md:w-[90%] sm:w-[95%] max-h-[80vh] overflow-y-auto shadow-lg" onclick={(e) => e.stopPropagation()}>
+      <div class="flex justify-between items-center p-6 md:p-6 sm:p-4 border-b border-border">
+        <h3 class="text-lg md:text-lg sm:text-base font-semibold m-0">🌐 How to translate to {selectedLanguage}</h3>
+        <button class="bg-none border-none text-2xl cursor-pointer p-0 text-foreground-muted hover:text-foreground transition-colors" onclick={closeTranslationModal}>×</button>
       </div>
-      <div class="modal-body">
-        <div class="instruction-steps">
-          <h4>📱 On Mobile:</h4>
-          <div class="step">
-            <div class="step-number">1</div>
-            <div class="step-content">
-              <strong>Tap the three dots menu (⋮) in your browser</strong>
+      <div class="p-6 md:p-6 sm:p-4">
+        <div class="mb-6">
+          <h4 class="text-base font-semibold text-primary m-0 mb-3">📱 On Mobile:</h4>
+          <div class="flex gap-4 mb-4 items-start">
+            <div class="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex-shrink-0 mt-0.5">1</div>
+            <div>
+              <strong class="block mb-1">Tap the three dots menu (⋮) in your browser</strong>
             </div>
           </div>
-          <div class="step">
-            <div class="step-number">2</div>
-            <div class="step-content">
-              <strong>Look for "Translate" option</strong>
+          <div class="flex gap-4 mb-4 items-start">
+            <div class="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex-shrink-0 mt-0.5">2</div>
+            <div>
+              <strong class="block mb-1">Look for "Translate" option</strong>
             </div>
           </div>
-          <div class="step">
-            <div class="step-number">3</div>
-            <div class="step-content">
-              <strong>Select your language</strong>
+          <div class="flex gap-4 items-start">
+            <div class="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex-shrink-0 mt-0.5">3</div>
+            <div>
+              <strong class="block mb-1">Select your language</strong>
             </div>
           </div>
         </div>
 
-        <div class="instruction-steps">
-          <h4>💻 On Desktop:</h4>
-          <div class="step">
-            <div class="step-number">1</div>
-            <div class="step-content">
-              <strong>Right-click anywhere on this page</strong>
+        <div class="mb-6">
+          <h4 class="text-base font-semibold text-primary m-0 mb-3">💻 On Desktop:</h4>
+          <div class="flex gap-4 mb-4 items-start">
+            <div class="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex-shrink-0 mt-0.5">1</div>
+            <div>
+              <strong class="block mb-1">Right-click anywhere on this page</strong>
             </div>
           </div>
-          <div class="step">
-            <div class="step-number">2</div>
-            <div class="step-content">
-              <strong
-                >Look for "Translate to {selectedLanguage !== "More Languages"
+          <div class="flex gap-4 mb-4 items-start">
+            <div class="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex-shrink-0 mt-0.5">2</div>
+            <div>
+              <strong class="block mb-1">Look for "Translate to {selectedLanguage !== "More Languages"
                   ? selectedLanguage.split("(")[1]?.replace(")", "") ||
                     "your language"
-                  : "your language"}"</strong
-              >
+                  : "your language"}"</strong>
             </div>
           </div>
-          <div class="step">
-            <div class="step-number">3</div>
-            <div class="step-content">
-              <strong>Click to translate</strong>
+          <div class="flex gap-4 items-start">
+            <div class="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex-shrink-0 mt-0.5">3</div>
+            <div>
+              <strong class="block mb-1">Click to translate</strong>
             </div>
           </div>
         </div>
 
-        <div class="alternative-method">
-          <h4>💡 Alternative methods:</h4>
-          <p>
+        <div class="border-t border-border pt-4">
+          <h4 class="text-base font-semibold m-0 mb-2">💡 Alternative methods:</h4>
+          <p class="text-sm text-foreground-secondary my-1">
             <strong>Chrome users:</strong> Look for the translate icon 🌐 in your
             address bar
           </p>
-          <p>
+          <p class="text-sm text-foreground-secondary my-1">
             <strong>Safari (iPhone/iPad):</strong> Tap the "aA" button in address
             bar
           </p>
-          <p>
+          <p class="text-sm text-foreground-secondary my-1">
             <strong>Other browsers:</strong> Check browser settings for translation
             options
           </p>
@@ -327,319 +325,3 @@
 <!-- {#if browser && showChat}
   <ChatbotWidget messages={chatMessages} />
 {/if} -->
-
-<style>
-  nav {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    padding: 1rem;
-    transition: background-color 0.3s ease;
-    width: 100%;
-    box-sizing: border-box;
-    gap: 2rem;
-  }
-
-  /* Light Mode */
-  .light {
-    background-color: #fafafa;
-    color: #333;
-  }
-
-  /* Dark Mode */
-  .dark {
-    background-color: #1a1a1a;
-    color: #fff;
-  }
-
-  /* Button style */
-  button {
-    background: none;
-    border: 1px solid;
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition:
-      background-color 0.3s ease,
-      color 0.3s ease;
-    white-space: nowrap;
-    border-radius: 4px;
-  }
-
-
-  /* Theme toggle button and translate container - move to right */
-  .translate-container {
-    margin-left: auto;
-  }
-
-  .light button {
-    border-color: #333;
-    color: #333;
-  }
-
-  .light button:hover {
-    background-color: #333;
-    color: white;
-  }
-
-  .dark button {
-    border-color: #fff;
-    color: #fff;
-  }
-
-  .dark button:hover {
-    background-color: #fff;
-    color: #333;
-  }
-
-
-  /* Stories Modal Loading State */
-  .stories-loading-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.95);
-    z-index: 2000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .stories-loading-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    color: white;
-    text-align: center;
-  }
-
-  .stories-loading-spinner {
-    width: 50px;
-    height: 50px;
-    border: 4px solid rgba(255, 255, 255, 0.2);
-    border-left-color: white;
-    border-radius: 50%;
-    animation: stories-spin 1s linear infinite;
-  }
-
-  @keyframes stories-spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-
-  .stories-loading-container p {
-    font-size: 1.1rem;
-    margin: 0;
-  }
-
-  /* Translate container and dropdown */
-  .translate-container {
-    position: relative;
-    display: inline-block;
-  }
-
-  .translate-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    min-width: 200px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-    margin-top: 2px;
-  }
-
-  .dark .translate-dropdown {
-    background: #2a2a2a;
-    border-color: #555;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-  }
-
-  .language-option {
-    display: block;
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: none;
-    background: none;
-    text-align: left;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: background-color 0.2s ease;
-    border-bottom: 1px solid #eee;
-  }
-
-  .language-option:last-child {
-    border-bottom: none;
-  }
-
-  .language-option:hover {
-    background-color: #f5f5f5;
-  }
-
-  .dark .language-option {
-    color: #fff;
-    border-bottom-color: #444;
-  }
-
-  .dark .language-option:hover {
-    background-color: #3a3a3a;
-  }
-
-  /* Translation Modal */
-  .modal-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 2000;
-  }
-
-  .modal-content {
-    background: white;
-    border-radius: 8px;
-    max-width: 500px;
-    width: 90%;
-    max-height: 80vh;
-    overflow-y: auto;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  }
-
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.5rem;
-    border-bottom: 1px solid #eee;
-  }
-
-  .modal-header h3 {
-    margin: 0;
-    font-size: 1.2rem;
-    color: #333;
-  }
-
-  .modal-close {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: 0;
-    color: #666;
-    transition: color 0.2s ease;
-  }
-
-  .modal-close:hover {
-    color: #333;
-  }
-
-  .modal-body {
-    padding: 1.5rem;
-  }
-
-  .instruction-steps {
-    margin-bottom: 1.5rem;
-  }
-
-  .step {
-    display: flex;
-    margin-bottom: 1rem;
-    align-items: flex-start;
-  }
-
-  .step-number {
-    background: #0077cc;
-    color: white;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8rem;
-    font-weight: bold;
-    margin-right: 1rem;
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-
-  .step-content strong {
-    display: block;
-    margin-bottom: 0.25rem;
-    color: #333;
-  }
-
-  .alternative-method {
-    border-top: 1px solid #eee;
-    padding-top: 1rem;
-  }
-
-  .alternative-method h4 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1rem;
-    color: #333;
-  }
-
-  .alternative-method p {
-    margin: 0.25rem 0;
-    font-size: 0.9rem;
-    color: #666;
-  }
-
-  .instruction-steps h4 {
-    margin: 1rem 0 0.5rem 0;
-    color: #0077cc;
-    font-size: 1rem;
-  }
-
-  .instruction-steps:first-of-type h4 {
-    margin-top: 0;
-  }
-
-  /* Mobile responsiveness */
-  @media (max-width: 768px) {
-    nav {
-      justify-content: center;
-      padding: 0.75rem;
-      gap: 1rem;
-    }
-
-    button {
-      padding: 0.25rem 0.5rem;
-      font-size: 0.8rem;
-      margin-left: 0;
-    }
-
-    .translate-dropdown {
-      left: auto;
-      right: 0;
-      min-width: 180px;
-    }
-
-    .modal-content {
-      width: 95%;
-      margin: 1rem;
-    }
-
-    .modal-header {
-      padding: 1rem;
-    }
-
-    .modal-body {
-      padding: 1rem;
-    }
-  }
-</style>

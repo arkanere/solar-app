@@ -8,12 +8,6 @@ export const storiesData: Writable<Story[]> = writable([]);
 export const storiesLoading: Writable<boolean> = writable(false);
 export const storiesError: Writable<string | null> = writable(null);
 
-console.log('[DEBUG storiesStore.ts] Store initialized');
-
-// Debug store subscriptions
-storiesModalOpen.subscribe(value => {
-	console.log('[DEBUG storiesStore.ts] storiesModalOpen changed to:', value);
-});
 
 // Function to open stories modal
 export function openStoriesModal(): void {

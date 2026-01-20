@@ -1,12 +1,10 @@
 <script>
-  import { toggleTheme, initializeTheme } from "$lib/themeStore.svelte";
+  import { toggleTheme, initializeTheme, isDarkMode } from "$lib/themeStore.svelte";
   import { writable } from "svelte/store";
   import { storiesModalOpen } from "$lib/in/storiesStore.js";
   import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
   import { page } from "$app/stores";
   import StoriesModal from "$lib/in-new-rewrites/StoriesModal.svelte";
-
-  console.log('[DEBUG +layout.svelte] storiesModalOpen store imported:', storiesModalOpen);
 
   // Accept children snippet from SvelteKit
   let { children } = $props();
@@ -101,10 +99,7 @@
 
   // Function to open stories modal
   function openStoriesModal() {
-    console.log('[DEBUG] openStoriesModal called');
-    console.log('[DEBUG] Before set - storiesModalOpen value:', $storiesModalOpen);
     storiesModalOpen.set(true);
-    console.log('[DEBUG] After set - storiesModalOpen value:', $storiesModalOpen);
   }
 
   // Handle translate dropdown toggle
@@ -220,25 +215,25 @@
   <!-- Heavy analytics scripts moved to loadAnalytics() function for deferred loading -->
 </svelte:head>
 
-<nav class="flex flex-wrap items-center gap-4 sm:gap-8 px-4 py-4 w-full box-border transition-colors duration-300 bg-background text-foreground">
+<nav class="flex flex-wrap items-center gap-4 sm:gap-8 px-4 py-4 w-full box-border transition-colors duration-300 bg-background text-foreground border-b border-border">
   <a href="/in" class="no-underline text-lg sm:text-xl font-medium transition-colors duration-300 hover:text-primary whitespace-nowrap">Solar Vipani</a>
   <a href="/in/business-listing" class="no-underline text-base sm:text-lg font-medium transition-colors duration-300 hover:text-primary whitespace-nowrap">List Business</a>
   <a href="/in/recent-solar-installation-projects" class="no-underline text-base sm:text-lg font-medium transition-colors duration-300 hover:text-primary whitespace-nowrap">Recent Projects</a>
   <a href="/in/solar-panel-installer-directory" class="no-underline text-base sm:text-lg font-medium transition-colors duration-300 hover:text-primary whitespace-nowrap">Directory</a>
-  <button class="bg-gradient-to-r from-[#f09433] via-[#dc2743] to-[#bc1888] hover:brightness-110 border-none text-white font-semibold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base transition-all duration-300 hover:translate-y-[-2px] hover:shadow-lg whitespace-nowrap" onclick={() => { console.log('[DEBUG] Stories button clicked'); openStoriesModal(); }}>Stories</button>
+  <button class="bg-gradient-to-r from-[#f09433] via-[#dc2743] to-[#bc1888] hover:brightness-110 border-none text-white font-semibold rounded-full px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base transition-all duration-300 hover:translate-y-[-2px] hover:shadow-lg whitespace-nowrap" onclick={openStoriesModal}>Stories</button>
   <a href="/in/about-us" class="no-underline text-base sm:text-lg font-medium transition-colors duration-300 hover:text-primary whitespace-nowrap">About us</a>
 
   <!-- Translate Dropdown -->
   <div class="translate-container ml-auto relative inline-block">
-    <button class="border rounded px-4 py-2 text-sm sm:text-base cursor-pointer transition-all duration-300 whitespace-nowrap border-foreground dark:border-white text-foreground dark:text-white hover:bg-muted dark:hover:bg-background-secondary hover:border-primary dark:hover:border-primary hover:text-primary dark:hover:text-primary" onclick={toggleTranslateDropdown}>
+    <button class="border border-border px-4 py-2 md:px-4 md:py-2 text-sm md:text-sm rounded cursor-pointer transition-all duration-300 whitespace-nowrap hover:bg-muted hover:text-foreground" onclick={toggleTranslateDropdown}>
       🌐 Translate
     </button>
 
     {#if showTranslateDropdown}
-      <div class="absolute top-full left-0 min-w-[200px] rounded border z-[1000] mt-1 shadow-md bg-card border-border dark:shadow-black/20">
+      <div class="absolute top-full left-0 md:left-0 sm:right-0 bg-popover border border-border rounded min-w-[200px] md:min-w-[200px] sm:min-w-[180px] shadow-md z-50 mt-0.5">
         {#each indianLanguages as language}
           <button
-            class={`block w-full text-left px-4 py-3 text-sm cursor-pointer transition-colors duration-200 border-b border-border text-foreground dark:text-white hover:bg-muted dark:hover:bg-background-secondary ${language === indianLanguages[indianLanguages.length - 1] ? "border-b-0" : ""}`}
+            class="block w-full px-4 py-3 border-b border-border last:border-b-0 text-left text-sm hover:bg-muted transition-colors duration-200"
             onclick={() => selectLanguage(language)}
           >
             {language.flag}
@@ -249,8 +244,8 @@
     {/if}
   </div>
 
-  <button class="border rounded px-4 py-2 text-sm sm:text-base cursor-pointer transition-all duration-300 whitespace-nowrap border-foreground dark:border-white text-foreground dark:text-white hover:bg-foreground hover:text-background dark:hover:bg-white dark:hover:text-foreground" onclick={toggleTheme}>
-    🌙 Theme
+  <button class="border border-border px-4 py-2 md:px-4 md:py-2 text-sm md:text-sm rounded cursor-pointer transition-all duration-300 whitespace-nowrap hover:bg-muted hover:text-foreground sm:px-2 sm:py-1 sm:text-xs" onclick={toggleTheme}>
+    {$isDarkMode ? "Light mode" : "Dark mode"}
   </button>
 </nav>
 
@@ -263,55 +258,76 @@
 {#if showTranslationModal}
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="fixed inset-0 w-full h-full bg-black bg-opacity-70 z-[2000] flex justify-center items-center" onclick={closeTranslationModal}>
+  <div class="fixed inset-0 bg-overlay flex justify-center items-center z-[2000]" onclick={closeTranslationModal}>
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div class="bg-white rounded-lg max-w-2xl w-11/12 sm:w-full max-h-[80vh] overflow-y-auto shadow-2xl" onclick={(e) => e.stopPropagation()}>
-      <div class="flex justify-between items-center px-6 py-6 border-b border-border">
-        <h3 class="text-xl text-foreground m-0">🌐 How to translate to {selectedLanguage}</h3>
-        <button class="bg-none border-0 text-2xl cursor-pointer p-0 text-foreground-secondary transition-colors duration-200 hover:text-foreground" onclick={closeTranslationModal}>×</button>
+    <div class="bg-popover text-popover-foreground rounded-lg max-w-[500px] w-[90%] md:w-[90%] sm:w-[95%] max-h-[80vh] overflow-y-auto shadow-lg" onclick={(e) => e.stopPropagation()}>
+      <div class="flex justify-between items-center p-6 md:p-6 sm:p-4 border-b border-border">
+        <h3 class="text-lg md:text-lg sm:text-base font-semibold m-0">🌐 How to translate to {selectedLanguage}</h3>
+        <button class="bg-none border-none text-2xl cursor-pointer p-0 text-foreground-muted hover:text-foreground transition-colors" onclick={closeTranslationModal}>×</button>
       </div>
-      <div class="px-6 py-6">
+      <div class="p-6 md:p-6 sm:p-4">
         <div class="mb-6">
-          <h4 class="text-primary font-semibold text-base m-0 mb-3">📱 On Mobile:</h4>
-          <div class="flex gap-4 mb-4">
+          <h4 class="text-base font-semibold text-primary m-0 mb-3">📱 On Mobile:</h4>
+          <div class="flex gap-4 mb-4 items-start">
             <div class="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex-shrink-0 mt-0.5">1</div>
-            <div class="text-foreground"><strong>Tap the three dots menu (⋮) in your browser</strong></div>
+            <div>
+              <strong class="block mb-1">Tap the three dots menu (⋮) in your browser</strong>
+            </div>
           </div>
-          <div class="flex gap-4 mb-4">
+          <div class="flex gap-4 mb-4 items-start">
             <div class="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex-shrink-0 mt-0.5">2</div>
-            <div class="text-foreground"><strong>Look for "Translate" option</strong></div>
+            <div>
+              <strong class="block mb-1">Look for "Translate" option</strong>
+            </div>
           </div>
-          <div class="flex gap-4">
+          <div class="flex gap-4 items-start">
             <div class="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex-shrink-0 mt-0.5">3</div>
-            <div class="text-foreground"><strong>Select your language</strong></div>
+            <div>
+              <strong class="block mb-1">Select your language</strong>
+            </div>
           </div>
         </div>
 
         <div class="mb-6">
-          <h4 class="text-primary font-semibold text-base m-0 mb-3">💻 On Desktop:</h4>
-          <div class="flex gap-4 mb-4">
+          <h4 class="text-base font-semibold text-primary m-0 mb-3">💻 On Desktop:</h4>
+          <div class="flex gap-4 mb-4 items-start">
             <div class="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex-shrink-0 mt-0.5">1</div>
-            <div class="text-foreground"><strong>Right-click anywhere on this page</strong></div>
+            <div>
+              <strong class="block mb-1">Right-click anywhere on this page</strong>
+            </div>
           </div>
-          <div class="flex gap-4 mb-4">
+          <div class="flex gap-4 mb-4 items-start">
             <div class="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex-shrink-0 mt-0.5">2</div>
-            <div class="text-foreground"><strong>Look for "Translate to {selectedLanguage !== "More Languages"
+            <div>
+              <strong class="block mb-1">Look for "Translate to {selectedLanguage !== "More Languages"
                   ? selectedLanguage.split("(")[1]?.replace(")", "") ||
                     "your language"
-                  : "your language"}"</strong></div>
+                  : "your language"}"</strong>
+            </div>
           </div>
-          <div class="flex gap-4">
+          <div class="flex gap-4 items-start">
             <div class="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex-shrink-0 mt-0.5">3</div>
-            <div class="text-foreground"><strong>Click to translate</strong></div>
+            <div>
+              <strong class="block mb-1">Click to translate</strong>
+            </div>
           </div>
         </div>
 
         <div class="border-t border-border pt-4">
-          <h4 class="text-base text-foreground m-0 mb-2 font-semibold">💡 Alternative methods:</h4>
-          <p class="text-sm text-foreground-secondary my-1"><strong>Chrome users:</strong> Look for the translate icon 🌐 in your address bar</p>
-          <p class="text-sm text-foreground-secondary my-1"><strong>Safari (iPhone/iPad):</strong> Tap the "aA" button in address bar</p>
-          <p class="text-sm text-foreground-secondary my-1"><strong>Other browsers:</strong> Check browser settings for translation options</p>
+          <h4 class="text-base font-semibold m-0 mb-2">💡 Alternative methods:</h4>
+          <p class="text-sm text-foreground-secondary my-1">
+            <strong>Chrome users:</strong> Look for the translate icon 🌐 in your
+            address bar
+          </p>
+          <p class="text-sm text-foreground-secondary my-1">
+            <strong>Safari (iPhone/iPad):</strong> Tap the "aA" button in address
+            bar
+          </p>
+          <p class="text-sm text-foreground-secondary my-1">
+            <strong>Other browsers:</strong> Check browser settings for translation
+            options
+          </p>
         </div>
       </div>
     </div>

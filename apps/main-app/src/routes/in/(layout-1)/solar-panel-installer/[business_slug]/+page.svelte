@@ -91,18 +91,18 @@
     </div>
 
     <!-- Hero Section -->
-    <div class="text-center px-8 py-12 bg-gradient-to-br from-blue-600 to-primary dark:from-gray-700 dark:to-gray-900 rounded-2xl text-primary-foreground mb-8 relative overflow-hidden">
+    <div class="text-center px-8 py-12 bg-gradient-to-br from-primary to-primary/80 dark:from-primary dark:to-primary/70 rounded-2xl text-primary-foreground mb-8 relative overflow-hidden">
       <h1 class="text-3xl md:text-4xl font-bold mb-2">{business.businessname}</h1>
       {#if business.businessfilled && business.tag !== "Blank"}
         <div class="inline-flex items-center text-xs font-medium uppercase tracking-wide mb-6">
           <span class="inline-flex items-center justify-center w-3.5 h-3.5 bg-success text-primary-foreground rounded-full text-xs font-bold mr-1">✓</span>
-          <span class="text-green-500">{business.tag}</span>
+          <span class="text-success">{business.tag}</span>
         </div>
       {/if}
       {#if business.phonenumber}
         <div class="flex justify-center gap-4 flex-wrap">
           <button
-            class="flex items-center gap-2 bg-gradient-to-br from-red-500 to-red-600 text-primary-foreground font-bold text-sm uppercase tracking-wide px-8 py-4 rounded-lg transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 w-40 justify-center md:w-auto"
+            class="flex items-center gap-2 bg-gradient-to-br from-destructive to-destructive/80 text-primary-foreground font-bold text-sm uppercase tracking-wide px-8 py-4 rounded-lg transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 w-40 justify-center md:w-auto"
             onclick={() => makeCall(business.phonenumber, business.slug)}
           >
             <span class="flex items-center">
@@ -125,7 +125,7 @@
             <span>CALL NOW</span>
           </button>
           <button
-            class="flex items-center gap-2 bg-gradient-to-br from-green-500 to-green-600 text-primary-foreground font-bold text-sm uppercase tracking-wide px-8 py-4 rounded-lg transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 w-40 justify-center md:w-auto"
+            class="flex items-center gap-2 bg-gradient-to-br from-success to-success/80 text-primary-foreground font-bold text-sm uppercase tracking-wide px-8 py-4 rounded-lg transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 w-40 justify-center md:w-auto"
             onclick={() => openWhatsApp(business.phonenumber, business.slug)}
           >
             <span class="flex items-center">
@@ -299,7 +299,7 @@
                         href={business.google_maps_link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="text-primary no-underline transition-colors hover:text-primary dark:hover:text-primary hover:underline">View on Map</a
+                        class="text-primary no-underline transition-colors hover:text-primary/80 hover:underline">View on Map</a
                       >
                     </div>
                   </div>
@@ -376,7 +376,7 @@
 
     <!-- Other Businesses in the City -->
     {#if business.city}
-      <section class="mt-8 text-center px-6 py-8 bg-white bg-card rounded-2xl shadow-md transition-all">
+      <section class="mt-8 text-center px-6 py-8 bg-card rounded-2xl shadow-md transition-all">
         <h2 class="text-2xl md:text-3xl font-bold mb-4 text-primary">Find Other Solar Businesses in {business.city}</h2>
         <p class="text-lg mb-4 text-muted-foreground">
           If you're interested in exploring other solar businesses in {business.city},
