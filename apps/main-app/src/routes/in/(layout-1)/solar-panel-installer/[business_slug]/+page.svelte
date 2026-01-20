@@ -75,7 +75,7 @@
   />
 </svelte:head>
 
-<main class="w-full font-sans leading-relaxed overflow-x-hidden transition-colors duration-300 flex flex-col items-center px-4 py-8 min-h-screen bg-background text-foreground">
+<main class="w-full font-sans leading-relaxed overflow-x-hidden transition-colors duration-300 flex flex-col items-center px-4 py-8 min-h-screen bg-background text-foreground max-w-6xl mx-auto">
   {#if business}
     <!-- Business Login (for business owners) -->
     <div class="flex justify-end mb-4 px-4">
@@ -394,13 +394,7 @@
   {/if}
 
   <!-- About Solarvipani -->
-  <div class="max-w-4xl w-full mb-8">
+  <div class="mb-8 w-full">
     <AboutSolarVipani />
   </div>
 </main>
-
-<style>
-  :global(main > *) {
-    @apply max-w-4xl w-full;
-  }
-</style>

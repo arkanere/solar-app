@@ -1,5 +1,6 @@
 <script>
 	import BusinessForm from '$lib/in-new-rewrites/BusinessForm.svelte';
+	import { isDarkMode } from '$lib/themeStore.svelte';
 </script>
 
 <!-- svelte-ignore a11y_img_redundant_alt -->
@@ -43,7 +44,7 @@
 	/>
 </svelte:head>
 
-<main class={`min-h-screen flex flex-col items-center justify-center px-4 md:px-8 py-8 transition-colors duration-300 ${darkMode ? 'dark bg-background text-foreground' : 'light bg-background text-foreground'}`}>
+<main class={`min-h-screen flex flex-col items-center justify-center px-4 md:px-8 py-8 transition-colors duration-300 ${$isDarkMode ? 'dark bg-background text-foreground' : 'light bg-background text-foreground'}`}>
 	<!-- Business Form Component -->
 	<div class="w-full max-w-2xl p-6 md:p-8 rounded-lg shadow-md dark:shadow-card bg-card  transition-colors duration-300">
 		<BusinessForm />
