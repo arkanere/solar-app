@@ -18,7 +18,6 @@
   } from "../in/storiesStore.js";
   import { formatBusinessName, formatDate, getImageUrl } from "$lib/constants/projectFormatters";
 
-  console.log('[DEBUG StoriesModal.svelte] storiesModalOpen store imported:', storiesModalOpen);
 
   let currentStoryIndex = $state(0);
   let storyProgress = $state(0);
@@ -90,9 +89,6 @@
   }
 
   $effect(() => {
-    console.log('[DEBUG StoriesModal] $storiesModalOpen changed:', $storiesModalOpen);
-    console.log('[DEBUG StoriesModal] $storiesData.length:', $storiesData.length);
-    console.log('[DEBUG StoriesModal] $storiesLoading:', $storiesLoading);
     if ($storiesModalOpen && $storiesData.length > 0 && !$storiesLoading) {
       showViewAll = false;
       currentStoryIndex = 0;
@@ -103,9 +99,7 @@
   });
 
   $effect(() => {
-    console.log('[DEBUG StoriesModal] Data load check - modalOpen:', $storiesModalOpen, 'dataLength:', $storiesData.length, 'loading:', $storiesLoading);
     if ($storiesModalOpen && $storiesData.length === 0 && !$storiesLoading) {
-      console.log('[DEBUG StoriesModal] Loading stories data...');
       loadStoriesData();
     }
   });
@@ -120,9 +114,7 @@
 <svelte:window onkeydown={handleKeydown} />
 
 <TooltipProvider>
-<Dialog.Root bind:open={$storiesModalOpen} onOpenChange={(open) => {
-    console.log('[DEBUG StoriesModal] Dialog.Root onOpenChange:', open);
-  }}>
+<Dialog.Root bind:open={$storiesModalOpen}>
   <Dialog.Content class="fixed inset-0 z-50 flex items-center justify-center bg-black/95 border-0 p-0 rounded-0 w-full max-w-none h-full max-h-none">
     <!-- Loading State -->
     {#if $storiesLoading}

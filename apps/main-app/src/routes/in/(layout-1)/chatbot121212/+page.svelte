@@ -34,13 +34,13 @@
 	}
 </script>
 
-<main>
-	<h1>SolarVipani AI Assistant</h1>
+<main class="mx-auto max-w-2xl px-5 py-5">
+	<h1 class="text-2xl font-display mb-5">SolarVipani AI Assistant</h1>
 
 	<!-- Chat history -->
-	<div class="chat-history">
+	<div class="max-h-96 overflow-y-auto mb-5 p-2.5 border rounded bg-background">
 		{#each $messages as message}
-			<div class="message {message.role}">
+			<div class="mb-2.5" class:text-right={message.role === 'user'} class:text-left={message.role === 'assistant'}>
 				<strong>{message.role === 'user' ? 'You' : 'Solar PV Expert'}:</strong>
 				<p>{message.content}</p>
 			</div>
@@ -48,83 +48,14 @@
 	</div>
 
 	<!-- Chat input -->
-	<div class="chat-input">
+	<div class="flex gap-2.5">
 		<input
 			type="text"
 			bind:value={userInput}
 			placeholder="Ask your Solar PV question..."
 			onkeypress={(e) => e.key === 'Enter' && sendMessage()}
+			class="flex-1 p-2.5 text-base border rounded bg-background text-foreground placeholder-foreground-muted"
 		/>
-		<button onclick={sendMessage}>Send</button>
+		<button onclick={sendMessage} class="px-5 py-2.5 text-base bg-primary text-primary-foreground border-none rounded cursor-pointer transition-opacity duration-default hover:opacity-90">Send</button>
 	</div>
 </main>
-
-<style>
-	:root {
-		--primary-color: var(--color-primary);
-		--border-color: var(--color-border);
-		--bg-color: var(--color-background);
-		--text-color: var(--color-text-primary);
-		--text-foreground: var(--color-foreground);
-	}
-
-	main {
-		max-width: 600px;
-		margin: 0 auto;
-		padding: 20px;
-		font-family: Arial, sans-serif;
-		color: var(--text-color);
-	}
-
-	.chat-history {
-		max-height: 400px;
-		overflow-y: auto;
-		margin-bottom: 20px;
-		padding: 10px;
-		border: 1px solid var(--border-color);
-		border-radius: 5px;
-		background: var(--bg-color);
-	}
-
-	.message {
-		margin-bottom: 10px;
-	}
-
-	.message.user {
-		text-align: right;
-	}
-
-	.message.assistant {
-		text-align: left;
-	}
-
-	.chat-input {
-		display: flex;
-		gap: 10px;
-	}
-
-	input {
-		flex: 1;
-		padding: 10px;
-		font-size: 16px;
-		border: 1px solid var(--border-color);
-		border-radius: 5px;
-		background: var(--bg-color);
-		color: var(--text-color);
-	}
-
-	button {
-		padding: 10px 20px;
-		font-size: 16px;
-		background-color: var(--primary-color);
-		color: var(--color-primary-foreground);
-		border: none;
-		border-radius: 5px;
-		cursor: pointer;
-		transition: opacity 150ms ease;
-	}
-
-	button:hover {
-		opacity: 0.9;
-	}
-</style>

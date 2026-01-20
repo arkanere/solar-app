@@ -41,409 +41,143 @@
 </script>
 
 <svelte:head>
-  <title>Data Deletion Request | Solar Vipani - Delete Your Personal Data</title
-  >
+  <title>Data Deletion Request | Solar Vipani - Delete Your Personal Data</title>
   <meta
     name="description"
     content="Request deletion of your personal data from Solar Vipani. Submit a data deletion request to remove your information from our database."
   />
 </svelte:head>
 
-<main class={darkMode ? "dark" : "light"}>
-  <div class="container">
-    <h1>Data Deletion Request</h1>
+<main class="min-h-screen p-8 transition-colors duration-300 bg-[hsl(var(--background))] text-[var(--color-text-primary)] dark:bg-[hsl(var(--background))]">
+  <div class="max-w-2xl mx-auto">
+    <h1 class="text-5xl font-semibold text-center mb-6 leading-tight md:text-4xl">Data Deletion Request</h1>
 
-    <div class="intro-section">
-      <p>
+    <div class="mb-8">
+      <p class="text-lg leading-relaxed mb-6">
         We respect your privacy and your right to control your personal data.
         Whether you are a customer or a registered solar installer on our
         platform, if you would like to request deletion of your personal
         information from our database, please fill out the form below.
       </p>
 
-      <div class="info-box">
-        <h3>What data will be deleted?</h3>
-        <h4>For Customers:</h4>
-        <ul>
-          <li>Your contact information (phone number, email address)</li>
-          <li>Lead submissions and requirements</li>
-          <li>Account information and preferences</li>
-          <li>Communication history with our team</li>
+      <div class="p-6 bg-[hsl(var(--muted))] rounded-lg mb-8 shadow-md dark:bg-[hsl(var(--muted))]">
+        <h3 class="text-2xl font-semibold mb-4">What data will be deleted?</h3>
+        <h4 class="text-xl font-semibold mt-6 mb-3 first:mt-0">For Customers:</h4>
+        <ul class="pl-6 space-y-2">
+          <li class="leading-relaxed">Your contact information (phone number, email address)</li>
+          <li class="leading-relaxed">Lead submissions and requirements</li>
+          <li class="leading-relaxed">Account information and preferences</li>
+          <li class="leading-relaxed">Communication history with our team</li>
         </ul>
 
-        <h4>For Solar Installers/Businesses:</h4>
-        <ul>
-          <li>Business profile and contact information</li>
-          <li>Service area and specialization details</li>
-          <li>Lead claims and interaction history</li>
-          <li>Project portfolios and showcase images</li>
-          <li>Branch locations and team information</li>
-          <li>Business verification documents</li>
+        <h4 class="text-xl font-semibold mt-6 mb-3">For Solar Installers/Businesses:</h4>
+        <ul class="pl-6 space-y-2">
+          <li class="leading-relaxed">Business profile and contact information</li>
+          <li class="leading-relaxed">Service area and specialization details</li>
+          <li class="leading-relaxed">Lead claims and interaction history</li>
+          <li class="leading-relaxed">Project portfolios and showcase images</li>
+          <li class="leading-relaxed">Branch locations and team information</li>
+          <li class="leading-relaxed">Business verification documents</li>
         </ul>
       </div>
     </div>
 
     {#if submitted}
-      <div class="success-message">
-        <h2>Request Submitted Successfully!</h2>
-        <p>
+      <div class="p-8 bg-[hsl(var(--success))] text-[var(--color-success-foreground)] rounded-lg text-center mb-8">
+        <h2 class="text-2xl font-semibold mb-4">Request Submitted Successfully!</h2>
+        <p class="mb-4">
           Your data deletion request has been received. We will process your
           request within 30 days and send you a confirmation email once
           completed.
         </p>
         <p>
           If you have any questions, please contact us at <a
-            href="mailto:admin@solarvipani.com">admin@solarvipani.com</a
+            href="mailto:admin@solarvipani.com"
+            class="underline hover:no-underline">admin@solarvipani.com</a
           >.
         </p>
       </div>
     {:else}
-      <form onsubmit={handleSubmit} class="deletion-form">
-        <div class="form-group">
-          <label for="email">Email Address *</label>
+      <form onsubmit={handleSubmit} class="p-8 bg-[hsl(var(--card))] rounded-lg shadow-md mb-8 dark:bg-[hsl(var(--card))]">
+        <div class="mb-6">
+          <label for="email" class="block mb-2 font-semibold text-sm">Email Address *</label>
           <input
             type="email"
             id="email"
             bind:value={formData.email}
             required
             placeholder="Enter your email address (business or personal)"
+            class="w-full px-3 py-2 border border-[hsl(var(--border))] rounded transition-colors duration-300 focus:outline-none focus:border-[hsl(var(--accent))] dark:bg-[hsl(var(--background-secondary))] dark:border-[hsl(var(--border))] dark:text-[var(--color-text-primary)]"
           />
         </div>
 
-        <div class="form-group">
-          <label for="phone">Phone Number</label>
+        <div class="mb-6">
+          <label for="phone" class="block mb-2 font-semibold text-sm">Phone Number</label>
           <input
             type="tel"
             id="phone"
             bind:value={formData.phone}
             placeholder="Enter your phone number (optional)"
+            class="w-full px-3 py-2 border border-[hsl(var(--border))] rounded transition-colors duration-300 focus:outline-none focus:border-[hsl(var(--accent))] dark:bg-[hsl(var(--background-secondary))] dark:border-[hsl(var(--border))] dark:text-[var(--color-text-primary)]"
           />
         </div>
 
-        <div class="form-group">
-          <label for="reason">Reason for Deletion (Optional)</label>
+        <div class="mb-6">
+          <label for="reason" class="block mb-2 font-semibold text-sm">Reason for Deletion (Optional)</label>
           <textarea
             id="reason"
             bind:value={formData.reason}
             placeholder="Please let us know why you're requesting data deletion (customers and installers welcome)"
             rows="4"
+            class="w-full px-3 py-2 border border-[hsl(var(--border))] rounded transition-colors duration-300 focus:outline-none focus:border-[hsl(var(--accent))] resize-vertical min-h-24 dark:bg-[hsl(var(--background-secondary))] dark:border-[hsl(var(--border))] dark:text-[var(--color-text-primary)]"
           ></textarea>
         </div>
 
         {#if error}
-          <div class="error-message">
+          <div class="p-4 bg-[hsl(var(--destructive))] text-[var(--color-destructive-foreground)] rounded text-center mb-4">
             {error}
           </div>
         {/if}
 
-        <button type="submit" disabled={submitting} class="submit-btn">
+        <button
+          type="submit"
+          disabled={submitting}
+          class="w-full py-2 px-8 bg-[hsl(var(--accent))] text-[var(--color-text-primary)] rounded font-semibold transition-all duration-300 cursor-pointer hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
+        >
           {submitting ? "Submitting..." : "Submit Deletion Request"}
         </button>
       </form>
     {/if}
 
-    <div class="additional-info">
-      <h3>Important Information</h3>
-      <ul>
-        <li>Data deletion requests are processed within 30 business days</li>
-        <li>
+    <div class="p-6 bg-[hsl(var(--muted))] rounded-lg shadow-md dark:bg-[hsl(var(--muted))]">
+      <h3 class="text-2xl font-semibold mb-4">Important Information</h3>
+      <ul class="pl-6 space-y-2 mb-4">
+        <li class="leading-relaxed">Data deletion requests are processed within 30 business days</li>
+        <li class="leading-relaxed">
           You will receive a confirmation email once your data has been deleted
         </li>
-        <li>
+        <li class="leading-relaxed">
           Some data may be retained for legal compliance purposes (financial
           records, tax documentation, government subsidy records)
         </li>
-        <li>
+        <li class="leading-relaxed">
           Deleting your data will remove you from our marketing communications
         </li>
-        <li>
+        <li class="leading-relaxed">
           <strong>For Installers:</strong> Your business will be removed from our
           directory and you will no longer receive leads
         </li>
-        <li>
+        <li class="leading-relaxed">
           <strong>For Customers:</strong> You will no longer receive solar installation
           quotes or updates
         </li>
       </ul>
 
-      <p>
+      <p class="leading-relaxed">
         For any questions or concerns about your data deletion request, please
         contact us at
-        <a href="mailto:admin@solarvipani.com">admin@solarvipani.com</a>.
+        <a href="mailto:admin@solarvipani.com" class="text-[hsl(var(--accent))] hover:underline">admin@solarvipani.com</a>.
       </p>
     </div>
   </div>
 </main>
-
-<style>
-  /* Root variables for light and dark modes */
-  :root {
-    --light-bg-color: hsl(var(--background));
-    --dark-bg-color: hsl(var(--background));
-    --light-primary-text-color: var(--color-text-primary);
-    --dark-primary-text-color: var(--color-text-primary);
-    --accent-color: hsl(var(--accent));
-    --success-color: hsl(var(--success));
-    --error-color: hsl(var(--destructive));
-    --font-family: "Helvetica Neue", Arial, sans-serif;
-    --light-form-bg: hsl(var(--card));
-    --dark-form-bg: hsl(var(--card));
-    --light-info-bg: hsl(var(--muted));
-    --dark-info-bg: hsl(var(--muted));
-    --box-shadow: var(--shadow-md);
-  }
-
-  main {
-    padding: 2rem;
-    font-family: var(--font-family);
-    transition:
-      background-color 0.3s ease,
-      color 0.3s ease;
-    min-height: 100vh;
-  }
-
-  .container {
-    max-width: 800px;
-    margin: 0 auto;
-  }
-
-  /* Light mode */
-  .light {
-    background-color: var(--light-bg-color);
-    color: var(--light-primary-text-color);
-  }
-
-  /* Dark mode */
-  .dark {
-    background-color: var(--dark-bg-color);
-    color: var(--dark-primary-text-color);
-  }
-
-  h1 {
-    font-size: 2.5rem;
-    margin-bottom: 1.5rem;
-    font-weight: 600;
-    text-align: center;
-    line-height: 1.3;
-  }
-
-  h2,
-  h3 {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    font-weight: 600;
-  }
-
-  .intro-section {
-    margin-bottom: 2rem;
-  }
-
-  .intro-section p {
-    font-size: 1.1rem;
-    line-height: 1.6;
-    margin-bottom: 1.5rem;
-  }
-
-  .info-box {
-    padding: 1.5rem;
-    border-radius: 8px;
-    margin-bottom: 2rem;
-    box-shadow: var(--box-shadow);
-    transition: background-color 0.3s ease;
-  }
-
-  .light .info-box {
-    background-color: var(--light-info-bg);
-  }
-
-  .dark .info-box {
-    background-color: var(--dark-info-bg);
-  }
-
-  .info-box h3 {
-    margin-top: 0;
-    margin-bottom: 1rem;
-  }
-
-  .info-box h4 {
-    margin-top: 1.5rem;
-    margin-bottom: 0.75rem;
-    font-size: 1.2rem;
-    font-weight: 600;
-  }
-
-  .info-box h4:first-of-type {
-    margin-top: 0;
-  }
-
-  .info-box ul {
-    margin: 0;
-    padding-left: 1.5rem;
-  }
-
-  .info-box li {
-    margin-bottom: 0.5rem;
-    line-height: 1.5;
-  }
-
-  .deletion-form {
-    background-color: var(--light-form-bg);
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: var(--box-shadow);
-    margin-bottom: 2rem;
-    transition: background-color 0.3s ease;
-  }
-
-  .dark .deletion-form {
-    background-color: var(--dark-form-bg);
-  }
-
-  .form-group {
-    margin-bottom: 1.5rem;
-  }
-
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    font-size: 0.95rem;
-  }
-
-  input,
-  textarea {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid hsl(var(--border));
-    border-radius: 4px;
-    font-size: 1rem;
-    transition: border-color 0.3s ease;
-    box-sizing: border-box;
-  }
-
-  .dark input,
-  .dark textarea {
-    background-color: hsl(var(--background-secondary));
-    border-color: hsl(var(--border));
-    color: var(--dark-primary-text-color);
-  }
-
-  input:focus,
-  textarea:focus {
-    outline: none;
-    border-color: var(--accent-color);
-  }
-
-  textarea {
-    resize: vertical;
-    min-height: 100px;
-  }
-
-  .submit-btn {
-    background-color: var(--accent-color);
-    color: var(--color-text-primary);
-    padding: 0.75rem 2rem;
-    border: none;
-    border-radius: 4px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    width: 100%;
-  }
-
-  .submit-btn:hover:not(:disabled) {
-    background-color: hsl(var(--accent-hover));
-  }
-
-  .submit-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  .success-message {
-    background-color: var(--success-color);
-    color: var(--color-success-foreground);
-    padding: 2rem;
-    border-radius: 8px;
-    text-align: center;
-    margin-bottom: 2rem;
-  }
-
-  .success-message h2 {
-    margin-top: 0;
-    margin-bottom: 1rem;
-  }
-
-  .success-message a {
-    color: var(--color-success-foreground);
-    text-decoration: underline;
-  }
-
-  .error-message {
-    background-color: var(--error-color);
-    color: var(--color-destructive-foreground);
-    padding: 1rem;
-    border-radius: 4px;
-    margin-bottom: 1rem;
-    text-align: center;
-  }
-
-  .additional-info {
-    padding: 1.5rem;
-    border-radius: 8px;
-    box-shadow: var(--box-shadow);
-    transition: background-color 0.3s ease;
-  }
-
-  .light .additional-info {
-    background-color: var(--light-info-bg);
-  }
-
-  .dark .additional-info {
-    background-color: var(--dark-info-bg);
-  }
-
-  .additional-info h3 {
-    margin-top: 0;
-  }
-
-  .additional-info ul {
-    margin-bottom: 1rem;
-    padding-left: 1.5rem;
-  }
-
-  .additional-info li {
-    margin-bottom: 0.5rem;
-    line-height: 1.5;
-  }
-
-  a {
-    color: var(--accent-color);
-    text-decoration: none;
-  }
-
-  a:hover {
-    text-decoration: underline;
-  }
-
-  /* Responsive styling */
-  @media (max-width: 768px) {
-    main {
-      padding: 1rem;
-    }
-
-    h1 {
-      font-size: 2rem;
-    }
-
-    .deletion-form {
-      padding: 1.5rem;
-    }
-
-    .info-box,
-    .additional-info {
-      padding: 1rem;
-    }
-  }
-</style>

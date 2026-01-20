@@ -540,8 +540,8 @@
             </a>
           {/each}
         {:else}
-          <div class="no-installers">
-            <p>
+          <div class="col-span-full text-center py-12">
+            <p class="text-muted-foreground">
               No verified installers available at the moment. Be the first to
               join!
             </p>
@@ -549,8 +549,8 @@
         {/if}
       </div>
 
-      <div class="cta-center">
-        <button class="cta-button" onclick={navigateToBusinessForm}>
+      <div class="text-center mt-8">
+        <button class="inline-flex items-center justify-center gap-2 px-8 py-3 bg-primary text-primary-foreground rounded-md font-semibold hover:bg-primary-hover hover:-translate-y-1 transition-all duration-300 hover:shadow-lg uppercase tracking-wider" onclick={navigateToBusinessForm}>
           <span>Join These Businesses</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -572,12 +572,12 @@
 
     <!-- How It Works Video Section -->
     <section class="rounded-lg bg-card p-12 md:p-16 mb-8 shadow-md text-center" id="product-working">
-      <div class="section-header">
-        <h2>See How It Works</h2>
-        <div class="section-divider">
-          <span class="divider-accent"></span>
+      <div class="text-center mb-10">
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">See How It Works</h2>
+        <div class="flex justify-center items-center my-4">
+          <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
-        <p class="section-subtitle">
+        <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
           Watch this quick video to understand how Solar Vipani connects you
           with customers
         </p>
@@ -595,8 +595,8 @@
         </iframe>
       </div>
 
-      <div class="cta-center">
-        <button class="cta-button" onclick={navigateToBusinessForm}>
+      <div class="text-center mt-8">
+        <button class="inline-flex items-center justify-center gap-2 px-8 py-3 bg-primary text-primary-foreground rounded-md font-semibold hover:bg-primary-hover hover:-translate-y-1 transition-all duration-300 hover:shadow-lg uppercase tracking-wider" onclick={navigateToBusinessForm}>
           <span>Try It Now — Free</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"

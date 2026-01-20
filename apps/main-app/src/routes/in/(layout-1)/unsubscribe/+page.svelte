@@ -51,27 +51,33 @@
 	}
 </script>
 
-<div class="unsubscribe-container">
-	<div class="unsubscribe-card">
+<div class="flex items-center justify-center min-h-screen bg-background p-4">
+	<div class="w-full max-w-[450px] bg-card rounded-lg shadow-md px-8 py-12 text-center">
 		{#if isConfirming}
-			<h1>Confirm Unsubscription</h1>
+			<h1 class="text-3xl mb-6 text-primary">Confirm Unsubscription</h1>
 
-			<p>
+			<p class="text-base leading-6 text-secondary mb-6">
 				Please confirm that you want to unsubscribe<br />
 				<strong>{email}</strong> from our email list.
 			</p>
 
 			{#if errorMessage}
-				<div class="error-message">{errorMessage}</div>
+				<div class="bg-destructive-muted text-destructive-foreground my-4 p-2 rounded-sm">
+					{errorMessage}
+				</div>
 			{/if}
 
-			<div class="button-group">
-				<button class="confirm-button" onclick={handleConfirm} disabled={isLoading || !email}>
+			<div class="mt-8">
+				<button
+					class="bg-success text-success-foreground px-6 py-3 rounded-sm cursor-pointer transition-colors hover:bg-success/85 disabled:bg-muted disabled:cursor-not-allowed"
+					onclick={handleConfirm}
+					disabled={isLoading || !email}
+				>
 					{isLoading ? 'Processing...' : 'Confirm Unsubscription'}
 				</button>
 			</div>
 		{:else if isSuccess}
-			<div class="check-circle">
+			<div class="w-20 h-20 mx-auto mb-6 text-success">
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					viewBox="0 0 24 24"
@@ -86,9 +92,9 @@
 				</svg>
 			</div>
 
-			<h1>Unsubscription was successful!</h1>
+			<h1 class="text-3xl mb-6 text-primary">Unsubscription was successful!</h1>
 
-			<p>
+			<p class="text-base leading-6 text-secondary mb-6">
 				We have informed the sender of this email that<br />
 				you don't want to receive more email from<br />
 				them.
@@ -96,76 +102,3 @@
 		{/if}
 	</div>
 </div>
-
-<style>
-	.unsubscribe-container {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		min-height: 100vh;
-		background-color: hsl(var(--background));
-		padding: 1rem;
-	}
-
-	.unsubscribe-card {
-		background: hsl(var(--card));
-		border-radius: 12px;
-		box-shadow: var(--shadow-md);
-		padding: 3rem 2rem;
-		text-align: center;
-		max-width: 450px;
-		width: 100%;
-	}
-
-	.check-circle {
-		width: 80px;
-		height: 80px;
-		margin: 0 auto 1.5rem;
-		color: hsl(var(--success));
-	}
-
-	h1 {
-		font-size: 1.8rem;
-		margin-bottom: 1.5rem;
-		color: var(--color-text-primary);
-	}
-
-	p {
-		font-size: 1rem;
-		line-height: 1.5;
-		color: var(--color-text-secondary);
-		margin-bottom: 1.5rem;
-	}
-
-	.button-group {
-		margin-top: 2rem;
-	}
-
-	.confirm-button {
-		background-color: hsl(var(--success));
-		color: hsl(var(--success-foreground));
-		border: none;
-		border-radius: 6px;
-		padding: 0.75rem 1.5rem;
-		font-size: 1rem;
-		cursor: pointer;
-		transition: background-color 0.3s;
-	}
-
-	.confirm-button:hover {
-		background-color: hsl(var(--success) / 0.85);
-	}
-
-	.confirm-button:disabled {
-		background-color: hsl(var(--muted));
-		cursor: not-allowed;
-	}
-
-	.error-message {
-		color: hsl(var(--destructive-foreground));
-		margin: 1rem 0;
-		padding: 0.5rem;
-		background-color: hsl(var(--destructive-muted));
-		border-radius: 4px;
-	}
-</style>

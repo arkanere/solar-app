@@ -397,7 +397,7 @@
 
 /* ===== CSS CUSTOM PROPERTIES FOR HSL VALUES ===== */
 :root {
-  /* ===== LIGHT MODE (Linear-inspired) ===== */
+  /* ===== LIGHT MODE (Solar Vipani Brand) ===== */
 
   /* Backgrounds - Clean whites and light grays */
   --background: 0 0% 98%;           /* #FAFAFA - Main background */
@@ -413,27 +413,27 @@
   --border: 0 0% 90%;               /* #E5E5E5 - Default borders */
   --border-hover: 0 0% 83%;         /* #D4D4D4 - Hover state borders */
 
-  /* Accent - Trust Blue (professional, sky, clean energy) */
-  --accent: 221 83% 53%;            /* #3B82F6 - Primary accent */
-  --accent-hover: 221 83% 45%;      /* #2563EB - Accent hover */
+  /* Accent - Sun Orange (solar energy, warmth, brand identity) */
+  --accent: 24 100% 50%;            /* #FF6600 - Primary accent (sun orange) */
+  --accent-hover: 20 100% 42%;      /* #D65500 - Accent hover */
   --accent-foreground: 0 0% 100%;   /* White text on accent */
-  --accent-muted: 214 95% 93%;      /* #DBEAFE - Light accent bg */
+  --accent-muted: 30 100% 93%;      /* #FFECD9 - Light orange bg */
 
-  /* Secondary - Solar Amber (sun, warmth, energy) */
-  --secondary: 38 92% 50%;          /* #F59E0B - Secondary accent */
-  --secondary-hover: 32 95% 44%;    /* #D97706 - Secondary hover */
+  /* Secondary - Hill Green (nature, eco-friendly, sustainability) */
+  --secondary: 122 39% 49%;         /* #4CAF50 - Secondary accent (nature green) */
+  --secondary-hover: 122 39% 42%;   /* #43A047 - Secondary hover */
   --secondary-foreground: 0 0% 100%;/* White text on secondary */
-  --secondary-muted: 48 96% 89%;    /* #FEF3C7 - Light secondary bg */
+  --secondary-muted: 122 39% 92%;   /* #E8F5E9 - Light green bg */
 
-  /* Semantic - Success (green) */
-  --success: 142 71% 45%;           /* #22C55E */
+  /* Semantic - Success (green - same as secondary) */
+  --success: 122 39% 49%;           /* #4CAF50 */
   --success-foreground: 0 0% 100%;
-  --success-muted: 142 76% 94%;     /* #DCFCE7 */
+  --success-muted: 122 39% 92%;     /* #E8F5E9 */
 
-  /* Semantic - Warning (amber) */
-  --warning: 38 92% 50%;            /* #F59E0B */
+  /* Semantic - Warning (sun gold) */
+  --warning: 42 100% 50%;           /* #FFAA00 - Sun gold */
   --warning-foreground: 0 0% 9%;
-  --warning-muted: 48 96% 89%;      /* #FEF3C7 */
+  --warning-muted: 45 100% 90%;     /* #FFF3CC - Light gold bg */
 
   /* Semantic - Destructive (red) */
   --destructive: 0 84% 60%;         /* #EF4444 */
@@ -450,15 +450,15 @@
 
   /* Form elements */
   --input: 0 0% 90%;                /* Input borders */
-  --ring: 221 83% 53%;              /* Focus ring color - Trust Blue */
+  --ring: 24 100% 50%;              /* Focus ring color - Sun Orange */
 
   /* Primary (shadcn compatibility - same as accent) */
-  --primary: 221 83% 53%;
+  --primary: 24 100% 50%;
   --primary-foreground: 0 0% 100%;
 }
 
 .dark {
-  /* ===== DARK MODE (Linear-inspired) ===== */
+  /* ===== DARK MODE (Solar Vipani Brand) ===== */
 
   /* Backgrounds - Deep blacks */
   --background: 0 0% 5%;            /* #0D0D0D - Main background */
@@ -480,26 +480,26 @@
   --border: 0 0% 18%;               /* #2E2E2E - Default borders */
   --border-hover: 0 0% 25%;         /* #404040 - Hover borders */
 
-  /* Accent - Trust Blue (brighter in dark mode) */
-  --accent: 217 91% 60%;            /* #60A5FA - Brighter blue */
-  --accent-hover: 217 91% 55%;
+  /* Accent - Sun Orange (brighter in dark mode) */
+  --accent: 24 100% 55%;            /* #FF7A1A - Brighter orange */
+  --accent-hover: 24 100% 50%;
   --accent-foreground: 0 0% 100%;
-  --accent-muted: 221 47% 25%;      /* #1E3A5F - Dark accent bg */
+  --accent-muted: 24 60% 20%;       /* #522600 - Dark orange bg */
 
-  /* Secondary - Solar Amber (brighter in dark mode) */
-  --secondary: 38 92% 55%;          /* #FBBF24 - Brighter amber */
-  --secondary-hover: 38 92% 50%;
+  /* Secondary - Hill Green (brighter in dark mode) */
+  --secondary: 122 50% 55%;         /* #5DC060 - Brighter green */
+  --secondary-hover: 122 50% 50%;
   --secondary-foreground: 0 0% 100%;
-  --secondary-muted: 38 50% 20%;    /* #4D3B1A - Dark secondary bg */
+  --secondary-muted: 122 40% 18%;   /* #1A3D1B - Dark green bg */
 
   /* Semantic colors - Adjusted for dark */
-  --success: 142 71% 45%;
+  --success: 122 50% 55%;
   --success-foreground: 0 0% 100%;
-  --success-muted: 142 40% 15%;
+  --success-muted: 122 40% 18%;
 
-  --warning: 38 92% 50%;
+  --warning: 42 100% 55%;           /* Sun gold - brighter */
   --warning-foreground: 0 0% 9%;
-  --warning-muted: 38 40% 15%;
+  --warning-muted: 42 50% 18%;
 
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
@@ -515,10 +515,10 @@
 
   /* Form elements */
   --input: 0 0% 18%;
-  --ring: 217 91% 60%;              /* Trust Blue */
+  --ring: 24 100% 55%;              /* Sun Orange */
 
   /* Primary (shadcn compatibility) */
-  --primary: 217 91% 60%;
+  --primary: 24 100% 55%;
   --primary-foreground: 0 0% 100%;
 }
 
