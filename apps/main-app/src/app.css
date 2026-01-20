@@ -53,6 +53,16 @@
   --duration-slow: 200ms;
   --duration-slower: 300ms;
 
+  /* Phase 1.1: Transition utilities with easing */
+  --transition-default: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: 100ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Phase 1.3: Scale utilities for interactive feedback */
+  --hover-scale: 1.02;
+  --hover-scale-subtle: 1.01;
+  --active-scale: 0.98;
+
   /* Z-Index Scale (layering system) */
   --z-base: 0;
   --z-dropdown: 50;
@@ -91,6 +101,11 @@
   --tracking-wider: 0.05em;
   --tracking-widest: 0.1em;
 
+  /* Phase 5.2: Letter-spacing refinements for typography hierarchy */
+  --tracking-heading: -0.02em;
+  --tracking-body: 0;
+  --tracking-ui: 0.01em;
+
   /* Max Width Scale */
   --max-width-xs: 20rem;
   --max-width-sm: 24rem;
@@ -118,6 +133,12 @@
   --animation-enter-fast: slide-in-from-bottom 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --animation-enter-slow: slide-in-from-bottom 250ms cubic-bezier(0.4, 0, 0.2, 1);
   --animation-scale-in: scale-in 150ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Phase 7.1: Pulse animation for attention */
+  --animate-pulse-subtle: pulse-subtle 2s ease-in-out infinite;
+
+  /* Phase 7.2: Bounce entrance animation */
+  --animate-bounce-in: bounce-in 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 
   /* ===== GRADIENT TOKENS ===== */
   /* Subtle gradients for Linear design system metallic sheen effect */
@@ -325,6 +346,71 @@
   }
 }
 
+/* Phase 7.1: Pulse animation for subtle attention-grabbing */
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Phase 7.2: Bounce entrance animation */
+@keyframes bounce-in {
+  0% {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ===== PHASE 1.2: BASE INTERACTIVE TRANSITIONS ===== */
+@layer base {
+  button,
+  a,
+  [role="button"],
+  input,
+  select,
+  textarea {
+    transition: all var(--transition-default);
+  }
+
+  /* ===== PHASE 5: TYPOGRAPHY POLISH ===== */
+  /* 5.1 Add text-balance for headings */
+  h1, h2, h3, h4, h5, h6 {
+    text-wrap: balance;
+  }
+
+  /* 5.3 Add heading base styles with letter-spacing and font-features */
+  h1, h2, h3 {
+    letter-spacing: var(--tracking-heading);
+    font-feature-settings: "ss01", "ss02";
+  }
+
+  /* ===== PHASE 9: FORM ELEMENT REFINEMENT ===== */
+  /* 9.1 Add input focus glow for form inputs */
+  input:focus,
+  select:focus,
+  textarea:focus {
+    border-color: hsl(var(--ring));
+    box-shadow: 0 0 0 3px hsl(var(--ring) / 0.1);
+    outline: none;
+  }
+
+  /* 9.2 Add placeholder styling for better visual hierarchy */
+  ::placeholder {
+    color: hsl(var(--foreground-muted));
+    opacity: 0.7;
+  }
+}
+
 /* ===== COMPONENT UTILITIES ===== */
 @layer components {
   .overlay-dark {
@@ -388,15 +474,106 @@
     @apply font-semibold;
   }
 
+  /* Phase 5.4: Add optical sizing for display text */
+  .text-display {
+    font-optical-sizing: auto;
+    letter-spacing: -0.025em;
+  }
+
   /* Skeleton loading shimmer utility - Phase 2.2 */
   .skeleton-shimmer {
     animation: shimmer 2s infinite;
     background-size: 1000px 100%;
   }
+
+  /* Phase 2.2: Focus-within ring for form groups */
+  .focus-within-ring:focus-within {
+    box-shadow: 0 0 0 2px hsl(var(--ring) / 0.3);
+  }
+
+  /* ===== PHASE 3: CARD INTERACTION POLISH ===== */
+  /* 3.1 Card hover utilities with lift effect */
+  .card-interactive {
+    transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .card-interactive:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card-hover);
+  }
+  .card-interactive:active {
+    transform: translateY(0);
+  }
+
+  /* 3.2 Subtle border glow on hover */
+  .card-hover-glow:hover {
+    border-color: hsl(var(--border-hover));
+  }
+
+  /* ===== PHASE 4: BUTTON/LINK FEEDBACK ===== */
+  /* 4.1 Pressed state utilities for buttons */
+  .btn-press:active {
+    transform: scale(0.98);
+  }
+
+  /* 4.2 Default link transitions for unstyled links */
+  a:not([class]) {
+    color: hsl(var(--primary));
+    transition: color 150ms ease, opacity 150ms ease;
+  }
+  a:not([class]):hover {
+    opacity: 0.8;
+  }
+
+  /* ===== PHASE 6: SELECTION & CURSOR REFINEMENT ===== */
+  /* 6.2 Add cursor utilities for interactive elements */
+  .cursor-pointer {
+    cursor: pointer;
+  }
+  .cursor-grab {
+    cursor: grab;
+  }
+  .cursor-grab:active {
+    cursor: grabbing;
+  }
+
+  /* ===== PHASE 7: MICRO-INTERACTION UTILITIES ===== */
+  /* 7.1 Apply pulse-subtle animation utility */
+  .animate-pulse-subtle {
+    animation: var(--animate-pulse-subtle);
+  }
+
+  /* 7.2 Apply bounce-in animation utility */
+  .animate-bounce-in {
+    animation: var(--animate-bounce-in);
+  }
+
+  /* 7.3 Hover glow utility for accent effects */
+  .hover-glow {
+    transition: box-shadow 200ms ease;
+  }
+  .hover-glow:hover {
+    box-shadow: 0 0 20px hsl(var(--accent) / 0.15);
+  }
+
+  /* ===== PHASE 10: CONTAINER & LAYOUT UTILITIES ===== */
+  /* 10.1 Container query support for responsive component behavior */
+  .container-query {
+    container-type: inline-size;
+  }
+
+  /* 10.2 Content-visibility for performance optimization */
+  .content-lazy {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 500px;
+  }
 }
 
 /* ===== CSS CUSTOM PROPERTIES FOR HSL VALUES ===== */
 :root {
+  /* Phase 8.1: Smooth theme transition for background and text color */
+  transition: background-color 300ms ease, color 300ms ease;
+
   /* ===== LIGHT MODE (Solar Vipani Brand) ===== */
 
   /* Backgrounds - Clean whites and light grays */
@@ -459,6 +636,10 @@
 
 .dark {
   /* ===== DARK MODE (Solar Vipani Brand) ===== */
+
+  /* Phase 8.2: Refined dark mode shadows for better depth perception */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.4);
 
   /* Backgrounds - Deep blacks */
   --background: 0 0% 5%;            /* #0D0D0D - Main background */
@@ -550,18 +731,17 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Focus visible styling */
+/* Phase 2.1: Focus visible styling - subtle ring with inner/outer contrast */
 :focus-visible {
   outline: none;
-  box-shadow:
-    0 0 0 var(--ring-width) hsl(var(--ring)),
-    0 0 0 calc(var(--ring-width) + var(--ring-offset-width)) hsl(var(--background));
+  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring) / 0.5);
+  transition: box-shadow var(--transition-default);
 }
 
-/* Selection styling */
+/* Phase 6.1: Selection styling - refined for minimal elegance */
 ::selection {
-  background-color: hsl(var(--accent) / 0.2);
-  color: hsl(var(--foreground));
+  background-color: hsl(var(--accent) / 0.15);
+  color: inherit;
 }
 
 /* ===== UTILITY CLASSES ===== */
