@@ -10,11 +10,17 @@
 	}: CalendarPrimitive.DayProps = $props();
 </script>
 
+<style>
+	:global([data-bits-day]) > span {
+		font-size: var(--calendar-day-inner-text-size);
+	}
+</style>
+
 <CalendarPrimitive.Day
 	bind:ref
 	class={cn(
 		buttonVariants({ variant: "ghost" }),
-		"flex size-(--cell-size) flex-col items-center justify-center gap-1 p-0 leading-none font-normal whitespace-nowrap select-none",
+		"flex size-(--cell-size) flex-col items-center justify-center p-0 leading-none font-normal whitespace-nowrap select-none [&>span]:opacity-70",
 		"[&[data-today]:not([data-selected])]:bg-accent [&[data-today]:not([data-selected])]:text-accent-foreground [&[data-today][data-disabled]]:text-muted-foreground",
 		"data-[selected]:bg-primary dark:data-[selected]:hover:bg-accent/50 data-[selected]:text-primary-foreground",
 		// Outside months
@@ -27,9 +33,8 @@
 		"dark:hover:text-accent-foreground",
 		// focus
 		"focus:border-ring focus:ring-ring/50 focus:relative",
-		// inner spans
-		"[&>span]:text-xs [&>span]:opacity-70",
 		className
 	)}
+	style="gap: var(--calendar-day-gap); --calendar-day-inner-text-size: var(--calendar-day-inner-text-size);"
 	{...restProps}
 />

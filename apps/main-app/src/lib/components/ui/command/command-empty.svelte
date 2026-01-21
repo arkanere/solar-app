@@ -12,6 +12,6 @@
 <CommandPrimitive.Empty
 	bind:ref
 	data-slot="command-empty"
-	class={cn("py-6 text-center text-sm", className)}
+	class={cn("text-center text-sm [padding-block:var(--command-empty-padding-y)]", className)}
 	{...restProps}
 />

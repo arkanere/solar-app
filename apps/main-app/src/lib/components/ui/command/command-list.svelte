@@ -12,6 +12,6 @@
 <CommandPrimitive.List
 	bind:ref
 	data-slot="command-list"
-	class={cn("max-h-[300px] scroll-py-1 overflow-x-hidden overflow-y-auto", className)}
+	class={cn("overflow-x-hidden overflow-y-auto [max-height:var(--command-list-max-height)] [scroll-padding-block:var(--command-list-scroll-padding-y)]", className)}
 	{...restProps}
 />

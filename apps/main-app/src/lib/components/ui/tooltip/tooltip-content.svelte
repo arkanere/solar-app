@@ -27,9 +27,10 @@
 		{sideOffset}
 		{side}
 		class={cn(
-			"bg-foreground text-background animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-end-2 data-[side=right]:slide-in-from-start-2 data-[side=top]:slide-in-from-bottom-2 z-50 w-fit origin-(--bits-tooltip-content-transform-origin) rounded-md px-3 py-1.5 text-xs text-balance",
+			"animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-end-2 data-[side=right]:slide-in-from-start-2 data-[side=top]:slide-in-from-bottom-2 w-fit origin-(--bits-tooltip-content-transform-origin) text-balance",
 			className
 		)}
+		style="background-color: var(--tooltip-content-bg); color: var(--tooltip-content-text); z-index: var(--tooltip-content-z-index); border-radius: var(--tooltip-content-radius); padding-left: var(--tooltip-content-padding-x); padding-right: var(--tooltip-content-padding-x); padding-top: var(--tooltip-content-padding-y); padding-bottom: var(--tooltip-content-padding-y); font-size: var(--tooltip-content-font-size);"
 		{...restProps}
 	>
 		{@render children?.()}
@@ -37,13 +38,14 @@
 			{#snippet child({ props })}
 				<div
 					class={cn(
-						"bg-foreground z-50 size-2.5 rotate-45 rounded-[2px]",
+						"rotate-45",
 						"data-[side=top]:translate-x-1/2 data-[side=top]:translate-y-[calc(-50%_+_2px)]",
 						"data-[side=bottom]:-translate-x-1/2 data-[side=bottom]:-translate-y-[calc(-50%_+_1px)]",
 						"data-[side=right]:translate-x-[calc(50%_+_2px)] data-[side=right]:translate-y-1/2",
 						"data-[side=left]:-translate-y-[calc(50%_-_3px)]",
 						arrowClasses
 					)}
+					style="background-color: var(--tooltip-content-bg); z-index: var(--tooltip-content-z-index); width: var(--tooltip-arrow-size); height: var(--tooltip-arrow-size); border-radius: var(--tooltip-arrow-radius);"
 					{...props}
 				></div>
 			{/snippet}

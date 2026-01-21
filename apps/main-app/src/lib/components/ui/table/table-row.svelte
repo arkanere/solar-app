@@ -10,13 +10,25 @@
 	}: WithElementRef<HTMLAttributes<HTMLTableRowElement>> = $props();
 </script>
 
+<style>
+	tr {
+		border-bottom: 1px solid hsl(var(--border));
+		transition: var(--table-row-transition);
+	}
+
+	tr:hover {
+		background-color: var(--table-row-hover-bg);
+	}
+
+	tr[data-state="selected"] {
+		background-color: var(--table-row-selected-bg);
+	}
+</style>
+
 <tr
 	bind:this={ref}
 	data-slot="table-row"
-	class={cn(
-		"hover:[&,&>svelte-css-wrapper]:[&>th,td]:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors",
-		className
-	)}
+	class={cn("", className)}
 	{...restProps}
 >
 	{@render children?.()}

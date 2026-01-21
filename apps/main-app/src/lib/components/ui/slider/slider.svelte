@@ -46,11 +46,16 @@
 	value={Array.isArray(value) ? value[0] : value}
 	onchange={handleChange}
 	class={cn(
-		"w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary",
-		"hover:accent-primary/90",
-		disabled && "opacity-50 cursor-not-allowed",
+		"w-full appearance-none cursor-pointer",
+		disabled && "cursor-not-allowed",
 		className
 	)}
+	style={`
+		height: var(--slider-track-height);
+		border-radius: var(--slider-track-radius);
+		background: var(--slider-track-bg);
+		${disabled ? `opacity: var(--slider-disabled-opacity)` : ''}
+	`}
 	{...restProps}
 />
 
@@ -65,35 +70,35 @@
 	input[type="range"]::-webkit-slider-thumb {
 		-webkit-appearance: none;
 		appearance: none;
-		width: 18px;
-		height: 18px;
-		border-radius: 50%;
-		background: hsl(var(--primary));
+		width: var(--slider-thumb-size);
+		height: var(--slider-thumb-size);
+		border-radius: var(--slider-thumb-radius);
+		background: var(--slider-thumb-bg);
 		cursor: pointer;
-		border: 2px solid white;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+		border: var(--slider-thumb-border);
+		box-shadow: var(--slider-thumb-shadow);
 	}
 
 	input[type="range"]::-moz-range-thumb {
-		width: 18px;
-		height: 18px;
-		border-radius: 50%;
-		background: hsl(var(--primary));
+		width: var(--slider-thumb-size);
+		height: var(--slider-thumb-size);
+		border-radius: var(--slider-thumb-radius);
+		background: var(--slider-thumb-bg);
 		cursor: pointer;
-		border: 2px solid white;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+		border: var(--slider-thumb-border);
+		box-shadow: var(--slider-thumb-shadow);
 	}
 
 	input[type="range"]::-webkit-slider-runnable-track {
-		background: hsl(var(--input));
-		height: 8px;
-		border-radius: 4px;
+		background: var(--slider-track-bg);
+		height: var(--slider-track-height);
+		border-radius: var(--slider-track-radius);
 	}
 
 	input[type="range"]::-moz-range-track {
-		background: hsl(var(--input));
-		height: 8px;
-		border-radius: 4px;
+		background: var(--slider-track-bg);
+		height: var(--slider-track-height);
+		border-radius: var(--slider-track-radius);
 		border: none;
 	}
 </style>

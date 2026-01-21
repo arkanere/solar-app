@@ -11,6 +11,7 @@
 
 <CalendarPrimitive.Heading
 	bind:ref
-	class={cn("px-(--cell-size) text-sm font-medium", className)}
+	class={cn("px-(--cell-size)", className)}
+	style="font-size: var(--calendar-heading-text-size); font-weight: var(--calendar-heading-font-weight);"
 	{...restProps}
 />

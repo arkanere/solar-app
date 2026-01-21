@@ -3,7 +3,7 @@
 	import { tv } from "tailwind-variants";
 
 	export const navigationMenuTriggerStyle = tv({
-		base: "bg-background hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[state=open]:hover:bg-accent data-[state=open]:text-accent-foreground data-[state=open]:focus:bg-accent data-[state=open]:bg-accent/50 focus-visible:ring-ring/50 group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-50",
+		base: "bg-background hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[state=open]:hover:bg-accent data-[state=open]:text-accent-foreground data-[state=open]:focus:bg-accent data-[state=open]:bg-accent/50 focus-visible:ring-ring/50 group inline-flex w-max items-center justify-center font-medium transition-[color,box-shadow] outline-none focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-50",
 	});
 </script>
 
@@ -23,12 +23,26 @@
 	bind:ref
 	data-slot="navigation-menu-trigger"
 	class={cn(navigationMenuTriggerStyle(), "group", className)}
+	style={`
+		height: var(--navigation-menu-trigger-height);
+		padding-left: var(--navigation-menu-trigger-padding-x);
+		padding-right: var(--navigation-menu-trigger-padding-x);
+		padding-top: var(--navigation-menu-trigger-padding-y);
+		padding-bottom: var(--navigation-menu-trigger-padding-y);
+		border-radius: var(--navigation-menu-trigger-radius);
+		font-size: var(--navigation-menu-trigger-font-size);
+	`}
 	{...restProps}
 >
 	{@render children?.()}
 
 	<ChevronDownIcon
-		class="relative top-[1px] ms-1 size-3 transition duration-300 group-data-[state=open]:rotate-180"
+		style={`
+			width: var(--navigation-menu-trigger-icon-size);
+			height: var(--navigation-menu-trigger-icon-size);
+			margin-left: var(--navigation-menu-trigger-icon-margin-start);
+		`}
+		class="relative top-[1px] transition duration-300 group-data-[state=open]:rotate-180"
 		aria-hidden="true"
 	/>
 </NavigationMenuPrimitive.Trigger>
