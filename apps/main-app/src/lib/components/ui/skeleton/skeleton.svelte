@@ -12,6 +12,7 @@
 <div
 	bind:this={ref}
 	data-slot="skeleton"
-	class={cn("bg-gradient-to-r from-card via-background to-card skeleton-shimmer rounded-md", className)}
+	class={cn("bg-gradient-to-r from-card via-background to-card skeleton-shimmer", className)}
+	style="border-radius: var(--skeleton-radius)"
 	{...restProps}
 ></div>

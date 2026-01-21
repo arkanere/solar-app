@@ -13,8 +13,9 @@
 <SeparatorPrimitive.Root
 	bind:ref
 	data-slot={dataSlot}
+	style="background-color: var(--separator-color);"
 	class={cn(
-		"bg-border shrink-0 data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:min-h-full data-[orientation=vertical]:w-px",
+		"shrink-0 data-[orientation=horizontal]:h-[var(--separator-thickness)] data-[orientation=horizontal]:w-full data-[orientation=vertical]:min-h-full data-[orientation=vertical]:w-[var(--separator-thickness)]",
 		className
 	)}
 	{...restProps}

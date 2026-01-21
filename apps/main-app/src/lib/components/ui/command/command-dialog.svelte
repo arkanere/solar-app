@@ -30,7 +30,7 @@
 	</Dialog.Header>
 	<Dialog.Content class="overflow-hidden p-0" {portalProps}>
 		<Command
-			class="**:data-[slot=command-input-wrapper]:h-12 [&_[data-command-group]]:px-2 [&_[data-command-group]:not([hidden])_~[data-command-group]]:pt-0 [&_[data-command-input-wrapper]_svg]:h-5 [&_[data-command-input-wrapper]_svg]:w-5 [&_[data-command-input]]:h-12 [&_[data-command-item]]:px-2 [&_[data-command-item]]:py-3 [&_[data-command-item]_svg]:h-5 [&_[data-command-item]_svg]:w-5"
+			class="[&_[data-slot=command-input-wrapper]]:h-[var(--command-dialog-input-wrapper-height)] [&_[data-slot=command-group]]:px-[var(--command-dialog-group-padding-x)] [&_[data-slot=command-group]]:py-[var(--command-dialog-group-padding-y)] [&_[data-slot=command-group]:not([hidden])_~[data-slot=command-group]]:pt-0 [&_[data-slot=command-input-wrapper]_svg]:h-[var(--command-dialog-icon-size)] [&_[data-slot=command-input-wrapper]_svg]:w-[var(--command-dialog-icon-size)] [&_[data-slot=command-input]]:h-[var(--command-dialog-input-height)] [&_[data-slot=command-item]]:px-[var(--command-dialog-item-padding-x)] [&_[data-slot=command-item]]:py-[var(--command-dialog-item-padding-y)] [&_[data-slot=command-item]_svg]:h-[var(--command-dialog-icon-size)] [&_[data-slot=command-item]_svg]:w-[var(--command-dialog-icon-size)]"
 			{...restProps}
 			bind:value
 			bind:ref

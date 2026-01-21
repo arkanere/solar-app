@@ -12,4 +12,4 @@
 	}: WithoutChild<FormPrimitive.FieldsetProps<T, U>> = $props();
 </script>
 
-<FormPrimitive.Fieldset bind:ref {form} {name} class={cn("space-y-2", className)} {...restProps} />
+<FormPrimitive.Fieldset bind:ref {form} {name} class={cn(className)} style="gap: var(--form-fieldset-gap); display: flex; flex-direction: column;" {...restProps} />

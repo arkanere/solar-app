@@ -2,7 +2,16 @@
 	import { type VariantProps, tv } from "tailwind-variants";
 
 	export const badgeVariants = tv({
-		base: "focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-full border px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:ring-[3px] [&>svg]:pointer-events-none [&>svg]:size-3",
+		base: "focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive inline-flex w-fit shrink-0 items-center justify-center border whitespace-nowrap transition-[color,box-shadow] overflow-hidden" +
+			" [&]:gap-[var(--badge-gap)]" +
+			" [&]:rounded-[var(--badge-radius)]" +
+			" [&]:px-[var(--badge-padding-x)]" +
+			" [&]:py-[var(--badge-padding-y)]" +
+			" [&]:text-[var(--badge-font-size)]" +
+			" [&]:font-[var(--badge-font-weight)]" +
+			" [&]:focus-visible:ring-[var(--badge-ring-width)]" +
+			" [&>svg]:pointer-events-none" +
+			" [&>svg]:size-[var(--badge-icon-size)]",
 		variants: {
 			variant: {
 				default:

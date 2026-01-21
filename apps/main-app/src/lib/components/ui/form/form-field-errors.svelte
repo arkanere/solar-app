@@ -15,7 +15,8 @@
 
 <FormPrimitive.FieldErrors
 	bind:ref
-	class={cn("text-destructive text-sm font-medium", className)}
+	class={cn("text-destructive", className)}
+	style="font-size: var(--form-field-errors-font-size); font-weight: var(--form-field-errors-font-weight);"
 	{...restProps}
 >
 	{#snippet children({ errors, errorProps })}
