@@ -44,21 +44,22 @@
 </script>
 
 {#if visibleBusinesses.length > 0}
-	<section class="w-full max-w-4xl mx-auto my-10 px-4 space-y-4">
+	<section style="width: 100%; max-width: var(--max-width-4xl); margin-left: auto; margin-right: auto; padding-left: var(--button-padding-x-default); padding-right: var(--button-padding-x-default); margin-top: var(--card-gap); margin-bottom: var(--card-gap); display: flex; flex-direction: column; gap: var(--form-field-gap);">
 		{#each visibleBusinesses as business}
-			<Card.Root class="hover:shadow-lg transition-shadow">
-				<Card.Header class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 pb-3 border-b">
-					<h2 class="text-xl font-semibold">
+			<Card.Root class="transition-shadow" style="box-shadow: var(--shadow-card); transition: box-shadow var(--transition-default);">
+				<Card.Header class="flex flex-col sm:flex-row sm:items-start sm:justify-between border-b" style="gap: var(--dropdown-menu-item-gap); padding-bottom: var(--card-padding-y);">
+					<h2 style="font-size: var(--font-size-xl); line-height: var(--font-size-xl--line-height); font-weight: 600; letter-spacing: var(--tracking-heading);">
 						<a
 							href={`/in/solar-panel-installer/${business.slug}`}
-							class="text-primary hover:text-primary/80 underline-offset-2 hover:underline"
+							class="hover:opacity-80 underline-offset-2 hover:underline"
+							style="color: hsl(var(--primary)); text-decoration: none; transition: all var(--transition-default);"
 						>
 							{business.businessname}
 						</a>
 					</h2>
 					{#if business.tag}
 						<Badge variant="secondary" class="whitespace-nowrap">
-							<span class="inline-flex items-center justify-center w-4 h-4 mr-1 rounded-full text-xs font-bold text-success-foreground bg-success">
+							<span class="inline-flex items-center justify-center w-4 h-4 mr-1 rounded-full text-success-foreground bg-success" style="font-size: var(--font-size-xs); font-weight: 700;">
 								✓
 							</span>
 							{business.tag}
@@ -66,32 +67,33 @@
 					{/if}
 				</Card.Header>
 
-				<Card.Content class="space-y-3">
+				<Card.Content style="display: flex; flex-direction: column; gap: var(--form-element-field-gap);">
 					{#if business.businessfilled}
 						{#if business.description}
-							<p class="text-foreground">{business.description}</p>
+							<p style="color: hsl(var(--foreground));">{business.description}</p>
 						{/if}
 
-						<div class="flex items-center gap-3 text-foreground-secondary">
+						<div class="flex items-center" style="color: hsl(var(--foreground-secondary)); gap: var(--form-element-field-gap);">
 							<Phone class="w-5 h-5 text-primary flex-shrink-0" />
 							<span>{business.phonenumber}</span>
 						</div>
 
-						<div class="flex items-start gap-3 text-foreground-secondary">
-							<MapPin class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+						<div class="flex items-start" style="color: hsl(var(--foreground-secondary)); gap: var(--form-element-field-gap);">
+							<MapPin class="w-5 h-5 text-primary flex-shrink-0" style="margin-top: var(--form-element-field-gap);" />
 							<span>{business.address}</span>
 						</div>
 					{:else}
-						<div class="flex items-start gap-3 text-foreground-secondary">
-							<MapPin class="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+						<div class="flex items-start" style="color: hsl(var(--foreground-secondary)); gap: var(--form-element-field-gap);">
+							<MapPin class="w-5 h-5 text-primary flex-shrink-0" style="margin-top: var(--form-element-field-gap);" />
 							<span>{business.address || `${business.city}, ${business.state}`}</span>
 						</div>
 						{#if business.phonenumber}
-							<div class="flex items-center gap-3 text-foreground-secondary">
+							<div class="flex items-center" style="color: hsl(var(--foreground-secondary)); gap: var(--form-element-field-gap);">
 								<Phone class="w-5 h-5 text-primary flex-shrink-0" />
 								<a
 									href={`tel:${business.phonenumber}`}
-									class="text-primary hover:text-primary/80 hover:underline"
+									class="hover:opacity-80 hover:underline"
+									style="color: hsl(var(--primary)); text-decoration: none; transition: all var(--transition-default);"
 								>
 									{business.phonenumber}
 								</a>
@@ -100,7 +102,7 @@
 					{/if}
 				</Card.Content>
 
-				<div class="flex flex-col sm:flex-row gap-3 px-6 py-4 bg-muted">
+				<div class="flex flex-col sm:flex-row" style="background-color: hsl(var(--muted)); gap: var(--form-element-field-gap); padding: var(--button-padding-y-default) var(--button-padding-x-lg);">
 					<Button
 						variant="default"
 						class="bg-destructive hover:bg-destructive/80 flex-1 sm:flex-none"
@@ -124,7 +126,7 @@
 		{/each}
 
 		{#if loadedCount < businesses.length}
-			<div class="flex justify-center pt-4">
+			<div class="flex justify-center" style="padding-top: var(--form-field-gap);">
 				<Button variant="outline" onclick={loadMoreBusinesses}>LOAD MORE</Button>
 			</div>
 		{/if}
@@ -134,12 +136,12 @@
 <Dialog.Root bind:open={isModalOpen}>
 	<Dialog.Content class="max-w-md">
 		<div class="flex items-center justify-between">
-			<h2 class="text-lg font-semibold">Request a Free Quote</h2>
+			<h2 style="font-size: var(--font-size-lg); line-height: var(--font-size-lg--line-height); font-weight: 600;">Request a Free Quote</h2>
 			<Dialog.Close class="rounded-md opacity-70 hover:opacity-100">
 				<X class="w-4 h-4" />
 			</Dialog.Close>
 		</div>
-		<p class="text-sm text-foreground-secondary">From {selectedBusinessName}</p>
+		<p style="font-size: var(--font-size-sm); line-height: var(--font-size-sm--line-height); color: hsl(var(--foreground-secondary));">From {selectedBusinessName}</p>
 		<LeadFormModal businessName={selectedBusinessName} businessSlug={selectedBusinessSlug} />
 	</Dialog.Content>
 </Dialog.Root>

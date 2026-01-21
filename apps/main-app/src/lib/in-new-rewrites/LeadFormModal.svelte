@@ -5,6 +5,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import * as Select from '$lib/components/ui/select';
+	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import { validateLeadForm } from '$lib/constants/formValidation';
 
 	let { businessName = '', businessSlug = '' } = $props();
@@ -73,18 +74,20 @@
 	}
 </script>
 
-<form onsubmit={handleSubmit} class="space-y-4 max-w-sm mx-auto p-4">
+<form onsubmit={handleSubmit} style="gap: var(--space-y-4); max-width: var(--max-width-sm); margin-left: auto; margin-right: auto; padding: var(--form-field-gap);" class="flex flex-col">
 	<!-- Name -->
-	<div class="space-y-2">
+	<div style="gap: var(--space-y-2);" class="flex flex-col">
 		<Label for="name">Name</Label>
 		<Input id="name" type="text" bind:value={name} placeholder="Enter your name" />
 		{#if errors.name}
-			<p class="text-sm text-destructive">{errors.name}</p>
+			<Alert variant="destructive">
+				<AlertDescription>{errors.name}</AlertDescription>
+			</Alert>
 		{/if}
 	</div>
 
 	<!-- Phone Number -->
-	<div class="space-y-2">
+	<div style="gap: var(--space-y-2);" class="flex flex-col">
 		<Label for="phone">Phone Number</Label>
 		<Input
 			id="phone"
@@ -93,12 +96,14 @@
 			placeholder="Enter your phone number"
 		/>
 		{#if errors.phone}
-			<p class="text-sm text-destructive">{errors.phone}</p>
+			<Alert variant="destructive">
+				<AlertDescription>{errors.phone}</AlertDescription>
+			</Alert>
 		{/if}
 	</div>
 
 	<!-- Pin Code -->
-	<div class="space-y-2">
+	<div style="gap: var(--space-y-2);" class="flex flex-col">
 		<Label for="pincode">Pin Code</Label>
 		<Input
 			id="pincode"
@@ -107,21 +112,25 @@
 			placeholder="Enter your 6-digit pin code"
 		/>
 		{#if errors.pinCode}
-			<p class="text-sm text-destructive">{errors.pinCode}</p>
+			<Alert variant="destructive">
+				<AlertDescription>{errors.pinCode}</AlertDescription>
+			</Alert>
 		{/if}
 	</div>
 
 	<!-- Email -->
-	<div class="space-y-2">
+	<div style="gap: var(--space-y-2);" class="flex flex-col">
 		<Label for="email">Email</Label>
 		<Input id="email" type="email" bind:value={email} placeholder="Enter your email" />
 		{#if errors.email}
-			<p class="text-sm text-destructive">{errors.email}</p>
+			<Alert variant="destructive">
+				<AlertDescription>{errors.email}</AlertDescription>
+			</Alert>
 		{/if}
 	</div>
 
 	<!-- Type of Consultation -->
-	<div class="space-y-2">
+	<div style="gap: var(--space-y-2);" class="flex flex-col">
 		<Label for="type">Type of Consultation</Label>
 		<Select.Root type="single" bind:value={type}>
 			<Select.Trigger id="type">
@@ -136,12 +145,14 @@
 			</Select.Content>
 		</Select.Root>
 		{#if errors.type}
-			<p class="text-sm text-destructive">{errors.type}</p>
+			<Alert variant="destructive">
+				<AlertDescription>{errors.type}</AlertDescription>
+			</Alert>
 		{/if}
 	</div>
 
 	<!-- Comment -->
-	<div class="space-y-2">
+	<div style="gap: var(--space-y-2);" class="flex flex-col">
 		<Label for="comment">Comment</Label>
 		<Textarea
 			id="comment"
@@ -150,7 +161,9 @@
 			class="resize-none"
 		/>
 		{#if errors.comment}
-			<p class="text-sm text-destructive">{errors.comment}</p>
+			<Alert variant="destructive">
+				<AlertDescription>{errors.comment}</AlertDescription>
+			</Alert>
 		{/if}
 	</div>
 
