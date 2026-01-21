@@ -55,18 +55,18 @@
 	}
 </script>
 
-<main class="min-h-screen flex flex-col items-center justify-center py-12 px-4">
-	<div class="w-full max-w-md">
-		<Card.Root class="border shadow-lg">
+<main style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: var(--button-height-lg); padding-bottom: var(--button-height-lg); padding-left: 1rem; padding-right: 1rem;">
+	<div style="width: 100%; max-width: var(--max-width-sm);">
+		<Card.Root style="border: 1px solid hsl(var(--border)); box-shadow: var(--shadow-lg);">
 			<Card.Header>
-				<Card.Title class="text-2xl">Solar Installer Directory</Card.Title>
+				<Card.Title style="font-size: var(--font-size-2xl); line-height: var(--font-size-2xl--line-height);">Solar Installer Directory</Card.Title>
 				<Card.Description>
 					Select state and district to view installer listings
 				</Card.Description>
 			</Card.Header>
 
-			<Card.Content class="space-y-6">
-				<div class="space-y-3">
+			<Card.Content style="display: flex; flex-direction: column; gap: var(--card-gap);">
+				<div style="display: flex; flex-direction: column; gap: var(--form-element-field-gap);">
 					<Label.Root for="state">State</Label.Root>
 					<Select.Root type="single" bind:value={selectedState} onValueChange={handleStateChange}>
 						<Select.Trigger id="state" class="w-full">
@@ -80,7 +80,7 @@
 					</Select.Root>
 				</div>
 
-				<div class="space-y-3">
+				<div style="display: flex; flex-direction: column; gap: var(--form-element-field-gap);">
 					<Label.Root for="district">District</Label.Root>
 					<Select.Root type="single" bind:value={selectedDistrict} disabled={!selectedState || isLoading}>
 						<Select.Trigger id="district" class="w-full">
@@ -105,7 +105,9 @@
 				<button
 					onclick={handleDistrictSelection}
 					disabled={!selectedState || !selectedDistrict}
-					class="w-full mt-6 px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+					style="width: 100%; margin-top: var(--card-gap); padding-left: var(--button-padding-x-default); padding-right: var(--button-padding-x-default); padding-top: var(--button-padding-y-default); padding-bottom: var(--button-padding-y-default); background-color: hsl(var(--primary)); color: hsl(var(--primary-foreground)); border-radius: var(--radius-md); font-weight: 500; transition: all var(--transition-default);"
+					onmouseenter={(e) => !e.currentTarget.disabled && e.currentTarget.style.setProperty('background-color', 'hsl(var(--primary) / 0.9)')}
+					onmouseleave={(e) => e.currentTarget.style.setProperty('background-color', 'hsl(var(--primary))')}
 				>
 					View Installers
 				</button>

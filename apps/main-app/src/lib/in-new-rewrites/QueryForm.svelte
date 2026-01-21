@@ -5,6 +5,7 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Label } from '$lib/components/ui/label';
 	import { Button } from '$lib/components/ui/button';
+	import * as Alert from '$lib/components/ui/alert';
 	import { validateQueryForm } from '$lib/constants/formValidation';
 
 	let name = $state('');
@@ -57,9 +58,9 @@
 	}
 </script>
 
-<form onsubmit={handleSubmit} class="flex flex-col max-w-md mx-auto gap-4 pb-4">
+<form onsubmit={handleSubmit} style="display: flex; flex-direction: column; max-width: 448px; margin-left: auto; margin-right: auto; gap: var(--form-field-gap); padding-bottom: var(--form-field-gap);">
 	<!-- Name Input -->
-	<div class="space-y-1">
+	<div style="display: flex; flex-direction: column; gap: var(--form-element-field-gap);">
 		<Label for="name">Name</Label>
 		<Input
 			id="name"
@@ -69,12 +70,14 @@
 			class={errors.name ? 'border-destructive' : ''}
 		/>
 		{#if errors.name}
-			<p class="text-destructive text-sm">{errors.name}</p>
+			<Alert.Root variant="destructive">
+				<Alert.Description>{errors.name}</Alert.Description>
+			</Alert.Root>
 		{/if}
 	</div>
 
 	<!-- Phone Number Input -->
-	<div class="space-y-1">
+	<div style="display: flex; flex-direction: column; gap: var(--form-element-field-gap);">
 		<Label for="phone">Phone Number</Label>
 		<Input
 			id="phone"
@@ -84,12 +87,14 @@
 			class={errors.phone ? 'border-destructive' : ''}
 		/>
 		{#if errors.phone}
-			<p class="text-destructive text-sm">{errors.phone}</p>
+			<Alert.Root variant="destructive">
+				<Alert.Description>{errors.phone}</Alert.Description>
+			</Alert.Root>
 		{/if}
 	</div>
 
 	<!-- Pincode Input -->
-	<div class="space-y-1">
+	<div style="display: flex; flex-direction: column; gap: var(--form-element-field-gap);">
 		<Label for="pincode">Pincode</Label>
 		<Input
 			id="pincode"
@@ -99,12 +104,14 @@
 			class={errors.pincode ? 'border-destructive' : ''}
 		/>
 		{#if errors.pincode}
-			<p class="text-destructive text-sm">{errors.pincode}</p>
+			<Alert.Root variant="destructive">
+				<Alert.Description>{errors.pincode}</Alert.Description>
+			</Alert.Root>
 		{/if}
 	</div>
 
 	<!-- Message Input -->
-	<div class="space-y-1">
+	<div style="display: flex; flex-direction: column; gap: var(--form-element-field-gap);">
 		<Label for="message">Message</Label>
 		<Textarea
 			id="message"
@@ -113,7 +120,9 @@
 			class={errors.message ? 'border-destructive' : ''}
 		/>
 		{#if errors.message}
-			<p class="text-destructive text-sm">{errors.message}</p>
+			<Alert.Root variant="destructive">
+				<Alert.Description>{errors.message}</Alert.Description>
+			</Alert.Root>
 		{/if}
 	</div>
 

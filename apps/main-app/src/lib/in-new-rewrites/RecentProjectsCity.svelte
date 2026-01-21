@@ -34,25 +34,26 @@
 </script>
 
 {#if projects.length > 0}
-	<section class="space-y-8">
-		<h2 class="text-3xl font-bold text-center">
+	<section style="gap: 2rem; display: flex; flex-direction: column;">
+		<h2 style="font-size: var(--font-size-3xl); line-height: var(--font-size-3xl--line-height); font-weight: 700; text-align: center;">
 			Recent Solar Panel Installation Projects in {city?.replace('-', ' ')}
 		</h2>
 
-		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" style="gap: 1.5rem;">
 			{#each projects as project (project.id)}
-				<Card.Root class="overflow-hidden hover:shadow-lg transition-shadow duration-200">
+				<Card.Root class="overflow-hidden card-interactive">
 					<a
 						href="/in/solar-panel-installer/{project.business_slug}/project/{project.project_slug}"
 						class="block text-inherit no-underline"
 					>
-						<div class="h-48 bg-muted overflow-hidden">
+						<div class="bg-muted overflow-hidden" style="height: 12rem;">
 							{#if project.cloudinary_public_id || project.image_url}
 								<img
 									src={getImageUrl(project.cloudinary_public_id, project.image_url)}
 									alt={project.title}
 									loading="lazy"
-									class="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+									style="width: 100%; height: 100%; object-fit: cover; transition: transform var(--transition-default);"
+									class="hover:scale-105"
 								/>
 							{:else}
 								<div class="flex items-center justify-center h-full text-muted-foreground">
@@ -61,25 +62,25 @@
 							{/if}
 						</div>
 
-						<Card.Content class="pt-6 space-y-2">
-							<h3 class="font-semibold text-lg line-clamp-2">{project.title}</h3>
+						<Card.Content style="padding-top: 1.5rem; gap: 0.5rem; display: flex; flex-direction: column;">
+							<h3 style="font-weight: 600; font-size: var(--font-size-lg); line-height: var(--font-size-lg--line-height);" class="line-clamp-2">{project.title}</h3>
 
-							<div class="space-y-1 text-sm text-muted-foreground">
-								<p class="flex items-center gap-2">
+							<div style="gap: 0.25rem; display: flex; flex-direction: column; font-size: var(--font-size-sm); line-height: var(--font-size-sm--line-height);" class="text-muted-foreground">
+								<p class="flex items-center" style="gap: 0.5rem;">
 									<MapPin size={14} class="flex-shrink-0" />
 									<span>Pincode: {project.pincode}</span>
 								</p>
 
-								<p class="flex items-center gap-2">
+								<p class="flex items-center" style="gap: 0.5rem;">
 									<Calendar size={14} class="flex-shrink-0" />
 									<span>{formatDate(project.project_date)}</span>
 								</p>
 
-								<p class="flex items-center gap-2">
+								<p class="flex items-center" style="gap: 0.5rem;">
 									<Wrench size={14} class="flex-shrink-0" />
 									<span>
 										Installer:
-										<span class="text-accent-foreground font-medium underline">
+										<span class="text-accent-foreground" style="font-weight: 500; text-decoration: underline;">
 											{formatBusinessName(project.business_slug)}
 										</span>
 									</span>
@@ -92,7 +93,7 @@
 		</div>
 
 		{#if projects.length >= 6}
-			<div class="bg-muted rounded-lg p-8 text-center space-y-4">
+			<div class="bg-muted text-center" style="border-radius: var(--radius-lg); padding: 2rem; gap: 1rem; display: flex; flex-direction: column;">
 				<p class="text-muted-foreground">Want to see more solar projects in your area?</p>
 				<Button>View All Projects in {city?.replace('-', ' ')}</Button>
 			</div>

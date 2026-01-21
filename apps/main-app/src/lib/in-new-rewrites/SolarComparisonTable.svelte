@@ -33,16 +33,16 @@
 	];
 </script>
 
-<section class="space-y-6 py-12 px-4 md:px-8">
-	<div class="text-center space-y-2">
-		<h2 class="text-3xl md:text-4xl font-bold text-primary">
+<section style="display: flex; flex-direction: column; gap: var(--card-gap); padding-top: var(--card-gap); padding-bottom: var(--card-gap); padding-left: var(--container-padding); padding-right: var(--container-padding);" class="md:px-8">
+	<div style="text-align: center; display: flex; flex-direction: column; gap: var(--form-element-field-gap);">
+		<h2 style="font-size: var(--font-size-3xl); line-height: var(--font-size-3xl--line-height); font-weight: 600; letter-spacing: var(--tracking-heading); color: hsl(var(--primary));">
 			Simplifying Solar For Everyone All over India
 		</h2>
 	</div>
 
 	<div class="flex justify-center">
-		<Card class="w-full max-w-4xl">
-			<CardContent class="pt-6">
+		<Card style="width: 100%; max-width: var(--max-width-4xl);">
+			<CardContent style="padding-top: var(--card-padding-y);">
 				<div class="overflow-x-auto">
 					<Table.Root>
 						<Table.Header>
@@ -55,15 +55,15 @@
 						<Table.Body>
 							{#each comparisonData as row (row.aspect)}
 								<Table.Row>
-									<Table.Cell class="font-semibold">{row.aspect}</Table.Cell>
+									<Table.Cell style="font-weight: 600;">{row.aspect}</Table.Cell>
 									<Table.Cell>
-										<Badge variant="default" class="gap-1">
+										<Badge variant="default" style="gap: var(--form-element-field-gap);">
 											<Check class="w-4 h-4" />
 											{row.solar}
 										</Badge>
 									</Table.Cell>
 									<Table.Cell>
-										<Badge variant="destructive" class="gap-1">
+										<Badge variant="destructive" style="gap: var(--form-element-field-gap);">
 											<X class="w-4 h-4" />
 											{row.traditional}
 										</Badge>

@@ -5,6 +5,7 @@
   import { Label } from '$lib/components/ui/label';
   import { Textarea } from '$lib/components/ui/textarea';
   import * as Card from '$lib/components/ui/card';
+  import * as Alert from '$lib/components/ui/alert';
   import { goto } from '$app/navigation';
   import { validatePhone, validateEmail, validatePinCode } from '$lib/constants/formValidation';
 
@@ -75,11 +76,11 @@
   };
 </script>
 
-<div class="flex items-center justify-center py-4">
-  <Card.Root class="w-full max-w-md md:max-w-none">
-    <Card.Content class="pt-6">
-      <form onsubmit={handleSubmit} class="space-y-4">
-        <div>
+<div class="flex items-center justify-center" style="padding-top: var(--button-padding-y-default); padding-bottom: var(--button-padding-y-default);">
+  <Card.Root style="width: 100%; max-width: var(--max-width-md);">
+    <Card.Content style="padding-top: var(--card-padding-y);">
+      <form onsubmit={handleSubmit} style="gap: var(--form-field-gap); display: flex; flex-direction: column;">
+        <div style="gap: var(--form-element-field-gap); display: flex; flex-direction: column;">
           <Label for="name">Name</Label>
           <Input
             id="name"
@@ -87,14 +88,16 @@
             type="text"
             placeholder="Your name"
             disabled={isSubmitting}
-            class="mt-1"
+            style="margin-top: var(--form-element-field-gap);"
           />
           {#if errors.name}
-            <p class="text-sm text-destructive mt-1">{errors.name}</p>
+            <Alert.Root variant="destructive" style="margin-top: var(--form-element-field-gap);">
+              <Alert.Description>{errors.name}</Alert.Description>
+            </Alert.Root>
           {/if}
         </div>
 
-        <div>
+        <div style="gap: var(--form-element-field-gap); display: flex; flex-direction: column;">
           <Label for="phone">Phone</Label>
           <Input
             id="phone"
@@ -102,14 +105,16 @@
             type="text"
             placeholder="10-digit phone number"
             disabled={isSubmitting}
-            class="mt-1"
+            style="margin-top: var(--form-element-field-gap);"
           />
           {#if errors.phone}
-            <p class="text-sm text-destructive mt-1">{errors.phone}</p>
+            <Alert.Root variant="destructive" style="margin-top: var(--form-element-field-gap);">
+              <Alert.Description>{errors.phone}</Alert.Description>
+            </Alert.Root>
           {/if}
         </div>
 
-        <div>
+        <div style="gap: var(--form-element-field-gap); display: flex; flex-direction: column;">
           <Label for="pinCode">Pin Code</Label>
           <Input
             id="pinCode"
@@ -117,14 +122,16 @@
             type="text"
             placeholder="6-digit pin code"
             disabled={isSubmitting}
-            class="mt-1"
+            style="margin-top: var(--form-element-field-gap);"
           />
           {#if errors.pinCode}
-            <p class="text-sm text-destructive mt-1">{errors.pinCode}</p>
+            <Alert.Root variant="destructive" style="margin-top: var(--form-element-field-gap);">
+              <Alert.Description>{errors.pinCode}</Alert.Description>
+            </Alert.Root>
           {/if}
         </div>
 
-        <div>
+        <div style="gap: var(--form-element-field-gap); display: flex; flex-direction: column;">
           <Label for="email">Email</Label>
           <Input
             id="email"
@@ -132,24 +139,28 @@
             type="email"
             placeholder="your@email.com"
             disabled={isSubmitting}
-            class="mt-1"
+            style="margin-top: var(--form-element-field-gap);"
           />
           {#if errors.email}
-            <p class="text-sm text-destructive mt-1">{errors.email}</p>
+            <Alert.Root variant="destructive" style="margin-top: var(--form-element-field-gap);">
+              <Alert.Description>{errors.email}</Alert.Description>
+            </Alert.Root>
           {/if}
         </div>
 
-        <div>
+        <div style="gap: var(--form-element-field-gap); display: flex; flex-direction: column;">
           <Label for="comment">Comments</Label>
           <Textarea
             id="comment"
             bind:value={comment}
             placeholder="Tell us about your solar system requirements..."
             disabled={isSubmitting}
-            class="mt-1 min-h-[120px]"
+            style="margin-top: var(--form-element-field-gap); min-height: 120px;"
           />
           {#if errors.comment}
-            <p class="text-sm text-destructive mt-1">{errors.comment}</p>
+            <Alert.Root variant="destructive" style="margin-top: var(--form-element-field-gap);">
+              <Alert.Description>{errors.comment}</Alert.Description>
+            </Alert.Root>
           {/if}
         </div>
 

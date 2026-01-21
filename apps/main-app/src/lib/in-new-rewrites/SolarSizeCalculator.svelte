@@ -12,17 +12,17 @@
 	});
 </script>
 
-<div class="flex items-center justify-center min-h-screen p-4">
-	<Card.Root class="w-full max-w-md">
+<div class="flex items-center justify-center min-h-screen" style="padding: var(--space-y-4);">
+	<Card.Root class="w-full" style="max-width: var(--max-width-sm);">
 		<Card.Header>
 			<Card.Title>Solar System Calculator</Card.Title>
 			<Card.Description>Calculate the size of your solar system</Card.Description>
 		</Card.Header>
-		<Card.Content class="space-y-6">
-			<div class="space-y-2">
+		<Card.Content style="gap: var(--space-y-6); display: flex; flex-direction: column;">
+			<div style="gap: var(--space-y-2); display: flex; flex-direction: column;">
 				<div class="flex justify-between items-baseline">
 					<Label for="bill">Monthly Electricity Bill</Label>
-					<span class="text-lg font-semibold text-primary">₹{currentBill}</span>
+					<span class="text-primary" style="font-size: var(--font-size-lg); line-height: var(--font-size-lg--line-height); font-weight: 600;">₹{currentBill}</span>
 				</div>
 				<Slider
 					id="bill"
@@ -32,13 +32,13 @@
 					bind:value={currentBill}
 					class="w-full"
 				/>
-				<div class="text-xs text-muted-foreground">₹500 - ₹5000</div>
+				<div class="text-muted-foreground" style="font-size: var(--font-size-xs); line-height: var(--font-size-xs--line-height);">₹500 - ₹5000</div>
 			</div>
 
-			<div class="space-y-2">
+			<div style="gap: var(--space-y-2); display: flex; flex-direction: column;">
 				<div class="flex justify-between items-baseline">
 					<Label for="rate">Rate per Unit</Label>
-					<span class="text-lg font-semibold text-primary">₹{ratePerUnit.toFixed(1)}</span>
+					<span class="text-primary" style="font-size: var(--font-size-lg); line-height: var(--font-size-lg--line-height); font-weight: 600;">₹{ratePerUnit.toFixed(1)}</span>
 				</div>
 				<Slider
 					id="rate"
@@ -48,13 +48,13 @@
 					bind:value={ratePerUnit}
 					class="w-full"
 				/>
-				<div class="text-xs text-muted-foreground">₹3 - ₹15 per unit</div>
+				<div class="text-muted-foreground" style="font-size: var(--font-size-xs); line-height: var(--font-size-xs--line-height);">₹3 - ₹15 per unit</div>
 			</div>
 
-			<div class="pt-4 border-t">
+			<div class="border-t" style="padding-top: var(--space-y-4);">
 				<div class="text-center">
-					<p class="text-sm text-muted-foreground mb-2">Estimated System Size</p>
-					<p class="text-3xl font-bold text-primary">{solarSystemSize} <span class="text-lg">kW</span></p>
+					<p class="text-muted-foreground" style="font-size: var(--font-size-sm); line-height: var(--font-size-sm--line-height); margin-bottom: var(--space-y-2);">Estimated System Size</p>
+					<p class="text-primary" style="font-size: var(--font-size-3xl); line-height: var(--font-size-3xl--line-height); font-weight: 700;">{solarSystemSize} <span style="font-size: var(--font-size-lg); line-height: var(--font-size-lg--line-height);">kW</span></p>
 				</div>
 			</div>
 		</Card.Content>
