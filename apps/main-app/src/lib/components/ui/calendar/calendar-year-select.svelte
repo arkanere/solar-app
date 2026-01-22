@@ -3,6 +3,12 @@
 	import { cn, type WithoutChildrenOrChild } from "$lib/utils.js";
 	import ChevronDownIcon from "@lucide/svelte/icons/chevron-down";
 
+	interface YearSelectSnippetProps {
+		props: Record<string, any>;
+		yearItems: Array<{ value: number; label: string }>;
+		selectedYearItem: { value: number; label: string };
+	}
+
 	let {
 		ref = $bindable(null),
 		class: className,
@@ -18,7 +24,7 @@
 	)}
 >
 	<CalendarPrimitive.YearSelect bind:ref class="absolute inset-0 opacity-0" {...restProps}>
-		{#snippet child({ props, yearItems, selectedYearItem })}
+		{#snippet child({ props, yearItems, selectedYearItem }: YearSelectSnippetProps)}
 			<select {...props} {value}>
 				{#each yearItems as yearItem (yearItem.value)}
 					<option

@@ -3,6 +3,12 @@
 	import { cn, type WithoutChildrenOrChild } from "$lib/utils.js";
 	import ChevronDownIcon from "@lucide/svelte/icons/chevron-down";
 
+	interface MonthSelectSnippetProps {
+		props: Record<string, any>;
+		monthItems: Array<{ value: number; label: string }>;
+		selectedMonthItem: { value: number; label: string };
+	}
+
 	let {
 		ref = $bindable(null),
 		class: className,
@@ -19,7 +25,7 @@
 	)}
 >
 	<CalendarPrimitive.MonthSelect bind:ref class="absolute inset-0 opacity-0" {...restProps}>
-		{#snippet child({ props, monthItems, selectedMonthItem })}
+		{#snippet child({ props, monthItems, selectedMonthItem }: MonthSelectSnippetProps)}
 			<select {...props} {value} {onchange}>
 				{#each monthItems as monthItem (monthItem.value)}
 					<option
@@ -36,7 +42,7 @@
 				class="[&>svg]:text-muted-foreground flex h-8 items-center gap-1 rounded-md ps-2 pe-1 text-sm font-medium select-none [&>svg]:size-3.5"
 				aria-hidden="true"
 			>
-				{monthItems.find((item) => item.value === value)?.label || selectedMonthItem.label}
+				{monthItems.find((item: any) => item.value === value)?.label || selectedMonthItem.label}
 				<ChevronDownIcon class="size-4" />
 			</span>
 		{/snippet}

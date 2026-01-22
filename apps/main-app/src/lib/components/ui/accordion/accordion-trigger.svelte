@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Accordion as AccordionPrimitive } from "bits-ui";
 	import ChevronDownIcon from "@lucide/svelte/icons/chevron-down";
-	import { cn, type WithoutChild } from "$lib/utils.js";
+	import { cn } from "$lib/utils.js";
 
 	let {
 		ref = $bindable(null),
@@ -9,8 +9,9 @@
 		level = 3,
 		children,
 		...restProps
-	}: WithoutChild<AccordionPrimitive.TriggerProps> & {
+	}: AccordionPrimitive.TriggerProps & {
 		level?: AccordionPrimitive.HeaderProps["level"];
+		children?: any;
 	} = $props();
 </script>
 

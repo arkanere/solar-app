@@ -28,7 +28,7 @@
 	)}
 	{...restProps}
 >
-	{#snippet children({ checked, indeterminate })}
+	{#snippet children({ checked, indeterminate }: { checked: boolean; indeterminate: boolean })}
 		<span
 			class="pointer-events-none absolute start-2 flex size-3.5 items-center justify-center"
 		>

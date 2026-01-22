@@ -116,7 +116,7 @@
           <CardTitle>Request Data Deletion</CardTitle>
         </CardHeader>
         <CardContent>
-          <form on:submit={handleSubmit} class="gap-[theme(--spacing-lg)] flex flex-col">
+          <form onsubmit={handleSubmit} class="gap-[theme(--spacing-lg)] flex flex-col">
             <div class="gap-[theme(--spacing-sm)] flex flex-col">
               <label for="email" class="font-semibold text-[theme(--font-size-sm)]">Email Address *</label>
               <Input

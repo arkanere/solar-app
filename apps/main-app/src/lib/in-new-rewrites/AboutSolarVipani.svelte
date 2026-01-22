@@ -3,47 +3,58 @@
 	import { Button } from '$lib/components/ui/button';
 	import { SOCIAL_LINKS, scrollToElement } from '$lib/constants/social';
 
+	let hoveredLink: string | null = $state(null);
+
 	function handleScroll() {
 		scrollToElement('lead-form-sv');
 	}
+
+	function handleSocialHover(url: string) {
+		hoveredLink = url;
+	}
+
+	function handleSocialLeave() {
+		hoveredLink = null;
+	}
 </script>
 
-<Card class="w-full border-0" style="margin-bottom: var(--card-gap); box-shadow: var(--shadow-md);">
+<Card class="w-full border-0 mb-[theme(--card-gap)] shadow-[theme(--shadow-md)]">
 	<CardHeader class="text-center">
-		<CardTitle style="font-size: var(--font-size-3xl); line-height: var(--font-size-3xl--line-height); letter-spacing: var(--tracking-heading);">About Solarvipani</CardTitle>
-		<div style="height: 0.25rem; width: 5rem; background-color: hsl(var(--secondary)); margin-left: auto; margin-right: auto; margin-top: var(--form-element-field-gap);"></div>
+		<CardTitle class="text-[theme(--font-size-3xl)] leading-[theme(--font-size-3xl--line-height)] tracking-[theme(--tracking-heading)]">
+			About Solarvipani
+		</CardTitle>
+		<div class="h-[theme(--divider-line-height)] w-[theme(--divider-line-width)] bg-secondary mx-auto mt-[theme(--form-element-field-gap)]"></div>
 	</CardHeader>
 
-	<CardContent style="gap: var(--card-gap); display: flex; flex-direction: column;">
+	<CardContent class="gap-[theme(--card-gap)] flex flex-col">
 		<!-- About Container -->
-		<div class="flex items-center md:flex-col md:text-center" style="gap: var(--card-gap);">
+		<div class="flex items-center md:flex-col md:text-center gap-[theme(--card-gap)]">
 			<img
 				src="/logo.webp"
 				alt="Solarvipani Logo"
-				class="w-48 h-auto rounded-lg"
-				style="box-shadow: var(--shadow-sm);"
+				class="w-48 h-auto rounded-[theme(--radius-lg)] shadow-[theme(--shadow-sm)]"
 				loading="lazy"
 			/>
 
-			<div class="flex-1" style="gap: var(--form-element-field-gap); display: flex; flex-direction: column;">
-				<p style="font-size: var(--font-size-lg); line-height: var(--font-size-lg--line-height);">
+			<div class="flex-1 gap-[theme(--form-element-field-gap)] flex flex-col">
+				<p class="text-[theme(--font-size-lg)] leading-[theme(--font-size-lg--line-height)]">
 					We are your premier marketplace aggregator dedicated to connecting residential and business
 					customers with
 					<a
 						href="/in/blogs/hiring-verified-solar-installer-in-india-is-essential"
-						style="font-weight: 600; color: hsl(var(--primary)); text-decoration: underline;"
+						class="font-semibold text-primary underline hover:opacity-80 transition-opacity"
 					>
 						Best Local Solar Panel Installation
 					</a>
 					companies, ensuring that you make smart decisions backed by credible information and have a
 					hassle-free experience.
 				</p>
-				<p style="font-size: var(--font-size-lg); line-height: var(--font-size-lg--line-height);">
+				<p class="text-[theme(--font-size-lg)] leading-[theme(--font-size-lg--line-height)]">
 					Our platform is designed for smart homeowners and businesses ready to go solar but unsure where to
 					start.
 					<Button
 						variant="ghost"
-						style="padding: 0; height: auto; font-weight: 600; color: hsl(var(--primary)); text-decoration: underline;"
+						class="p-0 h-auto font-semibold text-primary underline"
 						onclick={handleScroll}
 					>
 						Get 2-3 free quotes from verified installers in your area
@@ -54,28 +65,22 @@
 		</div>
 
 		<!-- Social Media Links -->
-		<div class="w-full" style="padding-top: var(--card-padding-y); border-top: 1px solid hsl(var(--border));">
-			<h4 style="text-align: center; font-size: var(--font-size-lg); font-weight: 600; margin-bottom: var(--form-element-field-gap);">Follow us on:</h4>
-			<div class="flex justify-center flex-wrap" style="gap: var(--card-gap);">
+		<div class="w-full pt-[theme(--card-padding-y)] border-t border-[hsl(var(--border))]">
+			<h4 class="text-center text-[theme(--font-size-lg)] font-semibold mb-[theme(--form-element-field-gap)]">Follow us on:</h4>
+			<div class="flex justify-center flex-wrap gap-[theme(--card-gap)]">
 				{#each SOCIAL_LINKS as link (link.url)}
 					<a
 						href={link.url}
 						target="_blank"
 						rel="noopener noreferrer"
 						aria-label={link.label}
-						class="flex items-center"
-						style="gap: var(--form-element-field-gap); color: hsl(var(--primary)); transition: all var(--transition-default);"
-						onmouseenter={(e) => {
-							e.currentTarget.style.color = `hsl(var(--primary) / 0.8)`;
-							e.currentTarget.style.transform = 'translateY(-0.25rem)';
-						}}
-						onmouseleave={(e) => {
-							e.currentTarget.style.color = `hsl(var(--primary))`;
-							e.currentTarget.style.transform = 'translateY(0)';
-						}}
+						class="flex items-center gap-[theme(--form-element-field-gap)] text-primary transition-all duration-[theme(--duration-default)]"
+						class:hover-lift-sm={hoveredLink === link.url}
+						onmouseenter={() => handleSocialHover(link.url)}
+						onmouseleave={handleSocialLeave}
 					>
 						<link.icon size={20} />
-						<span style="font-size: var(--font-size-sm); font-weight: 500;">{link.label}</span>
+						<span class="text-[theme(--font-size-sm)] font-medium">{link.label}</span>
 					</a>
 				{/each}
 			</div>

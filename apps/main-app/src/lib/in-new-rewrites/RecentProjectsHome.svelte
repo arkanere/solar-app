@@ -18,22 +18,25 @@
   let { projects = [] } = $props<{ projects: Project[] }>();
 </script>
 
-<Card.Root class="border-0" style="box-shadow: var(--shadow-lg);">
-  <Card.Header class="text-center" style="padding-bottom: var(--space-y-6);">
-    <div class="flex justify-center" style="margin-bottom: var(--space-y-4);">
-      <div style="height: 0.25rem; width: 5rem; background-color: hsl(var(--secondary)); border-radius: 9999px;"></div>
+<Card.Root class="border-0 shadow-[theme(--shadow-lg)]">
+  <Card.Header class="text-center pb-[theme(--card-padding-y)]">
+    <div class="flex justify-center mb-[theme(--spacing-lg)]">
+      <div
+        class="bg-secondary rounded-full"
+        style="height: {`var(--divider-line-height)`}; width: {`var(--divider-line-width)`};"
+      ></div>
     </div>
-    <Card.Title style="font-size: var(--font-size-3xl); line-height: var(--font-size-3xl--line-height); font-weight: 700; margin-bottom: var(--space-y-2);">
+    <Card.Title class="text-[theme(--font-size-3xl)] font-semibold mb-[theme(--spacing-md)]">
       Recent Solar Installation Projects
     </Card.Title>
-    <Card.Description style="font-size: var(--font-size-base); line-height: var(--font-size-base--line-height); max-width: var(--max-width-2xl); margin-left: auto; margin-right: auto;">
+    <Card.Description class="text-[theme(--font-size-base)] max-w-[theme(--max-width-2xl)] mx-auto">
       Explore real solar installations completed by our verified installers across India
     </Card.Description>
   </Card.Header>
 
   <Card.Content>
     {#if projects && projects.length > 0}
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" style="gap: var(--space-y-6); margin-bottom: 2rem;">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] mb-[theme(--spacing-2xl)]">
         {#each projects as project (project.id)}
           <a
             href="/in/solar-panel-installer/{project.business_slug}/project/{project.project_slug}"
@@ -46,16 +49,14 @@
                   <img
                     src={`https://res.cloudinary.com/${PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_fill,w_300,h_300,q_auto,f_auto/${project.cloudinary_public_id}`}
                     alt="{project.title} - Solar installation project in {project.pincode || 'India'}"
-                    class="w-full h-full object-cover group-hover:scale-105"
-                    style="transition: transform var(--transition-slow);"
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[theme(--duration-slow)]"
                     loading="lazy"
                   />
                 {:else if project.image_url}
                   <img
                     src={project.image_url}
                     alt="{project.title} - Solar installation project in {project.pincode || 'India'}"
-                    class="w-full h-full object-cover group-hover:scale-105"
-                    style="transition: transform var(--transition-slow);"
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[theme(--duration-slow)]"
                     loading="lazy"
                   />
                 {:else}
@@ -65,15 +66,15 @@
                 {/if}
               </div>
 
-              <Card.Content style="padding-top: var(--space-y-4);">
-                <h3 class="line-clamp-2 text-primary" style="font-weight: 600; font-size: var(--font-size-lg); line-height: var(--font-size-lg--line-height); margin-bottom: var(--space-y-2);">
+              <Card.Content class="pt-[theme(--spacing-lg)]">
+                <h3 class="line-clamp-2 text-primary font-semibold text-[theme(--font-size-lg)] mb-[theme(--spacing-md)]">
                   {project.title}
                 </h3>
-                <div class="text-muted-foreground" style="gap: 0.25rem; display: flex; flex-direction: column; font-size: var(--font-size-sm); line-height: var(--font-size-sm--line-height);">
+                <div class="text-muted-foreground flex flex-col gap-[theme(--spacing-xs)] text-[theme(--font-size-sm)]">
                   <p>Pincode: {project.pincode || "N/A"}</p>
                   <p>Completed on: {formatDate(project.project_date)}</p>
                   <p>
-                    Installer: <span class="text-foreground" style="font-weight: 500;">
+                    Installer: <span class="text-foreground font-medium">
                       {formatBusinessName(project.business_slug)}
                     </span>
                   </p>
@@ -84,7 +85,7 @@
         {/each}
       </div>
 
-      <div class="flex justify-center border-t" style="padding-top: var(--space-y-4);">
+      <div class="flex justify-center border-t pt-[theme(--spacing-lg)]">
         <Button variant="default" asChild>
           <a href="/in/recent-solar-installation-projects">
             View All Projects →

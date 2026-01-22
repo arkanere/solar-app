@@ -11,9 +11,6 @@
 </script>
 
 <style>
-	:global([data-bits-day]) > span {
-		font-size: var(--calendar-day-inner-text-size);
-	}
 </style>
 
 <CalendarPrimitive.Day

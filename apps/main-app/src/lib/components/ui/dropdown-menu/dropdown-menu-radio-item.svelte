@@ -8,7 +8,7 @@
 		class: className,
 		children: childrenProp,
 		...restProps
-	}: WithoutChild<DropdownMenuPrimitive.RadioItemProps> = $props();
+	}: DropdownMenuPrimitive.RadioItemProps = $props();
 </script>
 
 <DropdownMenuPrimitive.RadioItem
@@ -20,7 +20,7 @@
 	)}
 	{...restProps}
 >
-	{#snippet children({ checked })}
+	{#snippet children({ checked }: { checked: boolean })}
 		<span
 			class="pointer-events-none absolute start-2 flex size-3.5 items-center justify-center"
 		>

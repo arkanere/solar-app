@@ -16,7 +16,7 @@
 		...restProps
 	}: WithoutChildrenOrChild<DialogPrimitive.RootProps> &
 		WithoutChildrenOrChild<CommandPrimitive.RootProps> & {
-			portalProps?: DialogPrimitive.PortalProps;
+			portalProps?: Omit<DialogPrimitive.PortalProps, "children">;
 			children: Snippet;
 			title?: string;
 			description?: string;
