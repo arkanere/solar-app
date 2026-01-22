@@ -1,4 +1,12 @@
 <script>
+	import { Card } from '$lib/components/ui/card';
+	import {
+		Accordion,
+		AccordionItem,
+		AccordionTrigger,
+		AccordionContent
+	} from '$lib/components/ui/accordion';
+
 	// States array defined directly in the component
 	const states = [
 		'Andaman and Nicobar Islands',
@@ -39,6 +47,39 @@
 		'West Bengal'
 	];
 
+	const faqItems = [
+		{
+			id: 'faq-1',
+			question: 'How much does it cost to install solar panels in India?',
+			answer:
+				'The cost of installing solar panels in India varies based on system size and components. For instance, a 3kW system typically ranges from ₹1.5 lakhs to ₹2.5 lakhs, including installation and related expenses.'
+		},
+		{
+			id: 'faq-2',
+			question: 'How much should I budget for solar panel installation?',
+			answer:
+				'Budgeting for solar panel installation depends on your energy needs and system size. On average, residential installations can cost between ₹65,000 to ₹95,000 per kW, covering installation, transportation, and related expenses.'
+		},
+		{
+			id: 'faq-3',
+			question: 'How much solar panel is required for a 1.5-ton AC?',
+			answer:
+				'To run a 1.5-ton air conditioner, you would need a solar system capable of generating approximately 3kW of power. This typically involves installing around 10-12 solar panels of 250 watts each.'
+		},
+		{
+			id: 'faq-4',
+			question: 'What are the benefits of solar panels in India?',
+			answer:
+				'Installing solar panels in India offers multiple benefits, including reduced electricity bills, government subsidies through schemes like PM Surya Ghar Yojana, energy independence, and contributing to a greener environment with reduced carbon footprint.'
+		},
+		{
+			id: 'faq-5',
+			question: 'How much money will I save if I install solar panels?',
+			answer:
+				'If you install solar panels with net metering, you\'ll save approximately ₹5.5 to ₹6.5 per unit compared to the ₹8-₹9 per unit cost from the DISCOM. Over 25 years, this translates to substantial savings, making solar energy a cost-effective and sustainable choice.'
+		}
+	];
+
 	// Function to format state name for URL
 	function formatStateSlug(state) {
 		return `solar-panel-installers-in-${state.toLowerCase().replace(/\s+/g, '-')}`;
@@ -53,28 +94,28 @@
 	/>
 </svelte:head>
 
-<main class="w-full bg-background text-foreground overflow-x-hidden transition-colors duration-300 flex flex-col items-center px-4 py-8 min-h-screen">
+<main class="w-full bg-background text-foreground overflow-x-hidden transition-colors duration-300 flex flex-col items-center px-[theme(--container-padding)] py-[theme(--spacing-2xl)] min-h-screen">
 	<!-- State List Section -->
-	<div class="max-w-4xl w-full mb-12">
-		<h1 class="text-3xl md:text-4xl font-semibold text-center mb-4 text-primary">
+	<div class="max-w-4xl w-full mb-[theme(--spacing-3xl)]">
+		<h1 class="text-[theme(--font-size-3xl)] md:text-[theme(--font-size-4xl)] font-semibold text-center mb-[theme(--spacing-lg)] text-primary">
 			Solar Panel Installers by State
 		</h1>
 
-		<p class="text-center text-muted-foreground mb-8 text-lg">
+		<p class="text-center text-muted-foreground mb-[theme(--spacing-2xl)] text-[theme(--font-size-lg)]">
 			Browse solar panel installers by state. We have listings in <span class="font-semibold text-foreground">{states.length} states</span> across India.
 		</p>
 
-		<ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full list-none p-0">
+		<ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] w-full list-none p-0">
 			{#each states as state}
 				<li>
 					<a
 						href={`/in/state/${formatStateSlug(state)}`}
-						class="block h-full bg-card rounded-xl p-6 border border-border hover:shadow-lg hover:border-primary/50 transition-all duration-300 hover:-translate-y-1"
+						class="block h-full bg-card rounded-[theme(--radius-xl)] p-[theme(--card-padding-y)] border border-border hover:shadow-lg hover:border-primary/50 transition-all duration-300 hover:-translate-y-1"
 					>
-						<h2 class="text-xl font-semibold mb-2 text-primary">
+						<h2 class="text-[theme(--font-size-xl)] font-semibold mb-[theme(--spacing-sm)] text-primary">
 							{state}
 						</h2>
-						<p class="text-muted-foreground mb-4 flex-grow">
+						<p class="text-muted-foreground mb-[theme(--spacing-lg)] flex-grow">
 							Find solar installers in {state}
 						</p>
 						<div class="flex items-center text-primary font-medium">
@@ -99,122 +140,104 @@
 	</div>
 
 	<!-- Services Section -->
-	<div class="max-w-4xl w-full mb-12">
-		<h2 class="text-2xl font-semibold text-center mb-8 text-secondary">
+	<div class="max-w-4xl w-full mb-[theme(--spacing-3xl)]">
+		<h2 class="text-[theme(--font-size-2xl)] font-semibold text-center mb-[theme(--spacing-2xl)] text-secondary">
 			Services Provided by Solar Panel Installers
 		</h2>
-		<ul class="grid grid-cols-1 md:grid-cols-2 gap-6 list-none p-0">
-			<li class="bg-card rounded-xl p-6 border border-border hover:shadow-md transition-all duration-300">
-				<strong class="block text-lg text-primary mb-3">Solar panel installations at Homes, Apartments, and Businesses</strong>
-				<p class="text-muted-foreground leading-relaxed">
-					Professional installation of solar panels tailored to residential, commercial, and
-					industrial needs. Commonly used systems for independant homes and bunglows are <strong
-						>1kW ongrid solar system, 3kW ongrid solar system,</strong
-					>
-					and <strong> 5kW ongrid solar system.</strong>
-				</p>
+		<ul class="grid grid-cols-1 md:grid-cols-2 gap-[theme(--card-gap)] list-none p-0">
+			<li>
+				<Card class="hover:shadow-md transition-all duration-300">
+					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-md)]">Solar panel installations at Homes, Apartments, and Businesses</strong>
+					<p class="text-muted-foreground leading-relaxed">
+						Professional installation of solar panels tailored to residential, commercial, and
+						industrial needs. Commonly used systems for independant homes and bunglows are <strong
+							>1kW ongrid solar system, 3kW ongrid solar system,</strong
+						>
+						and <strong> 5kW ongrid solar system.</strong>
+					</p>
+				</Card>
 			</li>
-			<li class="bg-card rounded-xl p-6 border border-border hover:shadow-md transition-all duration-300">
-				<strong class="block text-lg text-primary mb-3">Solar Modules and Inverters</strong>
-				<p class="text-muted-foreground leading-relaxed">
-					Supply and installation of high-quality solar modules and inverters to ensure efficient
-					energy generation.
-				</p>
+			<li>
+				<Card class="hover:shadow-md transition-all duration-300">
+					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-md)]">Solar Modules and Inverters</strong>
+					<p class="text-muted-foreground leading-relaxed">
+						Supply and installation of high-quality solar modules and inverters to ensure efficient
+						energy generation.
+					</p>
+				</Card>
 			</li>
-			<li class="bg-card rounded-xl p-6 border border-border hover:shadow-md transition-all duration-300">
-				<strong class="block text-lg text-primary mb-3">
-					Documentation and Permissions for Subsidy under <a
-						href="/in/blogs/pm-surya-ghar-yojana"
-						target="_blank"
-						class="text-primary hover:underline"
-					>
-						PM Surya Ghar Yojana
-					</a>
-				</strong>
-				<p class="text-muted-foreground leading-relaxed">
-					Assistance with the necessary paperwork and approvals to avail government solar subsidies
-					and benefits.
-				</p>
+			<li>
+				<Card class="hover:shadow-md transition-all duration-300">
+					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-md)]">
+						Documentation and Permissions for Subsidy under <a
+							href="/in/blogs/pm-surya-ghar-yojana"
+							target="_blank"
+							class="text-primary hover:underline"
+						>
+							PM Surya Ghar Yojana
+						</a>
+					</strong>
+					<p class="text-muted-foreground leading-relaxed">
+						Assistance with the necessary paperwork and approvals to avail government solar subsidies
+						and benefits.
+					</p>
+				</Card>
 			</li>
-			<li class="bg-card rounded-xl p-6 border border-border hover:shadow-md transition-all duration-300">
-				<strong class="block text-lg text-primary mb-3">Net Metering</strong>
-				<p class="text-muted-foreground leading-relaxed">
-					Setup of net metering systems to help you save on electricity bills by feeding surplus
-					power back into the grid.
-				</p>
+			<li>
+				<Card class="hover:shadow-md transition-all duration-300">
+					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-md)]">Net Metering</strong>
+					<p class="text-muted-foreground leading-relaxed">
+						Setup of net metering systems to help you save on electricity bills by feeding surplus
+						power back into the grid.
+					</p>
+				</Card>
 			</li>
-			<li class="bg-card rounded-xl p-6 border border-border hover:shadow-md transition-all duration-300">
-				<strong class="block text-lg text-primary mb-3">Solar Financing through Banks and NBFCs</strong>
-				<p class="text-muted-foreground leading-relaxed">
-					Guidance on financing options, loans, and schemes offered by banks and non-banking
-					financial companies. Nowadays <strong> Zero cost EMI schemes </strong>have become popular.
-				</p>
+			<li>
+				<Card class="hover:shadow-md transition-all duration-300">
+					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-md)]">Solar Financing through Banks and NBFCs</strong>
+					<p class="text-muted-foreground leading-relaxed">
+						Guidance on financing options, loans, and schemes offered by banks and non-banking
+						financial companies. Nowadays <strong> Zero cost EMI schemes </strong>have become popular.
+					</p>
+				</Card>
 			</li>
-			<li class="bg-card rounded-xl p-6 border border-border hover:shadow-md transition-all duration-300">
-				<strong class="block text-lg text-primary mb-3">Routine Maintenance and Cleaning</strong>
-				<p class="text-muted-foreground leading-relaxed">
-					Regular maintenance and cleaning services to keep your solar system running efficiently.
-				</p>
+			<li>
+				<Card class="hover:shadow-md transition-all duration-300">
+					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-md)]">Routine Maintenance and Cleaning</strong>
+					<p class="text-muted-foreground leading-relaxed">
+						Regular maintenance and cleaning services to keep your solar system running efficiently.
+					</p>
+				</Card>
 			</li>
 		</ul>
 	</div>
 
 	<!-- FAQ Section -->
-	<div class="max-w-4xl w-full mb-12">
-		<h2 class="text-2xl font-semibold text-center mb-8 text-secondary">
+	<div class="max-w-4xl w-full mb-[theme(--spacing-3xl)]">
+		<h2 class="text-[theme(--font-size-2xl)] font-semibold text-center mb-[theme(--spacing-2xl)] text-secondary">
 			Frequently Asked Questions
 		</h2>
-		<ul class="grid grid-cols-1 md:grid-cols-2 gap-6 list-none p-0">
-			<li class="bg-card rounded-xl p-6 border border-border">
-				<strong class="block text-primary mb-3">How much does it cost to install solar panels in India?</strong>
-				<p class="text-muted-foreground text-sm leading-relaxed">
-					The cost of installing solar panels in India varies based on system size and components.
-					For instance, a 3kW system typically ranges from ₹1.5 lakhs to ₹2.5 lakhs, including
-					installation and related expenses.
-				</p>
-			</li>
-			<li class="bg-card rounded-xl p-6 border border-border">
-				<strong class="block text-primary mb-3">How much should I budget for solar panel installation?</strong>
-				<p class="text-muted-foreground text-sm leading-relaxed">
-					Budgeting for solar panel installation depends on your energy needs and system size. On
-					average, residential installations can cost between ₹65,000 to ₹95,000 per kW, covering
-					installation, transportation, and related expenses.
-				</p>
-			</li>
-			<li class="bg-card rounded-xl p-6 border border-border">
-				<strong class="block text-primary mb-3">How much solar panel is required for a 1.5-ton AC?</strong>
-				<p class="text-muted-foreground text-sm leading-relaxed">
-					To run a 1.5-ton air conditioner, you would need a solar system capable of generating
-					approximately 3kW of power. This typically involves installing around 10-12 solar panels
-					of 250 watts each.
-				</p>
-			</li>
-			<li class="bg-card rounded-xl p-6 border border-border">
-				<strong class="block text-primary mb-3">What are the benefits of solar panels in India?</strong>
-				<p class="text-muted-foreground text-sm leading-relaxed">
-					Installing solar panels in India offers multiple benefits, including reduced electricity
-					bills, government subsidies through schemes like PM Surya Ghar Yojana, energy
-					independence, and contributing to a greener environment with reduced carbon footprint.
-				</p>
-			</li>
-			<li class="bg-card rounded-xl p-6 border border-border">
-				<strong class="block text-primary mb-3">How much money will I save if I install solar panels?</strong>
-				<p class="text-muted-foreground text-sm leading-relaxed">
-					If you install solar panels with net metering, you'll save approximately ₹5.5 to ₹6.5 per
-					unit compared to the ₹8-₹9 per unit cost from the DISCOM. Over 25 years, this translates
-					to substantial savings, making solar energy a cost-effective and sustainable choice.
-				</p>
-			</li>
-		</ul>
+		<Accordion class="w-full">
+			{#each faqItems as item}
+				<AccordionItem value={item.id}>
+					<AccordionTrigger class="text-primary font-semibold">
+						{item.question}
+					</AccordionTrigger>
+					<AccordionContent class="text-muted-foreground text-[theme(--font-size-sm)] leading-relaxed">
+						{item.answer}
+					</AccordionContent>
+				</AccordionItem>
+			{/each}
+		</Accordion>
 	</div>
 
 	<!-- About Section -->
 	<div class="max-w-4xl w-full">
-		<h2 class="text-2xl font-semibold text-center mb-8 text-secondary">
+		<h2 class="text-[theme(--font-size-2xl)] font-semibold text-center mb-[theme(--spacing-2xl)] text-secondary">
 			About Solarvipani
 		</h2>
 
-		<div class="flex flex-col md:flex-row gap-8 items-center mb-8 bg-card rounded-xl p-8 border border-border">
+		<Card class="flex flex-col md:flex-row gap-[theme(--spacing-2xl)] items-center mb-[theme(--spacing-2xl)]">
 			<!-- Logo -->
 			<img
 				src="/logo.webp"
@@ -227,7 +250,7 @@
 
 			<!-- Text -->
 			<div class="flex-grow">
-				<p class="text-muted-foreground text-lg leading-relaxed">
+				<p class="text-muted-foreground text-[theme(--font-size-lg)] leading-relaxed">
 					We are your premier marketplace aggregator dedicated to connecting residential and
 					business customers with <a
 						href="/in/blogs/hiring-verified-solar-installer-in-india-is-essential"
@@ -240,12 +263,12 @@
 					and have a hassle-free experience.
 				</p>
 			</div>
-		</div>
+		</Card>
 
 		<!-- Social Media Links -->
 		<div class="text-center">
-			<h4 class="text-lg font-semibold text-foreground mb-4">Follow us on:</h4>
-			<div class="flex flex-wrap justify-center gap-4">
+			<h4 class="text-[theme(--font-size-lg)] font-semibold text-foreground mb-[theme(--spacing-lg)]">Follow us on:</h4>
+			<div class="flex flex-wrap justify-center gap-[theme(--spacing-lg)]">
 				<a
 					href="https://www.facebook.com/p/Solar-Vipani-61556033262509/"
 					target="_blank"

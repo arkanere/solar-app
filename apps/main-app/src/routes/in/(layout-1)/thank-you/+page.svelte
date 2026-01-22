@@ -1,10 +1,13 @@
 <script>
+	import { Card } from '$lib/components/ui/card';
+	import { Alert } from '$lib/components/ui/alert';
+
 	let { data } = $props();
 
 	// Extract customer details from server data
 	let customerDetails = $derived(data?.customerDetails || null);
 	let error = $derived(data?.error || null);
-	
+
 	// Format date for display
 	function formatDate(dateString) {
 		if (!dateString) return '';
@@ -60,93 +63,93 @@
 	/>
 </svelte:head>
 
-<main class="min-h-screen pt-4 flex flex-col items-center justify-start text-center transition-colors duration-300 bg-background text-foreground">
+<main class="min-h-screen pt-[theme(--spacing-sm)] flex flex-col items-center justify-start text-center transition-colors duration-[theme(--transition-default)] bg-background text-foreground">
 	{#if error}
-		<h1 class="text-2xl md:text-4xl font-bold mb-2">Details not found</h1>
-		<p class="text-base md:text-lg max-w-2xl mx-auto mb-3">The requested information could not be found. Please contact us if you need assistance.</p>
-		<p class="text-base md:text-lg max-w-2xl mx-auto mb-3">
+		<h1 class="text-[theme(--font-size-2xl)] md:text-[theme(--font-size-4xl)] font-bold mb-[theme(--spacing-sm)]">Details not found</h1>
+		<p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] max-w-2xl mx-auto mb-[theme(--spacing-md)]">The requested information could not be found. Please contact us if you need assistance.</p>
+		<p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] max-w-2xl mx-auto mb-[theme(--spacing-md)]">
 			If you'd like to speak with us, feel free to give us a call at <a
 				href="tel:+918983066701"
-				class="text-primary dark:text-primary underline hover:no-underline"
+				class="text-primary underline hover:no-underline"
 			>+91 8983066701</a
 			>
 		</p>
 	{:else}
-		<h1 class="text-2xl md:text-4xl font-bold mb-4">We have received your details.</h1>
+		<h1 class="text-[theme(--font-size-2xl)] md:text-[theme(--font-size-4xl)] font-bold mb-[theme(--spacing-lg)]">We have received your details.</h1>
 
 		<!-- Customer details section -->
 		{#if customerDetails}
-		<div class="w-full max-w-2xl mx-auto mb-6 px-4 text-left">
-			<div class="bg-card  rounded-lg shadow-md dark:shadow-card p-4 md:p-6 border border-border dark:border-border">
-				<div class="space-y-3">
-					<div class="flex flex-col md:flex-row md:justify-between md:items-start pb-3 border-b border-border dark:border-border last:border-b-0">
-						<span class="font-semibold text-foreground-secondary dark:text-foreground-secondary md:min-w-[140px] flex-shrink-0">Name:</span>
-						<span class="font-medium text-foreground dark:text-foreground md:text-right flex-grow md:ml-4">{customerDetails.name}</span>
+		<div class="w-full max-w-2xl mx-auto mb-[theme(--spacing-2xl)] px-[theme(--spacing-sm)] text-left">
+			<Card class="p-[theme(--spacing-sm)] md:p-[theme(--spacing-lg)] border border-border">
+				<div class="space-y-[theme(--spacing-md)]">
+					<div class="flex flex-col md:flex-row md:justify-between md:items-start pb-[theme(--spacing-md)] border-b border-border last:border-b-0">
+						<span class="font-semibold text-foreground-secondary md:min-w-[140px] flex-shrink-0">Name:</span>
+						<span class="font-medium text-foreground md:text-right flex-grow md:ml-[theme(--spacing-lg)]">{customerDetails.name}</span>
 					</div>
-					<div class="flex flex-col md:flex-row md:justify-between md:items-start pb-3 border-b border-border dark:border-border last:border-b-0">
-						<span class="font-semibold text-foreground-secondary dark:text-foreground-secondary md:min-w-[140px] flex-shrink-0">Phone:</span>
-						<span class="font-medium text-foreground dark:text-foreground md:text-right flex-grow md:ml-4">{customerDetails.phone}</span>
+					<div class="flex flex-col md:flex-row md:justify-between md:items-start pb-[theme(--spacing-md)] border-b border-border last:border-b-0">
+						<span class="font-semibold text-foreground-secondary md:min-w-[140px] flex-shrink-0">Phone:</span>
+						<span class="font-medium text-foreground md:text-right flex-grow md:ml-[theme(--spacing-lg)]">{customerDetails.phone}</span>
 					</div>
-					<div class="flex flex-col md:flex-row md:justify-between md:items-start pb-3 border-b border-border dark:border-border last:border-b-0">
-						<span class="font-semibold text-foreground-secondary dark:text-foreground-secondary md:min-w-[140px] flex-shrink-0">Email:</span>
-						<span class="font-medium text-foreground dark:text-foreground md:text-right flex-grow md:ml-4">{customerDetails.email || 'Not provided'}</span>
+					<div class="flex flex-col md:flex-row md:justify-between md:items-start pb-[theme(--spacing-md)] border-b border-border last:border-b-0">
+						<span class="font-semibold text-foreground-secondary md:min-w-[140px] flex-shrink-0">Email:</span>
+						<span class="font-medium text-foreground md:text-right flex-grow md:ml-[theme(--spacing-lg)]">{customerDetails.email || 'Not provided'}</span>
 					</div>
-					<div class="flex flex-col md:flex-row md:justify-between md:items-start pb-3 border-b border-border dark:border-border last:border-b-0">
-						<span class="font-semibold text-foreground-secondary dark:text-foreground-secondary md:min-w-[140px] flex-shrink-0">Location:</span>
-						<span class="font-medium text-foreground dark:text-foreground md:text-right flex-grow md:ml-4">{customerDetails.pinCode}{customerDetails.district ? `, ${customerDetails.district}` : ''}</span>
+					<div class="flex flex-col md:flex-row md:justify-between md:items-start pb-[theme(--spacing-md)] border-b border-border last:border-b-0">
+						<span class="font-semibold text-foreground-secondary md:min-w-[140px] flex-shrink-0">Location:</span>
+						<span class="font-medium text-foreground md:text-right flex-grow md:ml-[theme(--spacing-lg)]">{customerDetails.pinCode}{customerDetails.district ? `, ${customerDetails.district}` : ''}</span>
 					</div>
-					<div class="flex flex-col md:flex-row md:justify-between md:items-start pb-3 border-b border-border dark:border-border last:border-b-0">
-						<span class="font-semibold text-foreground-secondary dark:text-foreground-secondary md:min-w-[140px] flex-shrink-0">Installation Type:</span>
-						<span class="font-medium text-foreground dark:text-foreground md:text-right flex-grow md:ml-4">{customerDetails.type}</span>
+					<div class="flex flex-col md:flex-row md:justify-between md:items-start pb-[theme(--spacing-md)] border-b border-border last:border-b-0">
+						<span class="font-semibold text-foreground-secondary md:min-w-[140px] flex-shrink-0">Installation Type:</span>
+						<span class="font-medium text-foreground md:text-right flex-grow md:ml-[theme(--spacing-lg)]">{customerDetails.type}</span>
 					</div>
-					<div class="flex flex-col md:flex-row md:justify-between md:items-start pb-3 border-b border-border dark:border-border last:border-b-0">
-						<span class="font-semibold text-foreground-secondary dark:text-foreground-secondary md:min-w-[140px] flex-shrink-0">Requirements:</span>
-						<span class="font-medium text-foreground dark:text-foreground md:text-right flex-grow md:ml-4">{customerDetails.comment}</span>
+					<div class="flex flex-col md:flex-row md:justify-between md:items-start pb-[theme(--spacing-md)] border-b border-border last:border-b-0">
+						<span class="font-semibold text-foreground-secondary md:min-w-[140px] flex-shrink-0">Requirements:</span>
+						<span class="font-medium text-foreground md:text-right flex-grow md:ml-[theme(--spacing-lg)]">{customerDetails.comment}</span>
 					</div>
 					<div class="flex flex-col md:flex-row md:justify-between md:items-start">
-						<span class="font-semibold text-foreground-secondary dark:text-foreground-secondary md:min-w-[140px] flex-shrink-0">Submitted:</span>
-						<span class="font-medium text-foreground dark:text-foreground md:text-right flex-grow md:ml-4">{formatDate(customerDetails.submittedAt)}</span>
+						<span class="font-semibold text-foreground-secondary md:min-w-[140px] flex-shrink-0">Submitted:</span>
+						<span class="font-medium text-foreground md:text-right flex-grow md:ml-[theme(--spacing-lg)]">{formatDate(customerDetails.submittedAt)}</span>
 					</div>
 				</div>
-			</div>
+			</Card>
 		</div>
 
 		{#if customerDetails && !customerDetails.hasVerifiedBusinessInDistrict && customerDetails.district}
-			<div class="w-full max-w-2xl mx-auto mb-6 px-4 py-4 bg-warning/10 dark:bg-warning/20 border border-warning rounded-lg shadow-sm text-center">
-				<h3 class="text-lg md:text-xl font-semibold mb-2 text-warning dark:text-warning">Service Area Update</h3>
-				<p class="text-sm md:text-base text-warning/90 dark:text-warning/90 leading-relaxed">We are expanding to <strong>{customerDetails.district}</strong>. We will reach out to you once we have a verified installer there.</p>
-			</div>
+			<Alert class="w-full max-w-2xl mx-auto mb-[theme(--spacing-2xl)] px-[theme(--spacing-sm)] py-[theme(--spacing-sm)] bg-warning/10 border border-warning rounded-[theme(--radius-lg)] shadow-[theme(--shadow-sm)] text-center">
+				<h3 class="text-[theme(--font-size-lg)] md:text-[theme(--font-size-xl)] font-semibold mb-[theme(--spacing-sm)] text-warning">Service Area Update</h3>
+				<p class="text-[theme(--font-size-sm)] md:text-[theme(--font-size-base)] text-warning/90 leading-relaxed">We are expanding to <strong>{customerDetails.district}</strong>. We will reach out to you once we have a verified installer there.</p>
+			</Alert>
 		{/if}
 	{/if}
 
-	<h2 class="text-xl md:text-2xl font-bold my-4 text-primary dark:text-primary">Next Steps</h2>
+	<h2 class="text-[theme(--font-size-xl)] md:text-[theme(--font-size-2xl)] font-bold my-[theme(--spacing-lg)] text-primary">Next Steps</h2>
 	{#if customerDetails && customerDetails.hasVerifiedBusinessInDistrict}
-		<p class="text-base md:text-lg max-w-2xl mx-auto mb-3">
+		<p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] max-w-2xl mx-auto mb-[theme(--spacing-md)]">
 			We will call you within 24 hours to gather the exact requirement and clear any doubts that you
 			may have.
 		</p>
-		<p class="text-base md:text-lg max-w-2xl mx-auto mb-3">
+		<p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] max-w-2xl mx-auto mb-[theme(--spacing-md)]">
 			After gathering your exact requirement, we will reshare your requirement with 2-3 verfied
 			intallers in your area so that they can provide you with the quotaion.
 		</p>
 	{:else if customerDetails && !customerDetails.hasVerifiedBusinessInDistrict}
-		<p class="text-base md:text-lg max-w-2xl mx-auto mb-3">
+		<p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] max-w-2xl mx-auto mb-[theme(--spacing-md)]">
 			Once we have verified installers in your district, we will connect you with 2-3 qualified installers who can provide you with competitive quotations.
 		</p>
 	{:else}
-		<p class="text-base md:text-lg max-w-2xl mx-auto mb-3">
+		<p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] max-w-2xl mx-auto mb-[theme(--spacing-md)]">
 			We will call you within 24 hours to gather the exact requirement and clear any doubts that you
 			may have.
 		</p>
-		<p class="text-base md:text-lg max-w-2xl mx-auto mb-3">
+		<p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] max-w-2xl mx-auto mb-[theme(--spacing-md)]">
 			After gathering your exact requirement, we will reshare your requirement with 2-3 verfied
 			intallers in your area so that they can provide you with the quotaion.
 		</p>
 	{/if}
-		<p class="text-base md:text-lg max-w-2xl mx-auto mb-3">
+		<p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] max-w-2xl mx-auto mb-[theme(--spacing-md)]">
 			If you'd like to speak with us right away, feel free to give us a call at <a
 				href="tel:+918983066701"
-				class="text-primary dark:text-primary underline hover:no-underline"
+				class="text-primary underline hover:no-underline"
 			>+91 8983066701</a
 			>
 		</p>

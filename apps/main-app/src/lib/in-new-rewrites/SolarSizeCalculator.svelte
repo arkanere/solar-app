@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Card } from '$lib/components/ui/card';
+	import { Root as CardRoot, Header as CardHeader, Title as CardTitle, Description as CardDescription, Content as CardContent } from '$lib/components/ui/card';
 	import { Label } from '$lib/components/ui/label';
 	import { Slider } from '$lib/components/ui/slider';
 
@@ -13,12 +13,12 @@
 </script>
 
 <div class="flex items-center justify-center min-h-screen" style="padding: var(--space-y-4);">
-	<Card.Root class="w-full" style="max-width: var(--max-width-sm);">
-		<Card.Header>
-			<Card.Title>Solar System Calculator</Card.Title>
-			<Card.Description>Calculate the size of your solar system</Card.Description>
-		</Card.Header>
-		<Card.Content style="gap: var(--space-y-6); display: flex; flex-direction: column;">
+	<CardRoot class="w-full" style="max-width: var(--max-width-sm);">
+		<CardHeader>
+			<CardTitle>Solar System Calculator</CardTitle>
+			<CardDescription>Calculate the size of your solar system</CardDescription>
+		</CardHeader>
+		<CardContent style="gap: var(--space-y-6); display: flex; flex-direction: column;">
 			<div style="gap: var(--space-y-2); display: flex; flex-direction: column;">
 				<div class="flex justify-between items-baseline">
 					<Label for="bill">Monthly Electricity Bill</Label>
@@ -57,6 +57,6 @@
 					<p class="text-primary" style="font-size: var(--font-size-3xl); line-height: var(--font-size-3xl--line-height); font-weight: 700;">{solarSystemSize} <span style="font-size: var(--font-size-lg); line-height: var(--font-size-lg--line-height);">kW</span></p>
 				</div>
 			</div>
-		</Card.Content>
-	</Card.Root>
+		</CardContent>
+	</CardRoot>
 </div>

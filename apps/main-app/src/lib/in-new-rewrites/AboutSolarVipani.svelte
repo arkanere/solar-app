@@ -44,7 +44,7 @@
 					<Button
 						variant="ghost"
 						style="padding: 0; height: auto; font-weight: 600; color: hsl(var(--primary)); text-decoration: underline;"
-						on:click={handleScroll}
+						onclick={handleScroll}
 					>
 						Get 2-3 free quotes from verified installers in your area
 					</Button>

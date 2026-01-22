@@ -2,6 +2,8 @@
   import { page } from "$app/stores";
   import { goto } from "$app/navigation";
   import { PUBLIC_CLOUDINARY_CLOUD_NAME } from "$env/static/public";
+  import { Card } from "$lib/components/ui/card";
+  import { Button } from "$lib/components/ui/button";
 
   // Destructure page data using derived
   const { project, business } = $derived($page.data);
@@ -21,15 +23,15 @@
     }).format(amount);
   };
 
-  const navigateToBusinessPage = () => {
+  function navigateToBusinessPage() {
     goto(`/in/solar-panel-installer/${business.slug}`);
-  };
+  }
 
-  const navigateToDirectory = () => {
+  function navigateToDirectory() {
     goto(
       `/in/solar-panel-installer-directory/${encodeURIComponent(business.city)}`,
     );
-  };
+  }
 </script>
 
 <svelte:head>
@@ -61,9 +63,9 @@
   {/if}
 </svelte:head>
 
-<main class="w-full font-sans leading-relaxed overflow-x-hidden transition-colors duration-300 flex flex-col items-center px-4 py-8 min-h-screen bg-background text-foreground">
+<main class="w-full font-sans leading-relaxed overflow-x-hidden flex flex-col items-center px-[theme(--spacing-sm)] py-[theme(--spacing-lg)] min-h-screen bg-background text-foreground transition-colors duration-300">
   <!-- Breadcrumb Navigation -->
-  <nav class="w-full max-w-[1140px] mb-8 text-sm flex items-center flex-wrap gap-2 bg-card px-6 py-4 rounded-lg shadow-sm transition-colors duration-300">
+  <nav class="w-full max-w-[1140px] mb-[theme(--spacing-xl)] text-sm flex items-center flex-wrap gap-[theme(--spacing-sm)] bg-card px-[theme(--container-padding)] py-[theme(--spacing-md)] rounded-[theme(--radius-lg)] shadow-[theme(--shadow-sm)] transition-colors duration-300">
     <a href="/in" class="text-primary hover:text-primary/80 hover:underline transition-colors duration-200">Home</a>
     <span class="text-muted-foreground"> › </span>
     <button onclick={navigateToDirectory} class="text-primary hover:text-primary/80 hover:underline transition-colors duration-200 bg-none border-none p-0 font-inherit cursor-pointer">
@@ -78,8 +80,8 @@
   </nav>
 
   <!-- Project Header -->
-  <header class="w-full max-w-[1140px] text-center py-12 px-8 bg-primary rounded-2xl text-primary-foreground mb-8 relative overflow-hidden">
-    <h1 class="text-4xl font-bold m-0 mb-4 leading-tight relative z-10">{project.title}</h1>
+  <header class="w-full max-w-[1140px] text-center py-[theme(--spacing-3xl)] px-[theme(--container-padding)] bg-primary rounded-[theme(--radius-xl)] text-primary-foreground mb-[theme(--spacing-xl)] relative overflow-hidden">
+    <h1 class="text-4xl font-bold m-0 mb-[theme(--spacing-md)] leading-tight relative z-10">{project.title}</h1>
     <p class="text-lg m-0 text-primary-foreground/90 relative z-10">
       By <button class="bg-none border-none p-0 font-medium cursor-pointer text-primary-foreground underline underline-offset-2 hover:no-underline transition-all duration-200" onclick={navigateToBusinessPage}>
         {business.businessname}
@@ -89,23 +91,23 @@
   </header>
 
   <!-- Project Image -->
-  <section class="w-full max-w-[1140px] flex justify-center mb-12 bg-card px-8 py-8 rounded-2xl shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+  <section class="w-full max-w-[1140px] flex justify-center mb-[theme(--spacing-3xl)] bg-card px-[theme(--container-padding)] py-[theme(--container-padding)] rounded-[theme(--radius-xl)] shadow-[theme(--shadow-md)] transition-all duration-300 hover:shadow-[theme(--shadow-lg)] hover:-translate-y-[theme(--hover-lift-sm)]">
     {#if project.cloudinary_public_id}
       <img
         src={`https://res.cloudinary.com/${PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_fill,w_800,h_600,q_auto,f_auto/${project.cloudinary_public_id}`}
         alt={project.title}
-        class="w-full max-w-[600px] h-auto max-h-96 object-cover rounded-lg shadow-md transition-transform duration-300 hover:scale-105"
+        class="w-full max-w-[600px] h-auto max-h-96 object-cover rounded-[theme(--radius-lg)] shadow-[theme(--shadow-md)] transition-transform duration-300 hover:scale-105"
         loading="eager"
       />
     {:else if project.image_url}
       <img
         src={project.image_url}
         alt={project.title}
-        class="w-full max-w-[600px] h-auto max-h-96 object-cover rounded-lg shadow-md transition-transform duration-300 hover:scale-105"
+        class="w-full max-w-[600px] h-auto max-h-96 object-cover rounded-[theme(--radius-lg)] shadow-[theme(--shadow-md)] transition-transform duration-300 hover:scale-105"
         loading="eager"
       />
     {:else}
-      <div class="flex flex-col items-center justify-center w-full max-w-[600px] h-96 rounded-lg border-2 border-dashed border-border bg-background text-muted-foreground">
+      <div class="flex flex-col items-center justify-center w-full max-w-[600px] h-96 rounded-[theme(--radius-lg)] border-2 border-dashed border-border bg-background text-muted-foreground">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="64"
@@ -114,7 +116,7 @@
           fill="none"
           stroke="currentColor"
           stroke-width="1"
-          class="mb-4 opacity-60"
+          class="mb-[theme(--spacing-md)] opacity-60"
         >
           <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
           <circle cx="8.5" cy="8.5" r="1.5" />
@@ -126,41 +128,49 @@
   </section>
 
   <!-- Project Details -->
-  <section class="w-full max-w-[1140px] mb-8">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-      <div class="bg-card rounded-2xl px-8 py-8 shadow-md transition-all duration-300 border border-border text-center hover:shadow-lg hover:-translate-y-1.5">
-        <h3 class="m-0 mb-4 text-lg font-semibold text-primary uppercase tracking-wide pb-2 border-b-2 border-border">Location</h3>
-        <div class="flex flex-col gap-2">
-          <p class="m-0 text-2xl font-semibold text-foreground">Pincode: {project.pincode}</p>
-          {#if project.city}
-            <p class="m-0 text-xl font-medium text-primary">City: {project.city}</p>
-          {/if}
-          {#if project.district}
-            <p class="m-0 text-xl font-medium text-primary">District: {project.district}</p>
-          {/if}
+  <section class="w-full max-w-[1140px] mb-[theme(--spacing-xl)]">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] mb-[theme(--spacing-3xl)]">
+      <Card class="text-center border border-border hover:shadow-[theme(--shadow-lg)] hover:-translate-y-[theme(--hover-lift-md)] transition-all duration-300">
+        <div class="px-[theme(--container-padding)] py-[theme(--container-padding)]">
+          <h3 class="m-0 mb-[theme(--spacing-md)] text-lg font-semibold text-primary uppercase tracking-wide pb-[theme(--spacing-sm)] border-b-2 border-border">Location</h3>
+          <div class="flex flex-col gap-[theme(--spacing-sm)]">
+            <p class="m-0 text-2xl font-semibold text-foreground">Pincode: {project.pincode}</p>
+            {#if project.city}
+              <p class="m-0 text-xl font-medium text-primary">City: {project.city}</p>
+            {/if}
+            {#if project.district}
+              <p class="m-0 text-xl font-medium text-primary">District: {project.district}</p>
+            {/if}
+          </div>
         </div>
-      </div>
+      </Card>
 
       {#if project.cost}
-        <div class="bg-card rounded-2xl px-8 py-8 shadow-md transition-all duration-300 border border-border text-center hover:shadow-lg hover:-translate-y-1.5">
-          <h3 class="m-0 mb-4 text-lg font-semibold text-primary uppercase tracking-wide pb-2 border-b-2 border-border">Project Cost</h3>
-          <p class="m-0 text-2xl font-semibold text-foreground">{formatCurrency(project.cost)}</p>
-        </div>
+        <Card class="text-center border border-border hover:shadow-[theme(--shadow-lg)] hover:-translate-y-[theme(--hover-lift-md)] transition-all duration-300">
+          <div class="px-[theme(--container-padding)] py-[theme(--container-padding)]">
+            <h3 class="m-0 mb-[theme(--spacing-md)] text-lg font-semibold text-primary uppercase tracking-wide pb-[theme(--spacing-sm)] border-b-2 border-border">Project Cost</h3>
+            <p class="m-0 text-2xl font-semibold text-foreground">{formatCurrency(project.cost)}</p>
+          </div>
+        </Card>
       {/if}
 
       {#if project.savings}
-        <div class="bg-card rounded-2xl px-8 py-8 shadow-md transition-all duration-300 border border-border text-center hover:shadow-lg hover:-translate-y-1.5">
-          <h3 class="m-0 mb-4 text-lg font-semibold text-primary uppercase tracking-wide pb-2 border-b-2 border-border">Annual Savings</h3>
-          <p class="m-0 text-2xl font-semibold text-foreground">{formatCurrency(project.savings)}</p>
-        </div>
+        <Card class="text-center border border-border hover:shadow-[theme(--shadow-lg)] hover:-translate-y-[theme(--hover-lift-md)] transition-all duration-300">
+          <div class="px-[theme(--container-padding)] py-[theme(--container-padding)]">
+            <h3 class="m-0 mb-[theme(--spacing-md)] text-lg font-semibold text-primary uppercase tracking-wide pb-[theme(--spacing-sm)] border-b-2 border-border">Annual Savings</h3>
+            <p class="m-0 text-2xl font-semibold text-foreground">{formatCurrency(project.savings)}</p>
+          </div>
+        </Card>
       {/if}
     </div>
 
     {#if project.description}
-      <div class="bg-card rounded-2xl px-8 py-8 shadow-md transition-all duration-300 border border-border hover:shadow-lg hover:-translate-y-0.5">
-        <h3 class="m-0 mb-4 text-2xl font-semibold text-primary pb-2 border-b-2 border-border">Project Description</h3>
-        <p class="m-0 text-lg leading-relaxed text-muted-foreground">{project.description}</p>
-      </div>
+      <Card class="border border-border hover:shadow-[theme(--shadow-lg)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all duration-300">
+        <div class="px-[theme(--container-padding)] py-[theme(--container-padding)]">
+          <h3 class="m-0 mb-[theme(--spacing-md)] text-2xl font-semibold text-primary pb-[theme(--spacing-sm)] border-b-2 border-border">Project Description</h3>
+          <p class="m-0 text-lg leading-relaxed text-muted-foreground">{project.description}</p>
+        </div>
+      </Card>
     {/if}
   </section>
 </main>

@@ -1,6 +1,9 @@
 <script>
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
+	import { Button } from '$lib/components/ui/button';
+	import { Alert, AlertDescription } from '$lib/components/ui/alert';
+	import { Card, CardContent } from '$lib/components/ui/card';
 
 	let email = $state('');
 	let isConfirming = $state(true);
@@ -51,54 +54,61 @@
 	}
 </script>
 
-<div class="flex items-center justify-center min-h-screen bg-background p-4">
-	<div class="w-full max-w-[450px] bg-card rounded-lg shadow-md px-8 py-12 text-center">
-		{#if isConfirming}
-			<h1 class="text-3xl mb-6 text-primary">Confirm Unsubscription</h1>
+<div class="flex items-center justify-center min-h-screen bg-background p-[theme(--container-padding)]">
+	<Card class="w-full max-w-[theme(--max-width-sm)] text-center">
+		<CardContent class="pt-[theme(--card-padding-y)] px-[theme(--card-padding-y)]">
+			{#if isConfirming}
+				<h1 class="text-[theme(--font-size-3xl)] font-display mb-[theme(--spacing-xl)] text-primary">
+					Confirm Unsubscription
+				</h1>
 
-			<p class="text-base leading-6 text-secondary mb-6">
-				Please confirm that you want to unsubscribe<br />
-				<strong>{email}</strong> from our email list.
-			</p>
+				<p class="text-[theme(--font-size-base)] leading-[theme(--font-size-base--line-height)] text-secondary mb-[theme(--spacing-xl)]">
+					Please confirm that you want to unsubscribe<br />
+					<strong>{email}</strong> from our email list.
+				</p>
 
-			{#if errorMessage}
-				<div class="bg-destructive-muted text-destructive-foreground my-4 p-2 rounded-sm">
-					{errorMessage}
+				{#if errorMessage}
+					<Alert variant="destructive" class="my-[theme(--spacing-lg)]">
+						<AlertDescription>{errorMessage}</AlertDescription>
+					</Alert>
+				{/if}
+
+				<div class="mt-[theme(--spacing-xl)]">
+					<Button
+						variant="default"
+						onclick={handleConfirm}
+						disabled={isLoading || !email}
+						class="w-full bg-success hover:bg-success/85 text-success-foreground"
+					>
+						{isLoading ? 'Processing...' : 'Confirm Unsubscription'}
+					</Button>
 				</div>
+			{:else if isSuccess}
+				<div class="w-[theme(--icon-size-xl)] h-[theme(--icon-size-xl)] mx-auto mb-[theme(--spacing-xl)] text-success flex justify-center">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					>
+						<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+						<polyline points="22 4 12 14.01 9 11.01"></polyline>
+					</svg>
+				</div>
+
+				<h1 class="text-[theme(--font-size-3xl)] font-display mb-[theme(--spacing-xl)] text-primary">
+					Unsubscription was successful!
+				</h1>
+
+				<p class="text-[theme(--font-size-base)] leading-[theme(--font-size-base--line-height)] text-secondary mb-[theme(--spacing-xl)]">
+					We have informed the sender of this email that<br />
+					you don't want to receive more email from<br />
+					them.
+				</p>
 			{/if}
-
-			<div class="mt-8">
-				<button
-					class="bg-success text-success-foreground px-6 py-3 rounded-sm cursor-pointer transition-colors hover:bg-success/85 disabled:bg-muted disabled:cursor-not-allowed"
-					onclick={handleConfirm}
-					disabled={isLoading || !email}
-				>
-					{isLoading ? 'Processing...' : 'Confirm Unsubscription'}
-				</button>
-			</div>
-		{:else if isSuccess}
-			<div class="w-20 h-20 mx-auto mb-6 text-success">
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-				>
-					<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-					<polyline points="22 4 12 14.01 9 11.01"></polyline>
-				</svg>
-			</div>
-
-			<h1 class="text-3xl mb-6 text-primary">Unsubscription was successful!</h1>
-
-			<p class="text-base leading-6 text-secondary mb-6">
-				We have informed the sender of this email that<br />
-				you don't want to receive more email from<br />
-				them.
-			</p>
-		{/if}
-	</div>
+		</CardContent>
+	</Card>
 </div>

@@ -168,16 +168,16 @@
   });
 </script>
 
-<Card.Root style="width: 100%; max-width: var(--max-width-3xl); margin-left: auto; margin-right: auto;">
-  <Card.Header style="padding-top: var(--card-padding-y); padding-bottom: var(--card-padding-y);">
-    <h1 style="font-size: var(--font-size-2xl); line-height: var(--font-size-2xl--line-height); font-weight: 600; letter-spacing: var(--tracking-heading);">Get listed by filling the form below</h1>
-    <p style="font-size: var(--font-size-sm); line-height: var(--font-size-sm--line-height); margin-top: var(--form-field-gap); color: hsl(var(--muted-foreground));">It takes 90 seconds to fill this form</p>
+<Card.Root class="w-full max-w-[theme(--max-width-3xl)] mx-auto">
+  <Card.Header class="py-[theme(--card-padding-y)]">
+    <h1 class="text-[theme(--font-size-2xl)] font-semibold tracking-[theme(--tracking-heading)]">Get listed by filling the form below</h1>
+    <p class="text-[theme(--font-size-sm)] mt-[theme(--form-field-gap)] text-muted-foreground">It takes 90 seconds to fill this form</p>
   </Card.Header>
 
   <Card.Content>
-    <form onsubmit={handleSubmit} style="gap: var(--form-field-gap); display: flex; flex-direction: column; padding-bottom: var(--card-padding-y);">
+    <form on:submit={handleSubmit} class="flex flex-col gap-[theme(--form-field-gap)] pb-[theme(--card-padding-y)]">
       <!-- Business Name -->
-      <div style="gap: var(--form-element-field-gap); display: flex; flex-direction: column;">
+      <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="businessName">Business Name</Label>
         <Input
           id="businessName"
@@ -189,7 +189,7 @@
       </div>
 
       <!-- GSTN -->
-      <div style="gap: var(--form-element-field-gap); display: flex; flex-direction: column;">
+      <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="gstn">GSTN (Required)</Label>
         <Input
           id="gstn"
@@ -197,7 +197,7 @@
           bind:value={gstn}
           placeholder="GSTN"
           required
-          onblur={validateGSTNField}
+          on:blur={validateGSTNField}
           data-error-field={errors.gstn ? true : undefined}
         />
         {#if errors.gstn}
@@ -208,9 +208,9 @@
       </div>
 
       <!-- Address -->
-      <div style="gap: var(--form-element-field-gap); display: flex; flex-direction: column;">
+      <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="address">Address</Label>
-        <p style="font-size: var(--font-size-xs); line-height: var(--font-size-xs--line-height); color: hsl(var(--muted-foreground));">Complete address helps in finding your business</p>
+        <p class="text-[theme(--font-size-xs)] text-muted-foreground">Complete address helps in finding your business</p>
         <Input
           id="address"
           type="text"
@@ -221,9 +221,9 @@
       </div>
 
       <!-- Plus Code -->
-      <div style="gap: var(--form-element-field-gap); display: flex; flex-direction: column;">
+      <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="plusCode">Plus Code</Label>
-        <p style="font-size: var(--font-size-xs); line-height: var(--font-size-xs--line-height); color: hsl(var(--muted-foreground));">For navigation on google maps</p>
+        <p class="text-[theme(--font-size-xs)] text-muted-foreground">For navigation on google maps</p>
         <Input
           id="plusCode"
           type="text"
@@ -233,14 +233,14 @@
       </div>
 
       <!-- Phone Number -->
-      <div style="gap: var(--form-element-field-gap); display: flex; flex-direction: column;">
+      <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="phoneNumber">Phone Number</Label>
         <Input
           id="phoneNumber"
           type="text"
           bind:value={phoneNumber}
           placeholder="Phone Number"
-          onblur={validatePhoneNumberField}
+          on:blur={validatePhoneNumberField}
           required
           data-error-field={errors.phoneNumber ? true : undefined}
         />
@@ -252,14 +252,14 @@
       </div>
 
       <!-- WhatsApp Number -->
-      <div style="gap: var(--form-element-field-gap); display: flex; flex-direction: column;">
+      <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="whatsappNumber">WhatsApp Number</Label>
         <Input
           id="whatsappNumber"
           type="text"
           bind:value={whatsappNumber}
           placeholder="eg +919812345678"
-          onblur={validateWhatsappNumberField}
+          on:blur={validateWhatsappNumberField}
           data-error-field={errors.whatsappNumber ? true : undefined}
         />
         {#if errors.whatsappNumber}
@@ -270,9 +270,9 @@
       </div>
 
       <!-- Email -->
-      <div style="gap: var(--form-element-field-gap); display: flex; flex-direction: column;">
+      <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="email">Business Email</Label>
-        <p style="font-size: var(--font-size-xs); line-height: var(--font-size-xs--line-height); color: hsl(var(--muted-foreground));">Will be displayed on the business profile page</p>
+        <p class="text-[theme(--font-size-xs)] text-muted-foreground">Will be displayed on the business profile page</p>
         <Input
           id="email"
           type="email"
@@ -283,9 +283,9 @@
       </div>
 
       <!-- Login Email -->
-      <div style="gap: var(--form-element-field-gap); display: flex; flex-direction: column;">
+      <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="login_email">Login Email</Label>
-        <p style="font-size: var(--font-size-xs); line-height: var(--font-size-xs--line-height); color: hsl(var(--muted-foreground));">You will receive login instructions here</p>
+        <p class="text-[theme(--font-size-xs)] text-muted-foreground">You will receive login instructions here</p>
         <Input
           id="login_email"
           type="email"
@@ -296,7 +296,7 @@
       </div>
 
       <!-- Website -->
-      <div style="gap: var(--form-element-field-gap); display: flex; flex-direction: column;">
+      <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="website">Website</Label>
         <Input
           id="website"
@@ -307,7 +307,7 @@
       </div>
 
       <!-- State Select -->
-      <div style="gap: var(--form-element-field-gap); display: flex; flex-direction: column;">
+      <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="state">State</Label>
         <Select.Root type="single" bind:value={selectedState}>
           <Select.Trigger id="state" required>
@@ -322,7 +322,7 @@
       </div>
 
       <!-- District Select -->
-      <div style="gap: var(--form-element-field-gap); display: flex; flex-direction: column;">
+      <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="district">District</Label>
         <Select.Root type="single" bind:value={district} disabled={!selectedState || isDistrictLoading}>
           <Select.Trigger id="district" required>
@@ -337,7 +337,7 @@
       </div>
 
       <!-- City Select -->
-      <div style="gap: var(--form-element-field-gap); display: flex; flex-direction: column;">
+      <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="city">City</Label>
         <Select.Root type="single" bind:value={city} disabled={!district || isCityLoading}>
           <Select.Trigger id="city" required>
@@ -357,12 +357,12 @@
       </Button>
 
       <!-- Info Messages -->
-      <div style="gap: var(--form-element-field-gap); display: flex; flex-direction: column;">
-        <p style="font-size: var(--font-size-sm); line-height: var(--font-size-sm--line-height); color: hsl(var(--muted-foreground));">
+      <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
+        <p class="text-[theme(--font-size-sm)] text-muted-foreground">
           You will be redirected after submission. Ensure the next page confirms your submission.
         </p>
-        <p style="font-size: var(--font-size-sm); line-height: var(--font-size-sm--line-height); color: hsl(var(--muted-foreground));">
-          In case of any issue, call us at <a href="tel:+918983066701" style="color: hsl(var(--primary)); text-decoration: underline;">+91 8983066701</a>
+        <p class="text-[theme(--font-size-sm)] text-muted-foreground">
+          In case of any issue, call us at <a href="tel:+918983066701" class="text-primary underline">+91 8983066701</a>
         </p>
       </div>
     </form>
