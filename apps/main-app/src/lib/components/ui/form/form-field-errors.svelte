@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as FormPrimitive from "formsnap";
-	import { cn, type WithoutChild } from "$lib/utils.js";
+	import { cn } from "$lib/utils.js";
 
 	let {
 		ref = $bindable(null),
@@ -8,7 +8,7 @@
 		errorClasses,
 		children: childrenProp,
 		...restProps
-	}: WithoutChild<FormPrimitive.FieldErrorsProps> & {
+	}: FormPrimitive.FieldErrorsProps & {
 		errorClasses?: string | undefined | null;
 	} = $props();
 </script>
@@ -19,7 +19,7 @@
 	style="font-size: var(--form-field-errors-font-size); font-weight: var(--form-field-errors-font-weight);"
 	{...restProps}
 >
-	{#snippet children({ errors, errorProps })}
+	{#snippet children({ errors, errorProps }: any)}
 		{#if childrenProp}
 			{@render childrenProp({ errors, errorProps })}
 		{:else}

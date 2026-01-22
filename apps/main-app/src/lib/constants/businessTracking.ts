@@ -3,6 +3,14 @@
  * Handles Umami event tracking and phone/WhatsApp actions
  */
 
+declare global {
+	interface Window {
+		umami?: {
+			track: (eventName: string) => void;
+		};
+	}
+}
+
 /**
  * Track Umami event for business interactions
  */

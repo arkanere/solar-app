@@ -3,7 +3,6 @@
  */
 
 import type {
-  ConversationFlow,
   ConversationFlows,
   LeadProfile,
 } from "./types";

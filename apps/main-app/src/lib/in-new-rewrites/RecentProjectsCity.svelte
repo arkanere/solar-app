@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
-	import { Card } from '$lib/components/ui/card';
+	import { Root as Card, Content as CardContent } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { MapPin, Calendar, Wrench, Image as ImageIcon } from '@lucide/svelte';
 
@@ -41,7 +41,7 @@
 
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--spacing-xl)]">
 			{#each projects as project (project.id)}
-				<Card.Root class="overflow-hidden card-interactive">
+				<Card class="overflow-hidden card-interactive">
 					<a
 						href="/in/solar-panel-installer/{project.business_slug}/project/{project.project_slug}"
 						class="block text-inherit no-underline"
@@ -61,7 +61,7 @@
 							{/if}
 						</div>
 
-						<Card.Content class="flex flex-col gap-[theme(--spacing-sm)] pt-[theme(--spacing-xl)]">
+						<CardContent class="flex flex-col gap-[theme(--spacing-sm)] pt-[theme(--spacing-xl)]">
 							<h3 class="font-semibold text-[theme(--font-size-lg)] leading-[theme(--font-size-lg--line-height)] line-clamp-2">
 								{project.title}
 							</h3>
@@ -87,9 +87,9 @@
 									</span>
 								</p>
 							</div>
-						</Card.Content>
+						</CardContent>
 					</a>
-				</Card.Root>
+				</Card>
 			{/each}
 		</div>
 

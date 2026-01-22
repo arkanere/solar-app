@@ -1,7 +1,6 @@
 <script lang="ts">
   import { PUBLIC_CLOUDINARY_CLOUD_NAME } from "$env/static/public";
   import * as Card from "$lib/components/ui/card";
-  import { Button } from "$lib/components/ui/button";
   import { formatDate, formatBusinessName } from "$lib/constants/projectFormatters";
 
   type Project = {
@@ -86,11 +85,9 @@
       </div>
 
       <div class="flex justify-center border-t pt-[theme(--spacing-lg)]">
-        <Button variant="default" asChild>
-          <a href="/in/recent-solar-installation-projects">
-            View All Projects →
-          </a>
-        </Button>
+        <a href="/in/recent-solar-installation-projects" class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
+          View All Projects →
+        </a>
       </div>
     {:else}
       <div class="text-center py-12">

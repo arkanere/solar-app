@@ -2,7 +2,7 @@
  * Chat state persistence to localStorage
  */
 
-import type { ChatState, Message, LeadProfile, ConversationFlows } from "./types";
+import type { ChatState } from "./types";
 import { createLeadProfile } from "./leadProfileManager";
 
 /**
@@ -110,9 +110,7 @@ export function clearChatState(): void {
 /**
  * Initialize chat state with default values from flows
  */
-export function initializeChatState(
-  flows: ConversationFlows
-): ChatState {
+export function initializeChatState(): ChatState {
   return {
     messages: [],
     currentFlowId: "initial",

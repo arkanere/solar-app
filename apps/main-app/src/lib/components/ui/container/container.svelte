@@ -1,9 +1,12 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
+
 	interface Props {
 		class?: string;
+		children?: Snippet;
 	}
 
-	let { class: className, ...rest }: Props = $props();
+	let { class: className, children, ...rest }: Props = $props();
 </script>
 
 <div
@@ -11,5 +14,7 @@
 	style="border-radius: var(--container-radius); padding: var(--container-padding); transition: var(--container-transition);"
 	{...rest}
 >
-	<slot />
+	{#if children}
+		{@render children()}
+	{/if}
 </div>

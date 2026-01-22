@@ -198,16 +198,16 @@
         <div class="flex items-center justify-between relative z-30 p-[theme(--spacing-md)] pt-16">
           <div class="flex items-center gap-[theme(--spacing-sm)]">
             <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold text-sm">
-              {formatBusinessName($storiesData[currentStoryIndex].business_slug).charAt(0)}
+              {formatBusinessName(String($storiesData[currentStoryIndex]?.business_slug || '')).charAt(0)}
             </div>
             <div>
               <h3 class="text-white text-[theme(--font-size-sm)] leading-[theme(--font-size-sm--line-height)] font-semibold">
                 <a
-                  href="/in/solar-panel-installer/{$storiesData[currentStoryIndex].business_slug}"
+                  href="/in/solar-panel-installer/{String($storiesData[currentStoryIndex]?.business_slug || '')}"
                   class="hover:text-secondary transition-colors duration-[theme(--duration-default)]"
                   onclick={closeStory}
                 >
-                  {formatBusinessName($storiesData[currentStoryIndex].business_slug)}
+                  {formatBusinessName(String($storiesData[currentStoryIndex]?.business_slug || ''))}
                 </a>
               </h3>
             </div>
@@ -237,7 +237,7 @@
                 PUBLIC_CLOUDINARY_CLOUD_NAME,
                 "w_800,h_800"
               )}
-              alt={$storiesData[currentStoryIndex].title}
+              alt={String($storiesData[currentStoryIndex]?.title || '')}
               class="w-full h-auto object-contain mt-[theme(--spacing-md)] max-h-[70vh]"
             />
           {:else}
@@ -256,7 +256,7 @@
               📍 {$storiesData[currentStoryIndex].pincode || "N/A"}
             </Badge>
             <Badge variant="secondary" class="bg-white/20 text-white border-white/30 hover:bg-white/30">
-              📅 {formatDate($storiesData[currentStoryIndex].project_date)}
+              📅 {formatDate(String($storiesData[currentStoryIndex]?.project_date || ''))}
             </Badge>
           </div>
         </div>

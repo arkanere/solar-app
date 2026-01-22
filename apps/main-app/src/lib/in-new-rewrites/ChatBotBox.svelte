@@ -3,52 +3,46 @@
   import { writable, get } from "svelte/store";
   import conversationFlows from "$lib/in/conversationFlows.json";
   import { page } from "$app/stores";
-  import { goto } from "$app/navigation";
-  import { Card, CardContent, CardDescription, CardHeader } from "$lib/components/ui/card";
+  import { Card, CardContent } from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
-  import { Textarea } from "$lib/components/ui/textarea";
-  import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "$lib/components/ui/dialog";
   import { Badge } from "$lib/components/ui/badge";
   import { X, Send } from "@lucide/svelte";
 
-  let { messages = writable([]), onClose = null } = $props();
+  let { messages = writable<any[]>([]), onClose = null }: { messages?: any; onClose?: any } = $props();
 
   // Chat state
   let userInput = $state("");
   let isLoading = $state(false);
   let currentFlowId = $state("initial");
-  let inputValues = $state({});
+
+  // Helper to get current flow with proper typing
+  let currentFlow = $derived((conversationFlows.flows as Record<string, any>)[currentFlowId]);
+  let inputValues: Record<string, any> = $state({});
 
   // Form state
-  let formValues = $state({});
-  let formErrors = $state({});
+  let formValues: Record<string, any> = $state({});
+  let formErrors: Record<string, string> = $state({});
   let isFormValid = $state(false);
   let isSubmittingForm = $state(false);
   let hasAttemptedSubmit = $state(false);
 
   // URL parameter and journey tracking
   let urlParam = $state("");
-  let userJourney = $state([]);
+  let userJourney: (string | any)[] = $state([]);
 
   // Conversation context
   let conversationContext = $state("");
   let contextSent = $state(false);
 
   // Scroll and animation state
-  let chatHistoryContainer;
+  let chatHistoryContainer: HTMLDivElement | undefined;
   let isUserScrolledUp = $state(false);
   let lastScrollHeight = $state(0);
-  let lastScrollTop = $state(0);
-  let hasUserInteracted = $state(false);
-
-  // Show guided flow suggestion dialog
-  let showGuidedDialog = $state(false);
-  let guidedMessageIndex = $state(-1);
 
   // Lead Profile Data
-  let leadProfile = {
+  let leadProfile: Record<string, any> = {
     name: null,
     phone: null,
     email: null,
@@ -70,11 +64,9 @@
     urlParam = $page.url.pathname;
   });
 
-  function stopBackgroundAnimation() {
-    hasUserInteracted = true;
-  }
+  function stopBackgroundAnimation() {}
 
-  function updateLeadProfile(field, value) {
+  function updateLeadProfile(field: string, value: any) {
     leadProfile[field] = value;
     console.log(`Lead Profile Updated: ${field} = ${value}`);
     saveLeadProfile();
@@ -95,7 +87,7 @@
     }
   }
 
-  function addToUserJourney(type, value) {
+  function addToUserJourney(type: string, value: any) {
     if (type === "formSubmission" || (type === "input" && ["customerName", "customerPhone", "customerPinCode", "customerEmail", "customerComment"].includes(value))) {
       return;
     }
@@ -113,7 +105,7 @@
       }
     });
     contextLines.push("");
-    const currentFlow = conversationFlows.flows[currentFlowId];
+    const currentFlow = (conversationFlows.flows as Record<string, any>)[currentFlowId];
     if (currentFlow && currentFlowId !== "initial" && currentFlowId !== "welcome") {
       contextLines.push(`Current Flow: ${currentFlowId}`);
       if (currentFlow.message) {
@@ -124,28 +116,28 @@
   }
 
   // Form validation functions
-  function validatePhoneNumber(phone) {
+  function validatePhoneNumber(phone: any) {
     if (!phone || !/^\+?\d{10,16}$/.test(phone)) {
       return "Phone number must be between 10 and 16 digits, optionally starting with +";
     }
     return "";
   }
 
-  function validateEmail(email) {
+  function validateEmail(email: any) {
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return "Invalid email address";
     }
     return "";
   }
 
-  function validatePinCode(pinCode) {
+  function validatePinCode(pinCode: any) {
     if (!pinCode || !/^\d{6}$/.test(pinCode)) {
       return "Pin code must be exactly 6 digits";
     }
     return "";
   }
 
-  function validateRequired(value, fieldName) {
+  function validateRequired(value: any, fieldName: string) {
     if (!value || value.trim() === "") {
       return `${fieldName} is required`;
     }
@@ -153,15 +145,15 @@
   }
 
   function validateForm(showAllErrors = true) {
-    const currentFlow = conversationFlows.flows[currentFlowId];
+    const currentFlow = (conversationFlows.flows as Record<string, any>)[currentFlowId];
     if (!currentFlow || !currentFlow.inputs) {
       return false;
     }
 
     let isValid = true;
-    const errors = {};
+    const errors: Record<string, string> = {};
 
-    currentFlow.inputs.forEach((input) => {
+    currentFlow.inputs.forEach((input: any) => {
       const value = formValues[input.id] || "";
       let error = "";
 
@@ -231,10 +223,9 @@
       isUserScrolledUp = false;
     }
     lastScrollHeight = chatHistoryContainer.scrollHeight;
-    lastScrollTop = chatHistoryContainer.scrollTop;
   }
 
-  function simulateDelay(ms) {
+  function simulateDelay(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
@@ -245,7 +236,7 @@
       window.umami.track("chatbot-guided-flow-started");
     }
 
-    messages.update((m) => [...m, { role: "user", content: "Yes, start assessment" }]);
+    messages.update((m: any[]) => [...m, { role: "user", content: "Yes, start assessment" }]);
     await scrollToBottom();
 
     isLoading = true;
@@ -257,16 +248,15 @@
     await scrollToBottom();
   }
 
-  function dismissGuidedSuggestion(messageIndex) {
+  function dismissGuidedSuggestion(messageIndex: number) {
     stopBackgroundAnimation();
-    messages.update((m) => {
+    messages.update((m: any[]) => {
       const updated = [...m];
       if (updated[messageIndex]) {
         updated[messageIndex] = { ...updated[messageIndex], showGuidedOption: false };
       }
       return updated;
     });
-    showGuidedDialog = false;
   }
 
   async function sendMessage() {
@@ -274,15 +264,15 @@
     stopBackgroundAnimation();
 
     if (typeof window !== "undefined" && window.umami) {
-      window.umami.track("chatbot-freeform-message", { flow: currentFlowId });
+      (window.umami as any).track("chatbot-freeform-message", { flow: currentFlowId });
     }
 
-    messages.update((m) => [...m, { role: "user", content: userInput }]);
+    messages.update((m: any[]) => [...m, { role: "user", content: userInput }]);
     isLoading = true;
     await scrollToBottom();
 
     try {
-      let requestPayload = {
+      let requestPayload: Record<string, any> = {
         userMessage: userInput,
         leadProfile: leadProfile,
       };
@@ -305,20 +295,20 @@
 
       if (reply.includes("SUGGEST_GUIDED_FLOW:")) {
         const [mainReply, suggestion] = reply.split("SUGGEST_GUIDED_FLOW:");
-        messages.update((m) => [...m, { role: "assistant", content: mainReply.trim() }]);
+        messages.update((m: any[]) => [...m, { role: "assistant", content: mainReply.trim() }]);
         await scrollToBottom();
 
         setTimeout(async () => {
-          messages.update((m) => [...m, { role: "assistant", content: suggestion.trim(), showGuidedOption: true }]);
+          messages.update((m: any[]) => [...m, { role: "assistant", content: suggestion.trim(), showGuidedOption: true }]);
           await scrollToBottom();
         }, 1000);
       } else {
-        messages.update((m) => [...m, { role: "assistant", content: reply }]);
+        messages.update((m: any[]) => [...m, { role: "assistant", content: reply }]);
         await scrollToBottom();
       }
     } catch (err) {
       console.error("Error communicating with chatbot:", err);
-      messages.update((m) => [...m, { role: "assistant", content: "Something went wrong. Please try again later." }]);
+      messages.update((m: any[]) => [...m, { role: "assistant", content: "Something went wrong. Please try again later." }]);
       await scrollToBottom();
     } finally {
       userInput = "";
@@ -332,18 +322,18 @@
 
     if (!validateForm()) {
       if (typeof window !== "undefined" && window.umami) {
-        window.umami.track("chatbot-form-validation-failed", { flow: currentFlowId });
+        (window.umami as any).track("chatbot-form-validation-failed", { flow: currentFlowId });
       }
       return;
     }
 
-    const currentFlow = conversationFlows.flows[currentFlowId];
+    const currentFlow = (conversationFlows.flows as Record<string, any>)[currentFlowId];
     if (!currentFlow) return;
 
     isSubmittingForm = true;
 
     if (typeof window !== "undefined" && window.umami) {
-      window.umami.track("chatbot-form-submitted", { flow: currentFlowId });
+      (window.umami as any).track("chatbot-form-submitted", { flow: currentFlowId });
     }
 
     try {
@@ -373,17 +363,17 @@
 
       if (result.success) {
         const formSummary = Object.entries(formValues)
-          .filter(([key, value]) => value && value.trim())
-          .map(([key, value]) => {
-            const input = currentFlow.inputs.find((inp) => inp.id === key);
+          .filter(([_key, value]) => value && value.trim())
+          .map(([key, value]: [string, any]) => {
+            const input = currentFlow.inputs.find((inp: any) => inp.id === key);
             return `${input?.label || key}: ${value}`;
           })
           .join("\n");
 
-        messages.update((m) => [...m, { role: "user", content: `Form submitted:\n${formSummary}` }]);
+        messages.update((m: any[]) => [...m, { role: "user", content: `Form submitted:\n${formSummary}` }]);
         await scrollToBottom();
 
-        Object.keys(formValues).forEach((key) => {
+        Object.keys(formValues).forEach((key: string) => {
           inputValues[key] = formValues[key];
         });
 
@@ -401,22 +391,22 @@
         isLoading = false;
         await scrollToBottom();
       } else {
-        messages.update((m) => [...m, { role: "assistant", content: "Sorry, there was an error submitting your form. Please try again or contact us directly." }]);
+        messages.update((m: any[]) => [...m, { role: "assistant", content: "Sorry, there was an error submitting your form. Please try again or contact us directly." }]);
         await scrollToBottom();
       }
     } catch (error) {
-      messages.update((m) => [...m, { role: "assistant", content: "Sorry, there was a network error. Please check your connection and try again." }]);
+      messages.update((m: any[]) => [...m, { role: "assistant", content: "Sorry, there was a network error. Please check your connection and try again." }]);
       await scrollToBottom();
     } finally {
       isSubmittingForm = false;
     }
   }
 
-  async function selectOption(optionId) {
+  async function selectOption(optionId: string) {
     stopBackgroundAnimation();
 
     if (typeof window !== "undefined" && window.umami) {
-      window.umami.track("chatbot-option-selected", { flow: currentFlowId, option: optionId });
+      (window.umami as any).track("chatbot-option-selected", { flow: currentFlowId, option: optionId });
     }
 
     addToUserJourney("option", optionId);
@@ -431,13 +421,13 @@
       updateLeadProfile("propertySubtype", optionId);
     }
 
-    const currentFlow = conversationFlows.flows[currentFlowId];
+    const currentFlow = (conversationFlows.flows as Record<string, any>)[currentFlowId];
     if (!currentFlow || !currentFlow.options) return;
 
-    const selectedOption = currentFlow.options.find((opt) => opt.id === optionId);
+    const selectedOption = currentFlow.options.find((opt: any) => opt.id === optionId);
     if (!selectedOption) return;
 
-    messages.update((m) => [...m, { role: "user", content: selectedOption.label }]);
+    messages.update((m: any[]) => [...m, { role: "user", content: selectedOption.label }]);
     await scrollToBottom();
 
     inputValues[currentFlowId] = optionId;
@@ -453,11 +443,11 @@
     await scrollToBottom();
   }
 
-  async function submitInput(inputId, value) {
+  async function submitInput(inputId: string, value: string) {
     stopBackgroundAnimation();
 
     if (typeof window !== "undefined" && window.umami) {
-      window.umami.track("chatbot-input-submitted", { flow: currentFlowId, inputId: inputId });
+      (window.umami as any).track("chatbot-input-submitted", { flow: currentFlowId, inputId: inputId });
     }
 
     addToUserJourney("input", `${inputId} = ${value}`);
@@ -470,16 +460,16 @@
       updateLeadProfile("powerCutHours", Number(value));
     }
 
-    const currentFlow = conversationFlows.flows[currentFlowId];
+    const currentFlow = (conversationFlows.flows as Record<string, any>)[currentFlowId];
     if (!currentFlow || !currentFlow.inputs) return;
 
-    const inputDef = currentFlow.inputs.find((inp) => inp.id === inputId);
+    const inputDef = currentFlow.inputs.find((inp: any) => inp.id === inputId);
     if (!inputDef) return;
 
     let userMessage = inputDef.label ? `${inputDef.label}: ${value}` : `${value}`;
     if (inputDef.unit) userMessage += ` ${inputDef.unit}`;
 
-    messages.update((m) => [...m, { role: "user", content: userMessage }]);
+    messages.update((m: any[]) => [...m, { role: "user", content: userMessage }]);
     await scrollToBottom();
 
     if (inputDef.type === "number") {
@@ -510,12 +500,12 @@
     }
   }
 
-  function processMessageText(text) {
+  function processMessageText(text: string) {
     if (!text || typeof text !== "string") {
       return text;
     }
 
-    const currentFlow = conversationFlows.flows[currentFlowId];
+    const currentFlow = (conversationFlows.flows as Record<string, any>)[currentFlowId];
     if (!currentFlow) {
       return text;
     }
@@ -594,8 +584,8 @@
     return processedText;
   }
 
-  async function transitionToFlow(flowId) {
-    const flow = conversationFlows.flows[flowId];
+  async function transitionToFlow(flowId: string) {
+    const flow = (conversationFlows.flows as Record<string, any>)[flowId];
     if (!flow) {
       console.error(`❌ Flow '${flowId}' not found!`);
       return;
@@ -611,14 +601,14 @@
       updateLeadProfile("systemType", "hybrid");
     }
 
-    if (flowId === "welcome" || flowId === "initial" || conversationFlows.flows[flowId]?.flowType === "freeform") {
+    if (flowId === "welcome" || flowId === "initial" || (conversationFlows.flows as Record<string, any>)[flowId]?.flowType === "freeform") {
       contextSent = false;
     }
 
     currentFlowId = flowId;
     const processedMessage = processMessageText(flow.message);
 
-    messages.update((m) => [...m, { role: "assistant", content: processedMessage }]);
+    messages.update((m: any[]) => [...m, { role: "assistant", content: processedMessage }]);
     saveState();
     await scrollToBottom();
   }
@@ -712,7 +702,7 @@
   // Lifecycle effects
   $effect(() => {
     if (typeof window !== "undefined") {
-      window.resetChat = resetChat;
+      (window as any).resetChat = resetChat;
       initializeChat();
       scrollToBottom();
     }
@@ -725,13 +715,13 @@
   });
 
   $effect(() => {
-    if (conversationFlows.flows[currentFlowId]?.flowType === "form" && formValues) {
+    if ((conversationFlows.flows as Record<string, any>)[currentFlowId]?.flowType === "form" && formValues) {
       validateForm(false);
     }
   });
 
   $effect(() => {
-    if (hasAttemptedSubmit && conversationFlows.flows[currentFlowId]?.flowType === "form") {
+    if (hasAttemptedSubmit && (conversationFlows.flows as Record<string, any>)[currentFlowId]?.flowType === "form") {
       validateForm(true);
     }
   });
@@ -768,9 +758,9 @@
             {/if}
 
             <!-- Options display -->
-            {#if message.role === "assistant" && i === $messages.length - 1 && conversationFlows.flows[currentFlowId]?.flowType === "options" && conversationFlows.flows[currentFlowId]?.options?.length > 0 && !message.showGuidedOption}
+            {#if message.role === "assistant" && i === $messages.length - 1 && currentFlow?.flowType === "options" && currentFlow?.options?.length > 0 && !message.showGuidedOption}
               <div class="mt-[theme(--card-gap)] gap-[theme(--form-element-field-gap)] flex flex-col">
-                {#each conversationFlows.flows[currentFlowId].options as option}
+                {#each currentFlow.options as option}
                   <Button onclick={() => selectOption(option.id)} variant="outline" class="w-full justify-start text-left">
                     {option.label}
                   </Button>
@@ -779,9 +769,9 @@
             {/if}
 
             <!-- Input fields -->
-            {#if message.role === "assistant" && i === $messages.length - 1 && conversationFlows.flows[currentFlowId]?.flowType === "inputs" && conversationFlows.flows[currentFlowId]?.inputs?.length > 0 && !message.showGuidedOption}
+            {#if message.role === "assistant" && i === $messages.length - 1 && (conversationFlows.flows as Record<string, any>)[currentFlowId]?.flowType === "inputs" && (conversationFlows.flows as Record<string, any>)[currentFlowId]?.inputs?.length > 0 && !message.showGuidedOption}
               <div class="mt-[theme(--card-gap)] gap-[theme(--form-element-field-gap)] flex flex-col">
-                {#each conversationFlows.flows[currentFlowId].inputs as input}
+                {#each (conversationFlows.flows as Record<string, any>)[currentFlowId].inputs as input}
                   <div class="gap-[theme(--form-element-field-gap)] flex flex-col">
                     {#if input.label}
                       <Label class="text-[hsl(var(--foreground))]">{input.label}</Label>
@@ -809,9 +799,9 @@
             {/if}
 
             <!-- Form display -->
-            {#if message.role === "assistant" && i === $messages.length - 1 && conversationFlows.flows[currentFlowId]?.flowType === "form" && conversationFlows.flows[currentFlowId]?.inputs?.length > 0 && !message.showGuidedOption}
+            {#if message.role === "assistant" && i === $messages.length - 1 && (conversationFlows.flows as Record<string, any>)[currentFlowId]?.flowType === "form" && (conversationFlows.flows as Record<string, any>)[currentFlowId]?.inputs?.length > 0 && !message.showGuidedOption}
               <div class="mt-[theme(--card-gap)] p-[theme(--card-padding-y)] rounded-[theme(--radius-lg)] gap-[theme(--form-element-field-gap)] flex flex-col bg-[hsl(var(--background-secondary))]">
-                {#each conversationFlows.flows[currentFlowId].inputs as input}
+                {#each (conversationFlows.flows as Record<string, any>)[currentFlowId].inputs as input}
                   <div class="gap-[theme(--form-element-field-gap)] flex flex-col">
                     <Label class="text-[hsl(var(--foreground))]">
                       {input.label}{input.required ? " *" : ""}
@@ -863,7 +853,7 @@
   </div>
 
   <!-- Chat Input -->
-  {#if conversationFlows.flows[currentFlowId]?.flowType === "freeform"}
+  {#if currentFlow?.flowType === "freeform"}
     <div class="flex gap-[theme(--form-element-field-gap)] p-[theme(--card-padding-y)] border-t border-[hsl(var(--border))] bg-[hsl(var(--card))]">
       <Input bind:value={userInput} placeholder="Ask a question about solar installation..." onkeypress={(e) => e.key === "Enter" && sendMessage()} />
       <Button onclick={sendMessage} disabled={isLoading || !userInput.trim()} variant="default" size="sm">

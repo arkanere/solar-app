@@ -51,12 +51,12 @@ export function setupLazyLoading(setState: (key: keyof LazyLoadState, value: any
 
       // Create a sentinel element at the bottom of the about section
       const bottomSentinel = document.createElement('div');
-      bottomSentinel.style.position = 'absolute';
-      bottomSentinel.style.bottom = '0';
-      bottomSentinel.style.height = '1px';
-      bottomSentinel.style.width = '100%';
-      bottomSentinel.style.pointerEvents = 'none';
-      aboutSection.style.position = 'relative';
+      (bottomSentinel as HTMLElement).style.position = 'absolute';
+      (bottomSentinel as HTMLElement).style.bottom = '0';
+      (bottomSentinel as HTMLElement).style.height = '1px';
+      (bottomSentinel as HTMLElement).style.width = '100%';
+      (bottomSentinel as HTMLElement).style.pointerEvents = 'none';
+      (aboutSection as HTMLElement).style.position = 'relative';
       aboutSection.appendChild(bottomSentinel);
 
       // Observer for the bottom sentinel
