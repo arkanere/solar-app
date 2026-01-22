@@ -51,7 +51,7 @@
 
 	function handleDistrictSelection() {
 		if (selectedState && selectedDistrict) {
-			goto(`/in/solar-panel-installer-directory/${selectedDistrict.toLowerCase()}`, { force: true });
+			goto(`/in/solar-panel-installer-directory/${selectedDistrict.toLowerCase()}`);
 		}
 	}
 </script>

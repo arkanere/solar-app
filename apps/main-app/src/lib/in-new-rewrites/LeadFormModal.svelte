@@ -17,7 +17,7 @@
 	let comment = $state('');
 	let email = $state('');
 	let isSubmitting = $state(false);
-	let errors = $state<Record<string, string>>({});
+	let errors = $state<any>({});
 
 	const consultationTypes = [
 		'Residential - Independent Home',

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import CheckIcon from "@lucide/svelte/icons/check";
 	import { Select as SelectPrimitive } from "bits-ui";
-	import { cn, type WithoutChild } from "$lib/utils.js";
+	import { cn } from "$lib/utils.js";
 
 	let {
 		ref = $bindable(null),
@@ -10,7 +10,7 @@
 		label,
 		children: childrenProp,
 		...restProps
-	}: WithoutChild<SelectPrimitive.ItemProps> = $props();
+	}: SelectPrimitive.ItemProps = $props();
 </script>
 
 <SelectPrimitive.Item
@@ -23,7 +23,7 @@
 	)}
 	{...restProps}
 >
-	{#snippet children({ selected, highlighted })}
+	{#snippet children({ selected, highlighted }: any)}
 		<span class="absolute end-2 flex size-3.5 items-center justify-center">
 			{#if selected}
 				<CheckIcon class="size-4" />

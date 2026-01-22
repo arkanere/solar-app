@@ -29,7 +29,7 @@
 		event.preventDefault();
 
 		const validation = validateQueryForm(name, phone, message, pincode);
-		errors = validation.errors;
+		errors = { ...errors, ...validation.errors };
 
 		if (validation.isValid) {
 			isSubmitting = true;

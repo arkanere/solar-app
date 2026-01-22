@@ -2,7 +2,7 @@
 	import QueryForm from './QueryForm.svelte';
 	import { Card } from '$lib/components/ui/card';
 
-	let { city = '', hasBusinesses = false } = $props();
+	let { city = '' } = $props();
 </script>
 
 <section id="lead-form-sv" class="w-full max-w-[theme(--max-width-4xl)] mb-[theme(--spacing-xl)] p-[theme(--container-padding)]">

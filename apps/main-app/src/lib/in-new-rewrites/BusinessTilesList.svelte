@@ -9,7 +9,7 @@
 	import { makeCall, openWhatsApp } from '$lib/constants/businessTracking';
 
 	// State management
-	let visibleBusinesses = $state([]);
+	let visibleBusinesses = $state<any[]>([]);
 	let loadedCount = $state(0);
 	let isModalOpen = $state(false);
 	let selectedBusinessName = $state('');
@@ -18,9 +18,7 @@
 	const batchSize = 3;
 
 	// Reactive values from page store
-	let city = $derived($page.data.city);
 	let businesses = $derived($page.data.businesses || []);
-	let errorMessage = $derived($page.data.errorMessage);
 
 	// Auto-load first batch
 	$effect(() => {
@@ -36,11 +34,6 @@
 		loadedCount = endIndex;
 	}
 
-	function toggleModal(businessName = '', businessSlug = '') {
-		selectedBusinessName = businessName;
-		selectedBusinessSlug = businessSlug;
-		isModalOpen = !isModalOpen;
-	}
 </script>
 
 {#if visibleBusinesses.length > 0}

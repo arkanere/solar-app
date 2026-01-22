@@ -1,14 +1,9 @@
 <script lang="ts">
-	import { Dialog } from '$lib/components/ui/dialog';
+	import * as Dialog from '$lib/components/ui/dialog';
 	import ChatBotBox from '$lib/in-new-rewrites/ChatBotBox.svelte';
 	import type { Writable } from 'svelte/store';
 
-	interface Props {
-		messages?: Writable<unknown[]>;
-		isVisible?: boolean;
-	}
-
-	const { messages, isVisible = $bindable(true) } = $props();
+	const { messages, isVisible = $bindable(true) }: { messages?: Writable<unknown[]>; isVisible?: boolean } = $props();
 
 	let isManuallyDismissed = $state(false);
 

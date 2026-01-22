@@ -310,7 +310,7 @@
       <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="state">State</Label>
         <Select.Root type="single" bind:value={selectedState}>
-          <Select.Trigger id="state" required>
+          <Select.Trigger id="state">
             {selectedState || "Select a state"}
           </Select.Trigger>
           <Select.Content>
@@ -325,7 +325,7 @@
       <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="district">District</Label>
         <Select.Root type="single" bind:value={district} disabled={!selectedState || isDistrictLoading}>
-          <Select.Trigger id="district" required>
+          <Select.Trigger id="district">
             {isDistrictLoading ? "Loading districts..." : (district || "Select a district")}
           </Select.Trigger>
           <Select.Content>
@@ -340,7 +340,7 @@
       <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="city">City</Label>
         <Select.Root type="single" bind:value={city} disabled={!district || isCityLoading}>
-          <Select.Trigger id="city" required>
+          <Select.Trigger id="city">
             {isCityLoading ? "Loading cities..." : (city || "Select a city")}
           </Select.Trigger>
           <Select.Content>

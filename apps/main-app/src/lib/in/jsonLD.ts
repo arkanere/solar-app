@@ -5,7 +5,7 @@ const DEFAULT_BUSINESS = {
   phonenumber: '8983066701',
 };
 
-export function generateCityJsonLD(city: string, businesses: any[], district?: string) {
+export function generateCityJsonLD(city: string, businesses: any[]) {
   const city_jsonLD_1 = city_jsonLD1(city);
 
   const city_jsonLD_2 = (businesses.length > 0 ? businesses : [DEFAULT_BUSINESS]).map((business) => ({

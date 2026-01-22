@@ -1,9 +1,8 @@
 <script lang="ts">
 	import * as Dialog from '$lib/components/ui/dialog';
 	import LeadFormModal from './LeadFormModal.svelte';
-	import { X } from '@lucide/svelte';
 
-	let { isModalOpen = false, businessName = '', businessSlug = '', onClose = () => {} } = $props();
+	let { isModalOpen = false, businessName = '', businessSlug = '' } = $props();
 </script>
 
 <Dialog.Root bind:open={isModalOpen}>
