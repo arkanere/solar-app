@@ -152,14 +152,14 @@
         </CardHeader>
         <CardContent class="flex flex-col" style="gap: var(--space-y-3);">
           <Button
-            on:click={() => window.location.href = "/in/recent-solar-installation-projects"}
+            onclick={() => window.location.href = "/in/recent-solar-installation-projects"}
             variant="default"
             class="w-full"
           >
             View All Solar Projects →
           </Button>
           <Button
-            on:click={() => {
+            onclick={() => {
               showViewAll = false;
               currentStoryIndex = 0;
               startStoryProgress();
@@ -267,7 +267,7 @@
           <Tooltip>
             <TooltipTrigger>
               <Button
-                on:click={() => handleStoryClick("left")}
+                onclick={() => handleStoryClick("left")}
                 disabled={currentStoryIndex === 0}
                 variant="ghost"
                 size="icon"
@@ -285,7 +285,7 @@
           <Tooltip>
             <TooltipTrigger>
               <Button
-                on:click={() => handleStoryClick("right")}
+                onclick={() => handleStoryClick("right")}
                 variant="ghost"
                 size="icon"
                 class="text-white hover:bg-white/20"

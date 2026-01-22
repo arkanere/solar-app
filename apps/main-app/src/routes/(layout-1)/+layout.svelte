@@ -5,6 +5,9 @@
   import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
   import { page } from "$app/stores";
   import StoriesModal from "$lib/in-new-rewrites/StoriesModal.svelte";
+  import { Button } from "$lib/components/ui/button";
+  import * as Dialog from "$lib/components/ui/dialog";
+  import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 
   // Accept children snippet from SvelteKit
   let { children } = $props();
@@ -16,8 +19,7 @@
   // Only load component client-side to avoid SSR issues
   let showChat = $state(false);
 
-  // Translation dropdown state
-  let showTranslateDropdown = $state(false);
+  // Translation modal state
   let showTranslationModal = $state(false);
   let selectedLanguage = $state("");
 
@@ -55,17 +57,10 @@
     // Track CallSafe widget interactions
     trackCallSafeEvents();
 
-    // Add click outside listener for translate dropdown
-    document.addEventListener("click", handleClickOutside);
-
     // Defer analytics scripts to improve initial page performance
     setTimeout(() => {
       loadAnalytics();
     }, 3000); // Load analytics after 3 seconds
-
-    return () => {
-      document.removeEventListener("click", handleClickOutside);
-    };
   });
 
   function trackCallSafeEvents() {
@@ -102,28 +97,15 @@
     storiesModalOpen.set(true);
   }
 
-  // Handle translate dropdown toggle
-  function toggleTranslateDropdown() {
-    showTranslateDropdown = !showTranslateDropdown;
-  }
-
   // Handle language selection
   function selectLanguage(language) {
     selectedLanguage = language.name;
-    showTranslateDropdown = false;
     showTranslationModal = true;
   }
 
   // Close translation modal
   function closeTranslationModal() {
     showTranslationModal = false;
-  }
-
-  // Close dropdown when clicking outside
-  function handleClickOutside(event) {
-    if (!event.target.closest(".translate-container")) {
-      showTranslateDropdown = false;
-    }
   }
 
   function loadAnalytics() {
@@ -214,27 +196,33 @@
   <!-- Heavy analytics scripts moved to loadAnalytics() function for deferred loading -->
 </svelte:head>
 
-<nav class="flex flex-wrap items-center p-4 md:p-4 transition-colors duration-300 w-full gap-8 md:gap-8 bg-background text-foreground md:justify-start justify-center border-b border-border">
-  <!-- Translate Dropdown -->
-  <div class="relative inline-block ml-auto">
-    {#if showTranslateDropdown}
-      <div class="absolute top-full left-0 md:left-0 sm:right-0 bg-popover border border-border rounded min-w-[200px] md:min-w-[200px] sm:min-w-[180px] shadow-md z-50 mt-0.5">
+<nav class="flex flex-wrap items-center w-full justify-between border-b border-border bg-background text-foreground p-[theme(--container-padding)] gap-[theme(--spacing-2xl)] transition-colors duration-[theme(--transition-default)]">
+  <!-- Spacer for left alignment -->
+  <div></div>
+
+  <!-- Right side buttons group -->
+  <div class="flex items-center gap-[theme(--spacing-md)]">
+    <!-- Translate Dropdown -->
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <button class="border border-border cursor-pointer whitespace-nowrap text-foreground hover:bg-muted px-[theme(--button-padding-x-sm)] py-[theme(--button-padding-y-sm)] text-[theme(--font-size-sm)] rounded-[theme(--radius-md)] transition-all duration-[theme(--transition-default)]">
+          🌐 Translate
+        </button>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Content>
         {#each indianLanguages as language}
-          <button
-            class="block w-full px-4 py-3 border-b border-border last:border-b-0 text-left text-sm hover:bg-muted transition-colors duration-200"
-            onclick={() => selectLanguage(language)}
-          >
+          <DropdownMenu.Item onclick={() => selectLanguage(language)}>
             {language.flag}
             {language.name}
-          </button>
+          </DropdownMenu.Item>
         {/each}
-      </div>
-    {/if}
-  </div>
+      </DropdownMenu.Content>
+    </DropdownMenu.Root>
 
-  <button class="border border-border px-4 py-2 md:px-4 md:py-2 text-sm md:text-sm rounded cursor-pointer transition-all duration-300 whitespace-nowrap hover:bg-muted hover:text-foreground sm:px-2 sm:py-1 sm:text-xs" onclick={toggleTheme}>
-    {$isDarkMode ? "Light mode" : "Dark mode"}
-  </button>
+    <Button variant="outline" onclick={toggleTheme}>
+      {$isDarkMode ? "☀️ Light mode" : "🌙 Dark mode"}
+    </Button>
+  </div>
 </nav>
 
 {@render children?.()}
@@ -243,84 +231,52 @@
 <StoriesModal />
 
 <!-- Translation Instructions Modal -->
-{#if showTranslationModal}
-  <!-- svelte-ignore a11y_click_events_have_key_events -->
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="fixed inset-0 bg-overlay flex justify-center items-center z-[2000]" onclick={closeTranslationModal}>
-    <!-- svelte-ignore a11y_click_events_have_key_events -->
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div class="bg-popover text-popover-foreground rounded-lg max-w-[500px] w-[90%] md:w-[90%] sm:w-[95%] max-h-[80vh] overflow-y-auto shadow-lg" onclick={(e) => e.stopPropagation()}>
-      <div class="flex justify-between items-center p-6 md:p-6 sm:p-4 border-b border-border">
-        <h3 class="text-lg md:text-lg sm:text-base font-semibold m-0">🌐 How to translate to {selectedLanguage}</h3>
-        <button class="bg-none border-none text-2xl cursor-pointer p-0 text-foreground-muted hover:text-foreground transition-colors" onclick={closeTranslationModal}>×</button>
+<Dialog.Root bind:open={showTranslationModal}>
+  <Dialog.Content class="max-w-[500px]">
+    <Dialog.Header>
+      <Dialog.Title>🌐 How to translate to {selectedLanguage}</Dialog.Title>
+    </Dialog.Header>
+
+    <div class="space-y-[theme(--card-gap)]">
+      <div>
+        <h4 class="text-[theme(--font-size-base)] font-semibold text-primary mb-[theme(--spacing-md)]">📱 On Mobile:</h4>
+        <div class="space-y-[theme(--spacing-lg)]">
+          {#each ["Tap the three dots menu (⋮) in your browser", "Look for \"Translate\" option", "Select your language"] as step, i}
+            <div class="flex items-start gap-[theme(--spacing-lg)]">
+              <div class="flex items-center justify-center w-[theme(--step-indicator-size)] h-[theme(--step-indicator-size)] rounded-full bg-primary text-primary-foreground text-[theme(--font-size-xs)] font-bold flex-shrink-0">
+                {i + 1}
+              </div>
+              <strong class="block pt-[0.125rem]">{step}</strong>
+            </div>
+          {/each}
+        </div>
       </div>
-      <div class="p-6 md:p-6 sm:p-4">
-        <div class="mb-6">
-          <h4 class="text-base font-semibold text-primary m-0 mb-3">📱 On Mobile:</h4>
-          <div class="flex gap-4 mb-4 items-start">
-            <div class="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex-shrink-0 mt-0.5">1</div>
-            <div>
-              <strong class="block mb-1">Tap the three dots menu (⋮) in your browser</strong>
-            </div>
-          </div>
-          <div class="flex gap-4 mb-4 items-start">
-            <div class="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex-shrink-0 mt-0.5">2</div>
-            <div>
-              <strong class="block mb-1">Look for "Translate" option</strong>
-            </div>
-          </div>
-          <div class="flex gap-4 items-start">
-            <div class="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex-shrink-0 mt-0.5">3</div>
-            <div>
-              <strong class="block mb-1">Select your language</strong>
-            </div>
-          </div>
-        </div>
 
-        <div class="mb-6">
-          <h4 class="text-base font-semibold text-primary m-0 mb-3">💻 On Desktop:</h4>
-          <div class="flex gap-4 mb-4 items-start">
-            <div class="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex-shrink-0 mt-0.5">1</div>
-            <div>
-              <strong class="block mb-1">Right-click anywhere on this page</strong>
+      <div>
+        <h4 class="text-[theme(--font-size-base)] font-semibold text-primary mb-[theme(--spacing-md)]">💻 On Desktop:</h4>
+        <div class="space-y-[theme(--spacing-lg)]">
+          {#each ["Right-click anywhere on this page", "Look for \"Translate\" option", "Click to translate"] as step, i}
+            <div class="flex items-start gap-[theme(--spacing-lg)]">
+              <div class="flex items-center justify-center w-[theme(--step-indicator-size)] h-[theme(--step-indicator-size)] rounded-full bg-primary text-primary-foreground text-[theme(--font-size-xs)] font-bold flex-shrink-0">
+                {i + 1}
+              </div>
+              <strong class="block pt-[0.125rem]">{step}</strong>
             </div>
-          </div>
-          <div class="flex gap-4 mb-4 items-start">
-            <div class="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex-shrink-0 mt-0.5">2</div>
-            <div>
-              <strong class="block mb-1">Look for "Translate to {selectedLanguage !== "More Languages"
-                  ? selectedLanguage.split("(")[1]?.replace(")", "") ||
-                    "your language"
-                  : "your language"}"</strong>
-            </div>
-          </div>
-          <div class="flex gap-4 items-start">
-            <div class="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex-shrink-0 mt-0.5">3</div>
-            <div>
-              <strong class="block mb-1">Click to translate</strong>
-            </div>
-          </div>
+          {/each}
         </div>
+      </div>
 
-        <div class="border-t border-border pt-4">
-          <h4 class="text-base font-semibold m-0 mb-2">💡 Alternative methods:</h4>
-          <p class="text-sm text-foreground-secondary my-1">
-            <strong>Chrome users:</strong> Look for the translate icon 🌐 in your
-            address bar
-          </p>
-          <p class="text-sm text-foreground-secondary my-1">
-            <strong>Safari (iPhone/iPad):</strong> Tap the "aA" button in address
-            bar
-          </p>
-          <p class="text-sm text-foreground-secondary my-1">
-            <strong>Other browsers:</strong> Check browser settings for translation
-            options
-          </p>
+      <div class="border-t border-border pt-[theme(--spacing-lg)]">
+        <h4 class="text-[theme(--font-size-base)] font-semibold mb-[theme(--spacing-sm)]">💡 Alternative methods:</h4>
+        <div class="space-y-[theme(--spacing-xs)] text-[theme(--font-size-sm)] text-foreground-secondary">
+          <p><strong>Chrome users:</strong> Look for the translate icon 🌐 in your address bar</p>
+          <p><strong>Safari (iPhone/iPad):</strong> Tap the "aA" button in address bar</p>
+          <p><strong>Other browsers:</strong> Check browser settings for translation options</p>
         </div>
       </div>
     </div>
-  </div>
-{/if}
+  </Dialog.Content>
+</Dialog.Root>
 
 <!-- {#if browser && showChat}
   <ChatbotWidget messages={chatMessages} />

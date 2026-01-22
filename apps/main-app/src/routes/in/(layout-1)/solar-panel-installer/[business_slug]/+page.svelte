@@ -1,6 +1,8 @@
 <script>
   import { page } from "$app/stores";
   import { goto } from "$app/navigation";
+  import { Button } from "$lib/components/ui/button";
+  import { Card } from "$lib/components/ui/card";
   import LeadFormBusiness from "$lib/in-new-rewrites/LeadFormBusiness.svelte";
   import SolarSizeCalculator from "$lib/in-new-rewrites/SolarSizeCalculator.svelte";
   import { PUBLIC_CLOUDINARY_CLOUD_NAME } from "$env/static/public";
@@ -75,34 +77,35 @@
   />
 </svelte:head>
 
-<main class="w-full font-sans leading-relaxed overflow-x-hidden transition-colors duration-300 flex flex-col items-center px-4 py-8 min-h-screen bg-background text-foreground max-w-6xl mx-auto">
+<main class="w-full font-sans leading-relaxed overflow-x-hidden transition-colors duration-300 flex flex-col items-center px-[theme(--container-padding)] py-[theme(--spacing-2xl)] min-h-screen bg-background text-foreground max-w-6xl mx-auto">
   {#if business}
     <!-- Business Login (for business owners) -->
-    <div class="flex justify-end mb-4 px-4">
-      <button
-        class="bg-transparent text-muted-foreground border border-border text-xs font-normal px-4 py-2 rounded transition-all opacity-70 hover:opacity-100 hover:bg-muted"
-        onclick={business.businessfilled ? navigateToLogin : navigateToClaim}
+    <div class="flex justify-end mb-[theme(--spacing-md)] px-[theme(--container-padding)]">
+      <Button
+        variant="outline"
+        size="sm"
+        onclick={() => business.businessfilled ? navigateToLogin() : navigateToClaim()}
         title={business.businessfilled
           ? "Business owner login"
           : "Claim this business listing"}
       >
         {business.businessfilled ? "Business Login" : "Claim Business"}
-      </button>
+      </Button>
     </div>
 
     <!-- Hero Section -->
-    <div class="text-center px-8 py-12 bg-gradient-to-br from-primary to-primary/80 dark:from-primary dark:to-primary/70 rounded-2xl text-primary-foreground mb-8 relative overflow-hidden">
-      <h1 class="text-3xl md:text-4xl font-bold mb-2">{business.businessname}</h1>
+    <div class="text-center px-[theme(--button-padding-x-lg)] py-[theme(--card-padding-y)] bg-gradient-to-br from-primary to-primary/80 dark:from-primary dark:to-primary/70 rounded-[theme(--radius-xl)] text-primary-foreground mb-[theme(--spacing-2xl)] relative overflow-hidden">
+      <h1 class="text-[theme(--font-size-3xl)] md:text-[theme(--font-size-4xl)] font-bold mb-[theme(--spacing-sm)]">{business.businessname}</h1>
       {#if business.businessfilled && business.tag !== "Blank"}
-        <div class="inline-flex items-center text-xs font-medium uppercase tracking-wide mb-6">
-          <span class="inline-flex items-center justify-center w-3.5 h-3.5 bg-success text-primary-foreground rounded-full text-xs font-bold mr-1">✓</span>
+        <div class="inline-flex items-center text-[theme(--font-size-xs)] font-medium uppercase tracking-[theme(--tracking-widest)] mb-[theme(--spacing-xl)]">
+          <span class="inline-flex items-center justify-center w-3.5 h-3.5 bg-success text-primary-foreground rounded-full text-[theme(--font-size-xs)] font-bold mr-[theme(--spacing-sm)]">✓</span>
           <span class="text-success">{business.tag}</span>
         </div>
       {/if}
       {#if business.phonenumber}
-        <div class="flex justify-center gap-4 flex-wrap">
-          <button
-            class="flex items-center gap-2 bg-gradient-to-br from-destructive to-destructive/80 text-primary-foreground font-bold text-sm uppercase tracking-wide px-8 py-4 rounded-lg transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 w-40 justify-center md:w-auto"
+        <div class="flex justify-center gap-[theme(--button-gap)] flex-wrap">
+          <Button
+            class="flex items-center gap-[theme(--button-gap)] w-40 justify-center md:w-auto"
             onclick={() => makeCall(business.phonenumber, business.slug)}
           >
             <span class="flex items-center">
@@ -123,9 +126,10 @@
               </svg>
             </span>
             <span>CALL NOW</span>
-          </button>
-          <button
-            class="flex items-center gap-2 bg-gradient-to-br from-success to-success/80 text-primary-foreground font-bold text-sm uppercase tracking-wide px-8 py-4 rounded-lg transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 w-40 justify-center md:w-auto"
+          </Button>
+          <Button
+            variant="secondary"
+            class="flex items-center gap-[theme(--button-gap)] w-40 justify-center md:w-auto"
             onclick={() => openWhatsApp(business.phonenumber, business.slug)}
           >
             <span class="flex items-center">
@@ -142,15 +146,15 @@
               </svg>
             </span>
             <span>WHATSAPP</span>
-          </button>
+          </Button>
         </div>
       {/if}
     </div>
 
     <!-- Business Details - Single Combined Card -->
-    <div class="mb-8">
-      <div class="bg-card rounded-2xl px-8 py-6 shadow-md border border-border transition-all hover:shadow-lg hover:-translate-y-0.5">
-        <div class="flex items-center gap-3 mb-4 pb-3 border-b-2 border-border">
+    <div class="mb-[theme(--spacing-2xl)] w-full">
+      <Card class="transition-all hover:shadow-lg hover:-translate-y-0.5">
+        <div class="flex items-center gap-[theme(--spacing-md)] mb-[theme(--spacing-md)] pb-[theme(--spacing-sm)] border-b-2 border-border">
           <div class="flex items-center justify-center w-10 h-10 bg-accent-muted rounded-full text-primary">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -167,25 +171,25 @@
               <polyline points="9,22 9,12 15,12 15,22"></polyline>
             </svg>
           </div>
-          <h3 class="m-0 text-xl font-semibold text-primary">Business Information</h3>
+          <h3 class="m-0 text-[theme(--font-size-xl)] font-semibold text-primary">Business Information</h3>
         </div>
 
-        <div class="flex flex-col gap-6">
+        <div class="flex flex-col gap-[theme(--card-gap)]">
           <!-- Description Section -->
           {#if business.businessfilled && business.description}
-            <div class="flex flex-col gap-3">
-              <h4 class="text-lg font-semibold text-primary m-0 pb-2 border-b-2 border-border">About</h4>
+            <div class="flex flex-col gap-[theme(--spacing-md)]">
+              <h4 class="text-[theme(--font-size-lg)] font-semibold text-primary m-0 pb-[theme(--spacing-sm)] border-b-2 border-border">About</h4>
               <p class="m-0 leading-relaxed text-muted-foreground">{business.description}</p>
             </div>
           {/if}
 
           <!-- Services Section -->
           {#if business.businessfilled && business.services && business.services.length > 0}
-            <div class="flex flex-col gap-3">
-              <h4 class="text-lg font-semibold text-primary m-0 pb-2 border-b-2 border-border">Services</h4>
-              <div class="flex flex-wrap gap-2">
+            <div class="flex flex-col gap-[theme(--spacing-md)]">
+              <h4 class="text-[theme(--font-size-lg)] font-semibold text-primary m-0 pb-[theme(--spacing-sm)] border-b-2 border-border">Services</h4>
+              <div class="flex flex-wrap gap-[theme(--spacing-sm)]">
                 {#each business.services as serviceId}
-                  <span class="bg-accent-muted text-primary px-3 py-1 rounded-full text-sm font-medium"
+                  <span class="bg-accent-muted text-primary px-[theme(--badge-padding-x)] py-[theme(--badge-padding-y)] rounded-[theme(--badge-radius)] text-[theme(--font-size-xs)] font-medium"
                     >{SERVICE_MAPPING[serviceId] || "Unknown Service"}</span
                   >
                 {/each}
@@ -194,16 +198,16 @@
           {/if}
 
           <!-- Contact & Location Combined -->
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-[theme(--card-gap)]">
             <!-- Contact Information -->
-            <div class="flex flex-col gap-3">
-              <h4 class="text-lg font-semibold text-primary m-0 pb-2 border-b-2 border-border">Contact Information</h4>
-              <div class="flex flex-col gap-3">
+            <div class="flex flex-col gap-[theme(--spacing-md)]">
+              <h4 class="text-[theme(--font-size-lg)] font-semibold text-primary m-0 pb-[theme(--spacing-sm)] border-b-2 border-border">Contact Information</h4>
+              <div class="flex flex-col gap-[theme(--spacing-md)]">
                 {#if business.phonenumber}
-                  <div class="flex items-start gap-3">
-                    <span class="text-lg flex-shrink-0 mt-0.5">📞</span>
-                    <div class="flex flex-col gap-0.5 min-w-0">
-                      <span class="font-semibold text-sm text-muted-foreground">Phone:</span>
+                  <div class="flex items-start gap-[theme(--spacing-md)]">
+                    <span class="text-[theme(--font-size-lg)] flex-shrink-0 mt-0.5">📞</span>
+                    <div class="flex flex-col gap-[theme(--spacing-xs)] min-w-0">
+                      <span class="font-semibold text-[theme(--font-size-sm)] text-muted-foreground">Phone:</span>
                       <a
                         href="tel:{business.phonenumber}"
                         class="text-primary no-underline transition-colors hover:text-primary/80 hover:underline break-all"
@@ -213,10 +217,10 @@
                   </div>
                 {/if}
                 {#if business.email}
-                  <div class="flex items-start gap-3">
-                    <span class="text-lg flex-shrink-0 mt-0.5">📧</span>
-                    <div class="flex flex-col gap-0.5 min-w-0">
-                      <span class="font-semibold text-sm text-muted-foreground">Email:</span>
+                  <div class="flex items-start gap-[theme(--spacing-md)]">
+                    <span class="text-[theme(--font-size-lg)] flex-shrink-0 mt-0.5">📧</span>
+                    <div class="flex flex-col gap-[theme(--spacing-xs)] min-w-0">
+                      <span class="font-semibold text-[theme(--font-size-sm)] text-muted-foreground">Email:</span>
                       <a
                         href="mailto:{business.email}"
                         class="text-primary no-underline transition-colors hover:text-primary/80 hover:underline break-all">{business.email}</a
@@ -225,10 +229,10 @@
                   </div>
                 {/if}
                 {#if business.website}
-                  <div class="flex items-start gap-3">
-                    <span class="text-lg flex-shrink-0 mt-0.5">🌐</span>
-                    <div class="flex flex-col gap-0.5 min-w-0">
-                      <span class="font-semibold text-sm text-muted-foreground">Website:</span>
+                  <div class="flex items-start gap-[theme(--spacing-md)]">
+                    <span class="text-[theme(--font-size-lg)] flex-shrink-0 mt-0.5">🌐</span>
+                    <div class="flex flex-col gap-[theme(--spacing-xs)] min-w-0">
+                      <span class="font-semibold text-[theme(--font-size-sm)] text-muted-foreground">Website:</span>
                       <a
                         href={business.website}
                         target="_blank"
@@ -239,10 +243,10 @@
                   </div>
                 {/if}
                 {#if business.instagram_id}
-                  <div class="flex items-start gap-3">
-                    <span class="text-lg flex-shrink-0 mt-0.5">📷</span>
-                    <div class="flex flex-col gap-0.5 min-w-0">
-                      <span class="font-semibold text-sm text-muted-foreground">Instagram:</span>
+                  <div class="flex items-start gap-[theme(--spacing-md)]">
+                    <span class="text-[theme(--font-size-lg)] flex-shrink-0 mt-0.5">📷</span>
+                    <div class="flex flex-col gap-[theme(--spacing-xs)] min-w-0">
+                      <span class="font-semibold text-[theme(--font-size-sm)] text-muted-foreground">Instagram:</span>
                       <a
                         href="https://instagram.com/{business.instagram_id.replace(
                           '@',
@@ -260,41 +264,41 @@
             </div>
 
             <!-- Location Information -->
-            <div class="flex flex-col gap-3">
-              <h4 class="text-lg font-semibold text-primary m-0 pb-2 border-b-2 border-border">Location</h4>
-              <div class="flex flex-col gap-3">
+            <div class="flex flex-col gap-[theme(--spacing-md)]">
+              <h4 class="text-[theme(--font-size-lg)] font-semibold text-primary m-0 pb-[theme(--spacing-sm)] border-b-2 border-border">Location</h4>
+              <div class="flex flex-col gap-[theme(--spacing-md)]">
                 {#if business.address}
-                  <div class="flex items-start gap-3">
-                    <span class="text-lg flex-shrink-0 mt-0.5">📍</span>
-                    <div class="flex flex-col gap-0.5 min-w-0">
-                      <span class="font-semibold text-sm text-muted-foreground">Address:</span>
+                  <div class="flex items-start gap-[theme(--spacing-md)]">
+                    <span class="text-[theme(--font-size-lg)] flex-shrink-0 mt-0.5">📍</span>
+                    <div class="flex flex-col gap-[theme(--spacing-xs)] min-w-0">
+                      <span class="font-semibold text-[theme(--font-size-sm)] text-muted-foreground">Address:</span>
                       <span class="text-primary">{business.address}</span>
                     </div>
                   </div>
                 {/if}
                 {#if business.city}
-                  <div class="flex items-start gap-3">
-                    <span class="text-lg flex-shrink-0 mt-0.5">🏙️</span>
-                    <div class="flex flex-col gap-0.5 min-w-0">
-                      <span class="font-semibold text-sm text-muted-foreground">City:</span>
+                  <div class="flex items-start gap-[theme(--spacing-md)]">
+                    <span class="text-[theme(--font-size-lg)] flex-shrink-0 mt-0.5">🏙️</span>
+                    <div class="flex flex-col gap-[theme(--spacing-xs)] min-w-0">
+                      <span class="font-semibold text-[theme(--font-size-sm)] text-muted-foreground">City:</span>
                       <span class="text-primary">{business.city}</span>
                     </div>
                   </div>
                 {/if}
                 {#if business.state}
-                  <div class="flex items-start gap-3">
-                    <span class="text-lg flex-shrink-0 mt-0.5">🗺️</span>
-                    <div class="flex flex-col gap-0.5 min-w-0">
-                      <span class="font-semibold text-sm text-muted-foreground">State:</span>
+                  <div class="flex items-start gap-[theme(--spacing-md)]">
+                    <span class="text-[theme(--font-size-lg)] flex-shrink-0 mt-0.5">🗺️</span>
+                    <div class="flex flex-col gap-[theme(--spacing-xs)] min-w-0">
+                      <span class="font-semibold text-[theme(--font-size-sm)] text-muted-foreground">State:</span>
                       <span class="text-primary">{business.state}</span>
                     </div>
                   </div>
                 {/if}
                 {#if business.google_maps_link}
-                  <div class="flex items-start gap-3">
-                    <span class="text-lg flex-shrink-0 mt-0.5">🗺️</span>
-                    <div class="flex flex-col gap-0.5 min-w-0">
-                      <span class="font-semibold text-sm text-muted-foreground">Google Maps:</span>
+                  <div class="flex items-start gap-[theme(--spacing-md)]">
+                    <span class="text-[theme(--font-size-lg)] flex-shrink-0 mt-0.5">🗺️</span>
+                    <div class="flex flex-col gap-[theme(--spacing-xs)] min-w-0">
+                      <span class="font-semibold text-[theme(--font-size-sm)] text-muted-foreground">Google Maps:</span>
                       <a
                         href={business.google_maps_link}
                         target="_blank"
@@ -308,50 +312,50 @@
             </div>
           </div>
         </div>
-      </div>
+      </Card>
     </div>
 
     <!-- Recent Projects Section -->
     {#if showProjects}
-      <section class="px-6 py-8 bg-card rounded-2xl shadow-md mb-8 transition-all">
-        <h2 class="text-2xl md:text-3xl font-bold mb-4 text-primary text-center">Recent Solar Panel Installation Projects</h2>
+      <section class="px-[theme(--container-padding)] py-[theme(--card-padding-y)] bg-card rounded-[theme(--radius-xl)] shadow-[theme(--shadow-md)] mb-[theme(--spacing-2xl)] transition-all w-full">
+        <h2 class="text-[theme(--font-size-2xl)] md:text-[theme(--font-size-3xl)] font-bold mb-[theme(--spacing-md)] text-primary text-center">Recent Solar Panel Installation Projects</h2>
 
         {#if projects.length === 0}
-          <div class="text-center py-8 bg-card rounded-lg mb-6 text-muted-foreground">
+          <div class="text-center py-[theme(--card-padding-y)] bg-card rounded-[theme(--radius-lg)] mb-[theme(--spacing-xl)] text-muted-foreground">
             No recent projects found for this business.
           </div>
         {:else}
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] mt-[theme(--spacing-xl)]">
             {#each projects as project (project.id)}
-              <div class="rounded-lg overflow-hidden shadow-md transition-all hover:shadow-lg hover:-translate-y-1 bg-card h-full">
+              <div class="rounded-[theme(--radius-lg)] overflow-hidden shadow-[theme(--shadow-md)] transition-all hover:shadow-lg hover:-translate-y-1 bg-card h-full">
                 <a
                   href="/in/solar-panel-installer/{businessSlug}/project/{project.project_slug}"
                   class="block no-underline text-inherit transition-all"
                 >
-                  <div class="h-48 overflow-hidden relative">
+                  <div class="h-[theme(--height-md)] overflow-hidden relative">
                     {#if project.cloudinary_public_id}
                       <img
                         src={`https://res.cloudinary.com/${PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_fill,w_300,h_200,q_auto,f_auto/${project.cloudinary_public_id}`}
                         alt={project.title}
                         loading="lazy"
-                        class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                        class="w-full h-full object-cover transition-transform duration-[theme(--duration-slower)] hover:scale-105"
                       />
                     {:else if project.image_url}
                       <img
                         src={project.image_url}
                         alt={project.title}
                         loading="lazy"
-                        class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                        class="w-full h-full object-cover transition-transform duration-[theme(--duration-slower)] hover:scale-105"
                       />
                     {:else}
                       <div class="flex items-center justify-center h-full bg-muted text-muted-foreground font-medium">No Image</div>
                     {/if}
                   </div>
 
-                  <div class="px-6 py-4">
-                    <h3 class="mt-0 mb-3 text-xl text-primary font-semibold">{project.title}</h3>
-                    <p class="m-2 text-sm text-muted-foreground">Pincode: {project.pincode}</p>
-                    <p class="m-2 text-sm text-muted-foreground">
+                  <div class="px-[theme(--container-padding)] py-[theme(--button-padding-y-default)]">
+                    <h3 class="mt-0 mb-[theme(--spacing-md)] text-[theme(--font-size-xl)] text-primary font-semibold">{project.title}</h3>
+                    <p class="m-[theme(--spacing-sm)] text-[theme(--font-size-sm)] text-muted-foreground">Pincode: {project.pincode}</p>
+                    <p class="m-[theme(--spacing-sm)] text-[theme(--font-size-sm)] text-muted-foreground">
                       Completed on: {formatDate(project.project_date)}
                     </p>
                     {#if project.system_size}
@@ -367,7 +371,7 @@
         {/if}
       </section>
 
-      <h2 class="text-2xl md:text-3xl font-bold mb-4 text-primary text-center">Book Free Consultation To Know Price from {business.businessname}</h2>
+      <h2 class="text-[theme(--font-size-2xl)] md:text-[theme(--font-size-3xl)] font-bold mb-[theme(--spacing-md)] text-primary text-center">Book Free Consultation To Know Price from {business.businessname}</h2>
       <LeadFormBusiness />
     {/if}
 
@@ -376,25 +380,29 @@
 
     <!-- Other Businesses in the City -->
     {#if business.city}
-      <section class="mt-8 text-center px-6 py-8 bg-card rounded-2xl shadow-md transition-all">
-        <h2 class="text-2xl md:text-3xl font-bold mb-4 text-primary">Find Other Solar Businesses in {business.city}</h2>
-        <p class="text-lg mb-4 text-muted-foreground">
+      <section class="mt-[theme(--spacing-2xl)] text-center px-[theme(--container-padding)] py-[theme(--card-padding-y)] bg-card rounded-[theme(--radius-xl)] shadow-[theme(--shadow-md)] transition-all w-full">
+        <h2 class="text-[theme(--font-size-2xl)] md:text-[theme(--font-size-3xl)] font-bold mb-[theme(--spacing-md)] text-primary">Find Other Solar Businesses in {business.city}</h2>
+        <p class="text-[theme(--font-size-lg)] mb-[theme(--spacing-md)] text-muted-foreground">
           If you're interested in exploring other solar businesses in {business.city},
           visit our directory page.
         </p>
-        <button onclick={navigateToDirectory} class="bg-transparent border-2 border-primary text-primary font-semibold px-6 py-3 min-w-max transition-all hover:bg-primary/10 hover:-translate-y-0.5">
+        <Button
+          variant="outline"
+          onclick={navigateToDirectory}
+          class="min-w-max"
+        >
           View Solar Businesses in {business.city}
-        </button>
+        </Button>
       </section>
     {/if}
   {:else if errorMessage}
-    <p class="text-destructive text-lg font-semibold">{errorMessage}</p>
+    <p class="text-destructive text-[theme(--font-size-lg)] font-semibold">{errorMessage}</p>
   {:else}
     <p>Loading...</p>
   {/if}
 
   <!-- About Solarvipani -->
-  <div class="mb-8 w-full">
+  <div class="mb-[theme(--spacing-2xl)] w-full">
     <AboutSolarVipani />
   </div>
 </main>

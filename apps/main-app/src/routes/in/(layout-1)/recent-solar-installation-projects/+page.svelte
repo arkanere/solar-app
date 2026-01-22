@@ -1,6 +1,8 @@
 <script>
   import { PUBLIC_CLOUDINARY_CLOUD_NAME } from "$env/static/public";
   import { page } from "$app/stores";
+  import { Alert } from "$lib/components/ui/alert";
+  import { Button } from "$lib/components/ui/button";
 
   /** @type {import('./$types').PageData} */
   const { data } = $props();
@@ -207,24 +209,24 @@
   </script>
 </svelte:head>
 
-<main class="w-full bg-background text-foreground overflow-x-hidden transition-colors duration-300 flex flex-col items-center px-4 py-8 min-h-screen">
-  <h1 class="text-3xl md:text-4xl font-semibold text-center mb-4 text-primary">Recent Solar Installation Projects</h1>
+<main class="w-full bg-background text-foreground overflow-x-hidden transition-colors duration-300 flex flex-col items-center px-[theme(--container-padding)] py-[theme(--spacing-xl)] min-h-screen">
+  <h1 class="text-3xl md:text-4xl font-semibold text-center mb-[theme(--spacing-md)] text-primary">Recent Solar Installation Projects</h1>
 
-  <section id="recent-projects" class="max-w-4xl w-full mb-10">
+  <section id="recent-projects" class="max-w-4xl w-full mb-[theme(--spacing-2xl)]">
     {#if !data.success}
-      <div class="bg-destructive/10 border border-destructive/30 rounded-lg p-4 mb-6" role="alert">
-        <p class="text-destructive font-medium">Error: {data.error || "Failed to load projects"}</p>
-      </div>
+      <Alert variant="destructive" class="mb-[theme(--spacing-lg)]">
+        <p class="font-medium">Error: {data.error || "Failed to load projects"}</p>
+      </Alert>
     {:else if projects.length === 0}
-      <div class="bg-warning/10 border border-warning/30 rounded-lg p-4 mb-6" role="alert">
-        <p class="text-warning font-medium">No projects found.</p>
-      </div>
+      <Alert variant="warning" class="mb-[theme(--spacing-lg)]">
+        <p class="font-medium">No projects found.</p>
+      </Alert>
     {:else}
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] w-full mb-[theme(--spacing-2xl)]">
         {#each projects as project (project.id)}
           <a
             href="/in/solar-panel-installer/{project.business_slug}/project/{project.project_slug}"
-            class="group block bg-card hover:shadow-lg rounded-xl overflow-hidden border border-border hover:border-primary/50 transition-all duration-300 hover:-translate-y-1"
+            class="group block bg-card hover:shadow-[theme(--shadow-card-hover)] rounded-[theme(--radius-xl)] overflow-hidden border border-border hover:border-primary/50 transition-all duration-300 hover:-translate-y-1"
             rel="noopener"
           >
             <!-- Project Image -->
@@ -257,7 +259,7 @@
             </div>
 
             <!-- Project Details -->
-            <div class="p-4 space-y-2">
+            <div class="p-[theme(--container-padding)] space-y-[theme(--spacing-sm)]">
               <h3 class="text-lg font-semibold text-primary line-clamp-2">
                 {project.title}
               </h3>
@@ -286,34 +288,31 @@
 
       <!-- Pagination -->
       {#if totalPages > 1}
-        <div class="flex justify-center items-center gap-2 mt-8 flex-wrap">
+        <div class="flex justify-center items-center gap-[theme(--spacing-sm)] mt-[theme(--spacing-2xl)] flex-wrap">
           <!-- Next button (since this is page 1, only show next) -->
           {#if currentPage < totalPages}
-            <a
-              href="/in/recent-solar-installation-projects/2"
-              class="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-lg transition-all duration-200 hover:-translate-y-0.5"
-            >
+            <Button href="/in/recent-solar-installation-projects/2" variant="default">
               Next →
-            </a>
+            </Button>
           {/if}
 
           <!-- Page numbers -->
           {#each paginationLinks as link}
             {#if link === "..."}
-              <span class="px-2 text-muted-foreground">...</span>
+              <span class="px-[theme(--spacing-sm)] text-muted-foreground">...</span>
             {:else if link === currentPage}
-              <span class="px-3 py-2 bg-primary text-primary-foreground font-medium rounded-lg">
+              <span class="px-[theme(--spacing-md)] py-[theme(--spacing-sm)] bg-primary text-primary-foreground font-medium rounded-[theme(--radius-md)]">
                 {link}
               </span>
             {:else}
-              <a
+              <Button
                 href={link === 1
                   ? "/in/recent-solar-installation-projects"
                   : `/in/recent-solar-installation-projects/${link}`}
-                class="px-3 py-2 border border-primary text-primary hover:bg-primary hover:text-primary-foreground font-medium rounded-lg transition-all duration-200 hover:-translate-y-0.5"
+                variant="outline"
               >
                 {link}
-              </a>
+              </Button>
             {/if}
           {/each}
         </div>

@@ -73,11 +73,11 @@
 <script>
   import { goto } from "$app/navigation";
   import AboutSolarVipani from "$lib/in-new-rewrites/AboutSolarVipani.svelte";
+  import { Button } from "$lib/components/ui/button";
+  import { Card } from "$lib/components/ui/card";
 
   // For data loading
   let { data } = $props();
-
-  // Reactive statement for dark mode
 
   // Navigation function
   const navigateToBusinessForm = () => goto("/in/business-form");
@@ -308,7 +308,7 @@
   <meta name="robots" content="index, follow" />
 </svelte:head>
 
-<main class="w-full transition-colors duration-300 overflow-x-hidden bg-card text-foreground">
+<main class="w-full overflow-x-hidden bg-card text-foreground transition-colors duration-[theme(--transition-default)]">
   <!-- Hero Banner with Solar Panel Background -->
   <div class="relative w-full h-96 md:h-96 sm:h-80 flex items-center justify-center text-center overflow-hidden">
     <picture>
@@ -332,12 +332,12 @@
         decoding="sync"
       />
     </picture>
-    <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-black/40 to-primary/40 z-10"></div>
+    <div class="absolute top-0 left-0 w-full h-full bg-gradient-overlay-primary z-10"></div>
     <div class="relative z-20 max-w-3xl px-6">
       <h1 class="text-4xl md:text-5xl font-bold mb-4 text-primary-foreground uppercase tracking-wide">Grow Your Solar Business</h1>
       <h2 class="text-2xl md:text-3xl font-medium mb-6 text-accent drop-shadow-lg">Get Discovered on Google & ChatGPT</h2>
-      <div class="my-6 p-3 md:p-3 bg-black/30 rounded-lg backdrop-blur-sm border border-white/10">
-        <div class="mb-3 text-sm md:text-base leading-relaxed opacity-95">
+      <div class="my-6 p-[theme(--spacing-md)] md:p-[theme(--spacing-md)] bg-black/30 rounded-lg backdrop-blur-sm border border-white/10">
+        <div class="mb-[theme(--spacing-md)] text-sm md:text-base leading-relaxed opacity-95">
           <strong class="text-accent drop-shadow">Join 450+ Solar Panel Installers</strong> who are listed on Solarvipani.com
         </div>
         <div class="text-sm md:text-base leading-relaxed opacity-95">
@@ -349,7 +349,7 @@
       <p class="text-base md:text-lg mb-6 text-primary-foreground/95 opacity-95 italic drop-shadow">
         Connect directly with customers seeking solar installation services in your area
       </p>
-      <button class="inline-flex items-center justify-center gap-2 px-6 md:px-8 py-3 md:py-3 bg-primary text-primary-foreground rounded-md font-semibold hover:bg-primary hover:opacity-90 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg uppercase tracking-wider text-sm md:text-base pulse" onclick={navigateToBusinessForm}>
+      <Button onclick={navigateToBusinessForm} class="pulse uppercase tracking-wider gap-2">
         <span>List My Business Now</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -366,16 +366,16 @@
             points="12 5 19 12 12 19"
           ></polyline></svg
         >
-      </button>
+      </Button>
     </div>
   </div>
 
   <div class="max-w-5xl mx-auto px-4 py-8 md:py-12">
     <!-- Value Proposition Section -->
-    <section class="rounded-lg bg-card p-12 md:p-16 mb-8 shadow-md">
-      <div class="text-center mb-10">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">Why List Your Business with Solar Vipani?</h2>
-        <div class="flex justify-center items-center my-4">
+    <Card class="p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)]">
+      <div class="text-center mb-[theme(--spacing-2xl)]">
+        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Why List Your Business with Solar Vipani?</h2>
+        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
         <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -385,22 +385,22 @@
         </p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-[theme(--card-gap)] mb-[theme(--spacing-2xl)]">
         {#each benefits as benefit}
-          <div class="p-8 rounded-lg bg-card shadow-md hover:shadow-lg hover:-translate-y-1 transition-all text-center flex flex-col items-center">
-            <div class="w-16 h-16 flex items-center justify-center mb-4 rounded-full bg-primary/10 text-primary">{@html benefit.icon}</div>
-            <h3 class="text-xl font-semibold mb-3 text-primary">{benefit.title}</h3>
+          <Card class="text-center flex flex-col items-center p-[theme(--spacing-lg)]">
+            <div class="w-16 h-16 flex items-center justify-center text-primary mb-[theme(--spacing-lg)] rounded-full bg-primary/10">{@html benefit.icon}</div>
+            <h3 class="text-xl font-semibold text-primary mb-[theme(--spacing-md)]">{benefit.title}</h3>
             <div class="text-muted-foreground text-sm">
               {#each benefit.descriptions as description}
-                <p class="mb-2">{description}</p>
+                <p class="mb-[theme(--spacing-sm)]">{description}</p>
               {/each}
             </div>
-          </div>
+          </Card>
         {/each}
       </div>
 
-      <div class="text-center mt-8">
-        <button class="inline-flex items-center justify-center gap-2 px-8 py-3 bg-primary text-primary-foreground rounded-md font-semibold hover:bg-primary-hover hover:-translate-y-1 transition-all duration-300 hover:shadow-lg uppercase tracking-wider" onclick={navigateToBusinessForm}>
+      <div class="text-center mt-[theme(--spacing-2xl)]">
+        <Button onclick={navigateToBusinessForm} class="uppercase tracking-wider gap-2">
           <span>Get Started for Free</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -417,30 +417,30 @@
               points="12 5 19 12 12 19"
             ></polyline></svg
           >
-        </button>
+        </Button>
       </div>
-    </section>
+    </Card>
 
     <!-- Social Proof Section -->
-    <section class="rounded-lg bg-accent-muted p-12 md:p-16 mb-8 shadow-md">
-      <div class="text-center mb-10">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">Join the Solar Installer Community</h2>
-        <div class="flex justify-center items-center my-4">
+    <Card class="bg-accent-muted p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)]">
+      <div class="text-center mb-[theme(--spacing-2xl)]">
+        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Join the Solar Installer Community</h2>
+        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
       </div>
 
-      <div class="flex justify-center gap-12 flex-wrap mb-8">
+      <div class="flex justify-center flex-wrap gap-[theme(--spacing-2xl)] mb-[theme(--spacing-2xl)]">
         {#each stats as stat}
-          <div class="w-48 text-center p-6 rounded-lg bg-card shadow-md hover:shadow-lg hover:scale-105 transition-all">
-            <div class="text-5xl font-bold text-primary mb-2">{stat.number}</div>
+          <Card class="w-48 text-center p-[theme(--spacing-lg)]">
+            <div class="text-5xl font-bold text-primary mb-[theme(--spacing-sm)]">{stat.number}</div>
             <div class="text-lg font-semibold text-muted-foreground">{stat.label}</div>
-          </div>
+          </Card>
         {/each}
       </div>
 
-      <div class="text-center mt-8">
-        <button class="inline-flex items-center justify-center gap-2 px-8 py-3 bg-primary text-primary-foreground rounded-md font-semibold hover:bg-primary-hover hover:-translate-y-1 transition-all duration-300 hover:shadow-lg uppercase tracking-wider" onclick={navigateToBusinessForm}>
+      <div class="text-center mt-[theme(--spacing-2xl)]">
+        <Button onclick={navigateToBusinessForm} class="uppercase tracking-wider gap-2">
           <span>List My Business</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -457,15 +457,15 @@
               points="12 5 19 12 12 19"
             ></polyline></svg
           >
-        </button>
+        </Button>
       </div>
-    </section>
+    </Card>
 
     <!-- Recently Joined Verified Installers -->
-    <section class="rounded-lg bg-accent/10 p-12 md:p-16 mb-8 shadow-md">
-      <div class="text-center mb-10">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">Recently Joined Verified Installers</h2>
-        <div class="flex justify-center items-center my-4">
+    <Card class="p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)] bg-[hsl(var(--accent)/0.1)]">
+      <div class="text-center mb-[theme(--spacing-2xl)]">
+        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Recently Joined Verified Installers</h2>
+        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
         <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -473,17 +473,17 @@
         </p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] mb-[theme(--spacing-2xl)]">
         {#if data && data.businesses && data.businesses.length > 0}
           {#each data.businesses as business}
             <a
               href={`/solar-panel-installer/${business.slug}`}
               target="_blank"
               rel="noopener noreferrer"
-              class="no-underline text-inherit block transition-transform hover:-translate-y-1 duration-300"
+              class="no-underline text-inherit block transition-transform duration-[theme(--transition-default)]"
             >
-              <div class="relative p-6 rounded-lg bg-card shadow-md hover:shadow-lg transition-shadow h-full flex flex-col overflow-hidden">
-                <div class="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-full bg-success text-primary-foreground text-xs font-semibold">
+              <Card class="relative h-full flex flex-col overflow-hidden p-[theme(--spacing-lg)]">
+                <div class="absolute flex items-center text-primary-foreground text-xs font-semibold bg-success top-[theme(--spacing-xs)] right-[theme(--spacing-xs)] gap-[theme(--spacing-xs)] px-[theme(--spacing-sm)] py-[theme(--spacing-xs)] rounded-full">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="18"
@@ -500,9 +500,9 @@
                   >
                   <span>Verified</span>
                 </div>
-                <h3 class="text-lg font-semibold pr-16 text-primary">{business.businessname}</h3>
-                <div class="flex flex-col gap-2 mt-auto">
-                  <div class="flex items-center gap-2 text-muted-foreground text-sm">
+                <h3 class="text-lg font-semibold text-primary pr-[theme(--spacing-2xl)]">{business.businessname}</h3>
+                <div class="flex flex-col mt-auto gap-[theme(--spacing-sm)]">
+                  <div class="flex items-center text-muted-foreground text-sm gap-[theme(--spacing-sm)]">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
@@ -518,7 +518,7 @@
                     >
                     <span>{business.city}, {business.state}</span>
                   </div>
-                  <div class="flex items-center gap-2 text-muted-foreground text-sm">
+                  <div class="flex items-center text-muted-foreground text-sm gap-[theme(--spacing-sm)]">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
@@ -536,7 +536,7 @@
                     <span>{business.phonenumber}</span>
                   </div>
                 </div>
-              </div>
+              </Card>
             </a>
           {/each}
         {:else}
@@ -549,8 +549,8 @@
         {/if}
       </div>
 
-      <div class="text-center mt-8">
-        <button class="inline-flex items-center justify-center gap-2 px-8 py-3 bg-primary text-primary-foreground rounded-md font-semibold hover:bg-primary-hover hover:-translate-y-1 transition-all duration-300 hover:shadow-lg uppercase tracking-wider" onclick={navigateToBusinessForm}>
+      <div class="text-center mt-[theme(--spacing-2xl)]">
+        <Button onclick={navigateToBusinessForm} class="uppercase tracking-wider gap-2">
           <span>Join These Businesses</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -566,15 +566,15 @@
               points="12 5 19 12 12 19"
             ></polyline></svg
           >
-        </button>
+        </Button>
       </div>
-    </section>
+    </Card>
 
     <!-- How It Works Video Section -->
-    <section class="rounded-lg bg-card p-12 md:p-16 mb-8 shadow-md text-center" id="product-working">
-      <div class="text-center mb-10">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">See How It Works</h2>
-        <div class="flex justify-center items-center my-4">
+    <Card class="text-center p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)]" id="product-working">
+      <div class="text-center mb-[theme(--spacing-2xl)]">
+        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">See How It Works</h2>
+        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
         <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -583,7 +583,7 @@
         </p>
       </div>
 
-      <div class="relative mx-auto max-w-2xl rounded-lg overflow-hidden shadow-lg">
+      <div class="relative mx-auto max-w-2xl overflow-hidden rounded-[theme(--radius-lg)] shadow-[theme(--shadow-lg)]">
         <iframe
           src="https://www.youtube.com/embed/8UZ-4XN8Vq8"
           title="How Solarvipani.com works"
@@ -595,8 +595,8 @@
         </iframe>
       </div>
 
-      <div class="text-center mt-8">
-        <button class="inline-flex items-center justify-center gap-2 px-8 py-3 bg-primary text-primary-foreground rounded-md font-semibold hover:bg-primary-hover hover:-translate-y-1 transition-all duration-300 hover:shadow-lg uppercase tracking-wider" onclick={navigateToBusinessForm}>
+      <div class="text-center mt-[theme(--spacing-2xl)]">
+        <Button onclick={navigateToBusinessForm} class="uppercase tracking-wider gap-2">
           <span>Try It Now — Free</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -612,72 +612,71 @@
               points="12 5 19 12 12 19"
             ></polyline></svg
           >
-        </button>
+        </Button>
       </div>
-    </section>
+    </Card>
 
     <!-- FAQs Section -->
-    <section class="rounded-lg bg-card p-12 md:p-16 mb-8 shadow-md">
-      <div class="text-center mb-10">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">Frequently Asked Questions</h2>
-        <div class="flex justify-center items-center my-4">
+    <Card class="p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)]">
+      <div class="text-center mb-[theme(--spacing-2xl)]">
+        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Frequently Asked Questions</h2>
+        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-[theme(--card-gap)]">
         {#each faqs as faq}
-          <div class="p-6 rounded-lg bg-card shadow-sm hover:shadow-md hover:-translate-y-1 transition-all">
-            <h3 class="text-lg font-semibold mb-3 text-primary">{faq.question}</h3>
+          <Card class="p-[theme(--spacing-lg)]">
+            <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-md)]">{faq.question}</h3>
             <p class="text-muted-foreground text-sm">{faq.answer}</p>
-          </div>
+          </Card>
         {/each}
       </div>
-    </section>
+    </Card>
 
     <!-- Call to Action Section -->
-    <section class="rounded-lg bg-transparent p-0 mb-8 shadow-none">
-      <div class="bg-gradient-to-r from-primary to-primary text-primary-foreground p-12 md:p-16 rounded-lg shadow-lg text-center">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4">Ready to Grow Your Solar Business?</h2>
-        <p class="text-lg mb-8 max-w-2xl mx-auto opacity-90">
-          Join thousands of solar installation companies already benefiting from
-          Solar Vipani's platform
-        </p>
-        <button
-          class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-card text-primary rounded-md font-semibold hover:bg-muted hover:-translate-y-1 transition-all duration-300 hover:shadow-lg uppercase tracking-wider pulse"
-          onclick={navigateToBusinessForm}
+    <Card class="rounded-lg bg-gradient-subtle p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)] text-center text-primary-foreground">
+      <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)]">Ready to Grow Your Solar Business?</h2>
+      <p class="text-lg mb-[theme(--spacing-2xl)] max-w-2xl mx-auto opacity-90">
+        Join thousands of solar installation companies already benefiting from
+        Solar Vipani's platform
+      </p>
+      <Button
+        onclick={navigateToBusinessForm}
+        variant="outline"
+        class="pulse uppercase tracking-wider gap-2"
+      >
+        <span>List My Business Now</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="hover:translate-x-1 transition-transform"
+          ><line x1="5" y1="12" x2="19" y2="12"></line><polyline
+            points="12 5 19 12 12 19"
+          ></polyline></svg
         >
-          <span>List My Business Now</span>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="hover:translate-x-1 transition-transform"
-            ><line x1="5" y1="12" x2="19" y2="12"></line><polyline
-              points="12 5 19 12 12 19"
-            ></polyline></svg
-          >
-        </button>
-      </div>
-    </section>
+      </Button>
+    </Card>
 
     <!-- Need Assistance Section -->
-    <section class="rounded-lg bg-card p-12 md:p-16 mb-8 shadow-md">
-      <div class="text-center mb-10">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">We're Here to Help</h2>
-        <div class="flex justify-center items-center my-4">
+    <Card class="p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)]">
+      <div class="text-center mb-[theme(--spacing-2xl)]">
+        <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">We're Here to Help</h2>
+        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
       </div>
 
-      <div class="flex justify-center gap-8 flex-wrap">
-        <div class="p-6 rounded-lg bg-card shadow-sm text-center w-64 transition-transform hover:-translate-y-1">
+      <div class="flex justify-center gap-[theme(--spacing-2xl)] flex-wrap">
+        <Card class="p-[theme(--spacing-lg)] text-center w-64">
           <div class="text-primary mb-4 flex justify-center">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -700,9 +699,9 @@
             class="block text-lg font-semibold text-primary hover:underline transition-colors"
             rel="noopener">admin@solarvipani.com</a
           >
-        </div>
+        </Card>
 
-        <div class="p-6 rounded-lg bg-card shadow-sm text-center w-64 transition-transform hover:-translate-y-1">
+        <Card class="p-[theme(--spacing-lg)] text-center w-64">
           <div class="text-primary mb-4 flex justify-center">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -723,9 +722,9 @@
           <a href="tel:+918983066701" class="block text-lg font-semibold text-primary hover:underline transition-colors" rel="noopener"
             >+91 8983066701</a
           >
-        </div>
+        </Card>
       </div>
-    </section>
+    </Card>
 
     <!-- About Solarvipani Section -->
 

@@ -1,3 +1,7 @@
+<script>
+	import { Card } from '$lib/components/ui/card';
+</script>
+
 <svelte:head>
 	<!-- Meta Pixel Code -->
 	<script>
@@ -39,13 +43,15 @@
 	/>
 </svelte:head>
 
-<main class="pt-12 flex flex-col items-center justify-center min-h-screen text-center bg-background text-foreground">
-	<h1 class="text-4xl md:text-5xl font-bold mb-4">Thank you for submitting your details.</h1>
-	<p class="text-xl md:text-2xl mb-4">We will call you soon to verify the business details submitted in the form.</p>
-	<p class="text-xl md:text-2xl">
-		If you'd like to speak with us right away, feel free to give us a call at <a
-			href="tel:+918983066701"
-			class="text-primary hover:opacity-80 transition-opacity">+91 8983066701</a
-		>
-	</p>
+<main class="pt-[theme(--spacing-2xl)] flex flex-col items-center justify-center min-h-screen text-center bg-background text-foreground">
+	<Card class="w-full max-w-[theme(--max-width-2xl)] mx-[theme(--spacing-sm)]">
+		<h1 class="text-[theme(--font-size-4xl)] md:text-[theme(--font-size-5xl)] font-bold mb-[theme(--spacing-lg)]">Thank you for submitting your details.</h1>
+		<p class="text-[theme(--font-size-xl)] md:text-[theme(--font-size-2xl)] mb-[theme(--spacing-lg)]">We will call you soon to verify the business details submitted in the form.</p>
+		<p class="text-[theme(--font-size-xl)] md:text-[theme(--font-size-2xl)]">
+			If you'd like to speak with us right away, feel free to give us a call at <a
+				href="tel:+918983066701"
+				class="text-primary hover:opacity-80 transition-opacity">+91 8983066701</a
+			>
+		</p>
+	</Card>
 </main>
