@@ -18,12 +18,14 @@
 	}
 </script>
 
-<Card class="w-full border-0 mb-[theme(--card-gap)] shadow-[theme(--shadow-md)]">
+<Card class="w-full border-0 mt-[theme(--spacing-2xl)] mb-[theme(--card-gap)] shadow-[theme(--shadow-md)]">
 	<CardHeader class="text-center">
-		<CardTitle class="text-[theme(--font-size-3xl)] leading-[theme(--font-size-3xl--line-height)] tracking-[theme(--tracking-heading)]">
+		<CardTitle class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">
 			About Solarvipani
 		</CardTitle>
-		<div class="h-[theme(--divider-line-height)] w-[theme(--divider-line-width)] bg-secondary mx-auto mt-[theme(--form-element-field-gap)]"></div>
+		<div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+			<span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+		</div>
 	</CardHeader>
 
 	<CardContent class="gap-[theme(--card-gap)] flex flex-col">

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { Root as Card, CardContent } from '$lib/components/ui/card';
-	import { Badge } from '$lib/components/ui/badge';
 	import * as Table from '$lib/components/ui/table';
 	import { Check, X } from '@lucide/svelte';
 
@@ -35,9 +34,12 @@
 
 <section class="flex flex-col gap-[theme(--card-gap)] px-[theme(--container-padding)] py-[theme(--card-gap)] md:px-8">
 	<div class="flex flex-col items-center justify-center gap-[theme(--form-element-field-gap)] text-center">
-		<h2 class="text-[length:var(--font-size-3xl)] leading-[var(--font-size-3xl--line-height)] font-semibold tracking-[var(--tracking-heading)] text-primary">
+		<h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">
 			Simplifying Solar For Everyone All over India
 		</h2>
+		<div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+			<span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+		</div>
 	</div>
 
 	<div class="flex justify-center">
@@ -48,25 +50,25 @@
 						<Table.Header>
 							<Table.Row>
 								<Table.Head class="w-1/4">Aspect</Table.Head>
-								<Table.Head class="w-3/8">With <strong>Solar Vipani</strong></Table.Head>
-								<Table.Head class="w-3/8">Traditional Approach</Table.Head>
+								<Table.Head class="w-3/8 bg-green-50 dark:bg-green-900 text-green-900 dark:text-green-100">With <strong>Solar Vipani</strong></Table.Head>
+								<Table.Head class="w-3/8 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100">Traditional Approach</Table.Head>
 							</Table.Row>
 						</Table.Header>
 						<Table.Body>
 							{#each comparisonData as row (row.aspect)}
 								<Table.Row>
 									<Table.Cell class="font-semibold">{row.aspect}</Table.Cell>
-									<Table.Cell>
-										<Badge variant="default" class="gap-[theme(--form-element-field-gap)]">
-											<Check class="w-4 h-4" />
-											{row.solar}
-										</Badge>
+									<Table.Cell class="bg-green-50 dark:bg-green-900">
+										<div class="flex items-center gap-[theme(--form-element-field-gap)] text-green-700 dark:text-green-300">
+											<Check class="w-4 h-4 flex-shrink-0" />
+											<span>{row.solar}</span>
+										</div>
 									</Table.Cell>
-									<Table.Cell>
-										<Badge variant="destructive" class="gap-[theme(--form-element-field-gap)]">
-											<X class="w-4 h-4" />
-											{row.traditional}
-										</Badge>
+									<Table.Cell class="bg-gray-50 dark:bg-gray-800">
+										<div class="flex items-center gap-[theme(--form-element-field-gap)] text-gray-600 dark:text-gray-400">
+											<X class="w-4 h-4 flex-shrink-0" />
+											<span>{row.traditional}</span>
+										</div>
 									</Table.Cell>
 								</Table.Row>
 							{/each}
