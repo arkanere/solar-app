@@ -58,9 +58,9 @@
 	}
 </script>
 
-<form onsubmit={handleSubmit} style="display: flex; flex-direction: column; max-width: 448px; margin-left: auto; margin-right: auto; gap: var(--form-field-gap); padding-bottom: var(--form-field-gap);">
+<form onsubmit={handleSubmit} class="flex flex-col max-w-[theme(--max-width-md)] mx-auto gap-[theme(--form-field-gap)] pb-[theme(--form-field-gap)]">
 	<!-- Name Input -->
-	<div style="display: flex; flex-direction: column; gap: var(--form-element-field-gap);">
+	<div class="flex flex-col gap-[theme(--form-element-field-gap)]">
 		<Label for="name">Name</Label>
 		<Input
 			id="name"
@@ -77,7 +77,7 @@
 	</div>
 
 	<!-- Phone Number Input -->
-	<div style="display: flex; flex-direction: column; gap: var(--form-element-field-gap);">
+	<div class="flex flex-col gap-[theme(--form-element-field-gap)]">
 		<Label for="phone">Phone Number</Label>
 		<Input
 			id="phone"
@@ -94,7 +94,7 @@
 	</div>
 
 	<!-- Pincode Input -->
-	<div style="display: flex; flex-direction: column; gap: var(--form-element-field-gap);">
+	<div class="flex flex-col gap-[theme(--form-element-field-gap)]">
 		<Label for="pincode">Pincode</Label>
 		<Input
 			id="pincode"
@@ -111,7 +111,7 @@
 	</div>
 
 	<!-- Message Input -->
-	<div style="display: flex; flex-direction: column; gap: var(--form-element-field-gap);">
+	<div class="flex flex-col gap-[theme(--form-element-field-gap)]">
 		<Label for="message">Message</Label>
 		<Textarea
 			id="message"

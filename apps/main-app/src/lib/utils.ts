@@ -17,6 +17,16 @@ export type WithElementRef<T, E extends HTMLElement = HTMLElement> = T & {
 };
 
 /**
+ * Type helper that removes 'children' prop from a type
+ */
+export type WithoutChild<T> = Omit<T, 'children'>;
+
+/**
+ * Type helper that removes 'children' and 'child' props from a type
+ */
+export type WithoutChildrenOrChild<T> = Omit<T, 'children' | 'child'>;
+
+/**
  * Fly and slide transition helper for animations
  */
 export type FlyAndScaleParams = {

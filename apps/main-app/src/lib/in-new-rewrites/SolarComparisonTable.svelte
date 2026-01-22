@@ -33,16 +33,16 @@
 	];
 </script>
 
-<section style="display: flex; flex-direction: column; gap: var(--card-gap); padding-top: var(--card-gap); padding-bottom: var(--card-gap); padding-left: var(--container-padding); padding-right: var(--container-padding);" class="md:px-8">
-	<div style="text-align: center; display: flex; flex-direction: column; gap: var(--form-element-field-gap);">
-		<h2 style="font-size: var(--font-size-3xl); line-height: var(--font-size-3xl--line-height); font-weight: 600; letter-spacing: var(--tracking-heading); color: hsl(var(--primary));">
+<section class="flex flex-col gap-[theme(--card-gap)] px-[theme(--container-padding)] py-[theme(--card-gap)] md:px-8">
+	<div class="flex flex-col items-center justify-center gap-[theme(--form-element-field-gap)] text-center">
+		<h2 class="text-[length:var(--font-size-3xl)] leading-[var(--font-size-3xl--line-height)] font-semibold tracking-[var(--tracking-heading)] text-primary">
 			Simplifying Solar For Everyone All over India
 		</h2>
 	</div>
 
 	<div class="flex justify-center">
-		<Card style="width: 100%; max-width: var(--max-width-4xl);">
-			<CardContent style="padding-top: var(--card-padding-y);">
+		<Card class="w-full max-w-[theme(--max-width-4xl)]">
+			<CardContent class="pt-[theme(--card-padding-y)]">
 				<div class="overflow-x-auto">
 					<Table.Root>
 						<Table.Header>
@@ -55,15 +55,15 @@
 						<Table.Body>
 							{#each comparisonData as row (row.aspect)}
 								<Table.Row>
-									<Table.Cell style="font-weight: 600;">{row.aspect}</Table.Cell>
+									<Table.Cell class="font-semibold">{row.aspect}</Table.Cell>
 									<Table.Cell>
-										<Badge variant="default" style="gap: var(--form-element-field-gap);">
+										<Badge variant="default" class="gap-[theme(--form-element-field-gap)]">
 											<Check class="w-4 h-4" />
 											{row.solar}
 										</Badge>
 									</Table.Cell>
 									<Table.Cell>
-										<Badge variant="destructive" style="gap: var(--form-element-field-gap);">
+										<Badge variant="destructive" class="gap-[theme(--form-element-field-gap)]">
 											<X class="w-4 h-4" />
 											{row.traditional}
 										</Badge>

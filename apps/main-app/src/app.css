@@ -172,6 +172,8 @@
   --dialog-content-padding: 1.5rem;
   --dialog-content-shadow: var(--shadow-lg);
   --dialog-content-transition: var(--duration-slow);
+  --dialog-max-height: 85vh;
+  --dialog-max-width-responsive: 90%;
   --dialog-close-position-end: 1rem;
   --dialog-close-position-top: 1rem;
   --dialog-close-radius: var(--radius);

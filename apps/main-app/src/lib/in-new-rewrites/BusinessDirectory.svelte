@@ -3,6 +3,7 @@
 	import * as Select from '$lib/components/ui/select';
 	import * as Card from '$lib/components/ui/card';
 	import * as Label from '$lib/components/ui/label';
+	import { Button } from '$lib/components/ui/button';
 	import { INDIA_STATES } from '$lib/constants/solarSystems';
 
 	let selectedState = $state('');
@@ -55,18 +56,18 @@
 	}
 </script>
 
-<main style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: var(--button-height-lg); padding-bottom: var(--button-height-lg); padding-left: 1rem; padding-right: 1rem;">
-	<div style="width: 100%; max-width: var(--max-width-sm);">
-		<Card.Root style="border: 1px solid hsl(var(--border)); box-shadow: var(--shadow-lg);">
+<main class="min-h-screen flex flex-col items-center justify-center p-[theme(--button-height-lg)]">
+	<div class="w-full max-w-[theme(--max-width-sm)]">
+		<Card.Root class="border border-[theme(--color-border)] shadow-[theme(--shadow-lg)]">
 			<Card.Header>
-				<Card.Title style="font-size: var(--font-size-2xl); line-height: var(--font-size-2xl--line-height);">Solar Installer Directory</Card.Title>
+				<Card.Title class="text-[theme(--font-size-2xl)] leading-[theme(--font-size-2xl--line-height)]">Solar Installer Directory</Card.Title>
 				<Card.Description>
 					Select state and district to view installer listings
 				</Card.Description>
 			</Card.Header>
 
-			<Card.Content style="display: flex; flex-direction: column; gap: var(--card-gap);">
-				<div style="display: flex; flex-direction: column; gap: var(--form-element-field-gap);">
+			<Card.Content class="flex flex-col gap-[theme(--card-gap)]">
+				<div class="flex flex-col gap-[theme(--form-element-field-gap)]">
 					<Label.Root for="state">State</Label.Root>
 					<Select.Root type="single" bind:value={selectedState} onValueChange={handleStateChange}>
 						<Select.Trigger id="state" class="w-full">
@@ -80,7 +81,7 @@
 					</Select.Root>
 				</div>
 
-				<div style="display: flex; flex-direction: column; gap: var(--form-element-field-gap);">
+				<div class="flex flex-col gap-[theme(--form-element-field-gap)]">
 					<Label.Root for="district">District</Label.Root>
 					<Select.Root type="single" bind:value={selectedDistrict} disabled={!selectedState || isLoading}>
 						<Select.Trigger id="district" class="w-full">
@@ -102,15 +103,13 @@
 					</Select.Root>
 				</div>
 
-				<button
+				<Button
 					onclick={handleDistrictSelection}
 					disabled={!selectedState || !selectedDistrict}
-					style="width: 100%; margin-top: var(--card-gap); padding-left: var(--button-padding-x-default); padding-right: var(--button-padding-x-default); padding-top: var(--button-padding-y-default); padding-bottom: var(--button-padding-y-default); background-color: hsl(var(--primary)); color: hsl(var(--primary-foreground)); border-radius: var(--radius-md); font-weight: 500; transition: all var(--transition-default);"
-					onmouseenter={(e) => !e.currentTarget.disabled && e.currentTarget.style.setProperty('background-color', 'hsl(var(--primary) / 0.9)')}
-					onmouseleave={(e) => e.currentTarget.style.setProperty('background-color', 'hsl(var(--primary))')}
+					class="w-full mt-[theme(--card-gap)]"
 				>
 					View Installers
-				</button>
+				</Button>
 			</Card.Content>
 		</Card.Root>
 	</div>

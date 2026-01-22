@@ -1,26 +1,24 @@
 <script lang="ts">
-	import type { ComponentProps } from "svelte";
-	import type Calendar from "./calendar.svelte";
 	import CalendarMonthSelect from "./calendar-month-select.svelte";
 	import CalendarYearSelect from "./calendar-year-select.svelte";
 	import { DateFormatter, getLocalTimeZone, type DateValue } from "@internationalized/date";
 
 	let {
-		captionLayout,
-		months,
+		captionLayout = "label" as const,
+		months = [],
 		monthFormat,
-		years,
-		yearFormat,
+		years = [],
+		yearFormat = "numeric" as const,
 		month,
 		locale,
 		placeholder = $bindable(),
 		monthIndex = 0,
 	}: {
-		captionLayout: ComponentProps<typeof Calendar>["captionLayout"];
-		months: ComponentProps<typeof CalendarMonthSelect>["months"];
-		monthFormat: ComponentProps<typeof CalendarMonthSelect>["monthFormat"];
-		years: ComponentProps<typeof CalendarYearSelect>["years"];
-		yearFormat: ComponentProps<typeof CalendarYearSelect>["yearFormat"];
+		captionLayout?: "dropdown" | "dropdown-months" | "dropdown-years" | "label";
+		months?: any;
+		monthFormat?: any;
+		years?: any;
+		yearFormat?: any;
 		month: DateValue;
 		placeholder: DateValue | undefined;
 		locale: string;

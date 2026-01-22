@@ -80,7 +80,7 @@
     </Card.Header>
 
     <Card.Content class="pb-[theme(--card-padding-y)]">
-      <form on:submit={handleSubmit} class="flex flex-col gap-[theme(--form-field-gap)]">
+      <form onsubmit={handleSubmit} class="flex flex-col gap-[theme(--form-field-gap)]">
         <!-- Name Field -->
         <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
           <Label for="name">Name</Label>
@@ -159,7 +159,7 @@
             bind:value={comment}
             placeholder="Tell us about your solar system requirements..."
             disabled={isSubmitting}
-            class="min-h-[7.5rem]"
+            class="min-h-[theme(--textarea-min-height)]"
           />
           {#if errors.comment}
             <Alert.Root variant="destructive" class="mt-[theme(--form-element-field-gap)]">

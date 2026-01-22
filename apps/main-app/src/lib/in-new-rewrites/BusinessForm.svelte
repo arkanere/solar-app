@@ -175,7 +175,7 @@
   </Card.Header>
 
   <Card.Content>
-    <form on:submit={handleSubmit} class="flex flex-col gap-[theme(--form-field-gap)] pb-[theme(--card-padding-y)]">
+    <form onsubmit={handleSubmit} class="flex flex-col gap-[theme(--form-field-gap)] pb-[theme(--card-padding-y)]">
       <!-- Business Name -->
       <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="businessName">Business Name</Label>

@@ -12,17 +12,17 @@
 	});
 </script>
 
-<div class="flex items-center justify-center min-h-screen" style="padding: var(--space-y-4);">
-	<CardRoot class="w-full" style="max-width: var(--max-width-sm);">
+<div class="flex items-center justify-center min-h-screen p-[theme(--spacing-lg)]">
+	<CardRoot class="w-full max-w-[theme(--max-width-sm)]">
 		<CardHeader>
 			<CardTitle>Solar System Calculator</CardTitle>
 			<CardDescription>Calculate the size of your solar system</CardDescription>
 		</CardHeader>
-		<CardContent style="gap: var(--space-y-6); display: flex; flex-direction: column;">
-			<div style="gap: var(--space-y-2); display: flex; flex-direction: column;">
+		<CardContent class="gap-[theme(--spacing-xl)] flex flex-col">
+			<div class="gap-[theme(--spacing-sm)] flex flex-col">
 				<div class="flex justify-between items-baseline">
 					<Label for="bill">Monthly Electricity Bill</Label>
-					<span class="text-primary" style="font-size: var(--font-size-lg); line-height: var(--font-size-lg--line-height); font-weight: 600;">₹{currentBill}</span>
+					<span class="text-primary text-[theme(--font-size-lg)] font-semibold">₹{currentBill}</span>
 				</div>
 				<Slider
 					id="bill"
@@ -32,13 +32,13 @@
 					bind:value={currentBill}
 					class="w-full"
 				/>
-				<div class="text-muted-foreground" style="font-size: var(--font-size-xs); line-height: var(--font-size-xs--line-height);">₹500 - ₹5000</div>
+				<div class="text-muted-foreground text-[theme(--font-size-xs)]">₹500 - ₹5000</div>
 			</div>
 
-			<div style="gap: var(--space-y-2); display: flex; flex-direction: column;">
+			<div class="gap-[theme(--spacing-sm)] flex flex-col">
 				<div class="flex justify-between items-baseline">
 					<Label for="rate">Rate per Unit</Label>
-					<span class="text-primary" style="font-size: var(--font-size-lg); line-height: var(--font-size-lg--line-height); font-weight: 600;">₹{ratePerUnit.toFixed(1)}</span>
+					<span class="text-primary text-[theme(--font-size-lg)] font-semibold">₹{ratePerUnit.toFixed(1)}</span>
 				</div>
 				<Slider
 					id="rate"
@@ -48,13 +48,13 @@
 					bind:value={ratePerUnit}
 					class="w-full"
 				/>
-				<div class="text-muted-foreground" style="font-size: var(--font-size-xs); line-height: var(--font-size-xs--line-height);">₹3 - ₹15 per unit</div>
+				<div class="text-muted-foreground text-[theme(--font-size-xs)]">₹3 - ₹15 per unit</div>
 			</div>
 
-			<div class="border-t" style="padding-top: var(--space-y-4);">
+			<div class="border-t pt-[theme(--spacing-lg)]">
 				<div class="text-center">
-					<p class="text-muted-foreground" style="font-size: var(--font-size-sm); line-height: var(--font-size-sm--line-height); margin-bottom: var(--space-y-2);">Estimated System Size</p>
-					<p class="text-primary" style="font-size: var(--font-size-3xl); line-height: var(--font-size-3xl--line-height); font-weight: 700;">{solarSystemSize} <span style="font-size: var(--font-size-lg); line-height: var(--font-size-lg--line-height);">kW</span></p>
+					<p class="text-muted-foreground text-[theme(--font-size-sm)] mb-[theme(--spacing-sm)]">Estimated System Size</p>
+					<p class="text-primary text-[theme(--font-size-3xl)] font-bold">{solarSystemSize} <span class="text-[theme(--font-size-lg)]">kW</span></p>
 				</div>
 			</div>
 		</CardContent>

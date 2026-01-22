@@ -1,10 +1,28 @@
 <script lang="ts">
 	import { Calendar as CalendarPrimitive } from "bits-ui";
 	import * as Calendar from "./index.js";
-	import { cn, type WithoutChildrenOrChild } from "$lib/utils.js";
+	import { cn } from "$lib/utils.js";
 	import type { ButtonVariant } from "../button/button.svelte";
 	import { isEqualMonth, type DateValue } from "@internationalized/date";
 	import type { Snippet } from "svelte";
+
+	type Props = {
+		ref?: any;
+		value?: any;
+		placeholder?: any;
+		class?: string;
+		weekdayFormat?: string;
+		buttonVariant?: ButtonVariant;
+		captionLayout?: "dropdown" | "dropdown-months" | "dropdown-years" | "label";
+		locale?: string;
+		months?: any;
+		years?: any;
+		monthFormat?: any;
+		yearFormat?: any;
+		day?: Snippet<[{ day: DateValue; outsideMonth: boolean }]>;
+		disableDaysOutsideMonth?: boolean;
+		[key: string]: any;
+	};
 
 	let {
 		ref = $bindable(null),
@@ -22,15 +40,7 @@
 		day,
 		disableDaysOutsideMonth = false,
 		...restProps
-	}: WithoutChildrenOrChild<CalendarPrimitive.RootProps> & {
-		buttonVariant?: ButtonVariant;
-		captionLayout?: "dropdown" | "dropdown-months" | "dropdown-years" | "label";
-		months?: CalendarPrimitive.MonthSelectProps["months"];
-		years?: CalendarPrimitive.YearSelectProps["years"];
-		monthFormat?: CalendarPrimitive.MonthSelectProps["monthFormat"];
-		yearFormat?: CalendarPrimitive.YearSelectProps["yearFormat"];
-		day?: Snippet<[{ day: DateValue; outsideMonth: boolean }]>;
-	} = $props();
+	}: Props = $props();
 
 	const monthFormat = $derived.by(() => {
 		if (monthFormatProp) return monthFormatProp;
@@ -59,7 +69,7 @@ get along, so we shut typescript up by casting `value` to `never`.
 	{yearFormat}
 	{...restProps}
 >
-	{#snippet children({ months, weekdays })}
+	{#snippet children({ months, weekdays }: any)}
 		<Calendar.Months>
 			<Calendar.Nav>
 				<Calendar.PrevButton variant={buttonVariant} />
@@ -69,11 +79,11 @@ get along, so we shut typescript up by casting `value` to `never`.
 				<Calendar.Month>
 					<Calendar.Header>
 						<Calendar.Caption
-							{captionLayout}
-							months={monthsProp}
-							{monthFormat}
-							{years}
-							{yearFormat}
+							captionLayout={captionLayout as never}
+							months={monthsProp as never}
+							monthFormat={monthFormat as never}
+							years={years as never}
+							yearFormat={yearFormat as never}
 							month={month.value}
 							bind:placeholder
 							{locale}

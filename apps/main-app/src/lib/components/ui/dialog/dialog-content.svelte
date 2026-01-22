@@ -5,8 +5,7 @@
 	import type { Snippet } from "svelte";
 	import * as Dialog from "./index.js";
 	import { cn, type WithoutChildrenOrChild } from "$lib/utils.js";
-	import type { ComponentProps } from "svelte";
-
+	
 	let {
 		ref = $bindable(null),
 		class: className,
@@ -15,7 +14,7 @@
 		showCloseButton = true,
 		...restProps
 	}: WithoutChildrenOrChild<DialogPrimitive.ContentProps> & {
-		portalProps?: WithoutChildrenOrChild<ComponentProps<typeof DialogPortal>>;
+		portalProps?: DialogPrimitive.PortalProps;
 		children: Snippet;
 		showCloseButton?: boolean;
 	} = $props();

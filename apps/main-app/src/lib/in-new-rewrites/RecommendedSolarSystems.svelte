@@ -4,40 +4,25 @@
 	import { RECOMMENDED_SYSTEMS } from '$lib/constants/solarSystems';
 </script>
 
-<section
-	style="padding-top: var(--card-gap); padding-bottom: var(--card-gap); padding-left: 1rem; padding-right: 1rem;"
-	class="sm:px-6 lg:px-8"
->
+<section class="py-[theme(--card-gap)] px-[theme(--container-padding)] sm:px-6 lg:px-8">
 	<div class="max-w-4xl mx-auto">
-		<h2
-			class="text-center text-primary"
-			style="font-size: var(--font-size-3xl); line-height: var(--font-size-3xl--line-height); font-weight: 600; margin-bottom: var(--card-gap);"
-		>
+		<h2 class="text-center text-primary text-3xl font-semibold mb-[theme(--card-gap)] leading-9">
 			Recommended Solar Systems for Homes
 		</h2>
 
-		<Card.Root class="border-0" style="box-shadow: var(--shadow-card);">
+		<Card.Root class="border-0 shadow-[theme(--shadow-card)]">
 			<Card.Content class="p-0">
 				<div class="overflow-x-auto">
 					<Table.Root>
 						<Table.Header>
 							<Table.Row class="bg-primary">
-								<Table.Head
-									class="text-primary-foreground uppercase"
-									style="font-weight: 600; font-size: var(--font-size-sm); letter-spacing: var(--tracking-wider);"
-								>
+								<Table.Head class="text-primary-foreground uppercase font-semibold text-sm tracking-wider">
 									Monthly Consumption / Bill
 								</Table.Head>
-								<Table.Head
-									class="text-primary-foreground uppercase"
-									style="font-weight: 600; font-size: var(--font-size-sm); letter-spacing: var(--tracking-wider);"
-								>
+								<Table.Head class="text-primary-foreground uppercase font-semibold text-sm tracking-wider">
 									Power Outage
 								</Table.Head>
-								<Table.Head
-									class="text-primary-foreground uppercase"
-									style="font-weight: 600; font-size: var(--font-size-sm); letter-spacing: var(--tracking-wider);"
-								>
+								<Table.Head class="text-primary-foreground uppercase font-semibold text-sm tracking-wider">
 									Recommended Solar System
 								</Table.Head>
 							</Table.Row>
@@ -45,15 +30,12 @@
 						<Table.Body>
 							{#each RECOMMENDED_SYSTEMS as row, idx}
 								<Table.Row class={idx % 2 === 0 ? 'bg-muted' : ''}>
-									<Table.Cell style="font-weight: 500;">{row.consumption}</Table.Cell>
+									<Table.Cell class="font-medium">{row.consumption}</Table.Cell>
 									<Table.Cell>{row.outage}</Table.Cell>
 									<Table.Cell>
-										<div class="text-primary" style="font-weight: 600;">{row.system}</div>
+										<div class="text-primary font-semibold">{row.system}</div>
 										{#if row.note}
-											<div
-												class="text-foreground-secondary"
-												style="font-size: var(--font-size-sm); line-height: var(--font-size-sm--line-height); margin-top: var(--form-element-field-gap);"
-											>
+											<div class="text-foreground-secondary text-sm leading-5 mt-[theme(--form-element-field-gap)]">
 												({row.note})
 											</div>
 										{/if}

@@ -72,7 +72,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-[theme(--spacing-2xl)]">
       {#each countries as country}
         <button
-          on:click={() => selectCountry(country.path)}
+          onclick={() => selectCountry(country.path)}
           class="bg-card text-card-foreground border-2 border-border rounded-[theme(--radius-xl)] px-[theme(--spacing-2xl)] py-[theme(--spacing-lg)] text-center cursor-pointer transition-all duration-[theme(--duration-default)] hover:shadow-[theme(--shadow-card-hover)] hover:border-accent hover:scale-[1.05]"
         >
           <div class="text-6xl mb-[theme(--spacing-lg)]">{country.flag}</div>

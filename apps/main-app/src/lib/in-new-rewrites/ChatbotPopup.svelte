@@ -33,11 +33,9 @@
 
 {#if isVisible && !isManuallyDismissed}
 	<Dialog.Root open={!isManuallyDismissed} onOpenChange={handleOpenChange}>
-		<Dialog.Overlay
-			style="animation: var(--animate-fade-in);"
-		/>
+		<Dialog.Overlay class="animate-fade-in" />
 		<Dialog.Content
-			style="width: 90%; max-width: var(--max-width-4xl); max-height: 85vh; animation: var(--animation-enter-slow); border-radius: var(--dialog-content-radius);"
+			class="w-[theme(--dialog-max-width-responsive)] max-w-[theme(--max-width-4xl)] max-h-[theme(--dialog-max-height)] animate-slide-in-from-bottom"
 		>
 			<ChatBotBox {messages} onClose={closePopup} />
 		</Dialog.Content>
