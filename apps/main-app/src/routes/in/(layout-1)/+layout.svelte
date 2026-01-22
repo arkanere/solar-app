@@ -209,10 +209,8 @@
   <div class="flex items-center gap-[theme(--spacing-md)]">
     <!-- Translate Dropdown -->
     <DropdownMenu.Root>
-      <DropdownMenu.Trigger asChild>
-        <button class="border border-border cursor-pointer whitespace-nowrap text-foreground hover:bg-muted px-[theme(--button-padding-x-sm)] py-[theme(--button-padding-y-sm)] text-[theme(--font-size-sm)] rounded-[theme(--radius-md)] transition-all duration-[theme(--transition-default)]">
-          🌐 Translate
-        </button>
+      <DropdownMenu.Trigger class="border border-border cursor-pointer whitespace-nowrap text-foreground hover:bg-muted px-[theme(--button-padding-x-sm)] py-[theme(--button-padding-y-sm)] text-[theme(--font-size-sm)] rounded-[theme(--radius-md)] transition-all duration-[theme(--transition-default)]">
+        🌐 Translate
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
         {#each indianLanguages as language}
