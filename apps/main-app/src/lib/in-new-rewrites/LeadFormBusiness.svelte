@@ -76,7 +76,6 @@
   <Card.Root class="w-full max-w-[theme(--max-width-md)]">
     <Card.Header class="py-[theme(--card-padding-y)]">
       <h2 class="text-[theme(--font-size-lg)] font-semibold tracking-[theme(--tracking-ui)]">Share Your Details</h2>
-      <p class="text-[theme(--font-size-sm)] text-muted-foreground mt-[theme(--spacing-sm)]">Our solar experts will connect with you within 24 hours</p>
     </Card.Header>
 
     <Card.Content class="pb-[theme(--card-padding-y)]">
@@ -171,7 +170,7 @@
         <!-- Submit Button -->
         <Button
           type="submit"
-          class="w-full mt-[theme(--spacing-sm)]"
+          class="w-full mt-[theme(--spacing-sm)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all duration-[theme(--transition-default)]"
           disabled={isSubmitting}
         >
           {isSubmitting ? 'Submitting...' : 'Get Free Quotes'}

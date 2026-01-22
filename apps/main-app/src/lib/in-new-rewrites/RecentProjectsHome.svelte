@@ -17,17 +17,14 @@
   let { projects = [] } = $props<{ projects: Project[] }>();
 </script>
 
-<Card.Root class="border-0 shadow-[theme(--shadow-lg)]">
+<Card.Root class="border-0 shadow-[theme(--shadow-lg)] mb-[theme(--spacing-2xl)]">
   <Card.Header class="text-center pb-[theme(--card-padding-y)]">
-    <div class="flex justify-center mb-[theme(--spacing-lg)]">
-      <div
-        class="bg-secondary rounded-full"
-        style="height: {`var(--divider-line-height)`}; width: {`var(--divider-line-width)`};"
-      ></div>
-    </div>
-    <Card.Title class="text-[theme(--font-size-3xl)] font-semibold mb-[theme(--spacing-md)]">
+    <Card.Title class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">
       Recent Solar Installation Projects
     </Card.Title>
+    <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+      <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+    </div>
     <Card.Description class="text-[theme(--font-size-base)] max-w-[theme(--max-width-2xl)] mx-auto">
       Explore real solar installations completed by our verified installers across India
     </Card.Description>
@@ -84,10 +81,8 @@
         {/each}
       </div>
 
-      <div class="flex justify-center border-t pt-[theme(--spacing-lg)]">
-        <a href="/in/recent-solar-installation-projects" class="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
-          View All Projects →
-        </a>
+      <div class="text-center">
+        <a href="/in/recent-solar-installation-projects" class="inline-block text-primary-foreground font-semibold bg-primary hover:bg-primary-hover hover:-translate-y-[theme(--hover-lift-sm)] px-[theme(--button-padding-x-default)] py-[theme(--button-padding-y-default)] rounded-[theme(--radius-lg)] transition-all duration-[theme(--transition-default)]">View All Projects →</a>
       </div>
     {:else}
       <div class="text-center py-12">
