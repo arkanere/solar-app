@@ -118,7 +118,7 @@
   <Dialog.Content class="fixed inset-0 z-50 flex items-center justify-center bg-black/95 border-0 p-0 rounded-0 w-full max-w-none h-full max-h-none">
     <!-- Loading State -->
     {#if $storiesLoading}
-      <div class="flex flex-col items-center justify-center w-full max-w-[theme(--max-width-sm)] gap-[theme(--spacing-lg)] px-[theme(--spacing-md)]">
+      <div class="flex flex-col items-center justify-center w-full max-w-[theme(--max-width-sm)] gap-[theme(--spacing-lg)] px-[theme(--spacing-lg)]">
         <Skeleton class="h-96 w-full rounded-[theme(--radius-lg)] bg-white/10" />
         <Skeleton class="h-12 w-full rounded-[theme(--radius-md)] bg-white/10" />
         <Skeleton class="h-8 w-2/3 rounded-[theme(--radius-md)] bg-white/10" />
@@ -129,7 +129,7 @@
         <CardHeader>
           <CardTitle class="text-destructive">Error Loading Stories</CardTitle>
         </CardHeader>
-        <CardContent class="flex flex-col gap-[theme(--spacing-md)]">
+        <CardContent class="flex flex-col gap-[theme(--spacing-lg)]">
           <p class="text-destructive/90">{$storiesError}</p>
           <Button onclick={closeStory} variant="default">Close</Button>
         </CardContent>
@@ -139,7 +139,7 @@
         <CardHeader>
           <CardTitle>No Stories Available</CardTitle>
         </CardHeader>
-        <CardContent class="flex flex-col gap-[theme(--spacing-md)]">
+        <CardContent class="flex flex-col gap-[theme(--spacing-lg)]">
           <p class="text-foreground/90">No stories available at the moment.</p>
           <Button onclick={closeStory} variant="default">Close</Button>
         </CardContent>
@@ -178,7 +178,7 @@
       <!-- Story Viewer -->
       <div class="relative w-full h-full overflow-hidden flex flex-col bg-gradient-to-b from-black/80 to-black/40 max-w-[theme(--max-width-sm)]" style="max-height: 700px;">
         <!-- Progress Bars -->
-        <div class="flex absolute top-0 left-0 right-0 z-40 gap-[theme(--spacing-xs)] p-[theme(--spacing-md)]">
+        <div class="flex absolute top-0 left-0 right-0 z-40 gap-[theme(--spacing-sm)] p-[theme(--spacing-lg)]">
           {#each $storiesData as _, index}
             <div class="flex-1">
               <Progress
@@ -195,7 +195,7 @@
         </div>
 
         <!-- Story Header -->
-        <div class="flex items-center justify-between relative z-30 p-[theme(--spacing-md)] pt-16">
+        <div class="flex items-center justify-between relative z-30 p-[theme(--spacing-lg)] pt-16">
           <div class="flex items-center gap-[theme(--spacing-sm)]">
             <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold text-sm">
               {formatBusinessName(String($storiesData[currentStoryIndex]?.business_slug || '')).charAt(0)}
@@ -238,7 +238,7 @@
                 "w_800,h_800"
               )}
               alt={String($storiesData[currentStoryIndex]?.title || '')}
-              class="w-full h-auto object-contain mt-[theme(--spacing-md)] max-h-[70vh]"
+              class="w-full h-auto object-contain mt-[theme(--spacing-lg)] max-h-[70vh]"
             />
           {:else}
             <div class="flex flex-col items-center justify-center gap-[theme(--spacing-sm)] text-white/80">
@@ -251,7 +251,7 @@
         <!-- Story Details Overlay -->
         <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent z-30 p-[theme(--card-padding-y)]">
           <h2 class="text-white text-[theme(--font-size-lg)] leading-[theme(--font-size-lg--line-height)] font-semibold mb-[theme(--spacing-sm)]">{$storiesData[currentStoryIndex].title}</h2>
-          <div class="flex flex-wrap gap-[theme(--spacing-xs)]">
+          <div class="flex flex-wrap gap-[theme(--spacing-sm)]">
             <Badge variant="secondary" class="bg-white/20 text-white border-white/30 hover:bg-white/30">
               📍 {$storiesData[currentStoryIndex].pincode || "N/A"}
             </Badge>
@@ -262,7 +262,7 @@
         </div>
 
         <!-- Navigation Areas -->
-        <div class="absolute left-0 top-1/2 -translate-y-1/2 z-20 ml-[theme(--spacing-md)]">
+        <div class="absolute left-0 top-1/2 -translate-y-1/2 z-20 ml-[theme(--spacing-lg)]">
           <Tooltip>
             <TooltipTrigger>
               <Button
@@ -280,7 +280,7 @@
           </Tooltip>
         </div>
 
-        <div class="absolute right-0 top-1/2 -translate-y-1/2 z-20 mr-[theme(--spacing-md)]">
+        <div class="absolute right-0 top-1/2 -translate-y-1/2 z-20 mr-[theme(--spacing-lg)]">
           <Tooltip>
             <TooltipTrigger>
               <Button

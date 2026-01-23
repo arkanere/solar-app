@@ -362,7 +362,7 @@
         {#each benefits as benefit}
           <Card class="text-center flex flex-col items-center p-[theme(--spacing-lg)]">
             <div class="w-16 h-16 flex items-center justify-center text-primary mb-[theme(--spacing-lg)] rounded-full bg-primary/10">{@html benefit.icon}</div>
-            <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-md)]">{benefit.title}</h3>
+            <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">{benefit.title}</h3>
             <div class="text-foreground dark:text-foreground-secondary text-sm">
               {#each benefit.descriptions as description}
                 <p class="mb-[theme(--spacing-sm)]">{description}</p>
@@ -456,7 +456,7 @@
               class="no-underline text-inherit block transition-transform duration-[theme(--transition-default)]"
             >
               <Card class="relative h-full flex flex-col overflow-hidden p-[theme(--spacing-lg)]">
-                <div class="absolute flex items-center text-primary-foreground text-xs font-semibold bg-success top-[theme(--spacing-xs)] right-[theme(--spacing-xs)] gap-[theme(--spacing-xs)] px-[theme(--spacing-sm)] py-[theme(--spacing-xs)] rounded-full">
+                <div class="absolute flex items-center text-primary-foreground text-xs font-semibold bg-success top-[theme(--spacing-sm)] right-[theme(--spacing-sm)] gap-[theme(--spacing-sm)] px-[theme(--spacing-sm)] py-[theme(--spacing-sm)] rounded-full">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="18"
@@ -601,7 +601,7 @@
       <div class="flex flex-col items-center gap-[theme(--card-gap)] max-w-2xl mx-auto">
         {#each faqs as faq}
           <Card class="p-[theme(--spacing-lg)] w-full">
-            <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-md)]">{faq.question}</h3>
+            <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">{faq.question}</h3>
             <p class="text-foreground dark:text-foreground-secondary text-sm">{faq.answer}</p>
           </Card>
         {/each}

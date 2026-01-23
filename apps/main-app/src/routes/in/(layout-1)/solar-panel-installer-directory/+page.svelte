@@ -150,7 +150,7 @@
               {state}
             </h3>
 
-            <div class="flex items-center justify-center font-medium text-primary mt-auto gap-[theme(--spacing-xs)] group">
+            <div class="flex items-center justify-center font-medium text-primary mt-auto gap-[theme(--spacing-sm)] group">
               <Button asChild variant="default" class="w-full">
                 <a href={`/in/state/${formatStateSlug(state)}`} rel="noopener" class="flex items-center justify-center gap-2">
                   <span>Find Installers</span>

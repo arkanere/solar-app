@@ -299,28 +299,28 @@
       <div class="grid grid-cols-1 md:grid-cols-4 gap-[theme(--card-gap)]">
         <div class="text-center border border-border hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] bg-background p-[theme(--spacing-2xl)] transition-all duration-[theme(--transition-default)]">
           <div class="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-lg mx-auto mb-[theme(--spacing-lg)]">1</div>
-          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-md)]">Fill the Inquiry Form</h3>
+          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">Fill the Inquiry Form</h3>
           <p class="text-foreground dark:text-foreground-secondary">
             Share your basic details and energy requirements to help us understand your needs.
           </p>
         </div>
         <div class="text-center border border-border hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] bg-background p-[theme(--spacing-2xl)] transition-all duration-[theme(--transition-default)]">
           <div class="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-lg mx-auto mb-[theme(--spacing-lg)]">2</div>
-          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-md)]">Receive Competitive Quotes</h3>
+          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">Receive Competitive Quotes</h3>
           <p class="text-foreground dark:text-foreground-secondary">
             Review quotes from 2-3 solar companies, comparing costs, equipment, and terms to find the perfect match.
           </p>
         </div>
         <div class="text-center border border-border hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] bg-background p-[theme(--spacing-2xl)] transition-all duration-[theme(--transition-default)]">
           <div class="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-lg mx-auto mb-[theme(--spacing-lg)]">3</div>
-          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-md)]">Make an Informed Choice</h3>
+          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">Make an Informed Choice</h3>
           <p class="text-foreground dark:text-foreground-secondary">
             Select a provider with complete confidence, backed by transparent, verified information.
           </p>
         </div>
         <div class="text-center border border-border hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] bg-background p-[theme(--spacing-2xl)] transition-all duration-[theme(--transition-default)]">
           <div class="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-lg mx-auto mb-[theme(--spacing-lg)]">4</div>
-          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-md)]">Share Your Success</h3>
+          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">Share Your Success</h3>
           <p class="text-foreground dark:text-foreground-secondary">
             Join our community of solar adopters by sharing your experience, helping others on their journey to clean energy.
           </p>
@@ -361,7 +361,7 @@
         <div class="flex flex-col items-center text-center border-t-[theme(--card-accent-border)] border-accent hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-md)] rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] transition-all duration-[theme(--transition-default)]">
           <div class="text-4xl mb-[theme(--spacing-lg)]">💰</div>
           <div class="text-2xl font-bold text-primary mb-[theme(--spacing-sm)]">Up to ₹78,000</div>
-          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-md)]">Government Subsidy</h3>
+          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">Government Subsidy</h3>
           <p class="text-foreground dark:text-foreground-secondary">
             Get up to ₹78,000 in direct subsidy under PM Surya Ghar Yojana - available for limited time
           </p>
@@ -370,14 +370,14 @@
         <div class="flex flex-col items-center text-center border-t-[theme(--card-accent-border)] border-accent hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-md)] rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] transition-all duration-[theme(--transition-default)]">
           <div class="text-4xl mb-[theme(--spacing-lg)]">🏦</div>
           <div class="text-2xl font-bold text-primary mb-[theme(--spacing-sm)]">0% Interest</div>
-          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-md)]">Easy Financing Options</h3>
+          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">Easy Financing Options</h3>
           <p class="text-foreground dark:text-foreground-secondary">Zero-cost EMI and attractive loan schemes from leading banks and NBFCs make solar affordable</p>
         </div>
 
         <div class="flex flex-col items-center text-center border-t-[theme(--card-accent-border)] border-accent hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-md)] rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] transition-all duration-[theme(--transition-default)]">
           <div class="text-4xl mb-[theme(--spacing-lg)]">⚡</div>
           <div class="text-2xl font-bold text-primary mb-[theme(--spacing-sm)]">50-80%</div>
-          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-md)]">Electricity Bill Savings</h3>
+          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">Electricity Bill Savings</h3>
           <p class="text-foreground dark:text-foreground-secondary">
             Save up to 80% on rising electricity costs with net metering and reduce dependency on the grid
           </p>
@@ -399,7 +399,7 @@
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-[theme(--card-gap)] mb-[theme(--spacing-2xl)]">
         <div class="border border-border flex flex-col hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] bg-background p-[theme(--spacing-2xl)] transition-all duration-[theme(--transition-default)]">
-          <h3 class="text-lg font-semibold mb-[theme(--spacing-md)]">
+          <h3 class="text-lg font-semibold mb-[theme(--spacing-lg)]">
             <a
               href="/in/blogs/hiring-verified-solar-installer-in-india-is-essential"
               class="text-primary hover:text-primary-hover dark:hover:text-primary transition-colors"
@@ -419,7 +419,7 @@
         </div>
 
         <div class="border border-border flex flex-col hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] bg-background p-[theme(--spacing-2xl)] transition-all duration-[theme(--transition-default)]">
-          <h3 class="text-lg font-semibold mb-[theme(--spacing-md)]">
+          <h3 class="text-lg font-semibold mb-[theme(--spacing-lg)]">
             <a
               href="/in/blogs/pm-surya-ghar-yojana"
               class="text-primary hover:text-primary-hover dark:hover:text-primary transition-colors"
@@ -439,7 +439,7 @@
         </div>
 
         <div class="border border-border flex flex-col hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] bg-background p-[theme(--spacing-2xl)] transition-all duration-[theme(--transition-default)]">
-          <h3 class="text-lg font-semibold mb-[theme(--spacing-md)]">
+          <h3 class="text-lg font-semibold mb-[theme(--spacing-lg)]">
             <a
               href="/in/blogs/cost-of-solar-on-grid-system"
               class="text-primary hover:text-primary-hover dark:hover:text-primary transition-colors"

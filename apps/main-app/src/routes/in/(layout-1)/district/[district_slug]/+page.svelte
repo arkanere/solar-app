@@ -36,11 +36,11 @@
     </div>
 
     {#if errorMessage}
-      <Alert variant="destructive" class="mb-[theme(--spacing-xl)]">
+      <Alert variant="destructive" class="mb-[theme(--spacing-2xl)]">
         <p>{errorMessage}</p>
       </Alert>
     {:else if cities.length === 0}
-      <Alert variant="warning" class="mb-[theme(--spacing-xl)]">
+      <Alert variant="warning" class="mb-[theme(--spacing-2xl)]">
         <p>No cities found in {district}.</p>
       </Alert>
     {:else}
@@ -55,7 +55,7 @@
               {city}
             </h2>
 
-            <div class="flex items-center justify-center font-medium text-primary mt-auto gap-[theme(--spacing-xs)] group">
+            <div class="flex items-center justify-center font-medium text-primary mt-auto gap-[theme(--spacing-sm)] group">
               <Button asChild variant="default" class="w-full">
                 <a href={`/in/solar-panel-installer-directory/${formatCitySlug(city)}`} rel="noopener" class="flex items-center justify-center gap-2">
                   <span>Find Installers</span>

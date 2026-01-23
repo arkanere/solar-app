@@ -21,7 +21,7 @@
 	</div>
 	<div class="flex items-center justify-center">
 		<CardRoot class="w-full max-w-[theme(--max-width-sm)] border-0 shadow-none bg-transparent">
-			<CardContent class="gap-[theme(--spacing-xl)] flex flex-col">
+			<CardContent class="gap-[theme(--spacing-2xl)] flex flex-col">
 			<div class="gap-[theme(--spacing-sm)] flex flex-col">
 				<div class="flex justify-between items-baseline">
 					<Label for="bill">Monthly Electricity Bill</Label>
@@ -57,7 +57,7 @@
 			<div class="border-t pt-[theme(--spacing-lg)]">
 				<div class="text-center">
 					<p class="text-muted-foreground text-[theme(--font-size-sm)] mb-[theme(--spacing-sm)]">Estimated System Size</p>
-					<p class="text-primary text-[theme(--font-size-3xl)] font-bold">{solarSystemSize} <span class="text-[theme(--font-size-lg)]">kW</span></p>
+					<p class="text-primary text-[theme(--font-size-4xl)] font-bold">{solarSystemSize} <span class="text-[theme(--font-size-lg)]">kW</span></p>
 				</div>
 			</div>
 		</CardContent>

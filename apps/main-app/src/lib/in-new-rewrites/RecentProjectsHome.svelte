@@ -63,10 +63,10 @@
               </div>
 
               <Card.Content class="pt-[theme(--spacing-lg)]">
-                <h3 class="line-clamp-2 text-primary font-semibold text-[theme(--font-size-lg)] mb-[theme(--spacing-md)]">
+                <h3 class="line-clamp-2 text-primary font-semibold text-[theme(--font-size-lg)] mb-[theme(--spacing-lg)]">
                   {project.title}
                 </h3>
-                <div class="text-muted-foreground flex flex-col gap-[theme(--spacing-xs)] text-[theme(--font-size-sm)]">
+                <div class="text-muted-foreground flex flex-col gap-[theme(--spacing-sm)] text-[theme(--font-size-sm)]">
                   <p>Pincode: {project.pincode || "N/A"}</p>
                   <p>Completed on: {formatDate(project.project_date)}</p>
                   <p>

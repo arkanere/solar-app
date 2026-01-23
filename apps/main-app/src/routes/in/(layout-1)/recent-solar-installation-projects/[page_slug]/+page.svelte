@@ -194,7 +194,7 @@
 						{#if link === '...'}
 							<span class="px-[theme(--spacing-sm)] text-foreground dark:text-foreground-secondary">...</span>
 						{:else if link === currentPage}
-							<span class="px-[theme(--spacing-md)] py-[theme(--spacing-sm)] bg-primary text-primary-foreground font-medium rounded-[theme(--radius-md)]">
+							<span class="px-[theme(--spacing-lg)] py-[theme(--spacing-sm)] bg-primary text-primary-foreground font-medium rounded-[theme(--radius-md)]">
 								{link}
 							</span>
 						{:else}

@@ -11,7 +11,7 @@
 
 <main class="flex flex-col items-center px-[theme(--container-padding)] md:px-[theme(--container-padding)] py-[theme(--spacing-2xl)] transition-colors duration-300 bg-background text-foreground">
 	<div class="max-w-3xl w-full">
-		<h1 class="text-[theme(--font-size-3xl)] md:text-[theme(--font-size-4xl)] font-semibold mb-[theme(--spacing-xl)] text-center">Privacy Policy</h1>
+		<h1 class="text-[theme(--font-size-2xl)] md:text-[theme(--font-size-4xl)] font-semibold mb-[theme(--spacing-2xl)] text-center">Privacy Policy</h1>
 
 		<p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] leading-relaxed text-foreground-secondary mb-[theme(--spacing-2xl)]">
 			At Solarvipani.com, we are committed to safeguarding your privacy and ensuring that your
@@ -20,7 +20,7 @@
 		</p>
 
 		<section class="mb-[theme(--spacing-2xl)]">
-			<h2 class="text-[theme(--font-size-2xl)] font-semibold mb-[theme(--spacing-md)]">1. Information We Collect</h2>
+			<h2 class="text-[theme(--font-size-2xl)] font-semibold mb-[theme(--spacing-lg)]">1. Information We Collect</h2>
 			<p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] leading-relaxed text-foreground-secondary">
 				We collect your phone number when you submit a lead form on our website. This information is
 				essential for connecting you with our trusted solar installers.
@@ -28,7 +28,7 @@
 		</section>
 
 		<section class="mb-[theme(--spacing-2xl)]">
-			<h2 class="text-[theme(--font-size-2xl)] font-semibold mb-[theme(--spacing-md)]">2. Use of Your Information</h2>
+			<h2 class="text-[theme(--font-size-2xl)] font-semibold mb-[theme(--spacing-lg)]">2. Use of Your Information</h2>
 			<p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] leading-relaxed text-foreground-secondary">
 				Your phone number is shared with solar installers only after obtaining your explicit consent.
 				This allows them to contact you regarding your solar installation needs.
@@ -36,7 +36,7 @@
 		</section>
 
 		<section class="mb-[theme(--spacing-2xl)]">
-			<h2 class="text-[theme(--font-size-2xl)] font-semibold mb-[theme(--spacing-md)]">3. Data Sharing and Disclosure</h2>
+			<h2 class="text-[theme(--font-size-2xl)] font-semibold mb-[theme(--spacing-lg)]">3. Data Sharing and Disclosure</h2>
 			<p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] leading-relaxed text-foreground-secondary">
 				We do not share your personal data with any third parties other than the installers you have
 				consented to connect with. We ensure that all parties comply with strict confidentiality
@@ -45,7 +45,7 @@
 		</section>
 
 		<section class="mb-[theme(--spacing-2xl)]">
-			<h2 class="text-[theme(--font-size-2xl)] font-semibold mb-[theme(--spacing-md)]">4. Data Retention</h2>
+			<h2 class="text-[theme(--font-size-2xl)] font-semibold mb-[theme(--spacing-lg)]">4. Data Retention</h2>
 			<p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] leading-relaxed text-foreground-secondary">
 				Your personal data is retained for a period of six months from the date of collection. After
 				this period, all personal information is securely deleted from our systems.
@@ -53,7 +53,7 @@
 		</section>
 
 		<section class="mb-[theme(--spacing-2xl)]">
-			<h2 class="text-[theme(--font-size-2xl)] font-semibold mb-[theme(--spacing-md)]">5. Compliance with Indian Data Protection Regulations</h2>
+			<h2 class="text-[theme(--font-size-2xl)] font-semibold mb-[theme(--spacing-lg)]">5. Compliance with Indian Data Protection Regulations</h2>
 			<p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] leading-relaxed text-foreground-secondary">
 				We adhere to all applicable data protection laws and regulations in India, including the
 				Information Technology Act, 2000, and the rules thereunder. We ensure that your data is
@@ -62,8 +62,8 @@
 		</section>
 
 		<section class="mb-[theme(--spacing-2xl)]">
-			<h2 class="text-[theme(--font-size-2xl)] font-semibold mb-[theme(--spacing-md)]">6. Your Rights</h2>
-			<p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] leading-relaxed text-foreground-secondary mb-[theme(--spacing-md)]">
+			<h2 class="text-[theme(--font-size-2xl)] font-semibold mb-[theme(--spacing-lg)]">6. Your Rights</h2>
+			<p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] leading-relaxed text-foreground-secondary mb-[theme(--spacing-lg)]">
 				You have the right to access, correct, or delete your personal information held by us. To
 				exercise these rights, please contact us at <a href="mailto:admin@solarvipani.com" class="text-primary underline hover:no-underline"
 					>admin@solarvipani.com</a
@@ -76,7 +76,7 @@
 		</section>
 
 		<section class="mb-[theme(--spacing-2xl)]">
-			<h2 class="text-[theme(--font-size-2xl)] font-semibold mb-[theme(--spacing-md)]">7. Security Measures</h2>
+			<h2 class="text-[theme(--font-size-2xl)] font-semibold mb-[theme(--spacing-lg)]">7. Security Measures</h2>
 			<p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] leading-relaxed text-foreground-secondary">
 				We implement appropriate technical and organizational measures to protect your data against
 				unauthorized access, alteration, disclosure, or destruction.
@@ -84,7 +84,7 @@
 		</section>
 
 		<section class="mb-[theme(--spacing-2xl)]">
-			<h2 class="text-[theme(--font-size-2xl)] font-semibold mb-[theme(--spacing-md)]">8. Changes to This Policy</h2>
+			<h2 class="text-[theme(--font-size-2xl)] font-semibold mb-[theme(--spacing-lg)]">8. Changes to This Policy</h2>
 			<p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] leading-relaxed text-foreground-secondary">
 				We may update this Privacy Policy from time to time. Any changes will be posted on this page
 				with an updated revision date.
@@ -92,7 +92,7 @@
 		</section>
 
 		<section>
-			<h2 class="text-[theme(--font-size-2xl)] font-semibold mb-[theme(--spacing-md)]">9. Contact Us</h2>
+			<h2 class="text-[theme(--font-size-2xl)] font-semibold mb-[theme(--spacing-lg)]">9. Contact Us</h2>
 			<p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] leading-relaxed text-foreground-secondary">
 				If you have any questions or concerns about this Privacy Policy or our data practices, please
 				contact us at <a href="mailto:admin@solarvipani.com" class="text-primary underline hover:no-underline">admin@solarvipani.com</a>.

@@ -201,7 +201,7 @@
   <div></div>
 
   <!-- Right side buttons group -->
-  <div class="flex items-center gap-[theme(--spacing-md)]">
+  <div class="flex items-center gap-[theme(--spacing-lg)]">
     <!-- Translate Dropdown -->
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
@@ -239,7 +239,7 @@
 
     <div class="space-y-[theme(--card-gap)]">
       <div>
-        <h4 class="text-[theme(--font-size-base)] font-semibold text-primary mb-[theme(--spacing-md)]">📱 On Mobile:</h4>
+        <h4 class="text-[theme(--font-size-base)] font-semibold text-primary mb-[theme(--spacing-lg)]">📱 On Mobile:</h4>
         <div class="space-y-[theme(--spacing-lg)]">
           {#each ["Tap the three dots menu (⋮) in your browser", "Look for \"Translate\" option", "Select your language"] as step, i}
             <div class="flex items-start gap-[theme(--spacing-lg)]">
@@ -253,7 +253,7 @@
       </div>
 
       <div>
-        <h4 class="text-[theme(--font-size-base)] font-semibold text-primary mb-[theme(--spacing-md)]">💻 On Desktop:</h4>
+        <h4 class="text-[theme(--font-size-base)] font-semibold text-primary mb-[theme(--spacing-lg)]">💻 On Desktop:</h4>
         <div class="space-y-[theme(--spacing-lg)]">
           {#each ["Right-click anywhere on this page", "Look for \"Translate\" option", "Click to translate"] as step, i}
             <div class="flex items-start gap-[theme(--spacing-lg)]">
@@ -268,7 +268,7 @@
 
       <div class="border-t border-border pt-[theme(--spacing-lg)]">
         <h4 class="text-[theme(--font-size-base)] font-semibold mb-[theme(--spacing-sm)]">💡 Alternative methods:</h4>
-        <div class="space-y-[theme(--spacing-xs)] text-[theme(--font-size-sm)] text-foreground-secondary">
+        <div class="space-y-[theme(--spacing-sm)] text-[theme(--font-size-sm)] text-foreground-secondary">
           <p><strong>Chrome users:</strong> Look for the translate icon 🌐 in your address bar</p>
           <p><strong>Safari (iPhone/iPad):</strong> Tap the "aA" button in address bar</p>
           <p><strong>Other browsers:</strong> Check browser settings for translation options</p>

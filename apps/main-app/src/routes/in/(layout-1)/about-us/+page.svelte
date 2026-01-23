@@ -58,16 +58,16 @@
     <!-- Introduction Section -->
     <section class="rounded-[theme(--radius-lg)] bg-accent-muted p-[theme(--card-padding-y)] mb-[theme(--card-gap)] shadow-[theme(--shadow-md)]">
       <div>
-        <p class="text-lg font-medium text-primary mb-[theme(--spacing-xl)]">
+        <p class="text-lg font-medium text-primary mb-[theme(--spacing-2xl)]">
           Our platform is designed for homeowners and businesses ready to go
           solar but unsure where to start.
         </p>
-        <p class="text-base text-foreground dark:text-foreground-secondary mb-[theme(--spacing-xl)] leading-relaxed">
+        <p class="text-base text-foreground dark:text-foreground-secondary mb-[theme(--spacing-2xl)] leading-relaxed">
           Finding the right solar panel installer can be overwhelming. We
           simplify this process by connecting you with verified installers,
           ensuring competitive pricing, and giving you peace of mind.
         </p>
-        <div class="bg-accent text-foreground p-[theme(--spacing-md)] rounded-[theme(--radius-md)] mb-[theme(--spacing-xl)] text-center">
+        <div class="bg-accent text-foreground p-[theme(--spacing-lg)] rounded-[theme(--radius-md)] mb-[theme(--spacing-2xl)] text-center">
           <p class="text-base">
             <strong
               >We make solar panel installation easy, affordable, and secure by
@@ -159,7 +159,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-[theme(--card-gap)]">
         <Card class="p-[theme(--spacing-lg)] hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all text-center">
           <div class="text-4xl mb-[theme(--spacing-lg)] block">⚡</div>
-          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-md)]">Quality Assurance</h3>
+          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">Quality Assurance</h3>
           <p class="text-foreground dark:text-foreground-secondary text-sm">
             We rigorously screen every Solar EPC company on our platform, so
             you're only matched with trusted industry leaders.
@@ -167,7 +167,7 @@
         </Card>
         <Card class="p-[theme(--spacing-lg)] hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all text-center">
           <div class="text-4xl mb-[theme(--spacing-lg)] block">📊</div>
-          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-md)]">Unbiased Information</h3>
+          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">Unbiased Information</h3>
           <p class="text-foreground dark:text-foreground-secondary text-sm">
             Solar Vipani is built to inform, not sell. Our platform provides
             objective, detailed information on each solar provider.
@@ -175,7 +175,7 @@
         </Card>
         <Card class="p-[theme(--spacing-lg)] hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all text-center">
           <div class="text-4xl mb-[theme(--spacing-lg)] block">🔍</div>
-          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-md)]">Effortless Comparisons</h3>
+          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">Effortless Comparisons</h3>
           <p class="text-foreground dark:text-foreground-secondary text-sm">
             Comparing options is as easy as browsing. Get insights on service
             quality, equipment standards, and financial benefits at a glance.
@@ -183,7 +183,7 @@
         </Card>
         <Card class="p-[theme(--spacing-lg)] hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all text-center">
           <div class="text-4xl mb-[theme(--spacing-lg)] block">🎯</div>
-          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-md)]">Customer-First Support</h3>
+          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">Customer-First Support</h3>
           <p class="text-foreground dark:text-foreground-secondary text-sm">
             Our support team is dedicated to guiding you through every step,
             from initial inquiries to post-installation feedback.
@@ -200,14 +200,14 @@
           <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
         </div>
       </div>
-      <p class="text-base text-foreground dark:text-foreground-secondary leading-relaxed mb-[theme(--spacing-xl)]">
+      <p class="text-base text-foreground dark:text-foreground-secondary leading-relaxed mb-[theme(--spacing-2xl)]">
         Choosing solar isn't just about savings; it's about building a
         sustainable tomorrow. At Solar Vipani, we're committed to making that
         journey clear and accessible for every household and business. Whether
         you're exploring options for the first time or ready to dive in, we're
         here to guide you every step of the way.
       </p>
-      <div class="bg-accent text-foreground p-[theme(--spacing-md)] rounded-[theme(--radius-md)] text-center">
+      <div class="bg-accent text-foreground p-[theme(--spacing-lg)] rounded-[theme(--radius-md)] text-center">
         <p>
           <strong
             >Step into a Greener Future with Solar Vipani — where High
