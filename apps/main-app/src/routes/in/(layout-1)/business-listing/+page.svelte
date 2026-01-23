@@ -334,10 +334,10 @@
     </picture>
     <div class="absolute top-0 left-0 w-full h-full z-10 bg-black/55"></div>
     <div class="relative z-20 max-w-3xl px-6">
-      <h1 class="text-4xl md:text-5xl font-bold mb-6 text-primary-foreground leading-tight drop-shadow-lg">
+      <h1 class="text-4xl md:text-4xl font-bold mb-6 text-primary-foreground leading-tight drop-shadow-lg">
         Grow Your Solar Business
       </h1>
-      <h2 class="text-2xl md:text-3xl font-medium mb-6 text-primary-foreground leading-snug drop-shadow-lg">
+      <h2 class="text-2xl md:text-2xl font-medium mb-6 text-primary-foreground leading-snug drop-shadow-lg">
         Get discovered by customers researching online
       </h2>
     </div>
@@ -347,7 +347,7 @@
     <!-- Value Proposition Section -->
     <Card class="p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)]">
       <div class="text-center mb-[theme(--spacing-2xl)]">
-        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Why List Your Business with Solar Vipani?</h2>
+        <h2 class="text-2xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Why List Your Business with Solar Vipani?</h2>
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
@@ -362,7 +362,7 @@
         {#each benefits as benefit}
           <Card class="text-center flex flex-col items-center p-[theme(--spacing-lg)]">
             <div class="w-16 h-16 flex items-center justify-center text-primary mb-[theme(--spacing-lg)] rounded-full bg-primary/10">{@html benefit.icon}</div>
-            <h3 class="text-xl font-semibold text-primary mb-[theme(--spacing-md)]">{benefit.title}</h3>
+            <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-md)]">{benefit.title}</h3>
             <div class="text-foreground dark:text-foreground-secondary text-sm">
               {#each benefit.descriptions as description}
                 <p class="mb-[theme(--spacing-sm)]">{description}</p>
@@ -397,7 +397,7 @@
     <!-- Social Proof Section -->
     <Card class="bg-accent-muted p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)]">
       <div class="text-center mb-[theme(--spacing-2xl)]">
-        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Join the Solar Installer Community</h2>
+        <h2 class="text-2xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Join the Solar Installer Community</h2>
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
@@ -406,7 +406,7 @@
       <div class="flex justify-center flex-wrap gap-[theme(--spacing-2xl)] mb-[theme(--spacing-2xl)]">
         {#each stats as stat}
           <Card class="w-48 text-center p-[theme(--spacing-lg)]">
-            <div class="text-5xl font-bold text-primary mb-[theme(--spacing-sm)]">{stat.number}</div>
+            <div class="text-4xl font-bold text-primary mb-[theme(--spacing-sm)]">{stat.number}</div>
             <div class="text-lg font-semibold text-foreground dark:text-foreground-secondary">{stat.label}</div>
           </Card>
         {/each}
@@ -437,7 +437,7 @@
     <!-- Recently Joined Verified Installers -->
     <Card class="p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)] bg-[hsl(var(--accent)/0.1)]">
       <div class="text-center mb-[theme(--spacing-2xl)]">
-        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Recently Joined Verified Installers</h2>
+        <h2 class="text-2xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Recently Joined Verified Installers</h2>
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
@@ -546,7 +546,7 @@
     <!-- How It Works Video Section -->
     <Card class="text-center p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)]" id="product-working">
       <div class="text-center mb-[theme(--spacing-2xl)]">
-        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">See How It Works</h2>
+        <h2 class="text-2xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">See How It Works</h2>
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
@@ -592,7 +592,7 @@
     <!-- FAQs Section -->
     <Card class="p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)]">
       <div class="text-center mb-[theme(--spacing-2xl)]">
-        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Frequently Asked Questions</h2>
+        <h2 class="text-2xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Frequently Asked Questions</h2>
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
@@ -611,7 +611,7 @@
     <!-- Need Assistance Section -->
     <Card class="p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)]">
       <div class="text-center mb-[theme(--spacing-2xl)]">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">We're Here to Help</h2>
+        <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">We're Here to Help</h2>
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>

@@ -96,7 +96,7 @@
 
       <!-- Hero Section -->
       <div class="text-center px-[theme(--button-padding-x-lg)] py-[theme(--card-padding-y)] bg-primary rounded-[theme(--radius-xl)] text-primary-foreground mb-8 relative overflow-hidden">
-        <h1 class="text-3xl md:text-4xl font-bold mb-2">{business.businessname}</h1>
+        <h1 class="text-2xl md:text-4xl font-bold mb-2">{business.businessname}</h1>
         {#if business.businessfilled && business.tag !== "Blank"}
           <div class="inline-flex items-center text-xs font-medium uppercase tracking-widest mb-4">
             <span class="inline-flex items-center justify-center w-3.5 h-3.5 bg-success text-primary-foreground rounded-full text-xs font-bold mr-2">✓</span>
@@ -156,7 +156,7 @@
       <section class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] transition-all w-full">
         <!-- Section Header -->
         <div class="text-center mb-[theme(--spacing-2xl)]">
-          <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Business Information</h2>
+          <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Business Information</h2>
           <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
             <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
           </div>
@@ -166,7 +166,7 @@
           <!-- Description Section -->
           {#if business.businessfilled && business.description}
             <div class="flex flex-col gap-[theme(--spacing-md)]">
-              <h3 class="text-xl font-semibold text-primary m-0">About</h3>
+              <h3 class="text-lg font-semibold text-primary m-0">About</h3>
               <p class="m-0 leading-relaxed text-foreground dark:text-foreground-secondary">{business.description}</p>
             </div>
           {/if}
@@ -174,7 +174,7 @@
           <!-- Services Section -->
           {#if business.businessfilled && business.services && business.services.length > 0}
             <div class="flex flex-col gap-[theme(--spacing-md)]">
-              <h3 class="text-xl font-semibold text-primary m-0">Services</h3>
+              <h3 class="text-lg font-semibold text-primary m-0">Services</h3>
               <div class="flex flex-wrap gap-2">
                 {#each business.services as serviceId}
                   <span class="bg-accent/10 text-primary px-3 py-1 rounded-md text-xs font-medium border border-accent/30"
@@ -189,7 +189,7 @@
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-[theme(--card-gap)]">
             <!-- Contact Information -->
             <div class="flex flex-col gap-[theme(--spacing-md)]">
-              <h3 class="text-xl font-semibold text-primary m-0">Contact Information</h3>
+              <h3 class="text-lg font-semibold text-primary m-0">Contact Information</h3>
               <div class="flex flex-col gap-[theme(--spacing-lg)]">
                 {#if business.phonenumber}
                   <div class="flex items-start gap-4">
@@ -310,7 +310,7 @@
 
             <!-- Location Information -->
             <div class="flex flex-col gap-[theme(--spacing-md)]">
-              <h3 class="text-xl font-semibold text-primary m-0">Location</h3>
+              <h3 class="text-lg font-semibold text-primary m-0">Location</h3>
               <div class="flex flex-col gap-[theme(--spacing-lg)]">
                 {#if business.address}
                   <div class="flex items-start gap-4">
@@ -421,7 +421,7 @@
       {#if showProjects}
         <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] mb-8 transition-all w-full">
           <div class="text-center mb-[theme(--spacing-2xl)]">
-            <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Recent Solar Panel Installation Projects</h2>
+            <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Recent Solar Panel Installation Projects</h2>
             <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
               <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
             </div>
@@ -490,7 +490,7 @@
       {#if business.city}
         <section class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] transition-all w-full">
           <div class="text-center mb-[theme(--spacing-2xl)]">
-            <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Find Other Solar Businesses in {business.city}</h2>
+            <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Find Other Solar Businesses in {business.city}</h2>
             <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
               <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
             </div>

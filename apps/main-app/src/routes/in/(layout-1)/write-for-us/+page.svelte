@@ -126,10 +126,10 @@
   <div class="max-w-5xl mx-auto px-[theme(--container-padding)] sm:px-[theme(--container-padding)] md:px-[theme(--container-padding)]">
     <!-- Hero Section -->
     <section class="py-[theme(--card-padding-y)] text-center">
-      <h1 class="text-3xl md:text-4xl font-bold mb-[theme(--spacing-md)] text-primary">
+      <h1 class="text-2xl md:text-4xl font-bold mb-[theme(--spacing-md)] text-primary">
         Contribute as a Solar Expert
       </h1>
-      <p class="text-lg md:text-xl font-semibold mb-[theme(--spacing-md)] text-foreground-secondary">
+      <p class="text-lg md:text-lg font-semibold mb-[theme(--spacing-md)] text-foreground-secondary">
         Share Your Knowledge. Shape India's Solar Future.
       </p>
       <p class="text-base md:text-lg leading-relaxed max-w-2xl mx-auto text-foreground-secondary">
@@ -140,7 +140,7 @@
 
     <!-- Why Contribute Section -->
     <section class="mb-[theme(--card-gap)]">
-      <h2 class="text-2xl md:text-3xl font-bold mb-[theme(--card-gap)] text-primary">Why Contribute to Solar Vipani?</h2>
+      <h2 class="text-2xl md:text-2xl font-bold mb-[theme(--card-gap)] text-primary">Why Contribute to Solar Vipani?</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[theme(--card-gap)]">
         {#each benefits as benefit}
           <Card class="card-interactive text-center">
@@ -156,48 +156,48 @@
 
     <!-- Who We're Looking For -->
     <section class="mb-[theme(--card-gap)]">
-      <h2 class="text-2xl md:text-3xl font-bold mb-[theme(--card-gap)] text-primary">Who We're Looking For</h2>
+      <h2 class="text-2xl md:text-2xl font-bold mb-[theme(--card-gap)] text-primary">Who We're Looking For</h2>
       <Card>
         <CardContent class="pt-[theme(--card-padding-y)]">
           <p class="text-base md:text-lg mb-[theme(--card-gap)] text-foreground-secondary">We welcome contributions from credentialed professionals in the solar and renewable energy industry:</p>
           <div class="space-y-[theme(--card-gap)]">
           <div class="flex gap-[theme(--spacing-lg)] items-start">
-            <span class="text-xl font-bold text-success flex-shrink-0">✓</span>
+            <span class="text-lg font-bold text-success flex-shrink-0">✓</span>
             <div>
               <strong class="block mb-1 text-foreground">Solar Installation Professionals</strong>
               <p class="text-sm text-foreground-secondary">Licensed installers with hands-on experience in residential and commercial projects</p>
             </div>
           </div>
           <div class="flex gap-[theme(--spacing-lg)] items-start">
-            <span class="text-xl font-bold text-success flex-shrink-0">✓</span>
+            <span class="text-lg font-bold text-success flex-shrink-0">✓</span>
             <div>
               <strong class="block mb-1 text-foreground">Electrical & Solar Engineers</strong>
               <p class="text-sm text-foreground-secondary">Technical experts in PV systems, inverters, batteries, and grid integration</p>
             </div>
           </div>
           <div class="flex gap-[theme(--spacing-lg)] items-start">
-            <span class="text-xl font-bold text-success flex-shrink-0">✓</span>
+            <span class="text-lg font-bold text-success flex-shrink-0">✓</span>
             <div>
               <strong class="block mb-1 text-foreground">Energy Consultants & Advisors</strong>
               <p class="text-sm text-foreground-secondary">Professionals guiding customers on system design, financing, and ROI</p>
             </div>
           </div>
           <div class="flex gap-[theme(--spacing-lg)] items-start">
-            <span class="text-xl font-bold text-success flex-shrink-0">✓</span>
+            <span class="text-lg font-bold text-success flex-shrink-0">✓</span>
             <div>
               <strong class="block mb-1 text-foreground">Researchers & Academics</strong>
               <p class="text-sm text-foreground-secondary">Scientists studying solar technology, efficiency, sustainability, or policy</p>
             </div>
           </div>
           <div class="flex gap-[theme(--spacing-lg)] items-start">
-            <span class="text-xl font-bold text-success flex-shrink-0">✓</span>
+            <span class="text-lg font-bold text-success flex-shrink-0">✓</span>
             <div>
               <strong class="block mb-1 text-foreground">Policy & Regulatory Experts</strong>
               <p class="text-sm text-foreground-secondary">Professionals with deep knowledge of solar subsidies, net metering, and compliance</p>
             </div>
           </div>
           <div class="flex gap-[theme(--spacing-lg)] items-start">
-            <span class="text-xl font-bold text-success flex-shrink-0">✓</span>
+            <span class="text-lg font-bold text-success flex-shrink-0">✓</span>
             <div>
               <strong class="block mb-1 text-foreground">Sustainability Professionals</strong>
               <p class="text-sm text-foreground-secondary">Corporate sustainability managers, ESG consultants, and clean energy advocates</p>
@@ -210,7 +210,7 @@
 
     <!-- Topics We Accept -->
     <section class="mb-[theme(--card-gap)]">
-      <h2 class="text-2xl md:text-3xl font-bold mb-[theme(--card-gap)] text-primary">What Topics We Accept</h2>
+      <h2 class="text-2xl md:text-2xl font-bold mb-[theme(--card-gap)] text-primary">What Topics We Accept</h2>
       <p class="text-base md:text-lg leading-relaxed mb-[theme(--card-gap)] text-foreground-secondary">
         We publish expert content that educates, informs, and empowers our audience. Here are some topic areas we're interested in:
       </p>
@@ -233,7 +233,7 @@
 
     <!-- Editorial Guidelines -->
     <section class="mb-[theme(--card-gap)]">
-      <h2 class="text-2xl md:text-3xl font-bold mb-[theme(--card-gap)] text-primary">Editorial Guidelines</h2>
+      <h2 class="text-2xl md:text-2xl font-bold mb-[theme(--card-gap)] text-primary">Editorial Guidelines</h2>
       <p class="text-base md:text-lg leading-relaxed mb-[theme(--card-gap)] text-foreground-secondary">
         To maintain the highest quality standards, all submissions must meet these requirements:
       </p>
@@ -251,7 +251,7 @@
 
     <!-- Link Policy -->
     <section class="mb-[theme(--card-gap)]">
-      <h2 class="text-2xl md:text-3xl font-bold mb-[theme(--card-gap)] text-primary">Link Policy</h2>
+      <h2 class="text-2xl md:text-2xl font-bold mb-[theme(--card-gap)] text-primary">Link Policy</h2>
       <div class="space-y-[theme(--card-gap)]">
         <Card class="border-l-4 border-success">
           <CardContent class="pt-[theme(--card-padding-y)]">
@@ -305,7 +305,7 @@
 
     <!-- Submission Process -->
     <section class="mb-[theme(--card-gap)]">
-      <h2 class="text-2xl md:text-3xl font-bold mb-[theme(--card-gap)] text-primary">How to Submit</h2>
+      <h2 class="text-2xl md:text-2xl font-bold mb-[theme(--card-gap)] text-primary">How to Submit</h2>
       <div class="space-y-[theme(--card-gap)]">
         {#each [
           {num: 1, title: 'Send a Pitch', content: `Email us at <a href="mailto:${submissionEmail}">${submissionEmail}</a> with:`, items: ['Proposed article title and brief outline (3-5 bullet points)', 'Your credentials and relevant experience', 'Links to previous published work (if available)']},
@@ -335,7 +335,7 @@
 
     <!-- Important Disclaimers -->
     <section class="mb-[theme(--card-gap)]">
-      <h2 class="text-2xl md:text-3xl font-bold mb-[theme(--card-gap)] text-primary">Important Notes</h2>
+      <h2 class="text-2xl md:text-2xl font-bold mb-[theme(--card-gap)] text-primary">Important Notes</h2>
       <Card>
         <CardContent class="pt-[theme(--card-padding-y)]">
           <ul class="space-y-[theme(--spacing-md)] divide-y divide-border">
@@ -361,7 +361,7 @@
 
     <!-- CTA Section -->
     <section class="text-center bg-gradient-to-r from-primary to-primary/90 rounded-[theme(--radius-lg)] p-[theme(--card-padding-y)] md:p-[theme(--card-gap)] text-primary-foreground shadow-[theme(--shadow-lg)] mb-[theme(--card-gap)]">
-      <h2 class="text-2xl md:text-3xl font-bold mb-[theme(--spacing-md)] text-primary-foreground">Ready to Share Your Expertise?</h2>
+      <h2 class="text-2xl md:text-2xl font-bold mb-[theme(--spacing-md)] text-primary-foreground">Ready to Share Your Expertise?</h2>
       <p class="text-base md:text-lg mb-[theme(--card-gap)] max-w-xl mx-auto">
         Help homeowners and businesses across India make informed solar decisions.
         Your insights can accelerate the clean energy transition.

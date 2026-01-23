@@ -20,7 +20,7 @@
 
 <Card class="w-full border-0 mt-[theme(--spacing-2xl)] mb-[theme(--card-gap)] shadow-[theme(--shadow-md)]">
 	<CardHeader class="text-center">
-		<CardTitle class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">
+		<CardTitle class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">
 			About Solarvipani
 		</CardTitle>
 		<div class="flex justify-center items-center my-[theme(--spacing-lg)]">

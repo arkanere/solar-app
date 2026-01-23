@@ -33,7 +33,7 @@
 
 <main class="w-full min-h-screen bg-background text-foreground transition-colors duration-300 dark:bg-background dark:text-foreground flex flex-col items-center justify-center py-[theme(--card-padding-y)] px-[theme(--container-padding)] md:py-[theme(--spacing-3xl)]">
   <div class="max-w-3xl w-full">
-    <h1 class="text-center text-3xl md:text-4xl font-semibold mb-[theme(--card-padding-y)] leading-tight">Blog Posts</h1>
+    <h1 class="text-center text-2xl md:text-4xl font-semibold mb-[theme(--card-padding-y)] leading-tight">Blog Posts</h1>
 
     {#if error}
       <div class="text-center p-[theme(--card-padding-y)] text-base md:text-lg">
@@ -59,7 +59,7 @@
                 </div>
               {/if}
               <div class="p-[theme(--container-padding)]">
-                <h2 class="text-2xl md:text-3xl font-semibold mb-[theme(--spacing-md)]">{blog.title}</h2>
+                <h2 class="text-2xl md:text-2xl font-semibold mb-[theme(--spacing-md)]">{blog.title}</h2>
                 {#if blog.excerpt}
                   <p class="text-base md:text-lg leading-relaxed mb-[theme(--spacing-lg)] opacity-90">{blog.excerpt}</p>
                 {/if}

@@ -5,14 +5,14 @@
   This file contains 100+ design tokens. For Beautiful/Minimal/Fast design:
 
   USE THESE 90% OF THE TIME (Core Set):
-  - Typography: text-sm, text-lg, text-2xl, text-3xl, text-4xl only
-  - Spacing: --spacing-lg (1rem), --spacing-xl (1.5rem), --spacing-2xl (2rem)
+  - Typography: text-sm, text-lg, text-2xl, text-4xl (3 sizes per screen max)
+  - Spacing: --spacing-lg (1rem), --spacing-2xl (2rem), --spacing-4xl (4rem)
   - Shadows: shadow-xs (subtle), shadow-sm (cards)
   - Radius: --radius-md (inputs), --radius-lg (cards)
   - Colors: text-primary, bg-accent, bg-secondary (semantic only)
 
   AVOID UNLESS NECESSARY (Extended Set):
-  - text-xs, text-base, text-5xl (use core sizes instead)
+  - text-xs, text-base, text-3xl, text-5xl (removed per Phase 2)
   - --spacing-xs/sm/md (too granular; prefer larger spacing)
   - shadow-md/lg/xl (too heavy for minimal aesthetic)
   - Component-specific tokens (used internally by Shadcn components)
@@ -41,16 +41,10 @@
   --font-size-base--line-height: 1.5rem;
   --font-size-lg: 1.125rem;
   --font-size-lg--line-height: 1.75rem;
-  --font-size-xl: 1.25rem;
-  --font-size-xl--line-height: 1.75rem;
   --font-size-2xl: 1.5rem;
   --font-size-2xl--line-height: 2rem;
-  --font-size-3xl: 1.875rem;
-  --font-size-3xl--line-height: 2.25rem;
   --font-size-4xl: 2.25rem;
   --font-size-4xl--line-height: 2.5rem;
-  --font-size-5xl: 3rem;
-  --font-size-5xl--line-height: 3.5rem;
 
   /* Shadows (Linear uses very subtle, diffused shadows) */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);

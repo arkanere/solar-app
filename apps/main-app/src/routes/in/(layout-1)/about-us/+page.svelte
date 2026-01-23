@@ -45,11 +45,11 @@
     <!-- Hero Section -->
     <section class="rounded-[theme(--radius-lg)] bg-gradient-to-r from-primary to-primary text-primary-foreground p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">
       <div class="text-center mb-[theme(--card-gap)]">
-        <h1 class="text-4xl md:text-5xl font-bold mb-[theme(--spacing-lg)] text-primary-foreground">About Solar Vipani</h1>
+        <h1 class="text-4xl md:text-4xl font-bold mb-[theme(--spacing-lg)] text-primary-foreground">About Solar Vipani</h1>
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
           <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
         </div>
-        <p class="text-xl text-primary-foreground max-w-2xl mx-auto">
+        <p class="text-lg text-primary-foreground max-w-2xl mx-auto">
           Your trusted marketplace for solar energy solutions
         </p>
       </div>
@@ -94,17 +94,17 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-[theme(--card-gap)]">
         <Card class="p-[theme(--spacing-lg)] border-t-[theme(--card-accent-border)] border-accent hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-md)] transition-all text-center">
           <div class="text-4xl font-bold text-primary mb-[theme(--spacing-sm)]">450+</div>
-          <h3 class="text-xl font-semibold text-primary mb-[theme(--spacing-sm)]">Verified Businesses</h3>
+          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-sm)]">Verified Businesses</h3>
           <p class="text-foreground dark:text-foreground-secondary">Listed across India</p>
         </Card>
         <Card class="p-[theme(--spacing-lg)] border-t-[theme(--card-accent-border)] border-accent hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-md)] transition-all text-center">
           <div class="text-4xl font-bold text-primary mb-[theme(--spacing-sm)]">5,000+</div>
-          <h3 class="text-xl font-semibold text-primary mb-[theme(--spacing-sm)]">Cities & Towns</h3>
+          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-sm)]">Cities & Towns</h3>
           <p class="text-foreground dark:text-foreground-secondary">Nationwide coverage</p>
         </Card>
         <Card class="p-[theme(--spacing-lg)] border-t-[theme(--card-accent-border)] border-accent hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-md)] transition-all text-center">
           <div class="text-4xl font-bold text-primary mb-[theme(--spacing-sm)]">100%</div>
-          <h3 class="text-xl font-semibold text-primary mb-[theme(--spacing-sm)]">Quality Assured</h3>
+          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-sm)]">Quality Assured</h3>
           <p class="text-foreground dark:text-foreground-secondary">Verified solar providers</p>
         </Card>
       </div>
@@ -113,7 +113,7 @@
     <!-- Purpose Section -->
     <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] mb-[theme(--card-gap)] shadow-[theme(--shadow-md)]">
       <div class="text-center mb-[theme(--card-gap)]">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Our Purpose</h2>
+        <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Our Purpose</h2>
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
           <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
         </div>
@@ -132,7 +132,7 @@
     <!-- Expertise Section -->
     <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] mb-[theme(--card-gap)] shadow-[theme(--shadow-md)]">
       <div class="text-center mb-[theme(--card-gap)]">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Our Digital Expertise</h2>
+        <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Our Digital Expertise</h2>
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
           <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
         </div>
@@ -151,7 +151,7 @@
     <!-- Why Choose Us Section -->
     <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] mb-[theme(--card-gap)] shadow-[theme(--shadow-md)]">
       <div class="text-center mb-[theme(--card-gap)]">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Why Choose Solar Vipani?</h2>
+        <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Why Choose Solar Vipani?</h2>
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
           <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
         </div>
@@ -195,7 +195,7 @@
     <!-- Call to Action Section -->
     <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] mb-[theme(--card-gap)] shadow-[theme(--shadow-md)]">
       <div class="text-center mb-[theme(--card-gap)]">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Building a Brighter Future, Together</h2>
+        <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Building a Brighter Future, Together</h2>
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
           <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
         </div>
@@ -229,7 +229,7 @@
       </div>
 
       <div class="mb-[theme(--card-gap)]">
-        <h4 class="text-xl font-semibold text-foreground dark:text-foreground-secondary mb-[theme(--spacing-lg)]">Follow us on:</h4>
+        <h4 class="text-lg font-semibold text-foreground dark:text-foreground-secondary mb-[theme(--spacing-lg)]">Follow us on:</h4>
         <div class="flex justify-center gap-[theme(--card-gap)] flex-wrap">
           {#each socialLinks as link}
             <a
