@@ -12,13 +12,16 @@
 	});
 </script>
 
-<div class="flex items-center justify-center min-h-screen p-[theme(--spacing-lg)]">
-	<CardRoot class="w-full max-w-[theme(--max-width-sm)]">
-		<CardHeader>
-			<CardTitle>Solar System Calculator</CardTitle>
-			<CardDescription>Calculate the size of your solar system</CardDescription>
-		</CardHeader>
-		<CardContent class="gap-[theme(--spacing-xl)] flex flex-col">
+<section class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] transition-all w-full">
+	<div class="text-center mb-[theme(--spacing-2xl)]">
+		<h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Solar System Calculator</h2>
+		<div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+			<span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+		</div>
+	</div>
+	<div class="flex items-center justify-center">
+		<CardRoot class="w-full max-w-[theme(--max-width-sm)] border-0 shadow-none bg-transparent">
+			<CardContent class="gap-[theme(--spacing-xl)] flex flex-col">
 			<div class="gap-[theme(--spacing-sm)] flex flex-col">
 				<div class="flex justify-between items-baseline">
 					<Label for="bill">Monthly Electricity Bill</Label>
@@ -58,5 +61,6 @@
 				</div>
 			</div>
 		</CardContent>
-	</CardRoot>
-</div>
+		</CardRoot>
+	</div>
+</section>

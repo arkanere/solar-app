@@ -3,8 +3,8 @@
 
 	let { city = '', title = '', hasBusinesses = true } = $props();
 
-	const defaultTitle = city ? `Get 2-3 Free Quotes at ${city}` : 'Get Free Quote';
-	const displayTitle = title || defaultTitle;
+	const defaultTitle = $derived(city ? `Get 2-3 Free Quotes at ${city}` : 'Get Free Quote');
+	const displayTitle = $derived(title || defaultTitle);
 </script>
 
 <section id="lead-form-sv" class="mb-8 mx-auto max-w-[theme(--max-width-md)]">
