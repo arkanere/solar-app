@@ -34,6 +34,12 @@
 		value = newValue;
 		onchange?.(newValue);
 	}
+
+	function handleInput(e: Event) {
+		const input = e.target as HTMLInputElement;
+		const newValue = Number(input.value);
+		value = newValue;
+	}
 </script>
 
 <input
@@ -45,6 +51,7 @@
 	step={stepValue}
 	value={Array.isArray(value) ? value[0] : value}
 	onchange={handleChange}
+	oninput={handleInput}
 	class={cn(
 		"w-full appearance-none cursor-pointer",
 		disabled && "cursor-not-allowed",

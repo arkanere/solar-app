@@ -82,28 +82,39 @@
   <!-- Project Header -->
   <header class="w-full max-w-[1140px] text-center py-[theme(--spacing-3xl)] px-[theme(--container-padding)] bg-primary rounded-[theme(--radius-xl)] text-primary-foreground mb-[theme(--spacing-xl)] relative overflow-hidden">
     <h1 class="text-4xl font-bold m-0 mb-[theme(--spacing-md)] leading-tight relative z-10">{project.title}</h1>
-    <p class="text-lg m-0 text-primary-foreground/90 relative z-10">
+    <p class="text-lg m-0 text-primary-foreground/90 mb-[theme(--spacing-md)] relative z-10">
       By <button class="bg-none border-none p-0 font-medium cursor-pointer text-primary-foreground underline underline-offset-2 hover:no-underline transition-all duration-200" onclick={navigateToBusinessPage}>
         {business.businessname}
       </button>
       • Completed on {formatDate(project.project_date)}
     </p>
+    <div class="flex flex-wrap justify-center items-center gap-[theme(--spacing-lg)] text-sm text-primary-foreground/80 relative z-10">
+      {#if project.pincode}
+        <span>📍 {project.pincode}</span>
+      {/if}
+      {#if project.city}
+        <span>🏙️ {project.city}</span>
+      {/if}
+      {#if project.district}
+        <span>🗺️ {project.district}</span>
+      {/if}
+    </div>
   </header>
 
   <!-- Project Image -->
-  <section class="w-full max-w-[1140px] flex justify-center mb-[theme(--spacing-3xl)] bg-card px-[theme(--container-padding)] py-[theme(--container-padding)] rounded-[theme(--radius-xl)] shadow-[theme(--shadow-md)] transition-all duration-300 hover:shadow-[theme(--shadow-lg)] hover:-translate-y-[theme(--hover-lift-sm)]">
+  <section class="w-full max-w-[1140px] flex justify-center mb-[theme(--spacing-3xl)] bg-card px-[theme(--container-padding)] py-[theme(--container-padding)] rounded-[theme(--radius-xl)] shadow-[theme(--shadow-md)]">
     {#if project.cloudinary_public_id}
       <img
-        src={`https://res.cloudinary.com/${PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_fill,w_800,h_600,q_auto,f_auto/${project.cloudinary_public_id}`}
+        src={`https://res.cloudinary.com/${PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_limit,w_800,q_auto,f_auto/${project.cloudinary_public_id}`}
         alt={project.title}
-        class="w-full max-w-[600px] h-auto max-h-96 object-cover rounded-[theme(--radius-lg)] shadow-[theme(--shadow-md)] transition-transform duration-300 hover:scale-105"
+        class="w-full max-w-[600px] h-auto object-contain rounded-[theme(--radius-lg)] shadow-[theme(--shadow-md)]"
         loading="eager"
       />
     {:else if project.image_url}
       <img
         src={project.image_url}
         alt={project.title}
-        class="w-full max-w-[600px] h-auto max-h-96 object-cover rounded-[theme(--radius-lg)] shadow-[theme(--shadow-md)] transition-transform duration-300 hover:scale-105"
+        class="w-full max-w-[600px] h-auto object-contain rounded-[theme(--radius-lg)] shadow-[theme(--shadow-md)]"
         loading="eager"
       />
     {:else}
@@ -127,51 +138,18 @@
     {/if}
   </section>
 
-  <!-- Project Details -->
-  <section class="w-full max-w-[1140px] mb-[theme(--spacing-xl)]">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] mb-[theme(--spacing-3xl)]">
-      <Card class="text-center border border-border hover:shadow-[theme(--shadow-lg)] hover:-translate-y-[theme(--hover-lift-md)] transition-all duration-300">
-        <div class="px-[theme(--container-padding)] py-[theme(--container-padding)]">
-          <h3 class="m-0 mb-[theme(--spacing-md)] text-lg font-semibold text-primary uppercase tracking-wide pb-[theme(--spacing-sm)] border-b-2 border-border">Location</h3>
-          <div class="flex flex-col gap-[theme(--spacing-sm)]">
-            <p class="m-0 text-2xl font-semibold text-foreground">Pincode: {project.pincode}</p>
-            {#if project.city}
-              <p class="m-0 text-xl font-medium text-primary">City: {project.city}</p>
-            {/if}
-            {#if project.district}
-              <p class="m-0 text-xl font-medium text-primary">District: {project.district}</p>
-            {/if}
-          </div>
-        </div>
-      </Card>
-
-      {#if project.cost}
-        <Card class="text-center border border-border hover:shadow-[theme(--shadow-lg)] hover:-translate-y-[theme(--hover-lift-md)] transition-all duration-300">
-          <div class="px-[theme(--container-padding)] py-[theme(--container-padding)]">
-            <h3 class="m-0 mb-[theme(--spacing-md)] text-lg font-semibold text-primary uppercase tracking-wide pb-[theme(--spacing-sm)] border-b-2 border-border">Project Cost</h3>
-            <p class="m-0 text-2xl font-semibold text-foreground">{formatCurrency(project.cost)}</p>
-          </div>
-        </Card>
-      {/if}
-
-      {#if project.savings}
-        <Card class="text-center border border-border hover:shadow-[theme(--shadow-lg)] hover:-translate-y-[theme(--hover-lift-md)] transition-all duration-300">
-          <div class="px-[theme(--container-padding)] py-[theme(--container-padding)]">
-            <h3 class="m-0 mb-[theme(--spacing-md)] text-lg font-semibold text-primary uppercase tracking-wide pb-[theme(--spacing-sm)] border-b-2 border-border">Annual Savings</h3>
-            <p class="m-0 text-2xl font-semibold text-foreground">{formatCurrency(project.savings)}</p>
-          </div>
-        </Card>
-      {/if}
+<!-- View Installer Profile Section -->
+  <section class="w-full max-w-[1140px] mb-[theme(--spacing-xl)] rounded-[theme(--radius-lg)] bg-[hsl(var(--accent)/0.1)] p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] transition-all">
+    <div class="text-center">
+      <h2 class="text-2xl md:text-3xl font-semibold mb-[theme(--spacing-lg)] text-primary">Interested in This Installer?</h2>
+      <p class="text-lg mb-[theme(--spacing-lg)] text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
+        View the complete profile of <strong>{business.businessname}</strong> to see all their projects, services, and contact information.
+      </p>
+      <Button onclick={navigateToBusinessPage} class="font-semibold px-[theme(--button-padding-x-lg)] py-[theme(--button-padding-y-default)]">
+        View {business.businessname}'s Profile
+      </Button>
     </div>
-
-    {#if project.description}
-      <Card class="border border-border hover:shadow-[theme(--shadow-lg)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all duration-300">
-        <div class="px-[theme(--container-padding)] py-[theme(--container-padding)]">
-          <h3 class="m-0 mb-[theme(--spacing-md)] text-2xl font-semibold text-primary pb-[theme(--spacing-sm)] border-b-2 border-border">Project Description</h3>
-          <p class="m-0 text-lg leading-relaxed text-muted-foreground">{project.description}</p>
-        </div>
-      </Card>
-    {/if}
   </section>
+
 </main>
 
