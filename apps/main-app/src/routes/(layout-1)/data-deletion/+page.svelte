@@ -50,7 +50,7 @@
 
 <main class="min-h-screen p-8 transition-colors duration-300 bg-[hsl(var(--background))] text-[var(--color-text-primary)] dark:bg-[hsl(var(--background))]">
   <div class="max-w-2xl mx-auto">
-    <h1 class="text-5xl font-semibold text-center mb-6 leading-tight md:text-4xl">Data Deletion Request</h1>
+    <h1 class="text-4xl font-semibold text-center mb-6 leading-tight md:text-4xl">Data Deletion Request</h1>
 
     <div class="mb-8">
       <p class="text-lg leading-relaxed mb-6">
@@ -62,7 +62,7 @@
 
       <div class="p-6 bg-[hsl(var(--muted))] rounded-lg mb-8 shadow-md dark:bg-[hsl(var(--muted))]">
         <h3 class="text-2xl font-semibold mb-4">What data will be deleted?</h3>
-        <h4 class="text-xl font-semibold mt-6 mb-3 first:mt-0">For Customers:</h4>
+        <h4 class="text-lg font-semibold mt-6 mb-3 first:mt-0">For Customers:</h4>
         <ul class="pl-6 space-y-2">
           <li class="leading-relaxed">Your contact information (phone number, email address)</li>
           <li class="leading-relaxed">Lead submissions and requirements</li>
@@ -70,7 +70,7 @@
           <li class="leading-relaxed">Communication history with our team</li>
         </ul>
 
-        <h4 class="text-xl font-semibold mt-6 mb-3">For Solar Installers/Businesses:</h4>
+        <h4 class="text-lg font-semibold mt-6 mb-3">For Solar Installers/Businesses:</h4>
         <ul class="pl-6 space-y-2">
           <li class="leading-relaxed">Business profile and contact information</li>
           <li class="leading-relaxed">Service area and specialization details</li>

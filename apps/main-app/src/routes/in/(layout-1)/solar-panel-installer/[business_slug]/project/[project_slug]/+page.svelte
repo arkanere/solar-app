@@ -141,7 +141,7 @@
 <!-- View Installer Profile Section -->
   <section class="w-full max-w-[1140px] mb-[theme(--spacing-xl)] rounded-[theme(--radius-lg)] bg-[hsl(var(--accent)/0.1)] p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] transition-all">
     <div class="text-center">
-      <h2 class="text-2xl md:text-3xl font-semibold mb-[theme(--spacing-lg)] text-primary">Interested in This Installer?</h2>
+      <h2 class="text-2xl md:text-2xl font-semibold mb-[theme(--spacing-lg)] text-primary">Interested in This Installer?</h2>
       <p class="text-lg mb-[theme(--spacing-lg)] text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
         View the complete profile of <strong>{business.businessname}</strong> to see all their projects, services, and contact information.
       </p>

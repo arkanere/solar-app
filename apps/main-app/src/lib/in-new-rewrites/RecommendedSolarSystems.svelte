@@ -6,7 +6,7 @@
 
 <section class="py-[theme(--card-gap)] px-[theme(--container-padding)] sm:px-6 lg:px-8">
 	<div class="max-w-4xl mx-auto">
-		<h2 class="text-center text-primary text-3xl font-semibold mb-[theme(--card-gap)] leading-9">
+		<h2 class="text-center text-primary text-2xl font-semibold mb-[theme(--card-gap)] leading-9">
 			Recommended Solar Systems for Homes
 		</h2>
 

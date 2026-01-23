@@ -21,7 +21,7 @@
 {#if projects.length > 0}
 	<Card.Root class="border-0 shadow-[theme(--shadow-lg)] mb-[theme(--spacing-2xl)]">
 		<Card.Header class="text-center pb-[theme(--card-padding-y)]">
-			<Card.Title class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">
+			<Card.Title class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">
 				Recent Solar Panel Installation Projects in {city?.replace('-', ' ')}
 			</Card.Title>
 			<div class="flex justify-center items-center my-[theme(--spacing-lg)]">

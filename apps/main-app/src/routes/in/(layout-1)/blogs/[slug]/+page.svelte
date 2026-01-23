@@ -96,7 +96,7 @@
 <main class="w-full min-h-screen bg-background text-foreground transition-colors duration-300 dark:bg-background dark:text-foreground flex flex-col items-center py-[theme(--spacing-lg)] px-[theme(--container-padding)] md:py-[theme(--spacing-3xl)]">
 	<div class="max-w-3xl w-full mb-[theme(--spacing-3xl)]">
 		<header class="mb-[theme(--spacing-xl)] pb-[theme(--spacing-md)] border-b border-border">
-			<h1 class="text-[theme(--font-size-4xl)] md:text-5xl font-bold mb-[theme(--spacing-md)] leading-tight">{blog.title}</h1>
+			<h1 class="text-[theme(--font-size-4xl)] md:text-4xl font-bold mb-[theme(--spacing-md)] leading-tight">{blog.title}</h1>
 			{#if blog.author_name}
 				<p class="text-[theme(--font-size-base)] mb-[theme(--spacing-xs)]">
 					By <a href="/about-us" class="text-primary hover:underline">

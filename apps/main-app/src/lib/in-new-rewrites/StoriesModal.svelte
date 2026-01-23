@@ -242,7 +242,7 @@
             />
           {:else}
             <div class="flex flex-col items-center justify-center gap-[theme(--spacing-sm)] text-white/80">
-              <span class="text-5xl">📸</span>
+              <span class="text-4xl">📸</span>
               <p>No image available</p>
             </div>
           {/if}

@@ -133,7 +133,7 @@
     <!-- Solar Panel Installers by State Section -->
     <section class="mb-[theme(--spacing-2xl)]">
       <div class="text-center mb-[theme(--spacing-2xl)]">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Solar Panel Installers by State</h2>
+        <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Solar Panel Installers by State</h2>
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
           <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
         </div>

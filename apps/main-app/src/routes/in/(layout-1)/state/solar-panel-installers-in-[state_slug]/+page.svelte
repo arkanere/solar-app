@@ -27,7 +27,7 @@
 <main class="w-full bg-background text-foreground transition-colors duration-300 overflow-x-hidden">
   <div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
     <div class="text-center mb-[theme(--spacing-2xl)]">
-      <h1 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">
+      <h1 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">
         Solar Panel Installers in {state}
       </h1>
       <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
