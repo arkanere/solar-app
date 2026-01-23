@@ -1,5 +1,23 @@
 @import "tailwindcss";
 
+/* ===== DESIGN SYSTEM GUIDANCE ===== */
+/*
+  This file contains 100+ design tokens. For Beautiful/Minimal/Fast design:
+
+  USE THESE 90% OF THE TIME (Core Set):
+  - Typography: text-sm, text-lg, text-2xl, text-3xl, text-4xl only
+  - Spacing: --spacing-lg (1rem), --spacing-xl (1.5rem), --spacing-2xl (2rem)
+  - Shadows: shadow-xs (subtle), shadow-sm (cards)
+  - Radius: --radius-md (inputs), --radius-lg (cards)
+  - Colors: text-primary, bg-accent, bg-secondary (semantic only)
+
+  AVOID UNLESS NECESSARY (Extended Set):
+  - text-xs, text-base, text-5xl (use core sizes instead)
+  - --spacing-xs/sm/md (too granular; prefer larger spacing)
+  - shadow-md/lg/xl (too heavy for minimal aesthetic)
+  - Component-specific tokens (used internally by Shadcn components)
+*/
+
 /* ===== THEME CONFIGURATION (Linear-inspired) ===== */
 @theme {
   /* Base radius for border-radius calculations */
@@ -401,9 +419,6 @@
   /* Phase 7.1: Pulse animation for attention */
   --animate-pulse-subtle: pulse-subtle 2s ease-in-out infinite;
 
-  /* Phase 7.2: Bounce entrance animation */
-  --animate-bounce-in: bounce-in 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-
   /* ===== GRADIENT TOKENS ===== */
   /* Subtle gradients for Linear design system metallic sheen effect */
   --gradient-subtle-vertical: linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.95) 100%);
@@ -617,45 +632,6 @@
   /* Decorative Line Dimensions (section dividers) */
   --divider-line-width: 5rem;
   --divider-line-height: 0.25rem;
-
-  /* Colors for Tailwind v4 - with hover variants that have opacity baked in */
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-  --color-primary-hover: var(--primary-hover);
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-  --color-secondary-hover: var(--secondary-hover);
-  --color-secondary-muted: hsl(var(--secondary-muted));
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-accent-hover: var(--accent-hover);
-  --color-accent-muted: hsl(var(--accent-muted));
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-  --color-destructive-hover: var(--destructive-hover);
-  --color-destructive-muted: hsl(var(--destructive-muted));
-  --color-success: hsl(var(--success));
-  --color-success-foreground: hsl(var(--success-foreground));
-  --color-success-muted: hsl(var(--success-muted));
-  --color-warning: hsl(var(--warning));
-  --color-warning-foreground: hsl(var(--warning-foreground));
-  --color-warning-muted: hsl(var(--warning-muted));
-  --color-background: hsl(var(--background));
-  --color-background-secondary: hsl(var(--background-secondary));
-  --color-background-tertiary: hsl(var(--background-tertiary));
-  --color-foreground: hsl(var(--foreground));
-  --color-foreground-secondary: hsl(var(--foreground-secondary));
-  --color-foreground-muted: hsl(var(--foreground-muted));
-  --color-border: hsl(var(--border));
-  --color-border-hover: hsl(var(--border-hover));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
 }
 
 /* ===== KEYFRAMES ===== */
@@ -780,21 +756,6 @@
   }
 }
 
-/* Phase 7.2: Bounce entrance animation */
-@keyframes bounce-in {
-  0% {
-    transform: scale(0.95);
-    opacity: 0;
-  }
-  70% {
-    transform: scale(1.02);
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
 /* ===== PHASE 1.2: BASE INTERACTIVE TRANSITIONS ===== */
 @layer base {
   button,
@@ -867,12 +828,6 @@
     background: rgba(0, 0, 0, 0.1);
   }
 
-  .backdrop-glass-heavy {
-    backdrop-filter: var(--backdrop-blur-heavy);
-    -webkit-backdrop-filter: var(--backdrop-blur-heavy);
-    background: rgba(0, 0, 0, 0.2);
-  }
-
   /* Text color utilities for muted text hierarchy */
   .text-primary {
     color: var(--color-text-primary);
@@ -890,9 +845,6 @@
   /* Phase 3.3: Typography weight utilities for standardized font weights */
   .font-ui {
     @apply font-medium;
-  }
-  .font-body {
-    @apply font-normal;
   }
   .font-display {
     @apply font-semibold;
@@ -915,30 +867,7 @@
     box-shadow: 0 0 0 2px hsl(var(--ring) / 0.3);
   }
 
-  /* ===== PHASE 3: CARD INTERACTION POLISH ===== */
-  /* 3.1 Card hover utilities with lift effect */
-  .card-interactive {
-    transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
-                box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  .card-interactive:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-card-hover);
-  }
-  .card-interactive:active {
-    transform: translateY(0);
-  }
-
-  /* 3.2 Subtle border glow on hover */
-  .card-hover-glow:hover {
-    border-color: hsl(var(--border-hover));
-  }
-
   /* ===== PHASE 4: BUTTON/LINK FEEDBACK ===== */
-  /* 4.1 Pressed state utilities for buttons */
-  .btn-press:active {
-    transform: scale(0.98);
-  }
 
   /* 4.2 Default link transitions for unstyled links */
   a:not([class]) {
@@ -967,12 +896,7 @@
     animation: var(--animate-pulse-subtle);
   }
 
-  /* 7.2 Apply bounce-in animation utility */
-  .animate-bounce-in {
-    animation: var(--animate-bounce-in);
-  }
-
-  /* 7.3 Hover glow utility for accent effects */
+  /* 7.2 Hover glow utility for accent effects */
   .hover-glow {
     transition: box-shadow 200ms ease;
   }
