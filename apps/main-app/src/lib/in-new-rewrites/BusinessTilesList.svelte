@@ -92,7 +92,7 @@
 				<div class="flex flex-col sm:flex-row gap-[theme(--form-element-field-gap)] p-[theme(--button-padding-y-default)_theme(--button-padding-x-lg)]">
 					<Button
 						variant="default"
-						class="bg-destructive hover:bg-destructive-hover flex-1 sm:flex-none"
+						class="flex-1 sm:flex-none"
 						onclick={() => makeCall(business.phonenumber, business.city, business.slug)}
 					>
 						<Phone class="w-4 h-4" />
@@ -100,8 +100,8 @@
 					</Button>
 					{#if business.businessfilled || business.phonenumber}
 						<Button
-							variant="default"
-							class="bg-success hover:bg-success-hover flex-1 sm:flex-none"
+							variant="secondary"
+							class="flex-1 sm:flex-none"
 							onclick={() => openWhatsApp(business.phonenumber, business.city, business.slug)}
 						>
 							<MessageCircle class="w-4 h-4" />

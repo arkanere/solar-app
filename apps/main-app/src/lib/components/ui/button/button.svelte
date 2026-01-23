@@ -11,10 +11,11 @@
 				destructive:
 					"bg-destructive hover:bg-destructive-hover focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60 text-white shadow-xs",
 				outline:
-					"bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 border-inner-glow shadow-xs",
-				secondary: "bg-secondary text-secondary-foreground hover:bg-secondary-hover shadow-xs",
-				ghost: "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
+					"bg-transparent border border-border text-foreground hover:bg-background-secondary dark:bg-input/30 dark:border-input dark:hover:bg-input/50 shadow-xs",
+				secondary: "bg-transparent border border-border text-foreground hover:bg-background-secondary shadow-xs",
+				ghost: "bg-transparent hover:bg-background-secondary text-foreground",
 				link: "text-primary underline-offset-4 hover:underline",
+				success: "bg-success text-success-foreground hover:bg-success-hover shadow-xs",
 			},
 			size: {
 				default: "h-[var(--button-height-default)] px-[var(--button-padding-x-default)] py-[var(--button-padding-y-default)] has-[>svg]:px-3",
