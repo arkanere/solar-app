@@ -116,7 +116,7 @@
 						href="/in/solar-panel-installer/{project.business_slug}/project/{project.project_slug}"
 						class="group block overflow-hidden transition-all duration-[var(--transition-default)] hover:-translate-y-[var(--hover-lift-sm)]"
 					>
-						<Card class="h-full flex flex-col hover:shadow-[var(--shadow-card-hover)]">
+						<Card class="h-full flex flex-col hover:shadow-[theme(--shadow-sm)]">
 						<!-- Project Image -->
 						<div class="w-full aspect-square overflow-hidden bg-muted relative">
 							{#if project.cloudinary_public_id}

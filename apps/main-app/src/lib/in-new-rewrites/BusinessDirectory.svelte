@@ -57,7 +57,7 @@
 </script>
 
 <div class="w-full max-w-[theme(--max-width-sm)] mx-auto">
-	<Card.Root class="border border-[theme(--color-border)] shadow-[theme(--shadow-lg)]">
+	<Card.Root class="border border-[theme(--color-border)] shadow-[theme(--shadow-sm)]">
 		<Card.Header>
 			<Card.Title class="text-[theme(--font-size-2xl)] leading-[theme(--font-size-2xl--line-height)]">Solar Installer Directory</Card.Title>
 			<Card.Description>

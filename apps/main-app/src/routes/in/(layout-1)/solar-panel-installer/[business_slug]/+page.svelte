@@ -153,7 +153,7 @@
       </div>
 
       <!-- Business Details - Single Combined Card -->
-      <section class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] transition-all w-full">
+      <section class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-sm)] transition-all w-full">
         <!-- Section Header -->
         <div class="text-center mb-[theme(--spacing-2xl)]">
           <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Business Information</h2>
@@ -419,7 +419,7 @@
 
       <!-- Recent Projects Section -->
       {#if showProjects}
-        <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] mb-8 transition-all w-full">
+        <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-sm)] mb-8 transition-all w-full">
           <div class="text-center mb-[theme(--spacing-2xl)]">
             <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Recent Solar Panel Installation Projects</h2>
             <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
@@ -434,7 +434,7 @@
           {:else}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] mt-[theme(--spacing-2xl)]">
               {#each projects as project (project.id)}
-                <div class="rounded-[theme(--radius-lg)] overflow-hidden shadow-[theme(--shadow-md)] transition-all hover:shadow-lg hover:-translate-y-1 bg-card h-full">
+                <div class="rounded-[theme(--radius-lg)] overflow-hidden shadow-[theme(--shadow-sm)] transition-transform duration-100 hover:shadow-sm hover:-translate-y-1 bg-card h-full">
                   <a
                     href="/in/solar-panel-installer/{businessSlug}/project/{project.project_slug}"
                     class="block no-underline text-inherit transition-all"
@@ -488,7 +488,7 @@
 
       <!-- Other Businesses in the City -->
       {#if business.city}
-        <section class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] transition-all w-full">
+        <section class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-sm)] transition-all w-full">
           <div class="text-center mb-[theme(--spacing-2xl)]">
             <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Find Other Solar Businesses in {business.city}</h2>
             <div class="flex justify-center items-center my-[theme(--spacing-lg)]">

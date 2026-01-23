@@ -39,7 +39,7 @@
 {#if visibleBusinesses.length > 0}
 	<section class="mx-auto w-full max-w-[theme(--max-width-4xl)] flex flex-col gap-[theme(--form-field-gap)] px-[theme(--button-padding-x-default)] my-[theme(--card-gap)]">
 		{#each visibleBusinesses as business}
-			<Card.Root class="shadow-[theme(--shadow-card)] transition-shadow duration-[theme(--duration-default)]">
+			<Card.Root class="shadow-[theme(--shadow-card)] transition-shadow duration-100">
 				<Card.Header class="flex flex-col sm:flex-row sm:items-start sm:justify-between border-b gap-[theme(--dropdown-menu-item-gap)] pb-[theme(--card-padding-y)]">
 					<h2 class="text-[length:theme(--font-size-lg)] leading-[theme(--font-size-lg--line-height)] font-semibold tracking-[theme(--tracking-heading)]">
 						<a

@@ -56,6 +56,6 @@
 			onkeypress={(e) => e.key === 'Enter' && sendMessage()}
 			class="flex-1 p-2.5 text-base border rounded bg-background text-foreground placeholder-foreground-muted"
 		/>
-		<button onclick={sendMessage} class="px-5 py-2.5 text-base bg-primary text-primary-foreground border-none rounded cursor-pointer transition-opacity duration-default hover:opacity-90">Send</button>
+		<button onclick={sendMessage} class="px-5 py-2.5 text-base bg-primary text-primary-foreground border-none rounded cursor-pointer transition-opacity duration-100 hover:opacity-90">Send</button>
 	</div>
 </main>

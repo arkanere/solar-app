@@ -360,7 +360,7 @@
     </section>
 
     <!-- CTA Section -->
-    <section class="text-center bg-gradient-to-r from-primary to-primary/90 rounded-[theme(--radius-lg)] p-[theme(--card-padding-y)] md:p-[theme(--card-gap)] text-primary-foreground shadow-[theme(--shadow-lg)] mb-[theme(--card-gap)]">
+    <section class="text-center bg-gradient-to-r from-primary to-primary/90 rounded-[theme(--radius-lg)] p-[theme(--card-padding-y)] md:p-[theme(--card-gap)] text-primary-foreground shadow-[theme(--shadow-sm)] mb-[theme(--card-gap)]">
       <h2 class="text-2xl md:text-2xl font-bold mb-[theme(--spacing-lg)] text-primary-foreground">Ready to Share Your Expertise?</h2>
       <p class="text-base md:text-lg mb-[theme(--card-gap)] max-w-xl mx-auto">
         Help homeowners and businesses across India make informed solar decisions.

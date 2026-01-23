@@ -110,7 +110,7 @@
 				<li>
 					<a
 						href={`/in/state/${formatStateSlug(state)}`}
-						class="block h-full bg-card rounded-[theme(--radius-xl)] p-[theme(--card-padding-y)] border border-border hover:shadow-lg hover:border-primary/50 transition-all duration-300 hover:-translate-y-1"
+						class="block h-full bg-card rounded-[theme(--radius-xl)] p-[theme(--card-padding-y)] border border-border hover:shadow-sm hover:border-primary/50 transition-all duration-100 hover:-translate-y-1"
 					>
 						<h2 class="text-[theme(--font-size-lg)] font-semibold mb-[theme(--spacing-sm)] text-primary">
 							{state}
@@ -146,7 +146,7 @@
 		</h2>
 		<ul class="grid grid-cols-1 md:grid-cols-2 gap-[theme(--card-gap)] list-none p-0">
 			<li>
-				<Card class="hover:shadow-md transition-all duration-300">
+				<Card class="hover:-translate-y-1 transition-transform duration-100">
 					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-lg)]">Solar panel installations at Homes, Apartments, and Businesses</strong>
 					<p class="text-muted-foreground leading-relaxed">
 						Professional installation of solar panels tailored to residential, commercial, and
@@ -158,7 +158,7 @@
 				</Card>
 			</li>
 			<li>
-				<Card class="hover:shadow-md transition-all duration-300">
+				<Card class="hover:-translate-y-1 transition-transform duration-100">
 					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-lg)]">Solar Modules and Inverters</strong>
 					<p class="text-muted-foreground leading-relaxed">
 						Supply and installation of high-quality solar modules and inverters to ensure efficient
@@ -167,7 +167,7 @@
 				</Card>
 			</li>
 			<li>
-				<Card class="hover:shadow-md transition-all duration-300">
+				<Card class="hover:-translate-y-1 transition-transform duration-100">
 					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-lg)]">
 						Documentation and Permissions for Subsidy under <a
 							href="/in/blogs/pm-surya-ghar-yojana"
@@ -184,7 +184,7 @@
 				</Card>
 			</li>
 			<li>
-				<Card class="hover:shadow-md transition-all duration-300">
+				<Card class="hover:-translate-y-1 transition-transform duration-100">
 					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-lg)]">Net Metering</strong>
 					<p class="text-muted-foreground leading-relaxed">
 						Setup of net metering systems to help you save on electricity bills by feeding surplus
@@ -193,7 +193,7 @@
 				</Card>
 			</li>
 			<li>
-				<Card class="hover:shadow-md transition-all duration-300">
+				<Card class="hover:-translate-y-1 transition-transform duration-100">
 					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-lg)]">Solar Financing through Banks and NBFCs</strong>
 					<p class="text-muted-foreground leading-relaxed">
 						Guidance on financing options, loans, and schemes offered by banks and non-banking
@@ -202,7 +202,7 @@
 				</Card>
 			</li>
 			<li>
-				<Card class="hover:shadow-md transition-all duration-300">
+				<Card class="hover:-translate-y-1 transition-transform duration-100">
 					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-lg)]">Routine Maintenance and Cleaning</strong>
 					<p class="text-muted-foreground leading-relaxed">
 						Regular maintenance and cleaning services to keep your solar system running efficiently.

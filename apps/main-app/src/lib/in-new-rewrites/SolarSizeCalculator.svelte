@@ -12,7 +12,7 @@
 	});
 </script>
 
-<section class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] transition-all w-full">
+<section class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-sm)] transition-all w-full">
 	<div class="text-center mb-[theme(--spacing-2xl)]">
 		<h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Solar System Calculator</h2>
 		<div class="flex justify-center items-center my-[theme(--spacing-lg)]">

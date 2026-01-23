@@ -43,7 +43,7 @@
 <main class="w-full bg-background text-foreground transition-colors duration-300 overflow-x-hidden dark:bg-background dark:text-foreground">
   <div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
     <!-- Hero Section -->
-    <section class="rounded-[theme(--radius-lg)] bg-gradient-to-r from-primary to-primary text-primary-foreground p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">
+    <section class="rounded-[theme(--radius-lg)] bg-gradient-to-r from-primary to-primary text-primary-foreground p-[theme(--card-padding-y)] shadow-[theme(--shadow-sm)]">
       <div class="text-center mb-[theme(--card-gap)]">
         <h1 class="text-4xl md:text-4xl font-bold mb-[theme(--spacing-lg)] text-primary-foreground">About Solar Vipani</h1>
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
@@ -56,7 +56,7 @@
     </section>
 
     <!-- Introduction Section -->
-    <section class="rounded-[theme(--radius-lg)] bg-accent-muted p-[theme(--card-padding-y)] mb-[theme(--card-gap)] shadow-[theme(--shadow-md)]">
+    <section class="rounded-[theme(--radius-lg)] bg-accent-muted p-[theme(--card-padding-y)] mb-[theme(--card-gap)] shadow-[theme(--shadow-sm)]">
       <div>
         <p class="text-lg font-medium text-primary mb-[theme(--spacing-2xl)]">
           Our platform is designed for homeowners and businesses ready to go
@@ -90,19 +90,19 @@
     </section>
 
     <!-- Stats Grid -->
-    <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] mb-[theme(--card-gap)] shadow-[theme(--shadow-md)]">
+    <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] mb-[theme(--card-gap)] shadow-[theme(--shadow-sm)]">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-[theme(--card-gap)]">
-        <Card class="p-[theme(--spacing-lg)] border-t-[theme(--card-accent-border)] border-accent hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-md)] transition-all text-center">
+        <Card class="p-[theme(--spacing-lg)] border-t-[theme(--card-accent-border)] border-accent hover:shadow-[theme(--shadow-sm)] hover:-translate-y-[theme(--hover-lift-md)] transition-all text-center">
           <div class="text-4xl font-bold text-primary mb-[theme(--spacing-sm)]">450+</div>
           <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-sm)]">Verified Businesses</h3>
           <p class="text-foreground dark:text-foreground-secondary">Listed across India</p>
         </Card>
-        <Card class="p-[theme(--spacing-lg)] border-t-[theme(--card-accent-border)] border-accent hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-md)] transition-all text-center">
+        <Card class="p-[theme(--spacing-lg)] border-t-[theme(--card-accent-border)] border-accent hover:shadow-[theme(--shadow-sm)] hover:-translate-y-[theme(--hover-lift-md)] transition-all text-center">
           <div class="text-4xl font-bold text-primary mb-[theme(--spacing-sm)]">5,000+</div>
           <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-sm)]">Cities & Towns</h3>
           <p class="text-foreground dark:text-foreground-secondary">Nationwide coverage</p>
         </Card>
-        <Card class="p-[theme(--spacing-lg)] border-t-[theme(--card-accent-border)] border-accent hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-md)] transition-all text-center">
+        <Card class="p-[theme(--spacing-lg)] border-t-[theme(--card-accent-border)] border-accent hover:shadow-[theme(--shadow-sm)] hover:-translate-y-[theme(--hover-lift-md)] transition-all text-center">
           <div class="text-4xl font-bold text-primary mb-[theme(--spacing-sm)]">100%</div>
           <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-sm)]">Quality Assured</h3>
           <p class="text-foreground dark:text-foreground-secondary">Verified solar providers</p>
@@ -111,7 +111,7 @@
     </section>
 
     <!-- Purpose Section -->
-    <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] mb-[theme(--card-gap)] shadow-[theme(--shadow-md)]">
+    <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] mb-[theme(--card-gap)] shadow-[theme(--shadow-sm)]">
       <div class="text-center mb-[theme(--card-gap)]">
         <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Our Purpose</h2>
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
@@ -130,7 +130,7 @@
     </section>
 
     <!-- Expertise Section -->
-    <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] mb-[theme(--card-gap)] shadow-[theme(--shadow-md)]">
+    <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] mb-[theme(--card-gap)] shadow-[theme(--shadow-sm)]">
       <div class="text-center mb-[theme(--card-gap)]">
         <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Our Digital Expertise</h2>
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
@@ -149,7 +149,7 @@
     </section>
 
     <!-- Why Choose Us Section -->
-    <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] mb-[theme(--card-gap)] shadow-[theme(--shadow-md)]">
+    <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] mb-[theme(--card-gap)] shadow-[theme(--shadow-sm)]">
       <div class="text-center mb-[theme(--card-gap)]">
         <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Why Choose Solar Vipani?</h2>
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
@@ -157,7 +157,7 @@
         </div>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-[theme(--card-gap)]">
-        <Card class="p-[theme(--spacing-lg)] hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all text-center">
+        <Card class="p-[theme(--spacing-lg)] hover:shadow-[theme(--shadow-sm)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all text-center">
           <div class="text-4xl mb-[theme(--spacing-lg)] block">⚡</div>
           <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">Quality Assurance</h3>
           <p class="text-foreground dark:text-foreground-secondary text-sm">
@@ -165,7 +165,7 @@
             you're only matched with trusted industry leaders.
           </p>
         </Card>
-        <Card class="p-[theme(--spacing-lg)] hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all text-center">
+        <Card class="p-[theme(--spacing-lg)] hover:shadow-[theme(--shadow-sm)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all text-center">
           <div class="text-4xl mb-[theme(--spacing-lg)] block">📊</div>
           <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">Unbiased Information</h3>
           <p class="text-foreground dark:text-foreground-secondary text-sm">
@@ -173,7 +173,7 @@
             objective, detailed information on each solar provider.
           </p>
         </Card>
-        <Card class="p-[theme(--spacing-lg)] hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all text-center">
+        <Card class="p-[theme(--spacing-lg)] hover:shadow-[theme(--shadow-sm)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all text-center">
           <div class="text-4xl mb-[theme(--spacing-lg)] block">🔍</div>
           <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">Effortless Comparisons</h3>
           <p class="text-foreground dark:text-foreground-secondary text-sm">
@@ -181,7 +181,7 @@
             quality, equipment standards, and financial benefits at a glance.
           </p>
         </Card>
-        <Card class="p-[theme(--spacing-lg)] hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all text-center">
+        <Card class="p-[theme(--spacing-lg)] hover:shadow-[theme(--shadow-sm)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all text-center">
           <div class="text-4xl mb-[theme(--spacing-lg)] block">🎯</div>
           <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">Customer-First Support</h3>
           <p class="text-foreground dark:text-foreground-secondary text-sm">
@@ -193,7 +193,7 @@
     </section>
 
     <!-- Call to Action Section -->
-    <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] mb-[theme(--card-gap)] shadow-[theme(--shadow-md)]">
+    <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] mb-[theme(--card-gap)] shadow-[theme(--shadow-sm)]">
       <div class="text-center mb-[theme(--card-gap)]">
         <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Building a Brighter Future, Together</h2>
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
