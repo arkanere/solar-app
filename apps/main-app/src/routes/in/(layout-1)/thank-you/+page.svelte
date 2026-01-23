@@ -80,29 +80,29 @@
 		<!-- Customer details section -->
 		{#if customerDetails}
 		<div class="w-full max-w-2xl mx-auto mb-[theme(--spacing-2xl)] px-[theme(--spacing-sm)] text-left">
-			<Card class="p-[theme(--spacing-sm)] md:p-[theme(--spacing-lg)] border border-border">
+			<Card class="p-[theme(--spacing-sm)] md:p-[theme(--spacing-lg)] bg-background-secondary">
 				<div class="space-y-[theme(--spacing-lg)]">
-					<div class="flex flex-col md:flex-row md:justify-between md:items-start pb-[theme(--spacing-lg)] border-b border-border last:border-b-0">
+					<div class="flex flex-col md:flex-row md:justify-between md:items-start pb-[theme(--spacing-lg)] last:pb-0">
 						<span class="font-semibold text-foreground-secondary md:min-w-[140px] flex-shrink-0">Name:</span>
 						<span class="font-medium text-foreground md:text-right flex-grow md:ml-[theme(--spacing-lg)]">{customerDetails.name}</span>
 					</div>
-					<div class="flex flex-col md:flex-row md:justify-between md:items-start pb-[theme(--spacing-lg)] border-b border-border last:border-b-0">
+					<div class="flex flex-col md:flex-row md:justify-between md:items-start pb-[theme(--spacing-lg)] last:pb-0">
 						<span class="font-semibold text-foreground-secondary md:min-w-[140px] flex-shrink-0">Phone:</span>
 						<span class="font-medium text-foreground md:text-right flex-grow md:ml-[theme(--spacing-lg)]">{customerDetails.phone}</span>
 					</div>
-					<div class="flex flex-col md:flex-row md:justify-between md:items-start pb-[theme(--spacing-lg)] border-b border-border last:border-b-0">
+					<div class="flex flex-col md:flex-row md:justify-between md:items-start pb-[theme(--spacing-lg)] last:pb-0">
 						<span class="font-semibold text-foreground-secondary md:min-w-[140px] flex-shrink-0">Email:</span>
 						<span class="font-medium text-foreground md:text-right flex-grow md:ml-[theme(--spacing-lg)]">{customerDetails.email || 'Not provided'}</span>
 					</div>
-					<div class="flex flex-col md:flex-row md:justify-between md:items-start pb-[theme(--spacing-lg)] border-b border-border last:border-b-0">
+					<div class="flex flex-col md:flex-row md:justify-between md:items-start pb-[theme(--spacing-lg)] last:pb-0">
 						<span class="font-semibold text-foreground-secondary md:min-w-[140px] flex-shrink-0">Location:</span>
 						<span class="font-medium text-foreground md:text-right flex-grow md:ml-[theme(--spacing-lg)]">{customerDetails.pinCode}{customerDetails.district ? `, ${customerDetails.district}` : ''}</span>
 					</div>
-					<div class="flex flex-col md:flex-row md:justify-between md:items-start pb-[theme(--spacing-lg)] border-b border-border last:border-b-0">
+					<div class="flex flex-col md:flex-row md:justify-between md:items-start pb-[theme(--spacing-lg)] last:pb-0">
 						<span class="font-semibold text-foreground-secondary md:min-w-[140px] flex-shrink-0">Installation Type:</span>
 						<span class="font-medium text-foreground md:text-right flex-grow md:ml-[theme(--spacing-lg)]">{customerDetails.type}</span>
 					</div>
-					<div class="flex flex-col md:flex-row md:justify-between md:items-start pb-[theme(--spacing-lg)] border-b border-border last:border-b-0">
+					<div class="flex flex-col md:flex-row md:justify-between md:items-start pb-[theme(--spacing-lg)] last:pb-0">
 						<span class="font-semibold text-foreground-secondary md:min-w-[140px] flex-shrink-0">Requirements:</span>
 						<span class="font-medium text-foreground md:text-right flex-grow md:ml-[theme(--spacing-lg)]">{customerDetails.comment}</span>
 					</div>

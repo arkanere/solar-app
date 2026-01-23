@@ -50,7 +50,7 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] w-full mb-[theme(--spacing-2xl)]">
         {#each cities as city}
-          <div class="flex flex-col h-full bg-card rounded-[theme(--radius-lg)] border border-border hover:shadow-[theme(--shadow-sm)] transition-all duration-300 hover:-translate-y-1 p-[theme(--spacing-lg)]">
+          <div class="flex flex-col h-full bg-card rounded-[theme(--radius-lg)] bg-background-secondary hover:shadow-[theme(--shadow-sm)] transition-all duration-300 hover:-translate-y-1 p-[theme(--spacing-lg)]">
             <h2 class="text-lg font-semibold mb-[theme(--spacing-lg)] text-primary">
               {city}
             </h2>

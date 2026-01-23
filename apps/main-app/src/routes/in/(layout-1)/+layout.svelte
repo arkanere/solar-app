@@ -192,7 +192,7 @@
   <!-- Heavy analytics scripts moved to loadAnalytics() function for deferred loading -->
 </svelte:head>
 
-<nav class="flex flex-wrap items-center w-full justify-between border-b border-border bg-background text-foreground p-[theme(--container-padding)] gap-[theme(--spacing-2xl)] transition-colors duration-[theme(--transition-default)]">
+<nav class="flex flex-wrap items-center w-full justify-between bg-background-secondary text-foreground p-[theme(--container-padding)] gap-[theme(--spacing-2xl)] transition-colors duration-[theme(--transition-default)]">
   <!-- Left side navigation links -->
   <div class="flex items-center gap-[theme(--spacing-2xl)] flex-wrap">
     <a href="/in" class="no-underline text-[theme(--font-size-lg)] font-medium transition-colors duration-[theme(--transition-default)] hover:text-primary whitespace-nowrap">Solar Vipani</a>
@@ -209,7 +209,7 @@
   <div class="flex items-center gap-[theme(--spacing-lg)]">
     <!-- Translate Dropdown -->
     <DropdownMenu.Root>
-      <DropdownMenu.Trigger class="border border-border cursor-pointer whitespace-nowrap text-foreground hover:bg-muted px-[theme(--button-padding-x-sm)] py-[theme(--button-padding-y-sm)] text-[theme(--font-size-sm)] rounded-[theme(--radius-md)] transition-all duration-[theme(--transition-default)]">
+      <DropdownMenu.Trigger class="bg-background-secondary cursor-pointer whitespace-nowrap text-foreground hover:bg-muted px-[theme(--button-padding-x-sm)] py-[theme(--button-padding-y-sm)] text-[theme(--font-size-sm)] rounded-[theme(--radius-md)] transition-all duration-[theme(--transition-default)]">
         🌐 Translate
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
@@ -222,7 +222,7 @@
       </DropdownMenu.Content>
     </DropdownMenu.Root>
 
-    <button onclick={toggleTheme} class="border border-border cursor-pointer whitespace-nowrap text-foreground hover:bg-muted px-[theme(--button-padding-x-sm)] py-[theme(--button-padding-y-sm)] text-[theme(--font-size-sm)] rounded-[theme(--radius-md)] transition-all duration-[theme(--transition-default)]">
+    <button onclick={toggleTheme} class="bg-background-secondary cursor-pointer whitespace-nowrap text-foreground hover:bg-muted px-[theme(--button-padding-x-sm)] py-[theme(--button-padding-y-sm)] text-[theme(--font-size-sm)] rounded-[theme(--radius-md)] transition-all duration-[theme(--transition-default)]">
       {$isDarkMode ? "☀️ Light mode" : "🌙 Dark mode"}
     </button>
   </div>
@@ -269,7 +269,7 @@
         </div>
       </div>
 
-      <div class="border-t border-border pt-[theme(--spacing-lg)]">
+      <div class="pt-[theme(--spacing-lg)]">
         <h4 class="text-[theme(--font-size-base)] font-semibold mb-[theme(--spacing-sm)]">💡 Alternative methods:</h4>
         <div class="space-y-[theme(--spacing-sm)] text-[theme(--font-size-sm)] text-foreground-secondary">
           <p><strong>Chrome users:</strong> Look for the translate icon 🌐 in your address bar</p>

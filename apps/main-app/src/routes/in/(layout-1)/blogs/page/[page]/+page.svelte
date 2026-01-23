@@ -46,7 +46,7 @@
     {:else}
       <ul class="space-y-[theme(--card-gap)]">
         {#each blogs as blog}
-          <li class="rounded-[theme(--radius-lg)] shadow-[theme(--shadow-sm)] hover:shadow-[theme(--shadow-sm)] transition-shadow overflow-hidden border border-border">
+          <li class="rounded-[theme(--radius-lg)] shadow-[theme(--shadow-sm)] hover:shadow-[theme(--shadow-sm)] transition-shadow overflow-hidden bg-background-secondary">
             <a href="/in/blogs/{blog.slug}" class="no-underline text-foreground dark:text-foreground block hover:no-underline">
               {#if getFeaturedImageUrl(blog.featured_image)}
                 <div class="w-full h-[theme(--height-xs)] md:h-[theme(--height-sm)] overflow-hidden">

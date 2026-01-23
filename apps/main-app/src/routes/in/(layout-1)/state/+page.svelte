@@ -110,7 +110,7 @@
 				<li>
 					<a
 						href={`/in/state/${formatStateSlug(state)}`}
-						class="block h-full bg-card rounded-[theme(--radius-xl)] p-[theme(--card-padding-y)] border border-border hover:shadow-sm hover:border-primary/50 transition-all duration-100 hover:-translate-y-1"
+						class="block h-full bg-card rounded-[theme(--radius-xl)] p-[theme(--card-padding-y)] bg-background-secondary hover:shadow-sm hover:border-primary/50 transition-all duration-100 hover:-translate-y-1"
 					>
 						<h2 class="text-[theme(--font-size-lg)] font-semibold mb-[theme(--spacing-sm)] text-primary">
 							{state}

@@ -95,7 +95,7 @@
 
 <main class="w-full min-h-screen bg-background text-foreground transition-colors duration-300 dark:bg-background dark:text-foreground flex flex-col items-center py-[theme(--spacing-lg)] px-[theme(--container-padding)] md:py-[theme(--spacing-4xl)]">
 	<div class="max-w-3xl w-full mb-[theme(--spacing-4xl)]">
-		<header class="mb-[theme(--spacing-2xl)] pb-[theme(--spacing-lg)] border-b border-border">
+		<header class="mb-[theme(--spacing-2xl)] pb-[theme(--spacing-lg)]">
 			<h1 class="text-[theme(--font-size-4xl)] md:text-4xl font-bold mb-[theme(--spacing-lg)] leading-tight">{blog.title}</h1>
 			{#if blog.author_name}
 				<p class="text-[theme(--font-size-base)] mb-[theme(--spacing-sm)]">
@@ -139,7 +139,7 @@
 		</div>
 
 		{#if blog.categories && blog.categories.length > 0}
-			<div class="mt-[theme(--spacing-2xl)] pt-[theme(--spacing-lg)] border-t border-border opacity-80 text-[theme(--font-size-base)]">
+			<div class="mt-[theme(--spacing-2xl)] pt-[theme(--spacing-lg)] opacity-80 text-[theme(--font-size-base)]">
 				<strong>Categories:</strong>
 				{#each blog.categories as category, index}
 					<span>{category}{index < blog.categories.length - 1 ? ', ' : ''}</span>

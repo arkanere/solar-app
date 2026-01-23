@@ -73,7 +73,7 @@
       {#each countries as country}
         <button
           onclick={() => selectCountry(country.path)}
-          class="bg-card text-card-foreground border-2 border-border rounded-[theme(--radius-xl)] px-[theme(--spacing-2xl)] py-[theme(--spacing-lg)] text-center cursor-pointer transition-all duration-100 hover:shadow-[theme(--shadow-sm)] hover:border-accent hover:scale-[1.05]"
+          class="bg-background-secondary text-foreground rounded-[theme(--radius-xl)] px-[theme(--spacing-2xl)] py-[theme(--spacing-lg)] text-center cursor-pointer transition-all duration-100 hover:shadow-[theme(--shadow-sm)] hover:bg-accent hover:text-accent-foreground hover:scale-[1.05]"
         >
           <div class="text-6xl mb-[theme(--spacing-lg)]">{country.flag}</div>
           <h3 class="text-[theme(--font-size-2xl)] font-semibold text-primary">{country.name}</h3>

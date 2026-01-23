@@ -118,7 +118,7 @@
         loading="eager"
       />
     {:else}
-      <div class="flex flex-col items-center justify-center w-full max-w-[600px] h-96 rounded-[theme(--radius-lg)] border-2 border-dashed border-border bg-background text-muted-foreground">
+      <div class="flex flex-col items-center justify-center w-full max-w-[600px] h-96 rounded-[theme(--radius-lg)] bg-background-secondary text-muted-foreground">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="64"
