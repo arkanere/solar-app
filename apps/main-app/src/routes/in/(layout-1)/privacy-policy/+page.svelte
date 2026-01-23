@@ -9,7 +9,7 @@
 	/>
 </svelte:head>
 
-<main class="flex flex-col items-center px-[theme(--container-padding)] md:px-[theme(--container-padding)] py-[theme(--spacing-2xl)] transition-colors duration-300 bg-background text-foreground">
+<main class="flex flex-col items-center px-[theme(--container-padding)] md:px-[theme(--container-padding)] py-[theme(--spacing-2xl)] transition-colors duration-100 bg-background text-foreground">
 	<div class="max-w-3xl w-full">
 		<h1 class="text-[theme(--font-size-2xl)] md:text-[theme(--font-size-4xl)] font-semibold mb-[theme(--spacing-2xl)] text-center">Privacy Policy</h1>
 

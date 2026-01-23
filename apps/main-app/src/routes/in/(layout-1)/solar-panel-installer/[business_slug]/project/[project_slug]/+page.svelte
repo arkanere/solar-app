@@ -63,16 +63,16 @@
   {/if}
 </svelte:head>
 
-<main class="w-full font-sans leading-relaxed overflow-x-hidden flex flex-col items-center px-[theme(--spacing-sm)] py-[theme(--spacing-lg)] min-h-screen bg-background text-foreground transition-colors duration-300">
+<main class="w-full font-sans leading-relaxed overflow-x-hidden flex flex-col items-center px-[theme(--spacing-sm)] py-[theme(--spacing-lg)] min-h-screen bg-background text-foreground transition-colors duration-100">
   <!-- Breadcrumb Navigation -->
-  <nav class="w-full max-w-[1140px] mb-[theme(--spacing-2xl)] text-sm flex items-center flex-wrap gap-[theme(--spacing-sm)] bg-card px-[theme(--container-padding)] py-[theme(--spacing-lg)] rounded-[theme(--radius-lg)] shadow-[theme(--shadow-sm)] transition-colors duration-300">
-    <a href="/in" class="text-primary hover:text-primary/80 hover:underline transition-colors duration-200">Home</a>
+  <nav class="w-full max-w-[1140px] mb-[theme(--spacing-2xl)] text-sm flex items-center flex-wrap gap-[theme(--spacing-sm)] bg-card px-[theme(--container-padding)] py-[theme(--spacing-lg)] rounded-[theme(--radius-lg)] shadow-[theme(--shadow-sm)] transition-colors duration-100">
+    <a href="/in" class="text-primary hover:text-primary/80 hover:underline transition-colors duration-100">Home</a>
     <span class="text-muted-foreground"> › </span>
-    <button onclick={navigateToDirectory} class="text-primary hover:text-primary/80 hover:underline transition-colors duration-200 bg-none border-none p-0 font-inherit cursor-pointer">
+    <button onclick={navigateToDirectory} class="text-primary hover:text-primary/80 hover:underline transition-colors duration-100 bg-none border-none p-0 font-inherit cursor-pointer">
       Solar Installers in {business.city}
     </button>
     <span class="text-muted-foreground"> › </span>
-    <button onclick={navigateToBusinessPage} class="text-primary hover:text-primary/80 hover:underline transition-colors duration-200 bg-none border-none p-0 font-inherit cursor-pointer">
+    <button onclick={navigateToBusinessPage} class="text-primary hover:text-primary/80 hover:underline transition-colors duration-100 bg-none border-none p-0 font-inherit cursor-pointer">
       {business.businessname}
     </button>
     <span class="text-muted-foreground"> › </span>
@@ -83,7 +83,7 @@
   <header class="w-full max-w-[1140px] text-center py-[theme(--spacing-4xl)] px-[theme(--container-padding)] bg-primary rounded-[theme(--radius-xl)] text-primary-foreground mb-[theme(--spacing-2xl)] relative overflow-hidden">
     <h1 class="text-4xl font-bold m-0 mb-[theme(--spacing-lg)] leading-tight relative z-10">{project.title}</h1>
     <p class="text-lg m-0 text-primary-foreground/90 mb-[theme(--spacing-lg)] relative z-10">
-      By <button class="bg-none border-none p-0 font-medium cursor-pointer text-primary-foreground underline underline-offset-2 hover:no-underline transition-all duration-200" onclick={navigateToBusinessPage}>
+      By <button class="bg-none border-none p-0 font-medium cursor-pointer text-primary-foreground underline underline-offset-2 hover:no-underline transition-all duration-100" onclick={navigateToBusinessPage}>
         {business.businessname}
       </button>
       • Completed on {formatDate(project.project_date)}

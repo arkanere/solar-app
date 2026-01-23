@@ -236,7 +236,7 @@
   </script>
 </svelte:head>
 
-<main class="w-full bg-background text-foreground transition-colors duration-300 overflow-x-hidden dark:bg-background dark:text-foreground">
+<main class="w-full bg-background text-foreground transition-colors duration-100 overflow-x-hidden dark:bg-background dark:text-foreground">
   <!-- Hero Banner Section -->
   <div class="relative w-full h-[theme(--height-md)] flex items-center justify-center text-center overflow-hidden md:h-[theme(--height-xl)]">
     <picture>

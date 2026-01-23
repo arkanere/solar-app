@@ -224,7 +224,7 @@
   />
 </svelte:head>
 
-<main class="w-full bg-background text-foreground transition-colors duration-300 overflow-x-hidden">
+<main class="w-full bg-background text-foreground transition-colors duration-100 overflow-x-hidden">
   <div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
     <div class="text-center mb-[theme(--spacing-2xl)]">
       <h1 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Top Rated Solar Panel Installers in {cityName}</h1>

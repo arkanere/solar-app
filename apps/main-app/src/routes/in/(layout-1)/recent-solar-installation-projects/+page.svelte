@@ -209,7 +209,7 @@
   </script>
 </svelte:head>
 
-<main class="w-full bg-background text-foreground transition-colors duration-300 overflow-x-hidden">
+<main class="w-full bg-background text-foreground transition-colors duration-100 overflow-x-hidden">
   <div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
     <div class="text-center mb-[theme(--spacing-2xl)]">
       <h1 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Recent Solar Installation Projects</h1>
@@ -232,7 +232,7 @@
         {#each projects as project (project.id)}
           <a
             href="/in/solar-panel-installer/{project.business_slug}/project/{project.project_slug}"
-            class="group block bg-card hover:shadow-[theme(--shadow-sm)] rounded-[theme(--radius-xl)] overflow-hidden bg-background-secondary hover:border-primary/50 transition-all duration-300 hover:-translate-y-1"
+            class="group block bg-card hover:shadow-[theme(--shadow-sm)] rounded-[theme(--radius-xl)] overflow-hidden bg-background-secondary hover:border-primary/50 transition-all duration-100 hover:-translate-y-1"
             rel="noopener"
           >
             <!-- Project Image -->
@@ -245,7 +245,7 @@
                   width="300"
                   height="300"
                   loading="lazy"
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-100"
                 />
               {:else if project.image_url}
                 <img
@@ -255,7 +255,7 @@
                   loading="lazy"
                   width="300"
                   height="300"
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-100"
                 />
               {:else}
                 <div class="w-full h-full flex items-center justify-center bg-muted text-foreground dark:text-foreground-secondary">

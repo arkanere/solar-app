@@ -77,7 +77,7 @@
   />
 </svelte:head>
 
-<main class="w-full bg-background text-foreground transition-colors duration-300 overflow-x-hidden">
+<main class="w-full bg-background text-foreground transition-colors duration-100 overflow-x-hidden">
   <div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
     {#if business}
       <!-- Business Login (for business owners) -->
@@ -445,14 +445,14 @@
                           src={`https://res.cloudinary.com/${PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_fill,w_300,h_200,q_auto,f_auto/${project.cloudinary_public_id}`}
                           alt={project.title}
                           loading="lazy"
-                          class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                          class="w-full h-full object-cover transition-transform duration-100 hover:scale-105"
                         />
                       {:else if project.image_url}
                         <img
                           src={project.image_url}
                           alt={project.title}
                           loading="lazy"
-                          class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                          class="w-full h-full object-cover transition-transform duration-100 hover:scale-105"
                         />
                       {:else}
                         <div class="flex items-center justify-center h-full bg-muted text-muted-foreground font-medium">No Image</div>
