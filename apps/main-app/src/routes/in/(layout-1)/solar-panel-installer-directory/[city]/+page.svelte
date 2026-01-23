@@ -271,7 +271,7 @@
         </div>
       </div>
       {#each services as service (service.title)}
-        <div class="mb-6 pb-6 border-b border-border last:mb-0 last:pb-0 last:border-b-0">
+        <div class="mb-6 pb-6 last:mb-0 last:pb-0">
           <strong class="block text-lg font-semibold text-primary mb-2">{service.title}</strong>
           <p class="text-foreground dark:text-foreground-secondary leading-relaxed">
             {service.description}
@@ -308,7 +308,7 @@
         </div>
         <div class="grid grid-cols-1 gap-[theme(--card-gap)]">
           {#each faqList as faq (faq.question)}
-            <div class="mb-6 pb-6 border-b border-border last:mb-0 last:pb-0 last:border-b-0">
+            <div class="mb-6 pb-6 last:mb-0 last:pb-0">
               <strong class="block text-lg font-semibold text-primary mb-2">{faq.question}</strong>
               <p class="text-foreground dark:text-foreground-secondary text-sm">{faq.answer}</p>
             </div>

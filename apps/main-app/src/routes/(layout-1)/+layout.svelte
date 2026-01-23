@@ -196,7 +196,7 @@
   <!-- Heavy analytics scripts moved to loadAnalytics() function for deferred loading -->
 </svelte:head>
 
-<nav class="flex flex-wrap items-center w-full justify-between border-b border-border bg-background text-foreground p-[theme(--container-padding)] gap-[theme(--spacing-2xl)] transition-colors duration-[theme(--transition-default)]">
+<nav class="flex flex-wrap items-center w-full justify-between bg-background-secondary text-foreground p-[theme(--container-padding)] gap-[theme(--spacing-2xl)] transition-colors duration-[theme(--transition-default)]">
   <!-- Spacer for left alignment -->
   <div></div>
 
@@ -205,7 +205,7 @@
     <!-- Translate Dropdown -->
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
-        <button class="border border-border cursor-pointer whitespace-nowrap text-foreground hover:bg-muted px-[theme(--button-padding-x-sm)] py-[theme(--button-padding-y-sm)] text-[theme(--font-size-sm)] rounded-[theme(--radius-md)] transition-all duration-[theme(--transition-default)]">
+        <button class="bg-background-secondary cursor-pointer whitespace-nowrap text-foreground hover:bg-muted px-[theme(--button-padding-x-sm)] py-[theme(--button-padding-y-sm)] text-[theme(--font-size-sm)] rounded-[theme(--radius-md)] transition-all duration-[theme(--transition-default)]">
           🌐 Translate
         </button>
       </DropdownMenu.Trigger>
@@ -266,7 +266,7 @@
         </div>
       </div>
 
-      <div class="border-t border-border pt-[theme(--spacing-lg)]">
+      <div class="pt-[theme(--spacing-lg)]">
         <h4 class="text-[theme(--font-size-base)] font-semibold mb-[theme(--spacing-sm)]">💡 Alternative methods:</h4>
         <div class="space-y-[theme(--spacing-sm)] text-[theme(--font-size-sm)] text-foreground-secondary">
           <p><strong>Chrome users:</strong> Look for the translate icon 🌐 in your address bar</p>

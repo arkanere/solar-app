@@ -232,7 +232,7 @@
         {#each projects as project (project.id)}
           <a
             href="/in/solar-panel-installer/{project.business_slug}/project/{project.project_slug}"
-            class="group block bg-card hover:shadow-[theme(--shadow-sm)] rounded-[theme(--radius-xl)] overflow-hidden border border-border hover:border-primary/50 transition-all duration-300 hover:-translate-y-1"
+            class="group block bg-card hover:shadow-[theme(--shadow-sm)] rounded-[theme(--radius-xl)] overflow-hidden bg-background-secondary hover:border-primary/50 transition-all duration-300 hover:-translate-y-1"
             rel="noopener"
           >
             <!-- Project Image -->

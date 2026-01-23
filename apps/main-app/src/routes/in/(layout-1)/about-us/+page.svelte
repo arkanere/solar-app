@@ -245,7 +245,7 @@
         </div>
       </div>
 
-      <div class="border-t border-border pt-[theme(--card-padding-y)]">
+      <div class="pt-[theme(--card-padding-y)]">
         <p class="text-foreground dark:text-foreground-secondary">
           <a href="/in/terms-of-use" class="text-primary hover:underline">Terms of Use</a> |
           <a href="/in/privacy-policy" class="text-primary hover:underline">Privacy Policy</a>

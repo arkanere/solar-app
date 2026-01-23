@@ -297,28 +297,28 @@
         </div>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-4 gap-[theme(--card-gap)]">
-        <div class="text-center border border-border hover:shadow-[theme(--shadow-sm)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] bg-background p-[theme(--spacing-2xl)] transition-all duration-[theme(--transition-default)]">
+        <div class="text-center bg-background-secondary hover:shadow-[theme(--shadow-sm)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] p-[theme(--spacing-2xl)] transition-all duration-[theme(--transition-default)]">
           <div class="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-lg mx-auto mb-[theme(--spacing-lg)]">1</div>
           <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">Fill the Inquiry Form</h3>
           <p class="text-foreground dark:text-foreground-secondary">
             Share your basic details and energy requirements to help us understand your needs.
           </p>
         </div>
-        <div class="text-center border border-border hover:shadow-[theme(--shadow-sm)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] bg-background p-[theme(--spacing-2xl)] transition-all duration-[theme(--transition-default)]">
+        <div class="text-center bg-background-secondary hover:shadow-[theme(--shadow-sm)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] p-[theme(--spacing-2xl)] transition-all duration-[theme(--transition-default)]">
           <div class="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-lg mx-auto mb-[theme(--spacing-lg)]">2</div>
           <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">Receive Competitive Quotes</h3>
           <p class="text-foreground dark:text-foreground-secondary">
             Review quotes from 2-3 solar companies, comparing costs, equipment, and terms to find the perfect match.
           </p>
         </div>
-        <div class="text-center border border-border hover:shadow-[theme(--shadow-sm)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] bg-background p-[theme(--spacing-2xl)] transition-all duration-[theme(--transition-default)]">
+        <div class="text-center bg-background-secondary hover:shadow-[theme(--shadow-sm)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] p-[theme(--spacing-2xl)] transition-all duration-[theme(--transition-default)]">
           <div class="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-lg mx-auto mb-[theme(--spacing-lg)]">3</div>
           <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">Make an Informed Choice</h3>
           <p class="text-foreground dark:text-foreground-secondary">
             Select a provider with complete confidence, backed by transparent, verified information.
           </p>
         </div>
-        <div class="text-center border border-border hover:shadow-[theme(--shadow-sm)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] bg-background p-[theme(--spacing-2xl)] transition-all duration-[theme(--transition-default)]">
+        <div class="text-center bg-background-secondary hover:shadow-[theme(--shadow-sm)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] p-[theme(--spacing-2xl)] transition-all duration-[theme(--transition-default)]">
           <div class="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-lg mx-auto mb-[theme(--spacing-lg)]">4</div>
           <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">Share Your Success</h3>
           <p class="text-foreground dark:text-foreground-secondary">
@@ -398,7 +398,7 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-[theme(--card-gap)] mb-[theme(--spacing-2xl)]">
-        <div class="border border-border flex flex-col hover:shadow-[theme(--shadow-sm)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] bg-background p-[theme(--spacing-2xl)] transition-all duration-[theme(--transition-default)]">
+        <div class="bg-background-secondary flex flex-col hover:shadow-[theme(--shadow-sm)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] p-[theme(--spacing-2xl)] transition-all duration-[theme(--transition-default)]">
           <h3 class="text-lg font-semibold mb-[theme(--spacing-lg)]">
             <a
               href="/in/blogs/hiring-verified-solar-installer-in-india-is-essential"
@@ -418,7 +418,7 @@
           >
         </div>
 
-        <div class="border border-border flex flex-col hover:shadow-[theme(--shadow-sm)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] bg-background p-[theme(--spacing-2xl)] transition-all duration-[theme(--transition-default)]">
+        <div class="bg-background-secondary flex flex-col hover:shadow-[theme(--shadow-sm)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] p-[theme(--spacing-2xl)] transition-all duration-[theme(--transition-default)]">
           <h3 class="text-lg font-semibold mb-[theme(--spacing-lg)]">
             <a
               href="/in/blogs/pm-surya-ghar-yojana"
@@ -438,7 +438,7 @@
           >
         </div>
 
-        <div class="border border-border flex flex-col hover:shadow-[theme(--shadow-sm)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] bg-background p-[theme(--spacing-2xl)] transition-all duration-[theme(--transition-default)]">
+        <div class="bg-background-secondary flex flex-col hover:shadow-[theme(--shadow-sm)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] p-[theme(--spacing-2xl)] transition-all duration-[theme(--transition-default)]">
           <h3 class="text-lg font-semibold mb-[theme(--spacing-lg)]">
             <a
               href="/in/blogs/cost-of-solar-on-grid-system"
