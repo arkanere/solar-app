@@ -31,7 +31,7 @@
   <link rel="canonical" href="https://solarvipani.com/in/blogs" />
 </svelte:head>
 
-<main class="w-full min-h-screen bg-background text-foreground transition-colors duration-300 dark:bg-background dark:text-foreground flex flex-col items-center justify-center py-[theme(--card-padding-y)] px-[theme(--container-padding)] md:py-[theme(--spacing-4xl)]">
+<main class="w-full min-h-screen bg-background text-foreground transition-colors duration-100 dark:bg-background dark:text-foreground flex flex-col items-center justify-center py-[theme(--card-padding-y)] px-[theme(--container-padding)] md:py-[theme(--spacing-4xl)]">
   <div class="max-w-3xl w-full">
     <h1 class="text-center text-2xl md:text-4xl font-semibold mb-[theme(--card-padding-y)] leading-tight">Blog Posts</h1>
 

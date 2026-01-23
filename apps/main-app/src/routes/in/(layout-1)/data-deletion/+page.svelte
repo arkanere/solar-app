@@ -51,7 +51,7 @@
   />
 </svelte:head>
 
-<main class="min-h-screen p-[theme(--container-padding)] transition-colors duration-300 bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+<main class="min-h-screen p-[theme(--container-padding)] transition-colors duration-100 bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
   <div class="max-w-2xl mx-auto">
     <h1 class="text-[2.25rem] font-semibold text-center mb-[theme(--spacing-lg)] leading-tight md:text-[1.875rem]">Data Deletion Request</h1>
 

@@ -42,7 +42,7 @@
 			height: var(--navigation-menu-trigger-icon-size);
 			margin-left: var(--navigation-menu-trigger-icon-margin-start);
 		`}
-		class="relative top-[1px] transition duration-300 group-data-[state=open]:rotate-180"
+		class="relative top-[1px] transition duration-100 group-data-[state=open]:rotate-180"
 		aria-hidden="true"
 	/>
 </NavigationMenuPrimitive.Trigger>

@@ -94,7 +94,7 @@
 	/>
 </svelte:head>
 
-<main class="w-full bg-background text-foreground overflow-x-hidden transition-colors duration-300 flex flex-col items-center px-[theme(--container-padding)] py-[theme(--spacing-2xl)] min-h-screen">
+<main class="w-full bg-background text-foreground overflow-x-hidden transition-colors duration-100 flex flex-col items-center px-[theme(--container-padding)] py-[theme(--spacing-2xl)] min-h-screen">
 	<!-- State List Section -->
 	<div class="max-w-4xl w-full mb-[theme(--spacing-4xl)]">
 		<h1 class="text-[theme(--font-size-2xl)] md:text-[theme(--font-size-4xl)] font-semibold text-center mb-[theme(--spacing-lg)] text-primary">
@@ -124,7 +124,7 @@
 								xmlns="http://www.w3.org/2000/svg"
 								viewBox="0 0 20 20"
 								fill="currentColor"
-								class="w-5 h-5 ml-2 transition-transform duration-300 group-hover:translate-x-1"
+								class="w-5 h-5 ml-2 transition-transform duration-100 group-hover:translate-x-1"
 							>
 								<path
 									fill-rule="evenodd"

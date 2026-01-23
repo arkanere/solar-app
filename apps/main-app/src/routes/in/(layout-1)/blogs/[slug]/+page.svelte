@@ -93,7 +93,7 @@
     `}
 </svelte:head>
 
-<main class="w-full min-h-screen bg-background text-foreground transition-colors duration-300 dark:bg-background dark:text-foreground flex flex-col items-center py-[theme(--spacing-lg)] px-[theme(--container-padding)] md:py-[theme(--spacing-4xl)]">
+<main class="w-full min-h-screen bg-background text-foreground transition-colors duration-100 dark:bg-background dark:text-foreground flex flex-col items-center py-[theme(--spacing-lg)] px-[theme(--container-padding)] md:py-[theme(--spacing-4xl)]">
 	<div class="max-w-3xl w-full mb-[theme(--spacing-4xl)]">
 		<header class="mb-[theme(--spacing-2xl)] pb-[theme(--spacing-lg)]">
 			<h1 class="text-[theme(--font-size-4xl)] md:text-4xl font-bold mb-[theme(--spacing-lg)] leading-tight">{blog.title}</h1>

@@ -145,7 +145,7 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)]">
         {#each states as state}
-          <div class="flex flex-col h-full bg-card rounded-[theme(--radius-lg)] bg-background-secondary hover:shadow-[theme(--shadow-sm)] transition-all duration-300 hover:-translate-y-1 p-[theme(--spacing-lg)]">
+          <div class="flex flex-col h-full bg-card rounded-[theme(--radius-lg)] bg-background-secondary hover:shadow-[theme(--shadow-sm)] transition-all duration-100 hover:-translate-y-1 p-[theme(--spacing-lg)]">
             <h3 class="text-lg font-semibold mb-[theme(--spacing-lg)] text-primary">
               {state}
             </h3>
@@ -158,7 +158,7 @@
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 20 20"
                     fill="currentColor"
-                    class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+                    class="w-4 h-4 transition-transform duration-100 group-hover:translate-x-1"
                   >
                     <path
                       fill-rule="evenodd"

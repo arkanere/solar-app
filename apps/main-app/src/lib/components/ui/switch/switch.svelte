@@ -15,7 +15,7 @@
 	bind:checked
 	data-slot="switch"
 	class={cn(
-		"data-[state=checked]:bg-primary data-[state=unchecked]:bg-input focus-visible:border-ring focus-visible:ring-ring/50 dark:data-[state=unchecked]:bg-input/80 peer inline-flex shrink-0 items-center rounded-full border border-transparent shadow-xs transition-all duration-150 outline-none disabled:cursor-not-allowed disabled:opacity-50",
+		"data-[state=checked]:bg-primary data-[state=unchecked]:bg-input focus-visible:border-ring focus-visible:ring-ring/50 dark:data-[state=unchecked]:bg-input/80 peer inline-flex shrink-0 items-center rounded-full border border-transparent shadow-xs transition-all duration-100 outline-none disabled:cursor-not-allowed disabled:opacity-50",
 		"h-[var(--switch-track-height)]",
 		"w-[var(--switch-track-width)]",
 		"focus-visible:ring-[var(--switch-ring-width)]",

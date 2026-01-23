@@ -40,7 +40,7 @@
   />
 </svelte:head>
 
-<main class="w-full bg-background text-foreground transition-colors duration-300 overflow-x-hidden dark:bg-background dark:text-foreground">
+<main class="w-full bg-background text-foreground transition-colors duration-100 overflow-x-hidden dark:bg-background dark:text-foreground">
   <div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
     <!-- Hero Section -->
     <section class="rounded-[theme(--radius-lg)] bg-gradient-to-r from-primary to-primary text-primary-foreground p-[theme(--card-padding-y)] shadow-[theme(--shadow-sm)]">
