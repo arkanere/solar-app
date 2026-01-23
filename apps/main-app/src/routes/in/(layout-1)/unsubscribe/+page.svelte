@@ -75,10 +75,10 @@
 
 				<div class="mt-[theme(--spacing-2xl)]">
 					<Button
-						variant="default"
+						variant="success"
 						onclick={handleConfirm}
 						disabled={isLoading || !email}
-						class="w-full bg-success hover:bg-success-hover text-success-foreground"
+						class="w-full"
 					>
 						{isLoading ? 'Processing...' : 'Confirm Unsubscription'}
 					</Button>
