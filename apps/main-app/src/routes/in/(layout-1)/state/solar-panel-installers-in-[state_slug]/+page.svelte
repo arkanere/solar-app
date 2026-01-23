@@ -36,14 +36,14 @@
     </div>
 
     {#if errorMessage}
-      <div class="mb-[theme(--spacing-xl)]">
+      <div class="mb-[theme(--spacing-2xl)]">
         <Alert variant="destructive">
           <AlertTitle>Error</AlertTitle>
           <AlertDescription>{errorMessage}</AlertDescription>
         </Alert>
       </div>
     {:else if districts.length === 0}
-      <div class="mb-[theme(--spacing-xl)]">
+      <div class="mb-[theme(--spacing-2xl)]">
         <Alert variant="warning">
           <AlertTitle>No Districts Found</AlertTitle>
           <AlertDescription>No districts found in {state}.</AlertDescription>
@@ -61,7 +61,7 @@
               {district}
             </h2>
 
-            <div class="flex items-center justify-center font-medium text-primary mt-auto gap-[theme(--spacing-xs)] group">
+            <div class="flex items-center justify-center font-medium text-primary mt-auto gap-[theme(--spacing-sm)] group">
               <Button asChild variant="default" class="w-full">
                 <a href={`/in/district/${formatDistrictSlug(district)}`} rel="noopener" class="flex items-center justify-center gap-2">
                   <span>Find Installers</span>

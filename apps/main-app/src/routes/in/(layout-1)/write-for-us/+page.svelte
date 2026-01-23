@@ -126,10 +126,10 @@
   <div class="max-w-5xl mx-auto px-[theme(--container-padding)] sm:px-[theme(--container-padding)] md:px-[theme(--container-padding)]">
     <!-- Hero Section -->
     <section class="py-[theme(--card-padding-y)] text-center">
-      <h1 class="text-2xl md:text-4xl font-bold mb-[theme(--spacing-md)] text-primary">
+      <h1 class="text-2xl md:text-4xl font-bold mb-[theme(--spacing-lg)] text-primary">
         Contribute as a Solar Expert
       </h1>
-      <p class="text-lg md:text-lg font-semibold mb-[theme(--spacing-md)] text-foreground-secondary">
+      <p class="text-lg md:text-lg font-semibold mb-[theme(--spacing-lg)] text-foreground-secondary">
         Share Your Knowledge. Shape India's Solar Future.
       </p>
       <p class="text-base md:text-lg leading-relaxed max-w-2xl mx-auto text-foreground-secondary">
@@ -145,8 +145,8 @@
         {#each benefits as benefit}
           <Card class="card-interactive text-center">
             <CardContent class="pt-[theme(--card-padding-y)]">
-              <div class="text-4xl mb-[theme(--spacing-md)]">{benefit.icon}</div>
-              <h3 class="text-lg font-semibold mb-[theme(--spacing-md)] text-foreground">{benefit.title}</h3>
+              <div class="text-4xl mb-[theme(--spacing-lg)]">{benefit.icon}</div>
+              <h3 class="text-lg font-semibold mb-[theme(--spacing-lg)] text-foreground">{benefit.title}</h3>
               <p class="text-sm leading-relaxed text-foreground-secondary">{benefit.description}</p>
             </CardContent>
           </Card>
@@ -214,10 +214,10 @@
       <p class="text-base md:text-lg leading-relaxed mb-[theme(--card-gap)] text-foreground-secondary">
         We publish expert content that educates, informs, and empowers our audience. Here are some topic areas we're interested in:
       </p>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-[theme(--spacing-md)] mb-[theme(--card-gap)]">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-[theme(--spacing-lg)] mb-[theme(--card-gap)]">
         {#each acceptedTopics as topic}
           <Card class="border-l-4 border-primary">
-            <CardContent class="pt-[theme(--spacing-md)]">
+            <CardContent class="pt-[theme(--spacing-lg)]">
               <h3 class="text-lg font-semibold mb-[theme(--spacing-sm)] text-primary">{topic.title}</h3>
               <p class="text-sm text-foreground-secondary"><strong>Examples:</strong> {topic.examples}</p>
             </CardContent>
@@ -237,10 +237,10 @@
       <p class="text-base md:text-lg leading-relaxed mb-[theme(--card-gap)] text-foreground-secondary">
         To maintain the highest quality standards, all submissions must meet these requirements:
       </p>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-[theme(--spacing-md)]">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-[theme(--spacing-lg)]">
         {#each guidelines as guideline}
           <Card>
-            <CardContent class="pt-[theme(--spacing-md)]">
+            <CardContent class="pt-[theme(--spacing-lg)]">
               <h3 class="text-base font-semibold mb-[theme(--spacing-sm)] text-foreground">{guideline.title}</h3>
               <p class="text-sm text-foreground-secondary">{guideline.description}</p>
             </CardContent>
@@ -255,18 +255,18 @@
       <div class="space-y-[theme(--card-gap)]">
         <Card class="border-l-4 border-success">
           <CardContent class="pt-[theme(--card-padding-y)]">
-            <h3 class="text-lg font-semibold mb-[theme(--spacing-md)] text-foreground">✓ What We Allow</h3>
+            <h3 class="text-lg font-semibold mb-[theme(--spacing-lg)] text-foreground">✓ What We Allow</h3>
             <ul class="space-y-[theme(--spacing-sm)]">
-              <li class="text-sm pl-[theme(--spacing-md)] text-foreground-secondary">
+              <li class="text-sm pl-[theme(--spacing-lg)] text-foreground-secondary">
                 <span class="inline-block mr-[theme(--spacing-sm)] text-success font-bold">✓</span>Links to credible research papers, government resources, or industry reports
               </li>
-              <li class="text-sm pl-[theme(--spacing-md)] text-foreground-secondary">
+              <li class="text-sm pl-[theme(--spacing-lg)] text-foreground-secondary">
                 <span class="inline-block mr-[theme(--spacing-sm)] text-success font-bold">✓</span>References to relevant technical standards or certification bodies
               </li>
-              <li class="text-sm pl-[theme(--spacing-md)] text-foreground-secondary">
+              <li class="text-sm pl-[theme(--spacing-lg)] text-foreground-secondary">
                 <span class="inline-block mr-[theme(--spacing-sm)] text-success font-bold">✓</span>Author bio with one link to your professional LinkedIn or company website
               </li>
-              <li class="text-sm pl-[theme(--spacing-md)] text-foreground-secondary">
+              <li class="text-sm pl-[theme(--spacing-lg)] text-foreground-secondary">
                 <span class="inline-block mr-[theme(--spacing-sm)] text-success font-bold">✓</span>Links that genuinely add value to the reader's understanding
               </li>
             </ul>
@@ -274,21 +274,21 @@
         </Card>
         <Card class="border-l-4 border-destructive">
           <CardContent class="pt-[theme(--card-padding-y)]">
-            <h3 class="text-lg font-semibold mb-[theme(--spacing-md)] text-foreground">✗ What We Reject</h3>
+            <h3 class="text-lg font-semibold mb-[theme(--spacing-lg)] text-foreground">✗ What We Reject</h3>
             <ul class="space-y-[theme(--spacing-sm)]">
-              <li class="text-sm pl-[theme(--spacing-md)] text-foreground-secondary">
+              <li class="text-sm pl-[theme(--spacing-lg)] text-foreground-secondary">
                 <span class="inline-block mr-[theme(--spacing-sm)] text-destructive font-bold">✗</span>Promotional links to products, services, or unrelated websites
               </li>
-              <li class="text-sm pl-[theme(--spacing-md)] text-foreground-secondary">
+              <li class="text-sm pl-[theme(--spacing-lg)] text-foreground-secondary">
                 <span class="inline-block mr-[theme(--spacing-sm)] text-destructive font-bold">✗</span>Affiliate links or commercial referral URLs
               </li>
-              <li class="text-sm pl-[theme(--spacing-md)] text-foreground-secondary">
+              <li class="text-sm pl-[theme(--spacing-lg)] text-foreground-secondary">
                 <span class="inline-block mr-[theme(--spacing-sm)] text-destructive font-bold">✗</span>Excessive self-promotion or company advertising within content
               </li>
-              <li class="text-sm pl-[theme(--spacing-md)] text-foreground-secondary">
+              <li class="text-sm pl-[theme(--spacing-lg)] text-foreground-secondary">
                 <span class="inline-block mr-[theme(--spacing-sm)] text-destructive font-bold">✗</span>Link exchanges, paid links, or SEO link-building schemes
               </li>
-              <li class="text-sm pl-[theme(--spacing-md)] text-foreground-secondary">
+              <li class="text-sm pl-[theme(--spacing-lg)] text-foreground-secondary">
                 <span class="inline-block mr-[theme(--spacing-sm)] text-destructive font-bold">✗</span>Links to low-quality or irrelevant sources
               </li>
             </ul>
@@ -318,9 +318,9 @@
               {step.num}
             </div>
             <Card class="flex-1">
-              <CardContent class="pt-[theme(--spacing-md)]">
-                <h3 class="text-lg font-semibold mb-[theme(--spacing-md)] text-foreground">{step.title}</h3>
-                <p class="text-sm mb-[theme(--spacing-md)] text-foreground-secondary">{@html step.content}</p>
+              <CardContent class="pt-[theme(--spacing-lg)]">
+                <h3 class="text-lg font-semibold mb-[theme(--spacing-lg)] text-foreground">{step.title}</h3>
+                <p class="text-sm mb-[theme(--spacing-lg)] text-foreground-secondary">{@html step.content}</p>
                 <ul class="list-disc list-inside space-y-1">
                   {#each step.items as item}
                     <li class="text-sm text-foreground-secondary">{item}</li>
@@ -338,20 +338,20 @@
       <h2 class="text-2xl md:text-2xl font-bold mb-[theme(--card-gap)] text-primary">Important Notes</h2>
       <Card>
         <CardContent class="pt-[theme(--card-padding-y)]">
-          <ul class="space-y-[theme(--spacing-md)] divide-y divide-border">
-            <li class="pt-[theme(--spacing-md)] first:pt-0 text-sm text-foreground-secondary">
+          <ul class="space-y-[theme(--spacing-lg)] divide-y divide-border">
+            <li class="pt-[theme(--spacing-lg)] first:pt-0 text-sm text-foreground-secondary">
               <strong class="text-foreground">Editorial Control:</strong> We reserve the right to edit submissions for clarity, length, grammar, and style. Major changes will be shared with you for approval.
             </li>
-            <li class="pt-[theme(--spacing-md)] text-sm text-foreground-secondary">
+            <li class="pt-[theme(--spacing-lg)] text-sm text-foreground-secondary">
               <strong class="text-foreground">Rejection Rights:</strong> We may decline articles that don't meet our quality standards, are overly promotional, or lack relevance to our audience.
             </li>
-            <li class="pt-[theme(--spacing-md)] text-sm text-foreground-secondary">
+            <li class="pt-[theme(--spacing-lg)] text-sm text-foreground-secondary">
               <strong class="text-foreground">No Payment:</strong> This is an unpaid guest contribution opportunity. The primary benefit is audience reach and professional visibility.
             </li>
-            <li class="pt-[theme(--spacing-md)] text-sm text-foreground-secondary">
+            <li class="pt-[theme(--spacing-lg)] text-sm text-foreground-secondary">
               <strong class="text-foreground">Content Ownership:</strong> You retain copyright of your work, but grant Solar Vipani non-exclusive rights to publish and promote it.
             </li>
-            <li class="pt-[theme(--spacing-md)] text-sm text-foreground-secondary">
+            <li class="pt-[theme(--spacing-lg)] text-sm text-foreground-secondary">
               <strong class="text-foreground">No Guaranteed Publication:</strong> Submission does not guarantee publication. We publish based on editorial merit and audience value.
             </li>
           </ul>
@@ -361,7 +361,7 @@
 
     <!-- CTA Section -->
     <section class="text-center bg-gradient-to-r from-primary to-primary/90 rounded-[theme(--radius-lg)] p-[theme(--card-padding-y)] md:p-[theme(--card-gap)] text-primary-foreground shadow-[theme(--shadow-lg)] mb-[theme(--card-gap)]">
-      <h2 class="text-2xl md:text-2xl font-bold mb-[theme(--spacing-md)] text-primary-foreground">Ready to Share Your Expertise?</h2>
+      <h2 class="text-2xl md:text-2xl font-bold mb-[theme(--spacing-lg)] text-primary-foreground">Ready to Share Your Expertise?</h2>
       <p class="text-base md:text-lg mb-[theme(--card-gap)] max-w-xl mx-auto">
         Help homeowners and businesses across India make informed solar decisions.
         Your insights can accelerate the clean energy transition.

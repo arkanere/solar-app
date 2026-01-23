@@ -67,10 +67,10 @@
         <CardHeader>
           <CardTitle>What data will be deleted?</CardTitle>
         </CardHeader>
-        <CardContent class="gap-[theme(--spacing-md)]">
+        <CardContent class="gap-[theme(--spacing-lg)]">
           <div>
             <h4 class="font-semibold mb-[theme(--spacing-sm)] text-[theme(--font-size-base)]">For Customers:</h4>
-            <ul class="pl-[theme(--spacing-lg)] space-y-[theme(--spacing-xs)]">
+            <ul class="pl-[theme(--spacing-lg)] space-y-[theme(--spacing-sm)]">
               <li class="leading-relaxed">Your contact information (phone number, email address)</li>
               <li class="leading-relaxed">Lead submissions and requirements</li>
               <li class="leading-relaxed">Account information and preferences</li>
@@ -80,7 +80,7 @@
 
           <div>
             <h4 class="font-semibold mb-[theme(--spacing-sm)] text-[theme(--font-size-base)]">For Solar Installers/Businesses:</h4>
-            <ul class="pl-[theme(--spacing-lg)] space-y-[theme(--spacing-xs)]">
+            <ul class="pl-[theme(--spacing-lg)] space-y-[theme(--spacing-sm)]">
               <li class="leading-relaxed">Business profile and contact information</li>
               <li class="leading-relaxed">Service area and specialization details</li>
               <li class="leading-relaxed">Lead claims and interaction history</li>
@@ -97,7 +97,7 @@
       <Alert class="mb-[theme(--spacing-2xl)] bg-[hsl(var(--success))] border-[hsl(var(--success))]">
         <AlertTitle>Request Submitted Successfully!</AlertTitle>
         <AlertDescription>
-          <p class="mb-[theme(--spacing-md)]">
+          <p class="mb-[theme(--spacing-lg)]">
             Your data deletion request has been received. We will process your
             request within 30 days and send you a confirmation email once
             completed.
@@ -170,8 +170,8 @@
       <CardHeader>
         <CardTitle>Important Information</CardTitle>
       </CardHeader>
-      <CardContent class="gap-[theme(--spacing-md)] flex flex-col">
-        <ul class="pl-[theme(--spacing-lg)] space-y-[theme(--spacing-xs)]">
+      <CardContent class="gap-[theme(--spacing-lg)] flex flex-col">
+        <ul class="pl-[theme(--spacing-lg)] space-y-[theme(--spacing-sm)]">
           <li class="leading-relaxed">Data deletion requests are processed within 30 business days</li>
           <li class="leading-relaxed">
             You will receive a confirmation email once your data has been deleted

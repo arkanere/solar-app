@@ -41,7 +41,7 @@
 		{#each visibleBusinesses as business}
 			<Card.Root class="shadow-[theme(--shadow-card)] transition-shadow duration-[theme(--duration-default)]">
 				<Card.Header class="flex flex-col sm:flex-row sm:items-start sm:justify-between border-b gap-[theme(--dropdown-menu-item-gap)] pb-[theme(--card-padding-y)]">
-					<h2 class="text-[length:theme(--font-size-xl)] leading-[theme(--font-size-xl--line-height)] font-semibold tracking-[theme(--tracking-heading)]">
+					<h2 class="text-[length:theme(--font-size-lg)] leading-[theme(--font-size-lg--line-height)] font-semibold tracking-[theme(--tracking-heading)]">
 						<a
 							href={`/in/solar-panel-installer/${business.slug}`}
 							class="text-primary hover:opacity-80 underline-offset-2 hover:underline transition-all duration-[theme(--transition-default)]"

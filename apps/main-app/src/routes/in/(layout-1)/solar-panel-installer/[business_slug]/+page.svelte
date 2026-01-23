@@ -165,7 +165,7 @@
         <div class="flex flex-col gap-[theme(--spacing-2xl)]">
           <!-- Description Section -->
           {#if business.businessfilled && business.description}
-            <div class="flex flex-col gap-[theme(--spacing-md)]">
+            <div class="flex flex-col gap-[theme(--spacing-lg)]">
               <h3 class="text-lg font-semibold text-primary m-0">About</h3>
               <p class="m-0 leading-relaxed text-foreground dark:text-foreground-secondary">{business.description}</p>
             </div>
@@ -173,7 +173,7 @@
 
           <!-- Services Section -->
           {#if business.businessfilled && business.services && business.services.length > 0}
-            <div class="flex flex-col gap-[theme(--spacing-md)]">
+            <div class="flex flex-col gap-[theme(--spacing-lg)]">
               <h3 class="text-lg font-semibold text-primary m-0">Services</h3>
               <div class="flex flex-wrap gap-2">
                 {#each business.services as serviceId}
@@ -188,7 +188,7 @@
           <!-- Contact & Location Combined -->
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-[theme(--card-gap)]">
             <!-- Contact Information -->
-            <div class="flex flex-col gap-[theme(--spacing-md)]">
+            <div class="flex flex-col gap-[theme(--spacing-lg)]">
               <h3 class="text-lg font-semibold text-primary m-0">Contact Information</h3>
               <div class="flex flex-col gap-[theme(--spacing-lg)]">
                 {#if business.phonenumber}
@@ -309,7 +309,7 @@
             </div>
 
             <!-- Location Information -->
-            <div class="flex flex-col gap-[theme(--spacing-md)]">
+            <div class="flex flex-col gap-[theme(--spacing-lg)]">
               <h3 class="text-lg font-semibold text-primary m-0">Location</h3>
               <div class="flex flex-col gap-[theme(--spacing-lg)]">
                 {#if business.address}
