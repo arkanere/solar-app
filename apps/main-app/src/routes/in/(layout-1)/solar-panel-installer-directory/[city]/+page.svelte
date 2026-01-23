@@ -224,20 +224,23 @@
   />
 </svelte:head>
 
-<main class="w-full flex flex-col items-center p-[theme(--container-padding)] md:p-[theme(--card-padding-y)] min-h-screen overflow-x-hidden transition-colors duration-300 bg-background text-foreground">
-  <h1 class="text-center text-2xl md:text-3xl font-bold mb-4 w-full max-w-4xl">Best Solar Panel Installers in {cityName} - Top Rated Companies Near You</h1>
-  {#if lastUpdated}
-    <p class="text-left text-sm text-muted-foreground mb-8 italic">
-      Last Update: {new Date(lastUpdated).toLocaleDateString("en-IN", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      })}
-    </p>
-  {/if}
+<main class="w-full bg-background text-foreground transition-colors duration-300 overflow-x-hidden">
+  <div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
+    <div class="text-center mb-[theme(--spacing-2xl)]">
+      <h1 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Top Rated Solar Panel Installers in {cityName}</h1>
+      {#if lastUpdated}
+        <p class="text-sm text-muted-foreground mt-[theme(--spacing-lg)] italic">
+          Last Update: {new Date(lastUpdated).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })}
+        </p>
+      {/if}
+    </div>
 
-  {#if businesses.length === 0}
-    <Card class="w-full max-w-4xl mb-10 mt-12 flex flex-col items-center">
+    {#if businesses.length === 0}
+      <Card class="mb-10 mt-12 flex flex-col items-center">
       <div class="w-full text-center">
         <h2 class="text-3xl font-semibold mb-4 text-primary">We're Expanding to {cityName} - Join Us!</h2>
         <p class="text-lg leading-relaxed text-muted-foreground mb-8 max-w-2xl mx-auto">
@@ -248,99 +251,113 @@
         </Button>
       </div>
     </Card>
-  {:else}
-    <section id="BusinessTilesList" class="w-full max-w-4xl mb-10">
+    {:else}
       <BusinessTilesList />
-    </section>
-  {/if}
-
-  <LeadFormSection city={cityName} hasBusinesses={businesses.length > 0} />
-
-  <section id="recent-projects-section" class="w-full max-w-4xl mb-10">
-    {#if shouldLoadRecentProjects && RecentProjectsCity}
-      {@render RecentProjectsCity()}
     {/if}
-  </section>
 
-  <section id="services" class="w-full max-w-4xl mb-10 p-[theme(--card-padding-y)]">
-    <h2 class="text-3xl font-bold mb-4 text-primary">Services Provided by Solar Panel Installers</h2>
-    <Card class="hover:shadow-lg transition-shadow">
+    <LeadFormSection city={cityName} hasBusinesses={businesses.length > 0} />
+
+    <div id="recent-projects-section">
+      {#if shouldLoadRecentProjects && RecentProjectsCity}
+        {@render RecentProjectsCity()}
+      {/if}
+    </div>
+
+    <section id="services" class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">
+      <div class="text-center mb-[theme(--spacing-2xl)]">
+        <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Services Provided by Solar Panel Installers</h2>
+        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+          <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+        </div>
+      </div>
       {#each services as service (service.title)}
         <div class="mb-6 pb-6 border-b border-border last:mb-0 last:pb-0 last:border-b-0">
-          <strong class="block text-xl text-primary mb-2">{service.title}</strong>
-          <p class="text-muted-foreground leading-relaxed">
+          <strong class="block text-lg font-semibold text-primary mb-2">{service.title}</strong>
+          <p class="text-foreground dark:text-foreground-secondary leading-relaxed">
             {service.description}
             {#if service.links}
               {#each service.links as link, i}
                 {#if i === 0}
-                  <strong><a href={link.href} class="text-primary hover:underline">{link.text}</a></strong>
+                  <strong><a href={link.href} class="text-primary hover:text-primary-hover dark:hover:text-primary transition-colors">{link.text}</a></strong>
                 {:else}
-                  , <strong><a href={link.href} class="text-primary hover:underline">{link.text}</a></strong>
+                  , <strong><a href={link.href} class="text-primary hover:text-primary-hover dark:hover:text-primary transition-colors">{link.text}</a></strong>
                 {/if}
               {/each}.
             {/if}
           </p>
         </div>
       {/each}
-    </Card>
-  </section>
-
-  {#if businesses.length > 0 && subset_cities_localities.length > 0}
-    <RecommendedSolarSystems />
-
-    <!-- Get Quotation Button after Recommended Solar Systems -->
-    <div class="text-center my-8">
-      <Button class="font-semibold text-lg px-10 py-4 uppercase tracking-wide" onclick={scrollToLeadForm}>
-        Get Quotation
-      </Button>
-    </div>
-
-    <section id="people-also-ask" class="w-full max-w-4xl mb-10 p-[theme(--card-padding-y)]">
-      <h2 class="text-3xl font-bold mb-6 text-primary">Frequently Asked Questions</h2>
-      <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] w-full">
-        {#each faqList as faq (faq.question)}
-          <Card class="hover:shadow-lg hover:-translate-y-1 transition-all">
-            <strong class="block text-xl text-primary mb-2">{faq.question}</strong>
-            <p class="text-muted-foreground">{faq.answer}</p>
-          </Card>
-        {/each}
-      </ul>
     </section>
-  {/if}
 
-  {#if district}
-    <section class="w-full max-w-4xl mb-10 mt-8 text-center p-[theme(--card-padding-y)] bg-card rounded-[theme(--radius-xl)] shadow-[theme(--shadow-md)]">
-      <h2 class="text-3xl font-bold mb-4 text-primary">Find Other Solar Businesses in {district} district</h2>
-      <p class="text-muted-foreground mb-6">If you're interested in exploring other solar businesses in {district}, visit our district directory page.</p>
-      <Button
-        variant="outline"
-        class="font-semibold px-[theme(--button-padding-x-default)] py-[theme(--button-padding-y-default)] transition-all hover:-translate-y-1 min-w-max"
-        onclick={() =>
-          (window.location.href = `/in/district/${district.toLowerCase().replace(/\s+/g, "-")}`)}
-      >
-        View Solar Businesses in {district} district
-      </Button>
-    </section>
-  {/if}
+    {#if businesses.length > 0 && subset_cities_localities.length > 0}
+      <RecommendedSolarSystems />
 
-  <!-- Solar Comparison Section -->
-  {#if businesses.length > 0 && subset_cities_localities.length > 0}
-    <SolarComparisonTable />
+      <!-- Get Quotation Button after Recommended Solar Systems -->
+      <div class="text-center mb-8">
+        <Button class="font-semibold text-lg px-10 py-4 uppercase tracking-wide" onclick={scrollToLeadForm}>
+          Get Quotation
+        </Button>
+      </div>
 
-    <!-- Get Quotation Button after Solar Comparison Table -->
-    <div class="text-center my-8">
-      <Button class="font-semibold text-lg px-[theme(--button-padding-x-lg)] py-[theme(--button-padding-y-default)] transition-all hover:-translate-y-1 shadow-[theme(--shadow-md)] hover:shadow-[theme(--shadow-lg)] uppercase tracking-wide" onclick={scrollToLeadForm}>
-        Get Quotation
-      </Button>
-    </div>
-  {/if}
-
-  <!-- About Solarvipani Section (Lazy Loaded) -->
-  <section id="about-section" class="w-full max-w-4xl mb-10">
-    {#if shouldLoadAbout && AboutSolarVipani}
-      {@render AboutSolarVipani()}
+      <section id="people-also-ask" class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">
+        <div class="text-center mb-[theme(--spacing-2xl)]">
+          <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Frequently Asked Questions</h2>
+          <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+            <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 gap-[theme(--card-gap)]">
+          {#each faqList as faq (faq.question)}
+            <div class="mb-6 pb-6 border-b border-border last:mb-0 last:pb-0 last:border-b-0">
+              <strong class="block text-lg font-semibold text-primary mb-2">{faq.question}</strong>
+              <p class="text-foreground dark:text-foreground-secondary text-sm">{faq.answer}</p>
+            </div>
+          {/each}
+        </div>
+      </section>
     {/if}
-  </section>
+
+    {#if district}
+      <section class="mb-8 rounded-[theme(--radius-lg)] bg-[hsl(var(--accent)/0.1)] p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">
+        <div class="text-center mb-[theme(--spacing-2xl)]">
+          <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Find Other Solar Businesses in {district} District</h2>
+          <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+            <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+          </div>
+          <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">If you're interested in exploring other solar businesses in {district}, visit our district directory page.</p>
+        </div>
+        <div class="text-center">
+          <Button
+            variant="outline"
+            class="font-semibold px-[theme(--button-padding-x-default)] py-[theme(--button-padding-y-default)] transition-all hover:-translate-y-[theme(--hover-lift-sm)] uppercase tracking-wider"
+            onclick={() =>
+              (window.location.href = `/in/district/${district.toLowerCase().replace(/\s+/g, "-")}`)}
+          >
+            View Solar Businesses in {district} District
+          </Button>
+        </div>
+      </section>
+    {/if}
+
+    <!-- Solar Comparison Section -->
+    {#if businesses.length > 0 && subset_cities_localities.length > 0}
+      <SolarComparisonTable />
+
+      <!-- Get Quotation Button after Solar Comparison Table -->
+      <div class="text-center mb-8">
+        <Button class="font-semibold text-lg px-[theme(--button-padding-x-lg)] py-[theme(--button-padding-y-default)] transition-all hover:-translate-y-[theme(--hover-lift-sm)] shadow-[theme(--shadow-md)] hover:shadow-[theme(--shadow-lg)] uppercase tracking-wide" onclick={scrollToLeadForm}>
+          Get Quotation
+        </Button>
+      </div>
+    {/if}
+
+    <!-- About Solarvipani Section (Lazy Loaded) -->
+    <div id="about-section">
+      {#if shouldLoadAbout && AboutSolarVipani}
+        {@render AboutSolarVipani()}
+      {/if}
+    </div>
+  </div>
 </main>
 
 {#if shouldLoadChatbot && ChatbotPopup}

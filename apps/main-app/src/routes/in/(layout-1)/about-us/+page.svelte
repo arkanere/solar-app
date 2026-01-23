@@ -1,5 +1,4 @@
 <script>
-  import QueryForm from "$lib/in-new-rewrites/QueryForm.svelte";
   import { Card } from "$lib/components/ui/card";
 
   const socialLinks = [
@@ -215,20 +214,6 @@
             Convenience, Best Price and Low Risk is assured through Design</strong
           >
         </p>
-      </div>
-    </section>
-
-    <!-- Contact Form Section -->
-    <section class="mb-[theme(--card-gap)]">
-      <div class="bg-gradient-to-r from-primary to-primary text-primary-foreground p-[theme(--card-padding-y)] rounded-[theme(--radius-lg)] shadow-[theme(--shadow-lg)]">
-        <div class="text-center mb-[theme(--card-gap)]">
-          <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary-foreground">Feel Free to Reach Us</h2>
-          <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-            <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
-          </div>
-          <p class="text-lg text-primary-foreground/90">Get in touch with our solar experts</p>
-        </div>
-        <QueryForm />
       </div>
     </section>
 

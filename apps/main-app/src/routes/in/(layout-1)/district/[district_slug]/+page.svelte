@@ -1,6 +1,7 @@
 <script>
   import { page } from "$app/stores";
   import { Alert } from "$lib/components/ui/alert";
+  import { Button } from "$lib/components/ui/button";
 
   // Get reactive data from the page store using derived
   const district = $derived($page.data.district);
@@ -23,11 +24,16 @@
   />
 </svelte:head>
 
-<main class="flex flex-col items-center justify-start w-full min-h-screen px-[theme(--container-padding)] py-[theme(--spacing-lg)] overflow-x-hidden transition-colors duration-300 lg:py-[theme(--spacing-3xl)] md:py-[theme(--spacing-xl)] sm:py-[theme(--spacing-md)]">
-  <div class="w-full max-w-4xl">
-    <h1 class="mb-[theme(--spacing-md)] text-[theme(--font-size-3xl)] font-semibold text-center text-primary lg:text-[theme(--font-size-2xl)] md:text-[theme(--font-size-2xl)] sm:text-[theme(--font-size-xl)]">
-      Solar Panel Installers in {district}
-    </h1>
+<main class="w-full bg-background text-foreground transition-colors duration-300 overflow-x-hidden">
+  <div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
+    <div class="text-center mb-[theme(--spacing-2xl)]">
+      <h1 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">
+        Solar Panel Installers in {district}
+      </h1>
+      <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+        <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+      </div>
+    </div>
 
     {#if errorMessage}
       <Alert variant="destructive" class="mb-[theme(--spacing-xl)]">
@@ -38,44 +44,39 @@
         <p>No cities found in {district}.</p>
       </Alert>
     {:else}
-      <p class="mb-[theme(--spacing-2xl)] text-center text-[theme(--font-size-base)] text-foreground-secondary lg:text-[theme(--font-size-lg)]">
-        Browse solar panel installers in {district} by city. We have listings in {cities.length}
-        cities.
+      <p class="text-center text-foreground dark:text-foreground-secondary mb-[theme(--spacing-2xl)] text-lg">
+        Browse solar panel installers in {district} by city. We have listings in <span class="font-semibold text-primary">{cities.length} cities</span>.
       </p>
 
-      <ul class="grid w-full gap-[theme(--card-gap)] mb-[theme(--spacing-2xl)] auto-fit-minmax-sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] w-full mb-[theme(--spacing-2xl)]">
         {#each cities as city}
-          <li>
-            <a
-              href={`/in/solar-panel-installer-directory/${formatCitySlug(city)}`}
-              rel="noopener"
-              class="block h-full p-[theme(--card-padding-y)] text-decoration-none border border-border/30 rounded-[theme(--radius-xl)] shadow-[theme(--shadow-card)] bg-card hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[2px] transition-all duration-[theme(--transition-default)]"
-            >
-              <h2 class="mb-[theme(--spacing-sm)] text-[theme(--font-size-xl)] font-semibold text-left text-primary lg:text-[theme(--font-size-lg)]">
-                {city}
-              </h2>
-              <p class="mb-[theme(--spacing-md)] text-[theme(--font-size-sm)] text-foreground-secondary">
-                Find solar installers in {city}
-              </p>
-              <div class="flex items-center text-[theme(--font-size-sm)] font-medium text-primary transition-colors duration-[theme(--transition-default)]">
-                <span>View installers</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  class="w-4 h-4 ml-2 transition-transform duration-[theme(--transition-default)] group-hover:translate-x-1"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-              </div>
-            </a>
-          </li>
+          <div class="flex flex-col h-full bg-card rounded-[theme(--radius-lg)] border border-border hover:shadow-[theme(--shadow-card-hover)] transition-all duration-300 hover:-translate-y-1 p-[theme(--spacing-lg)]">
+            <h2 class="text-lg font-semibold mb-[theme(--spacing-lg)] text-primary">
+              {city}
+            </h2>
+
+            <div class="flex items-center justify-center font-medium text-primary mt-auto gap-[theme(--spacing-xs)] group">
+              <Button asChild variant="default" class="w-full">
+                <a href={`/in/solar-panel-installer-directory/${formatCitySlug(city)}`} rel="noopener" class="flex items-center justify-center gap-2">
+                  <span>Find Installers</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </a>
+              </Button>
+            </div>
+          </div>
         {/each}
-      </ul>
+      </div>
     {/if}
   </div>
 </main>

@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import BusinessDirectory from "$lib/in-new-rewrites/BusinessDirectory.svelte";
   import RecentProjectsHome from "$lib/in-new-rewrites/RecentProjectsHome.svelte";
-  import LeadFormBusiness from "$lib/in-new-rewrites/LeadFormBusiness.svelte";
+  import LeadForm from "$lib/in-new-rewrites/LeadForm.svelte";
   import SolarComparisonTable from "$lib/in-new-rewrites/SolarComparisonTable.svelte";
 
   // Receive data from server
@@ -273,7 +273,7 @@
 
   <div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
     <!-- Lead Form Section -->
-    <section id="lead-form-sv" class="mb-8">
+    <section id="lead-form-sv" class="mb-8 mx-auto max-w-[theme(--max-width-md)]">
       <div class="rounded-[theme(--radius-lg)] p-[theme(--card-padding-y)] shadow-[theme(--shadow-lg)] bg-gradient-to-br from-primary/10 to-primary/5">
         <div class="text-center mb-[theme(--spacing-2xl)]">
           <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Get Your Free Quotes</h2>
@@ -281,7 +281,7 @@
             <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
           </div>
         </div>
-        <LeadFormBusiness />
+        <LeadForm showWrapper={false} />
       </div>
     </section>
 

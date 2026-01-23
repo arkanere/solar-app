@@ -78,7 +78,7 @@
 						variant="default"
 						onclick={handleConfirm}
 						disabled={isLoading || !email}
-						class="w-full bg-success hover:bg-success/85 text-success-foreground"
+						class="w-full bg-success hover:bg-success-hover text-success-foreground"
 					>
 						{isLoading ? 'Processing...' : 'Confirm Unsubscription'}
 					</Button>

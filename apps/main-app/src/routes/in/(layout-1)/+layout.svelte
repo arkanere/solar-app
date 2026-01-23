@@ -222,9 +222,9 @@
       </DropdownMenu.Content>
     </DropdownMenu.Root>
 
-    <Button variant="outline" onclick={toggleTheme}>
+    <button onclick={toggleTheme} class="border border-border cursor-pointer whitespace-nowrap text-foreground hover:bg-muted px-[theme(--button-padding-x-sm)] py-[theme(--button-padding-y-sm)] text-[theme(--font-size-sm)] rounded-[theme(--radius-md)] transition-all duration-[theme(--transition-default)]">
       {$isDarkMode ? "☀️ Light mode" : "🌙 Dark mode"}
-    </Button>
+    </button>
   </div>
 </nav>
 

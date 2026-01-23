@@ -1,18 +1,20 @@
 <script lang="ts">
-	import QueryForm from './QueryForm.svelte';
-	import { Card } from '$lib/components/ui/card';
+	import LeadForm from './LeadForm.svelte';
 
-	let { city = '' } = $props();
+	let { city = '', title = '', hasBusinesses = true } = $props();
+
+	const defaultTitle = city ? `Get 2-3 Free Quotes at ${city}` : 'Get Free Quote';
+	const displayTitle = title || defaultTitle;
 </script>
 
-<section id="lead-form-sv" class="w-full max-w-[theme(--max-width-4xl)] mb-[theme(--spacing-xl)] p-[theme(--container-padding)]">
-	<Card class="gap-[theme(--card-gap)]">
-		<h2 class="text-[theme(--font-size-3xl)] leading-[theme(--font-size-3xl--line-height)] font-bold tracking-[theme(--tracking-heading)] text-primary">
-			Get Free Quotation for Solar Installation in {city}
-		</h2>
-		<p class="text-[theme(--font-size-base)] text-muted-foreground">
-			Fill the form below to get free quotes from verified solar installers in {city}.
-		</p>
-		<QueryForm />
-	</Card>
+<section id="lead-form-sv" class="mb-8 mx-auto max-w-[theme(--max-width-md)]">
+	<div class="rounded-[theme(--radius-lg)] p-[theme(--card-padding-y)] shadow-[theme(--shadow-lg)] bg-gradient-to-br from-primary/10 to-primary/5">
+		<div class="text-center mb-[theme(--spacing-2xl)]">
+			<h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">{displayTitle}</h2>
+			<div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+				<span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+			</div>
+		</div>
+		<LeadForm showWrapper={false} />
+	</div>
 </section>
