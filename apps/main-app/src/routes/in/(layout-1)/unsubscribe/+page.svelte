@@ -62,7 +62,7 @@
 					Confirm Unsubscription
 				</h1>
 
-				<p class="text-[theme(--font-size-base)] leading-[theme(--font-size-base--line-height)] text-secondary mb-[theme(--spacing-2xl)]">
+				<p class="text-[theme(--font-size-base)] leading-[theme(--font-size-base--line-height)] text-foreground-secondary mb-[theme(--spacing-2xl)]">
 					Please confirm that you want to unsubscribe<br />
 					<strong>{email}</strong> from our email list.
 				</p>
@@ -103,7 +103,7 @@
 					Unsubscription was successful!
 				</h1>
 
-				<p class="text-[theme(--font-size-base)] leading-[theme(--font-size-base--line-height)] text-secondary mb-[theme(--spacing-2xl)]">
+				<p class="text-[theme(--font-size-base)] leading-[theme(--font-size-base--line-height)] text-foreground-secondary mb-[theme(--spacing-2xl)]">
 					We have informed the sender of this email that<br />
 					you don't want to receive more email from<br />
 					them.

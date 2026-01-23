@@ -17,22 +17,22 @@
   let { projects = [] } = $props<{ projects: Project[] }>();
 </script>
 
-<Card.Root class="border-0 shadow-[theme(--shadow-sm)] mb-[theme(--spacing-2xl)]">
-  <Card.Header class="text-center pb-[theme(--card-padding-y)]">
-    <Card.Title class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">
+<Card.Root class="border-0 shadow-card mb-[theme(--spacing-component-between)]">
+  <Card.Header class="text-center">
+    <Card.Title class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-component-internal)]">
       Recent Solar Installation Projects
     </Card.Title>
-    <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-      <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+    <div class="flex justify-center items-center my-[theme(--spacing-component-internal)]">
+      <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-foreground-muted rounded"></span>
     </div>
-    <Card.Description class="text-[theme(--font-size-base)] max-w-[theme(--max-width-2xl)] mx-auto">
+    <Card.Description class="text-sm max-w-[theme(--max-width-2xl)] mx-auto">
       Explore real solar installations completed by our verified installers across India
     </Card.Description>
   </Card.Header>
 
   <Card.Content>
     {#if projects && projects.length > 0}
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] mb-[theme(--spacing-2xl)]">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--spacing-component-between)] mb-[theme(--spacing-component-between)]">
         {#each projects as project (project.id)}
           <a
             href="/in/solar-panel-installer/{project.business_slug}/project/{project.project_slug}"
@@ -62,11 +62,11 @@
                 {/if}
               </div>
 
-              <Card.Content class="pt-[theme(--spacing-lg)]">
-                <h3 class="line-clamp-2 text-primary font-semibold text-[theme(--font-size-lg)] mb-[theme(--spacing-lg)]">
+              <Card.Content class="pt-[theme(--spacing-component-internal)]">
+                <h3 class="line-clamp-2 font-semibold text-lg mb-[theme(--spacing-component-internal)]">
                   {project.title}
                 </h3>
-                <div class="text-muted-foreground flex flex-col gap-[theme(--spacing-sm)] text-[theme(--font-size-sm)]">
+                <div class="text-muted-foreground flex flex-col gap-[theme(--form-element-field-gap)] text-sm">
                   <p>Pincode: {project.pincode || "N/A"}</p>
                   <p>Completed on: {formatDate(project.project_date)}</p>
                   <p>
@@ -82,7 +82,7 @@
       </div>
 
       <div class="text-center">
-        <a href="/in/recent-solar-installation-projects" class="inline-block text-primary-foreground font-semibold bg-primary hover:bg-primary-hover hover:-translate-y-[theme(--hover-lift-sm)] px-[theme(--button-padding-x-default)] py-[theme(--button-padding-y-default)] rounded-[theme(--radius-lg)] transition-all duration-[theme(--transition-default)]">View All Projects →</a>
+        <a href="/in/recent-solar-installation-projects" class="inline-flex items-center justify-center text-primary-foreground font-semibold bg-primary hover:bg-primary-hover hover:scale-[theme(--hover-scale)] px-[theme(--button-padding-x-default)] py-[theme(--button-padding-y-default)] rounded-[theme(--radius-lg)] transition-all duration-[theme(--transition-default)]">View All Projects →</a>
       </div>
     {:else}
       <div class="text-center py-12">

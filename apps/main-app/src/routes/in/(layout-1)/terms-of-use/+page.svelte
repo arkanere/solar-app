@@ -41,7 +41,7 @@
 
 			<div>
 				<h2 class="text-2xl font-semibold mb-[theme(--spacing-lg)]">3. User Responsibilities</h2>
-				<ul class="ml-[theme(--spacing-lg)] md:ml-[theme(--spacing-2xl)] space-y-[theme(--spacing-sm)] text-[length:theme(--font-size-base)] md:text-[length:theme(--font-size-lg)] text-foreground-secondary">
+				<ul class="ml-[theme(--spacing-lg)] md:ml-[theme(--spacing-2xl)] space-y-[theme(--spacing-lg)] text-[length:theme(--font-size-base)] md:text-[length:theme(--font-size-lg)] text-foreground-secondary">
 					<li>
 						<strong class="text-foreground">Provide Accurate Information:</strong> Users must provide truthful and accurate details
 						when interacting with the Website.
@@ -55,7 +55,7 @@
 
 			<div>
 				<h2 class="text-2xl font-semibold mb-[theme(--spacing-lg)]">4. Installer Responsibilities</h2>
-				<ul class="ml-[theme(--spacing-lg)] md:ml-[theme(--spacing-2xl)] space-y-[theme(--spacing-sm)] text-[length:theme(--font-size-base)] md:text-[length:theme(--font-size-lg)] text-foreground-secondary">
+				<ul class="ml-[theme(--spacing-lg)] md:ml-[theme(--spacing-2xl)] space-y-[theme(--spacing-lg)] text-[length:theme(--font-size-base)] md:text-[length:theme(--font-size-lg)] text-foreground-secondary">
 					<li>
 						<strong class="text-foreground">Qualifications:</strong> Installers must ensure they have all required licenses, certifications,
 						and insurance to operate legally.
@@ -144,7 +144,7 @@
 			<div>
 				<h2 class="text-2xl font-semibold mb-[theme(--spacing-lg)]">14. Contact Us</h2>
 				<p class="text-[length:theme(--font-size-base)] md:text-[length:theme(--font-size-lg)] leading-relaxed text-foreground-secondary mb-[theme(--spacing-lg)]">For questions or concerns about these Terms, please contact us:</p>
-				<ul class="ml-[theme(--spacing-lg)] md:ml-[theme(--spacing-2xl)] space-y-[theme(--spacing-sm)] text-[length:theme(--font-size-base)] md:text-[length:theme(--font-size-lg)] text-foreground-secondary">
+				<ul class="ml-[theme(--spacing-lg)] md:ml-[theme(--spacing-2xl)] space-y-[theme(--spacing-lg)] text-[length:theme(--font-size-base)] md:text-[length:theme(--font-size-lg)] text-foreground-secondary">
 					<li>Email: <a href="mailto:admin@solarvipani.com" class="text-primary underline hover:no-underline">admin@solarvipani.com</a></li>
 					<li>Phone: <a href="tel:+918983066701" class="text-primary underline hover:no-underline">+91 8983066701</a></li>
 				</ul>

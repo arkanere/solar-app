@@ -110,9 +110,9 @@
 				<li>
 					<a
 						href={`/in/state/${formatStateSlug(state)}`}
-						class="block h-full bg-card rounded-[theme(--radius-xl)] p-[theme(--card-padding-y)] bg-background-secondary hover:shadow-sm hover:border-primary/50 transition-all duration-100 hover:-translate-y-1"
+						class="block h-full bg-card rounded-[theme(--radius-xl)] p-[theme(--card-padding-y)] bg-background-secondary hover:shadow-card hover:border-primary/50 transition-all duration-100 hover:-translate-y-1"
 					>
-						<h2 class="text-[theme(--font-size-lg)] font-semibold mb-[theme(--spacing-sm)] text-primary">
+						<h2 class="text-[theme(--font-size-lg)] font-semibold mb-[theme(--spacing-lg)] text-primary">
 							{state}
 						</h2>
 						<p class="text-muted-foreground mb-[theme(--spacing-lg)] flex-grow">
@@ -141,7 +141,7 @@
 
 	<!-- Services Section -->
 	<div class="max-w-4xl w-full mb-[theme(--spacing-4xl)]">
-		<h2 class="text-[theme(--font-size-2xl)] font-semibold text-center mb-[theme(--spacing-2xl)] text-secondary">
+		<h2 class="text-[theme(--font-size-2xl)] font-semibold text-center mb-[theme(--spacing-2xl)] text-primary">
 			Services Provided by Solar Panel Installers
 		</h2>
 		<ul class="grid grid-cols-1 md:grid-cols-2 gap-[theme(--card-gap)] list-none p-0">
@@ -214,7 +214,7 @@
 
 	<!-- FAQ Section -->
 	<div class="max-w-4xl w-full mb-[theme(--spacing-4xl)]">
-		<h2 class="text-[theme(--font-size-2xl)] font-semibold text-center mb-[theme(--spacing-2xl)] text-secondary">
+		<h2 class="text-[theme(--font-size-2xl)] font-semibold text-center mb-[theme(--spacing-2xl)] text-primary">
 			Frequently Asked Questions
 		</h2>
 		<Accordion class="w-full">
@@ -233,7 +233,7 @@
 
 	<!-- About Section -->
 	<div class="max-w-4xl w-full">
-		<h2 class="text-[theme(--font-size-2xl)] font-semibold text-center mb-[theme(--spacing-2xl)] text-secondary">
+		<h2 class="text-[theme(--font-size-2xl)] font-semibold text-center mb-[theme(--spacing-2xl)] text-primary">
 			About Solarvipani
 		</h2>
 

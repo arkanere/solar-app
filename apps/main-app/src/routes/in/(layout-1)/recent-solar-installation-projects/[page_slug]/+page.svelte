@@ -89,7 +89,7 @@
 		<div class="text-center mb-[theme(--spacing-2xl)]">
 			<h1 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Recent Solar Installation Projects</h1>
 			<div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-				<span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+				<span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-foreground-muted rounded"></span>
 			</div>
 			<p class="text-center text-foreground dark:text-foreground-secondary">Showing page {currentPage} of {totalPages}</p>
 		</div>
@@ -116,7 +116,7 @@
 						href="/in/solar-panel-installer/{project.business_slug}/project/{project.project_slug}"
 						class="group block overflow-hidden transition-all duration-[var(--transition-default)] hover:-translate-y-[var(--hover-lift-sm)]"
 					>
-						<Card class="h-full flex flex-col hover:shadow-[theme(--shadow-sm)]">
+						<Card class="h-full flex flex-col hover:shadow-card">
 						<!-- Project Image -->
 						<div class="w-full aspect-square overflow-hidden bg-muted relative">
 							{#if project.cloudinary_public_id}
@@ -141,8 +141,8 @@
 						</div>
 
 						<!-- Project Details -->
-						<CardContent class="py-[theme(--card-padding-y)] px-[theme(--card-padding-y)] space-y-[theme(--spacing-sm)] flex-1 flex flex-col justify-between">
-							<div class="space-y-[theme(--spacing-sm)]">
+						<CardContent class="py-[theme(--card-padding-y)] px-[theme(--card-padding-y)] space-y-[theme(--spacing-lg)] flex-1 flex flex-col justify-between">
+							<div class="space-y-[theme(--spacing-lg)]">
 								<h3 class="text-lg font-semibold text-primary line-clamp-2">
 									{project.title}
 								</h3>
@@ -173,7 +173,7 @@
 
 			<!-- Pagination -->
 			{#if totalPages > 1}
-				<div class="flex justify-center items-center gap-[theme(--spacing-sm)] mt-[theme(--spacing-2xl)] flex-wrap">
+				<div class="flex justify-center items-center gap-[theme(--spacing-lg)] mt-[theme(--spacing-2xl)] flex-wrap">
 					<!-- Previous button -->
 					{#if currentPage > 1}
 						<Button
@@ -192,9 +192,9 @@
 					<!-- Page numbers -->
 					{#each paginationLinks as link}
 						{#if link === '...'}
-							<span class="px-[theme(--spacing-sm)] text-foreground dark:text-foreground-secondary">...</span>
+							<span class="px-[theme(--spacing-lg)] text-foreground dark:text-foreground-secondary">...</span>
 						{:else if link === currentPage}
-							<span class="px-[theme(--spacing-lg)] py-[theme(--spacing-sm)] bg-primary text-primary-foreground font-medium rounded-[theme(--radius-md)]">
+							<span class="px-[theme(--spacing-lg)] py-[theme(--spacing-lg)] bg-primary text-primary-foreground font-medium rounded-[theme(--radius-md)]">
 								{link}
 							</span>
 						{:else}

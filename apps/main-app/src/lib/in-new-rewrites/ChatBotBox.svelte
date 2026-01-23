@@ -729,8 +729,8 @@
 
 <div class="flex flex-col w-full h-[700px] min-h-[600px] max-h-screen rounded-[theme(--radius-lg)] border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
   <!-- Header -->
-  <div class="flex items-center justify-between p-[theme(--card-padding-y)] border-b border-[hsl(var(--border))] bg-[hsl(var(--primary))]">
-    <h3 class="text-[length:var(--font-size-lg)] font-semibold text-[hsl(var(--primary-foreground))] leading-[var(--font-size-lg--line-height)]">Calculate Price and Savings</h3>
+  <div class="flex items-center justify-between p-[theme(--card-padding)] border-b border-[hsl(var(--border))] bg-[hsl(var(--primary))]">
+    <h3 class="text-lg font-semibold text-[hsl(var(--primary-foreground))]">Calculate Price and Savings</h3>
     {#if onClose}
       <Button variant="ghost" size="sm" onclick={onClose} class="rounded-[theme(--badge-radius)] w-[2rem] h-[2rem] p-0">
         <X class="w-[1.25rem] h-[1.25rem]" />
@@ -739,19 +739,19 @@
   </div>
 
   <!-- Chat History -->
-  <div class="flex-1 overflow-y-auto p-[theme(--card-padding-y)] gap-[theme(--card-gap)] flex flex-col bg-[hsl(var(--background))]" bind:this={chatHistoryContainer} onscroll={handleScroll}>
+  <div class="flex-1 overflow-y-auto p-[theme(--card-padding)] gap-[theme(--spacing-component-internal)] flex flex-col bg-[hsl(var(--background))]" bind:this={chatHistoryContainer} onscroll={handleScroll}>
     {#each $messages as message, i}
       <div class="flex gap-[theme(--form-element-field-gap)] {message.role === 'user' ? 'justify-end' : 'justify-start'}">
         {#if message.role === "assistant"}
           <img src="https://api.dicebear.com/9.x/bottts/svg?seed=SolarBot" alt="Bot" class="w-[2rem] h-[2rem] rounded-[theme(--badge-radius)] flex-shrink-0 mt-[theme(--form-element-field-gap)]" />
         {/if}
         <Card class="max-w-[85%] {message.role === 'user' ? 'bg-[hsl(var(--primary))]' : 'bg-[hsl(var(--card))]'} border border-[hsl(var(--border))]">
-          <CardContent class="pt-[theme(--card-padding-y)] text-[length:var(--font-size-sm)] {message.role === 'user' ? 'text-[hsl(var(--primary-foreground))]' : 'text-[hsl(var(--foreground))]'}">
+          <CardContent class="pt-[theme(--card-padding)] text-sm {message.role === 'user' ? 'text-[hsl(var(--primary-foreground))]' : 'text-[hsl(var(--foreground))]'}">
             <p class="whitespace-pre-wrap break-words">{@html message.content}</p>
 
             <!-- Guided flow suggestion -->
             {#if message.showGuidedOption && message.role === "assistant"}
-              <div class="mt-[theme(--card-gap)] gap-[theme(--form-element-field-gap)] flex flex-col">
+              <div class="mt-[theme(--spacing-component-internal)] gap-[theme(--form-element-field-gap)] flex flex-col">
                 <Button onclick={startGuidedFlow} class="w-full" variant="default">Yes, start assessment</Button>
                 <Button onclick={() => dismissGuidedSuggestion(i)} variant="outline" class="w-full">No, continue chatting</Button>
               </div>
@@ -759,7 +759,7 @@
 
             <!-- Options display -->
             {#if message.role === "assistant" && i === $messages.length - 1 && currentFlow?.flowType === "options" && currentFlow?.options?.length > 0 && !message.showGuidedOption}
-              <div class="mt-[theme(--card-gap)] gap-[theme(--form-element-field-gap)] flex flex-col">
+              <div class="mt-[theme(--spacing-component-internal)] gap-[theme(--form-element-field-gap)] flex flex-col">
                 {#each currentFlow.options as option}
                   <Button onclick={() => selectOption(option.id)} variant="outline" class="w-full justify-start text-left">
                     {option.label}
@@ -770,7 +770,7 @@
 
             <!-- Input fields -->
             {#if message.role === "assistant" && i === $messages.length - 1 && (conversationFlows.flows as Record<string, any>)[currentFlowId]?.flowType === "inputs" && (conversationFlows.flows as Record<string, any>)[currentFlowId]?.inputs?.length > 0 && !message.showGuidedOption}
-              <div class="mt-[theme(--card-gap)] gap-[theme(--form-element-field-gap)] flex flex-col">
+              <div class="mt-[theme(--spacing-component-internal)] gap-[theme(--form-element-field-gap)] flex flex-col">
                 {#each (conversationFlows.flows as Record<string, any>)[currentFlowId].inputs as input}
                   <div class="gap-[theme(--form-element-field-gap)] flex flex-col">
                     {#if input.label}
@@ -800,7 +800,7 @@
 
             <!-- Form display -->
             {#if message.role === "assistant" && i === $messages.length - 1 && (conversationFlows.flows as Record<string, any>)[currentFlowId]?.flowType === "form" && (conversationFlows.flows as Record<string, any>)[currentFlowId]?.inputs?.length > 0 && !message.showGuidedOption}
-              <div class="mt-[theme(--card-gap)] p-[theme(--card-padding-y)] rounded-[theme(--radius-lg)] gap-[theme(--form-element-field-gap)] flex flex-col bg-[hsl(var(--background-secondary))]">
+              <div class="mt-[theme(--spacing-component-internal)] p-[theme(--card-padding)] rounded-[theme(--radius-lg)] gap-[theme(--form-element-field-gap)] flex flex-col bg-[hsl(var(--background-secondary))]">
                 {#each (conversationFlows.flows as Record<string, any>)[currentFlowId].inputs as input}
                   <div class="gap-[theme(--form-element-field-gap)] flex flex-col">
                     <Label class="text-[hsl(var(--foreground))]">
@@ -820,7 +820,7 @@
                     {/if}
 
                     {#if formErrors[input.id]}
-                      <span class="text-[length:var(--font-size-xs)] text-[hsl(var(--destructive))]">{formErrors[input.id]}</span>
+                      <span class="text-[length:var(--font-size-sm)] text-[hsl(var(--destructive))]">{formErrors[input.id]}</span>
                     {/if}
                   </div>
                 {/each}
@@ -854,7 +854,7 @@
 
   <!-- Chat Input -->
   {#if currentFlow?.flowType === "freeform"}
-    <div class="flex gap-[theme(--form-element-field-gap)] p-[theme(--card-padding-y)] border-t border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+    <div class="flex gap-[theme(--form-element-field-gap)] p-[theme(--card-padding)] border-t border-[hsl(var(--border))] bg-[hsl(var(--card))]">
       <Input bind:value={userInput} placeholder="Ask a question about solar installation..." onkeypress={(e) => e.key === "Enter" && sendMessage()} />
       <Button onclick={sendMessage} disabled={isLoading || !userInput.trim()} variant="default" size="sm">
         <Send class="w-[1rem] h-[1rem]" />

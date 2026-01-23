@@ -57,15 +57,15 @@
 </script>
 
 <div class="w-full max-w-[theme(--max-width-sm)] mx-auto">
-	<Card.Root class="border border-[theme(--color-border)] shadow-[theme(--shadow-sm)]">
+	<Card.Root class="shadow-card">
 		<Card.Header>
-			<Card.Title class="text-[theme(--font-size-2xl)] leading-[theme(--font-size-2xl--line-height)]">Solar Installer Directory</Card.Title>
+			<Card.Title class="text-2xl">Solar Installer Directory</Card.Title>
 			<Card.Description>
 				Select state and district to view installer listings
 			</Card.Description>
 		</Card.Header>
 
-		<Card.Content class="flex flex-col gap-[theme(--card-gap)]">
+		<Card.Content class="flex flex-col gap-[theme(--spacing-component-internal)]">
 			<div class="flex flex-col gap-[theme(--form-element-field-gap)]">
 				<Label.Root for="state">State</Label.Root>
 				<Select.Root type="single" bind:value={selectedState} onValueChange={handleStateChange}>
@@ -105,7 +105,7 @@
 			<Button
 				onclick={handleDistrictSelection}
 				disabled={!selectedState || !selectedDistrict}
-				class="w-full mt-[theme(--card-gap)]"
+				class="w-full mt-[theme(--spacing-component-internal)]"
 			>
 				View Installers
 			</Button>

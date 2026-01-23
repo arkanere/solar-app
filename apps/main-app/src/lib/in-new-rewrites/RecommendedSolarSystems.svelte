@@ -4,9 +4,9 @@
 	import { RECOMMENDED_SYSTEMS } from '$lib/constants/solarSystems';
 </script>
 
-<section class="py-[theme(--card-gap)] px-[theme(--container-padding)] sm:px-6 lg:px-8">
+<section class="py-[theme(--spacing-component-between)] px-[theme(--container-padding)] md:px-[theme(--container-padding-md)]">
 	<div class="max-w-4xl mx-auto">
-		<h2 class="text-center text-primary text-2xl font-semibold mb-[theme(--card-gap)] leading-9">
+		<h2 class="text-center text-2xl font-semibold mb-[theme(--spacing-component-between)]">
 			Recommended Solar Systems for Homes
 		</h2>
 
@@ -33,7 +33,7 @@
 									<Table.Cell class="font-medium">{row.consumption}</Table.Cell>
 									<Table.Cell>{row.outage}</Table.Cell>
 									<Table.Cell>
-										<div class="text-primary font-semibold">{row.system}</div>
+										<div class="font-semibold">{row.system}</div>
 										{#if row.note}
 											<div class="text-foreground-secondary text-sm leading-5 mt-[theme(--form-element-field-gap)]">
 												({row.note})

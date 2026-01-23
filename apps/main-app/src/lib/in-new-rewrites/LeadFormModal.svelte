@@ -79,7 +79,7 @@
 	class="flex flex-col gap-[theme(--spacing-lg)] max-w-[theme(--max-width-sm)] mx-auto p-[theme(--form-field-gap)]"
 >
 	<!-- Name -->
-	<div class="flex flex-col gap-[theme(--spacing-sm)]">
+	<div class="flex flex-col gap-[theme(--spacing-lg)]">
 		<Label for="name">Name</Label>
 		<Input id="name" type="text" bind:value={name} placeholder="Enter your name" />
 		{#if errors.name}
@@ -90,7 +90,7 @@
 	</div>
 
 	<!-- Phone Number -->
-	<div class="flex flex-col gap-[theme(--spacing-sm)]">
+	<div class="flex flex-col gap-[theme(--spacing-lg)]">
 		<Label for="phone">Phone Number</Label>
 		<Input
 			id="phone"
@@ -106,7 +106,7 @@
 	</div>
 
 	<!-- Pin Code -->
-	<div class="flex flex-col gap-[theme(--spacing-sm)]">
+	<div class="flex flex-col gap-[theme(--spacing-lg)]">
 		<Label for="pincode">Pin Code</Label>
 		<Input
 			id="pincode"
@@ -122,7 +122,7 @@
 	</div>
 
 	<!-- Email -->
-	<div class="flex flex-col gap-[theme(--spacing-sm)]">
+	<div class="flex flex-col gap-[theme(--spacing-lg)]">
 		<Label for="email">Email</Label>
 		<Input id="email" type="email" bind:value={email} placeholder="Enter your email" />
 		{#if errors.email}
@@ -133,7 +133,7 @@
 	</div>
 
 	<!-- Type of Consultation -->
-	<div class="flex flex-col gap-[theme(--spacing-sm)]">
+	<div class="flex flex-col gap-[theme(--spacing-lg)]">
 		<Label for="type">Type of Consultation</Label>
 		<Select.Root type="single" bind:value={type}>
 			<Select.Trigger id="type">
@@ -155,7 +155,7 @@
 	</div>
 
 	<!-- Comment -->
-	<div class="flex flex-col gap-[theme(--spacing-sm)]">
+	<div class="flex flex-col gap-[theme(--spacing-lg)]">
 		<Label for="comment">Comment</Label>
 		<Textarea
 			id="comment"

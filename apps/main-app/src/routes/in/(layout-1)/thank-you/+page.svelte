@@ -63,9 +63,9 @@
 	/>
 </svelte:head>
 
-<main class="min-h-screen pt-[theme(--spacing-sm)] flex flex-col items-center justify-start text-center transition-colors duration-[theme(--transition-default)] bg-background text-foreground">
+<main class="min-h-screen pt-[theme(--spacing-lg)] flex flex-col items-center justify-start text-center transition-colors duration-[theme(--transition-default)] bg-background text-foreground">
 	{#if error}
-		<h1 class="text-[theme(--font-size-2xl)] md:text-[theme(--font-size-4xl)] font-bold mb-[theme(--spacing-sm)]">Details not found</h1>
+		<h1 class="text-[theme(--font-size-2xl)] md:text-[theme(--font-size-4xl)] font-bold mb-[theme(--spacing-lg)]">Details not found</h1>
 		<p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] max-w-2xl mx-auto mb-[theme(--spacing-lg)]">The requested information could not be found. Please contact us if you need assistance.</p>
 		<p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] max-w-2xl mx-auto mb-[theme(--spacing-lg)]">
 			If you'd like to speak with us, feel free to give us a call at <a
@@ -79,8 +79,8 @@
 
 		<!-- Customer details section -->
 		{#if customerDetails}
-		<div class="w-full max-w-2xl mx-auto mb-[theme(--spacing-2xl)] px-[theme(--spacing-sm)] text-left">
-			<Card class="p-[theme(--spacing-sm)] md:p-[theme(--spacing-lg)] bg-background-secondary">
+		<div class="w-full max-w-2xl mx-auto mb-[theme(--spacing-2xl)] px-[theme(--spacing-lg)] text-left">
+			<Card class="p-[theme(--spacing-lg)] md:p-[theme(--spacing-lg)] bg-background-secondary">
 				<div class="space-y-[theme(--spacing-lg)]">
 					<div class="flex flex-col md:flex-row md:justify-between md:items-start pb-[theme(--spacing-lg)] last:pb-0">
 						<span class="font-semibold text-foreground-secondary md:min-w-[140px] flex-shrink-0">Name:</span>
@@ -115,8 +115,8 @@
 		</div>
 
 		{#if customerDetails && !customerDetails.hasVerifiedBusinessInDistrict && customerDetails.district}
-			<Alert class="w-full max-w-2xl mx-auto mb-[theme(--spacing-2xl)] px-[theme(--spacing-sm)] py-[theme(--spacing-sm)] bg-warning/10 border border-warning rounded-[theme(--radius-lg)] shadow-[theme(--shadow-sm)] text-center">
-				<h3 class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] font-semibold mb-[theme(--spacing-sm)] text-warning">Service Area Update</h3>
+			<Alert class="w-full max-w-2xl mx-auto mb-[theme(--spacing-2xl)] px-[theme(--spacing-lg)] py-[theme(--spacing-lg)] bg-warning/10 border border-warning rounded-[theme(--radius-lg)] shadow-card text-center">
+				<h3 class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] font-semibold mb-[theme(--spacing-lg)] text-warning">Service Area Update</h3>
 				<p class="text-[theme(--font-size-sm)] md:text-[theme(--font-size-base)] text-warning/90 leading-relaxed">We are expanding to <strong>{customerDetails.district}</strong>. We will reach out to you once we have a verified installer there.</p>
 			</Alert>
 		{/if}

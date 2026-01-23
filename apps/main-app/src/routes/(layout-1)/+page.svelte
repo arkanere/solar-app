@@ -56,7 +56,7 @@
         height="100"
       />
       <h1 class="text-[theme(--font-size-2xl)] md:text-[theme(--font-size-4xl)] font-bold mb-[theme(--spacing-lg)]">Solar Vipani</h1>
-      <p class="text-[theme(--font-size-lg)] md:text-[theme(--font-size-2xl)] mb-[theme(--spacing-sm)] text-accent">
+      <p class="text-[theme(--font-size-lg)] md:text-[theme(--font-size-2xl)] mb-[theme(--spacing-lg)] text-foreground">
         Get 2-3 Free Quotes from Verified Installers in Your Area
       </p>
       <p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] text-foreground-secondary">
@@ -73,7 +73,7 @@
       {#each countries as country}
         <button
           onclick={() => selectCountry(country.path)}
-          class="bg-background-secondary text-foreground rounded-[theme(--radius-xl)] px-[theme(--spacing-2xl)] py-[theme(--spacing-lg)] text-center cursor-pointer transition-all duration-100 hover:shadow-[theme(--shadow-sm)] hover:bg-accent hover:text-accent-foreground hover:scale-[1.05]"
+          class="bg-background-secondary text-foreground rounded-[theme(--radius-xl)] px-[theme(--spacing-2xl)] py-[theme(--spacing-lg)] text-center cursor-pointer transition-all duration-100 hover:shadow-card hover:bg-accent hover:text-accent-foreground hover:scale-[1.05]"
         >
           <div class="text-6xl mb-[theme(--spacing-lg)]">{country.flag}</div>
           <h3 class="text-[theme(--font-size-2xl)] font-semibold text-primary">{country.name}</h3>

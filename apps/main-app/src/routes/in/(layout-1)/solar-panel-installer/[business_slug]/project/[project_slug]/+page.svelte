@@ -63,9 +63,9 @@
   {/if}
 </svelte:head>
 
-<main class="w-full font-sans leading-relaxed overflow-x-hidden flex flex-col items-center px-[theme(--spacing-sm)] py-[theme(--spacing-lg)] min-h-screen bg-background text-foreground transition-colors duration-100">
+<main class="w-full font-sans leading-relaxed overflow-x-hidden flex flex-col items-center px-[theme(--spacing-lg)] py-[theme(--spacing-lg)] min-h-screen bg-background text-foreground transition-colors duration-100">
   <!-- Breadcrumb Navigation -->
-  <nav class="w-full max-w-[1140px] mb-[theme(--spacing-2xl)] text-sm flex items-center flex-wrap gap-[theme(--spacing-sm)] bg-card px-[theme(--container-padding)] py-[theme(--spacing-lg)] rounded-[theme(--radius-lg)] shadow-[theme(--shadow-sm)] transition-colors duration-100">
+  <nav class="w-full max-w-[1140px] mb-[theme(--spacing-2xl)] text-sm flex items-center flex-wrap gap-[theme(--spacing-lg)] bg-card px-[theme(--container-padding)] py-[theme(--spacing-lg)] rounded-[theme(--radius-lg)] shadow-card transition-colors duration-100">
     <a href="/in" class="text-primary hover:text-primary/80 hover:underline transition-colors duration-100">Home</a>
     <span class="text-muted-foreground"> › </span>
     <button onclick={navigateToDirectory} class="text-primary hover:text-primary/80 hover:underline transition-colors duration-100 bg-none border-none p-0 font-inherit cursor-pointer">
@@ -102,19 +102,19 @@
   </header>
 
   <!-- Project Image -->
-  <section class="w-full max-w-[1140px] flex justify-center mb-[theme(--spacing-4xl)] bg-card px-[theme(--container-padding)] py-[theme(--container-padding)] rounded-[theme(--radius-xl)] shadow-[theme(--shadow-sm)]">
+  <section class="w-full max-w-[1140px] flex justify-center mb-[theme(--spacing-4xl)] bg-card px-[theme(--container-padding)] py-[theme(--container-padding)] rounded-[theme(--radius-xl)] shadow-card">
     {#if project.cloudinary_public_id}
       <img
         src={`https://res.cloudinary.com/${PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_limit,w_800,q_auto,f_auto/${project.cloudinary_public_id}`}
         alt={project.title}
-        class="w-full max-w-[600px] h-auto object-contain rounded-[theme(--radius-lg)] shadow-[theme(--shadow-sm)]"
+        class="w-full max-w-[600px] h-auto object-contain rounded-[theme(--radius-lg)] shadow-card"
         loading="eager"
       />
     {:else if project.image_url}
       <img
         src={project.image_url}
         alt={project.title}
-        class="w-full max-w-[600px] h-auto object-contain rounded-[theme(--radius-lg)] shadow-[theme(--shadow-sm)]"
+        class="w-full max-w-[600px] h-auto object-contain rounded-[theme(--radius-lg)] shadow-card"
         loading="eager"
       />
     {:else}
@@ -139,7 +139,7 @@
   </section>
 
 <!-- View Installer Profile Section -->
-  <section class="w-full max-w-[1140px] mb-[theme(--spacing-2xl)] rounded-[theme(--radius-lg)] bg-[hsl(var(--accent)/0.1)] p-[theme(--card-padding-y)] shadow-[theme(--shadow-sm)] transition-all">
+  <section class="w-full max-w-[1140px] mb-[theme(--spacing-2xl)] rounded-[theme(--radius-lg)] bg-[hsl(var(--accent)/0.1)] p-[theme(--card-padding-y)] shadow-card transition-all">
     <div class="text-center">
       <h2 class="text-2xl md:text-2xl font-semibold mb-[theme(--spacing-lg)] text-primary">Interested in This Installer?</h2>
       <p class="text-lg mb-[theme(--spacing-lg)] text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">

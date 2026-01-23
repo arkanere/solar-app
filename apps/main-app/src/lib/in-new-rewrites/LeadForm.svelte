@@ -81,13 +81,13 @@
 </script>
 
 {#if showWrapper}
-  <div class="py-[theme(--button-padding-y-default)] flex justify-center">
+  <div class="py-[theme(--spacing-component-between)] flex justify-center">
     <Card.Root class="w-full max-w-[theme(--max-width-md)]">
-      <Card.Header class="py-[theme(--card-padding-y)]">
-        <h2 class="text-[theme(--font-size-lg)] font-semibold tracking-[theme(--tracking-ui)]">{heading}</h2>
+      <Card.Header>
+        <h2 class="text-lg font-semibold">{heading}</h2>
       </Card.Header>
 
-      <Card.Content class="pb-[theme(--card-padding-y)]">
+      <Card.Content>
         <form onsubmit={handleSubmit} class="flex flex-col gap-[theme(--form-field-gap)]">
           <!-- Name Field -->
           <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
@@ -179,7 +179,7 @@
           <!-- Submit Button -->
           <Button
             type="submit"
-            class="w-full mt-[theme(--spacing-sm)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all duration-[theme(--transition-default)]"
+            class="w-full mt-[theme(--spacing-lg)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all duration-[theme(--transition-default)]"
             disabled={isSubmitting}
           >
             {isSubmitting ? 'Submitting...' : 'Get Free Quotes'}
@@ -281,7 +281,7 @@
     <!-- Submit Button -->
     <Button
       type="submit"
-      class="w-full mt-[theme(--spacing-sm)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all duration-[theme(--transition-default)]"
+      class="w-full mt-[theme(--spacing-lg)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all duration-[theme(--transition-default)]"
       disabled={isSubmitting}
     >
       {isSubmitting ? 'Submitting...' : 'Get Free Quotes'}

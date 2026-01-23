@@ -69,8 +69,8 @@
         </CardHeader>
         <CardContent class="gap-[theme(--spacing-lg)]">
           <div>
-            <h4 class="font-semibold mb-[theme(--spacing-sm)] text-[theme(--font-size-base)]">For Customers:</h4>
-            <ul class="pl-[theme(--spacing-lg)] space-y-[theme(--spacing-sm)]">
+            <h4 class="font-semibold mb-[theme(--spacing-lg)] text-[theme(--font-size-base)]">For Customers:</h4>
+            <ul class="pl-[theme(--spacing-lg)] space-y-[theme(--spacing-lg)]">
               <li class="leading-relaxed">Your contact information (phone number, email address)</li>
               <li class="leading-relaxed">Lead submissions and requirements</li>
               <li class="leading-relaxed">Account information and preferences</li>
@@ -79,8 +79,8 @@
           </div>
 
           <div>
-            <h4 class="font-semibold mb-[theme(--spacing-sm)] text-[theme(--font-size-base)]">For Solar Installers/Businesses:</h4>
-            <ul class="pl-[theme(--spacing-lg)] space-y-[theme(--spacing-sm)]">
+            <h4 class="font-semibold mb-[theme(--spacing-lg)] text-[theme(--font-size-base)]">For Solar Installers/Businesses:</h4>
+            <ul class="pl-[theme(--spacing-lg)] space-y-[theme(--spacing-lg)]">
               <li class="leading-relaxed">Business profile and contact information</li>
               <li class="leading-relaxed">Service area and specialization details</li>
               <li class="leading-relaxed">Lead claims and interaction history</li>
@@ -117,7 +117,7 @@
         </CardHeader>
         <CardContent>
           <form onsubmit={handleSubmit} class="gap-[theme(--spacing-lg)] flex flex-col">
-            <div class="gap-[theme(--spacing-sm)] flex flex-col">
+            <div class="gap-[theme(--spacing-lg)] flex flex-col">
               <label for="email" class="font-semibold text-[theme(--font-size-sm)]">Email Address *</label>
               <Input
                 type="email"
@@ -128,7 +128,7 @@
               />
             </div>
 
-            <div class="gap-[theme(--spacing-sm)] flex flex-col">
+            <div class="gap-[theme(--spacing-lg)] flex flex-col">
               <label for="phone" class="font-semibold text-[theme(--font-size-sm)]">Phone Number</label>
               <Input
                 type="tel"
@@ -138,7 +138,7 @@
               />
             </div>
 
-            <div class="gap-[theme(--spacing-sm)] flex flex-col">
+            <div class="gap-[theme(--spacing-lg)] flex flex-col">
               <label for="reason" class="font-semibold text-[theme(--font-size-sm)]">Reason for Deletion (Optional)</label>
               <Textarea
                 id="reason"
@@ -171,7 +171,7 @@
         <CardTitle>Important Information</CardTitle>
       </CardHeader>
       <CardContent class="gap-[theme(--spacing-lg)] flex flex-col">
-        <ul class="pl-[theme(--spacing-lg)] space-y-[theme(--spacing-sm)]">
+        <ul class="pl-[theme(--spacing-lg)] space-y-[theme(--spacing-lg)]">
           <li class="leading-relaxed">Data deletion requests are processed within 30 business days</li>
           <li class="leading-relaxed">
             You will receive a confirmation email once your data has been deleted
