@@ -1,7 +1,7 @@
 <script lang="ts" module>
 	import { tv, type VariantProps } from "tailwind-variants";
 	export const sheetVariants = tv({
-		base: "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-50 flex flex-col gap-[var(--sheet-content-gap)] shadow-lg transition ease-in-out data-[state=closed]:duration-[var(--sheet-content-transition-close)] data-[state=open]:duration-[var(--sheet-content-transition-open)]",
+		base: "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-50 flex flex-col gap-[var(--sheet-content-gap)] shadow-sm transition ease-in-out data-[state=closed]:duration-[var(--sheet-content-transition-close)] data-[state=open]:duration-[var(--sheet-content-transition-open)]",
 		variants: {
 			side: {
 				top: "data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top inset-x-0 top-0 h-auto border-b",

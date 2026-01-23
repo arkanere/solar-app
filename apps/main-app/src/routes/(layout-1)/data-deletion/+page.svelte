@@ -60,7 +60,7 @@
         information from our database, please fill out the form below.
       </p>
 
-      <div class="p-6 bg-[hsl(var(--muted))] rounded-lg mb-8 shadow-md dark:bg-[hsl(var(--muted))]">
+      <div class="p-6 bg-[hsl(var(--muted))] rounded-lg mb-8 shadow-sm dark:bg-[hsl(var(--muted))]">
         <h3 class="text-2xl font-semibold mb-4">What data will be deleted?</h3>
         <h4 class="text-lg font-semibold mt-6 mb-3 first:mt-0">For Customers:</h4>
         <ul class="pl-6 space-y-2">
@@ -98,7 +98,7 @@
         </p>
       </div>
     {:else}
-      <form onsubmit={handleSubmit} class="p-8 bg-[hsl(var(--card))] rounded-lg shadow-md mb-8 dark:bg-[hsl(var(--card))]">
+      <form onsubmit={handleSubmit} class="p-8 bg-[hsl(var(--card))] rounded-lg shadow-sm mb-8 dark:bg-[hsl(var(--card))]">
         <div class="mb-6">
           <label for="email" class="block mb-2 font-semibold text-sm">Email Address *</label>
           <input
@@ -149,7 +149,7 @@
       </form>
     {/if}
 
-    <div class="p-6 bg-[hsl(var(--muted))] rounded-lg shadow-md dark:bg-[hsl(var(--muted))]">
+    <div class="p-6 bg-[hsl(var(--muted))] rounded-lg shadow-sm dark:bg-[hsl(var(--muted))]">
       <h3 class="text-2xl font-semibold mb-4">Important Information</h3>
       <ul class="pl-6 space-y-2 mb-4">
         <li class="leading-relaxed">Data deletion requests are processed within 30 business days</li>

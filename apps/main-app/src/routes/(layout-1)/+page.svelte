@@ -44,7 +44,7 @@
   <link rel="canonical" href="https://solarvipani.com" />
 </svelte:head>
 
-<main class="min-h-screen bg-background text-foreground transition-colors duration-[theme(--duration-default)]">
+<main class="min-h-screen bg-background text-foreground transition-colors duration-100">
   <!-- Hero Section -->
   <section class="bg-gradient-to-br from-background to-background-secondary px-[theme(--spacing-2xl)] py-[theme(--spacing-4xl)] md:px-[theme(--spacing-2xl)] md:py-[theme(--spacing-4xl)] text-center">
     <div class="flex flex-col items-center">
@@ -73,7 +73,7 @@
       {#each countries as country}
         <button
           onclick={() => selectCountry(country.path)}
-          class="bg-card text-card-foreground border-2 border-border rounded-[theme(--radius-xl)] px-[theme(--spacing-2xl)] py-[theme(--spacing-lg)] text-center cursor-pointer transition-all duration-[theme(--duration-default)] hover:shadow-[theme(--shadow-card-hover)] hover:border-accent hover:scale-[1.05]"
+          class="bg-card text-card-foreground border-2 border-border rounded-[theme(--radius-xl)] px-[theme(--spacing-2xl)] py-[theme(--spacing-lg)] text-center cursor-pointer transition-all duration-100 hover:shadow-[theme(--shadow-sm)] hover:border-accent hover:scale-[1.05]"
         >
           <div class="text-6xl mb-[theme(--spacing-lg)]">{country.flag}</div>
           <h3 class="text-[theme(--font-size-2xl)] font-semibold text-primary">{country.name}</h3>

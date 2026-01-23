@@ -49,11 +49,7 @@
   /* Shadows (Linear uses very subtle, diffused shadows) */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
-  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.02);
-  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.06), 0 4px 8px rgba(0, 0, 0, 0.03);
-  --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.08), 0 6px 12px rgba(0, 0, 0, 0.04);
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08);
-  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.1);
 
   /* Animation timing */
   --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
@@ -64,10 +60,6 @@
 
   /* Transition Durations */
   --duration-fast: 100ms;
-  --duration-default: 150ms;
-  --duration-slow: 200ms;
-  --duration-slower: 300ms;
-  --duration-slower-extended: 500ms;
 
   /* Phase 1.1: Transition utilities with easing */
   --transition-default: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -170,7 +162,7 @@
   --dropdown-menu-shortcut-font-size: var(--font-size-xs);
   --dropdown-menu-shortcut-tracking: var(--tracking-widest);
   --dropdown-menu-icon-size: 1rem;
-  --dropdown-menu-transition-duration: var(--duration-default);
+  --dropdown-menu-transition-duration: var(--duration-fast);
 
   /* Card Component Tokens */
   --card-gap: 1.5rem;
@@ -182,14 +174,14 @@
   --dialog-content-gap: 1rem;
   --dialog-content-radius: var(--radius-lg);
   --dialog-content-padding: 1.5rem;
-  --dialog-content-shadow: var(--shadow-lg);
-  --dialog-content-transition: var(--duration-slow);
+  --dialog-content-shadow: var(--shadow-sm);
+  --dialog-content-transition: var(--duration-fast);
   --dialog-max-height: 85vh;
   --dialog-max-width-responsive: 90%;
   --dialog-close-position-end: 1rem;
   --dialog-close-position-top: 1rem;
   --dialog-close-radius: var(--radius);
-  --dialog-close-transition: var(--duration-default);
+  --dialog-close-transition: var(--duration-fast);
   --dialog-close-ring-width: 2px;
   --dialog-close-ring-offset: 2px;
   --dialog-header-gap: 0.5rem;
@@ -204,8 +196,8 @@
   --alert-dialog-content-gap: 1rem;
   --alert-dialog-content-radius: var(--radius-lg);
   --alert-dialog-content-padding: 1.5rem;
-  --alert-dialog-content-shadow: var(--shadow-lg);
-  --alert-dialog-content-transition: var(--duration-slow);
+  --alert-dialog-content-shadow: var(--shadow-sm);
+  --alert-dialog-content-transition: var(--duration-fast);
   --alert-dialog-header-gap: 0.5rem;
   --alert-dialog-footer-gap: 0.5rem;
   --alert-dialog-title-font-size: var(--font-size-lg);
@@ -215,13 +207,13 @@
 
   /* Sheet Component Tokens */
   --sheet-content-gap: 1rem;
-  --sheet-content-shadow: var(--shadow-lg);
-  --sheet-content-transition-open: var(--duration-slower-extended);
-  --sheet-content-transition-close: var(--duration-slower);
+  --sheet-content-shadow: var(--shadow-sm);
+  --sheet-content-transition-open: var(--duration-fast);
+  --sheet-content-transition-close: var(--duration-fast);
   --sheet-close-position-end: 1rem;
   --sheet-close-position-top: 1rem;
   --sheet-close-radius: var(--radius-xs);
-  --sheet-close-transition: var(--duration-default);
+  --sheet-close-transition: var(--duration-fast);
   --sheet-close-ring-width: 2px;
   --sheet-close-ring-offset: 2px;
   --sheet-header-gap: 0.375rem;
@@ -236,7 +228,7 @@
   --popover-content-width: 18rem;
   --popover-content-padding: 1rem;
   --popover-content-radius: var(--radius-md);
-  --popover-content-shadow: var(--shadow-md);
+  --popover-content-shadow: var(--shadow-sm);
   --popover-content-z-index: var(--z-popover);
   --popover-side-offset: 0.25rem;
 
@@ -569,7 +561,7 @@
   --navigation-menu-indicator-marker-height: 0.5rem;
   --navigation-menu-indicator-marker-width: 0.5rem;
   --navigation-menu-indicator-marker-radius: var(--radius-sm);
-  --navigation-menu-indicator-marker-shadow: var(--shadow-md);
+  --navigation-menu-indicator-marker-shadow: var(--shadow-sm);
   --navigation-menu-list-gap: 0.25rem;
 
   /* Label Component Tokens */
@@ -982,7 +974,6 @@
 
   /* Phase 8.2: Refined dark mode shadows for better depth perception */
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.4);
 
   /* Backgrounds - Deep blacks */
   --background: 0 0% 5%;            /* #0D0D0D - Main background */

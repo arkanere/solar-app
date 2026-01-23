@@ -148,7 +148,7 @@
 		{/if}
 	</div>
 
-	<section id="lead-form-sv" class="w-full max-w-[theme(--max-width-md)] mx-auto rounded-[theme(--radius-xl)] bg-gradient-to-r from-primary to-primary text-primary-foreground p-[theme(--spacing-lg)] md:p-[theme(--spacing-4xl)] text-center shadow-[theme(--shadow-lg)]">
+	<section id="lead-form-sv" class="w-full max-w-[theme(--max-width-md)] mx-auto rounded-[theme(--radius-xl)] bg-gradient-to-r from-primary to-primary text-primary-foreground p-[theme(--spacing-lg)] md:p-[theme(--spacing-4xl)] text-center shadow-[theme(--shadow-sm)]">
 		<h2 class="text-[theme(--font-size-2xl)] md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary-foreground">Get Your Free Solar Quote Today</h2>
 		<p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] mb-[theme(--spacing-2xl)] text-primary-foreground/90 mx-auto">
 			Connect with verified solar installers in your area and receive personalized quotes.

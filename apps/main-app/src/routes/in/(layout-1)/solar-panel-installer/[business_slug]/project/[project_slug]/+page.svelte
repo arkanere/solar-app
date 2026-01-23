@@ -102,19 +102,19 @@
   </header>
 
   <!-- Project Image -->
-  <section class="w-full max-w-[1140px] flex justify-center mb-[theme(--spacing-4xl)] bg-card px-[theme(--container-padding)] py-[theme(--container-padding)] rounded-[theme(--radius-xl)] shadow-[theme(--shadow-md)]">
+  <section class="w-full max-w-[1140px] flex justify-center mb-[theme(--spacing-4xl)] bg-card px-[theme(--container-padding)] py-[theme(--container-padding)] rounded-[theme(--radius-xl)] shadow-[theme(--shadow-sm)]">
     {#if project.cloudinary_public_id}
       <img
         src={`https://res.cloudinary.com/${PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_limit,w_800,q_auto,f_auto/${project.cloudinary_public_id}`}
         alt={project.title}
-        class="w-full max-w-[600px] h-auto object-contain rounded-[theme(--radius-lg)] shadow-[theme(--shadow-md)]"
+        class="w-full max-w-[600px] h-auto object-contain rounded-[theme(--radius-lg)] shadow-[theme(--shadow-sm)]"
         loading="eager"
       />
     {:else if project.image_url}
       <img
         src={project.image_url}
         alt={project.title}
-        class="w-full max-w-[600px] h-auto object-contain rounded-[theme(--radius-lg)] shadow-[theme(--shadow-md)]"
+        class="w-full max-w-[600px] h-auto object-contain rounded-[theme(--radius-lg)] shadow-[theme(--shadow-sm)]"
         loading="eager"
       />
     {:else}
@@ -139,7 +139,7 @@
   </section>
 
 <!-- View Installer Profile Section -->
-  <section class="w-full max-w-[1140px] mb-[theme(--spacing-2xl)] rounded-[theme(--radius-lg)] bg-[hsl(var(--accent)/0.1)] p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] transition-all">
+  <section class="w-full max-w-[1140px] mb-[theme(--spacing-2xl)] rounded-[theme(--radius-lg)] bg-[hsl(var(--accent)/0.1)] p-[theme(--card-padding-y)] shadow-[theme(--shadow-sm)] transition-all">
     <div class="text-center">
       <h2 class="text-2xl md:text-2xl font-semibold mb-[theme(--spacing-lg)] text-primary">Interested in This Installer?</h2>
       <p class="text-lg mb-[theme(--spacing-lg)] text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">

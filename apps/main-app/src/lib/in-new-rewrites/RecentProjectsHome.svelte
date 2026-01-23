@@ -17,7 +17,7 @@
   let { projects = [] } = $props<{ projects: Project[] }>();
 </script>
 
-<Card.Root class="border-0 shadow-[theme(--shadow-lg)] mb-[theme(--spacing-2xl)]">
+<Card.Root class="border-0 shadow-[theme(--shadow-sm)] mb-[theme(--spacing-2xl)]">
   <Card.Header class="text-center pb-[theme(--card-padding-y)]">
     <Card.Title class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">
       Recent Solar Installation Projects
@@ -45,14 +45,14 @@
                   <img
                     src={`https://res.cloudinary.com/${PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_fill,w_300,h_300,q_auto,f_auto/${project.cloudinary_public_id}`}
                     alt="{project.title} - Solar installation project in {project.pincode || 'India'}"
-                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[theme(--duration-slow)]"
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-100"
                     loading="lazy"
                   />
                 {:else if project.image_url}
                   <img
                     src={project.image_url}
                     alt="{project.title} - Solar installation project in {project.pincode || 'India'}"
-                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[theme(--duration-slow)]"
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-100"
                     loading="lazy"
                   />
                 {:else}

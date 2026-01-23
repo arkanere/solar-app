@@ -18,7 +18,7 @@
 	}
 </script>
 
-<Card class="w-full border-0 mt-[theme(--spacing-2xl)] mb-[theme(--card-gap)] shadow-[theme(--shadow-md)]">
+<Card class="w-full border-0 mt-[theme(--spacing-2xl)] mb-[theme(--card-gap)] shadow-[theme(--shadow-sm)]">
 	<CardHeader class="text-center">
 		<CardTitle class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">
 			About Solarvipani
@@ -76,7 +76,7 @@
 						target="_blank"
 						rel="noopener noreferrer"
 						aria-label={link.label}
-						class="flex items-center gap-[theme(--form-element-field-gap)] text-primary transition-all duration-[theme(--duration-default)]"
+						class="flex items-center gap-[theme(--form-element-field-gap)] text-primary transition-all duration-100"
 						class:hover-lift-sm={hoveredLink === link.url}
 						onmouseenter={() => handleSocialHover(link.url)}
 						onmouseleave={handleSocialLeave}

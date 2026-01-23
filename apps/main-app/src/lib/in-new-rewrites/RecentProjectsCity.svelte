@@ -19,7 +19,7 @@
 </script>
 
 {#if projects.length > 0}
-	<Card.Root class="border-0 shadow-[theme(--shadow-lg)] mb-[theme(--spacing-2xl)]">
+	<Card.Root class="border-0 shadow-[theme(--shadow-sm)] mb-[theme(--spacing-2xl)]">
 		<Card.Header class="text-center pb-[theme(--card-padding-y)]">
 			<Card.Title class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">
 				Recent Solar Panel Installation Projects in {city?.replace('-', ' ')}
@@ -43,14 +43,14 @@
 									<img
 										src={getImageUrl(project.cloudinary_public_id, null)}
 										alt="{project.title} - Solar installation project in {project.pincode || 'India'}"
-										class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[theme(--duration-slow)]"
+										class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-100"
 										loading="lazy"
 									/>
 								{:else if project.image_url}
 									<img
 										src={project.image_url}
 										alt="{project.title} - Solar installation project in {project.pincode || 'India'}"
-										class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[theme(--duration-slow)]"
+										class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-100"
 										loading="lazy"
 									/>
 								{:else}

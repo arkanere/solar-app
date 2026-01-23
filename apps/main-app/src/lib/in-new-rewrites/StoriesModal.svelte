@@ -204,7 +204,7 @@
               <h3 class="text-white text-[theme(--font-size-sm)] leading-[theme(--font-size-sm--line-height)] font-semibold">
                 <a
                   href="/in/solar-panel-installer/{String($storiesData[currentStoryIndex]?.business_slug || '')}"
-                  class="hover:text-secondary transition-colors duration-[theme(--duration-default)]"
+                  class="hover:text-secondary transition-colors duration-100"
                   onclick={closeStory}
                 >
                   {formatBusinessName(String($storiesData[currentStoryIndex]?.business_slug || ''))}
