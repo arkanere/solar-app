@@ -47,14 +47,14 @@
 
   const faqs = [
     {
+      question: "What is Solar Vipani?",
+      answer:
+        "Solar Vipani is India's leading platform connecting customers actively seeking solar installation with verified solar installers. We help grow your business by giving you direct access to qualified leads in your area.",
+    },
+    {
       question: "How much does it cost to list my business?",
       answer:
         "Listing your business is completely free of charge. We believe in providing value first and helping solar businesses grow their online presence without any upfront costs.",
-    },
-    {
-      question: "How do you earn money if the business listing is free?",
-      answer:
-        "We provide premium marketing services to select businesses where we see growth potential. These paid services include targeted campaigns on platforms like Facebook, Instagram, Google Search, and YouTube to further boost your visibility.",
     },
     {
       question:
@@ -310,7 +310,7 @@
 
 <main class="w-full overflow-x-hidden bg-card text-foreground transition-colors duration-[theme(--transition-default)]">
   <!-- Hero Banner with Solar Panel Background -->
-  <div class="relative w-full h-96 md:h-96 sm:h-80 flex items-center justify-center text-center overflow-hidden">
+  <div class="relative w-full h-[theme(--height-md)] flex items-center justify-center text-center overflow-hidden md:h-[theme(--height-xl)]">
     <picture>
       <source
         media="(max-width: 768px)"
@@ -324,53 +324,26 @@
       />
       <img
         class="absolute top-0 left-0 w-full h-full object-cover object-center z-0"
-        src="/header/header_mobile.avif"
+        src="/header/header_desktop.avif"
         alt="Solar Panel Installation Business Growth"
-        width="768"
-        height="400"
+        width="1920"
+        height="600"
         fetchpriority="high"
-        decoding="sync"
+        decoding="async"
       />
     </picture>
-    <div class="absolute top-0 left-0 w-full h-full bg-gradient-overlay-primary z-10"></div>
+    <div class="absolute top-0 left-0 w-full h-full z-10 bg-black/55"></div>
     <div class="relative z-20 max-w-3xl px-6">
-      <h1 class="text-4xl md:text-5xl font-bold mb-4 text-primary-foreground uppercase tracking-wide">Grow Your Solar Business</h1>
-      <h2 class="text-2xl md:text-3xl font-medium mb-6 text-accent drop-shadow-lg">Get Discovered on Google & ChatGPT</h2>
-      <div class="my-6 p-[theme(--spacing-md)] md:p-[theme(--spacing-md)] bg-black/30 rounded-lg backdrop-blur-sm border border-white/10">
-        <div class="mb-[theme(--spacing-md)] text-sm md:text-base leading-relaxed opacity-95">
-          <strong class="text-accent drop-shadow">Join 450+ Solar Panel Installers</strong> who are listed on Solarvipani.com
-        </div>
-        <div class="text-sm md:text-base leading-relaxed opacity-95">
-          <strong class="text-accent drop-shadow">2000+ households and businesses</strong> have started their
-          solar installation journey with Solarvipani.com.
-          <span class="text-secondary font-semibold drop-shadow">Don't let your business miss out.</span>
-        </div>
-      </div>
-      <p class="text-base md:text-lg mb-6 text-primary-foreground/95 opacity-95 italic drop-shadow">
-        Connect directly with customers seeking solar installation services in your area
-      </p>
-      <Button onclick={navigateToBusinessForm} class="pulse uppercase tracking-wider gap-2">
-        <span>List My Business Now</span>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="group-hover:translate-x-1 transition-transform"
-          ><line x1="5" y1="12" x2="19" y2="12"></line><polyline
-            points="12 5 19 12 12 19"
-          ></polyline></svg
-        >
-      </Button>
+      <h1 class="text-4xl md:text-5xl font-bold mb-6 text-primary-foreground leading-tight drop-shadow-lg">
+        Grow Your Solar Business
+      </h1>
+      <h2 class="text-2xl md:text-3xl font-medium mb-6 text-primary-foreground leading-snug drop-shadow-lg">
+        Get discovered by customers researching online
+      </h2>
     </div>
   </div>
 
-  <div class="max-w-5xl mx-auto px-4 py-8 md:py-12">
+  <div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
     <!-- Value Proposition Section -->
     <Card class="p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)]">
       <div class="text-center mb-[theme(--spacing-2xl)]">
@@ -378,7 +351,7 @@
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
-        <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
+        <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
           Get discovered by customers ready to install solar panels - completely <span
             class="text-accent font-bold">FREE</span
           >
@@ -390,7 +363,7 @@
           <Card class="text-center flex flex-col items-center p-[theme(--spacing-lg)]">
             <div class="w-16 h-16 flex items-center justify-center text-primary mb-[theme(--spacing-lg)] rounded-full bg-primary/10">{@html benefit.icon}</div>
             <h3 class="text-xl font-semibold text-primary mb-[theme(--spacing-md)]">{benefit.title}</h3>
-            <div class="text-muted-foreground text-sm">
+            <div class="text-foreground dark:text-foreground-secondary text-sm">
               {#each benefit.descriptions as description}
                 <p class="mb-[theme(--spacing-sm)]">{description}</p>
               {/each}
@@ -434,7 +407,7 @@
         {#each stats as stat}
           <Card class="w-48 text-center p-[theme(--spacing-lg)]">
             <div class="text-5xl font-bold text-primary mb-[theme(--spacing-sm)]">{stat.number}</div>
-            <div class="text-lg font-semibold text-muted-foreground">{stat.label}</div>
+            <div class="text-lg font-semibold text-foreground dark:text-foreground-secondary">{stat.label}</div>
           </Card>
         {/each}
       </div>
@@ -468,7 +441,7 @@
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
-        <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
+        <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
           These solar professionals recently joined our growing community
         </p>
       </div>
@@ -502,7 +475,7 @@
                 </div>
                 <h3 class="text-lg font-semibold text-primary pr-[theme(--spacing-2xl)]">{business.businessname}</h3>
                 <div class="flex flex-col mt-auto gap-[theme(--spacing-sm)]">
-                  <div class="flex items-center text-muted-foreground text-sm gap-[theme(--spacing-sm)]">
+                  <div class="flex items-center text-foreground dark:text-foreground-secondary text-sm gap-[theme(--spacing-sm)]">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
@@ -518,7 +491,7 @@
                     >
                     <span>{business.city}, {business.state}</span>
                   </div>
-                  <div class="flex items-center text-muted-foreground text-sm gap-[theme(--spacing-sm)]">
+                  <div class="flex items-center text-foreground dark:text-foreground-secondary text-sm gap-[theme(--spacing-sm)]">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
@@ -541,7 +514,7 @@
           {/each}
         {:else}
           <div class="col-span-full text-center py-12">
-            <p class="text-muted-foreground">
+            <p class="text-foreground dark:text-foreground-secondary">
               No verified installers available at the moment. Be the first to
               join!
             </p>
@@ -577,7 +550,7 @@
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
-        <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
+        <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
           Watch this quick video to understand how Solar Vipani connects you
           with customers
         </p>
@@ -625,45 +598,14 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-[theme(--card-gap)]">
+      <div class="flex flex-col items-center gap-[theme(--card-gap)] max-w-2xl mx-auto">
         {#each faqs as faq}
-          <Card class="p-[theme(--spacing-lg)]">
+          <Card class="p-[theme(--spacing-lg)] w-full">
             <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-md)]">{faq.question}</h3>
-            <p class="text-muted-foreground text-sm">{faq.answer}</p>
+            <p class="text-foreground dark:text-foreground-secondary text-sm">{faq.answer}</p>
           </Card>
         {/each}
       </div>
-    </Card>
-
-    <!-- Call to Action Section -->
-    <Card class="rounded-lg bg-gradient-subtle p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)] text-center text-primary-foreground">
-      <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)]">Ready to Grow Your Solar Business?</h2>
-      <p class="text-lg mb-[theme(--spacing-2xl)] max-w-2xl mx-auto opacity-90">
-        Join thousands of solar installation companies already benefiting from
-        Solar Vipani's platform
-      </p>
-      <Button
-        onclick={navigateToBusinessForm}
-        variant="outline"
-        class="pulse uppercase tracking-wider gap-2"
-      >
-        <span>List My Business Now</span>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="hover:translate-x-1 transition-transform"
-          ><line x1="5" y1="12" x2="19" y2="12"></line><polyline
-            points="12 5 19 12 12 19"
-          ></polyline></svg
-        >
-      </Button>
     </Card>
 
     <!-- Need Assistance Section -->
@@ -693,7 +635,7 @@
               ></path><polyline points="22,6 12,13 2,6"></polyline></svg
             >
           </div>
-          <p class="mb-2 text-muted-foreground">Email us at</p>
+          <p class="mb-2 text-foreground dark:text-foreground-secondary">Email us at</p>
           <a
             href="mailto:admin@solarvipani.com"
             class="block text-lg font-semibold text-primary hover:underline transition-colors"
@@ -718,7 +660,7 @@
               ></path></svg
             >
           </div>
-          <p class="mb-2 text-muted-foreground">Call us at</p>
+          <p class="mb-2 text-foreground dark:text-foreground-secondary">Call us at</p>
           <a href="tel:+918983066701" class="block text-lg font-semibold text-primary hover:underline transition-colors" rel="noopener"
             >+91 8983066701</a
           >

@@ -84,12 +84,18 @@
 	/>
 </svelte:head>
 
-<main class="w-full bg-background text-foreground overflow-x-hidden transition-colors duration-[var(--duration-slower)] flex flex-col items-center px-[theme(--container-padding)] py-[theme(--spacing-lg)] min-h-screen">
-	<h1 class="text-3xl md:text-4xl font-semibold text-center mb-[theme(--spacing-md)] text-primary">Recent Solar Installation Projects</h1>
-	<p class="text-center text-muted-foreground mb-[theme(--spacing-lg)]">Showing page {currentPage} of {totalPages}</p>
+<main class="w-full bg-background text-foreground transition-colors duration-300 overflow-x-hidden">
+	<div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
+		<div class="text-center mb-[theme(--spacing-2xl)]">
+			<h1 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Recent Solar Installation Projects</h1>
+			<div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+				<span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+			</div>
+			<p class="text-center text-foreground dark:text-foreground-secondary">Showing page {currentPage} of {totalPages}</p>
+		</div>
 
-	<section id="recent-projects" class="max-w-4xl w-full mb-[theme(--spacing-2xl)]">
-		{#if !data.success}
+		<section id="recent-projects" class="w-full mb-[theme(--spacing-2xl)]">
+			{#if !data.success}
 			<Alert variant="destructive" class="mb-[theme(--spacing-lg)]">
 				<AlertTitle>Error</AlertTitle>
 				<AlertDescription>
@@ -128,7 +134,7 @@
 									class="w-full h-full object-cover group-hover:scale-[var(--hover-scale)] transition-transform duration-[var(--transition-default)]"
 								/>
 							{:else}
-								<div class="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">
+								<div class="w-full h-full flex items-center justify-center bg-muted text-foreground dark:text-foreground-secondary">
 									No Image
 								</div>
 							{/if}
@@ -141,20 +147,20 @@
 									{project.title}
 								</h3>
 
-								<p class="text-sm text-muted-foreground">
+								<p class="text-sm text-foreground dark:text-foreground-secondary">
 									📍 Pincode: {project.pincode || 'N/A'}
 								</p>
 
-								<p class="text-sm text-muted-foreground">
+								<p class="text-sm text-foreground dark:text-foreground-secondary">
 									📅 Completed: {formatDate(project.project_date)}
 								</p>
 
-								<p class="text-sm text-muted-foreground">
+								<p class="text-sm text-foreground dark:text-foreground-secondary">
 									🏢 Installer: <span class="font-medium text-primary">{formatBusinessName(project.business_slug)}</span>
 								</p>
 
 								{#if project.system_size}
-									<p class="text-sm text-muted-foreground">
+									<p class="text-sm text-foreground dark:text-foreground-secondary">
 										⚡ System Size: <span class="font-medium text-primary">{project.system_size} kW</span>
 									</p>
 								{/if}
@@ -186,7 +192,7 @@
 					<!-- Page numbers -->
 					{#each paginationLinks as link}
 						{#if link === '...'}
-							<span class="px-[theme(--spacing-sm)] text-muted-foreground">...</span>
+							<span class="px-[theme(--spacing-sm)] text-foreground dark:text-foreground-secondary">...</span>
 						{:else if link === currentPage}
 							<span class="px-[theme(--spacing-md)] py-[theme(--spacing-sm)] bg-primary text-primary-foreground font-medium rounded-[theme(--radius-md)]">
 								{link}
@@ -221,5 +227,6 @@
 				</div>
 			{/if}
 		{/if}
-	</section>
+		</section>
+	</div>
 </main>

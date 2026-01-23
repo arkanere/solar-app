@@ -1,5 +1,5 @@
 <script>
-	import LeadFormBusiness from '$lib/in-new-rewrites/LeadFormBusiness.svelte';
+	import LeadForm from '$lib/in-new-rewrites/LeadForm.svelte';
 	import { Badge } from '$lib/components/ui/badge';
 
 	const { data } = $props();
@@ -148,13 +148,13 @@
 		{/if}
 	</div>
 
-	<section id="lead-form-sv" class="w-full max-w-3xl rounded-[theme(--radius-xl)] bg-gradient-to-r from-primary to-primary text-primary-foreground p-[theme(--spacing-lg)] md:p-[theme(--spacing-3xl)] text-center shadow-[theme(--shadow-lg)]">
+	<section id="lead-form-sv" class="w-full max-w-[theme(--max-width-md)] mx-auto rounded-[theme(--radius-xl)] bg-gradient-to-r from-primary to-primary text-primary-foreground p-[theme(--spacing-lg)] md:p-[theme(--spacing-3xl)] text-center shadow-[theme(--shadow-lg)]">
 		<h2 class="text-[theme(--font-size-3xl)] md:text-4xl font-semibold mb-[theme(--spacing-md)] text-primary-foreground">Get Your Free Solar Quote Today</h2>
-		<p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] mb-[theme(--spacing-xl)] text-primary-foreground/90 max-w-2xl mx-auto">
+		<p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] mb-[theme(--spacing-xl)] text-primary-foreground/90 mx-auto">
 			Connect with verified solar installers in your area and receive personalized quotes.
 			Free consultation and competitive pricing guaranteed.
 		</p>
-		<LeadFormBusiness />
+		<LeadForm showWrapper={false} />
 	</section>
 </main>
 

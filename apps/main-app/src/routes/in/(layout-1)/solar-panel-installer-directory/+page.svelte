@@ -1,4 +1,6 @@
 <script>
+  import { Button } from "$lib/components/ui/button";
+
   let state = "";
   let district = "";
   let city = "";
@@ -128,27 +130,14 @@
 
 <main class="w-full bg-background text-foreground transition-colors duration-[theme(--transition-default)] overflow-x-hidden dark:bg-background dark:text-foreground">
   <div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
-    <!-- Hero Section -->
-    <section class="rounded-[theme(--radius-xl)] bg-primary text-primary-foreground p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)] shadow-[theme(--shadow-md)]">
-      <div class="text-center mb-[theme(--spacing-2xl)]">
-        <h1 class="text-[theme(--font-size-4xl)] font-bold mb-[theme(--spacing-lg)] text-primary-foreground leading-tight">Solar Panel Installer Directory</h1>
-        <div class="flex justify-center items-center my-[theme(--spacing-md)]">
-          <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded-full"></span>
-        </div>
-        <p class="text-[theme(--font-size-lg)] text-primary-foreground/90 max-w-2xl mx-auto">
-          Find trusted local solar installers across India
-        </p>
-      </div>
-    </section>
-
     <!-- Solar Panel Installers by State Section -->
-    <section class="rounded-[theme(--radius-xl)] bg-card p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)] shadow-[theme(--shadow-md)]">
+    <section class="mb-[theme(--spacing-2xl)]">
       <div class="text-center mb-[theme(--spacing-2xl)]">
-        <h2 class="text-[theme(--font-size-3xl)] font-semibold mb-[theme(--spacing-lg)] text-primary">Solar Panel Installers by State</h2>
-        <div class="flex justify-center items-center my-[theme(--spacing-md)]">
-          <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded-full"></span>
+        <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Solar Panel Installers by State</h2>
+        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+          <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
         </div>
-        <p class="text-[theme(--font-size-base)] text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
+        <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
           Browse solar panel installers by state. We have listings in {states.length}
           states across India.
         </p>
@@ -156,26 +145,30 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)]">
         {#each states as state}
-          <div class="h-full transition-transform duration-[theme(--transition-default)] hover:-translate-y-2">
-            <a href={`/in/state/${formatStateSlug(state)}`} class="flex flex-col h-full p-[theme(--spacing-lg)] rounded-[theme(--radius-lg)] bg-background border border-border hover:border-primary hover:shadow-[theme(--shadow-lg)] transition-all duration-[theme(--transition-default)] no-underline text-foreground dark:text-foreground">
-              <h3 class="text-[theme(--font-size-xl)] font-semibold mb-[theme(--spacing-sm)] text-center text-primary">{state}</h3>
-              <p class="text-[theme(--font-size-sm)] text-foreground dark:text-foreground-secondary text-center flex-grow mb-[theme(--spacing-md)]">Find verified solar installers in {state}</p>
-              <div class="flex items-center justify-center font-medium text-primary mt-auto gap-[theme(--spacing-xs)] group">
-                <span>View Districts</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  class="w-[theme(--icon-size-md)] h-[theme(--icon-size-md)] transition-transform duration-[theme(--transition-fast)] group-hover:translate-x-1"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-              </div>
-            </a>
+          <div class="flex flex-col h-full bg-card rounded-[theme(--radius-lg)] border border-border hover:shadow-[theme(--shadow-card-hover)] transition-all duration-300 hover:-translate-y-1 p-[theme(--spacing-lg)]">
+            <h3 class="text-lg font-semibold mb-[theme(--spacing-lg)] text-primary">
+              {state}
+            </h3>
+
+            <div class="flex items-center justify-center font-medium text-primary mt-auto gap-[theme(--spacing-xs)] group">
+              <Button asChild variant="default" class="w-full">
+                <a href={`/in/state/${formatStateSlug(state)}`} rel="noopener" class="flex items-center justify-center gap-2">
+                  <span>Find Installers</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </a>
+              </Button>
+            </div>
           </div>
         {/each}
       </div>

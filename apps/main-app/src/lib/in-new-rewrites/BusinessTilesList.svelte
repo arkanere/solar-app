@@ -61,10 +61,6 @@
 
 				<Card.Content class="flex flex-col gap-[theme(--form-element-field-gap)]">
 					{#if business.businessfilled}
-						{#if business.description}
-							<p class="text-foreground">{business.description}</p>
-						{/if}
-
 						<div class="flex items-center text-foreground-secondary gap-[theme(--form-element-field-gap)]">
 							<Phone class="w-5 h-5 text-primary flex-shrink-0" />
 							<span>{business.phonenumber}</span>
@@ -93,10 +89,10 @@
 					{/if}
 				</Card.Content>
 
-				<div class="flex flex-col sm:flex-row bg-muted gap-[theme(--form-element-field-gap)] p-[theme(--button-padding-y-default)_theme(--button-padding-x-lg)]">
+				<div class="flex flex-col sm:flex-row gap-[theme(--form-element-field-gap)] p-[theme(--button-padding-y-default)_theme(--button-padding-x-lg)]">
 					<Button
 						variant="default"
-						class="bg-destructive hover:bg-destructive/80 flex-1 sm:flex-none"
+						class="bg-destructive hover:bg-destructive-hover flex-1 sm:flex-none"
 						onclick={() => makeCall(business.phonenumber, business.city, business.slug)}
 					>
 						<Phone class="w-4 h-4" />
@@ -105,7 +101,7 @@
 					{#if business.businessfilled || business.phonenumber}
 						<Button
 							variant="default"
-							class="bg-success hover:bg-success/80 flex-1 sm:flex-none"
+							class="bg-success hover:bg-success-hover flex-1 sm:flex-none"
 							onclick={() => openWhatsApp(business.phonenumber, business.city, business.slug)}
 						>
 							<MessageCircle class="w-4 h-4" />
