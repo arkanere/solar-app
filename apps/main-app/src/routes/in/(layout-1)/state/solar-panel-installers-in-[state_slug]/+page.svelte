@@ -27,7 +27,7 @@
 <main class="w-full bg-background text-foreground transition-colors duration-100 overflow-x-hidden">
   <div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
     <div class="text-center mb-[theme(--spacing-2xl)]">
-      <h1 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">
+      <h1 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)]">
         Solar Panel Installers in {state}
       </h1>
       <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
@@ -50,7 +50,7 @@
         </Alert>
       </div>
     {:else}
-      <p class="text-center text-foreground dark:text-foreground-secondary mb-[theme(--spacing-2xl)] text-lg">
+      <p class="text-center text-foreground text-foreground-secondary mb-[theme(--spacing-2xl)] text-lg">
         Browse solar panel installers in {state} by district. We have listings in <span class="font-semibold text-primary">{districts.length} districts</span>.
       </p>
 

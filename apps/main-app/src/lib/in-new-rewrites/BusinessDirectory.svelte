@@ -56,8 +56,8 @@
 	}
 </script>
 
-<div class="w-full max-w-[theme(--max-width-sm)] mx-auto">
-	<Card.Root class="shadow-card">
+<div class="w-full max-w-sm mx-auto">
+	<Card.Root>
 		<Card.Header>
 			<Card.Title class="text-2xl">Solar Installer Directory</Card.Title>
 			<Card.Description>
@@ -65,11 +65,11 @@
 			</Card.Description>
 		</Card.Header>
 
-		<Card.Content class="flex flex-col gap-[theme(--spacing-component-internal)]">
-			<div class="flex flex-col gap-[theme(--form-element-field-gap)]">
+		<Card.Content class="flex flex-col gap-4">
+			<div class="flex flex-col gap-2">
 				<Label.Root for="state">State</Label.Root>
 				<Select.Root type="single" bind:value={selectedState} onValueChange={handleStateChange}>
-					<Select.Trigger id="state" class="w-full">
+					<Select.Trigger id="state" class="w-full h-9">
 						{selectedState || 'Select a state'}
 					</Select.Trigger>
 					<Select.Content>
@@ -80,10 +80,10 @@
 				</Select.Root>
 			</div>
 
-			<div class="flex flex-col gap-[theme(--form-element-field-gap)]">
+			<div class="flex flex-col gap-2">
 				<Label.Root for="district">District</Label.Root>
 				<Select.Root type="single" bind:value={selectedDistrict} disabled={!selectedState || isLoading}>
-					<Select.Trigger id="district" class="w-full">
+					<Select.Trigger id="district" class="w-full h-9">
 						{#if isLoading}
 							Loading districts...
 						{:else if !selectedState}
@@ -105,7 +105,7 @@
 			<Button
 				onclick={handleDistrictSelection}
 				disabled={!selectedState || !selectedDistrict}
-				class="w-full mt-[theme(--spacing-component-internal)]"
+				class="w-full mt-4"
 			>
 				View Installers
 			</Button>

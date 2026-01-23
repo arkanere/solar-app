@@ -2,25 +2,24 @@
 	import { type VariantProps, tv } from "tailwind-variants";
 
 	export const badgeVariants = tv({
-		base: "focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive inline-flex w-fit shrink-0 items-center justify-center border whitespace-nowrap transition-[color,box-shadow] overflow-hidden" +
+		base: "inline-flex w-fit shrink-0 items-center justify-center border whitespace-nowrap transition-[color,box-shadow] overflow-hidden focus-visible:ring-2 ring-ring ring-offset-2 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive" +
 			" [&]:gap-[var(--badge-gap)]" +
 			" [&]:rounded-[var(--badge-radius)]" +
 			" [&]:px-[var(--badge-padding-x)]" +
 			" [&]:py-[var(--badge-padding-y)]" +
 			" [&]:text-[var(--badge-font-size)]" +
 			" [&]:font-[var(--badge-font-weight)]" +
-			" [&]:focus-visible:ring-[var(--badge-ring-width)]" +
 			" [&>svg]:pointer-events-none" +
 			" [&>svg]:size-[var(--badge-icon-size)]",
 		variants: {
 			variant: {
 				default:
-					"bg-primary text-primary-foreground [a&]:hover:bg-primary-hover border-transparent",
+					"bg-primary text-primary-foreground [a&]:hover:bg-accent-hover border-transparent",
 				secondary:
-					"bg-secondary text-secondary-foreground [a&]:hover:bg-secondary-hover border-transparent",
+					"bg-secondary text-secondary-foreground [a&]:hover:opacity-90 border-transparent",
 				destructive:
-					"bg-destructive [a&]:hover:bg-destructive-hover focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/70 border-transparent text-white",
-				outline: "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
+					"bg-destructive text-white [a&]:hover:bg-destructive-hover border-transparent dark:bg-destructive/70",
+				outline: "text-foreground [a&]:hover:opacity-90",
 			},
 		},
 		defaultVariants: {

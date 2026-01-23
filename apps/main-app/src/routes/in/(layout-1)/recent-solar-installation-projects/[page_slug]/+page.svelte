@@ -91,7 +91,7 @@
 			<div class="flex justify-center items-center my-[theme(--spacing-lg)]">
 				<span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-foreground-muted rounded"></span>
 			</div>
-			<p class="text-center text-foreground dark:text-foreground-secondary">Showing page {currentPage} of {totalPages}</p>
+			<p class="text-center text-foreground text-foreground-secondary">Showing page {currentPage} of {totalPages}</p>
 		</div>
 
 		<section id="recent-projects" class="w-full mb-[theme(--spacing-2xl)]">
@@ -124,17 +124,17 @@
 									src={`https://res.cloudinary.com/${PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_fill,w_300,h_300,q_auto,f_auto/${project.cloudinary_public_id}`}
 									alt={project.title}
 									loading="lazy"
-									class="w-full h-full object-cover group-hover:scale-[var(--hover-scale)] transition-transform duration-[var(--transition-default)]"
+									class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-[var(--transition-default)]"
 								/>
 							{:else if project.image_url}
 								<img
 									src={project.image_url}
 									alt={project.title}
 									loading="lazy"
-									class="w-full h-full object-cover group-hover:scale-[var(--hover-scale)] transition-transform duration-[var(--transition-default)]"
+									class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-[var(--transition-default)]"
 								/>
 							{:else}
-								<div class="w-full h-full flex items-center justify-center bg-muted text-foreground dark:text-foreground-secondary">
+								<div class="w-full h-full flex items-center justify-center bg-muted text-foreground text-foreground-secondary">
 									No Image
 								</div>
 							{/if}
@@ -147,20 +147,20 @@
 									{project.title}
 								</h3>
 
-								<p class="text-sm text-foreground dark:text-foreground-secondary">
+								<p class="text-sm text-foreground text-foreground-secondary">
 									📍 Pincode: {project.pincode || 'N/A'}
 								</p>
 
-								<p class="text-sm text-foreground dark:text-foreground-secondary">
+								<p class="text-sm text-foreground text-foreground-secondary">
 									📅 Completed: {formatDate(project.project_date)}
 								</p>
 
-								<p class="text-sm text-foreground dark:text-foreground-secondary">
+								<p class="text-sm text-foreground text-foreground-secondary">
 									🏢 Installer: <span class="font-medium text-primary">{formatBusinessName(project.business_slug)}</span>
 								</p>
 
 								{#if project.system_size}
-									<p class="text-sm text-foreground dark:text-foreground-secondary">
+									<p class="text-sm text-foreground text-foreground-secondary">
 										⚡ System Size: <span class="font-medium text-primary">{project.system_size} kW</span>
 									</p>
 								{/if}
@@ -192,7 +192,7 @@
 					<!-- Page numbers -->
 					{#each paginationLinks as link}
 						{#if link === '...'}
-							<span class="px-[theme(--spacing-lg)] text-foreground dark:text-foreground-secondary">...</span>
+							<span class="px-[theme(--spacing-lg)] text-foreground text-foreground-secondary">...</span>
 						{:else if link === currentPage}
 							<span class="px-[theme(--spacing-lg)] py-[theme(--spacing-lg)] bg-primary text-primary-foreground font-medium rounded-[theme(--radius-md)]">
 								{link}

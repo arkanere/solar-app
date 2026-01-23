@@ -81,16 +81,16 @@
 </script>
 
 {#if showWrapper}
-  <div class="py-[theme(--spacing-component-between)] flex justify-center">
-    <Card.Root class="w-full max-w-[theme(--max-width-md)]">
-      <Card.Header>
+  <div class="py-16 flex justify-center">
+    <Card.Root class="w-full max-w-md">
+      <Card.Header class="pb-4">
         <h2 class="text-lg font-semibold">{heading}</h2>
       </Card.Header>
 
-      <Card.Content>
-        <form onsubmit={handleSubmit} class="flex flex-col gap-[theme(--form-field-gap)]">
+      <Card.Content class="pt-0">
+        <form onsubmit={handleSubmit} class="flex flex-col gap-4">
           <!-- Name Field -->
-          <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
+          <div class="flex flex-col gap-2">
             <Label for="name">Name</Label>
             <Input
               id="name"
@@ -100,14 +100,14 @@
               disabled={isSubmitting}
             />
             {#if errors.name}
-              <Alert.Root variant="destructive" class="mt-[theme(--form-element-field-gap)]">
+              <Alert.Root variant="destructive" class="mt-2">
                 <Alert.Description>{errors.name}</Alert.Description>
               </Alert.Root>
             {/if}
           </div>
 
           <!-- Phone Field -->
-          <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
+          <div class="flex flex-col gap-2">
             <Label for="phone">Phone Number</Label>
             <Input
               id="phone"
@@ -118,14 +118,14 @@
               inputmode="numeric"
             />
             {#if errors.phone}
-              <Alert.Root variant="destructive" class="mt-[theme(--form-element-field-gap)]">
+              <Alert.Root variant="destructive" class="mt-2">
                 <Alert.Description>{errors.phone}</Alert.Description>
               </Alert.Root>
             {/if}
           </div>
 
           <!-- Pin Code Field -->
-          <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
+          <div class="flex flex-col gap-2">
             <Label for="pinCode">Pin Code</Label>
             <Input
               id="pinCode"
@@ -136,14 +136,14 @@
               inputmode="numeric"
             />
             {#if errors.pinCode}
-              <Alert.Root variant="destructive" class="mt-[theme(--form-element-field-gap)]">
+              <Alert.Root variant="destructive" class="mt-2">
                 <Alert.Description>{errors.pinCode}</Alert.Description>
               </Alert.Root>
             {/if}
           </div>
 
           <!-- Email Field -->
-          <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
+          <div class="flex flex-col gap-2">
             <Label for="email">Email Address</Label>
             <Input
               id="email"
@@ -153,14 +153,14 @@
               disabled={isSubmitting}
             />
             {#if errors.email}
-              <Alert.Root variant="destructive" class="mt-[theme(--form-element-field-gap)]">
+              <Alert.Root variant="destructive" class="mt-2">
                 <Alert.Description>{errors.email}</Alert.Description>
               </Alert.Root>
             {/if}
           </div>
 
           <!-- Comments Field -->
-          <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
+          <div class="flex flex-col gap-2">
             <Label for="comment">System Requirements</Label>
             <Textarea
               id="comment"
@@ -170,7 +170,7 @@
               class="min-h-[theme(--textarea-min-height)]"
             />
             {#if errors.comment}
-              <Alert.Root variant="destructive" class="mt-[theme(--form-element-field-gap)]">
+              <Alert.Root variant="destructive" class="mt-2">
                 <Alert.Description>{errors.comment}</Alert.Description>
               </Alert.Root>
             {/if}
@@ -179,7 +179,7 @@
           <!-- Submit Button -->
           <Button
             type="submit"
-            class="w-full mt-[theme(--spacing-lg)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all duration-[theme(--transition-default)]"
+            class="w-full mt-4"
             disabled={isSubmitting}
           >
             {isSubmitting ? 'Submitting...' : 'Get Free Quotes'}
@@ -189,10 +189,10 @@
     </Card.Root>
   </div>
 {:else}
-  <div class="w-full max-w-[theme(--max-width-md)] mx-auto py-[theme(--button-padding-y-default)]">
-    <form onsubmit={handleSubmit} class="flex flex-col gap-[theme(--form-field-gap)]">
+  <div class="w-full max-w-md mx-auto py-2">
+    <form onsubmit={handleSubmit} class="flex flex-col gap-4">
     <!-- Name Field -->
-    <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
+    <div class="flex flex-col gap-2">
       <Label for="name">Name</Label>
       <Input
         id="name"
@@ -202,14 +202,14 @@
         disabled={isSubmitting}
       />
       {#if errors.name}
-        <Alert.Root variant="destructive" class="mt-[theme(--form-element-field-gap)]">
+        <Alert.Root variant="destructive" class="mt-2">
           <Alert.Description>{errors.name}</Alert.Description>
         </Alert.Root>
       {/if}
     </div>
 
     <!-- Phone Field -->
-    <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
+    <div class="flex flex-col gap-2">
       <Label for="phone">Phone Number</Label>
       <Input
         id="phone"
@@ -220,14 +220,14 @@
         inputmode="numeric"
       />
       {#if errors.phone}
-        <Alert.Root variant="destructive" class="mt-[theme(--form-element-field-gap)]">
+        <Alert.Root variant="destructive" class="mt-2">
           <Alert.Description>{errors.phone}</Alert.Description>
         </Alert.Root>
       {/if}
     </div>
 
     <!-- Pin Code Field -->
-    <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
+    <div class="flex flex-col gap-2">
       <Label for="pinCode">Pin Code</Label>
       <Input
         id="pinCode"
@@ -238,14 +238,14 @@
         inputmode="numeric"
       />
       {#if errors.pinCode}
-        <Alert.Root variant="destructive" class="mt-[theme(--form-element-field-gap)]">
+        <Alert.Root variant="destructive" class="mt-2">
           <Alert.Description>{errors.pinCode}</Alert.Description>
         </Alert.Root>
       {/if}
     </div>
 
     <!-- Email Field -->
-    <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
+    <div class="flex flex-col gap-2">
       <Label for="email">Email Address</Label>
       <Input
         id="email"
@@ -255,14 +255,14 @@
         disabled={isSubmitting}
       />
       {#if errors.email}
-        <Alert.Root variant="destructive" class="mt-[theme(--form-element-field-gap)]">
+        <Alert.Root variant="destructive" class="mt-2">
           <Alert.Description>{errors.email}</Alert.Description>
         </Alert.Root>
       {/if}
     </div>
 
     <!-- Comments Field -->
-    <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
+    <div class="flex flex-col gap-2">
       <Label for="comment">System Requirements</Label>
       <Textarea
         id="comment"
@@ -272,7 +272,7 @@
         class="min-h-[theme(--textarea-min-height)]"
       />
       {#if errors.comment}
-        <Alert.Root variant="destructive" class="mt-[theme(--form-element-field-gap)]">
+        <Alert.Root variant="destructive" class="mt-2">
           <Alert.Description>{errors.comment}</Alert.Description>
         </Alert.Root>
       {/if}
@@ -281,7 +281,7 @@
     <!-- Submit Button -->
     <Button
       type="submit"
-      class="w-full mt-[theme(--spacing-lg)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all duration-[theme(--transition-default)]"
+      class="w-full mt-4"
       disabled={isSubmitting}
     >
       {isSubmitting ? 'Submitting...' : 'Get Free Quotes'}

@@ -17,10 +17,11 @@
 	bind:ref
 	data-slot="checkbox"
 	class={cn(
-		"border-input dark:bg-input/30 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground dark:data-[state=checked]:bg-primary data-[state=checked]:border-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive peer flex shrink-0 items-center justify-center border shadow-xs transition-all duration-100 outline-none disabled:cursor-not-allowed disabled:opacity-50",
+		"peer flex shrink-0 items-center justify-center border border-input shadow-xs transition-all duration-100 outline-none data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[state=checked]:border-primary dark:bg-input/30 dark:data-[state=checked]:bg-primary disabled:cursor-not-allowed disabled:opacity-50",
 		"size-[var(--checkbox-size)]",
 		"rounded-[var(--checkbox-radius)]",
-		"focus-visible:ring-[var(--checkbox-ring-width)]",
+		"focus-visible:ring-2 ring-ring ring-offset-2",
+		"aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
 		className
 	)}
 	bind:checked

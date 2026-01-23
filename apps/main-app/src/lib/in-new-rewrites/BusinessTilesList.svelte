@@ -37,21 +37,21 @@
 </script>
 
 {#if visibleBusinesses.length > 0}
-	<section class="mx-auto w-full max-w-[theme(--max-width-4xl)] flex flex-col gap-[theme(--spacing-component-internal)] px-[theme(--container-padding)] md:px-[theme(--container-padding-md)] my-[theme(--spacing-component-between)]">
+	<section class="mx-auto w-full max-w-4xl flex flex-col gap-4 px-4 md:px-8 my-16">
 		{#each visibleBusinesses as business}
-			<Card.Root class="shadow-[theme(--shadow-card)] transition-shadow duration-[theme(--transition-default)]">
-				<Card.Header class="flex flex-col sm:flex-row sm:items-start sm:justify-between border-b gap-[theme(--form-element-field-gap)]">
+			<Card.Root class="transition-shadow duration-100">
+				<Card.Header class="flex flex-col sm:flex-row sm:items-start sm:justify-between border-b gap-2">
 					<h2 class="text-[length:theme(--font-size-lg)] leading-[theme(--font-size-lg--line-height)] font-semibold tracking-[theme(--tracking-heading)]">
 						<a
 							href={`/in/solar-panel-installer/${business.slug}`}
-							class="text-primary hover:opacity-80 underline-offset-2 hover:underline transition-all duration-[theme(--transition-default)]"
+							class="text-primary hover:opacity-90 underline-offset-2 hover:underline transition-all duration-[theme(--transition-default)] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 						>
 							{business.businessname}
 						</a>
 					</h2>
 					{#if business.tag}
 						<Badge variant="secondary" class="whitespace-nowrap">
-							<span class="inline-flex items-center justify-center w-4 h-4 mr-1 rounded-full text-success-foreground bg-success text-[length:theme(--font-size-xs)] font-bold">
+							<span class="inline-flex items-center justify-center w-4 h-4 mr-1 rounded-full text-success-foreground bg-success text-[length:theme(--font-size-sm)] font-bold">
 								✓
 							</span>
 							{business.tag}
@@ -59,28 +59,28 @@
 					{/if}
 				</Card.Header>
 
-				<Card.Content class="flex flex-col gap-[theme(--form-element-field-gap)]">
+				<Card.Content class="flex flex-col gap-2">
 					{#if business.businessfilled}
-						<div class="flex items-center text-foreground-secondary gap-[theme(--form-element-field-gap)]">
+						<div class="flex items-center text-foreground-secondary gap-2">
 							<Phone class="w-5 h-5 flex-shrink-0" />
 							<span>{business.phonenumber}</span>
 						</div>
 
-						<div class="flex items-start text-foreground-secondary gap-[theme(--form-element-field-gap)]">
-							<MapPin class="w-5 h-5 text-primary flex-shrink-0 mt-[theme(--form-element-field-gap)]" />
+						<div class="flex items-start text-foreground-secondary gap-2">
+							<MapPin class="w-5 h-5 text-primary flex-shrink-0 mt-1" />
 							<span>{business.address}</span>
 						</div>
 					{:else}
-						<div class="flex items-start text-foreground-secondary gap-[theme(--form-element-field-gap)]">
-							<MapPin class="w-5 h-5 text-primary flex-shrink-0 mt-[theme(--form-element-field-gap)]" />
+						<div class="flex items-start text-foreground-secondary gap-2">
+							<MapPin class="w-5 h-5 text-primary flex-shrink-0 mt-1" />
 							<span>{business.address || `${business.city}, ${business.state}`}</span>
 						</div>
 						{#if business.phonenumber}
-							<div class="flex items-center text-foreground-secondary gap-[theme(--form-element-field-gap)]">
+							<div class="flex items-center text-foreground-secondary gap-2">
 								<Phone class="w-5 h-5 flex-shrink-0" />
 								<a
 									href={`tel:${business.phonenumber}`}
-									class="text-primary hover:opacity-80 hover:underline transition-all duration-[theme(--transition-default)]"
+									class="text-primary hover:opacity-90 hover:underline transition-all duration-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 								>
 									{business.phonenumber}
 								</a>
@@ -89,7 +89,7 @@
 					{/if}
 				</Card.Content>
 
-				<div class="flex flex-col sm:flex-row gap-[theme(--form-element-field-gap)] p-[theme(--card-padding)]">
+				<div class="flex flex-col sm:flex-row gap-2 p-6">
 					<Button
 						variant="default"
 						class="flex-1 sm:flex-none"
@@ -113,7 +113,7 @@
 		{/each}
 
 		{#if loadedCount < businesses.length}
-			<div class="flex justify-center pt-[theme(--spacing-component-internal)]">
+			<div class="flex justify-center pt-4">
 				<Button variant="secondary" onclick={loadMoreBusinesses}>LOAD MORE</Button>
 			</div>
 		{/if}
