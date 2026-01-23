@@ -125,12 +125,12 @@
         <p class="text-white text-center">Loading stories...</p>
       </div>
     {:else if $storiesError}
-      <Card class="w-full max-w-[theme(--max-width-sm)] bg-[hsl(var(--destructive)/0.1)] border-[hsl(var(--destructive)/0.2)]">
+      <Card class="w-full max-w-[theme(--max-width-sm)] bg-destructive-muted border-destructive">
         <CardHeader>
           <CardTitle class="text-destructive">Error Loading Stories</CardTitle>
         </CardHeader>
         <CardContent class="flex flex-col gap-[theme(--spacing-lg)]">
-          <p class="text-destructive/90">{$storiesError}</p>
+          <p class="text-foreground-secondary">{$storiesError}</p>
           <Button onclick={closeStory} variant="default">Close</Button>
         </CardContent>
       </Card>
@@ -150,7 +150,7 @@
         <CardHeader>
           <CardTitle class="text-center">You've seen all our latest solar stories!</CardTitle>
         </CardHeader>
-        <CardContent class="flex flex-col gap-[theme(--spacing-sm)]">
+        <CardContent class="flex flex-col gap-[theme(--spacing-lg)]">
           <Button
             onclick={() => window.location.href = "/in/recent-solar-installation-projects"}
             variant="default"
@@ -178,7 +178,7 @@
       <!-- Story Viewer -->
       <div class="relative w-full h-full overflow-hidden flex flex-col bg-gradient-to-b from-black/80 to-black/40 max-w-[theme(--max-width-sm)]" style="max-height: 700px;">
         <!-- Progress Bars -->
-        <div class="flex absolute top-0 left-0 right-0 z-40 gap-[theme(--spacing-sm)] p-[theme(--spacing-lg)]">
+        <div class="flex absolute top-0 left-0 right-0 z-40 gap-[theme(--spacing-lg)] p-[theme(--spacing-lg)]">
           {#each $storiesData as _, index}
             <div class="flex-1">
               <Progress
@@ -196,15 +196,15 @@
 
         <!-- Story Header -->
         <div class="flex items-center justify-between relative z-30 p-[theme(--spacing-lg)] pt-16">
-          <div class="flex items-center gap-[theme(--spacing-sm)]">
-            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold text-sm">
+          <div class="flex items-center gap-[theme(--spacing-lg)]">
+            <div class="w-10 h-10 rounded-full bg-card flex items-center justify-center text-foreground font-semibold text-sm">
               {formatBusinessName(String($storiesData[currentStoryIndex]?.business_slug || '')).charAt(0)}
             </div>
             <div>
               <h3 class="text-white text-[theme(--font-size-sm)] leading-[theme(--font-size-sm--line-height)] font-semibold">
                 <a
                   href="/in/solar-panel-installer/{String($storiesData[currentStoryIndex]?.business_slug || '')}"
-                  class="hover:text-secondary transition-colors duration-100"
+                  class="hover:text-primary transition-colors duration-100"
                   onclick={closeStory}
                 >
                   {formatBusinessName(String($storiesData[currentStoryIndex]?.business_slug || ''))}
@@ -241,7 +241,7 @@
               class="w-full h-auto object-contain mt-[theme(--spacing-lg)] max-h-[70vh]"
             />
           {:else}
-            <div class="flex flex-col items-center justify-center gap-[theme(--spacing-sm)] text-white/80">
+            <div class="flex flex-col items-center justify-center gap-[theme(--spacing-lg)] text-white/80">
               <span class="text-4xl">📸</span>
               <p>No image available</p>
             </div>
@@ -250,12 +250,12 @@
 
         <!-- Story Details Overlay -->
         <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent z-30 p-[theme(--card-padding-y)]">
-          <h2 class="text-white text-[theme(--font-size-lg)] leading-[theme(--font-size-lg--line-height)] font-semibold mb-[theme(--spacing-sm)]">{$storiesData[currentStoryIndex].title}</h2>
-          <div class="flex flex-wrap gap-[theme(--spacing-sm)]">
-            <Badge variant="secondary" class="bg-white/20 text-white border-white/30 hover:bg-white/30">
+          <h2 class="text-card text-[theme(--font-size-lg)] leading-[theme(--font-size-lg--line-height)] font-semibold mb-[theme(--spacing-lg)]">{$storiesData[currentStoryIndex].title}</h2>
+          <div class="flex flex-wrap gap-[theme(--spacing-lg)]">
+            <Badge variant="secondary" class="bg-card/20 text-card border-card/30 hover:bg-card/30">
               📍 {$storiesData[currentStoryIndex].pincode || "N/A"}
             </Badge>
-            <Badge variant="secondary" class="bg-white/20 text-white border-white/30 hover:bg-white/30">
+            <Badge variant="secondary" class="bg-card/20 text-card border-card/30 hover:bg-card/30">
               📅 {formatDate(String($storiesData[currentStoryIndex]?.project_date || ''))}
             </Badge>
           </div>

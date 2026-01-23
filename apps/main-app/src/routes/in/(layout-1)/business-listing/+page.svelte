@@ -334,10 +334,10 @@
     </picture>
     <div class="absolute top-0 left-0 w-full h-full z-10 bg-black/55"></div>
     <div class="relative z-20 max-w-3xl px-6">
-      <h1 class="text-4xl md:text-4xl font-bold mb-6 text-primary-foreground leading-tight drop-shadow-sm">
+      <h1 class="text-4xl md:text-4xl font-bold mb-6 text-primary-foreground leading-tight drop-shadow-card">
         Grow Your Solar Business
       </h1>
-      <h2 class="text-2xl md:text-2xl font-medium mb-6 text-primary-foreground leading-snug drop-shadow-sm">
+      <h2 class="text-2xl md:text-2xl font-medium mb-6 text-primary-foreground leading-snug drop-shadow-card">
         Get discovered by customers researching online
       </h2>
     </div>
@@ -349,11 +349,11 @@
       <div class="text-center mb-[theme(--spacing-2xl)]">
         <h2 class="text-2xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Why List Your Business with Solar Vipani?</h2>
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-          <span class="w-20 h-1 bg-accent rounded"></span>
+          <span class="w-20 h-1 bg-foreground-muted rounded"></span>
         </div>
         <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
           Get discovered by customers ready to install solar panels - completely <span
-            class="text-accent font-bold">FREE</span
+            class="text-foreground font-bold">FREE</span
           >
         </p>
       </div>
@@ -365,7 +365,7 @@
             <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">{benefit.title}</h3>
             <div class="text-foreground dark:text-foreground-secondary text-sm">
               {#each benefit.descriptions as description}
-                <p class="mb-[theme(--spacing-sm)]">{description}</p>
+                <p class="mb-[theme(--spacing-lg)]">{description}</p>
               {/each}
             </div>
           </Card>
@@ -395,18 +395,18 @@
     </Card>
 
     <!-- Social Proof Section -->
-    <Card class="bg-accent-muted p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)]">
+    <Card class="bg-card p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)]">
       <div class="text-center mb-[theme(--spacing-2xl)]">
         <h2 class="text-2xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Join the Solar Installer Community</h2>
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-          <span class="w-20 h-1 bg-accent rounded"></span>
+          <span class="w-20 h-1 bg-foreground-muted rounded"></span>
         </div>
       </div>
 
       <div class="flex justify-center flex-wrap gap-[theme(--spacing-2xl)] mb-[theme(--spacing-2xl)]">
         {#each stats as stat}
           <Card class="w-48 text-center p-[theme(--spacing-lg)]">
-            <div class="text-4xl font-bold text-primary mb-[theme(--spacing-sm)]">{stat.number}</div>
+            <div class="text-4xl font-bold text-primary mb-[theme(--spacing-lg)]">{stat.number}</div>
             <div class="text-lg font-semibold text-foreground dark:text-foreground-secondary">{stat.label}</div>
           </Card>
         {/each}
@@ -439,7 +439,7 @@
       <div class="text-center mb-[theme(--spacing-2xl)]">
         <h2 class="text-2xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Recently Joined Verified Installers</h2>
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-          <span class="w-20 h-1 bg-accent rounded"></span>
+          <span class="w-20 h-1 bg-foreground-muted rounded"></span>
         </div>
         <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
           These solar professionals recently joined our growing community
@@ -456,7 +456,7 @@
               class="no-underline text-inherit block transition-transform duration-[theme(--transition-default)]"
             >
               <Card class="relative h-full flex flex-col overflow-hidden p-[theme(--spacing-lg)]">
-                <div class="absolute flex items-center text-primary-foreground text-xs font-semibold bg-success top-[theme(--spacing-sm)] right-[theme(--spacing-sm)] gap-[theme(--spacing-sm)] px-[theme(--spacing-sm)] py-[theme(--spacing-sm)] rounded-full">
+                <div class="absolute flex items-center text-primary-foreground text-sm font-semibold bg-success top-[theme(--spacing-lg)] right-[theme(--spacing-lg)] gap-[theme(--spacing-lg)] px-[theme(--spacing-lg)] py-[theme(--spacing-lg)] rounded-full">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="18"
@@ -474,8 +474,8 @@
                   <span>Verified</span>
                 </div>
                 <h3 class="text-lg font-semibold text-primary pr-[theme(--spacing-2xl)]">{business.businessname}</h3>
-                <div class="flex flex-col mt-auto gap-[theme(--spacing-sm)]">
-                  <div class="flex items-center text-foreground dark:text-foreground-secondary text-sm gap-[theme(--spacing-sm)]">
+                <div class="flex flex-col mt-auto gap-[theme(--spacing-lg)]">
+                  <div class="flex items-center text-foreground dark:text-foreground-secondary text-sm gap-[theme(--spacing-lg)]">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
@@ -491,7 +491,7 @@
                     >
                     <span>{business.city}, {business.state}</span>
                   </div>
-                  <div class="flex items-center text-foreground dark:text-foreground-secondary text-sm gap-[theme(--spacing-sm)]">
+                  <div class="flex items-center text-foreground dark:text-foreground-secondary text-sm gap-[theme(--spacing-lg)]">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
@@ -548,7 +548,7 @@
       <div class="text-center mb-[theme(--spacing-2xl)]">
         <h2 class="text-2xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">See How It Works</h2>
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-          <span class="w-20 h-1 bg-accent rounded"></span>
+          <span class="w-20 h-1 bg-foreground-muted rounded"></span>
         </div>
         <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
           Watch this quick video to understand how Solar Vipani connects you
@@ -556,7 +556,7 @@
         </p>
       </div>
 
-      <div class="relative mx-auto max-w-2xl overflow-hidden rounded-[theme(--radius-lg)] shadow-[theme(--shadow-sm)]">
+      <div class="relative mx-auto max-w-2xl overflow-hidden rounded-[theme(--radius-lg)] shadow-card">
         <iframe
           src="https://www.youtube.com/embed/8UZ-4XN8Vq8"
           title="How Solarvipani.com works"
@@ -594,7 +594,7 @@
       <div class="text-center mb-[theme(--spacing-2xl)]">
         <h2 class="text-2xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Frequently Asked Questions</h2>
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-          <span class="w-20 h-1 bg-accent rounded"></span>
+          <span class="w-20 h-1 bg-foreground-muted rounded"></span>
         </div>
       </div>
 
@@ -613,7 +613,7 @@
       <div class="text-center mb-[theme(--spacing-2xl)]">
         <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">We're Here to Help</h2>
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-          <span class="w-20 h-1 bg-accent rounded"></span>
+          <span class="w-20 h-1 bg-foreground-muted rounded"></span>
         </div>
       </div>
 

@@ -214,7 +214,7 @@
     <div class="text-center mb-[theme(--spacing-2xl)]">
       <h1 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Recent Solar Installation Projects</h1>
       <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-        <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+        <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-foreground-muted rounded"></span>
       </div>
     </div>
 
@@ -232,7 +232,7 @@
         {#each projects as project (project.id)}
           <a
             href="/in/solar-panel-installer/{project.business_slug}/project/{project.project_slug}"
-            class="group block bg-card hover:shadow-[theme(--shadow-sm)] rounded-[theme(--radius-xl)] overflow-hidden bg-background-secondary hover:border-primary/50 transition-all duration-100 hover:-translate-y-1"
+            class="group block bg-card hover:shadow-card rounded-[theme(--radius-xl)] overflow-hidden bg-background-secondary hover:border-primary/50 transition-all duration-100 hover:-translate-y-1"
             rel="noopener"
           >
             <!-- Project Image -->
@@ -265,7 +265,7 @@
             </div>
 
             <!-- Project Details -->
-            <div class="p-[theme(--container-padding)] space-y-[theme(--spacing-sm)]">
+            <div class="p-[theme(--container-padding)] space-y-[theme(--spacing-lg)]">
               <h3 class="text-lg font-semibold text-primary line-clamp-2">
                 {project.title}
               </h3>
@@ -294,7 +294,7 @@
 
       <!-- Pagination -->
       {#if totalPages > 1}
-        <div class="flex justify-center items-center gap-[theme(--spacing-sm)] mt-[theme(--spacing-2xl)] flex-wrap">
+        <div class="flex justify-center items-center gap-[theme(--spacing-lg)] mt-[theme(--spacing-2xl)] flex-wrap">
           <!-- Next button (since this is page 1, only show next) -->
           {#if currentPage < totalPages}
             <Button href="/in/recent-solar-installation-projects/2" variant="default">
@@ -305,9 +305,9 @@
           <!-- Page numbers -->
           {#each paginationLinks as link}
             {#if link === "..."}
-              <span class="px-[theme(--spacing-sm)] text-foreground dark:text-foreground-secondary">...</span>
+              <span class="px-[theme(--spacing-lg)] text-foreground dark:text-foreground-secondary">...</span>
             {:else if link === currentPage}
-              <span class="px-[theme(--spacing-lg)] py-[theme(--spacing-sm)] bg-primary text-primary-foreground font-medium rounded-[theme(--radius-md)]">
+              <span class="px-[theme(--spacing-lg)] py-[theme(--spacing-lg)] bg-primary text-primary-foreground font-medium rounded-[theme(--radius-md)]">
                 {link}
               </span>
             {:else}

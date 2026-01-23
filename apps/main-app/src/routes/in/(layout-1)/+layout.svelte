@@ -270,8 +270,8 @@
       </div>
 
       <div class="pt-[theme(--spacing-lg)]">
-        <h4 class="text-[theme(--font-size-base)] font-semibold mb-[theme(--spacing-sm)]">💡 Alternative methods:</h4>
-        <div class="space-y-[theme(--spacing-sm)] text-[theme(--font-size-sm)] text-foreground-secondary">
+        <h4 class="text-[theme(--font-size-base)] font-semibold mb-[theme(--spacing-lg)]">💡 Alternative methods:</h4>
+        <div class="space-y-[theme(--spacing-lg)] text-[theme(--font-size-sm)] text-foreground-secondary">
           <p><strong>Chrome users:</strong> Look for the translate icon 🌐 in your address bar</p>
           <p><strong>Safari (iPhone/iPad):</strong> Tap the "aA" button in address bar</p>
           <p><strong>Other browsers:</strong> Check browser settings for translation options</p>

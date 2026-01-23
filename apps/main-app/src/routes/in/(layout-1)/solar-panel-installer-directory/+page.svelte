@@ -135,7 +135,7 @@
       <div class="text-center mb-[theme(--spacing-2xl)]">
         <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Solar Panel Installers by State</h2>
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-          <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+          <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-foreground-muted rounded"></span>
         </div>
         <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
           Browse solar panel installers by state. We have listings in {states.length}
@@ -145,12 +145,12 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)]">
         {#each states as state}
-          <div class="flex flex-col h-full bg-card rounded-[theme(--radius-lg)] bg-background-secondary hover:shadow-[theme(--shadow-sm)] transition-all duration-100 hover:-translate-y-1 p-[theme(--spacing-lg)]">
+          <div class="flex flex-col h-full bg-card rounded-[theme(--radius-lg)] bg-background-secondary hover:shadow-card transition-all duration-100 hover:-translate-y-1 p-[theme(--spacing-lg)]">
             <h3 class="text-lg font-semibold mb-[theme(--spacing-lg)] text-primary">
               {state}
             </h3>
 
-            <div class="flex items-center justify-center font-medium text-primary mt-auto gap-[theme(--spacing-sm)] group">
+            <div class="flex items-center justify-center font-medium text-primary mt-auto gap-[theme(--spacing-lg)] group">
               <Button asChild variant="default" class="w-full">
                 <a href={`/in/state/${formatStateSlug(state)}`} rel="noopener" class="flex items-center justify-center gap-2">
                   <span>Find Installers</span>

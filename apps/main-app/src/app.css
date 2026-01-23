@@ -2,20 +2,22 @@
 
 /* ===== DESIGN SYSTEM GUIDANCE ===== */
 /*
-  This file contains 100+ design tokens. For Beautiful/Minimal/Fast design:
+  PHASE 1: TOKEN CONSOLIDATION - Beautiful/Minimal/Fast Design
 
-  USE THESE 90% OF THE TIME (Core Set):
-  - Typography: text-sm, text-lg, text-2xl, text-4xl (3 sizes per screen max)
-  - Spacing: --spacing-lg (1rem), --spacing-2xl (2rem), --spacing-4xl (4rem)
-  - Shadows: shadow-xs (subtle), shadow-sm (cards)
+  CORE TOKENS (Use 90% of the time):
+  - Typography: text-sm, text-lg, text-2xl, text-4xl (max 3 sizes per screen)
+  - Spacing: --spacing-lg (16px), --spacing-2xl (32px), --spacing-4xl (64px)
+  - Shadows: shadow-xs (subtle), shadow-card (elevated)
   - Radius: --radius-md (inputs), --radius-lg (cards)
-  - Colors: text-primary, bg-accent, bg-secondary (semantic only)
+  - Colors: text-foreground, bg-accent, bg-secondary (semantic only)
+  - Borders: Minimize - prefer background contrast over borders
 
-  AVOID UNLESS NECESSARY (Extended Set):
-  - text-xs, text-base, text-3xl, text-5xl (removed per Phase 2)
-  - --spacing-sm/sm/md (too granular; prefer larger spacing)
-  - shadow-md/lg/xl (too heavy for minimal aesthetic)
-  - Component-specific tokens (used internally by Shadcn components)
+  DEPRECATED TOKENS (Phase 1 - Do not use):
+  - Typography: text-xs, text-base (use text-sm instead)
+  - Spacing: --spacing-sm (use --spacing-lg)
+  - Shadows: shadow-sm (use shadow-card or shadow-xs)
+
+  Component-specific tokens are used internally by Shadcn components.
 */
 
 /* ===== THEME CONFIGURATION (Linear-inspired) ===== */
@@ -33,12 +35,17 @@
   --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
 
   /* Font Sizes with Line Heights */
+  /* DEPRECATED - Phase 1: Use text-sm instead */
   --font-size-xs: 0.75rem;
   --font-size-xs--line-height: 1rem;
+
   --font-size-sm: 0.875rem;
   --font-size-sm--line-height: 1.25rem;
+
+  /* DEPRECATED - Phase 1: Use text-sm instead */
   --font-size-base: 1rem;
   --font-size-base--line-height: 1.5rem;
+
   --font-size-lg: 1.125rem;
   --font-size-lg--line-height: 1.75rem;
   --font-size-2xl: 1.5rem;
@@ -46,9 +53,12 @@
   --font-size-4xl: 2.25rem;
   --font-size-4xl--line-height: 2.5rem;
 
-  /* Shadows (Linear uses very subtle, diffused shadows) */
+  /* Shadows - Phase 1: Two levels only (subtle and elevated) */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+
+  /* DEPRECATED - Phase 1: Use shadow-card or shadow-xs instead */
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08);
 
   /* Animation timing */
@@ -161,11 +171,12 @@
   --dropdown-menu-icon-size: 1rem;
   --dropdown-menu-transition-duration: var(--duration-fast);
 
-  /* Card Component Tokens */
-  --card-gap: 1.5rem;
-  --card-padding-y: 1.5rem;
+  /* Card Component Tokens - Phase 3.2: Standard padding p-6 (24px) */
+  --card-gap: 2rem;                   /* 32px - between components */
+  --card-padding: 1.5rem;             /* 24px - standard card padding */
+  --card-padding-hero: 2rem;          /* 32px - hero card padding */
   --card-radius: var(--radius-xl);
-  --card-shadow: var(--shadow-sm);
+  --card-shadow: var(--shadow-card);  /* Phase 3: Use shadow-card */
 
   /* Dialog Component Tokens */
   --dialog-content-gap: 1rem;
@@ -574,10 +585,10 @@
   --icon-size-lg: 1.5rem;
   --icon-size-xl: 5rem;
 
-  /* Form Component Tokens */
-  --form-fieldset-gap: 0.5rem;
-  --form-field-gap: 0.5rem;
-  --form-element-field-gap: 0.5rem;
+  /* Form Component Tokens - Phase 3.4: gap-4 (16px) between fields */
+  --form-fieldset-gap: 1rem;          /* 16px - between fieldsets */
+  --form-field-gap: 1rem;             /* 16px - between form fields (gap-4) */
+  --form-element-field-gap: 0.5rem;   /* 8px - label to input spacing */
   --form-field-errors-font-size: var(--font-size-sm);
   --form-field-errors-font-weight: 500;
   --form-description-font-size: var(--font-size-sm);
@@ -585,17 +596,25 @@
   --form-legend-line-height: 1;
   --form-legend-font-weight: 500;
 
-  /* Container Component Tokens */
-  --container-padding: 1rem;
+  /* Container Component Tokens - Phase 3.4: Page padding px-4 md:px-8 */
+  --container-padding: 1rem;          /* 16px - mobile padding */
+  --container-padding-md: 2rem;       /* 32px - desktop padding */
   --container-radius: var(--radius-lg);
   --container-shadow: var(--shadow-xs);
   --container-transition: var(--transition-default);
 
-  /* Spacing Scale for Micro Spacing (powers of 2 only) */
+  /* Spacing Scale - Phase 1 & 3: Powers of 2 only (16/32/64) */
+  /* DEPRECATED - Phase 1: Use --spacing-lg (16px) instead */
   --spacing-sm: 0.5rem;    /* 8px */
+
   --spacing-lg: 1rem;      /* 16px - primary default */
   --spacing-2xl: 2rem;     /* 32px */
   --spacing-4xl: 4rem;     /* 64px */
+
+  /* Phase 3.4: Semantic spacing tokens for consistent component spacing */
+  --spacing-component-internal: 1rem;   /* 16px - gap-4 - within components */
+  --spacing-component-between: 2rem;    /* 32px - gap-8 - between components */
+  --spacing-section: 4rem;              /* 64px - gap-16 - between sections */
 
   /* Step Indicator Component Tokens */
   --step-indicator-size: 1.5rem;

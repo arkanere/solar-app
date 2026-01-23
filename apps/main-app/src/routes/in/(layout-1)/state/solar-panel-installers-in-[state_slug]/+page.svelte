@@ -31,7 +31,7 @@
         Solar Panel Installers in {state}
       </h1>
       <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-        <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+        <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-foreground-muted rounded"></span>
       </div>
     </div>
 
@@ -56,12 +56,12 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] w-full mb-[theme(--spacing-2xl)]">
         {#each districts as district}
-          <div class="flex flex-col h-full bg-card rounded-[theme(--radius-lg)] bg-background-secondary hover:shadow-[theme(--shadow-sm)] transition-all duration-100 hover:-translate-y-1 p-[theme(--spacing-lg)]">
+          <div class="flex flex-col h-full bg-card rounded-[theme(--radius-lg)] bg-background-secondary hover:shadow-card transition-all duration-100 hover:-translate-y-1 p-[theme(--spacing-lg)]">
             <h2 class="text-lg font-semibold mb-[theme(--spacing-lg)] text-primary">
               {district}
             </h2>
 
-            <div class="flex items-center justify-center font-medium text-primary mt-auto gap-[theme(--spacing-sm)] group">
+            <div class="flex items-center justify-center font-medium text-primary mt-auto gap-[theme(--spacing-lg)] group">
               <Button asChild variant="default" class="w-full">
                 <a href={`/in/district/${formatDistrictSlug(district)}`} rel="noopener" class="flex items-center justify-center gap-2">
                   <span>Find Installers</span>

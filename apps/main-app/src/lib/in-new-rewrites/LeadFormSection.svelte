@@ -8,11 +8,11 @@
 </script>
 
 <section id="lead-form-sv" class="mb-8 mx-auto max-w-[theme(--max-width-md)]">
-	<div class="rounded-[theme(--radius-lg)] p-[theme(--card-padding-y)] shadow-[theme(--shadow-sm)] bg-gradient-to-br from-primary/10 to-primary/5">
+	<div class="rounded-[theme(--radius-lg)] p-[theme(--card-padding-y)] shadow-card bg-card">
 		<div class="text-center mb-[theme(--spacing-2xl)]">
-			<h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">{displayTitle}</h2>
+			<h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)]">{displayTitle}</h2>
 			<div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-				<span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+				<span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-foreground-muted rounded"></span>
 			</div>
 		</div>
 		<LeadForm showWrapper={false} />

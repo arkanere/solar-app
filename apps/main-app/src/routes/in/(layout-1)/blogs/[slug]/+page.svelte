@@ -98,7 +98,7 @@
 		<header class="mb-[theme(--spacing-2xl)] pb-[theme(--spacing-lg)]">
 			<h1 class="text-[theme(--font-size-4xl)] md:text-4xl font-bold mb-[theme(--spacing-lg)] leading-tight">{blog.title}</h1>
 			{#if blog.author_name}
-				<p class="text-[theme(--font-size-base)] mb-[theme(--spacing-sm)]">
+				<p class="text-[theme(--font-size-base)] mb-[theme(--spacing-lg)]">
 					By <a href="/about-us" class="text-primary hover:underline">
 						{blog.author_name}
 					</a>
@@ -127,7 +127,7 @@
 		{/if}
 
 		{#if blog.tags && blog.tags.length > 0}
-			<div class="flex gap-[theme(--spacing-sm)] flex-wrap mb-[theme(--spacing-2xl)]">
+			<div class="flex gap-[theme(--spacing-lg)] flex-wrap mb-[theme(--spacing-2xl)]">
 				{#each blog.tags as tag}
 					<Badge variant="default">{tag}</Badge>
 				{/each}
@@ -148,7 +148,7 @@
 		{/if}
 	</div>
 
-	<section id="lead-form-sv" class="w-full max-w-[theme(--max-width-md)] mx-auto rounded-[theme(--radius-xl)] bg-gradient-to-r from-primary to-primary text-primary-foreground p-[theme(--spacing-lg)] md:p-[theme(--spacing-4xl)] text-center shadow-[theme(--shadow-sm)]">
+	<section id="lead-form-sv" class="w-full max-w-[theme(--max-width-md)] mx-auto rounded-[theme(--radius-xl)] bg-gradient-to-r from-primary to-primary text-primary-foreground p-[theme(--spacing-lg)] md:p-[theme(--spacing-4xl)] text-center shadow-card">
 		<h2 class="text-[theme(--font-size-2xl)] md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary-foreground">Get Your Free Solar Quote Today</h2>
 		<p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] mb-[theme(--spacing-2xl)] text-primary-foreground/90 mx-auto">
 			Connect with verified solar installers in your area and receive personalized quotes.

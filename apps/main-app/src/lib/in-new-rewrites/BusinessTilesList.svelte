@@ -37,10 +37,10 @@
 </script>
 
 {#if visibleBusinesses.length > 0}
-	<section class="mx-auto w-full max-w-[theme(--max-width-4xl)] flex flex-col gap-[theme(--form-field-gap)] px-[theme(--button-padding-x-default)] my-[theme(--card-gap)]">
+	<section class="mx-auto w-full max-w-[theme(--max-width-4xl)] flex flex-col gap-[theme(--spacing-component-internal)] px-[theme(--container-padding)] md:px-[theme(--container-padding-md)] my-[theme(--spacing-component-between)]">
 		{#each visibleBusinesses as business}
-			<Card.Root class="shadow-[theme(--shadow-card)] transition-shadow duration-100">
-				<Card.Header class="flex flex-col sm:flex-row sm:items-start sm:justify-between border-b gap-[theme(--dropdown-menu-item-gap)] pb-[theme(--card-padding-y)]">
+			<Card.Root class="shadow-[theme(--shadow-card)] transition-shadow duration-[theme(--transition-default)]">
+				<Card.Header class="flex flex-col sm:flex-row sm:items-start sm:justify-between border-b gap-[theme(--form-element-field-gap)]">
 					<h2 class="text-[length:theme(--font-size-lg)] leading-[theme(--font-size-lg--line-height)] font-semibold tracking-[theme(--tracking-heading)]">
 						<a
 							href={`/in/solar-panel-installer/${business.slug}`}
@@ -62,7 +62,7 @@
 				<Card.Content class="flex flex-col gap-[theme(--form-element-field-gap)]">
 					{#if business.businessfilled}
 						<div class="flex items-center text-foreground-secondary gap-[theme(--form-element-field-gap)]">
-							<Phone class="w-5 h-5 text-primary flex-shrink-0" />
+							<Phone class="w-5 h-5 flex-shrink-0" />
 							<span>{business.phonenumber}</span>
 						</div>
 
@@ -77,7 +77,7 @@
 						</div>
 						{#if business.phonenumber}
 							<div class="flex items-center text-foreground-secondary gap-[theme(--form-element-field-gap)]">
-								<Phone class="w-5 h-5 text-primary flex-shrink-0" />
+								<Phone class="w-5 h-5 flex-shrink-0" />
 								<a
 									href={`tel:${business.phonenumber}`}
 									class="text-primary hover:opacity-80 hover:underline transition-all duration-[theme(--transition-default)]"
@@ -89,7 +89,7 @@
 					{/if}
 				</Card.Content>
 
-				<div class="flex flex-col sm:flex-row gap-[theme(--form-element-field-gap)] p-[theme(--button-padding-y-default)_theme(--button-padding-x-lg)]">
+				<div class="flex flex-col sm:flex-row gap-[theme(--form-element-field-gap)] p-[theme(--card-padding)]">
 					<Button
 						variant="default"
 						class="flex-1 sm:flex-none"
@@ -113,8 +113,8 @@
 		{/each}
 
 		{#if loadedCount < businesses.length}
-			<div class="flex justify-center pt-[theme(--form-field-gap)]">
-				<Button variant="outline" onclick={loadMoreBusinesses}>LOAD MORE</Button>
+			<div class="flex justify-center pt-[theme(--spacing-component-internal)]">
+				<Button variant="secondary" onclick={loadMoreBusinesses}>LOAD MORE</Button>
 			</div>
 		{/if}
 	</section>

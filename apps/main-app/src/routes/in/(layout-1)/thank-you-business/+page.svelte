@@ -44,7 +44,7 @@
 </svelte:head>
 
 <main class="pt-[theme(--spacing-2xl)] flex flex-col items-center justify-center min-h-screen text-center bg-background text-foreground">
-	<Card class="w-full max-w-[theme(--max-width-2xl)] mx-[theme(--spacing-sm)]">
+	<Card class="w-full max-w-[theme(--max-width-2xl)] mx-[theme(--spacing-lg)]">
 		<h1 class="text-[theme(--font-size-2xl)] md:text-[theme(--font-size-4xl)] font-bold mb-[theme(--spacing-lg)]">Thank you for submitting your details.</h1>
 		<p class="text-[theme(--font-size-lg)] md:text-[theme(--font-size-2xl)] mb-[theme(--spacing-lg)]">We will call you soon to verify the business details submitted in the form.</p>
 		<p class="text-[theme(--font-size-lg)] md:text-[theme(--font-size-2xl)]">

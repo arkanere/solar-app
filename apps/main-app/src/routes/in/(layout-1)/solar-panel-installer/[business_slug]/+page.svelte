@@ -98,8 +98,8 @@
       <div class="text-center px-[theme(--button-padding-x-lg)] py-[theme(--card-padding-y)] bg-primary rounded-[theme(--radius-xl)] text-primary-foreground mb-8 relative overflow-hidden">
         <h1 class="text-2xl md:text-4xl font-bold mb-2">{business.businessname}</h1>
         {#if business.businessfilled && business.tag !== "Blank"}
-          <div class="inline-flex items-center text-xs font-medium uppercase tracking-widest mb-4">
-            <span class="inline-flex items-center justify-center w-3.5 h-3.5 bg-success text-primary-foreground rounded-full text-xs font-bold mr-2">✓</span>
+          <div class="inline-flex items-center text-sm font-medium uppercase tracking-widest mb-4">
+            <span class="inline-flex items-center justify-center w-3.5 h-3.5 bg-success text-primary-foreground rounded-full text-sm font-bold mr-2">✓</span>
             <span class="text-success">{business.tag}</span>
           </div>
         {/if}
@@ -153,12 +153,12 @@
       </div>
 
       <!-- Business Details - Single Combined Card -->
-      <section class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-sm)] transition-all w-full">
+      <section class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-card)] transition-all w-full">
         <!-- Section Header -->
         <div class="text-center mb-[theme(--spacing-2xl)]">
           <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Business Information</h2>
           <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-            <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+            <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-foreground-muted rounded"></span>
           </div>
         </div>
 
@@ -177,7 +177,7 @@
               <h3 class="text-lg font-semibold text-primary m-0">Services</h3>
               <div class="flex flex-wrap gap-2">
                 {#each business.services as serviceId}
-                  <span class="bg-accent/10 text-primary px-3 py-1 rounded-md text-xs font-medium border border-accent/30"
+                  <span class="bg-secondary text-foreground px-3 py-1 rounded-md text-sm font-medium"
                     >{SERVICE_MAPPING[serviceId] || "Unknown Service"}</span
                   >
                 {/each}
@@ -419,11 +419,11 @@
 
       <!-- Recent Projects Section -->
       {#if showProjects}
-        <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-sm)] mb-8 transition-all w-full">
+        <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-card)] mb-8 transition-all w-full">
           <div class="text-center mb-[theme(--spacing-2xl)]">
             <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Recent Solar Panel Installation Projects</h2>
             <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-              <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+              <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-foreground-muted rounded"></span>
             </div>
           </div>
 
@@ -434,7 +434,7 @@
           {:else}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] mt-[theme(--spacing-2xl)]">
               {#each projects as project (project.id)}
-                <div class="rounded-[theme(--radius-lg)] overflow-hidden shadow-[theme(--shadow-sm)] transition-transform duration-100 hover:shadow-sm hover:-translate-y-1 bg-card h-full">
+                <div class="rounded-[theme(--radius-lg)] overflow-hidden shadow-[theme(--shadow-card)] transition-transform duration-100 hover:shadow-card hover:-translate-y-1 bg-card h-full">
                   <a
                     href="/in/solar-panel-installer/{businessSlug}/project/{project.project_slug}"
                     class="block no-underline text-inherit transition-all"
@@ -488,11 +488,11 @@
 
       <!-- Other Businesses in the City -->
       {#if business.city}
-        <section class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-sm)] transition-all w-full">
+        <section class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-card)] transition-all w-full">
           <div class="text-center mb-[theme(--spacing-2xl)]">
             <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Find Other Solar Businesses in {business.city}</h2>
             <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-              <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+              <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-foreground-muted rounded"></span>
             </div>
           </div>
           <div class="text-center">

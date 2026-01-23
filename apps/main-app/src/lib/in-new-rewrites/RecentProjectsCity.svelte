@@ -19,13 +19,13 @@
 </script>
 
 {#if projects.length > 0}
-	<Card.Root class="border-0 shadow-[theme(--shadow-sm)] mb-[theme(--spacing-2xl)]">
+	<Card.Root class="border-0 shadow-card mb-[theme(--spacing-2xl)]">
 		<Card.Header class="text-center pb-[theme(--card-padding-y)]">
-			<Card.Title class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">
+			<Card.Title class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)]">
 				Recent Solar Panel Installation Projects in {city?.replace('-', ' ')}
 			</Card.Title>
 			<div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-				<span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+				<span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-foreground-muted rounded"></span>
 			</div>
 		</Card.Header>
 
@@ -61,10 +61,10 @@
 							</div>
 
 							<Card.Content class="pt-[theme(--spacing-lg)]">
-								<h3 class="line-clamp-2 text-primary font-semibold text-[theme(--font-size-lg)] mb-[theme(--spacing-lg)]">
+								<h3 class="line-clamp-2 font-semibold text-[theme(--font-size-lg)] mb-[theme(--spacing-lg)]">
 									{project.title}
 								</h3>
-								<div class="text-muted-foreground flex flex-col gap-[theme(--spacing-sm)] text-[theme(--font-size-sm)]">
+								<div class="text-muted-foreground flex flex-col gap-[theme(--spacing-lg)] text-[theme(--font-size-sm)]">
 									<p>Pincode: {project.pincode || "N/A"}</p>
 									<p>Completed on: {formatDate(project.project_date)}</p>
 									<p>

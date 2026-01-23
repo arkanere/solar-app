@@ -263,11 +263,11 @@
       {/if}
     </div>
 
-    <section id="services" class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-sm)]">
+    <section id="services" class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-card)]">
       <div class="text-center mb-[theme(--spacing-2xl)]">
         <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Services Provided by Solar Panel Installers</h2>
         <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-          <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+          <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-foreground-muted rounded"></span>
         </div>
       </div>
       {#each services as service (service.title)}
@@ -299,11 +299,11 @@
         </Button>
       </div>
 
-      <section id="people-also-ask" class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-sm)]">
+      <section id="people-also-ask" class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-card)]">
         <div class="text-center mb-[theme(--spacing-2xl)]">
           <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Frequently Asked Questions</h2>
           <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-            <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+            <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-foreground-muted rounded"></span>
           </div>
         </div>
         <div class="grid grid-cols-1 gap-[theme(--card-gap)]">
@@ -318,11 +318,11 @@
     {/if}
 
     {#if district}
-      <section class="mb-8 rounded-[theme(--radius-lg)] bg-[hsl(var(--accent)/0.1)] p-[theme(--card-padding-y)] shadow-[theme(--shadow-sm)]">
+      <section class="mb-8 rounded-[theme(--radius-lg)] bg-[hsl(var(--accent)/0.1)] p-[theme(--card-padding-y)] shadow-[theme(--shadow-card)]">
         <div class="text-center mb-[theme(--spacing-2xl)]">
           <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Find Other Solar Businesses in {district} District</h2>
           <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-            <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+            <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-foreground-muted rounded"></span>
           </div>
           <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">If you're interested in exploring other solar businesses in {district}, visit our district directory page.</p>
         </div>
@@ -345,7 +345,7 @@
 
       <!-- Get Quotation Button after Solar Comparison Table -->
       <div class="text-center mb-8">
-        <Button class="font-semibold text-lg px-[theme(--button-padding-x-lg)] py-[theme(--button-padding-y-default)] transition-all hover:-translate-y-[theme(--hover-lift-sm)] shadow-[theme(--shadow-sm)] hover:shadow-[theme(--shadow-sm)] uppercase tracking-wide" onclick={scrollToLeadForm}>
+        <Button class="font-semibold text-lg px-[theme(--button-padding-x-lg)] py-[theme(--button-padding-y-default)] transition-all hover:-translate-y-[theme(--hover-lift-sm)] shadow-[theme(--shadow-card)] hover:shadow-[theme(--shadow-card)] uppercase tracking-wide" onclick={scrollToLeadForm}>
           Get Quotation
         </Button>
       </div>
