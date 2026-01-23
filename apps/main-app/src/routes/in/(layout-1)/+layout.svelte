@@ -192,24 +192,24 @@
   <!-- Heavy analytics scripts moved to loadAnalytics() function for deferred loading -->
 </svelte:head>
 
-<nav class="flex flex-wrap items-center w-full justify-between bg-background-secondary text-foreground p-[theme(--container-padding)] gap-[theme(--spacing-2xl)] transition-colors duration-[theme(--transition-default)]">
+<nav class="flex flex-wrap items-center w-full justify-between bg-background text-foreground px-[theme(--spacing-2xl)] py-[theme(--spacing-lg)] gap-[theme(--spacing-2xl)] transition-colors duration-100">
   <!-- Left side navigation links -->
   <div class="flex items-center gap-[theme(--spacing-2xl)] flex-wrap">
-    <a href="/in" class="no-underline text-[theme(--font-size-lg)] font-medium transition-colors duration-[theme(--transition-default)] hover:text-primary whitespace-nowrap">Solar Vipani</a>
-    <a href="/in/business-listing" class="no-underline text-[theme(--font-size-base)] font-medium transition-colors duration-[theme(--transition-default)] hover:text-primary whitespace-nowrap">List Business</a>
-    <a href="/in/recent-solar-installation-projects" class="no-underline text-[theme(--font-size-base)] font-medium transition-colors duration-[theme(--transition-default)] hover:text-primary whitespace-nowrap">Recent Projects</a>
-    <a href="/in/solar-panel-installer-directory" class="no-underline text-[theme(--font-size-base)] font-medium transition-colors duration-[theme(--transition-default)] hover:text-primary whitespace-nowrap">Directory</a>
+    <a href="/in" class="no-underline text-[theme(--font-size-lg)] font-medium transition-all duration-100 hover:opacity-90 whitespace-nowrap">Solar Vipani</a>
+    <a href="/in/business-listing" class="no-underline text-[theme(--font-size-lg)] font-medium transition-all duration-100 hover:opacity-90 whitespace-nowrap">List Business</a>
+    <a href="/in/recent-solar-installation-projects" class="no-underline text-[theme(--font-size-lg)] font-medium transition-all duration-100 hover:opacity-90 whitespace-nowrap">Recent Projects</a>
+    <a href="/in/solar-panel-installer-directory" class="no-underline text-[theme(--font-size-lg)] font-medium transition-all duration-100 hover:opacity-90 whitespace-nowrap">Directory</a>
     <Button variant="default" onclick={openStoriesModal} class="rounded-full">
       Stories
     </Button>
-    <a href="/in/about-us" class="no-underline text-[theme(--font-size-base)] font-medium transition-colors duration-[theme(--transition-default)] hover:text-primary whitespace-nowrap">About us</a>
+    <a href="/in/about-us" class="no-underline text-[theme(--font-size-lg)] font-medium transition-all duration-100 hover:opacity-90 whitespace-nowrap">About us</a>
   </div>
 
   <!-- Right side buttons group -->
   <div class="flex items-center gap-[theme(--spacing-lg)]">
     <!-- Translate Dropdown -->
     <DropdownMenu.Root>
-      <DropdownMenu.Trigger class="bg-background-secondary cursor-pointer whitespace-nowrap text-foreground hover:bg-muted px-[theme(--button-padding-x-sm)] py-[theme(--button-padding-y-sm)] text-[theme(--font-size-sm)] rounded-[theme(--radius-md)] transition-all duration-[theme(--transition-default)]">
+      <DropdownMenu.Trigger class="bg-card whitespace-nowrap text-foreground hover:opacity-90 px-[theme(--spacing-lg)] py-[theme(--spacing-lg)] text-[theme(--font-size-lg)] rounded-[theme(--radius-xl)] transition-all duration-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
         🌐 Translate
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
@@ -222,7 +222,7 @@
       </DropdownMenu.Content>
     </DropdownMenu.Root>
 
-    <button onclick={toggleTheme} class="bg-background-secondary cursor-pointer whitespace-nowrap text-foreground hover:bg-muted px-[theme(--button-padding-x-sm)] py-[theme(--button-padding-y-sm)] text-[theme(--font-size-sm)] rounded-[theme(--radius-md)] transition-all duration-[theme(--transition-default)]">
+    <button onclick={toggleTheme} class="bg-card whitespace-nowrap text-foreground hover:opacity-90 px-[theme(--spacing-lg)] py-[theme(--spacing-lg)] text-[theme(--font-size-lg)] rounded-[theme(--radius-xl)] transition-all duration-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
       {$isDarkMode ? "☀️ Light mode" : "🌙 Dark mode"}
     </button>
   </div>
@@ -240,13 +240,13 @@
       <Dialog.Title>🌐 How to translate to {selectedLanguage}</Dialog.Title>
     </Dialog.Header>
 
-    <div class="space-y-[theme(--card-gap)]">
+    <div class="space-y-[theme(--spacing-2xl)]">
       <div>
-        <h4 class="text-[theme(--font-size-base)] font-semibold text-primary mb-[theme(--spacing-lg)]">📱 On Mobile:</h4>
+        <h4 class="text-[theme(--font-size-lg)] font-semibold mb-[theme(--spacing-lg)]">📱 On Mobile:</h4>
         <div class="space-y-[theme(--spacing-lg)]">
           {#each ["Tap the three dots menu (⋮) in your browser", "Look for \"Translate\" option", "Select your language"] as step, i}
             <div class="flex items-start gap-[theme(--spacing-lg)]">
-              <div class="flex items-center justify-center w-[theme(--step-indicator-size)] h-[theme(--step-indicator-size)] rounded-full bg-primary text-primary-foreground text-[theme(--font-size-xs)] font-bold flex-shrink-0">
+              <div class="flex items-center justify-center w-8 h-8 rounded-full bg-accent text-accent-foreground text-[theme(--font-size-lg)] font-bold flex-shrink-0">
                 {i + 1}
               </div>
               <strong class="block pt-[0.125rem]">{step}</strong>
@@ -256,11 +256,11 @@
       </div>
 
       <div>
-        <h4 class="text-[theme(--font-size-base)] font-semibold text-primary mb-[theme(--spacing-lg)]">💻 On Desktop:</h4>
+        <h4 class="text-[theme(--font-size-lg)] font-semibold mb-[theme(--spacing-lg)]">💻 On Desktop:</h4>
         <div class="space-y-[theme(--spacing-lg)]">
           {#each ["Right-click anywhere on this page", "Look for \"Translate\" option", "Click to translate"] as step, i}
             <div class="flex items-start gap-[theme(--spacing-lg)]">
-              <div class="flex items-center justify-center w-[theme(--step-indicator-size)] h-[theme(--step-indicator-size)] rounded-full bg-primary text-primary-foreground text-[theme(--font-size-xs)] font-bold flex-shrink-0">
+              <div class="flex items-center justify-center w-8 h-8 rounded-full bg-accent text-accent-foreground text-[theme(--font-size-lg)] font-bold flex-shrink-0">
                 {i + 1}
               </div>
               <strong class="block pt-[0.125rem]">{step}</strong>
@@ -270,8 +270,8 @@
       </div>
 
       <div class="pt-[theme(--spacing-lg)]">
-        <h4 class="text-[theme(--font-size-base)] font-semibold mb-[theme(--spacing-lg)]">💡 Alternative methods:</h4>
-        <div class="space-y-[theme(--spacing-lg)] text-[theme(--font-size-sm)] text-foreground-secondary">
+        <h4 class="text-[theme(--font-size-lg)] font-semibold mb-[theme(--spacing-lg)]">💡 Alternative methods:</h4>
+        <div class="space-y-[theme(--spacing-lg)] text-[theme(--font-size-lg)] text-foreground-secondary">
           <p><strong>Chrome users:</strong> Look for the translate icon 🌐 in your address bar</p>
           <p><strong>Safari (iPhone/iPad):</strong> Tap the "aA" button in address bar</p>
           <p><strong>Other browsers:</strong> Check browser settings for translation options</p>

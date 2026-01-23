@@ -51,7 +51,7 @@
   />
 </svelte:head>
 
-<main class="min-h-screen p-[theme(--container-padding)] transition-colors duration-100 bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
+<main class="min-h-screen p-[theme(--container-padding)] transition-colors duration-100 bg-background text-foreground">
   <div class="max-w-2xl mx-auto">
     <h1 class="text-[2.25rem] font-semibold text-center mb-[theme(--spacing-lg)] leading-tight md:text-[1.875rem]">Data Deletion Request</h1>
 
@@ -94,7 +94,7 @@
     </div>
 
     {#if submitted}
-      <Alert class="mb-[theme(--spacing-2xl)] bg-[hsl(var(--success))] border-[hsl(var(--success))]">
+      <Alert class="mb-[theme(--spacing-2xl)] bg-secondary border-secondary">
         <AlertTitle>Request Submitted Successfully!</AlertTitle>
         <AlertDescription>
           <p class="mb-[theme(--spacing-lg)]">
@@ -105,7 +105,7 @@
           <p>
             If you have any questions, please contact us at <a
               href="mailto:admin@solarvipani.com"
-              class="text-[hsl(var(--accent))] hover:underline">admin@solarvipani.com</a
+              class="text-accent hover:underline">admin@solarvipani.com</a
             >.
           </p>
         </AlertDescription>
@@ -149,7 +149,7 @@
             </div>
 
             {#if error}
-              <Alert class="bg-[hsl(var(--destructive))] border-[hsl(var(--destructive))]">
+              <Alert class="bg-destructive border-destructive text-destructive-foreground">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             {/if}
@@ -196,7 +196,7 @@
         <p class="leading-relaxed">
           For any questions or concerns about your data deletion request, please
           contact us at
-          <a href="mailto:admin@solarvipani.com" class="text-[hsl(var(--accent))] hover:underline">admin@solarvipani.com</a>.
+          <a href="mailto:admin@solarvipani.com" class="text-accent hover:underline">admin@solarvipani.com</a>.
         </p>
       </CardContent>
     </Card>

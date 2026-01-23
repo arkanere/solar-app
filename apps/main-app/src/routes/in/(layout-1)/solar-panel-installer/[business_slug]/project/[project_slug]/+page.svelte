@@ -66,13 +66,13 @@
 <main class="w-full font-sans leading-relaxed overflow-x-hidden flex flex-col items-center px-[theme(--spacing-lg)] py-[theme(--spacing-lg)] min-h-screen bg-background text-foreground transition-colors duration-100">
   <!-- Breadcrumb Navigation -->
   <nav class="w-full max-w-[1140px] mb-[theme(--spacing-2xl)] text-sm flex items-center flex-wrap gap-[theme(--spacing-lg)] bg-card px-[theme(--container-padding)] py-[theme(--spacing-lg)] rounded-[theme(--radius-lg)] shadow-card transition-colors duration-100">
-    <a href="/in" class="text-primary hover:text-primary/80 hover:underline transition-colors duration-100">Home</a>
+    <a href="/in" class="text-accent hover:opacity-90 hover:underline transition-colors duration-100">Home</a>
     <span class="text-muted-foreground"> › </span>
-    <button onclick={navigateToDirectory} class="text-primary hover:text-primary/80 hover:underline transition-colors duration-100 bg-none border-none p-0 font-inherit cursor-pointer">
+    <button onclick={navigateToDirectory} class="text-accent hover:opacity-90 hover:underline transition-colors duration-100 bg-none border-none p-0 font-inherit cursor-pointer">
       Solar Installers in {business.city}
     </button>
     <span class="text-muted-foreground"> › </span>
-    <button onclick={navigateToBusinessPage} class="text-primary hover:text-primary/80 hover:underline transition-colors duration-100 bg-none border-none p-0 font-inherit cursor-pointer">
+    <button onclick={navigateToBusinessPage} class="text-accent hover:opacity-90 hover:underline transition-colors duration-100 bg-none border-none p-0 font-inherit cursor-pointer">
       {business.businessname}
     </button>
     <span class="text-muted-foreground"> › </span>
@@ -139,10 +139,10 @@
   </section>
 
 <!-- View Installer Profile Section -->
-  <section class="w-full max-w-[1140px] mb-[theme(--spacing-2xl)] rounded-[theme(--radius-lg)] bg-[hsl(var(--accent)/0.1)] p-[theme(--card-padding-y)] shadow-card transition-all">
+  <section class="w-full max-w-[1140px] mb-[theme(--spacing-2xl)] rounded-[theme(--radius-lg)] bg-secondary p-[theme(--card-padding-y)] shadow-card transition-all">
     <div class="text-center">
-      <h2 class="text-2xl md:text-2xl font-semibold mb-[theme(--spacing-lg)] text-primary">Interested in This Installer?</h2>
-      <p class="text-lg mb-[theme(--spacing-lg)] text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
+      <h2 class="text-2xl md:text-2xl font-semibold mb-[theme(--spacing-lg)]">Interested in This Installer?</h2>
+      <p class="text-lg mb-[theme(--spacing-lg)] text-foreground-secondary max-w-2xl mx-auto">
         View the complete profile of <strong>{business.businessname}</strong> to see all their projects, services, and contact information.
       </p>
       <Button onclick={navigateToBusinessPage} class="font-semibold px-[theme(--button-padding-x-lg)] py-[theme(--button-padding-y-default)]">

@@ -273,20 +273,20 @@
 					href="https://www.facebook.com/p/Solar-Vipani-61556033262509/"
 					target="_blank"
 					aria-label="Facebook"
-					class="text-primary hover:text-primary/80 font-medium transition-colors"
+					class="text-foreground hover:opacity-90 font-medium transition-all"
 				>
 					Facebook
 				</a>
-				<a href="https://x.com/Solarvipani" target="_blank" aria-label="Twitter" class="text-primary hover:text-primary/80 font-medium transition-colors"
+				<a href="https://x.com/Solarvipani" target="_blank" aria-label="Twitter" class="text-foreground hover:opacity-90 font-medium transition-all"
 					>Twitter</a
 				>
-				<a href="https://www.linkedin.com/company/solar-vipani/" target="_blank" aria-label="LinkedIn" class="text-primary hover:text-primary/80 font-medium transition-colors"
+				<a href="https://www.linkedin.com/company/solar-vipani/" target="_blank" aria-label="LinkedIn" class="text-foreground hover:opacity-90 font-medium transition-all"
 					>LinkedIn</a
 				>
-				<a href="https://www.instagram.com/solar.vipani/" target="_blank" aria-label="Instagram" class="text-primary hover:text-primary/80 font-medium transition-colors"
+				<a href="https://www.instagram.com/solar.vipani/" target="_blank" aria-label="Instagram" class="text-foreground hover:opacity-90 font-medium transition-all"
 					>Instagram</a
 				>
-				<a href="https://wa.me/918983066701" target="_blank" aria-label="Whatsapp" class="text-primary hover:text-primary/80 font-medium transition-colors"
+				<a href="https://wa.me/918983066701" target="_blank" aria-label="Whatsapp" class="text-foreground hover:opacity-90 font-medium transition-all"
 					>Whatsapp</a
 				>
 			</div>

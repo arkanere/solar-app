@@ -44,13 +44,13 @@
         <p>No cities found in {district}.</p>
       </Alert>
     {:else}
-      <p class="text-center text-foreground dark:text-foreground-secondary mb-[theme(--spacing-2xl)] text-lg">
+      <p class="text-center text-foreground-secondary mb-[theme(--spacing-2xl)] text-lg">
         Browse solar panel installers in {district} by city. We have listings in <span class="font-semibold">{cities.length} cities</span>.
       </p>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] w-full mb-[theme(--spacing-2xl)]">
         {#each cities as city}
-          <div class="flex flex-col h-full bg-card rounded-[theme(--radius-lg)] bg-background-secondary hover:shadow-card transition-all duration-100 hover:-translate-y-1 p-[theme(--spacing-lg)]">
+          <div class="flex flex-col h-full bg-card rounded-[theme(--radius-lg)] bg-background-secondary hover:shadow-card transition-all duration-100 p-[theme(--spacing-lg)]">
             <h2 class="text-lg font-semibold mb-[theme(--spacing-lg)]">
               {city}
             </h2>

@@ -19,18 +19,15 @@
 </script>
 
 {#if projects.length > 0}
-	<Card.Root class="border-0 shadow-card mb-[theme(--spacing-2xl)]">
-		<Card.Header class="text-center pb-[theme(--card-padding-y)]">
-			<Card.Title class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)]">
+	<Card.Root class="mb-16">
+		<Card.Header class="text-center">
+			<Card.Title class="text-2xl md:text-4xl font-semibold mb-4">
 				Recent Solar Panel Installation Projects in {city?.replace('-', ' ')}
 			</Card.Title>
-			<div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-				<span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-foreground-muted rounded"></span>
-			</div>
 		</Card.Header>
 
 		<Card.Content>
-			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] mb-[theme(--spacing-2xl)]">
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
 				{#each projects as project (project.id)}
 					<a
 						href="/in/solar-panel-installer/{project.business_slug}/project/{project.project_slug}"
@@ -60,11 +57,11 @@
 								{/if}
 							</div>
 
-							<Card.Content class="pt-[theme(--spacing-lg)]">
-								<h3 class="line-clamp-2 font-semibold text-[theme(--font-size-lg)] mb-[theme(--spacing-lg)]">
+							<Card.Content class="pt-4">
+								<h3 class="line-clamp-2 font-semibold text-lg mb-4">
 									{project.title}
 								</h3>
-								<div class="text-muted-foreground flex flex-col gap-[theme(--spacing-lg)] text-[theme(--font-size-sm)]">
+								<div class="text-muted-foreground flex flex-col gap-2 text-sm">
 									<p>Pincode: {project.pincode || "N/A"}</p>
 									<p>Completed on: {formatDate(project.project_date)}</p>
 									<p>
@@ -81,7 +78,7 @@
 
 			{#if projects.length >= 6}
 				<div class="text-center">
-					<a href="/in/recent-solar-installation-projects-in/{city?.replace('-', '-')}" class="inline-block text-primary-foreground font-semibold bg-primary hover:bg-primary-hover hover:-translate-y-[theme(--hover-lift-sm)] px-[theme(--button-padding-x-default)] py-[theme(--button-padding-y-default)] rounded-[theme(--radius-lg)] transition-all duration-[theme(--transition-default)]">View All Projects →</a>
+					<Button href="/in/recent-solar-installation-projects-in/{city?.replace('-', '-')}">View All Projects →</Button>
 				</div>
 			{/if}
 		</Card.Content>

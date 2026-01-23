@@ -18,33 +18,30 @@
 	}
 </script>
 
-<Card class="w-full border-0 mt-[theme(--spacing-component-between)] mb-[theme(--spacing-component-between)] shadow-card">
+<Card class="w-full mt-16 mb-16">
 	<CardHeader class="text-center">
-		<CardTitle class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-component-internal)]">
+		<CardTitle class="text-2xl md:text-4xl font-semibold mb-4">
 			About Solarvipani
 		</CardTitle>
-		<div class="flex justify-center items-center my-[theme(--spacing-component-internal)]">
-			<span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-foreground-muted rounded"></span>
-		</div>
 	</CardHeader>
 
-	<CardContent class="gap-[theme(--spacing-component-between)] flex flex-col">
+	<CardContent class="gap-8 flex flex-col">
 		<!-- About Container -->
-		<div class="flex items-center md:flex-col md:text-center gap-[theme(--spacing-component-between)]">
+		<div class="flex items-center md:flex-col md:text-center gap-8">
 			<img
 				src="/logo.webp"
 				alt="Solarvipani Logo"
-				class="w-48 h-auto rounded-[theme(--radius-lg)] shadow-card"
+				class="w-48 h-auto rounded-xl"
 				loading="lazy"
 			/>
 
-			<div class="flex-1 gap-[theme(--form-element-field-gap)] flex flex-col">
+			<div class="flex-1 gap-4 flex flex-col">
 				<p class="text-lg">
 					We are your premier marketplace aggregator dedicated to connecting residential and business
 					customers with
 					<a
 						href="/in/blogs/hiring-verified-solar-installer-in-india-is-essential"
-						class="font-semibold text-primary underline hover:opacity-80 transition-opacity"
+						class="font-semibold text-primary underline hover:opacity-90 transition-all duration-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						Best Local Solar Panel Installation
 					</a>
@@ -67,16 +64,16 @@
 		</div>
 
 		<!-- Social Media Links -->
-		<div class="w-full pt-[theme(--card-padding)] border-t border-border">
-			<h4 class="text-center text-lg font-semibold mb-[theme(--form-element-field-gap)]">Follow us on:</h4>
-			<div class="flex justify-center flex-wrap gap-[theme(--spacing-component-internal)]">
+		<div class="w-full pt-6">
+			<h4 class="text-center text-lg font-semibold mb-4">Follow us on:</h4>
+			<div class="flex justify-center flex-wrap gap-4">
 				{#each SOCIAL_LINKS as link (link.url)}
 					<a
 						href={link.url}
 						target="_blank"
 						rel="noopener noreferrer"
 						aria-label={link.label}
-						class="flex items-center gap-[theme(--form-element-field-gap)] transition-all duration-[theme(--transition-default)] hover:opacity-90"
+						class="flex items-center gap-2 transition-all duration-100 hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 						onmouseenter={() => handleSocialHover(link.url)}
 						onmouseleave={handleSocialLeave}
 					>

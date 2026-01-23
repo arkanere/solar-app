@@ -37,9 +37,6 @@
 		<h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-component-internal)]">
 			Simplifying Solar For Everyone All over India
 		</h2>
-		<div class="flex justify-center items-center my-[theme(--spacing-component-internal)]">
-			<span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-foreground-muted rounded"></span>
-		</div>
 	</div>
 
 	<div class="flex justify-center">

@@ -232,7 +232,7 @@
         {#each projects as project (project.id)}
           <a
             href="/in/solar-panel-installer/{project.business_slug}/project/{project.project_slug}"
-            class="group block bg-card hover:shadow-card rounded-[theme(--radius-xl)] overflow-hidden bg-background-secondary hover:border-primary/50 transition-all duration-100 hover:-translate-y-1"
+            class="group block bg-card hover:shadow-card rounded-[theme(--radius-xl)] overflow-hidden bg-background-secondary hover:border-primary/50 transition-all duration-100"
             rel="noopener"
           >
             <!-- Project Image -->
@@ -258,7 +258,7 @@
                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-100"
                 />
               {:else}
-                <div class="w-full h-full flex items-center justify-center bg-muted text-foreground dark:text-foreground-secondary">
+                <div class="w-full h-full flex items-center justify-center bg-muted text-foreground text-foreground-secondary">
                   No Image
                 </div>
               {/if}
@@ -270,20 +270,20 @@
                 {project.title}
               </h3>
 
-              <p class="text-sm text-foreground dark:text-foreground-secondary">
+              <p class="text-sm text-foreground text-foreground-secondary">
                 📍 Pincode: {project.pincode || "N/A"}
               </p>
 
-              <p class="text-sm text-foreground dark:text-foreground-secondary">
+              <p class="text-sm text-foreground text-foreground-secondary">
                 📅 Completed: {formatDate(project.project_date)}
               </p>
 
-              <p class="text-sm text-foreground dark:text-foreground-secondary">
+              <p class="text-sm text-foreground text-foreground-secondary">
                 🏢 Installer: <span class="font-medium text-primary">{formatBusinessName(project.business_slug)}</span>
               </p>
 
               {#if project.system_size}
-                <p class="text-sm text-foreground dark:text-foreground-secondary">
+                <p class="text-sm text-foreground text-foreground-secondary">
                   ⚡ System Size: <span class="font-medium text-primary">{project.system_size} kW</span>
                 </p>
               {/if}
@@ -305,7 +305,7 @@
           <!-- Page numbers -->
           {#each paginationLinks as link}
             {#if link === "..."}
-              <span class="px-[theme(--spacing-lg)] text-foreground dark:text-foreground-secondary">...</span>
+              <span class="px-[theme(--spacing-lg)] text-foreground text-foreground-secondary">...</span>
             {:else if link === currentPage}
               <span class="px-[theme(--spacing-lg)] py-[theme(--spacing-lg)] bg-primary text-primary-foreground font-medium rounded-[theme(--radius-md)]">
                 {link}

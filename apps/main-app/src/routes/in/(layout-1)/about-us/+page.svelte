@@ -40,35 +40,32 @@
   />
 </svelte:head>
 
-<main class="w-full bg-background text-foreground transition-colors duration-100 overflow-x-hidden dark:bg-background dark:text-foreground">
+<main class="w-full bg-background text-foreground transition-colors duration-100 overflow-x-hidden">
   <div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
     <!-- Hero Section -->
-    <section class="rounded-[theme(--radius-lg)] bg-gradient-to-r from-primary to-primary text-primary-foreground p-[theme(--card-padding-y)] shadow-[theme(--shadow-card)]">
+    <section class="rounded-[theme(--radius-lg)] bg-accent text-accent-foreground p-6 shadow-card">
       <div class="text-center mb-[theme(--card-gap)]">
-        <h1 class="text-4xl md:text-4xl font-bold mb-[theme(--spacing-lg)] text-primary-foreground">About Solar Vipani</h1>
-        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-          <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-foreground-muted rounded"></span>
-        </div>
-        <p class="text-lg text-primary-foreground max-w-2xl mx-auto">
+        <h1 class="text-4xl font-bold mb-[theme(--spacing-lg)]">About Solar Vipani</h1>
+        <p class="text-lg max-w-2xl mx-auto">
           Your trusted marketplace for solar energy solutions
         </p>
       </div>
     </section>
 
     <!-- Introduction Section -->
-    <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] mb-[theme(--card-gap)] shadow-[theme(--shadow-card)]">
+    <section class="rounded-[theme(--radius-lg)] bg-card p-6 mb-[theme(--card-gap)] shadow-card max-w-2xl mx-auto">
       <div>
-        <p class="text-lg font-medium text-primary mb-[theme(--spacing-2xl)]">
+        <p class="text-lg font-medium mb-[theme(--spacing-2xl)]">
           Our platform is designed for homeowners and businesses ready to go
           solar but unsure where to start.
         </p>
-        <p class="text-sm text-foreground dark:text-foreground-secondary mb-[theme(--spacing-2xl)] leading-relaxed">
+        <p class="text-lg text-foreground-secondary mb-[theme(--spacing-2xl)] leading-relaxed">
           Finding the right solar panel installer can be overwhelming. We
           simplify this process by connecting you with verified installers,
           ensuring competitive pricing, and giving you peace of mind.
         </p>
         <div class="bg-secondary p-[theme(--spacing-lg)] rounded-[theme(--radius-md)] mb-[theme(--spacing-2xl)] text-center">
-          <p class="text-sm">
+          <p class="text-lg">
             <strong
               >We make solar panel installation easy, affordable, and secure by
               matching homeowners and business with reliable local installers
@@ -76,7 +73,7 @@
             >
           </p>
         </div>
-        <p class="text-sm text-foreground dark:text-foreground-secondary leading-relaxed">
+        <p class="text-lg text-foreground-secondary leading-relaxed">
           This is a platform where your journey to a sustainable future is
           streamlined, informed, and supported by digital expertise. We're not
           manufacturers or installers of solar products—instead, we're your
@@ -90,35 +87,32 @@
     </section>
 
     <!-- Stats Grid -->
-    <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] mb-[theme(--card-gap)] shadow-[theme(--shadow-card)]">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-[theme(--card-gap)]">
-        <Card class="p-[theme(--spacing-lg)] hover:shadow-[theme(--shadow-card)] hover:-translate-y-[theme(--hover-lift-md)] transition-all text-center">
-          <div class="text-4xl font-bold text-primary mb-[theme(--spacing-lg)]">450+</div>
-          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">Verified Businesses</h3>
-          <p class="text-foreground dark:text-foreground-secondary">Listed across India</p>
+    <section class="rounded-[theme(--radius-lg)] bg-card p-6 mb-[theme(--card-gap)] shadow-card">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <Card class="p-6 text-center">
+          <div class="text-4xl font-bold mb-[theme(--spacing-lg)]">450+</div>
+          <h3 class="text-lg font-semibold mb-[theme(--spacing-lg)]">Verified Businesses</h3>
+          <p class="text-foreground-secondary">Listed across India</p>
         </Card>
-        <Card class="p-[theme(--spacing-lg)] hover:shadow-[theme(--shadow-card)] hover:-translate-y-[theme(--hover-lift-md)] transition-all text-center">
-          <div class="text-4xl font-bold text-primary mb-[theme(--spacing-lg)]">5,000+</div>
-          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">Cities & Towns</h3>
-          <p class="text-foreground dark:text-foreground-secondary">Nationwide coverage</p>
+        <Card class="p-6 text-center">
+          <div class="text-4xl font-bold mb-[theme(--spacing-lg)]">5,000+</div>
+          <h3 class="text-lg font-semibold mb-[theme(--spacing-lg)]">Cities & Towns</h3>
+          <p class="text-foreground-secondary">Nationwide coverage</p>
         </Card>
-        <Card class="p-[theme(--spacing-lg)] hover:shadow-[theme(--shadow-card)] hover:-translate-y-[theme(--hover-lift-md)] transition-all text-center">
-          <div class="text-4xl font-bold text-primary mb-[theme(--spacing-lg)]">100%</div>
-          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">Quality Assured</h3>
-          <p class="text-foreground dark:text-foreground-secondary">Verified solar providers</p>
+        <Card class="p-6 text-center">
+          <div class="text-4xl font-bold mb-[theme(--spacing-lg)]">100%</div>
+          <h3 class="text-lg font-semibold mb-[theme(--spacing-lg)]">Quality Assured</h3>
+          <p class="text-foreground-secondary">Verified solar providers</p>
         </Card>
       </div>
     </section>
 
     <!-- Purpose Section -->
-    <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] mb-[theme(--card-gap)] shadow-[theme(--shadow-card)]">
+    <section class="rounded-[theme(--radius-lg)] bg-card p-6 mb-[theme(--card-gap)] shadow-card max-w-2xl mx-auto">
       <div class="text-center mb-[theme(--card-gap)]">
-        <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Our Purpose</h2>
-        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-          <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-foreground-muted rounded"></span>
-        </div>
+        <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)]">Our Purpose</h2>
       </div>
-      <p class="text-sm text-foreground dark:text-foreground-secondary leading-relaxed">
+      <p class="text-lg text-foreground-secondary leading-relaxed">
         At Solar Vipani, we believe going solar should be a straightforward,
         empowering choice for everyone. Our mission is to make this transition
         as smooth as possible by <strong
@@ -130,14 +124,11 @@
     </section>
 
     <!-- Expertise Section -->
-    <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] mb-[theme(--card-gap)] shadow-[theme(--shadow-card)]">
+    <section class="rounded-[theme(--radius-lg)] bg-card p-6 mb-[theme(--card-gap)] shadow-card max-w-2xl mx-auto">
       <div class="text-center mb-[theme(--card-gap)]">
-        <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Our Digital Expertise</h2>
-        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-          <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-foreground-muted rounded"></span>
-        </div>
+        <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)]">Our Digital Expertise</h2>
       </div>
-      <p class="text-sm text-foreground dark:text-foreground-secondary leading-relaxed">
+      <p class="text-lg text-foreground-secondary leading-relaxed">
         As a digital marketing company, we leverage our <strong
           >deep expertise in local search engine optimization, social media and
           search engine advertising</strong
@@ -149,42 +140,35 @@
     </section>
 
     <!-- Why Choose Us Section -->
-    <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] mb-[theme(--card-gap)] shadow-[theme(--shadow-card)]">
+    <section class="rounded-[theme(--radius-lg)] bg-card p-6 mb-[theme(--card-gap)] shadow-card">
       <div class="text-center mb-[theme(--card-gap)]">
-        <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Why Choose Solar Vipani?</h2>
-        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-          <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-foreground-muted rounded"></span>
-        </div>
+        <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)]">Why Choose Solar Vipani?</h2>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-[theme(--card-gap)]">
-        <Card class="p-[theme(--spacing-lg)] hover:shadow-[theme(--shadow-card)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all text-center">
-          <div class="text-4xl mb-[theme(--spacing-lg)] block">⚡</div>
-          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">Quality Assurance</h3>
-          <p class="text-foreground dark:text-foreground-secondary text-sm">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <Card class="p-6 text-center">
+          <h3 class="text-lg font-semibold mb-[theme(--spacing-lg)]">Quality Assurance</h3>
+          <p class="text-foreground-secondary">
             We rigorously screen every Solar EPC company on our platform, so
             you're only matched with trusted industry leaders.
           </p>
         </Card>
-        <Card class="p-[theme(--spacing-lg)] hover:shadow-[theme(--shadow-card)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all text-center">
-          <div class="text-4xl mb-[theme(--spacing-lg)] block">📊</div>
-          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">Unbiased Information</h3>
-          <p class="text-foreground dark:text-foreground-secondary text-sm">
+        <Card class="p-6 text-center">
+          <h3 class="text-lg font-semibold mb-[theme(--spacing-lg)]">Unbiased Information</h3>
+          <p class="text-foreground-secondary">
             Solar Vipani is built to inform, not sell. Our platform provides
             objective, detailed information on each solar provider.
           </p>
         </Card>
-        <Card class="p-[theme(--spacing-lg)] hover:shadow-[theme(--shadow-card)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all text-center">
-          <div class="text-4xl mb-[theme(--spacing-lg)] block">🔍</div>
-          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">Effortless Comparisons</h3>
-          <p class="text-foreground dark:text-foreground-secondary text-sm">
+        <Card class="p-6 text-center">
+          <h3 class="text-lg font-semibold mb-[theme(--spacing-lg)]">Effortless Comparisons</h3>
+          <p class="text-foreground-secondary">
             Comparing options is as easy as browsing. Get insights on service
             quality, equipment standards, and financial benefits at a glance.
           </p>
         </Card>
-        <Card class="p-[theme(--spacing-lg)] hover:shadow-[theme(--shadow-card)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all text-center">
-          <div class="text-4xl mb-[theme(--spacing-lg)] block">🎯</div>
-          <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">Customer-First Support</h3>
-          <p class="text-foreground dark:text-foreground-secondary text-sm">
+        <Card class="p-6 text-center">
+          <h3 class="text-lg font-semibold mb-[theme(--spacing-lg)]">Customer-First Support</h3>
+          <p class="text-foreground-secondary">
             Our support team is dedicated to guiding you through every step,
             from initial inquiries to post-installation feedback.
           </p>
@@ -193,14 +177,11 @@
     </section>
 
     <!-- Call to Action Section -->
-    <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] mb-[theme(--card-gap)] shadow-[theme(--shadow-card)]">
+    <section class="rounded-[theme(--radius-lg)] bg-card p-6 mb-[theme(--card-gap)] shadow-card max-w-2xl mx-auto">
       <div class="text-center mb-[theme(--card-gap)]">
-        <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Building a Brighter Future, Together</h2>
-        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-          <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-foreground-muted rounded"></span>
-        </div>
+        <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)]">Building a Brighter Future, Together</h2>
       </div>
-      <p class="text-sm text-foreground dark:text-foreground-secondary leading-relaxed mb-[theme(--spacing-2xl)]">
+      <p class="text-lg text-foreground-secondary leading-relaxed mb-[theme(--spacing-2xl)]">
         Choosing solar isn't just about savings; it's about building a
         sustainable tomorrow. At Solar Vipani, we're committed to making that
         journey clear and accessible for every household and business. Whether
@@ -208,7 +189,7 @@
         here to guide you every step of the way.
       </p>
       <div class="bg-secondary p-[theme(--spacing-lg)] rounded-[theme(--radius-md)] text-center">
-        <p>
+        <p class="text-lg">
           <strong
             >Step into a Greener Future with Solar Vipani — where High
             Convenience, Best Price and Low Risk is assured through Design</strong
@@ -220,23 +201,23 @@
     <!-- Contact Information -->
     <section class="text-center p-[theme(--card-padding-y)] mb-[theme(--card-gap)]">
       <div class="mb-[theme(--card-gap)]">
-        <p class="text-sm mb-[theme(--spacing-lg)]">
+        <p class="text-lg mb-[theme(--spacing-lg)]">
           Write to us at
-          <a href="mailto:admin@solarvipani.com" class="font-semibold text-primary hover:underline">admin@solarvipani.com</a>
+          <a href="mailto:admin@solarvipani.com" class="font-semibold text-accent hover:underline">admin@solarvipani.com</a>
           <br />
-          or call us at <a href="tel:+918983066701" class="font-semibold text-primary hover:underline">+91 8983066701</a>
+          or call us at <a href="tel:+918983066701" class="font-semibold text-accent hover:underline">+91 8983066701</a>
         </p>
       </div>
 
       <div class="mb-[theme(--card-gap)]">
-        <h4 class="text-lg font-semibold text-foreground dark:text-foreground-secondary mb-[theme(--spacing-lg)]">Follow us on:</h4>
+        <h4 class="text-lg font-semibold mb-[theme(--spacing-lg)]">Follow us on:</h4>
         <div class="flex justify-center gap-[theme(--card-gap)] flex-wrap">
           {#each socialLinks as link}
             <a
               href={link.url}
               target="_blank"
               aria-label={link.label}
-              class="flex items-center gap-2 text-primary hover:text-primary-hover dark:hover:text-primary font-medium transition-colors hover:-translate-y-[theme(--hover-lift-sm)] transform"
+              class="flex items-center gap-2 text-accent hover:opacity-90 font-medium transition-opacity duration-100"
             >
               {@html link.icon}
               <span>{link.label}</span>
@@ -246,9 +227,9 @@
       </div>
 
       <div class="pt-[theme(--card-padding-y)]">
-        <p class="text-foreground dark:text-foreground-secondary">
-          <a href="/in/terms-of-use" class="text-primary hover:underline">Terms of Use</a> |
-          <a href="/in/privacy-policy" class="text-primary hover:underline">Privacy Policy</a>
+        <p class="text-foreground-secondary">
+          <a href="/in/terms-of-use" class="text-accent hover:underline">Terms of Use</a> |
+          <a href="/in/privacy-policy" class="text-accent hover:underline">Privacy Policy</a>
         </p>
       </div>
     </section>

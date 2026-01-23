@@ -167,7 +167,7 @@
           {#if business.businessfilled && business.description}
             <div class="flex flex-col gap-[theme(--spacing-lg)]">
               <h3 class="text-lg font-semibold text-primary m-0">About</h3>
-              <p class="m-0 leading-relaxed text-foreground dark:text-foreground-secondary">{business.description}</p>
+              <p class="m-0 leading-relaxed text-foreground text-foreground-secondary">{business.description}</p>
             </div>
           {/if}
 
@@ -203,7 +203,7 @@
                       stroke-width="2"
                       stroke-linecap="round"
                       stroke-linejoin="round"
-                      class="text-primary flex-shrink-0 mt-1"
+                      class="text-accent flex-shrink-0 mt-1"
                     >
                       <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                     </svg>
@@ -211,7 +211,7 @@
                       <span class="font-semibold text-sm text-muted-foreground">Phone</span>
                       <a
                         href="tel:{business.phonenumber}"
-                        class="text-primary no-underline transition-colors hover:text-primary/80 hover:underline break-all"
+                        class="text-accent no-underline transition-colors hover:opacity-90 hover:underline break-all"
                         >{business.phonenumber}</a
                       >
                     </div>
@@ -229,7 +229,7 @@
                       stroke-width="2"
                       stroke-linecap="round"
                       stroke-linejoin="round"
-                      class="text-primary flex-shrink-0 mt-1"
+                      class="text-accent flex-shrink-0 mt-1"
                     >
                       <rect x="2" y="4" width="20" height="16" rx="2"></rect>
                       <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
@@ -238,7 +238,7 @@
                       <span class="font-semibold text-sm text-muted-foreground">Email</span>
                       <a
                         href="mailto:{business.email}"
-                        class="text-primary no-underline transition-colors hover:text-primary/80 hover:underline break-all">{business.email}</a
+                        class="text-accent no-underline transition-colors hover:opacity-90 hover:underline break-all">{business.email}</a
                       >
                     </div>
                   </div>
@@ -255,7 +255,7 @@
                       stroke-width="2"
                       stroke-linecap="round"
                       stroke-linejoin="round"
-                      class="text-primary flex-shrink-0 mt-1"
+                      class="text-accent flex-shrink-0 mt-1"
                     >
                       <circle cx="12" cy="12" r="10"></circle>
                       <path d="M2 12h20"></path>
@@ -267,7 +267,7 @@
                         href={business.website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="text-primary no-underline transition-colors hover:text-primary/80 hover:underline break-all">{business.website}</a
+                        class="text-accent no-underline transition-colors hover:opacity-90 hover:underline break-all">{business.website}</a
                       >
                     </div>
                   </div>
@@ -284,7 +284,7 @@
                       stroke-width="2"
                       stroke-linecap="round"
                       stroke-linejoin="round"
-                      class="text-primary flex-shrink-0 mt-1"
+                      class="text-accent flex-shrink-0 mt-1"
                     >
                       <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                       <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
@@ -299,7 +299,7 @@
                         )}"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="text-primary no-underline transition-colors hover:text-primary/80 hover:underline break-all"
+                        class="text-accent no-underline transition-colors hover:opacity-90 hover:underline break-all"
                         >{business.instagram_id}</a
                       >
                     </div>
@@ -324,14 +324,14 @@
                       stroke-width="2"
                       stroke-linecap="round"
                       stroke-linejoin="round"
-                      class="text-primary flex-shrink-0 mt-1"
+                      class="text-accent flex-shrink-0 mt-1"
                     >
                       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                       <circle cx="12" cy="10" r="3"></circle>
                     </svg>
                     <div class="flex flex-col gap-1 min-w-0">
                       <span class="font-semibold text-sm text-muted-foreground">Address</span>
-                      <span class="text-foreground dark:text-foreground-secondary">{business.address}</span>
+                      <span class="text-foreground text-foreground-secondary">{business.address}</span>
                     </div>
                   </div>
                 {/if}
@@ -347,7 +347,7 @@
                       stroke-width="2"
                       stroke-linecap="round"
                       stroke-linejoin="round"
-                      class="text-primary flex-shrink-0 mt-1"
+                      class="text-accent flex-shrink-0 mt-1"
                     >
                       <path d="M6 4h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"></path>
                       <path d="M9 9h1v6H9z"></path>
@@ -356,7 +356,7 @@
                     </svg>
                     <div class="flex flex-col gap-1 min-w-0">
                       <span class="font-semibold text-sm text-muted-foreground">City</span>
-                      <span class="text-foreground dark:text-foreground-secondary">{business.city}</span>
+                      <span class="text-foreground text-foreground-secondary">{business.city}</span>
                     </div>
                   </div>
                 {/if}
@@ -372,14 +372,14 @@
                       stroke-width="2"
                       stroke-linecap="round"
                       stroke-linejoin="round"
-                      class="text-primary flex-shrink-0 mt-1"
+                      class="text-accent flex-shrink-0 mt-1"
                     >
                       <circle cx="12" cy="12" r="9"></circle>
                       <path d="M12 7v5l3 3"></path>
                     </svg>
                     <div class="flex flex-col gap-1 min-w-0">
                       <span class="font-semibold text-sm text-muted-foreground">State</span>
-                      <span class="text-foreground dark:text-foreground-secondary">{business.state}</span>
+                      <span class="text-foreground text-foreground-secondary">{business.state}</span>
                     </div>
                   </div>
                 {/if}
@@ -395,7 +395,7 @@
                       stroke-width="2"
                       stroke-linecap="round"
                       stroke-linejoin="round"
-                      class="text-primary flex-shrink-0 mt-1"
+                      class="text-accent flex-shrink-0 mt-1"
                     >
                       <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                       <polyline points="9,22 9,12 15,12 15,22"></polyline>
@@ -434,7 +434,7 @@
           {:else}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] mt-[theme(--spacing-2xl)]">
               {#each projects as project (project.id)}
-                <div class="rounded-[theme(--radius-lg)] overflow-hidden shadow-[theme(--shadow-card)] transition-transform duration-100 hover:shadow-card hover:-translate-y-1 bg-card h-full">
+                <div class="rounded-[theme(--radius-lg)] overflow-hidden shadow-card transition-all duration-100 hover:shadow-card bg-card h-full">
                   <a
                     href="/in/solar-panel-installer/{businessSlug}/project/{project.project_slug}"
                     class="block no-underline text-inherit transition-all"
@@ -496,7 +496,7 @@
             </div>
           </div>
           <div class="text-center">
-            <p class="text-lg mb-[theme(--spacing-lg)] text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
+            <p class="text-lg mb-[theme(--spacing-lg)] text-foreground text-foreground-secondary max-w-2xl mx-auto">
               If you're interested in exploring other solar businesses in {business.city},
               visit our directory page.
             </p>

@@ -23,7 +23,7 @@
 >
 	{#if heading}
 		<CommandPrimitive.GroupHeading
-			class="text-muted-foreground text-xs font-medium [padding-inline:var(--command-group-heading-padding-x)] [padding-block:var(--command-group-heading-padding-y)]"
+			class="text-muted-foreground text-sm font-medium [padding-inline:var(--command-group-heading-padding-x)] [padding-block:var(--command-group-heading-padding-y)]"
 		>
 			{heading}
 		</CommandPrimitive.GroupHeading>
