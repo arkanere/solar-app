@@ -25,7 +25,7 @@
 		bind:this={ref}
 		data-slot={dataSlot}
 		class={cn(
-			"flex h-9 w-full min-w-0 rounded-[var(--radius-md)] border border-input bg-transparent px-[var(--input-padding-x)] pt-[var(--input-padding-y-file)] text-sm font-medium shadow-xs transition-all duration-100 outline-none placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 disabled:cursor-not-allowed disabled:opacity-50",
+			"flex h-9 w-full min-w-0 rounded-[var(--radius-md)] border border-input bg-transparent px-3 pt-1.5 text-sm font-medium shadow-xs transition-all duration-100 outline-none placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 disabled:cursor-not-allowed disabled:opacity-50",
 			"focus-visible:ring-2 ring-ring ring-offset-2",
 			"aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
 			className
@@ -40,7 +40,7 @@
 		bind:this={ref}
 		data-slot={dataSlot}
 		class={cn(
-			"flex h-9 w-full min-w-0 rounded-[var(--radius-md)] border border-input bg-background px-[var(--input-padding-x)] py-[var(--input-padding-y-default)] text-base shadow-xs transition-all duration-100 outline-none placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+			"flex h-9 w-full min-w-0 rounded-[var(--radius-md)] border border-input bg-background px-3 py-1 text-base shadow-xs transition-all duration-100 outline-none placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
 			"focus-visible:ring-2 ring-ring ring-offset-2",
 			"aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
 			className

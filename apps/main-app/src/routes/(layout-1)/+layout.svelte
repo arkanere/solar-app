@@ -204,10 +204,8 @@
   <div class="flex items-center gap-[theme(--spacing-lg)]">
     <!-- Translate Dropdown -->
     <DropdownMenu.Root>
-      <DropdownMenu.Trigger asChild>
-        <button class="bg-card whitespace-nowrap text-foreground hover:opacity-90 px-[theme(--spacing-lg)] py-[theme(--spacing-lg)] text-[theme(--font-size-lg)] rounded-[theme(--radius-xl)] transition-all duration-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-          🌐 Translate
-        </button>
+      <DropdownMenu.Trigger class="bg-card whitespace-nowrap text-foreground hover:opacity-90 px-[theme(--spacing-lg)] py-[theme(--spacing-lg)] text-[theme(--font-size-lg)] rounded-[theme(--radius-xl)] transition-all duration-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+        🌐 Translate
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
         {#each indianLanguages as language}
