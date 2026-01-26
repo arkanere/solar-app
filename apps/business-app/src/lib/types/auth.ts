@@ -70,7 +70,6 @@ export interface Business {
 	slug: string;
 	login_email: string;
 	isvisible: boolean;
-	tier3: boolean;
 }
 
 export interface BusinessPartial {

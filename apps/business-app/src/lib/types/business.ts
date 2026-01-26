@@ -43,9 +43,8 @@ export interface BusinessProfile {
 	notes?: string;
 	services?: string;
 
-	// Visibility and tier
+	// Visibility
 	isvisible: boolean;
-	tier3: boolean;
 
 	// Ranking score
 	rscore?: number;
