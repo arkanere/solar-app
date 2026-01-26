@@ -42,34 +42,26 @@
 		if (isValid) {
 			isSubmitting = true;
 
-			try {
-				const response = await fetch('/api/submitLead', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({
-						name,
-						phone,
-						pinCode,
-						type,
-						comment,
-						email,
-						urlParam: `/solar-panel-installer/${businessSlug}`,
-						businessName
-					})
-				});
+			// Navigate to thank-you page immediately for better UX
+			goto('/thank-you');
 
-				const result: { success: boolean; error?: string } = await response.json();
-
-				if (result.success) {
-					goto('/thank-you');
-				} else {
-					console.error('Submission failed:', result.error);
-				}
-			} catch (error) {
+			// Submit form in background (fire and forget)
+			fetch('/api/submitLead', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					name,
+					phone,
+					pinCode,
+					type,
+					comment,
+					email,
+					urlParam: `/solar-panel-installer/${businessSlug}`,
+					businessName
+				})
+			}).catch((error) => {
 				console.error('Error submitting form:', error);
-			} finally {
-				isSubmitting = false;
-			}
+			});
 		}
 	}
 </script>
