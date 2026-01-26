@@ -20,13 +20,9 @@
 
 		if (!business.businessfilled) {
 			return `${visibilityFlag} Tier-1  ${business.tag}`;
-		} else if (business.businessfilled && !business.tier3) {
+		} else {
 			return `${visibilityFlag} Tier-2  ${business.tag}`;
-		} else if (business.businessfilled && business.tier3) {
-			return `${visibilityFlag} Tier-3  ${business.tag}`;
 		}
-
-		return `${visibilityFlag} Unknown  ${business.tag}`;
 	}
 </script>
 

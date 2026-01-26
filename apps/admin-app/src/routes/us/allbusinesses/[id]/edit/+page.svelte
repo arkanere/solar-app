@@ -264,14 +264,6 @@
 			</select>
 		</div>
 
-		<div class="form-group">
-			<label for="tier3">Tier 3</label>
-			<select id="tier3" name="tier3" bind:value={updatedBusiness.tier3} required>
-				<option value={true}>True</option>
-				<option value={false}>False</option>
-			</select>
-		</div>
-
 		<div class="button-group">
 			<button type="submit" class="primary-button">Update Business</button>
 		</div>

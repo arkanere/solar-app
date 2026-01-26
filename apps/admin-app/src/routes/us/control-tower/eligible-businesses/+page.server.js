@@ -42,8 +42,8 @@ export async function load() {
 			LEFT JOIN leaddata_claimrequests lcr ON lcr.business_id = b.id
 			WHERE b.isvisible = true 
 			AND (b.slug IS NULL OR b.slug NOT LIKE '%-branch-%')
-			GROUP BY b.id, b.businessname, b.district, b.address, b.phonenumber, b.email, 
-					 b.created_at, b.businessfilled, b.tier3, b.isvisible, b.slug, b.state,
+			GROUP BY b.id, b.businessname, b.district, b.address, b.phonenumber, b.email,
+					 b.created_at, b.businessfilled, b.isvisible, b.slug, b.state,
 					 b.website, b.description, b.magic_link_token
 			HAVING (
 				-- Non-exclusive available + claimed leads > 0
@@ -86,38 +86,34 @@ export async function load() {
 		const businessCount = businesses.length;
 		
 		// Calculate no engagement count (non-exclusive available > 0 AND claimed = 0)
-		const noEngagementCount = businesses.filter(b => 
+		const noEngagementCount = businesses.filter(b =>
 			(b.non_exclusive_available_count || 0) > 0 && (b.claimed_leads_count || 0) === 0
 		).length;
-		
-		const tier3Count = businesses.filter(b => b.tier3 === true).length;
-		
+
 		// Group by tier
 		const tier1Count = businesses.filter(b => !b.businessfilled).length;
-		const tier2Count = businesses.filter(b => b.businessfilled && !b.tier3).length;
+		const tier2Count = businesses.filter(b => b.businessfilled).length;
 
-		return { 
+		return {
 			businesses,
 			totalCount,
 			businessCount,
 			noEngagementCount,
 			tier1Count,
-			tier2Count,
-			tier3Count
+			tier2Count
 		};
 	} catch (error) {
 		console.error('Database query error:', error);
 		console.error('Error details:', error.message);
 		console.error('Error stack:', error.stack);
-		return { 
+		return {
 			errorMessage: 'Failed to load eligible businesses data',
 			businesses: [],
 			totalCount: 0,
 			businessCount: 0,
 			noEngagementCount: 0,
 			tier1Count: 0,
-			tier2Count: 0,
-			tier3Count: 0
+			tier2Count: 0
 		};
 	}
 }

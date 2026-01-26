@@ -19,13 +19,12 @@ export async function POST({ request }) {
 
 		// Fetch businesses from the same district with magic_link_token
 		const businessesResult = await pool.query(
-			`SELECT id AS business_id, login_email, slug, magic_link_token 
-       FROM businesses_1 
-       WHERE district = $1 
-         AND isvisible = true 
+			`SELECT id AS business_id, login_email, slug, magic_link_token
+       FROM businesses_1
+       WHERE district = $1
+         AND isvisible = true
          AND login_email <> 'businessadminz@solar.com'
-         AND businessfilled = false
-         AND tier3 = false`,
+         AND businessfilled = false`,
 			[lead.district]
 		);
 

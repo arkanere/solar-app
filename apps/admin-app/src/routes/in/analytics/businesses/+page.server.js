@@ -59,10 +59,9 @@ export async function load() {
 
 		// Business status breakdown (excluding branches)
 		const statusBreakdown = await pool.query(`
-			SELECT 
+			SELECT
 				COUNT(*) FILTER (WHERE businessfilled = false) as tier1_count,
-				COUNT(*) FILTER (WHERE businessfilled = true AND tier3 = false) as tier2_count,
-				COUNT(*) FILTER (WHERE businessfilled = true AND tier3 = true) as tier3_count,
+				COUNT(*) FILTER (WHERE businessfilled = true) as tier2_count,
 				COUNT(*) FILTER (WHERE isvisible = false) as hidden_count
 			FROM businesses_1
 			WHERE (slug IS NULL OR slug NOT LIKE '%-branch-%')
@@ -90,7 +89,6 @@ export async function load() {
 				statusBreakdown: {
 					tier1_count: 0,
 					tier2_count: 0,
-					tier3_count: 0,
 					hidden_count: 0
 				}
 			}

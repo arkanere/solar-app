@@ -63,8 +63,7 @@ export const actions = {
 			zipcode: data.get('zipcode'),
 			rscore: parseInt(data.get('rscore'), 10), // Convert rscore to integer
 			isvisible: data.get('isvisible') === 'true', // Convert isvisible to boolean
-			businessfilled: data.get('businessfilled') === 'true', // Convert businessfilled to boolean
-			tier3: data.get('tier3') === 'true' // Convert tier3 to boolean
+			businessfilled: data.get('businessfilled') === 'true' // Convert businessfilled to boolean
 		};
 
 		try {
@@ -73,8 +72,8 @@ export const actions = {
         SET businessname = $1, description = $2, services = $3::integer[], address = $4, pluscode = $5, phonenumber = $6,
             whatsapp = $7, email = $8, login_email = $9, website = $10, instagram_id = $11, google_maps_link = $12,
             ein = $13, state = $14, county = $15, tag = $16, slug = $17, notes = $18, city = $19, zipcode = $20,
-            rscore = $21, isvisible = $22, businessfilled = $23, tier3 = $24
-        WHERE id = $25
+            rscore = $21, isvisible = $22, businessfilled = $23
+        WHERE id = $24
       `;
 
 			const values = [
@@ -101,7 +100,6 @@ export const actions = {
 				updatedBusiness.rscore,
 				updatedBusiness.isvisible,
 				updatedBusiness.businessfilled,
-				updatedBusiness.tier3,
 				id
 			];
 

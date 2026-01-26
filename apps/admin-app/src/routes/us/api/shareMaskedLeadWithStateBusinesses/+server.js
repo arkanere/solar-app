@@ -36,13 +36,12 @@ export async function POST({ request }) {
 		// Fetch businesses from the same state with magic_link_token
 		const businessesResult = await pool.query(
 			`SELECT id AS business_id, login_email, slug, magic_link_token, county
-       FROM us_businesses 
-       WHERE state = $1 
-         AND isvisible = true 
-         AND magic_link_token IS NOT NULL 
+       FROM us_businesses
+       WHERE state = $1
+         AND isvisible = true
+         AND magic_link_token IS NOT NULL
          AND magic_link_token <> ''
-         AND login_email <> 'businessadminz@solar.com'
-         AND tier3 = true`,
+         AND login_email <> 'businessadminz@solar.com'`,
 			[state]
 		);
 

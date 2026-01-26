@@ -21,11 +21,10 @@ export async function POST({ request }) {
 		const businessesResult = await pool.query(
 			`SELECT id AS business_id, login_email, slug, magic_link_token
        FROM us_businesses
-       WHERE county = $1 
-         AND isvisible = true 
+       WHERE county = $1
+         AND isvisible = true
          AND login_email <> 'businessadminz@solar.com'
-         AND businessfilled = false
-         AND tier3 = false`,
+         AND businessfilled = false`,
 			[lead.county]
 		);
 
