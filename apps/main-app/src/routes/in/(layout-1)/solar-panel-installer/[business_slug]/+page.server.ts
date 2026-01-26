@@ -20,7 +20,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		const businessResult = await pool.query(
 			`SELECT businessname, description, phonenumber, email, website,
 			slug, address, district,
-			state, city, tag, rscore, businessfilled, tier3, services, instagram_id, google_maps_link
+			state, city, tag, rscore, businessfilled, services, instagram_id, google_maps_link
 			FROM businesses_1 WHERE slug = $1 and isvisible = true`,
 			[slug]
 		);
@@ -31,9 +31,9 @@ export const load: PageServerLoad = async ({ params }) => {
 
 		const business = businessResult.rows[0];
 
-		// Fetch projects data if business is tier3 and filled
+		// Fetch projects data if business is filled
 		let projects = [];
-		if (business.businessfilled && business.tier3) {
+		if (business.businessfilled) {
 			// Extract main business slug by removing branch suffix if present
 			let mainBusinessSlug = slug;
 			const branchPattern = /-branch-[a-zA-Z0-9]+$/;
