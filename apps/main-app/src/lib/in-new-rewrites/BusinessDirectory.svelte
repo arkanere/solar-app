@@ -56,20 +56,20 @@
 	}
 </script>
 
-<div class="w-full max-w-sm mx-auto">
-	<Card.Root>
+<div class="w-full max-w-[theme(--max-width-sm)] mx-auto">
+	<Card.Root class="border border-[theme(--color-border)] shadow-[theme(--shadow-lg)]">
 		<Card.Header>
-			<Card.Title class="text-2xl">Solar Installer Directory</Card.Title>
+			<Card.Title class="text-[theme(--font-size-2xl)] leading-[theme(--font-size-2xl--line-height)]">Solar Installer Directory</Card.Title>
 			<Card.Description>
 				Select state and district to view installer listings
 			</Card.Description>
 		</Card.Header>
 
-		<Card.Content class="flex flex-col gap-4">
-			<div class="flex flex-col gap-2">
+		<Card.Content class="flex flex-col gap-[theme(--card-gap)]">
+			<div class="flex flex-col gap-[theme(--form-element-field-gap)]">
 				<Label.Root for="state">State</Label.Root>
 				<Select.Root type="single" bind:value={selectedState} onValueChange={handleStateChange}>
-					<Select.Trigger id="state" class="w-full h-9">
+					<Select.Trigger id="state" class="w-full">
 						{selectedState || 'Select a state'}
 					</Select.Trigger>
 					<Select.Content>
@@ -80,10 +80,10 @@
 				</Select.Root>
 			</div>
 
-			<div class="flex flex-col gap-2">
+			<div class="flex flex-col gap-[theme(--form-element-field-gap)]">
 				<Label.Root for="district">District</Label.Root>
 				<Select.Root type="single" bind:value={selectedDistrict} disabled={!selectedState || isLoading}>
-					<Select.Trigger id="district" class="w-full h-9">
+					<Select.Trigger id="district" class="w-full">
 						{#if isLoading}
 							Loading districts...
 						{:else if !selectedState}
@@ -105,7 +105,7 @@
 			<Button
 				onclick={handleDistrictSelection}
 				disabled={!selectedState || !selectedDistrict}
-				class="w-full mt-4"
+				class="w-full mt-[theme(--card-gap)]"
 			>
 				View Installers
 			</Button>

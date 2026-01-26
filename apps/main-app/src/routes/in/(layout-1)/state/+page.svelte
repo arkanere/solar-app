@@ -94,10 +94,10 @@
 	/>
 </svelte:head>
 
-<main class="w-full bg-background text-foreground overflow-x-hidden transition-colors duration-100 flex flex-col items-center px-[theme(--container-padding)] py-[theme(--spacing-2xl)] min-h-screen">
+<main class="w-full bg-background text-foreground overflow-x-hidden transition-colors duration-300 flex flex-col items-center px-[theme(--container-padding)] py-[theme(--spacing-2xl)] min-h-screen">
 	<!-- State List Section -->
-	<div class="max-w-4xl w-full mb-[theme(--spacing-4xl)]">
-		<h1 class="text-[theme(--font-size-2xl)] md:text-[theme(--font-size-4xl)] font-semibold text-center mb-[theme(--spacing-lg)] text-primary">
+	<div class="max-w-4xl w-full mb-[theme(--spacing-3xl)]">
+		<h1 class="text-[theme(--font-size-3xl)] md:text-[theme(--font-size-4xl)] font-semibold text-center mb-[theme(--spacing-lg)] text-primary">
 			Solar Panel Installers by State
 		</h1>
 
@@ -110,9 +110,9 @@
 				<li>
 					<a
 						href={`/in/state/${formatStateSlug(state)}`}
-						class="block h-full bg-card rounded-[theme(--radius-xl)] p-[theme(--card-padding-y)] bg-background-secondary hover:shadow-card hover:border-primary/50 transition-all duration-100 hover:-translate-y-1"
+						class="block h-full bg-card rounded-[theme(--radius-xl)] p-[theme(--card-padding-y)] border border-border hover:shadow-lg hover:border-primary/50 transition-all duration-300 hover:-translate-y-1"
 					>
-						<h2 class="text-[theme(--font-size-lg)] font-semibold mb-[theme(--spacing-lg)] text-primary">
+						<h2 class="text-[theme(--font-size-xl)] font-semibold mb-[theme(--spacing-sm)] text-primary">
 							{state}
 						</h2>
 						<p class="text-muted-foreground mb-[theme(--spacing-lg)] flex-grow">
@@ -124,7 +124,7 @@
 								xmlns="http://www.w3.org/2000/svg"
 								viewBox="0 0 20 20"
 								fill="currentColor"
-								class="w-5 h-5 ml-2 transition-transform duration-100 group-hover:translate-x-1"
+								class="w-5 h-5 ml-2 transition-transform duration-300 group-hover:translate-x-1"
 							>
 								<path
 									fill-rule="evenodd"
@@ -140,14 +140,14 @@
 	</div>
 
 	<!-- Services Section -->
-	<div class="max-w-4xl w-full mb-[theme(--spacing-4xl)]">
-		<h2 class="text-[theme(--font-size-2xl)] font-semibold text-center mb-[theme(--spacing-2xl)] text-primary">
+	<div class="max-w-4xl w-full mb-[theme(--spacing-3xl)]">
+		<h2 class="text-[theme(--font-size-2xl)] font-semibold text-center mb-[theme(--spacing-2xl)] text-secondary">
 			Services Provided by Solar Panel Installers
 		</h2>
 		<ul class="grid grid-cols-1 md:grid-cols-2 gap-[theme(--card-gap)] list-none p-0">
 			<li>
-				<Card class="hover:-translate-y-1 transition-transform duration-100">
-					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-lg)]">Solar panel installations at Homes, Apartments, and Businesses</strong>
+				<Card class="hover:shadow-md transition-all duration-300">
+					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-md)]">Solar panel installations at Homes, Apartments, and Businesses</strong>
 					<p class="text-muted-foreground leading-relaxed">
 						Professional installation of solar panels tailored to residential, commercial, and
 						industrial needs. Commonly used systems for independant homes and bunglows are <strong
@@ -158,8 +158,8 @@
 				</Card>
 			</li>
 			<li>
-				<Card class="hover:-translate-y-1 transition-transform duration-100">
-					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-lg)]">Solar Modules and Inverters</strong>
+				<Card class="hover:shadow-md transition-all duration-300">
+					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-md)]">Solar Modules and Inverters</strong>
 					<p class="text-muted-foreground leading-relaxed">
 						Supply and installation of high-quality solar modules and inverters to ensure efficient
 						energy generation.
@@ -167,8 +167,8 @@
 				</Card>
 			</li>
 			<li>
-				<Card class="hover:-translate-y-1 transition-transform duration-100">
-					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-lg)]">
+				<Card class="hover:shadow-md transition-all duration-300">
+					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-md)]">
 						Documentation and Permissions for Subsidy under <a
 							href="/in/blogs/pm-surya-ghar-yojana"
 							target="_blank"
@@ -184,8 +184,8 @@
 				</Card>
 			</li>
 			<li>
-				<Card class="hover:-translate-y-1 transition-transform duration-100">
-					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-lg)]">Net Metering</strong>
+				<Card class="hover:shadow-md transition-all duration-300">
+					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-md)]">Net Metering</strong>
 					<p class="text-muted-foreground leading-relaxed">
 						Setup of net metering systems to help you save on electricity bills by feeding surplus
 						power back into the grid.
@@ -193,8 +193,8 @@
 				</Card>
 			</li>
 			<li>
-				<Card class="hover:-translate-y-1 transition-transform duration-100">
-					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-lg)]">Solar Financing through Banks and NBFCs</strong>
+				<Card class="hover:shadow-md transition-all duration-300">
+					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-md)]">Solar Financing through Banks and NBFCs</strong>
 					<p class="text-muted-foreground leading-relaxed">
 						Guidance on financing options, loans, and schemes offered by banks and non-banking
 						financial companies. Nowadays <strong> Zero cost EMI schemes </strong>have become popular.
@@ -202,8 +202,8 @@
 				</Card>
 			</li>
 			<li>
-				<Card class="hover:-translate-y-1 transition-transform duration-100">
-					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-lg)]">Routine Maintenance and Cleaning</strong>
+				<Card class="hover:shadow-md transition-all duration-300">
+					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-md)]">Routine Maintenance and Cleaning</strong>
 					<p class="text-muted-foreground leading-relaxed">
 						Regular maintenance and cleaning services to keep your solar system running efficiently.
 					</p>
@@ -213,8 +213,8 @@
 	</div>
 
 	<!-- FAQ Section -->
-	<div class="max-w-4xl w-full mb-[theme(--spacing-4xl)]">
-		<h2 class="text-[theme(--font-size-2xl)] font-semibold text-center mb-[theme(--spacing-2xl)] text-primary">
+	<div class="max-w-4xl w-full mb-[theme(--spacing-3xl)]">
+		<h2 class="text-[theme(--font-size-2xl)] font-semibold text-center mb-[theme(--spacing-2xl)] text-secondary">
 			Frequently Asked Questions
 		</h2>
 		<Accordion class="w-full">
@@ -233,7 +233,7 @@
 
 	<!-- About Section -->
 	<div class="max-w-4xl w-full">
-		<h2 class="text-[theme(--font-size-2xl)] font-semibold text-center mb-[theme(--spacing-2xl)] text-primary">
+		<h2 class="text-[theme(--font-size-2xl)] font-semibold text-center mb-[theme(--spacing-2xl)] text-secondary">
 			About Solarvipani
 		</h2>
 
@@ -273,20 +273,20 @@
 					href="https://www.facebook.com/p/Solar-Vipani-61556033262509/"
 					target="_blank"
 					aria-label="Facebook"
-					class="text-foreground hover:opacity-90 font-medium transition-all"
+					class="text-primary hover:text-primary/80 font-medium transition-colors"
 				>
 					Facebook
 				</a>
-				<a href="https://x.com/Solarvipani" target="_blank" aria-label="Twitter" class="text-foreground hover:opacity-90 font-medium transition-all"
+				<a href="https://x.com/Solarvipani" target="_blank" aria-label="Twitter" class="text-primary hover:text-primary/80 font-medium transition-colors"
 					>Twitter</a
 				>
-				<a href="https://www.linkedin.com/company/solar-vipani/" target="_blank" aria-label="LinkedIn" class="text-foreground hover:opacity-90 font-medium transition-all"
+				<a href="https://www.linkedin.com/company/solar-vipani/" target="_blank" aria-label="LinkedIn" class="text-primary hover:text-primary/80 font-medium transition-colors"
 					>LinkedIn</a
 				>
-				<a href="https://www.instagram.com/solar.vipani/" target="_blank" aria-label="Instagram" class="text-foreground hover:opacity-90 font-medium transition-all"
+				<a href="https://www.instagram.com/solar.vipani/" target="_blank" aria-label="Instagram" class="text-primary hover:text-primary/80 font-medium transition-colors"
 					>Instagram</a
 				>
-				<a href="https://wa.me/918983066701" target="_blank" aria-label="Whatsapp" class="text-foreground hover:opacity-90 font-medium transition-all"
+				<a href="https://wa.me/918983066701" target="_blank" aria-label="Whatsapp" class="text-primary hover:text-primary/80 font-medium transition-colors"
 					>Whatsapp</a
 				>
 			</div>

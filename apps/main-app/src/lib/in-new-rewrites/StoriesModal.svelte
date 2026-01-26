@@ -118,39 +118,39 @@
   <Dialog.Content class="fixed inset-0 z-50 flex items-center justify-center bg-black/95 border-0 p-0 rounded-0 w-full max-w-none h-full max-h-none">
     <!-- Loading State -->
     {#if $storiesLoading}
-      <div class="flex flex-col items-center justify-center w-full max-w-sm gap-4 px-[theme(--spacing-lg)]">
+      <div class="flex flex-col items-center justify-center w-full max-w-[theme(--max-width-sm)] gap-[theme(--spacing-lg)] px-[theme(--spacing-md)]">
         <Skeleton class="h-96 w-full rounded-[theme(--radius-lg)] bg-white/10" />
         <Skeleton class="h-12 w-full rounded-[theme(--radius-md)] bg-white/10" />
         <Skeleton class="h-8 w-2/3 rounded-[theme(--radius-md)] bg-white/10" />
         <p class="text-white text-center">Loading stories...</p>
       </div>
     {:else if $storiesError}
-      <Card class="w-full max-w-sm bg-destructive-muted border-destructive">
+      <Card class="w-full max-w-[theme(--max-width-sm)] bg-[hsl(var(--destructive)/0.1)] border-[hsl(var(--destructive)/0.2)]">
         <CardHeader>
           <CardTitle class="text-destructive">Error Loading Stories</CardTitle>
         </CardHeader>
-        <CardContent class="flex flex-col gap-4">
-          <p class="text-foreground-secondary">{$storiesError}</p>
+        <CardContent class="flex flex-col gap-[theme(--spacing-md)]">
+          <p class="text-destructive/90">{$storiesError}</p>
           <Button onclick={closeStory} variant="default">Close</Button>
         </CardContent>
       </Card>
     {:else if $storiesData.length === 0}
-      <Card class="w-full max-w-sm">
+      <Card class="w-full max-w-[theme(--max-width-sm)]">
         <CardHeader>
           <CardTitle>No Stories Available</CardTitle>
         </CardHeader>
-        <CardContent class="flex flex-col gap-4">
+        <CardContent class="flex flex-col gap-[theme(--spacing-md)]">
           <p class="text-foreground/90">No stories available at the moment.</p>
           <Button onclick={closeStory} variant="default">Close</Button>
         </CardContent>
       </Card>
     {:else if showViewAll}
       <!-- View All Screen -->
-      <Card class="w-full max-w-sm">
+      <Card class="w-full max-w-[theme(--max-width-sm)]">
         <CardHeader>
           <CardTitle class="text-center">You've seen all our latest solar stories!</CardTitle>
         </CardHeader>
-        <CardContent class="flex flex-col gap-4">
+        <CardContent class="flex flex-col gap-[theme(--spacing-sm)]">
           <Button
             onclick={() => window.location.href = "/in/recent-solar-installation-projects"}
             variant="default"
@@ -176,9 +176,9 @@
       </Card>
     {:else}
       <!-- Story Viewer -->
-      <div class="relative w-full h-full overflow-hidden flex flex-col bg-gradient-to-b from-black/80 to-black/40 max-w-sm" style="max-height: 700px;">
+      <div class="relative w-full h-full overflow-hidden flex flex-col bg-gradient-to-b from-black/80 to-black/40 max-w-[theme(--max-width-sm)]" style="max-height: 700px;">
         <!-- Progress Bars -->
-        <div class="flex absolute top-0 left-0 right-0 z-40 gap-4 p-[theme(--spacing-lg)]">
+        <div class="flex absolute top-0 left-0 right-0 z-40 gap-[theme(--spacing-xs)] p-[theme(--spacing-md)]">
           {#each $storiesData as _, index}
             <div class="flex-1">
               <Progress
@@ -195,16 +195,16 @@
         </div>
 
         <!-- Story Header -->
-        <div class="flex items-center justify-between relative z-30 p-[theme(--spacing-lg)] pt-16">
-          <div class="flex items-center gap-4">
-            <div class="w-10 h-10 rounded-full bg-card flex items-center justify-center text-foreground font-semibold text-sm">
+        <div class="flex items-center justify-between relative z-30 p-[theme(--spacing-md)] pt-16">
+          <div class="flex items-center gap-[theme(--spacing-sm)]">
+            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold text-sm">
               {formatBusinessName(String($storiesData[currentStoryIndex]?.business_slug || '')).charAt(0)}
             </div>
             <div>
               <h3 class="text-white text-[theme(--font-size-sm)] leading-[theme(--font-size-sm--line-height)] font-semibold">
                 <a
                   href="/in/solar-panel-installer/{String($storiesData[currentStoryIndex]?.business_slug || '')}"
-                  class="hover:opacity-90 transition-all duration-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  class="hover:text-secondary transition-colors duration-[theme(--duration-default)]"
                   onclick={closeStory}
                 >
                   {formatBusinessName(String($storiesData[currentStoryIndex]?.business_slug || ''))}
@@ -213,7 +213,7 @@
             </div>
           </div>
           <Tooltip>
-            <TooltipTrigger asChild>
+            <TooltipTrigger>
               <Button
                 onclick={closeStory}
                 variant="ghost"
@@ -238,33 +238,33 @@
                 "w_800,h_800"
               )}
               alt={String($storiesData[currentStoryIndex]?.title || '')}
-              class="w-full h-auto object-contain mt-4 max-h-[70vh]"
+              class="w-full h-auto object-contain mt-[theme(--spacing-md)] max-h-[70vh]"
             />
           {:else}
-            <div class="flex flex-col items-center justify-center gap-4 text-white/80">
-              <span class="text-4xl">📸</span>
+            <div class="flex flex-col items-center justify-center gap-[theme(--spacing-sm)] text-white/80">
+              <span class="text-5xl">📸</span>
               <p>No image available</p>
             </div>
           {/if}
         </div>
 
         <!-- Story Details Overlay -->
-        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent z-30 p-6">
-          <h2 class="text-card text-[theme(--font-size-lg)] leading-[theme(--font-size-lg--line-height)] font-semibold mb-[theme(--spacing-lg)]">{$storiesData[currentStoryIndex].title}</h2>
-          <div class="flex flex-wrap gap-4">
-            <Badge variant="secondary" class="bg-card/20 text-card border-card/30 hover:bg-card/30">
+        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent z-30 p-[theme(--card-padding-y)]">
+          <h2 class="text-white text-[theme(--font-size-lg)] leading-[theme(--font-size-lg--line-height)] font-semibold mb-[theme(--spacing-sm)]">{$storiesData[currentStoryIndex].title}</h2>
+          <div class="flex flex-wrap gap-[theme(--spacing-xs)]">
+            <Badge variant="secondary" class="bg-white/20 text-white border-white/30 hover:bg-white/30">
               📍 {$storiesData[currentStoryIndex].pincode || "N/A"}
             </Badge>
-            <Badge variant="secondary" class="bg-card/20 text-card border-card/30 hover:bg-card/30">
+            <Badge variant="secondary" class="bg-white/20 text-white border-white/30 hover:bg-white/30">
               📅 {formatDate(String($storiesData[currentStoryIndex]?.project_date || ''))}
             </Badge>
           </div>
         </div>
 
         <!-- Navigation Areas -->
-        <div class="absolute left-0 top-1/2 -translate-y-1/2 z-20 ml-[theme(--spacing-lg)]">
+        <div class="absolute left-0 top-1/2 -translate-y-1/2 z-20 ml-[theme(--spacing-md)]">
           <Tooltip>
-            <TooltipTrigger asChild>
+            <TooltipTrigger>
               <Button
                 onclick={() => handleStoryClick("left")}
                 disabled={currentStoryIndex === 0}
@@ -280,9 +280,9 @@
           </Tooltip>
         </div>
 
-        <div class="absolute right-0 top-1/2 -translate-y-1/2 z-20 mr-[theme(--spacing-lg)]">
+        <div class="absolute right-0 top-1/2 -translate-y-1/2 z-20 mr-[theme(--spacing-md)]">
           <Tooltip>
-            <TooltipTrigger asChild>
+            <TooltipTrigger>
               <Button
                 onclick={() => handleStoryClick("right")}
                 variant="ghost"

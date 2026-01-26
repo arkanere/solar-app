@@ -58,11 +58,11 @@
 	<Card class="w-full max-w-[theme(--max-width-sm)] text-center">
 		<CardContent class="pt-[theme(--card-padding-y)] px-[theme(--card-padding-y)]">
 			{#if isConfirming}
-				<h1 class="text-[theme(--font-size-2xl)] font-display mb-[theme(--spacing-2xl)] text-primary">
+				<h1 class="text-[theme(--font-size-3xl)] font-display mb-[theme(--spacing-xl)] text-primary">
 					Confirm Unsubscription
 				</h1>
 
-				<p class="text-[theme(--font-size-base)] leading-[theme(--font-size-base--line-height)] text-foreground-secondary mb-[theme(--spacing-2xl)]">
+				<p class="text-[theme(--font-size-base)] leading-[theme(--font-size-base--line-height)] text-secondary mb-[theme(--spacing-xl)]">
 					Please confirm that you want to unsubscribe<br />
 					<strong>{email}</strong> from our email list.
 				</p>
@@ -73,18 +73,18 @@
 					</Alert>
 				{/if}
 
-				<div class="mt-[theme(--spacing-2xl)]">
+				<div class="mt-[theme(--spacing-xl)]">
 					<Button
-						variant="success"
+						variant="default"
 						onclick={handleConfirm}
 						disabled={isLoading || !email}
-						class="w-full"
+						class="w-full bg-success hover:bg-success-hover text-success-foreground"
 					>
 						{isLoading ? 'Processing...' : 'Confirm Unsubscription'}
 					</Button>
 				</div>
 			{:else if isSuccess}
-				<div class="w-[theme(--icon-size-xl)] h-[theme(--icon-size-xl)] mx-auto mb-[theme(--spacing-2xl)] text-success flex justify-center">
+				<div class="w-[theme(--icon-size-xl)] h-[theme(--icon-size-xl)] mx-auto mb-[theme(--spacing-xl)] text-success flex justify-center">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						viewBox="0 0 24 24"
@@ -99,11 +99,11 @@
 					</svg>
 				</div>
 
-				<h1 class="text-[theme(--font-size-2xl)] font-display mb-[theme(--spacing-2xl)] text-primary">
+				<h1 class="text-[theme(--font-size-3xl)] font-display mb-[theme(--spacing-xl)] text-primary">
 					Unsubscription was successful!
 				</h1>
 
-				<p class="text-[theme(--font-size-base)] leading-[theme(--font-size-base--line-height)] text-foreground-secondary mb-[theme(--spacing-2xl)]">
+				<p class="text-[theme(--font-size-base)] leading-[theme(--font-size-base--line-height)] text-secondary mb-[theme(--spacing-xl)]">
 					We have informed the sender of this email that<br />
 					you don't want to receive more email from<br />
 					them.

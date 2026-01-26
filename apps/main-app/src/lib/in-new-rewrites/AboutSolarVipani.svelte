@@ -18,37 +18,40 @@
 	}
 </script>
 
-<Card class="w-full mt-16 mb-16">
+<Card class="w-full border-0 mt-[theme(--spacing-2xl)] mb-[theme(--card-gap)] shadow-[theme(--shadow-md)]">
 	<CardHeader class="text-center">
-		<CardTitle class="text-2xl md:text-4xl font-semibold mb-4">
+		<CardTitle class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">
 			About Solarvipani
 		</CardTitle>
+		<div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+			<span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+		</div>
 	</CardHeader>
 
-	<CardContent class="gap-8 flex flex-col">
+	<CardContent class="gap-[theme(--card-gap)] flex flex-col">
 		<!-- About Container -->
-		<div class="flex items-center md:flex-col md:text-center gap-8">
+		<div class="flex items-center md:flex-col md:text-center gap-[theme(--card-gap)]">
 			<img
 				src="/logo.webp"
 				alt="Solarvipani Logo"
-				class="w-48 h-auto rounded-xl"
+				class="w-48 h-auto rounded-[theme(--radius-lg)] shadow-[theme(--shadow-sm)]"
 				loading="lazy"
 			/>
 
-			<div class="flex-1 gap-4 flex flex-col">
-				<p class="text-lg">
+			<div class="flex-1 gap-[theme(--form-element-field-gap)] flex flex-col">
+				<p class="text-[theme(--font-size-lg)] leading-[theme(--font-size-lg--line-height)]">
 					We are your premier marketplace aggregator dedicated to connecting residential and business
 					customers with
 					<a
 						href="/in/blogs/hiring-verified-solar-installer-in-india-is-essential"
-						class="font-semibold text-primary underline hover:opacity-90 transition-all duration-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						class="font-semibold text-primary underline hover:opacity-80 transition-opacity"
 					>
 						Best Local Solar Panel Installation
 					</a>
 					companies, ensuring that you make smart decisions backed by credible information and have a
 					hassle-free experience.
 				</p>
-				<p class="text-lg">
+				<p class="text-[theme(--font-size-lg)] leading-[theme(--font-size-lg--line-height)]">
 					Our platform is designed for smart homeowners and businesses ready to go solar but unsure where to
 					start.
 					<Button
@@ -64,21 +67,22 @@
 		</div>
 
 		<!-- Social Media Links -->
-		<div class="w-full pt-6">
-			<h4 class="text-center text-lg font-semibold mb-4">Follow us on:</h4>
-			<div class="flex justify-center flex-wrap gap-4">
+		<div class="w-full pt-[theme(--card-padding-y)] border-t border-[hsl(var(--border))]">
+			<h4 class="text-center text-[theme(--font-size-lg)] font-semibold mb-[theme(--form-element-field-gap)]">Follow us on:</h4>
+			<div class="flex justify-center flex-wrap gap-[theme(--card-gap)]">
 				{#each SOCIAL_LINKS as link (link.url)}
 					<a
 						href={link.url}
 						target="_blank"
 						rel="noopener noreferrer"
 						aria-label={link.label}
-						class="flex items-center gap-2 transition-all duration-100 hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						class="flex items-center gap-[theme(--form-element-field-gap)] text-primary transition-all duration-[theme(--duration-default)]"
+						class:hover-lift-sm={hoveredLink === link.url}
 						onmouseenter={() => handleSocialHover(link.url)}
 						onmouseleave={handleSocialLeave}
 					>
 						<link.icon size={20} />
-						<span class="text-sm font-medium">{link.label}</span>
+						<span class="text-[theme(--font-size-sm)] font-medium">{link.label}</span>
 					</a>
 				{/each}
 			</div>

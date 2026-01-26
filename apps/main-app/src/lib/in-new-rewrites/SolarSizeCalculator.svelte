@@ -12,20 +12,20 @@
 	});
 </script>
 
-<section class="mb-[theme(--spacing-component-between)] rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding)] shadow-card transition-all duration-[theme(--transition-default)] w-full">
-	<div class="text-center mb-[theme(--spacing-component-between)]">
-		<h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-component-internal)]">Solar System Calculator</h2>
-		<div class="flex justify-center items-center my-[theme(--spacing-component-internal)]">
-			<span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-foreground-muted rounded"></span>
+<section class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] transition-all w-full">
+	<div class="text-center mb-[theme(--spacing-2xl)]">
+		<h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Solar System Calculator</h2>
+		<div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+			<span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
 		</div>
 	</div>
 	<div class="flex items-center justify-center">
 		<CardRoot class="w-full max-w-[theme(--max-width-sm)] border-0 shadow-none bg-transparent">
-			<CardContent class="gap-[theme(--spacing-component-between)] flex flex-col">
-			<div class="gap-[theme(--spacing-component-internal)] flex flex-col">
+			<CardContent class="gap-[theme(--spacing-xl)] flex flex-col">
+			<div class="gap-[theme(--spacing-sm)] flex flex-col">
 				<div class="flex justify-between items-baseline">
 					<Label for="bill">Monthly Electricity Bill</Label>
-					<span class="text-lg font-semibold">₹{currentBill}</span>
+					<span class="text-primary text-[theme(--font-size-lg)] font-semibold">₹{currentBill}</span>
 				</div>
 				<Slider
 					id="bill"
@@ -35,13 +35,13 @@
 					bind:value={currentBill}
 					class="w-full"
 				/>
-				<div class="text-muted-foreground text-sm">₹500 - ₹5000</div>
+				<div class="text-muted-foreground text-[theme(--font-size-xs)]">₹500 - ₹5000</div>
 			</div>
 
-			<div class="gap-[theme(--spacing-component-internal)] flex flex-col">
+			<div class="gap-[theme(--spacing-sm)] flex flex-col">
 				<div class="flex justify-between items-baseline">
 					<Label for="rate">Rate per Unit</Label>
-					<span class="text-lg font-semibold">₹{ratePerUnit.toFixed(1)}</span>
+					<span class="text-primary text-[theme(--font-size-lg)] font-semibold">₹{ratePerUnit.toFixed(1)}</span>
 				</div>
 				<Slider
 					id="rate"
@@ -51,13 +51,13 @@
 					bind:value={ratePerUnit}
 					class="w-full"
 				/>
-				<div class="text-muted-foreground text-sm">₹3 - ₹15 per unit</div>
+				<div class="text-muted-foreground text-[theme(--font-size-xs)]">₹3 - ₹15 per unit</div>
 			</div>
 
-			<div class="border-t pt-[theme(--spacing-component-internal)]">
+			<div class="border-t pt-[theme(--spacing-lg)]">
 				<div class="text-center">
-					<p class="text-muted-foreground text-sm mb-[theme(--spacing-component-internal)]">Estimated System Size</p>
-					<p class="text-4xl font-bold">{solarSystemSize} <span class="text-lg">kW</span></p>
+					<p class="text-muted-foreground text-[theme(--font-size-sm)] mb-[theme(--spacing-sm)]">Estimated System Size</p>
+					<p class="text-primary text-[theme(--font-size-3xl)] font-bold">{solarSystemSize} <span class="text-[theme(--font-size-lg)]">kW</span></p>
 				</div>
 			</div>
 		</CardContent>

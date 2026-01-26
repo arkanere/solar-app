@@ -37,21 +37,21 @@
 </script>
 
 {#if visibleBusinesses.length > 0}
-	<section class="mx-auto w-full max-w-4xl flex flex-col gap-4 px-4 md:px-8 my-16">
+	<section class="mx-auto w-full max-w-[theme(--max-width-4xl)] flex flex-col gap-[theme(--form-field-gap)] px-[theme(--button-padding-x-default)] my-[theme(--card-gap)]">
 		{#each visibleBusinesses as business}
-			<Card.Root class="transition-shadow duration-100">
-				<Card.Header class="flex flex-col sm:flex-row sm:items-start sm:justify-between border-b gap-2">
-					<h2 class="text-[length:theme(--font-size-lg)] leading-[theme(--font-size-lg--line-height)] font-semibold tracking-[theme(--tracking-heading)]">
+			<Card.Root class="shadow-[theme(--shadow-card)] transition-shadow duration-[theme(--duration-default)]">
+				<Card.Header class="flex flex-col sm:flex-row sm:items-start sm:justify-between border-b gap-[theme(--dropdown-menu-item-gap)] pb-[theme(--card-padding-y)]">
+					<h2 class="text-[length:theme(--font-size-xl)] leading-[theme(--font-size-xl--line-height)] font-semibold tracking-[theme(--tracking-heading)]">
 						<a
 							href={`/in/solar-panel-installer/${business.slug}`}
-							class="text-primary hover:opacity-90 underline-offset-2 hover:underline transition-all duration-[theme(--transition-default)] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+							class="text-primary hover:opacity-80 underline-offset-2 hover:underline transition-all duration-[theme(--transition-default)]"
 						>
 							{business.businessname}
 						</a>
 					</h2>
 					{#if business.tag}
 						<Badge variant="secondary" class="whitespace-nowrap">
-							<span class="inline-flex items-center justify-center w-4 h-4 mr-1 rounded-full text-success-foreground bg-success text-[length:theme(--font-size-sm)] font-bold">
+							<span class="inline-flex items-center justify-center w-4 h-4 mr-1 rounded-full text-success-foreground bg-success text-[length:theme(--font-size-xs)] font-bold">
 								✓
 							</span>
 							{business.tag}
@@ -59,28 +59,28 @@
 					{/if}
 				</Card.Header>
 
-				<Card.Content class="flex flex-col gap-2">
+				<Card.Content class="flex flex-col gap-[theme(--form-element-field-gap)]">
 					{#if business.businessfilled}
-						<div class="flex items-center text-foreground-secondary gap-2">
-							<Phone class="w-5 h-5 flex-shrink-0" />
+						<div class="flex items-center text-foreground-secondary gap-[theme(--form-element-field-gap)]">
+							<Phone class="w-5 h-5 text-primary flex-shrink-0" />
 							<span>{business.phonenumber}</span>
 						</div>
 
-						<div class="flex items-start text-foreground-secondary gap-2">
-							<MapPin class="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+						<div class="flex items-start text-foreground-secondary gap-[theme(--form-element-field-gap)]">
+							<MapPin class="w-5 h-5 text-primary flex-shrink-0 mt-[theme(--form-element-field-gap)]" />
 							<span>{business.address}</span>
 						</div>
 					{:else}
-						<div class="flex items-start text-foreground-secondary gap-2">
-							<MapPin class="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+						<div class="flex items-start text-foreground-secondary gap-[theme(--form-element-field-gap)]">
+							<MapPin class="w-5 h-5 text-primary flex-shrink-0 mt-[theme(--form-element-field-gap)]" />
 							<span>{business.address || `${business.city}, ${business.state}`}</span>
 						</div>
 						{#if business.phonenumber}
-							<div class="flex items-center text-foreground-secondary gap-2">
-								<Phone class="w-5 h-5 flex-shrink-0" />
+							<div class="flex items-center text-foreground-secondary gap-[theme(--form-element-field-gap)]">
+								<Phone class="w-5 h-5 text-primary flex-shrink-0" />
 								<a
 									href={`tel:${business.phonenumber}`}
-									class="text-primary hover:opacity-90 hover:underline transition-all duration-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+									class="text-primary hover:opacity-80 hover:underline transition-all duration-[theme(--transition-default)]"
 								>
 									{business.phonenumber}
 								</a>
@@ -89,10 +89,10 @@
 					{/if}
 				</Card.Content>
 
-				<div class="flex flex-col sm:flex-row gap-2 p-6">
+				<div class="flex flex-col sm:flex-row gap-[theme(--form-element-field-gap)] p-[theme(--button-padding-y-default)_theme(--button-padding-x-lg)]">
 					<Button
 						variant="default"
-						class="flex-1 sm:flex-none"
+						class="bg-destructive hover:bg-destructive-hover flex-1 sm:flex-none"
 						onclick={() => makeCall(business.phonenumber, business.city, business.slug)}
 					>
 						<Phone class="w-4 h-4" />
@@ -100,8 +100,8 @@
 					</Button>
 					{#if business.businessfilled || business.phonenumber}
 						<Button
-							variant="secondary"
-							class="flex-1 sm:flex-none"
+							variant="default"
+							class="bg-success hover:bg-success-hover flex-1 sm:flex-none"
 							onclick={() => openWhatsApp(business.phonenumber, business.city, business.slug)}
 						>
 							<MessageCircle class="w-4 h-4" />
@@ -113,8 +113,8 @@
 		{/each}
 
 		{#if loadedCount < businesses.length}
-			<div class="flex justify-center pt-4">
-				<Button variant="secondary" onclick={loadMoreBusinesses}>LOAD MORE</Button>
+			<div class="flex justify-center pt-[theme(--form-field-gap)]">
+				<Button variant="outline" onclick={loadMoreBusinesses}>LOAD MORE</Button>
 			</div>
 		{/if}
 	</section>

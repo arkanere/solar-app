@@ -128,13 +128,16 @@
   </script>
 </svelte:head>
 
-<main class="w-full bg-background text-foreground transition-colors duration-100 overflow-x-hidden">
+<main class="w-full bg-background text-foreground transition-colors duration-[theme(--transition-default)] overflow-x-hidden dark:bg-background dark:text-foreground">
   <div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
     <!-- Solar Panel Installers by State Section -->
     <section class="mb-[theme(--spacing-2xl)]">
       <div class="text-center mb-[theme(--spacing-2xl)]">
-        <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)]">Solar Panel Installers by State</h2>
-        <p class="text-lg text-foreground-secondary max-w-2xl mx-auto">
+        <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Solar Panel Installers by State</h2>
+        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+          <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+        </div>
+        <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
           Browse solar panel installers by state. We have listings in {states.length}
           states across India.
         </p>
@@ -142,12 +145,12 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)]">
         {#each states as state}
-          <div class="flex flex-col h-full bg-card rounded-[theme(--radius-lg)] hover:shadow-card transition-all duration-100 p-[theme(--spacing-lg)]">
-            <h3 class="text-lg font-semibold mb-[theme(--spacing-lg)]">
+          <div class="flex flex-col h-full bg-card rounded-[theme(--radius-lg)] border border-border hover:shadow-[theme(--shadow-card-hover)] transition-all duration-300 hover:-translate-y-1 p-[theme(--spacing-lg)]">
+            <h3 class="text-lg font-semibold mb-[theme(--spacing-lg)] text-primary">
               {state}
             </h3>
 
-            <div class="flex items-center justify-center font-medium mt-auto gap-[theme(--spacing-lg)] group">
+            <div class="flex items-center justify-center font-medium text-primary mt-auto gap-[theme(--spacing-xs)] group">
               <Button asChild variant="default" class="w-full">
                 <a href={`/in/state/${formatStateSlug(state)}`} rel="noopener" class="flex items-center justify-center gap-2">
                   <span>Find Installers</span>
@@ -155,7 +158,7 @@
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 20 20"
                     fill="currentColor"
-                    class="w-4 h-4 transition-transform duration-100 group-hover:translate-x-1"
+                    class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
                   >
                     <path
                       fill-rule="evenodd"
