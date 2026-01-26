@@ -125,7 +125,7 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 
 		// ✅ Remove non-exclusive leads that have been claimed
 		const filteredNonExclusiveLeads = nonExclusiveLeadResult.rows.filter(
-			(lead: Lead) => !claimedOriginalIds.has(lead.original_id)
+			(lead: Lead) => !claimedOriginalIds.has(lead.id)
 		);
 
 		// ✅ Mask email and phone for non-exclusive leads
