@@ -97,9 +97,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
       INSERT INTO us_businesses (
         rscore, isvisible, pluscode, phonenumber, email, login_email,
         website, ein, state, county, tag, slug, notes, city,
-        businessname, address, login_password, tier3, services, description
+        businessname, address, login_password, services, description
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
       RETURNING id
     `;
 
@@ -122,7 +122,6 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			mainBusiness.businessname, // Same business name
 			mainBusiness.address, // Same address
 			mainBusiness.login_password, // Same login password
-			mainBusiness.tier3, // Copy tier3 status from main business
 			mainBusiness.services, // Copy services array from main business
 			mainBusiness.description || 'Solar panel installer' // Copy description or use default
 		]);

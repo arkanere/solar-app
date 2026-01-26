@@ -17,7 +17,7 @@ export class TokenManager {
 		try {
 			// Query business with matching token and slug
 			const result = await pool.query(
-				`SELECT id, businessname, slug, login_email, magic_link_token, isvisible, tier3
+				`SELECT id, businessname, slug, login_email, magic_link_token, isvisible
 				 FROM us_businesses
 				 WHERE slug = $1 AND magic_link_token = $2 AND magic_link_token IS NOT NULL`,
 				[businessSlug, token]
@@ -39,8 +39,7 @@ export class TokenManager {
 					businessname: business.businessname,
 					slug: business.slug,
 					login_email: business.login_email,
-					isvisible: business.isvisible,
-					tier3: business.tier3
+					isvisible: business.isvisible
 				}
 			});
 		} catch (error) {
@@ -57,7 +56,7 @@ export class TokenManager {
 			client = await pool.connect();
 
 			const result = await client.query(
-				`SELECT id, businessname, slug, login_email, isvisible, tier3
+				`SELECT id, businessname, slug, login_email, isvisible
 				 FROM us_businesses
 				 WHERE login_email = $1 AND isvisible = true AND slug NOT LIKE '%-branch-%'
 				 LIMIT 1`,
@@ -76,8 +75,7 @@ export class TokenManager {
 					businessname: business.businessname,
 					slug: business.slug,
 					login_email: business.login_email,
-					isvisible: business.isvisible,
-					tier3: business.tier3
+					isvisible: business.isvisible
 				}
 			});
 		} catch (error) {
@@ -93,7 +91,7 @@ export class TokenManager {
 	): Promise<BusinessLookupSuccess | AuthErrorResponse> {
 		try {
 			const result = await pool.query(
-				`SELECT id, businessname, slug, login_email, isvisible, tier3
+				`SELECT id, businessname, slug, login_email, isvisible
 				 FROM us_businesses
 				 WHERE slug = $1 AND isvisible = true`,
 				[businessSlug]
@@ -111,8 +109,7 @@ export class TokenManager {
 					businessname: business.businessname,
 					slug: business.slug,
 					login_email: business.login_email,
-					isvisible: business.isvisible,
-					tier3: business.tier3
+					isvisible: business.isvisible
 				}
 			});
 		} catch (error) {
