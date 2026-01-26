@@ -213,7 +213,7 @@
             </div>
           </div>
           <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger asChild>
               <Button
                 onclick={closeStory}
                 variant="ghost"
@@ -264,7 +264,7 @@
         <!-- Navigation Areas -->
         <div class="absolute left-0 top-1/2 -translate-y-1/2 z-20 ml-[theme(--spacing-lg)]">
           <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger asChild>
               <Button
                 onclick={() => handleStoryClick("left")}
                 disabled={currentStoryIndex === 0}
@@ -282,7 +282,7 @@
 
         <div class="absolute right-0 top-1/2 -translate-y-1/2 z-20 mr-[theme(--spacing-lg)]">
           <Tooltip>
-            <TooltipTrigger>
+            <TooltipTrigger asChild>
               <Button
                 onclick={() => handleStoryClick("right")}
                 variant="ghost"
