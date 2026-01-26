@@ -60,13 +60,12 @@ export const load: PageServerLoad = async ({ params }) => {
 		// Modified query: Sort businesses from the requested city to the top,
 		// then apply the existing sorting criteria within each group
 		const districtBusinessesResult = await pool.query(
-			`SELECT businessname, description, phonenumber, slug, address, pluscode, state, city, tag, rscore, businessfilled, tier3, services
-      FROM businesses_1 
-      WHERE district = $1 AND isvisible = true 
-      ORDER BY 
+			`SELECT businessname, description, phonenumber, slug, address, pluscode, state, city, tag, rscore, businessfilled, services
+      FROM businesses_1
+      WHERE district = $1 AND isvisible = true
+      ORDER BY
         CASE WHEN city = $2 THEN 0 ELSE 1 END, -- Sort businesses from selected city first
-        businessfilled DESC, 
-        tier3 DESC, 
+        businessfilled DESC,
         rscore DESC;`,
 			[district, city]
 		);

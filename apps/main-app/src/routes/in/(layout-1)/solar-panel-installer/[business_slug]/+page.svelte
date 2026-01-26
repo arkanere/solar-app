@@ -11,7 +11,7 @@
   // Destructure page data using derived
   const { business, projects = [], errorMessage } = $derived($page.data);
   const businessSlug = $derived(business?.slug || "");
-  const showProjects = $derived(business?.businessfilled && business?.tier3);
+  const showProjects = $derived(business?.businessfilled);
 
   // Function to make call with Umami tracking
   function makeCall(phoneNumber, businessSlug) {
