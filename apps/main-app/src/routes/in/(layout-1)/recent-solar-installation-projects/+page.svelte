@@ -209,12 +209,12 @@
   </script>
 </svelte:head>
 
-<main class="w-full bg-background text-foreground transition-colors duration-100 overflow-x-hidden">
+<main class="w-full bg-background text-foreground transition-colors duration-300 overflow-x-hidden">
   <div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
     <div class="text-center mb-[theme(--spacing-2xl)]">
-      <h1 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Recent Solar Installation Projects</h1>
+      <h1 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Recent Solar Installation Projects</h1>
       <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
-        <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-foreground-muted rounded"></span>
+        <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
       </div>
     </div>
 
@@ -232,7 +232,7 @@
         {#each projects as project (project.id)}
           <a
             href="/in/solar-panel-installer/{project.business_slug}/project/{project.project_slug}"
-            class="group block bg-card hover:shadow-card rounded-[theme(--radius-xl)] overflow-hidden bg-background-secondary hover:border-primary/50 transition-all duration-100"
+            class="group block bg-card hover:shadow-[theme(--shadow-card-hover)] rounded-[theme(--radius-xl)] overflow-hidden border border-border hover:border-primary/50 transition-all duration-300 hover:-translate-y-1"
             rel="noopener"
           >
             <!-- Project Image -->
@@ -245,7 +245,7 @@
                   width="300"
                   height="300"
                   loading="lazy"
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-100"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               {:else if project.image_url}
                 <img
@@ -255,35 +255,35 @@
                   loading="lazy"
                   width="300"
                   height="300"
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-100"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               {:else}
-                <div class="w-full h-full flex items-center justify-center bg-muted text-foreground text-foreground-secondary">
+                <div class="w-full h-full flex items-center justify-center bg-muted text-foreground dark:text-foreground-secondary">
                   No Image
                 </div>
               {/if}
             </div>
 
             <!-- Project Details -->
-            <div class="p-[theme(--container-padding)] space-y-[theme(--spacing-lg)]">
+            <div class="p-[theme(--container-padding)] space-y-[theme(--spacing-sm)]">
               <h3 class="text-lg font-semibold text-primary line-clamp-2">
                 {project.title}
               </h3>
 
-              <p class="text-sm text-foreground text-foreground-secondary">
+              <p class="text-sm text-foreground dark:text-foreground-secondary">
                 📍 Pincode: {project.pincode || "N/A"}
               </p>
 
-              <p class="text-sm text-foreground text-foreground-secondary">
+              <p class="text-sm text-foreground dark:text-foreground-secondary">
                 📅 Completed: {formatDate(project.project_date)}
               </p>
 
-              <p class="text-sm text-foreground text-foreground-secondary">
+              <p class="text-sm text-foreground dark:text-foreground-secondary">
                 🏢 Installer: <span class="font-medium text-primary">{formatBusinessName(project.business_slug)}</span>
               </p>
 
               {#if project.system_size}
-                <p class="text-sm text-foreground text-foreground-secondary">
+                <p class="text-sm text-foreground dark:text-foreground-secondary">
                   ⚡ System Size: <span class="font-medium text-primary">{project.system_size} kW</span>
                 </p>
               {/if}
@@ -294,7 +294,7 @@
 
       <!-- Pagination -->
       {#if totalPages > 1}
-        <div class="flex justify-center items-center gap-[theme(--spacing-lg)] mt-[theme(--spacing-2xl)] flex-wrap">
+        <div class="flex justify-center items-center gap-[theme(--spacing-sm)] mt-[theme(--spacing-2xl)] flex-wrap">
           <!-- Next button (since this is page 1, only show next) -->
           {#if currentPage < totalPages}
             <Button href="/in/recent-solar-installation-projects/2" variant="default">
@@ -305,9 +305,9 @@
           <!-- Page numbers -->
           {#each paginationLinks as link}
             {#if link === "..."}
-              <span class="px-[theme(--spacing-lg)] text-foreground text-foreground-secondary">...</span>
+              <span class="px-[theme(--spacing-sm)] text-foreground dark:text-foreground-secondary">...</span>
             {:else if link === currentPage}
-              <span class="px-[theme(--spacing-lg)] py-[theme(--spacing-lg)] bg-primary text-primary-foreground font-medium rounded-[theme(--radius-md)]">
+              <span class="px-[theme(--spacing-md)] py-[theme(--spacing-sm)] bg-primary text-primary-foreground font-medium rounded-[theme(--radius-md)]">
                 {link}
               </span>
             {:else}

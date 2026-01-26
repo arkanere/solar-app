@@ -168,16 +168,16 @@
   });
 </script>
 
-<Card.Root class="w-full max-w-md mx-auto">
-  <Card.Header>
-    <h1 class="text-2xl font-semibold">Get listed by filling the form below</h1>
-    <p class="text-sm mt-4 text-muted-foreground">It takes 90 seconds to fill this form</p>
+<Card.Root class="w-full max-w-[theme(--max-width-3xl)] mx-auto">
+  <Card.Header class="py-[theme(--card-padding-y)]">
+    <h1 class="text-[theme(--font-size-2xl)] font-semibold tracking-[theme(--tracking-heading)]">Get listed by filling the form below</h1>
+    <p class="text-[theme(--font-size-sm)] mt-[theme(--form-field-gap)] text-muted-foreground">It takes 90 seconds to fill this form</p>
   </Card.Header>
 
   <Card.Content>
-    <form onsubmit={handleSubmit} class="flex flex-col gap-4">
+    <form onsubmit={handleSubmit} class="flex flex-col gap-[theme(--form-field-gap)] pb-[theme(--card-padding-y)]">
       <!-- Business Name -->
-      <div class="flex flex-col gap-2">
+      <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="businessName">Business Name</Label>
         <Input
           id="businessName"
@@ -189,7 +189,7 @@
       </div>
 
       <!-- GSTN -->
-      <div class="flex flex-col gap-2">
+      <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="gstn">GSTN (Required)</Label>
         <Input
           id="gstn"
@@ -208,9 +208,9 @@
       </div>
 
       <!-- Address -->
-      <div class="flex flex-col gap-2">
+      <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="address">Address</Label>
-        <p class="text-[theme(--font-size-sm)] text-muted-foreground">Complete address helps in finding your business</p>
+        <p class="text-[theme(--font-size-xs)] text-muted-foreground">Complete address helps in finding your business</p>
         <Input
           id="address"
           type="text"
@@ -221,9 +221,9 @@
       </div>
 
       <!-- Plus Code -->
-      <div class="flex flex-col gap-2">
+      <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="plusCode">Plus Code</Label>
-        <p class="text-[theme(--font-size-sm)] text-muted-foreground">For navigation on google maps</p>
+        <p class="text-[theme(--font-size-xs)] text-muted-foreground">For navigation on google maps</p>
         <Input
           id="plusCode"
           type="text"
@@ -233,7 +233,7 @@
       </div>
 
       <!-- Phone Number -->
-      <div class="flex flex-col gap-2">
+      <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="phoneNumber">Phone Number</Label>
         <Input
           id="phoneNumber"
@@ -252,7 +252,7 @@
       </div>
 
       <!-- WhatsApp Number -->
-      <div class="flex flex-col gap-2">
+      <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="whatsappNumber">WhatsApp Number</Label>
         <Input
           id="whatsappNumber"
@@ -270,9 +270,9 @@
       </div>
 
       <!-- Email -->
-      <div class="flex flex-col gap-2">
+      <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="email">Business Email</Label>
-        <p class="text-[theme(--font-size-sm)] text-muted-foreground">Will be displayed on the business profile page</p>
+        <p class="text-[theme(--font-size-xs)] text-muted-foreground">Will be displayed on the business profile page</p>
         <Input
           id="email"
           type="email"
@@ -283,9 +283,9 @@
       </div>
 
       <!-- Login Email -->
-      <div class="flex flex-col gap-2">
+      <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="login_email">Login Email</Label>
-        <p class="text-[theme(--font-size-sm)] text-muted-foreground">You will receive login instructions here</p>
+        <p class="text-[theme(--font-size-xs)] text-muted-foreground">You will receive login instructions here</p>
         <Input
           id="login_email"
           type="email"
@@ -296,7 +296,7 @@
       </div>
 
       <!-- Website -->
-      <div class="flex flex-col gap-2">
+      <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="website">Website</Label>
         <Input
           id="website"
@@ -307,7 +307,7 @@
       </div>
 
       <!-- State Select -->
-      <div class="flex flex-col gap-2">
+      <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="state">State</Label>
         <Select.Root type="single" bind:value={selectedState}>
           <Select.Trigger id="state">
@@ -322,7 +322,7 @@
       </div>
 
       <!-- District Select -->
-      <div class="flex flex-col gap-2">
+      <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="district">District</Label>
         <Select.Root type="single" bind:value={district} disabled={!selectedState || isDistrictLoading}>
           <Select.Trigger id="district">
@@ -337,7 +337,7 @@
       </div>
 
       <!-- City Select -->
-      <div class="flex flex-col gap-2">
+      <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="city">City</Label>
         <Select.Root type="single" bind:value={city} disabled={!district || isCityLoading}>
           <Select.Trigger id="city">
@@ -357,7 +357,7 @@
       </Button>
 
       <!-- Info Messages -->
-      <div class="flex flex-col gap-2">
+      <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <p class="text-[theme(--font-size-sm)] text-muted-foreground">
           You will be redirected after submission. Ensure the next page confirms your submission.
         </p>

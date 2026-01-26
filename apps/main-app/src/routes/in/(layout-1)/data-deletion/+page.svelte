@@ -51,7 +51,7 @@
   />
 </svelte:head>
 
-<main class="min-h-screen p-[theme(--container-padding)] transition-colors duration-100 bg-background text-foreground">
+<main class="min-h-screen p-[theme(--container-padding)] transition-colors duration-300 bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
   <div class="max-w-2xl mx-auto">
     <h1 class="text-[2.25rem] font-semibold text-center mb-[theme(--spacing-lg)] leading-tight md:text-[1.875rem]">Data Deletion Request</h1>
 
@@ -67,10 +67,10 @@
         <CardHeader>
           <CardTitle>What data will be deleted?</CardTitle>
         </CardHeader>
-        <CardContent class="gap-[theme(--spacing-lg)]">
+        <CardContent class="gap-[theme(--spacing-md)]">
           <div>
-            <h4 class="font-semibold mb-[theme(--spacing-lg)] text-[theme(--font-size-base)]">For Customers:</h4>
-            <ul class="pl-[theme(--spacing-lg)] space-y-[theme(--spacing-lg)]">
+            <h4 class="font-semibold mb-[theme(--spacing-sm)] text-[theme(--font-size-base)]">For Customers:</h4>
+            <ul class="pl-[theme(--spacing-lg)] space-y-[theme(--spacing-xs)]">
               <li class="leading-relaxed">Your contact information (phone number, email address)</li>
               <li class="leading-relaxed">Lead submissions and requirements</li>
               <li class="leading-relaxed">Account information and preferences</li>
@@ -79,8 +79,8 @@
           </div>
 
           <div>
-            <h4 class="font-semibold mb-[theme(--spacing-lg)] text-[theme(--font-size-base)]">For Solar Installers/Businesses:</h4>
-            <ul class="pl-[theme(--spacing-lg)] space-y-[theme(--spacing-lg)]">
+            <h4 class="font-semibold mb-[theme(--spacing-sm)] text-[theme(--font-size-base)]">For Solar Installers/Businesses:</h4>
+            <ul class="pl-[theme(--spacing-lg)] space-y-[theme(--spacing-xs)]">
               <li class="leading-relaxed">Business profile and contact information</li>
               <li class="leading-relaxed">Service area and specialization details</li>
               <li class="leading-relaxed">Lead claims and interaction history</li>
@@ -94,10 +94,10 @@
     </div>
 
     {#if submitted}
-      <Alert class="mb-[theme(--spacing-2xl)] bg-secondary border-secondary">
+      <Alert class="mb-[theme(--spacing-2xl)] bg-[hsl(var(--success))] border-[hsl(var(--success))]">
         <AlertTitle>Request Submitted Successfully!</AlertTitle>
         <AlertDescription>
-          <p class="mb-[theme(--spacing-lg)]">
+          <p class="mb-[theme(--spacing-md)]">
             Your data deletion request has been received. We will process your
             request within 30 days and send you a confirmation email once
             completed.
@@ -105,7 +105,7 @@
           <p>
             If you have any questions, please contact us at <a
               href="mailto:admin@solarvipani.com"
-              class="text-accent hover:underline">admin@solarvipani.com</a
+              class="text-[hsl(var(--accent))] hover:underline">admin@solarvipani.com</a
             >.
           </p>
         </AlertDescription>
@@ -117,7 +117,7 @@
         </CardHeader>
         <CardContent>
           <form onsubmit={handleSubmit} class="gap-[theme(--spacing-lg)] flex flex-col">
-            <div class="gap-[theme(--spacing-lg)] flex flex-col">
+            <div class="gap-[theme(--spacing-sm)] flex flex-col">
               <label for="email" class="font-semibold text-[theme(--font-size-sm)]">Email Address *</label>
               <Input
                 type="email"
@@ -128,7 +128,7 @@
               />
             </div>
 
-            <div class="gap-[theme(--spacing-lg)] flex flex-col">
+            <div class="gap-[theme(--spacing-sm)] flex flex-col">
               <label for="phone" class="font-semibold text-[theme(--font-size-sm)]">Phone Number</label>
               <Input
                 type="tel"
@@ -138,7 +138,7 @@
               />
             </div>
 
-            <div class="gap-[theme(--spacing-lg)] flex flex-col">
+            <div class="gap-[theme(--spacing-sm)] flex flex-col">
               <label for="reason" class="font-semibold text-[theme(--font-size-sm)]">Reason for Deletion (Optional)</label>
               <Textarea
                 id="reason"
@@ -149,7 +149,7 @@
             </div>
 
             {#if error}
-              <Alert class="bg-destructive border-destructive text-destructive-foreground">
+              <Alert class="bg-[hsl(var(--destructive))] border-[hsl(var(--destructive))]">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             {/if}
@@ -170,8 +170,8 @@
       <CardHeader>
         <CardTitle>Important Information</CardTitle>
       </CardHeader>
-      <CardContent class="gap-[theme(--spacing-lg)] flex flex-col">
-        <ul class="pl-[theme(--spacing-lg)] space-y-[theme(--spacing-lg)]">
+      <CardContent class="gap-[theme(--spacing-md)] flex flex-col">
+        <ul class="pl-[theme(--spacing-lg)] space-y-[theme(--spacing-xs)]">
           <li class="leading-relaxed">Data deletion requests are processed within 30 business days</li>
           <li class="leading-relaxed">
             You will receive a confirmation email once your data has been deleted
@@ -196,7 +196,7 @@
         <p class="leading-relaxed">
           For any questions or concerns about your data deletion request, please
           contact us at
-          <a href="mailto:admin@solarvipani.com" class="text-accent hover:underline">admin@solarvipani.com</a>.
+          <a href="mailto:admin@solarvipani.com" class="text-[hsl(var(--accent))] hover:underline">admin@solarvipani.com</a>.
         </p>
       </CardContent>
     </Card>

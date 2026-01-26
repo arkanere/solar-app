@@ -13,7 +13,7 @@
 	bind:ref
 	data-slot="navigation-menu-link"
 	class={cn(
-		"flex flex-col transition-all outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[active=true]:bg-accent/50 data-[active=true]:text-accent-foreground data-[active=true]:hover:bg-accent data-[active=true]:focus:bg-accent focus-visible:ring-2 ring-ring ring-offset-2 [&_svg:not([class*='text-'])]:text-muted-foreground [&_svg:not([class*='size-'])]:size-[var(--navigation-menu-link-icon-size)]",
+		"data-[active=true]:focus:bg-accent data-[active=true]:hover:bg-accent data-[active=true]:bg-accent/50 data-[active=true]:text-accent-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus-visible:ring-ring/50 [&_svg:not([class*='text-'])]:text-muted-foreground flex flex-col transition-all outline-none focus-visible:outline-1 [&_svg:not([class*='size-'])]:size-[var(--navigation-menu-link-icon-size)]",
 		className
 	)}
 	style={`

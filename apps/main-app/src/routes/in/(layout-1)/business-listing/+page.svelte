@@ -334,10 +334,10 @@
     </picture>
     <div class="absolute top-0 left-0 w-full h-full z-10 bg-black/55"></div>
     <div class="relative z-20 max-w-3xl px-6">
-      <h1 class="text-4xl md:text-4xl font-bold mb-6 text-primary-foreground leading-tight drop-shadow-card">
+      <h1 class="text-4xl md:text-5xl font-bold mb-6 text-primary-foreground leading-tight drop-shadow-lg">
         Grow Your Solar Business
       </h1>
-      <h2 class="text-2xl md:text-2xl font-medium mb-6 text-primary-foreground leading-snug drop-shadow-card">
+      <h2 class="text-2xl md:text-3xl font-medium mb-6 text-primary-foreground leading-snug drop-shadow-lg">
         Get discovered by customers researching online
       </h2>
     </div>
@@ -345,24 +345,27 @@
 
   <div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
     <!-- Value Proposition Section -->
-    <Card class="p-6 mt-16 mb-[theme(--spacing-2xl)]">
+    <Card class="p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)]">
       <div class="text-center mb-[theme(--spacing-2xl)]">
-        <h2 class="text-2xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Why List Your Business with Solar Vipani?</h2>
-        <p class="text-lg text-foreground text-foreground-secondary max-w-2xl mx-auto">
+        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Why List Your Business with Solar Vipani?</h2>
+        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+          <span class="w-20 h-1 bg-accent rounded"></span>
+        </div>
+        <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
           Get discovered by customers ready to install solar panels - completely <span
-            class="text-foreground font-bold">FREE</span
+            class="text-accent font-bold">FREE</span
           >
         </p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-[theme(--spacing-2xl)]">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-[theme(--card-gap)] mb-[theme(--spacing-2xl)]">
         {#each benefits as benefit}
-          <Card class="text-center flex flex-col items-center p-6">
+          <Card class="text-center flex flex-col items-center p-[theme(--spacing-lg)]">
             <div class="w-16 h-16 flex items-center justify-center text-primary mb-[theme(--spacing-lg)] rounded-full bg-primary/10">{@html benefit.icon}</div>
-            <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">{benefit.title}</h3>
-            <div class="text-foreground text-foreground-secondary text-sm">
+            <h3 class="text-xl font-semibold text-primary mb-[theme(--spacing-md)]">{benefit.title}</h3>
+            <div class="text-foreground dark:text-foreground-secondary text-sm">
               {#each benefit.descriptions as description}
-                <p class="mb-[theme(--spacing-lg)]">{description}</p>
+                <p class="mb-[theme(--spacing-sm)]">{description}</p>
               {/each}
             </div>
           </Card>
@@ -392,16 +395,19 @@
     </Card>
 
     <!-- Social Proof Section -->
-    <Card class="bg-card p-6 mt-16 mb-[theme(--spacing-2xl)]">
+    <Card class="bg-accent-muted p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)]">
       <div class="text-center mb-[theme(--spacing-2xl)]">
-        <h2 class="text-2xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Join the Solar Installer Community</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Join the Solar Installer Community</h2>
+        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+          <span class="w-20 h-1 bg-accent rounded"></span>
+        </div>
       </div>
 
-      <div class="flex justify-center flex-wrap gap-8 mb-[theme(--spacing-2xl)]">
+      <div class="flex justify-center flex-wrap gap-[theme(--spacing-2xl)] mb-[theme(--spacing-2xl)]">
         {#each stats as stat}
-          <Card class="w-48 text-center p-6">
-            <div class="text-4xl font-bold text-primary mb-[theme(--spacing-lg)]">{stat.number}</div>
-            <div class="text-lg font-semibold text-foreground text-foreground-secondary">{stat.label}</div>
+          <Card class="w-48 text-center p-[theme(--spacing-lg)]">
+            <div class="text-5xl font-bold text-primary mb-[theme(--spacing-sm)]">{stat.number}</div>
+            <div class="text-lg font-semibold text-foreground dark:text-foreground-secondary">{stat.label}</div>
           </Card>
         {/each}
       </div>
@@ -429,15 +435,18 @@
     </Card>
 
     <!-- Recently Joined Verified Installers -->
-    <Card class="p-6 mt-16 mb-[theme(--spacing-2xl)] bg-card">
+    <Card class="p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)] bg-[hsl(var(--accent)/0.1)]">
       <div class="text-center mb-[theme(--spacing-2xl)]">
-        <h2 class="text-2xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Recently Joined Verified Installers</h2>
-        <p class="text-lg text-foreground text-foreground-secondary max-w-2xl mx-auto">
+        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Recently Joined Verified Installers</h2>
+        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+          <span class="w-20 h-1 bg-accent rounded"></span>
+        </div>
+        <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
           These solar professionals recently joined our growing community
         </p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-[theme(--spacing-2xl)]">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] mb-[theme(--spacing-2xl)]">
         {#if data && data.businesses && data.businesses.length > 0}
           {#each data.businesses as business}
             <a
@@ -446,8 +455,8 @@
               rel="noopener noreferrer"
               class="no-underline text-inherit block transition-transform duration-[theme(--transition-default)]"
             >
-              <Card class="relative h-full flex flex-col overflow-hidden p-6">
-                <div class="absolute flex items-center text-primary-foreground text-sm font-semibold bg-success top-[theme(--spacing-lg)] right-[theme(--spacing-lg)] gap-[theme(--spacing-lg)] px-[theme(--spacing-lg)] py-[theme(--spacing-lg)] rounded-full">
+              <Card class="relative h-full flex flex-col overflow-hidden p-[theme(--spacing-lg)]">
+                <div class="absolute flex items-center text-primary-foreground text-xs font-semibold bg-success top-[theme(--spacing-xs)] right-[theme(--spacing-xs)] gap-[theme(--spacing-xs)] px-[theme(--spacing-sm)] py-[theme(--spacing-xs)] rounded-full">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="18"
@@ -465,8 +474,8 @@
                   <span>Verified</span>
                 </div>
                 <h3 class="text-lg font-semibold text-primary pr-[theme(--spacing-2xl)]">{business.businessname}</h3>
-                <div class="flex flex-col mt-auto gap-[theme(--spacing-lg)]">
-                  <div class="flex items-center text-foreground text-foreground-secondary text-sm gap-[theme(--spacing-lg)]">
+                <div class="flex flex-col mt-auto gap-[theme(--spacing-sm)]">
+                  <div class="flex items-center text-foreground dark:text-foreground-secondary text-sm gap-[theme(--spacing-sm)]">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
@@ -482,7 +491,7 @@
                     >
                     <span>{business.city}, {business.state}</span>
                   </div>
-                  <div class="flex items-center text-foreground text-foreground-secondary text-sm gap-[theme(--spacing-lg)]">
+                  <div class="flex items-center text-foreground dark:text-foreground-secondary text-sm gap-[theme(--spacing-sm)]">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
@@ -505,7 +514,7 @@
           {/each}
         {:else}
           <div class="col-span-full text-center py-12">
-            <p class="text-foreground text-foreground-secondary">
+            <p class="text-foreground dark:text-foreground-secondary">
               No verified installers available at the moment. Be the first to
               join!
             </p>
@@ -535,16 +544,19 @@
     </Card>
 
     <!-- How It Works Video Section -->
-    <Card class="text-center p-6 mt-16 mb-[theme(--spacing-2xl)]" id="product-working">
+    <Card class="text-center p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)]" id="product-working">
       <div class="text-center mb-[theme(--spacing-2xl)]">
-        <h2 class="text-2xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">See How It Works</h2>
-        <p class="text-lg text-foreground text-foreground-secondary max-w-2xl mx-auto">
+        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">See How It Works</h2>
+        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+          <span class="w-20 h-1 bg-accent rounded"></span>
+        </div>
+        <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
           Watch this quick video to understand how Solar Vipani connects you
           with customers
         </p>
       </div>
 
-      <div class="relative mx-auto max-w-2xl overflow-hidden rounded-[theme(--card-radius)] shadow-card">
+      <div class="relative mx-auto max-w-2xl overflow-hidden rounded-[theme(--radius-lg)] shadow-[theme(--shadow-lg)]">
         <iframe
           src="https://www.youtube.com/embed/8UZ-4XN8Vq8"
           title="How Solarvipani.com works"
@@ -578,29 +590,35 @@
     </Card>
 
     <!-- FAQs Section -->
-    <Card class="p-6 mt-16 mb-[theme(--spacing-2xl)]">
+    <Card class="p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)]">
       <div class="text-center mb-[theme(--spacing-2xl)]">
-        <h2 class="text-2xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Frequently Asked Questions</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Frequently Asked Questions</h2>
+        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+          <span class="w-20 h-1 bg-accent rounded"></span>
+        </div>
       </div>
 
-      <div class="flex flex-col items-center gap-8 max-w-2xl mx-auto">
+      <div class="flex flex-col items-center gap-[theme(--card-gap)] max-w-2xl mx-auto">
         {#each faqs as faq}
-          <Card class="p-6 w-full">
-            <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-lg)]">{faq.question}</h3>
-            <p class="text-foreground text-foreground-secondary text-sm">{faq.answer}</p>
+          <Card class="p-[theme(--spacing-lg)] w-full">
+            <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-md)]">{faq.question}</h3>
+            <p class="text-foreground dark:text-foreground-secondary text-sm">{faq.answer}</p>
           </Card>
         {/each}
       </div>
     </Card>
 
     <!-- Need Assistance Section -->
-    <Card class="p-6 mt-16 mb-[theme(--spacing-2xl)]">
+    <Card class="p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)]">
       <div class="text-center mb-[theme(--spacing-2xl)]">
-        <h2 class="text-2xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">We're Here to Help</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">We're Here to Help</h2>
+        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+          <span class="w-20 h-1 bg-accent rounded"></span>
+        </div>
       </div>
 
-      <div class="flex justify-center gap-8 flex-wrap">
-        <Card class="p-6 text-center w-64">
+      <div class="flex justify-center gap-[theme(--spacing-2xl)] flex-wrap">
+        <Card class="p-[theme(--spacing-lg)] text-center w-64">
           <div class="text-primary mb-4 flex justify-center">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -617,7 +635,7 @@
               ></path><polyline points="22,6 12,13 2,6"></polyline></svg
             >
           </div>
-          <p class="mb-2 text-foreground text-foreground-secondary">Email us at</p>
+          <p class="mb-2 text-foreground dark:text-foreground-secondary">Email us at</p>
           <a
             href="mailto:admin@solarvipani.com"
             class="block text-lg font-semibold text-primary hover:underline transition-colors"
@@ -625,7 +643,7 @@
           >
         </Card>
 
-        <Card class="p-6 text-center w-64">
+        <Card class="p-[theme(--spacing-lg)] text-center w-64">
           <div class="text-primary mb-4 flex justify-center">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -642,7 +660,7 @@
               ></path></svg
             >
           </div>
-          <p class="mb-2 text-foreground text-foreground-secondary">Call us at</p>
+          <p class="mb-2 text-foreground dark:text-foreground-secondary">Call us at</p>
           <a href="tel:+918983066701" class="block text-lg font-semibold text-primary hover:underline transition-colors" rel="noopener"
             >+91 8983066701</a
           >
