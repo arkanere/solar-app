@@ -132,19 +132,11 @@
   <!-- Canonical URL -->
   <link rel="canonical" href="https://solarvipani.com" />
 
-  <!-- Preload critical hero images for faster LCP -->
+  <!-- Preload critical hero image for faster LCP -->
   <link
     rel="preload"
     as="image"
-    href="/header/header_desktop.avif"
-    media="(min-width: 769px)"
-    fetchpriority="high"
-  />
-  <link
-    rel="preload"
-    as="image"
-    href="/header/header_mobile.avif"
-    media="(max-width: 768px)"
+    href="/header/header.avif"
     fetchpriority="high"
   />
 
@@ -239,27 +231,15 @@
 <main class="w-full bg-background text-foreground transition-colors duration-300 overflow-x-hidden dark:bg-background dark:text-foreground">
   <!-- Hero Banner Section -->
   <div class="relative w-full h-[theme(--height-md)] flex items-center justify-center text-center overflow-hidden md:h-[theme(--height-xl)]">
-    <picture>
-      <source
-        media="(max-width: 768px)"
-        srcset="/header/header_mobile.avif"
-        type="image/avif"
-      />
-      <source
-        media="(min-width: 769px)"
-        srcset="/header/header_desktop.avif"
-        type="image/avif"
-      />
-      <img
-        class="absolute top-0 left-0 w-full h-full object-cover object-center z-0"
-        src="/header/header_desktop.avif"
-        alt="Solar Panel Installation in India"
-        width="1920"
-        height="600"
-        fetchpriority="high"
-        decoding="async"
-      />
-    </picture>
+    <img
+      class="absolute top-0 left-0 w-full h-full object-cover object-center z-0"
+      src="/header/header.avif"
+      alt="Residential Solar Panel Installation in India"
+      width="1920"
+      height="600"
+      fetchpriority="high"
+      decoding="async"
+    />
     <div class="absolute top-0 left-0 w-full h-full z-10 bg-black/55"></div>
     <div class="relative z-20 max-w-3xl px-6">
       <h1 class="text-4xl md:text-5xl font-bold mb-6 text-primary-foreground leading-tight drop-shadow-lg">
