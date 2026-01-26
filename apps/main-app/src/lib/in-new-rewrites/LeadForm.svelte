@@ -52,31 +52,25 @@
     if (!validateForm()) return;
 
     isSubmitting = true;
-    try {
-      const response = await fetch('/api/submitLead', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          phone,
-          pinCode,
-          email,
-          comment,
-          urlParam
-        })
-      });
 
-      if (response.ok) {
-        const data = await response.json();
-        await goto(`/thank-you?ref=${data.referenceId || ''}`);
-      } else {
-        console.error('Submission failed');
-      }
-    } catch (error) {
+    // Navigate to thank-you page immediately for better UX
+    goto('/thank-you');
+
+    // Submit form in background (fire and forget)
+    fetch('/api/submitLead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        phone,
+        pinCode,
+        email,
+        comment,
+        urlParam
+      })
+    }).catch((error) => {
       console.error('Error submitting form:', error);
-    } finally {
-      isSubmitting = false;
-    }
+    });
   }
 </script>
 
