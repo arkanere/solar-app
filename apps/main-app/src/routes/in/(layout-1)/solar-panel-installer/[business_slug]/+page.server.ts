@@ -20,7 +20,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		const businessResult = await pool.query(
 			`SELECT businessname, description, phonenumber, email, website,
 			slug, address, district,
-			state, city, tag, rscore, businessfilled, services, instagram_id, google_maps_link
+			state, city, tag, rscore, businessfilled, services, brands, instagram_id, google_maps_link
 			FROM businesses_1 WHERE slug = $1 and isvisible = true`,
 			[slug]
 		);

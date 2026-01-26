@@ -41,6 +41,17 @@
     6: "Agricultural Solar Installation",
   };
 
+  // Brand mappings as a constant object outside component for better performance
+  const BRAND_MAPPING = {
+    1: "Waaree Energies",
+    2: "Adani Solar",
+    3: "Tata Power Solar",
+    4: "Vikram Solar",
+    5: "Goldi Solar",
+    6: "RenewSys",
+    7: "Loom Solar",
+  };
+
   // Helper functions
   const getServiceNames = (serviceIds) =>
     serviceIds
@@ -179,6 +190,20 @@
                 {#each business.services as serviceId}
                   <span class="bg-accent/10 text-primary px-3 py-1 rounded-md text-xs font-medium border border-accent/30"
                     >{SERVICE_MAPPING[serviceId] || "Unknown Service"}</span
+                  >
+                {/each}
+              </div>
+            </div>
+          {/if}
+
+          <!-- Brands Section -->
+          {#if business.businessfilled && business.brands && business.brands.length > 0}
+            <div class="flex flex-col gap-[theme(--spacing-md)]">
+              <h3 class="text-xl font-semibold text-primary m-0">Brands</h3>
+              <div class="flex flex-wrap gap-2">
+                {#each business.brands as brandId}
+                  <span class="bg-accent/10 text-primary px-3 py-1 rounded-md text-xs font-medium border border-accent/30"
+                    >{BRAND_MAPPING[brandId] || "Unknown Brand"}</span
                   >
                 {/each}
               </div>
