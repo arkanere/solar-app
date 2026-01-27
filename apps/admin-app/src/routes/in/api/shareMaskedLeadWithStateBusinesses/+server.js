@@ -31,7 +31,6 @@ export async function POST({ request }) {
 		}
 
 		const state = stateResult.rows[0].state;
-		console.log(`Lead state determined: ${state} (from district: ${lead.district})`);
 
 		// Fetch businesses from the same state with magic_link_token
 		const businessesResult = await pool.query(
@@ -51,9 +50,6 @@ export async function POST({ request }) {
 				{ status: 404 }
 			);
 		}
-
-		console.log('Businesses identified for state sharing:', businessesResult.rows);
-		console.log(`Total businesses found in state ${state}:`, businessesResult.rows.length);
 
 		const businesses = businessesResult.rows;
 		const adminEmail = 'admin@solarvipani.com';
@@ -131,10 +127,6 @@ export async function POST({ request }) {
 				// Send email to business only
 				await sendEmail([login_email], subject, message, { isHtml: true });
 
-				// ✅ Log success and increment counter
-				console.log(
-					`✅ Email sent successfully to Business ID: ${business_id}, Email: ${login_email}`
-				);
 				emailsSentCount++;
 			} catch (error) {
 				// ❌ Log failure
@@ -169,7 +161,6 @@ export async function POST({ request }) {
         `;
 
 				await sendEmail([adminEmail], `[COPY] ${subject}`, adminCopyMessage, { isHtml: true });
-				console.log(`✅ Single admin copy sent for lead shared with ${emailsSentCount} businesses`);
 			} catch (error) {
 				console.error('❌ Failed to send admin copy:', error);
 			}
@@ -198,7 +189,6 @@ export async function POST({ request }) {
 					'UPDATE leaddata SET email_invite_count = email_invite_count + 1 WHERE id = $1',
 					[lead.id]
 				);
-				console.log(`✅ Updated email_invite_count for lead ID: ${lead.id}`);
 			} catch (updateError) {
 				console.error('Error updating email_invite_count:', updateError);
 				// Don't fail the entire operation if the count update fails
