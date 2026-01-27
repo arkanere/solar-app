@@ -88,7 +88,7 @@ export async function POST({ request }) {
         <p><strong>Important:</strong> Businesses that have either main branch or branch office in <a href="https://solarvipani.com/solar-panel-installer-directory/${lead.district.toLowerCase().replace(/\s+/g, '-')}" style="font-weight: bold;">${escapeHtml(lead.district)}</a> district can claim this lead by logging into their account.</p>
         `;
 
-		const subject = `New Solar Lead Inquiry in  ${escapeHtml(district)}, ${escapeHtml(state)} - ${escapeHtml(lead.name)}`;
+		const subject = `New Solar Lead Inquiry in  ${escapeHtml(lead.district)}, ${escapeHtml(state)} - ${escapeHtml(lead.name)}`;
 
 		for (const business of businesses) {
 			const { business_id, login_email, slug, magic_link_token, district } = business;
