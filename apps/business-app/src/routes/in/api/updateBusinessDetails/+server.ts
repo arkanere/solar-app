@@ -47,11 +47,40 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		} = data;
 
 		// Verify the logged-in business owns the resource
-		if (sessionResult.session.businessSlug !== business_slug) {
-			return json(
-				{ success: false, error: 'Forbidden - You can only update your own business' },
-				{ status: 403 }
+		// Check if it's the main business being updated
+		if (sessionResult.session.businessSlug === business_slug) {
+			// Main business updating itself - allowed
+		} else {
+			// Check if the business_slug belongs to a branch of the logged-in business
+			const mainBusinessQuery = await pool.query(
+				'SELECT id FROM businesses_1 WHERE slug = $1',
+				[sessionResult.session.businessSlug]
 			);
+
+			if (mainBusinessQuery.rows.length === 0) {
+				return json(
+					{ success: false, error: 'Main business not found' },
+					{ status: 404 }
+				);
+			}
+
+			const mainBusinessId = mainBusinessQuery.rows[0].id;
+
+			// Check if business_slug is a branch of this main business
+			const branchCheckQuery = await pool.query(
+				`SELECT br.branch_id
+				 FROM branches br
+				 JOIN businesses_1 b ON br.branch_id = b.id
+				 WHERE br.main_id = $1 AND b.slug = $2 AND br.isactive = true`,
+				[mainBusinessId, business_slug]
+			);
+
+			if (branchCheckQuery.rows.length === 0) {
+				return json(
+					{ success: false, error: 'Forbidden - You can only update your own business or branches' },
+					{ status: 403 }
+				);
+			}
 		}
 
 		// Update query for the businesses_1 table
