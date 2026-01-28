@@ -7,6 +7,7 @@ import type { Proposal } from '$lib/types/lead';
 
 interface DeleteProposalRequest {
 	proposalId: number;
+	businessSlug: string;
 }
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
@@ -25,7 +26,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		const data = (await request.json()) as DeleteProposalRequest;
-		const { proposalId } = data;
+		const { proposalId, businessSlug } = data;
 
 		// Validate required fields
 		if (!proposalId) {
@@ -35,13 +36,21 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			);
 		}
 
-		// Check if proposal exists
+		if (!businessSlug) {
+			return json(
+				{ success: false, error: 'Business slug is required' },
+				{ status: 400 }
+			);
+		}
+
+		// Check if proposal exists for this business
 		const checkQuery = `
-			SELECT id, customer_name FROM proposals
-			WHERE id = $1
+			SELECT id, customer_name FROM in_proposals
+			WHERE id = $1 AND business_slug = $2
 		`;
 		const checkResult = await pool.query<Pick<Proposal, 'id' | 'customer_name'>>(checkQuery, [
-			proposalId
+			proposalId,
+			businessSlug
 		]);
 
 		if (checkResult.rows.length === 0) {
@@ -53,12 +62,13 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		// Delete the proposal
 		const deleteQuery = `
-			DELETE FROM proposals
-			WHERE id = $1
+			DELETE FROM in_proposals
+			WHERE id = $1 AND business_slug = $2
 			RETURNING id, customer_name
 		`;
 		const deleteResult = await pool.query<Pick<Proposal, 'id' | 'customer_name'>>(deleteQuery, [
-			proposalId
+			proposalId,
+			businessSlug
 		]);
 
 		const deletedProposal = deleteResult.rows[0];
@@ -72,7 +82,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		console.error('❌ Error deleting proposal:', error);
 
 		// Handle specific database errors
-		if (error instanceof Error && error.message.includes('relation "proposals" does not exist')) {
+		if (error instanceof Error && error.message.includes('relation "in_proposals" does not exist')) {
 			return json(
 				{ success: false, error: 'Proposals table not found. Please contact administrator.' },
 				{ status: 500 }

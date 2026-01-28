@@ -8,6 +8,7 @@ export const prerender = false;
 interface Business {
 	id: number;
 	businessname: string;
+	slug: string;
 }
 
 interface Proposal {
@@ -37,7 +38,7 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 	try {
 		// First get the business information from slug
 		const businessResult = await pool.query(
-			'SELECT id, businessname FROM businesses_1 WHERE slug = $1',
+			'SELECT id, businessname, slug FROM businesses_1 WHERE slug = $1',
 			[businessSlug]
 		);
 
@@ -47,7 +48,7 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 
 		const business = businessResult.rows[0] as Business;
 
-		// Get all proposals (for now, get all proposals - can add business_id filter later if needed)
+		// Get proposals filtered by business slug
 		const proposalsResult = await pool.query(`
 			SELECT
 				id,
@@ -62,9 +63,10 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 				notes,
 				created_at,
 				updated_at
-			FROM proposals
+			FROM in_proposals
+			WHERE business_slug = $1
 			ORDER BY created_at DESC
-		`);
+		`, [businessSlug]);
 
 		const proposals = proposalsResult.rows as Proposal[];
 

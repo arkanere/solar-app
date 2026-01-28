@@ -119,6 +119,7 @@
 			const proposalData = {
 				id: proposal?.id,
 				lead_id: proposal?.lead_id,
+				business_slug: business?.slug,
 				customer_name: formData.customerName,
 				phone_number: formData.customerPhone,
 				address: formData.customerAddress,
