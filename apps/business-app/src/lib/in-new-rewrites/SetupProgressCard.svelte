@@ -69,8 +69,8 @@
 		{
 			id: 'complete-details',
 			title: 'Complete Business Details',
-			description: 'Add description, website, and contact info',
-			completed: !!business.description && !!business.website,
+			description: 'Add description',
+			completed: !!business.description,
 			action: 'openEditProfile',
 			actionLabel: 'Complete Profile'
 		},
@@ -123,11 +123,12 @@
 	}
 </script>
 
+{#if completedCount < totalCount}
 <Card.Root class="mb-8 overflow-hidden transition-shadow hover:shadow-md">
 	<Card.Header class="p-0 border-b">
 		<Button
 			variant="ghost"
-			class="flex justify-between items-center p-6 rounded-none w-full text-left h-auto"
+			class="flex justify-between items-center p-6 rounded-none w-full text-left h-auto hover:bg-transparent"
 			onclick={toggleExpanded}
 			aria-expanded={isExpanded}
 		>
@@ -206,3 +207,4 @@
 		</Card.Content>
 	{/if}
 </Card.Root>
+{/if}
