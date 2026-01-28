@@ -157,7 +157,7 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 
 		// ✅ Query referrers count for setup progress
 		const referrersResult = await pool.query(
-			'SELECT COUNT(*) as count FROM referrers_in WHERE business_id = $1',
+			'SELECT COUNT(*) as count FROM in_referrers WHERE business_id = $1',
 			[businessId]
 		);
 

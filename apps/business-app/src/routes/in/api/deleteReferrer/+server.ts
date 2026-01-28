@@ -47,7 +47,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		// Check if referrer exists and belongs to this business
 		const checkQuery = `
-			SELECT id, name FROM referrers_in
+			SELECT id, name FROM in_referrers
 			WHERE id = $1 AND business_id = $2
 		`;
 		const checkResult = await pool.query<ReferrerResult>(checkQuery, [referrerId, businessId]);
@@ -61,7 +61,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		// Delete the referrer
 		const deleteQuery = `
-			DELETE FROM referrers_in
+			DELETE FROM in_referrers
 			WHERE id = $1 AND business_id = $2
 			RETURNING id, name
 		`;
@@ -78,7 +78,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		console.error('Error deleting referrer:', error);
 
 		// Handle specific database errors
-		if (error instanceof Error && error.message.includes('relation "referrers_in" does not exist')) {
+		if (error instanceof Error && error.message.includes('relation "in_referrers" does not exist')) {
 			return json(
 				{ success: false, error: 'Referrers table not found. Please contact administrator.' },
 				{ status: 500 }

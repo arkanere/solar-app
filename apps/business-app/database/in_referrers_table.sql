@@ -1,7 +1,7 @@
--- SQL schema for referrers_in table
+-- SQL schema for in_referrers table
 -- This table stores referrer/partner information for businesses in India
 
-CREATE TABLE IF NOT EXISTS referrers_in (
+CREATE TABLE IF NOT EXISTS in_referrers (
     id SERIAL PRIMARY KEY,
     business_id INTEGER NOT NULL,
     name VARCHAR(255) NOT NULL,
@@ -19,13 +19,13 @@ CREATE TABLE IF NOT EXISTS referrers_in (
 );
 
 -- Create index on business_id for faster queries
-CREATE INDEX IF NOT EXISTS idx_referrers_in_business_id ON referrers_in(business_id);
+CREATE INDEX IF NOT EXISTS idx_in_referrers_business_id ON in_referrers(business_id);
 
 -- Create index on phone for potential lookups
-CREATE INDEX IF NOT EXISTS idx_referrers_in_phone ON referrers_in(phone);
+CREATE INDEX IF NOT EXISTS idx_in_referrers_phone ON in_referrers(phone);
 
 -- Optional: Add trigger to update updated_at timestamp
-CREATE OR REPLACE FUNCTION update_referrers_in_updated_at()
+CREATE OR REPLACE FUNCTION update_in_referrers_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
     NEW.updated_at = CURRENT_TIMESTAMP;
@@ -33,7 +33,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER referrers_in_updated_at_trigger
-    BEFORE UPDATE ON referrers_in
+CREATE TRIGGER in_referrers_updated_at_trigger
+    BEFORE UPDATE ON in_referrers
     FOR EACH ROW
-    EXECUTE FUNCTION update_referrers_in_updated_at();
+    EXECUTE FUNCTION update_in_referrers_updated_at();
