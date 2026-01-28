@@ -4,6 +4,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Label } from '$lib/components/ui/label';
+	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { toast } from 'svelte-sonner';
 
 	export type ShowEditProfileProps = {
@@ -22,6 +23,16 @@
 		onUpdated = () => {}
 	}: ShowEditProfileProps = $props();
 
+	// Service mappings
+	const SERVICE_OPTIONS = [
+		{ id: 1, name: 'Solar Panel Installation' },
+		{ id: 2, name: 'Net Metering' },
+		{ id: 3, name: 'Subsidy Documentation' },
+		{ id: 4, name: 'Financing' },
+		{ id: 5, name: 'Cleaning of Solar Panels' },
+		{ id: 6, name: 'Agricultural Solar Installation' }
+	];
+
 	// Create a local copy of the business info that we can modify
 	let formData = $state({
 		id: '',
@@ -33,7 +44,8 @@
 		address: '',
 		website: '',
 		instagram_id: '',
-		google_maps_link: ''
+		google_maps_link: '',
+		services: [] as number[]
 	});
 
 	// Reset the form data whenever the modal is shown or businessInfo changes
@@ -67,8 +79,22 @@
 			address: businessInfo.address || '',
 			website: businessInfo.website || '',
 			instagram_id: businessInfo.instagram_id || '',
-			google_maps_link: businessInfo.google_maps_link || ''
+			google_maps_link: businessInfo.google_maps_link || '',
+			services: businessInfo.services || []
 		};
+	}
+
+	// Helper functions for service selection
+	function toggleService(serviceId: number) {
+		if (formData.services.includes(serviceId)) {
+			formData.services = formData.services.filter((id) => id !== serviceId);
+		} else {
+			formData.services = [...formData.services, serviceId];
+		}
+	}
+
+	function isServiceSelected(serviceId: number) {
+		return formData.services.includes(serviceId);
 	}
 
 	function handleOpenChange(open: boolean) {
@@ -123,6 +149,19 @@
 
 			<Label for="description" class="font-bold">Description:</Label>
 			<Textarea id="description" bind:value={formData.description} class="min-h-[100px]" />
+
+			<Label class="font-bold">Services Provided:</Label>
+			<div class="flex flex-col gap-3 p-3 border rounded-md">
+				{#each SERVICE_OPTIONS as service}
+					<label class="flex items-center gap-3 cursor-pointer">
+						<Checkbox
+							checked={isServiceSelected(service.id)}
+							onCheckedChange={() => toggleService(service.id)}
+						/>
+						<span class="text-sm">{service.name}</span>
+					</label>
+				{/each}
+			</div>
 
 			<Label for="phonenumber" class="font-bold">Phone Number:</Label>
 			<Input id="phonenumber" bind:value={formData.phonenumber} />
