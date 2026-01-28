@@ -11,6 +11,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		const proposalData = (await request.json()) as ProposalPayload;
 		const {
 			id,
+			business_slug,
 			customer_name,
 			phone_number,
 			address,
@@ -36,8 +37,15 @@ export const POST: RequestHandler = async ({ request }) => {
 			);
 		}
 
+		if (!business_slug) {
+			return json(
+				{ success: false, error: 'Business slug is required' },
+				{ status: 400 }
+			);
+		}
+
 		const updateQuery = `
-			UPDATE proposals
+			UPDATE in_proposals
 			SET
 				customer_name = $1,
 				phone_number = $2,
@@ -49,7 +57,7 @@ export const POST: RequestHandler = async ({ request }) => {
 				inverter_brand_model = $8,
 				notes = $9,
 				updated_at = NOW()
-			WHERE id = $10
+			WHERE id = $10 AND business_slug = $11
 			RETURNING *
 		`;
 
@@ -63,7 +71,8 @@ export const POST: RequestHandler = async ({ request }) => {
 			number_of_panels ? parseInt(number_of_panels.toString()) : null,
 			inverter_brand_model ?? null,
 			notes ?? null,
-			id
+			id,
+			business_slug
 		];
 
 		const result = await pool.query<Proposal>(updateQuery, values);

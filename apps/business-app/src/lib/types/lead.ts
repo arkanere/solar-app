@@ -87,10 +87,11 @@ export interface ClaimRequestPayload {
 // ===== PROPOSAL TYPES =====
 
 /**
- * Proposal entity from proposals table
+ * Proposal entity from in_proposals table
  */
 export interface Proposal {
 	id: number;
+	business_slug: string;
 	lead_id: number | null;
 	customer_name: string;
 	phone_number: string | null;
@@ -110,6 +111,7 @@ export interface Proposal {
  */
 export interface ProposalPayload {
 	id?: number; // Present for updates
+	business_slug: string;
 	lead_id?: number | null;
 	customer_name: string;
 	phone_number?: string | null;

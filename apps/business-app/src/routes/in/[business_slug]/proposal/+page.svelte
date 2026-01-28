@@ -70,7 +70,8 @@
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
-					proposalId: proposalId
+					proposalId: proposalId,
+					businessSlug: businessSlug
 				})
 			});
 
@@ -100,7 +101,7 @@
 	<section>
 		{#if proposals.length === 0}
 			<div class="text-center py-12 bg-card rounded-lg border border-border">
-				<p class="text-muted-foreground">No proposals found. Proposals will appear here once created.</p>
+				<p class="text-muted-foreground">No proposals found. Proposals will appear here once created. Proposals can be created from the CRM, when inquiry reaches the contacted stage</p>
 			</div>
 		{:else}
 			<Table>

@@ -162,7 +162,10 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 		);
 
 		// ✅ Query proposals count for setup progress
-		const proposalsResult = await pool.query('SELECT COUNT(*) as count FROM proposals', []);
+		const proposalsResult = await pool.query(
+			'SELECT COUNT(*) as count FROM in_proposals WHERE business_slug = $1',
+			[business_slug]
+		);
 
 		return {
 			business,
