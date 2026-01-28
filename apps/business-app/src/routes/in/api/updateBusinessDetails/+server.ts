@@ -15,6 +15,7 @@ interface UpdateBusinessDetailsRequest {
 	instagram_id: string;
 	google_maps_link: string;
 	services: number[];
+	brands: number[];
 	business_slug: string;
 }
 
@@ -45,6 +46,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			instagram_id,
 			google_maps_link,
 			services,
+			brands,
 			business_slug // Assuming you're passing business_slug to identify the business to update
 		} = data;
 
@@ -88,8 +90,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		// Update query for the businesses_1 table
 		const updateQuery = `
       UPDATE businesses_1
-      SET businessname = $1, address = $2, phonenumber = $3, whatsapp = $4, email = $5, website = $6, description = $7, instagram_id = $8, google_maps_link = $9, services = $10
-      WHERE slug = $11
+      SET businessname = $1, address = $2, phonenumber = $3, whatsapp = $4, email = $5, website = $6, description = $7, instagram_id = $8, google_maps_link = $9, services = $10, brands = $11
+      WHERE slug = $12
       RETURNING id
     `;
 
@@ -104,6 +106,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			instagram_id,
 			google_maps_link,
 			services,
+			brands,
 			business_slug
 		]);
 

@@ -33,6 +33,17 @@
 		{ id: 6, name: 'Agricultural Solar Installation' }
 	];
 
+	// Brand mappings
+	const BRAND_OPTIONS = [
+		{ id: 1, name: 'Waaree Energies' },
+		{ id: 2, name: 'Adani Solar' },
+		{ id: 3, name: 'Tata Power Solar' },
+		{ id: 4, name: 'Vikram Solar' },
+		{ id: 5, name: 'Goldi Solar' },
+		{ id: 6, name: 'RenewSys' },
+		{ id: 7, name: 'Loom Solar' }
+	];
+
 	// Create a local copy of the business info that we can modify
 	let formData = $state({
 		id: '',
@@ -45,7 +56,8 @@
 		website: '',
 		instagram_id: '',
 		google_maps_link: '',
-		services: [] as number[]
+		services: [] as number[],
+		brands: [] as number[]
 	});
 
 	// Reset the form data whenever the modal is shown or businessInfo changes
@@ -80,7 +92,8 @@
 			website: businessInfo.website || '',
 			instagram_id: businessInfo.instagram_id || '',
 			google_maps_link: businessInfo.google_maps_link || '',
-			services: businessInfo.services || []
+			services: businessInfo.services || [],
+			brands: businessInfo.brands || []
 		};
 	}
 
@@ -95,6 +108,19 @@
 
 	function isServiceSelected(serviceId: number) {
 		return formData.services.includes(serviceId);
+	}
+
+	// Helper functions for brand selection
+	function toggleBrand(brandId: number) {
+		if (formData.brands.includes(brandId)) {
+			formData.brands = formData.brands.filter((id) => id !== brandId);
+		} else {
+			formData.brands = [...formData.brands, brandId];
+		}
+	}
+
+	function isBrandSelected(brandId: number) {
+		return formData.brands.includes(brandId);
 	}
 
 	function handleOpenChange(open: boolean) {
@@ -159,6 +185,19 @@
 							onCheckedChange={() => toggleService(service.id)}
 						/>
 						<span class="text-sm">{service.name}</span>
+					</label>
+				{/each}
+			</div>
+
+			<Label class="font-bold">Brands:</Label>
+			<div class="flex flex-col gap-3 p-3 border rounded-md">
+				{#each BRAND_OPTIONS as brand}
+					<label class="flex items-center gap-3 cursor-pointer">
+						<Checkbox
+							checked={isBrandSelected(brand.id)}
+							onCheckedChange={() => toggleBrand(brand.id)}
+						/>
+						<span class="text-sm">{brand.name}</span>
 					</label>
 				{/each}
 			</div>
