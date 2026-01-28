@@ -85,7 +85,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		// Check if referrer with same phone already exists for this business
 		const checkPhoneQuery = `
-			SELECT id FROM referrers_in
+			SELECT id FROM in_referrers
 			WHERE business_id = $1 AND phone = $2
 		`;
 		const checkPhoneResult = await pool.query<ReferrerIdResult>(checkPhoneQuery, [businessId, phone]);
@@ -99,7 +99,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		// Check if referrer with same slug already exists for this business
 		const checkSlugQuery = `
-			SELECT id FROM referrers_in
+			SELECT id FROM in_referrers
 			WHERE business_id = $1 AND slug = $2
 		`;
 		const checkSlugResult = await pool.query<ReferrerIdResult>(checkSlugQuery, [businessId, slug]);
@@ -116,7 +116,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		// Insert referrer into database
 		const insertQuery = `
-			INSERT INTO referrers_in (
+			INSERT INTO in_referrers (
 				business_id,
 				name,
 				slug,
@@ -148,7 +148,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		console.error('Error adding referrer:', error);
 
 		// Handle specific database errors
-		if (error instanceof Error && error.message.includes('relation "referrers_in" does not exist')) {
+		if (error instanceof Error && error.message.includes('relation "in_referrers" does not exist')) {
 			return json(
 				{ success: false, error: 'Referrers table not found. Please contact administrator.' },
 				{ status: 500 }

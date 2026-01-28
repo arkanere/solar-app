@@ -54,7 +54,7 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 
 		const business = businessResult.rows[0] as Business;
 
-		// Get all referrers for this business from referrers_in table
+		// Get all referrers for this business from in_referrers table
 		const referrersResult = await pool.query(
 			`
 			SELECT
@@ -67,7 +67,7 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 				notes,
 				created_at,
 				updated_at
-			FROM referrers_in
+			FROM in_referrers
 			WHERE business_id = $1
 			ORDER BY created_at DESC
 		`,
@@ -82,7 +82,7 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		};
 	} catch (err) {
 		// If table doesn't exist yet, return empty referrers with a warning
-		if (err instanceof Error && err.message.includes('relation "referrers_in" does not exist')) {
+		if (err instanceof Error && err.message.includes('relation "in_referrers" does not exist')) {
 			console.warn('Referrers table does not exist yet. Please run the SQL schema.');
 
 			// Still try to get business info

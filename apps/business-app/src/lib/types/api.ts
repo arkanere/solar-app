@@ -58,7 +58,7 @@ export interface LocationLookupResponse {
 // ===== REFERRER TYPES =====
 
 /**
- * Referrer entity from referrers_in/referrers_us tables
+ * Referrer entity from in_referrers/us_referrers tables
  * Represents a business partner who refers leads
  */
 export interface Referrer {
