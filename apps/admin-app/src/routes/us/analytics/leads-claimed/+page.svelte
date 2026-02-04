@@ -46,7 +46,7 @@
 
 <main class={darkMode ? 'dark' : 'light'}>
 	<div class="header">
-		<a href="/admin/analytics" class="back-link">← Back to Analytics</a>
+		<a href="/us/analytics" class="back-link">← Back to Analytics</a>
 		<h1>Leads Claimed Analytics</h1>
 	</div>
 
@@ -183,7 +183,7 @@
 						
 						{#if getCategoryData(expandedCategory).length === 50}
 							<div class="more-leads-notice">
-								Showing first 50 leads. <a href="/admin/leaddata">View all leads →</a>
+								Showing first 50 leads. <a href="/us/leaddata">View all leads →</a>
 							</div>
 						{/if}
 					{:else}
@@ -195,8 +195,8 @@
 
 		<!-- Actions Section -->
 		<div class="actions-section">
-			<a href="/admin/leaddata" class="action-link">View All Leads</a>
-			<a href="/admin/analytics/lead-generation" class="action-link secondary">View Lead Generation</a>
+			<a href="/us/leaddata" class="action-link">View All Leads</a>
+			<a href="/us/analytics/lead-generation" class="action-link secondary">View Lead Generation</a>
 		</div>
 	{/if}
 </main>

@@ -11,7 +11,7 @@
 
 <main class={darkMode ? 'dark' : 'light'}>
 	<div class="header">
-		<a href="/admin/analytics" class="back-link">← Back to Analytics</a>
+		<a href="/us/analytics" class="back-link">← Back to Analytics</a>
 		<h1>Business Login Activity Analytics</h1>
 		<p class="subtitle">Track business engagement through login activity over the last 15 days</p>
 	</div>
@@ -42,8 +42,8 @@
 
 		<!-- Actions Section -->
 		<div class="actions-section">
-			<a href="/admin/analytics/businesses" class="action-link">View Business Analytics</a>
-			<a href="/admin/allbusinesses" class="action-link secondary">View All Businesses</a>
+			<a href="/us/analytics/businesses" class="action-link">View Business Analytics</a>
+			<a href="/us/allbusinesses" class="action-link secondary">View All Businesses</a>
 		</div>
 	{/if}
 </main>

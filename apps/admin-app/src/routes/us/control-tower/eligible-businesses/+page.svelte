@@ -219,7 +219,7 @@
 					{/if}
 
 					<div class="business-actions">
-						<a href="/allbusinesses/{business.id}/edit" target="_blank" class="action-link">Edit Business</a>
+						<a href="/us/allbusinesses/{business.id}/edit" target="_blank" class="action-link">Edit Business</a>
 						{#if business.slug}
 							<a href="/solar-panel-installer/{business.slug}" target="_blank" class="action-link secondary">View Profile</a>
 						{/if}

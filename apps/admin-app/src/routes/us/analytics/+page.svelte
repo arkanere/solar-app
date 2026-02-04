@@ -12,71 +12,71 @@
 		<div class="card">
 			<h2>Lead Generation</h2>
 			<p>View detailed analytics about lead generation performance</p>
-			<a href="/admin/analytics/lead-generation" class="analytics-link">
+			<a href="/us/analytics/lead-generation" class="analytics-link">
 				View Lead Analytics →
 			</a>
 		</div>
-		
+
 		<div class="card">
 			<h2>Business Registration</h2>
 			<p>View detailed analytics about business registration and tier breakdown</p>
-			<a href="/admin/analytics/businesses" class="analytics-link">
+			<a href="/us/analytics/businesses" class="analytics-link">
 				View Business Analytics →
 			</a>
 		</div>
-		
+
 		<div class="card">
 			<h2>State-wise Businesses</h2>
 			<p>View businesses by state with analytics and complete business listings</p>
-			<a href="/admin/analytics/businesses-statewise" class="analytics-link">
+			<a href="/us/analytics/businesses-statewise" class="analytics-link">
 				View State-wise Analytics →
 			</a>
 		</div>
-		
+
 		<div class="card">
 			<h2>Business Branches</h2>
 			<p>View analytics about business branch distribution and expansion</p>
-			<a href="/admin/analytics/businesses-branches" class="analytics-link">
+			<a href="/us/analytics/businesses-branches" class="analytics-link">
 				View Branch Analytics →
 			</a>
 		</div>
-		
+
 		<div class="card">
 			<h2>Leads Claimed</h2>
 			<p>View analytics about lead claim distribution across businesses</p>
-			<a href="/admin/analytics/leads-claimed" class="analytics-link">
+			<a href="/us/analytics/leads-claimed" class="analytics-link">
 				View Claims Analytics →
 			</a>
 		</div>
-		
+
 		<div class="card">
 			<h2>Geographic Coverage</h2>
 			<p>View district-wise coverage and state-level business distribution</p>
-			<a href="/admin/analytics/coverage" class="analytics-link">
+			<a href="/us/analytics/coverage" class="analytics-link">
 				View Coverage Analytics →
 			</a>
 		</div>
-		
+
 		<div class="card">
 			<h2>Lead Distribution Spread</h2>
 			<p>Analyze geographic spread of incoming leads vs business presence</p>
-			<a href="/admin/analytics/spread" class="analytics-link">
+			<a href="/us/analytics/spread" class="analytics-link">
 				View Spread Analytics →
 			</a>
 		</div>
-		
+
 		<div class="card">
 			<h2>Business Login Activity</h2>
 			<p>Track business engagement through login activity and usage patterns</p>
-			<a href="/admin/analytics/business-login" class="analytics-link">
+			<a href="/us/analytics/business-login" class="analytics-link">
 				View Login Analytics →
 			</a>
 		</div>
-		
+
 		<div class="card">
 			<h2>Recent Projects</h2>
 			<p>Analyze business participation in project showcases and portfolio building</p>
-			<a href="/admin/analytics/recent-projects" class="analytics-link">
+			<a href="/us/analytics/recent-projects" class="analytics-link">
 				View Project Analytics →
 			</a>
 		</div>

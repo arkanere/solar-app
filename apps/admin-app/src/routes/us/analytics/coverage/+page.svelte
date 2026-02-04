@@ -27,7 +27,7 @@
 
 <main class={darkMode ? 'dark' : 'light'}>
 	<div class="header">
-		<a href="/admin/analytics" class="back-link">← Back to Analytics</a>
+		<a href="/us/analytics" class="back-link">← Back to Analytics</a>
 		<h1>Geographic Coverage Analytics</h1>
 	</div>
 
@@ -104,8 +104,8 @@
 
 		<!-- Actions Section -->
 		<div class="actions-section">
-			<a href="/admin/allbusinesses" class="action-link">View All Businesses</a>
-			<a href="/admin/analytics/businesses" class="action-link secondary">View Business Analytics</a>
+			<a href="/us/allbusinesses" class="action-link">View All Businesses</a>
+			<a href="/us/analytics/businesses" class="action-link secondary">View Business Analytics</a>
 		</div>
 	{/if}
 </main>

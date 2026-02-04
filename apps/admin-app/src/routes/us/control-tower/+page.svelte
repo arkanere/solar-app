@@ -12,15 +12,15 @@
 		<div class="card">
 			<h2>Eligible Leads</h2>
 			<p>View leads where businesses are present to handle the requirements</p>
-			<a href="/control-tower/eligible-leads" class="control-link">
+			<a href="/us/control-tower/eligible-leads" class="control-link">
 				View Eligible Leads →
 			</a>
 		</div>
-		
+
 		<div class="card">
 			<h2>Eligible Businesses</h2>
 			<p>View businesses that can claim leads with eligibility analysis and engagement metrics</p>
-			<a href="/control-tower/eligible-businesses" class="control-link">
+			<a href="/us/control-tower/eligible-businesses" class="control-link">
 				View Eligible Businesses →
 			</a>
 		</div>

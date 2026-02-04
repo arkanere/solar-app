@@ -54,9 +54,9 @@
 		// Reset district selection when state changes
 		selectedDistrict = '';
 		if (state) {
-			goto(`/admin/analytics/businesses-statewise?state=${encodeURIComponent(state)}`);
+			goto(`/us/analytics/businesses-statewise?state=${encodeURIComponent(state)}`);
 		} else {
-			goto('/admin/analytics/businesses-statewise');
+			goto('/us/analytics/businesses-statewise');
 		}
 	}
 
@@ -108,7 +108,7 @@
 
 <main class={darkMode ? 'dark' : 'light'}>
 	<div class="header">
-		<a href="/admin/analytics" class="back-link">← Back to Analytics</a>
+		<a href="/us/analytics" class="back-link">← Back to Analytics</a>
 		<h1>State-wise Business Analytics</h1>
 	</div>
 
@@ -235,7 +235,7 @@
 										<td class="date-cell">{formatDate(business.created_at)}</td>
 										<td class="actions-cell">
 											<div class="table-actions">
-												<a href="/admin/allbusinesses/{business.id}/edit" target="_blank" class="table-action-link">Edit</a>
+												<a href="/us/allbusinesses/{business.id}/edit" target="_blank" class="table-action-link">Edit</a>
 												{#if business.slug}
 													<a href="/solar-panel-installer/{business.slug}" target="_blank" class="table-action-link secondary">View</a>
 												{/if}

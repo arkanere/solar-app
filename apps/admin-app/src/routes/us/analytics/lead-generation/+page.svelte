@@ -19,7 +19,7 @@
 
 <main class={darkMode ? 'dark' : 'light'}>
 	<div class="header">
-		<a href="/admin/analytics" class="back-link">← Back to Analytics</a>
+		<a href="/us/analytics" class="back-link">← Back to Analytics</a>
 		<h1>Lead Generation Analytics</h1>
 	</div>
 
@@ -93,8 +93,8 @@
 
 		<!-- Actions Section -->
 		<div class="actions-section">
-			<a href="/admin/leaddata" class="action-link">View All Leads</a>
-			<a href="/admin/allclaims" class="action-link">View Lead Claims</a>
+			<a href="/us/leaddata" class="action-link">View All Leads</a>
+			<a href="/us/allclaims" class="action-link">View Lead Claims</a>
 		</div>
 	{/if}
 </main>

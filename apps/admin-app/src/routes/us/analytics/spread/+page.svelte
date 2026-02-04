@@ -41,7 +41,7 @@
 
 <main class={darkMode ? 'dark' : 'light'}>
 	<div class="header">
-		<a href="/admin/analytics" class="back-link">← Back to Analytics</a>
+		<a href="/us/analytics" class="back-link">← Back to Analytics</a>
 		<h1>Lead Distribution Spread Analytics</h1>
 		<p class="subtitle">Understanding the geographic spread of incoming leads and business coverage</p>
 	</div>
@@ -150,7 +150,7 @@
 							
 							{#if getDistrictLeads(selectedDistrict).length === 50}
 								<div class="more-leads-notice">
-									Showing first 50 leads from this district. <a href="/admin/leaddata">View all leads →</a>
+									Showing first 50 leads from this district. <a href="/us/leaddata">View all leads →</a>
 								</div>
 							{/if}
 						{:else}
@@ -163,8 +163,8 @@
 
 		<!-- Actions Section -->
 		<div class="actions-section">
-			<a href="/admin/analytics/coverage" class="action-link">View Geographic Coverage</a>
-			<a href="/admin/analytics/lead-generation" class="action-link secondary">View Lead Analytics</a>
+			<a href="/us/analytics/coverage" class="action-link">View Geographic Coverage</a>
+			<a href="/us/analytics/lead-generation" class="action-link secondary">View Lead Analytics</a>
 		</div>
 	{/if}
 </main>

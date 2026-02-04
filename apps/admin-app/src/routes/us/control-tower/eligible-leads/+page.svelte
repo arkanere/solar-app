@@ -236,7 +236,7 @@
 												{/if}
 
 												<div class="claim-business-actions">
-													<a href="/allbusinesses/{claim.business_id}/edit" target="_blank" class="business-action-btn edit">Edit</a>
+													<a href="/us/allbusinesses/{claim.business_id}/edit" target="_blank" class="business-action-btn edit">Edit</a>
 													{#if claim.business_slug}
 														<a href="/solar-panel-installer/{claim.business_slug}" target="_blank" class="business-action-btn view">View</a>
 													{/if}
@@ -319,7 +319,7 @@
 														{/if}
 													</div>
 													<div class="business-card-actions">
-														<a href="/allbusinesses/{business.id}/edit" target="_blank" class="business-action-btn edit">Edit</a>
+														<a href="/us/allbusinesses/{business.id}/edit" target="_blank" class="business-action-btn edit">Edit</a>
 														{#if business.slug}
 															<a href="/solar-panel-installer/{business.slug}" target="_blank" class="business-action-btn view">View</a>
 														{/if}

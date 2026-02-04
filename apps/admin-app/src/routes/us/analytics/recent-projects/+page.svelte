@@ -55,7 +55,7 @@
 
 <main class={darkMode ? 'dark' : 'light'}>
 	<div class="header">
-		<a href="/admin/analytics" class="back-link">← Back to Analytics</a>
+		<a href="/us/analytics" class="back-link">← Back to Analytics</a>
 		<h1>Recent Projects Analytics</h1>
 		<p class="subtitle">Track business engagement through project showcase activity</p>
 	</div>
@@ -208,7 +208,7 @@
 							
 							{#if getCategoryBusinesses(selectedCategory).length === 50}
 								<div class="more-businesses-notice">
-									Showing first 50 businesses. <a href="/admin/allbusinesses">View all businesses →</a>
+									Showing first 50 businesses. <a href="/us/allbusinesses">View all businesses →</a>
 								</div>
 							{/if}
 						{:else}
@@ -221,8 +221,8 @@
 
 		<!-- Actions Section -->
 		<div class="actions-section">
-			<a href="/admin/allrecentprojects" class="action-link">View All Projects</a>
-			<a href="/admin/analytics/businesses" class="action-link secondary">View Business Analytics</a>
+			<a href="/us/allrecentprojects" class="action-link">View All Projects</a>
+			<a href="/us/analytics/businesses" class="action-link secondary">View Business Analytics</a>
 		</div>
 	{/if}
 </main>
