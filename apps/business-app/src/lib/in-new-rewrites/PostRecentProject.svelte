@@ -396,8 +396,7 @@
 				<Input
 					id="pincode"
 					bind:value={formData.pincode}
-					pattern="[0-9]{6}"
-					title="Please enter a valid 6-digit pincode"
+					inputmode="numeric"
 					maxlength="6"
 					disabled={isSubmitting}
 					placeholder="Enter 6-digit pincode"
