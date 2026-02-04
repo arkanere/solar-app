@@ -340,13 +340,13 @@
 </script>
 
 <Dialog.Root open={show} onOpenChange={handleOpenChange}>
-	<Dialog.Content class="max-w-[500px] max-h-[90vh] overflow-y-auto">
+	<Dialog.Content class="max-w-[500px] max-h-[90vh] overflow-y-auto overflow-x-hidden">
 		<Dialog.Header>
 			<Dialog.Title class="text-accent">Post Recent Project</Dialog.Title>
 		</Dialog.Header>
 
 		<form
-			class="flex flex-col gap-4"
+			class="flex flex-col gap-4 w-full"
 			onsubmit={(e) => {
 				e.preventDefault();
 				saveProject();
@@ -381,7 +381,7 @@
 							type="button"
 							variant="outline"
 							size="sm"
-							class="justify-start text-left h-auto py-2 px-3"
+							class="justify-start text-left h-auto py-2 px-3 whitespace-normal break-words"
 							onclick={() => useSuggestedName(suggestion)}
 							disabled={isSubmitting}
 						>
