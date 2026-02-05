@@ -10,8 +10,8 @@
 	import { formatCityStateUrl } from '$lib/us/stateAbbreviations';
 
 	// Destructure page data with reactive declaration
-	const pageData = $derived($page.data);
-	let { business, errorMessage } = pageData;
+	let business = $derived($page.data.business);
+	let errorMessage = $derived($page.data.errorMessage);
 	let darkMode = $derived($isDarkMode);
 	let businessSlug = $derived(business?.slug || '');
 	let showProjects = $derived(business?.businessfilled && business?.tier3);
@@ -65,9 +65,9 @@
 	};
 
 	// Recent Projects state
-	let projects = [];
-	let projectsLoading = true;
-	let projectsError = null;
+	let projects = $state([]);
+	let projectsLoading = $state(true);
+	let projectsError = $state(null);
 
 	// Fetch recent projects
 	async function fetchRecentProjects() {
@@ -129,7 +129,7 @@
 		<div class="business-owner-section">
 			<button
 				class="business-login-btn"
-				on:click={business.businessfilled ? navigateToLogin : navigateToClaim}
+				onclick={business.businessfilled ? navigateToLogin : navigateToClaim}
 				title={business.businessfilled ? 'Business owner login' : 'Claim this business listing'}
 			>
 				{business.businessfilled ? 'Business Login' : 'Claim Business'}
@@ -146,7 +146,7 @@
 				<div class="hero-actions">
 					<button
 						class="call-now-button-hero"
-						on:click={() => makeCall(business.phonenumber, business.slug)}
+						onclick={() => makeCall(business.phonenumber, business.slug)}
 					>
 						<span class="button-icon phone-button-icon">
 							<svg
@@ -169,7 +169,7 @@
 					</button>
 					<button
 						class="whatsapp-button-hero"
-						on:click={() => openWhatsApp(business.phonenumber, business.slug)}
+						onclick={() => openWhatsApp(business.phonenumber, business.slug)}
 					>
 						<span class="button-icon whatsapp-button-icon">
 							<svg
@@ -327,7 +327,7 @@
 				{:else if projectsError}
 					<div class="error">
 						<p>Error: {projectsError}</p>
-						<button on:click={fetchRecentProjects}>Try Again</button>
+						<button onclick={fetchRecentProjects}>Try Again</button>
 					</div>
 				{:else if projects.length === 0}
 					<div class="no-projects">No recent projects found for this business.</div>
@@ -383,7 +383,7 @@
 					If you're interested in exploring other solar businesses in {business.city}, visit our
 					directory page.
 				</p>
-				<button on:click={navigateToDirectory}>
+				<button onclick={navigateToDirectory}>
 					View Solar Businesses in {business.city}
 				</button>
 			</section>

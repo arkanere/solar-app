@@ -2,11 +2,11 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 
-	let email = '';
-	let isConfirming = true;
-	let isLoading = false;
-	let isSuccess = false;
-	let errorMessage = '';
+	let email = $state('');
+	let isConfirming = $state(true);
+	let isLoading = $state(false);
+	let isSuccess = $state(false);
+	let errorMessage = $state('');
 
 	onMount(() => {
 		// Get email from URL query parameter
@@ -63,7 +63,7 @@
 			{/if}
 
 			<div class="button-group">
-				<button class="confirm-button" on:click={handleConfirm} disabled={isLoading || !email}>
+				<button class="confirm-button" onclick={handleConfirm} disabled={isLoading || !email}>
 					{isLoading ? 'Processing...' : 'Confirm Unsubscription'}
 				</button>
 			</div>

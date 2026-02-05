@@ -5,8 +5,7 @@
 	let { data } = $props();
 
 	let darkMode = $derived($isDarkMode);
-	const derivedData = $derived(data);
-	let { blog } = derivedData;
+	let blog = $derived(data.blog);
 
 	function formatDate(dateString) {
 		if (!dateString) return '';

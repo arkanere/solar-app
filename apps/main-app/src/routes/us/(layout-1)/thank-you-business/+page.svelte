@@ -3,7 +3,7 @@
 	let darkMode = $derived($isDarkMode);
 </script>
 
-<!-- svelte-ignore a11y-img-redundant-alt -->
+<!-- svelte-ignore a11y_img_redundant_alt -->
 <svelte:head>
 	<!-- Meta Pixel Code -->
 	<script>

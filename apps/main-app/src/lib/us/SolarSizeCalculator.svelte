@@ -1,9 +1,9 @@
 <script>
 	import { isDarkMode } from '$lib/us/themeStore'; // Assuming this store is globally managed
 
-	let currentBill = 1500; // Initial value for current electricity bill in Rupees
-	let ratePerUnit = 9; // Initial value for electricity rate per unit in Rupees
-	let solarSystemSize = null;
+	let currentBill = $state(1500); // Initial value for current electricity bill in Rupees
+	let ratePerUnit = $state(9); // Initial value for electricity rate per unit in Rupees
+	let solarSystemSize = $state(null);
 
 	// Dark mode state from the store
 	let darkMode = $derived($isDarkMode);

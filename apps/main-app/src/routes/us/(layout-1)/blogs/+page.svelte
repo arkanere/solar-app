@@ -1,33 +1,53 @@
 <script>
-	import { isDarkMode } from '$lib/us/themeStore';
+	// Data for blogs list
 
-	let { data } = $props();
+	import { isDarkMode } from '$lib/us/themeStore'; // Import from store if globally managed
 
+	// Initialize dark mode state
+
+	// Use the global theme store
 	let darkMode = $derived($isDarkMode);
-	const derivedData = $derived(data);
-	let { blogs, error, pagination } = derivedData;
 
-	function formatDate(dateString) {
-		if (!dateString) return '';
-		const date = new Date(dateString);
-		return date.toLocaleDateString('en-US', {
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric'
-		});
-	}
-
-	function getFeaturedImageUrl(featuredImage) {
-		if (!featuredImage) return null;
-		return typeof featuredImage === 'string' ? featuredImage : featuredImage.url;
-	}
+	const blogs = [
+		{
+			title: 'Zero Cost EMI Schemes for Solar Panels: Complete Guide 2025',
+			excerpt:
+				'Complete guide to Zero Cost EMI schemes for solar panels. Learn about no-cost EMI options, eligibility, banks offering solar loans, and how to finance your solar installation without upfront payment.',
+			link: '/us/blogs/zero-cost-emi-schemes-solar'
+		},
+		{
+			title: '1kW On-Grid Solar System: Complete Guide 2025',
+			excerpt:
+				'Complete guide to 1kW on-grid solar system. Learn about cost, installation, electricity generation, components, subsidy, and benefits for small homes and apartments.',
+			link: '/us/blogs/1kw-ongrid-solar-system'
+		},
+		{
+			title: '3kW On-Grid Solar System: Complete Guide 2025',
+			excerpt:
+				'Complete guide to 3kW on-grid solar system. Learn about cost, installation, electricity generation, components, government incentives, and benefits for residential properties.',
+			link: '/us/blogs/3kw-ongrid-solar-system'
+		},
+		{
+			title: '5kW On-Grid Solar System: Complete Guide 2025',
+			excerpt:
+				'Complete guide to 5kW on-grid solar system. Learn about cost, installation, electricity generation, components, tax credits, and benefits for medium to large homes.',
+			link: '/us/blogs/5kw-ongrid-solar-system'
+		},
+		{
+			title: 'Why Hiring a Verified Solar Installer Is Essential for Your Home or Business',
+			excerpt:
+				'Learn about the importance of professional workmanship, safety compliance, maximizing system efficiency, leveraging industry knowledge, and ensuring long-term support.',
+			link: '/us/blogs/hiring-verified-solar-installer-in-usa-is-essential'
+		}
+	];
 </script>
 
 <svelte:head>
+	<!-- Page Title -->
 	<title>Solar Vipani Blog - Solar Energy Guides & Resources</title>
 	<meta
 		name="description"
-		content="Explore comprehensive guides on solar panel systems, financing options, and installation tips. Learn about solar systems, zero-cost EMI schemes, and more."
+		content="Explore comprehensive guides on solar panel systems, financing options, and installation tips. Learn about 1kW, 3kW, and 5kW solar systems, zero-cost EMI schemes, and more."
 	/>
 	<meta name="robots" content="index, follow" />
 	<link rel="canonical" href="https://solarvipani.com/us/blogs" />
@@ -36,81 +56,22 @@
 <main class={darkMode ? 'dark' : 'light'}>
 	<div class="blogs-list">
 		<h1>Blog Posts</h1>
-
-		{#if error}
-			<div class="error-message">
-				<p>⚠️ {error}</p>
-			</div>
-		{:else if blogs.length === 0}
-			<div class="no-blogs">
-				<p>No blog posts available yet. Check back soon!</p>
-			</div>
-		{:else}
-			<ul>
-				{#each blogs as blog}
-					<li class="blog-item">
-						<a href="/us/blogs/{blog.slug}">
-							{#if getFeaturedImageUrl(blog.featured_image)}
-								<div class="blog-image">
-									<img
-										src={getFeaturedImageUrl(blog.featured_image)}
-										alt={blog.featured_image?.alt || blog.title}
-										loading="lazy"
-									/>
-								</div>
-							{/if}
-							<div class="blog-content">
-								<h2>{blog.title}</h2>
-								{#if blog.excerpt}
-									<p class="excerpt">{blog.excerpt}</p>
-								{/if}
-								<div class="blog-meta">
-									{#if blog.author_name}
-										<span class="author">By {blog.author_name}</span>
-									{/if}
-									{#if blog.published_at}
-										<span class="date">{formatDate(blog.published_at)}</span>
-									{/if}
-									{#if blog.view_count > 0}
-										<span class="views">{blog.view_count} views</span>
-									{/if}
-								</div>
-							</div>
-						</a>
-					</li>
-				{/each}
-			</ul>
-
-			{#if pagination && pagination.totalPages > 1}
-				<div class="pagination">
-					{#if pagination.page > 1}
-						<a href="/us/blogs?page={pagination.page - 1}" class="pagination-btn"> ← Previous </a>
-					{/if}
-
-					<div class="pagination-numbers">
-						{#each Array(pagination.totalPages) as _, i}
-							{#if i + 1 === pagination.page}
-								<span class="page-number active">{i + 1}</span>
-							{:else if Math.abs(i + 1 - pagination.page) <= 2 || i === 0 || i === pagination.totalPages - 1}
-								<a href="/us/blogs?page={i + 1}" class="page-number">
-									{i + 1}
-								</a>
-							{:else if Math.abs(i + 1 - pagination.page) === 3}
-								<span class="page-ellipsis">...</span>
-							{/if}
-						{/each}
-					</div>
-
-					{#if pagination.page < pagination.totalPages}
-						<a href="/us/blogs?page={pagination.page + 1}" class="pagination-btn"> Next → </a>
-					{/if}
-				</div>
-			{/if}
-		{/if}
+		<ul>
+			{#each blogs as blog}
+				<li class="blog-item">
+					<a href={blog.link}>
+						<h2>{blog.title}</h2>
+						<p>{blog.excerpt}</p>
+					</a>
+				</li>
+			{/each}
+		</ul>
 	</div>
+	<!-- Pagination removed as we only have 5 blog posts on a single page -->
 </main>
 
 <style>
+	/* Root variables for light and dark modes */
 	:root {
 		--light-bg-color: #f8f9fa;
 		--dark-bg-color: #1a1a1a;
@@ -120,6 +81,7 @@
 		--font-family: 'Helvetica Neue', Arial, sans-serif;
 	}
 
+	/* Main layout styling */
 	main {
 		display: flex;
 		flex-direction: column;
@@ -130,21 +92,24 @@
 		transition:
 			background-color 0.3s ease,
 			color 0.3s ease;
-		min-height: 100vh;
+		min-height: 100vh; /* Ensure main fills at least the viewport height */
 	}
 
+	/* Light mode */
 	.light {
 		background-color: var(--light-bg-color);
 		color: var(--light-primary-text-color);
 	}
 
+	/* Dark mode */
 	.dark {
 		background-color: var(--dark-bg-color);
 		color: var(--dark-primary-text-color);
 	}
 
+	/* Blog list styling */
 	.blogs-list {
-		max-width: 800px;
+		max-width: 650px;
 		width: 100%;
 	}
 
@@ -154,13 +119,6 @@
 		margin-bottom: 1.5rem;
 		font-weight: 600;
 		line-height: 1.3;
-	}
-
-	.error-message,
-	.no-blogs {
-		text-align: center;
-		padding: 2rem;
-		font-size: 1.1rem;
 	}
 
 	ul {
@@ -173,33 +131,17 @@
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 		border-radius: 8px;
 		transition: box-shadow 0.3s ease;
-		overflow: hidden;
 	}
 
 	.blog-item a {
 		text-decoration: none;
 		color: inherit;
 		display: block;
-	}
-
-	.blog-item:hover {
-		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-	}
-
-	.blog-image {
-		width: 100%;
-		height: 250px;
-		overflow: hidden;
-	}
-
-	.blog-image img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-	}
-
-	.blog-content {
 		padding: 1.5rem;
+	}
+
+	.blog-item a:hover {
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 	}
 
 	.blog-item h2 {
@@ -208,82 +150,12 @@
 		margin-bottom: 0.75rem;
 	}
 
-	.excerpt {
+	.blog-item p {
 		font-size: 1.1rem;
 		line-height: 1.6;
-		margin-bottom: 1rem;
-		color: inherit;
-		opacity: 0.9;
 	}
 
-	.blog-meta {
-		display: flex;
-		gap: 1rem;
-		flex-wrap: wrap;
-		font-size: 0.9rem;
-		opacity: 0.7;
-	}
-
-	.blog-meta span {
-		display: inline-block;
-	}
-
-	/* Pagination styles */
-	.pagination {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		gap: 1rem;
-		margin-top: 3rem;
-		padding: 2rem 0;
-	}
-
-	.pagination-btn {
-		padding: 0.75rem 1.5rem;
-		background-color: var(--accent-color);
-		color: white;
-		text-decoration: none;
-		border-radius: 8px;
-		font-weight: 600;
-		transition: background-color 0.3s ease;
-	}
-
-	.pagination-btn:hover {
-		background-color: #004494;
-	}
-
-	.pagination-numbers {
-		display: flex;
-		gap: 0.5rem;
-		align-items: center;
-	}
-
-	.page-number {
-		padding: 0.5rem 0.75rem;
-		text-decoration: none;
-		color: inherit;
-		border-radius: 6px;
-		transition: background-color 0.3s ease;
-		min-width: 40px;
-		text-align: center;
-	}
-
-	.page-number:hover {
-		background-color: rgba(0, 86, 179, 0.1);
-	}
-
-	.page-number.active {
-		background-color: var(--accent-color);
-		color: white;
-		font-weight: 600;
-	}
-
-	.page-ellipsis {
-		padding: 0.5rem;
-		color: inherit;
-		opacity: 0.6;
-	}
-
+	/* Responsive styling */
 	@media (max-width: 768px) {
 		main {
 			padding: 1.5rem;
@@ -293,32 +165,8 @@
 			font-size: 1.5rem;
 		}
 
-		.excerpt {
+		.blog-item p {
 			font-size: 1rem;
-		}
-
-		.blog-image {
-			height: 200px;
-		}
-
-		.pagination {
-			flex-wrap: wrap;
-			gap: 0.5rem;
-		}
-
-		.pagination-btn {
-			padding: 0.5rem 1rem;
-			font-size: 0.9rem;
-		}
-
-		.pagination-numbers {
-			gap: 0.25rem;
-		}
-
-		.page-number {
-			padding: 0.4rem 0.6rem;
-			min-width: 35px;
-			font-size: 0.9rem;
 		}
 	}
 </style>
