@@ -11,14 +11,14 @@
 	import { formatCityStateUrl, formatCountyStateUrl } from '$lib/us/stateAbbreviations';
 
 	// Lazy-loaded components (non-critical)
-	let RecentProjectsCity;
-	let AboutSolarVipani;
-	let ChatbotPopup;
+	let RecentProjectsCity = $state();
+	let AboutSolarVipani = $state();
+	let ChatbotPopup = $state();
 
 	// Loading states
-	let shouldLoadRecentProjects = false;
-	let shouldLoadAbout = false;
-	let shouldLoadChatbot = false;
+	let shouldLoadRecentProjects = $state(false);
+	let shouldLoadAbout = $state(false);
+	let shouldLoadChatbot = $state(false);
 
 	// Default business data
 	const defaultBusiness = {
@@ -27,23 +27,23 @@
 	};
 
 	// State management
-	let isModalOpen = false; // State to track if the modal is open
-	let selectedBusinessName = '';
-	let selectedBusinessSlug = '';
+	let isModalOpen = $state(false); // State to track if the modal is open
+	let selectedBusinessName = $state('');
+	let selectedBusinessSlug = $state('');
 
 	// Get reactive data from the page store
-	$: city = $page.data.city;
-	$: state = $page.data.state;
-	$: businesses = $page.data.businesses || [];
-	$: subset_cities_localities = $page.data.subset_cities_localities || [];
-	$: district = $page.data.district || '';
-	$: recentProjects = $page.data.recentProjects || [];
-	$: errorMessage = $page.data.errorMessage;
-	$: lastUpdated = $page.data.lastUpdated;
-	$: darkMode = $isDarkMode;
+	let city = $derived($page.data.city);
+	let state = $derived($page.data.state);
+	let businesses = $derived($page.data.businesses || []);
+	let subset_cities_localities = $derived($page.data.subset_cities_localities || []);
+	let district = $derived($page.data.district || '');
+	let recentProjects = $derived($page.data.recentProjects || []);
+	let errorMessage = $derived($page.data.errorMessage);
+	let lastUpdated = $derived($page.data.lastUpdated);
+	let darkMode = $derived($isDarkMode);
 
 	// Generate the city-state URL slug
-	$: cityStateSlug = state ? formatCityStateUrl(city, state) : city.toLowerCase();
+	let cityStateSlug = $derived(state ? formatCityStateUrl(city, state) : city.toLowerCase());
 
 	// Function to toggle modal visibility
 	function toggleModal(businessName = '', businessSlug = '') {
@@ -225,7 +225,7 @@
 		const recentProjectsObserver = new IntersectionObserver(
 			async (entries) => {
 				if (entries[0].isIntersecting) {
-					const module = await import('$lib/RecentProjectsCity.svelte');
+					const module = await import('$lib/us/RecentProjectsCity.svelte');
 					RecentProjectsCity = module.default;
 					shouldLoadRecentProjects = true;
 					recentProjectsObserver.disconnect();
@@ -238,7 +238,7 @@
 		const aboutObserver = new IntersectionObserver(
 			async (entries) => {
 				if (entries[0].isIntersecting) {
-					const module = await import('$lib/AboutSolarVipani.svelte');
+					const module = await import('$lib/us/AboutSolarVipani.svelte');
 					AboutSolarVipani = module.default;
 					shouldLoadAbout = true;
 					aboutObserver.disconnect();
@@ -258,7 +258,7 @@
 					if (!chatbotTimer) {
 						chatbotTimer = setTimeout(async () => {
 							if (!ChatbotPopup) {
-								const module = await import('$lib/ChatbotPopup.svelte');
+								const module = await import('$lib/us/ChatbotPopup.svelte');
 								ChatbotPopup = module.default;
 								console.log('Chatbot popup loaded successfully');
 							}
@@ -423,7 +423,7 @@
 
 				<button
 					class="primary-recruitment-cta"
-					on:click={() => (window.location.href = '/us/business-form')}
+					onclick={() => (window.location.href = '/us/business-form')}
 				>
 					Join Our Network - Register Your Business
 				</button>
@@ -459,7 +459,7 @@
 
 	<section id="recent-projects-section">
 		{#if shouldLoadRecentProjects && RecentProjectsCity}
-			<svelte:component this={RecentProjectsCity} />
+			<RecentProjectsCity />
 		{/if}
 	</section>
 
@@ -525,7 +525,7 @@
 
 		<!-- Get Quotation Button after Recommended Solar Systems -->
 		<div class="quotation-button-container">
-			<button class="get-quotation-btn" on:click={scrollToLeadForm}> Get Quotation </button>
+			<button class="get-quotation-btn" onclick={scrollToLeadForm}> Get Quotation </button>
 		</div>
 
 		<section id="people-also-ask">
@@ -588,7 +588,7 @@
 				directory page.
 			</p>
 			<button
-				on:click={() =>
+				onclick={() =>
 					(window.location.href = `/us/county/${formatCountyStateUrl(district, state)}`)}
 			>
 				View Solar Businesses in {district}
@@ -602,34 +602,34 @@
 
 		<!-- Get Quotation Button after Solar Comparison Table -->
 		<div class="quotation-button-container">
-			<button class="get-quotation-btn" on:click={scrollToLeadForm}> Get Quotation </button>
+			<button class="get-quotation-btn" onclick={scrollToLeadForm}> Get Quotation </button>
 		</div>
 	{/if}
 
 	<!-- About Solarvipani Section (Lazy Loaded) -->
 	<section id="about-section">
 		{#if shouldLoadAbout && AboutSolarVipani}
-			<svelte:component this={AboutSolarVipani} />
+			<AboutSolarVipani />
 		{/if}
 	</section>
 </main>
 
 <!-- Chatbot Popup (Lazy Loaded) -->
 {#if shouldLoadChatbot && ChatbotPopup}
-	<svelte:component this={ChatbotPopup} />
+	<ChatbotPopup />
 {/if}
 
 {#if isModalOpen}
 	<div
 		class="modal-overlay"
-		on:click={toggleModal}
-		on:keydown={(e) => e.key === 'Escape' && toggleModal()}
+		onclick={toggleModal}
+		onkeydown={(e) => e.key === 'Escape' && toggleModal()}
 		role="button"
 		tabindex="0"
 		aria-label="Close modal"
 	>
 		<dialog class="modal" open aria-modal="true" use:preventClickPropagation>
-			<button class="close-modal" on:click={toggleModal} aria-label="Close"> &times; </button>
+			<button class="close-modal" onclick={toggleModal} aria-label="Close"> &times; </button>
 			<h2>Request a Free Quote from {selectedBusinessName}</h2>
 			<LeadFormModal businessName={selectedBusinessName} businessSlug={selectedBusinessSlug} />
 		</dialog>
@@ -768,7 +768,17 @@
 	/* Section heading styles */
 
 	h1 {
+		font-size: 2.5rem;
+		font-weight: 700;
+		color: var(--primary-color);
 		text-align: center;
+		margin: 0 auto 1.5rem;
+		max-width: 900px;
+		line-height: var(--heading-line-height);
+	}
+
+	.dark h1 {
+		color: var(--primary-light);
 	}
 
 	.last-updated {
@@ -1106,6 +1116,10 @@
 
 	/* Responsive design */
 	@media (max-width: 992px) {
+		h1 {
+			font-size: 2.2rem;
+		}
+
 		section h2 {
 			font-size: 1.6rem;
 		}
@@ -1116,6 +1130,10 @@
 	}
 
 	@media (max-width: 768px) {
+		h1 {
+			font-size: 1.8rem;
+		}
+
 		section {
 			padding: 1.5rem 1rem;
 		}
@@ -1209,6 +1227,11 @@
 	}
 
 	@media (max-width: 576px) {
+		h1 {
+			font-size: 1.5rem;
+			margin-bottom: 1rem;
+		}
+
 		main {
 			padding: 1rem 0.5rem;
 		}
