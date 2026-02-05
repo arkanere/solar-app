@@ -1,7 +1,7 @@
 <script>
 	import { page } from '$app/stores';
-	import { isDarkMode } from '$lib/themeStore';
-	import LeadFormModal from '$lib/LeadFormModal.svelte';
+	import { isDarkMode } from '$lib/us/themeStore';
+	import LeadFormModal from '$lib/us/LeadFormModal.svelte';
 
 	// State management
 	let visibleBusinesses = []; // Businesses to display on the screen
@@ -13,13 +13,15 @@
 	const batchSize = 3; // Number of businesses to load at a time
 
 	// Get reactive data from the page store
-	$: city = $page.data.city;
-	$: businesses = $page.data.businesses || [];
-	$: errorMessage = $page.data.errorMessage;
-	$: darkMode = $isDarkMode;
-	$: if (loadedCount === 0 && businesses.length > 0) {
-		loadMoreBusinesses();
-	}
+	let city = $derived($page.data.city);
+	let businesses = $derived($page.data.businesses || []);
+	let errorMessage = $derived($page.data.errorMessage);
+	let darkMode = $derived($isDarkMode);
+	$effect(() => {
+		if (loadedCount === 0 && businesses.length > 0) {
+			loadMoreBusinesses();
+		}
+	});
 
 	// Load more businesses function
 	function loadMoreBusinesses() {

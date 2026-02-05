@@ -2,11 +2,13 @@
 	import { createEventDispatcher } from 'svelte';
 	import LeadProgressBar from './LeadProgressBar.svelte';
 
-	export let leads = [];
-	export let businessInfo = {};
-	export let businessSlug = '';
-	export let errorMessage = null;
-	export let isClaiming = false;
+	let {
+		leads = [],
+		businessInfo = {},
+		businessSlug = '',
+		errorMessage = null,
+		isClaiming = false
+	} = $props();
 
 	const dispatch = createEventDispatcher();
 
@@ -43,7 +45,7 @@
 	};
 
 	// Limit leads to 5 for dashboard home
-	$: limitedLeads = leads.slice(0, 5);
+	let limitedLeads = $derived(leads.slice(0, 5));
 
 	async function updateLead(lead) {
 		try {

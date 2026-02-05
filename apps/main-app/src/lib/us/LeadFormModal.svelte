@@ -1,8 +1,7 @@
 <script>
 	import { goto } from '$app/navigation';
 
-	export let businessName = '';
-	export let businessSlug = '';
+	let { businessName = '', businessSlug = '' } = $props();
 
 	let name = '';
 	let phone = '';
@@ -24,9 +23,9 @@
 	};
 
 	// ✅ **Set the urlParam dynamically based on the businessSlug**
-	$: {
+	$effect(() => {
 		urlParam = `/solar-panel-installer/${businessSlug}`;
-	}
+	});
 
 	function validatePhoneNumber() {
 		if (!/^\+?\d{10,16}$/.test(phone)) {

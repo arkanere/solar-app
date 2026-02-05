@@ -2,9 +2,7 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
 
-	export let show = false;
-	export let businessId;
-	export let businessSlug; // Added business slug for redirection
+	let { show = $bindable(false), businessId, businessSlug } = $props(); // businessSlug for redirection
 
 	const dispatch = createEventDispatcher();
 
@@ -59,14 +57,18 @@
 	];
 
 	// Fetch districts dynamically when the state changes
-	$: if (state) {
-		updateDistricts(state);
-	}
+	$effect(() => {
+		if (state) {
+			updateDistricts(state);
+		}
+	});
 
 	// Fetch cities dynamically when the district changes
-	$: if (district) {
-		updateCities(district);
-	}
+	$effect(() => {
+		if (district) {
+			updateCities(district);
+		}
+	});
 
 	// Function to fetch districts for a selected state
 	async function updateDistricts(selectedState) {

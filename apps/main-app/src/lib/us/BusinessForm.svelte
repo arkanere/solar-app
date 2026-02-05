@@ -1,22 +1,22 @@
 <script>
 	import { goto } from '$app/navigation';
 
-	let businessName = '';
-	let address = '';
-	let plusCode = '';
-	let phoneNumber = '';
-	let whatsappNumber = '';
-	let email = '';
-	let login_email = '';
-	let website = '';
-	let state = '';
-	let county = '';
-	let city = '';
-	let counties = [];
-	let cities = [];
-	let isCountyLoading = false; // Add loading state for counties
-	let isCityLoading = false; // Add loading state for cities
-	let isSubmitting = false; // Track form submission state
+	let businessName = $state('');
+	let address = $state('');
+	let plusCode = $state('');
+	let phoneNumber = $state('');
+	let whatsappNumber = $state('');
+	let email = $state('');
+	let login_email = $state('');
+	let website = $state('');
+	let state = $state('');
+	let county = $state('');
+	let city = $state('');
+	let counties = $state([]);
+	let cities = $state([]);
+	let isCountyLoading = $state(false); // Add loading state for counties
+	let isCityLoading = $state(false); // Add loading state for cities
+	let isSubmitting = $state(false); // Track form submission state
 
 	const states = [
 		'Alabama',
@@ -73,15 +73,17 @@
 		'Puerto Rico'
 	];
 
-	let errors = {
+	let errors = $state({
 		phoneNumber: '',
 		whatsappNumber: ''
-	};
+	});
 
 	// Fetch counties dynamically when the state changes
-	$: if (state) {
-		updateCounties(state);
-	}
+	$effect(() => {
+		if (state) {
+			updateCounties(state);
+		}
+	});
 
 	async function updateCounties(selectedState) {
 		isCountyLoading = true; // Set loading state
@@ -103,9 +105,11 @@
 	}
 
 	// Fetch cities dynamically when the county changes
-	$: if (county) {
-		updateCitiesForCounty(county);
-	}
+	$effect(() => {
+		if (county) {
+			updateCitiesForCounty(county);
+		}
+	});
 
 	async function updateCitiesForCounty(selectedCounty) {
 		isCityLoading = true; // Set loading state
@@ -200,7 +204,7 @@
 	}
 </script>
 
-<form on:submit|preventDefault={handleSubmit}>
+<form onsubmit={handleSubmit}>
 	<h1>Get listed by filling the form below</h1>
 	<p>It takes 90 seconds to fill this form</p>
 
@@ -236,7 +240,7 @@
 			type="text"
 			bind:value={phoneNumber}
 			placeholder="Phone Number"
-			on:blur={validatePhoneNumber}
+			onblur={validatePhoneNumber}
 			required
 		/>
 		{#if errors.phoneNumber}
@@ -252,7 +256,7 @@
 			type="text"
 			bind:value={whatsappNumber}
 			placeholder="eg +12025551234"
-			on:blur={validateWhatsappNumber}
+			onblur={validateWhatsappNumber}
 		/>
 		{#if errors.whatsappNumber}
 			<p class="error">{errors.whatsappNumber}</p>

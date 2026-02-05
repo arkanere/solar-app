@@ -5,10 +5,10 @@
 	import { formatCountyStateUrl } from '$lib/us/stateAbbreviations';
 
 	// Get reactive data from the page store
-	$: state = $page.data.state;
-	$: counties = $page.data.districts || []; // Backend returns as 'districts' for compatibility
-	$: errorMessage = $page.data.errorMessage;
-	$: darkMode = $isDarkMode;
+	let state = $derived($page.data.state);
+	let counties = $derived($page.data.districts || []); // Backend returns as 'districts' for compatibility
+	let errorMessage = $derived($page.data.errorMessage);
+	let darkMode = $derived($isDarkMode);
 </script>
 
 <svelte:head>

@@ -6,6 +6,8 @@
 	// import ChatbotWidget from '$lib/us/ChatbotWidget.svelte';
 	import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
 
+	let { children } = $props();
+
 	// Create a shared store for chat messages
 	const chatMessages = writable([]);
 
@@ -131,7 +133,7 @@
 	}
 </script>
 
-<!-- svelte-ignore a11y-img-redundant-alt -->
+<!-- svelte-ignore a11y_img_redundant_alt -->
 <svelte:head>
 	<!-- All analytics scripts removed from head to improve TBT (Total Blocking Time) -->
 	<!-- They are now loaded via requestIdleCallback in onMount() for optimal performance -->
@@ -143,12 +145,12 @@
 	<a href="/us/business-listing">List Business</a>
 	<a href="/us/solar-panel-installer-directory">Directory</a>
 	<a href="/us/about-us">About us</a>
-	<button on:click={toggleTheme}>
+	<button onclick={toggleTheme}>
 		{$isDarkMode ? 'Light mode' : 'Dark mode'}
 	</button>
 </nav>
 
-<slot></slot>
+{@render children()}
 
 <!-- {#if browser && showChat}
   <ChatbotWidget messages={chatMessages} />

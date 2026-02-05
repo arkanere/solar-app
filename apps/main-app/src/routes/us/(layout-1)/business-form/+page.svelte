@@ -2,10 +2,9 @@
 	import BusinessForm from '$lib/us/BusinessForm.svelte';
 	import { isDarkMode } from '$lib/us/themeStore'; // Import dark mode state
 
-	$: darkMode = $isDarkMode; // Watch for changes in dark mode state
+	let darkMode = $derived($isDarkMode); // Watch for changes in dark mode state
 </script>
 
-<!-- svelte-ignore a11y-img-redundant-alt -->
 <svelte:head>
 	<!-- Meta Pixel Code -->
 	<script>
@@ -34,7 +33,7 @@
 			width="1"
 			style="display:none"
 			src="https://www.facebook.com/tr?id=1226087962095221&ev=PageView&noscript=1"
-			alt="Facebook Pixel tracking image for PageView event"
+			alt="Facebook Pixel tracking for PageView event"
 		/>
 	</noscript>
 	<!-- End Meta Pixel Code -->

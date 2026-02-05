@@ -1,5 +1,5 @@
 <script>
-	export let show = false;
+	let { show = $bindable(false) } = $props();
 
 	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();

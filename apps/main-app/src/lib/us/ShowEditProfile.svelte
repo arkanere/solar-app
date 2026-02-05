@@ -1,7 +1,5 @@
 <script>
-	export let show = false;
-	export let businessInfo = {};
-	export let businessSlug = '';
+	let { show = $bindable(false), businessInfo = {}, businessSlug = '' } = $props();
 
 	import { createEventDispatcher, onMount, afterUpdate } from 'svelte';
 	const dispatch = createEventDispatcher();
@@ -21,14 +19,18 @@
 	};
 
 	// Reset the form data whenever the modal is shown or businessInfo changes
-	$: if (show) {
-		resetForm();
-	}
+	$effect(() => {
+		if (show) {
+			resetForm();
+		}
+	});
 
-	$: if (businessInfo && Object.keys(businessInfo).length > 0) {
-		// Only update if businessInfo actually has values
-		if (show) resetForm();
-	}
+	$effect(() => {
+		if (businessInfo && Object.keys(businessInfo).length > 0) {
+			// Only update if businessInfo actually has values
+			if (show) resetForm();
+		}
+	});
 
 	function resetForm() {
 		// Create a fresh copy of the business info

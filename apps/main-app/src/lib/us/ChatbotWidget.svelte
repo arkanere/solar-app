@@ -1,10 +1,10 @@
 <script>
 	import { onMount } from 'svelte';
 	import { writable } from 'svelte/store';
-	import { isDarkMode } from '$lib/themeStore';
+	import { isDarkMode } from '$lib/us/themeStore';
 
 	// Store to maintain message history
-	export let messages = writable([]);
+	let { messages = writable([]) } = $props();
 
 	// Widget state
 	let isOpen = false;
@@ -53,9 +53,11 @@
 	}
 
 	// Save messages to localStorage
-	$: if (typeof window !== 'undefined') {
-		localStorage.setItem('chatMessages', JSON.stringify($messages));
-	}
+	$effect(() => {
+		if (typeof window !== 'undefined') {
+			localStorage.setItem('chatMessages', JSON.stringify($messages));
+		}
+	});
 
 	// Load messages from localStorage on mount
 	onMount(() => {
