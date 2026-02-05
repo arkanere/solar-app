@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { createEventDispatcher } from 'svelte';
+	import { toast } from 'svelte-sonner';
 	import LeadProgressBar from './LeadProgressBar.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
@@ -17,44 +19,28 @@
 		Check
 	} from '@lucide/svelte';
 	import { getStagesMapForCategory, getCategoryLabel } from '$lib/constants/lead';
+	import { getRelativeTime, getNextAction, formatLeadForProposal, trackCallEvent } from '$lib/in/utils/lead-helpers';
+	import { updateLeadAPI } from '$lib/in/actions/lead-api';
 
 	type LeadTileProps = {
 		lead: any;
 		businessInfo: Record<string, any>;
 		isClaiming?: boolean;
-		savingNotes?: Set<number>;
-		savedNotes?: Set<number>;
-		expandedLeads?: Set<number>;
-		STAGES?: Record<number, string>;
-		NON_EXCLUSIVE_CLAIMED_STAGES?: Record<number, string>;
-		makeCall?: (phone: string, name: string, id: number) => void;
-		saveBusinessNotes?: (lead: any) => void;
-		updateLead?: (lead: any, updates: any) => void;
-		getRelativeTime?: (date: string) => { text: string; variant: string };
-		getNextAction?: (stage: number, category: number, status: string) => string | null;
-		openProposalModal?: (lead: any) => void;
-		showDeleteConfirmation?: (lead: any) => void;
-		claimLead?: (leadId: number, businessId: number) => void;
-		onToggleDetails?: (params: { leadId: number }) => void;
 	};
 
 	let {
 		lead,
 		businessInfo,
-		isClaiming = false,
-		savingNotes = new Set(),
-		savedNotes = new Set(),
-		expandedLeads = new Set(),
-		makeCall = () => {},
-		saveBusinessNotes = () => {},
-		updateLead = () => {},
-		getRelativeTime = () => ({ text: '', variant: '' }),
-		getNextAction = () => null,
-		openProposalModal = () => {},
-		showDeleteConfirmation = () => {},
-		claimLead = () => {},
-		onToggleDetails = () => {}
+		isClaiming = false
 	}: LeadTileProps = $props();
+
+	const dispatch = createEventDispatcher();
+
+	// Component-owned state (autonomous)
+	let isExpanded = $state(false);
+	let isSavingNotes = $state(false);
+	let notesSaved = $state(false);
+	let notesCollapsed = $state(true);
 
 	// Get appropriate stages based on lead category
 	let stagesMap = $derived(getStagesMapForCategory(lead.category));
@@ -64,12 +50,56 @@
 			.map(([value, label]) => ({ value: Number(value), label }))
 	);
 
-	let collapsedNotes = $derived(lead.collapsedNotes !== false);
-	let isExpanded = $derived(expandedLeads.has(lead.id));
 	let nextAction = $derived(getNextAction(lead.stage, lead.category, lead.status));
 
 	function toggleLeadDetails() {
-		onToggleDetails({ leadId: lead.id });
+		isExpanded = !isExpanded;
+	}
+
+	function makeCall() {
+		trackCallEvent(lead.id);
+		dispatch('call', { leadId: lead.id, phone: lead.phone });
+		window.location.href = `tel:${lead.phone}`;
+	}
+
+	async function handleUpdateLead(updates: any) {
+		const result = await updateLeadAPI({
+			id: lead.id,
+			stage: updates.stage !== undefined ? Number(updates.stage) : Number(lead.stage),
+			status: updates.status !== undefined ? updates.status : lead.status,
+			business_notes: updates.business_notes !== undefined ? updates.business_notes : lead.business_notes
+		});
+
+		if (result.success && result.lead) {
+			dispatch('update', { leadId: lead.id, lead: result.lead });
+		} else {
+			toast.error(result.error || 'Failed to update lead');
+		}
+	}
+
+	async function saveBusinessNotes() {
+		isSavingNotes = true;
+
+		await handleUpdateLead({ business_notes: lead.business_notes });
+
+		isSavingNotes = false;
+		notesSaved = true;
+
+		setTimeout(() => {
+			notesSaved = false;
+		}, 3000);
+	}
+
+	function handleClaim() {
+		dispatch('claim', { leadId: lead.id, businessId: businessInfo.id });
+	}
+
+	function handleDelete() {
+		dispatch('delete', { leadId: lead.id });
+	}
+
+	function handleGenerateProposal() {
+		dispatch('proposal', { lead, proposalData: formatLeadForProposal(lead) });
 	}
 </script>
 
@@ -88,45 +118,62 @@
 			{getCategoryLabel(lead.category)}
 		</Badge>
 	</Card.Header>
-	<p class="px-6 pb-4 pt-0 m-0 text-xs text-muted-foreground">
-		Received {getRelativeTime(lead.created_at).text}
-	</p>
 
-	<!-- COMPACT INFO GRID - Always Visible -->
+	<!-- COMPACT INFO - Always Visible -->
 	<Card.Content class="p-0">
-		<div
-			class="grid grid-cols-[1fr_auto] gap-3 p-4 px-6 bg-muted/50 dark:bg-background-tertiary border-b border-border max-sm:grid-cols-1"
-		>
-			<div
-				class="flex items-center gap-1.5 text-sm text-foreground-secondary font-medium col-span-1"
-			>
-				<Phone size={16} class="text-muted-foreground shrink-0" />
-				<span class="font-medium text-foreground">{lead.phone}</span>
-			</div>
-			{#if lead.category !== 1}
-				<Button
-					class="col-span-1 row-span-3 max-sm:col-span-1 max-sm:row-auto max-sm:w-full"
-					onclick={() => makeCall(lead.phone, lead.name, lead.id)}
-					title="Call {lead.name}"
-				>
-					<Phone size={16} />
-					Call Now
-				</Button>
-			{/if}
-			<div class="flex items-center gap-1.5 text-sm text-foreground-secondary">
-				<span class="font-semibold text-muted-foreground">Customer Comment:</span>
-				<span class="font-medium text-foreground">{lead.comment}</span>
-			</div>
-			<div class="flex items-center gap-1.5 text-sm text-foreground-secondary">
+		<div class="px-6 py-4 space-y-3 border-b border-border">
+			<!-- Location -->
+			<div class="flex items-center gap-2 text-sm">
 				<span class="font-semibold text-muted-foreground">Location:</span>
 				<span class="font-medium text-foreground">{lead.pin_code}</span>
 			</div>
-			{#if lead.category !== 1}
-				<div class="flex items-center gap-1.5 text-sm text-foreground-secondary">
-					<span class="font-semibold text-muted-foreground">Stage:</span>
-					<span class="font-medium text-foreground">
-						{stagesMap[lead.stage]}
-					</span>
+
+			<!-- Customer Comment -->
+			<div class="text-sm">
+				<p class="text-foreground leading-relaxed italic">"{lead.comment}"</p>
+			</div>
+
+			<!-- Next Step Hint - For Claimed Leads -->
+			{#if lead.category !== 1 && nextAction}
+				<div
+					class="flex items-start gap-2 p-3 bg-accent-muted border-l-[3px] border-accent rounded text-sm"
+				>
+					<Info size={14} class="text-accent shrink-0 mt-0.5" />
+					<span class="text-foreground-secondary leading-snug"
+						><strong>Next:</strong> {nextAction}</span
+					>
+				</div>
+			{/if}
+
+			<!-- Primary Action Button -->
+			{#if lead.category === 1}
+				<!-- Unclaimed: Show Claim Button -->
+				<div class="pt-2">
+					{#if lead.claim_count > 4}
+						<p class="font-semibold text-muted-foreground text-sm">
+							Not Available. Claimed by Other Business
+						</p>
+					{:else}
+						<Button
+							class="w-full bg-success text-success-foreground hover:bg-success/90"
+							onclick={handleClaim}
+							disabled={isClaiming}
+						>
+							{isClaiming ? 'Claiming...' : 'Claim Now (Free)'}
+						</Button>
+					{/if}
+				</div>
+			{:else}
+				<!-- Claimed: Show Call Now Button -->
+				<div class="pt-2">
+					<Button
+						class="w-full"
+						onclick={makeCall}
+						title="Call {lead.name}"
+					>
+						<Phone size={16} />
+						Call Now
+					</Button>
 				</div>
 			{/if}
 		</div>
@@ -152,6 +199,26 @@
 				class="p-5 bg-background-secondary dark:bg-background-secondary border-b border-border transition-all duration-300 ease-in-out"
 				id="details-{lead.id}"
 			>
+				<!-- RECEIVED TIME -->
+				<div class="flex items-start gap-2 mb-3 text-sm">
+					<span class="font-semibold text-muted-foreground">Received:</span>
+					<span class="font-medium text-foreground">{getRelativeTime(lead.created_at).text}</span>
+				</div>
+
+				<!-- PHONE NUMBER -->
+				<div class="flex items-center gap-2 mb-3 text-sm">
+					<Phone size={16} class="text-muted-foreground shrink-0" />
+					<span class="font-medium text-foreground">{lead.phone}</span>
+				</div>
+
+				<!-- PROPERTY TYPE -->
+				{#if lead.type}
+					<div class="flex items-start gap-2 mb-3 text-sm">
+						<span class="font-semibold text-muted-foreground">Property Type:</span>
+						<span class="font-medium text-foreground">{lead.type}</span>
+					</div>
+				{/if}
+
 				<!-- EMAIL ADDRESS -->
 				{#if lead.email}
 					<div
@@ -162,14 +229,6 @@
 							href="mailto:{lead.email}"
 							class="font-medium text-accent no-underline hover:underline">{lead.email}</a
 						>
-					</div>
-				{/if}
-
-				<!-- PROPERTY TYPE -->
-				{#if lead.type}
-					<div class="flex items-start gap-2 mb-3 text-sm">
-						<span class="font-semibold text-muted-foreground">Property Type:</span>
-						<span class="font-medium text-foreground">{lead.type}</span>
 					</div>
 				{/if}
 
@@ -202,7 +261,7 @@
 									onValueChange={(v) => {
 										if (v?.value !== undefined) {
 											lead.stage = v.value;
-											updateLead(lead, { stage: lead.stage });
+											handleUpdateLead({ stage: lead.stage });
 										}
 									}}
 								>
@@ -228,7 +287,7 @@
 									onValueChange={(v) => {
 										if (v?.value !== undefined) {
 											lead.status = v.value;
-											updateLead(lead, { status: lead.status });
+											handleUpdateLead({ status: lead.status });
 										}
 									}}
 								>
@@ -255,13 +314,13 @@
 						<Button
 							variant="ghost"
 							class="w-full justify-start rounded-none py-4 px-5 text-sm font-semibold text-foreground-secondary"
-							onclick={() => (lead.collapsedNotes = !collapsedNotes)}
+							onclick={() => (notesCollapsed = !notesCollapsed)}
 						>
 							<ChevronRight
 								size={16}
 								class={cn(
 									'transition-transform duration-200 text-muted-foreground',
-									!collapsedNotes && 'rotate-90'
+									!notesCollapsed && 'rotate-90'
 								)}
 							/>
 							<span>Internal Notes</span>
@@ -269,29 +328,29 @@
 								<span class="ml-auto text-accent text-lg">•</span>
 							{/if}
 						</Button>
-						{#if !collapsedNotes}
+						{#if !notesCollapsed}
 							<div class="px-5 pb-4">
 								<Textarea
 									id="business-notes-{lead.id}"
 									bind:value={lead.business_notes}
 									placeholder="Add your private notes about this lead..."
 									rows={3}
-									disabled={savingNotes.has(lead.id)}
+									disabled={isSavingNotes}
 									class="w-full"
 								/>
 								<div class="flex items-center gap-3 mt-3">
 									<Button
 										variant="secondary"
-										onclick={() => saveBusinessNotes(lead)}
-										disabled={savingNotes.has(lead.id)}
+										onclick={saveBusinessNotes}
+										disabled={isSavingNotes}
 									>
-										{#if savingNotes.has(lead.id)}
+										{#if isSavingNotes}
 											Saving...
 										{:else}
 											Save
 										{/if}
 									</Button>
-									{#if savedNotes.has(lead.id)}
+									{#if notesSaved}
 										<span class="text-success font-semibold text-sm flex items-center gap-1">
 											<Check size={16} strokeWidth={2.5} />
 											Saved
@@ -301,30 +360,20 @@
 							</div>
 						{/if}
 					</div>
-
-					<!-- NEXT STEP HINT (inside expandable section) -->
-					{#if nextAction}
-						<div
-							class="flex items-start gap-2.5 p-4 mt-4 bg-accent-muted border-l-[3px] border-accent rounded text-sm text-foreground-secondary"
-						>
-							<Info size={16} class="text-accent shrink-0 mt-0.5" />
-							<span class="leading-relaxed"><strong>Next Step:</strong> {nextAction}</span>
-						</div>
-					{/if}
 				{/if}
 			</div>
 		{/if}
 	</Card.Content>
 
-	<!-- ACTION BUTTONS - Always Visible -->
-	{#if lead.category !== 1}
+	<!-- SECONDARY ACTION BUTTONS - Only for Claimed Leads When Expanded -->
+	{#if lead.category !== 1 && isExpanded}
 		{#if lead.stage === 1 && lead.status}
 			<Card.Footer
-				class="p-5 bg-muted/50 dark:bg-background-tertiary justify-between gap-4 flex-wrap max-sm:flex-col max-sm:items-stretch"
+				class="p-5 bg-muted/50 dark:bg-background-tertiary justify-center gap-4 flex-wrap"
 			>
 				<Button
 					class="shadow-md hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 max-sm:w-full"
-					onclick={() => openProposalModal(lead)}
+					onclick={handleGenerateProposal}
 				>
 					Generate Proposal
 					<ArrowRight size={16} />
@@ -332,35 +381,16 @@
 			</Card.Footer>
 		{:else if !lead.status}
 			<Card.Footer
-				class="p-5 bg-muted/50 dark:bg-background-tertiary justify-between gap-4 flex-wrap max-sm:flex-col max-sm:items-stretch"
+				class="p-5 bg-muted/50 dark:bg-background-tertiary justify-center gap-4 flex-wrap"
 			>
 				<Button
 					variant="destructive"
 					class="max-sm:w-full"
-					onclick={() => showDeleteConfirmation(lead)}
+					onclick={handleDelete}
 				>
 					Delete Lead
 				</Button>
 			</Card.Footer>
 		{/if}
-	{:else}
-		<!-- CLAIM BUTTON FOR NON-EXCLUSIVE AVAILABLE LEADS -->
-		<Card.Footer
-			class="p-5 bg-muted/50 dark:bg-background-tertiary justify-between gap-4 flex-wrap max-sm:flex-col max-sm:items-stretch"
-		>
-			{#if lead.claim_count > 4}
-				<p class="font-semibold text-muted-foreground text-sm m-0">
-					Not Available. Claimed by Other Business
-				</p>
-			{:else}
-				<Button
-					class="bg-success text-success-foreground hover:bg-success/90 shadow-md hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 max-sm:w-full"
-					onclick={() => claimLead(lead.id, businessInfo.id)}
-					disabled={isClaiming}
-				>
-					{isClaiming ? 'Claiming...' : 'Claim Now (Free)'}
-				</Button>
-			{/if}
-		</Card.Footer>
 	{/if}
 </Card.Root>

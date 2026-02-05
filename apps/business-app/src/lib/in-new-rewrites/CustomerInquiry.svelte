@@ -36,6 +36,8 @@
 	import * as Alert from '$lib/components/ui/alert';
 	import { Badge } from '$lib/components/ui/badge';
 	import { cn } from '$lib/utils';
+	import { getRelativeTime } from '$lib/in/utils/lead-helpers';
+	import { deleteLeadAPI } from '$lib/in/actions/lead-api';
 
 	let {
 		leads = $bindable([]),
@@ -45,51 +47,18 @@
 		onClaimLead = () => {}
 	}: CustomerInquiryProps = $props();
 
-	// Proposal modal state
+	// Parent-level state (modals only)
 	let showProposalModal = $state(false);
-	let selectedLeadForProposal: {
-		customer_name: string;
-		phone_number: string;
-		email: string;
-		address: string;
-		lead_id: number;
-	} | null = $state(null);
-
-	// Filter state
-	let selectedCategory = $state('all');
-	let selectedStage = $state('all');
-	let selectedStatus = $state('all');
-	let filteredLeads: Lead[] = $state([]);
-
-	// Function to make call
-	function makeCall(phoneNumber: string, _leadName: string, leadId: number) {
-		// Track Umami event after hydration
-		if (typeof window !== 'undefined' && (window as any).umami) {
-			(window as any).umami.track(`crm-call-now-button-${leadId}`);
-		}
-		window.location.href = `tel:${phoneNumber}`;
-	}
-
-	// Delete confirmation state
+	let selectedLeadForProposal: any = $state(null);
 	let showDeleteConfirm = $state(false);
 	let leadToDelete: Lead | null = $state(null);
 	let isDeleting = $state(false);
 
-	// Lead stage mapping
-	const STAGES = {
-		0: 'New Inquiry',
-		1: 'Contacted',
-		2: 'Proposal/Quotation Sent',
-		3: 'Won'
-	};
-
-	// Stage mapping for Non-Exclusive-Claimed leads (category 2)
-	const NON_EXCLUSIVE_CLAIMED_STAGES = {
-		0: 'Claimed',
-		1: 'Contacted',
-		2: 'Proposal/Quotation Sent',
-		3: 'Won'
-	};
+	// Filter state (specific to CRM view)
+	let selectedCategory = $state('all');
+	let selectedStage = $state('all');
+	let selectedStatus = $state('all');
+	let filteredLeads: Lead[] = $state([]);
 
 	// Dummy test lead for new users
 	const dummyLead = {
@@ -102,149 +71,7 @@
 		comment: 'I want to install 3kW at my home. Please call me!'
 	};
 
-	async function updateLead(lead: any, updateFields: Record<string, any> = {}) {
-		try {
-			const response = await fetch('/in/api/updateLeadByBusiness', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					id: lead.id,
-					stage: updateFields.stage !== undefined ? Number(updateFields.stage) : Number(lead.stage),
-					status: updateFields.status !== undefined ? updateFields.status : lead.status,
-					business_notes:
-						updateFields.business_notes !== undefined
-							? updateFields.business_notes
-							: lead.business_notes
-				})
-			});
-
-			if (!response.ok) {
-				throw new Error('Failed to update lead');
-			}
-
-			const result = await response.json();
-
-			if (result.success) {
-				// Update the lead in the local array
-				leads = leads.map((l) => (l.id === lead.id ? { ...l, ...result.lead } : l));
-			} else {
-				toast.error(result.error);
-			}
-		} catch (error) {
-			console.error('Update Lead Error:', error);
-			toast.error('An error occurred while updating the lead');
-		}
-	}
-
-	// State for tracking save status per lead
-	let savingNotes = $state<Set<number>>(new Set());
-	let savedNotes = $state<Set<number>>(new Set());
-
-	// State for tracking expanded/collapsed leads (compact view)
-	let expandedLeads = $state<Set<number>>(new Set());
-
-	// Function to save business notes
-	async function saveBusinessNotes(lead: any) {
-		const newSavingSet = new Set(savingNotes);
-		newSavingSet.add(lead.id);
-		savingNotes = newSavingSet; // Create new Set instance for Svelte 5 reactivity
-
-		await updateLead(lead, { business_notes: lead.business_notes });
-
-		const updatedSavingSet = new Set(savingNotes);
-		updatedSavingSet.delete(lead.id);
-		savingNotes = updatedSavingSet; // Create new Set instance for Svelte 5 reactivity
-
-		// Show saved status
-		const newSavedSet = new Set(savedNotes);
-		newSavedSet.add(lead.id);
-		savedNotes = newSavedSet; // Create new Set instance for Svelte 5 reactivity
-
-		// Hide saved status after 3 seconds
-		setTimeout(() => {
-			const updatedSavedSet = new Set(savedNotes);
-			updatedSavedSet.delete(lead.id);
-			savedNotes = updatedSavedSet; // Create new Set instance for Svelte 5 reactivity
-		}, 3000);
-	}
-
-	async function claimLead(leadId: number, businessId: number) {
-		if (isClaiming) return;
-
-		onClaimLead({ leadId, businessId });
-	}
-
-	function getRelativeTime(dateString: string) {
-		const now = new Date();
-		const date = new Date(dateString);
-		const diffInMs = now.getTime() - date.getTime();
-		const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-		const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-		const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-
-		if (diffInDays > 0) {
-			return {
-				text: `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`,
-				variant: diffInDays <= 1 ? 'time-fresh' : diffInDays <= 3 ? 'time-recent' : 'time-old'
-			};
-		} else if (diffInHours > 0) {
-			return {
-				text: `${diffInHours} hour${diffInHours === 1 ? '' : 's'} ago`,
-				variant: 'time-fresh'
-			};
-		} else if (diffInMinutes > 0) {
-			return {
-				text: `${diffInMinutes} minute${diffInMinutes === 1 ? '' : 's'} ago`,
-				variant: 'time-fresh'
-			};
-		} else {
-			return {
-				text: 'Just now',
-				variant: 'time-fresh'
-			};
-		}
-	}
-
-	function getNextAction(stage: number, category: number, status: string) {
-		// No next action if lead is inactive or won
-		if (status === 'false' || stage === 3) {
-			return null;
-		}
-
-		// For Non-Exclusive-Claimed leads (category 2)
-		if (category === 2) {
-			switch (stage) {
-				case 0: // Claimed
-					return 'Call the customer';
-				case 1: // Contacted
-					return 'Send proposal/quotation if customer is interested, else make the inquiry inactive';
-				case 2: // Proposal/Quotation Sent
-					return 'Win the sale';
-				default:
-					return null;
-			}
-		}
-
-		// For Exclusive leads (category 3 or null)
-		if (category === 3 || category === null) {
-			switch (stage) {
-				case 0: // New Inquiry
-					return 'Call the customer';
-				case 1: // Contacted
-					return 'Send proposal/quotation if customer is interested, else make the inquiry inactive';
-				case 2: // Proposal/Quotation Sent
-					return 'Win the sale';
-				default:
-					return null;
-			}
-		}
-
-		return null;
-	}
-
-	// Filter function
+	// Pure filter function - data transformation only
 	function filterLeads() {
 		filteredLeads = leads.filter((lead) => {
 			// Category filter
@@ -300,97 +127,58 @@
 		filterLeads();
 	});
 
-	// Delete lead function
-	async function deleteLead(lead: Lead) {
-		if (isDeleting) return;
-		isDeleting = true;
+	// Event handlers - simple data transformations
+	function handleLeadUpdate(event: CustomEvent) {
+		const { leadId, lead: updatedLead } = event.detail;
+		leads = leads.map((l) => (l.id === leadId ? { ...l, ...updatedLead } : l));
+	}
 
-		try {
-			const response = await fetch('/in/api/deleteLeadByBusiness', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					id: lead.id
-				})
-			});
-
-			if (!response.ok) {
-				throw new Error('Failed to delete lead');
-			}
-
-			const result = await response.json();
-
-			if (result.success) {
-				// Remove the lead from the local array
-				leads = leads.filter((l) => l.id !== lead.id);
-				showDeleteConfirm = false;
-				leadToDelete = null;
-			} else {
-				toast.error(result.error);
-			}
-		} catch (error) {
-			console.error('Delete Lead Error:', error);
-			toast.error('An error occurred while deleting the lead');
-		} finally {
-			isDeleting = false;
+	function handleLeadClaim(event: CustomEvent) {
+		const { leadId, businessId } = event.detail;
+		if (!isClaiming) {
+			onClaimLead({ leadId, businessId });
 		}
 	}
 
-	// Show delete confirmation
-	function showDeleteConfirmation(lead: Lead) {
-		leadToDelete = lead;
-		showDeleteConfirm = true;
+	function handleProposalOpen(event: CustomEvent) {
+		selectedLeadForProposal = event.detail.proposalData;
+		showProposalModal = true;
 	}
 
-	// Cancel delete
+	function handleDeleteRequest(event: CustomEvent) {
+		const lead = leads.find((l) => l.id === event.detail.leadId);
+		if (lead) {
+			leadToDelete = lead;
+			showDeleteConfirm = true;
+		}
+	}
+
+	async function confirmDelete() {
+		if (!leadToDelete || isDeleting) return;
+		isDeleting = true;
+
+		const result = await deleteLeadAPI(leadToDelete.id);
+
+		if (result.success) {
+			leads = leads.filter((l) => l.id !== leadToDelete.id);
+			showDeleteConfirm = false;
+			leadToDelete = null;
+		} else {
+			toast.error(result.error || 'Failed to delete lead');
+		}
+
+		isDeleting = false;
+	}
+
 	function cancelDelete() {
-		if (isDeleting) return; // Prevent canceling while deleting
+		if (isDeleting) return;
 		showDeleteConfirm = false;
 		leadToDelete = null;
 	}
 
-	// Confirm delete
-	function confirmDelete() {
-		if (leadToDelete) {
-			deleteLead(leadToDelete);
-		}
-	}
-
-	// Open proposal modal
-	function openProposalModal(lead: Lead) {
-		selectedLeadForProposal = {
-			customer_name: lead.name,
-			phone_number: lead.phone,
-			email: lead.email,
-			address: lead.address || '',
-			lead_id: lead.id
-		};
-		showProposalModal = true;
-	}
-
-	// Close proposal modal
 	function closeProposalModal() {
 		showProposalModal = false;
 		selectedLeadForProposal = null;
-	}
-
-	// Handle proposal generated/updated
-	function handleProposalGenerated() {
-		// Optionally refresh leads or show success message
-		closeProposalModal();
-	}
-
-	// Toggle lead details expand/collapse
-	function toggleLeadDetails(leadId: number) {
-		const newSet = new Set(expandedLeads);
-		if (newSet.has(leadId)) {
-			newSet.delete(leadId);
-		} else {
-			newSet.add(leadId);
-		}
-		expandedLeads = newSet; // Create new Set instance for Svelte 5 reactivity
 	}
 </script>
 
@@ -425,27 +213,17 @@
 			{/if}
 		{/if}
 
-		<ul class="list-none p-0 w-full max-w-[900px] mx-auto">
+		<ul class="list-none p-0 w-full max-w-[540px] mx-auto">
 			{#if leads.length > 0}
 				{#each filteredLeads as lead}
 					<LeadTile
 						{lead}
 						{businessInfo}
 						{isClaiming}
-						{savingNotes}
-						{savedNotes}
-						{expandedLeads}
-						{STAGES}
-						{NON_EXCLUSIVE_CLAIMED_STAGES}
-						{makeCall}
-						{saveBusinessNotes}
-						{updateLead}
-						{getRelativeTime}
-						{getNextAction}
-						{openProposalModal}
-						{showDeleteConfirmation}
-						{claimLead}
-						onToggleDetails={(e) => toggleLeadDetails(e.leadId)}
+						onupdate={handleLeadUpdate}
+						onclaim={handleLeadClaim}
+						onproposal={handleProposalOpen}
+						ondelete={handleDeleteRequest}
 					/>
 				{/each}
 			{:else}
@@ -544,6 +322,6 @@
 		business={businessInfo}
 		proposal={selectedLeadForProposal}
 		onClose={closeProposalModal}
-		onGenerated={handleProposalGenerated}
+		onGenerated={closeProposalModal}
 	/>
 {/if}

@@ -17,6 +17,8 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Card from '$lib/components/ui/card';
+	import { getRelativeTime } from '$lib/in/utils/lead-helpers';
+	import { deleteLeadAPI } from '$lib/in/actions/lead-api';
 
 	let {
 		leads = $bindable([]),
@@ -27,32 +29,12 @@
 		onClaimLead = () => {}
 	}: CustomerInquiryDashboardHomeProps = $props();
 
+	// Parent-level state (modals only)
 	let showDeleteConfirm = $state(false);
 	let leadToDelete = $state<any>(null);
 	let isDeleting = $state(false);
 	let showProposalModal = $state(false);
-	let selectedLeadForProposal = $state<{ customer_name: string; phone_number: string; email: string; address: string; lead_id: number } | null>(null);
-
-	function makeCall(phoneNumber: string, _leadName: string, leadId: number) {
-		if (typeof window !== 'undefined' && (window as any).umami) {
-			(window as any).umami.track(`dashboard-home-call-now-button-${leadId}`);
-		}
-		window.location.href = `tel:${phoneNumber}`;
-	}
-
-	const STAGES = {
-		0: 'New Inquiry',
-		1: 'Contacted',
-		2: 'Proposal/Quotation Sent',
-		3: 'Won'
-	};
-
-	const NON_EXCLUSIVE_CLAIMED_STAGES = {
-		0: 'Claimed',
-		1: 'Contacted',
-		2: 'Proposal/Quotation Sent',
-		3: 'Won'
-	};
+	let selectedLeadForProposal = $state<any>(null);
 
 	const dummyLead = {
 		name: 'John Doe',
@@ -65,176 +47,48 @@
 	};
 
 	let limitedLeads = $derived(leads.slice(0, 5));
-	let savingNotes = $state<Set<number>>(new Set());
-	let savedNotes = $state<Set<number>>(new Set());
-	let expandedLeads = $state<Set<number>>(new Set());
 
-	async function updateLead(lead: any, updateFields: Record<string, any> = {}) {
-		try {
-			const response = await fetch('/in/api/updateLeadByBusiness', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					id: lead.id,
-					stage: updateFields.stage !== undefined ? Number(updateFields.stage) : Number(lead.stage),
-					status: updateFields.status !== undefined ? updateFields.status : lead.status,
-					business_notes:
-						updateFields.business_notes !== undefined
-							? updateFields.business_notes
-							: lead.business_notes
-				})
-			});
+	// Event handlers - simple data transformations
+	function handleLeadUpdate(event: CustomEvent) {
+		const { leadId, lead: updatedLead } = event.detail;
+		leads = leads.map((l) => (l.id === leadId ? { ...l, ...updatedLead } : l));
+	}
 
-			if (!response.ok) {
-				throw new Error('Failed to update lead');
-			}
-
-			const result = await response.json();
-
-			if (result.success) {
-				leads = leads.map((l) => (l.id === lead.id ? { ...l, ...result.lead } : l));
-			} else {
-				toast.error(result.error);
-			}
-		} catch (error) {
-			console.error('Update Lead Error:', error);
-			toast.error('An error occurred while updating the lead');
+	function handleLeadClaim(event: CustomEvent) {
+		const { leadId, businessId } = event.detail;
+		if (!isClaiming) {
+			onClaimLead({ leadId, businessId });
 		}
 	}
 
-	async function saveBusinessNotes(lead: any) {
-		const newSavingSet = new Set(savingNotes);
-		newSavingSet.add(lead.id);
-		savingNotes = newSavingSet;
-
-		await updateLead(lead, { business_notes: lead.business_notes });
-
-		const updatedSavingSet = new Set(savingNotes);
-		updatedSavingSet.delete(lead.id);
-		savingNotes = updatedSavingSet;
-
-		const newSavedSet = new Set(savedNotes);
-		newSavedSet.add(lead.id);
-		savedNotes = newSavedSet;
-
-		setTimeout(() => {
-			const updatedSavedSet = new Set(savedNotes);
-			updatedSavedSet.delete(lead.id);
-			savedNotes = updatedSavedSet;
-		}, 3000);
+	function handleProposalOpen(event: CustomEvent) {
+		selectedLeadForProposal = event.detail.proposalData;
+		showProposalModal = true;
 	}
 
-	async function claimLead(leadId: number, businessId: number) {
-		if (isClaiming) return;
-		onClaimLead({ leadId, businessId });
-	}
-
-	function getRelativeTime(dateString: string) {
-		const now = new Date();
-		const date = new Date(dateString);
-		const diffInMs = now.getTime() - date.getTime();
-		const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-		const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-		const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-
-		if (diffInDays > 0) {
-			return {
-				text: `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`,
-				variant: diffInDays <= 1 ? 'time-fresh' : diffInDays <= 3 ? 'time-recent' : 'time-old'
-			};
-		} else if (diffInHours > 0) {
-			return {
-				text: `${diffInHours} hour${diffInHours === 1 ? '' : 's'} ago`,
-				variant: 'time-fresh'
-			};
-		} else if (diffInMinutes > 0) {
-			return {
-				text: `${diffInMinutes} minute${diffInMinutes === 1 ? '' : 's'} ago`,
-				variant: 'time-fresh'
-			};
-		} else {
-			return {
-				text: 'Just now',
-				variant: 'time-fresh'
-			};
+	function handleDeleteRequest(event: CustomEvent) {
+		const lead = leads.find((l) => l.id === event.detail.leadId);
+		if (lead) {
+			leadToDelete = lead;
+			showDeleteConfirm = true;
 		}
 	}
 
-	function getNextAction(stage: number, category: number | null, status: any) {
-		if (!status || stage === 3) {
-			return null;
-		}
-
-		if (category === 2) {
-			switch (stage) {
-				case 0:
-					return 'Call the customer';
-				case 1:
-					return 'Send proposal/quotation if customer is interested, else make the inquiry inactive';
-				case 2:
-					return 'Win the sale';
-				default:
-					return null;
-			}
-		}
-
-		if (category === 3 || category === null) {
-			switch (stage) {
-				case 0:
-					return 'Call the customer';
-				case 1:
-					return 'Send proposal/quotation if customer is interested, else make the inquiry inactive';
-				case 2:
-					return 'Win the sale';
-				default:
-					return null;
-			}
-		}
-
-		return null;
-	}
-
-	async function deleteLead(lead: any) {
-		if (isDeleting) return;
+	async function confirmDelete() {
+		if (!leadToDelete || isDeleting) return;
 		isDeleting = true;
 
-		try {
-			const response = await fetch('/in/api/deleteLeadByBusiness', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					id: lead.id
-				})
-			});
+		const result = await deleteLeadAPI(leadToDelete.id);
 
-			if (!response.ok) {
-				throw new Error('Failed to delete lead');
-			}
-
-			const result = await response.json();
-
-			if (result.success) {
-				leads = leads.filter((l) => l.id !== lead.id);
-				showDeleteConfirm = false;
-				leadToDelete = null;
-			} else {
-				toast.error(result.error);
-			}
-		} catch (error) {
-			console.error('Delete Lead Error:', error);
-			toast.error('An error occurred while deleting the lead');
-		} finally {
-			isDeleting = false;
+		if (result.success) {
+			leads = leads.filter((l) => l.id !== leadToDelete.id);
+			showDeleteConfirm = false;
+			leadToDelete = null;
+		} else {
+			toast.error(result.error || 'Failed to delete lead');
 		}
-	}
 
-	function showDeleteConfirmation(lead: any) {
-		leadToDelete = lead;
-		showDeleteConfirm = true;
+		isDeleting = false;
 	}
 
 	function cancelDelete() {
@@ -243,40 +97,9 @@
 		leadToDelete = null;
 	}
 
-	function confirmDelete() {
-		if (leadToDelete) {
-			deleteLead(leadToDelete);
-		}
-	}
-
-	function openProposalModal(lead: any) {
-		selectedLeadForProposal = {
-			customer_name: lead.name,
-			phone_number: lead.phone,
-			email: lead.email,
-			address: lead.address || '',
-			lead_id: lead.id
-		};
-		showProposalModal = true;
-	}
-
 	function closeProposalModal() {
 		showProposalModal = false;
 		selectedLeadForProposal = null;
-	}
-
-	function handleProposalGenerated() {
-		closeProposalModal();
-	}
-
-	function toggleLeadDetails(leadId: number) {
-		const newSet = new Set(expandedLeads);
-		if (newSet.has(leadId)) {
-			newSet.delete(leadId);
-		} else {
-			newSet.add(leadId);
-		}
-		expandedLeads = newSet;
 	}
 </script>
 
@@ -285,27 +108,17 @@
 	{#if errorMessage}
 		<p class="text-destructive font-semibold p-4">{errorMessage}</p>
 	{:else}
-		<div class="w-full max-w-[900px] mx-auto space-y-6">
+		<div class="w-full max-w-[540px] mx-auto space-y-6">
 			{#if leads.length > 0}
 				{#each limitedLeads as lead}
 					<LeadTile
 						{lead}
 						{businessInfo}
 						{isClaiming}
-						{savingNotes}
-						{savedNotes}
-						{expandedLeads}
-						{STAGES}
-						{NON_EXCLUSIVE_CLAIMED_STAGES}
-						{makeCall}
-						{saveBusinessNotes}
-						{updateLead}
-						{getRelativeTime}
-						{getNextAction}
-						{openProposalModal}
-						{showDeleteConfirmation}
-						{claimLead}
-						onToggleDetails={(e) => toggleLeadDetails(e.leadId)}
+						onupdate={handleLeadUpdate}
+						onclaim={handleLeadClaim}
+						onproposal={handleProposalOpen}
+						ondelete={handleDeleteRequest}
 					/>
 				{/each}
 				{#if leads.length > 5}
@@ -404,6 +217,6 @@
 		business={businessInfo}
 		proposal={selectedLeadForProposal}
 		onClose={closeProposalModal}
-		onGenerated={handleProposalGenerated}
+		onGenerated={closeProposalModal}
 	/>
 {/if}
