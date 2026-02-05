@@ -3,24 +3,24 @@
 
 	let { businessName = '', businessSlug = '' } = $props();
 
-	let name = '';
-	let phone = '';
-	let pinCode = '';
-	let type = '';
-	let comment = '';
-	let email = '';
-	let urlParam = '';
+	let name = $state('');
+	let phone = $state('');
+	let pinCode = $state('');
+	let type = $state('');
+	let comment = $state('');
+	let email = $state('');
+	let urlParam = $state('');
 
-	let isSubmitting = false;
+	let isSubmitting = $state(false);
 
-	let errors = {
+	let errors = $state({
 		name: '',
 		phone: '',
 		pinCode: '',
 		type: '',
 		email: '',
 		comment: ''
-	};
+	});
 
 	// ✅ **Set the urlParam dynamically based on the businessSlug**
 	$effect(() => {
@@ -82,8 +82,6 @@
 	}
 
 	async function handleSubmit(event) {
-		event.preventDefault();
-
 		if (validateForm()) {
 			isSubmitting = true;
 
@@ -119,7 +117,7 @@
 	}
 </script>
 
-<form on:submit|preventDefault={handleSubmit}>
+<form onsubmit={(e) => { e.preventDefault(); handleSubmit(e); }}>
 	<!-- Name Input -->
 	<div>
 		<label for="name">Name:</label>
@@ -132,7 +130,7 @@
 	<!-- Phone Number Input -->
 	<div>
 		<label for="phone">Phone Number:</label>
-		<input id="phone" type="text" bind:value={phone} required on:blur={validatePhoneNumber} />
+		<input id="phone" type="text" bind:value={phone} required onblur={validatePhoneNumber} />
 		{#if errors.phone}
 			<p class="error">{errors.phone}</p>
 		{/if}
@@ -141,7 +139,7 @@
 	<!-- Pin Code Input -->
 	<div>
 		<label for="pinCode">Pin Code:</label>
-		<input id="pinCode" type="text" bind:value={pinCode} required on:blur={validatePinCode} />
+		<input id="pinCode" type="text" bind:value={pinCode} required onblur={validatePinCode} />
 		{#if errors.pinCode}
 			<p class="error">{errors.pinCode}</p>
 		{/if}
@@ -150,7 +148,7 @@
 	<!-- Email Input -->
 	<div>
 		<label for="email">Email:</label>
-		<input id="email" type="email" bind:value={email} required on:blur={validateEmail} />
+		<input id="email" type="email" bind:value={email} required onblur={validateEmail} />
 		{#if errors.email}
 			<p class="error">{errors.email}</p>
 		{/if}

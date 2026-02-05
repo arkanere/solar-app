@@ -10,38 +10,38 @@
 	let { messages = writable([]), onClose = null } = $props();
 
 	// Chat state
-	let userInput = '';
-	let isLoading = false;
-	let currentFlowId = 'initial'; // Start with freeform initial
-	let inputValues = {};
+	let userInput = $state('');
+	let isLoading = $state(false);
+	let currentFlowId = $state('initial'); // Start with freeform initial
+	let inputValues = $state({});
 
 	// Form state for new form flow type
-	let formValues = {};
-	let formErrors = {};
-	let isFormValid = false;
-	let isSubmittingForm = false;
-	let hasAttemptedSubmit = false;
+	let formValues = $state({});
+	let formErrors = $state({});
+	let isFormValid = $state(false);
+	let isSubmittingForm = $state(false);
+	let hasAttemptedSubmit = $state(false);
 
 	// URL parameter for tracking
-	let urlParam = '';
+	let urlParam = $state('');
 
 	// Track user journey for type field
-	let userJourney = [];
+	let userJourney = $state([]);
 
 	// Context handoff for LLM chatbot
-	let conversationContext = '';
-	let contextSent = false;
+	let conversationContext = $state('');
+	let contextSent = $state(false);
 
 	// Reference to chat history container for scrolling
 	let chatHistoryContainer;
 
 	// Track if user has manually scrolled up
-	let isUserScrolledUp = false;
-	let lastScrollHeight = 0;
-	let lastScrollTop = 0;
+	let isUserScrolledUp = $state(false);
+	let lastScrollHeight = $state(0);
+	let lastScrollTop = $state(0);
 
 	// Animation state management
-	let hasUserInteracted = false;
+	let hasUserInteracted = $state(false);
 
 	// Function to stop background animation on user interaction
 	function stopBackgroundAnimation() {
@@ -49,7 +49,7 @@
 	}
 
 	// Lead Profile Data Structure
-	let leadProfile = {
+	let leadProfile = $state({
 		// Personal (from form)
 		name: null,
 		phone: null,
@@ -73,7 +73,7 @@
 		systemCost: null,
 		subsidyAmount: null,
 		netInvestment: null
-	};
+	});
 
 	// Reactive statement to get URL parameter
 	$effect(() => {
@@ -1025,7 +1025,7 @@
 	<div class="chatbot-header">
 		<h3>Calculate Price and Savings</h3>
 		{#if onClose}
-			<button class="header-close-button" on:click={onClose} aria-label="Close chatbot"> × </button>
+			<button class="header-close-button" onclick={onClose} aria-label="Close chatbot"> × </button>
 		{/if}
 	</div>
 
@@ -1037,7 +1037,7 @@
 	<div
 		class="chat-history {!hasUserInteracted ? 'breathing-background' : ''}"
 		bind:this={chatHistoryContainer}
-		on:scroll={handleScroll}
+		onscroll={handleScroll}
 	>
 		{#each $messages as message, i}
 			<div class="message {message.role}">
@@ -1061,10 +1061,10 @@
 						<!-- Show guided flow suggestion -->
 						{#if message.showGuidedOption}
 							<div class="guided-flow-suggestion">
-								<button class="start-guided-btn" on:click={startGuidedFlow}>
+								<button class="start-guided-btn" onclick={startGuidedFlow}>
 									Yes, start assessment
 								</button>
-								<button class="continue-chat-btn" on:click={() => dismissGuidedSuggestion(i)}>
+								<button class="continue-chat-btn" onclick={() => dismissGuidedSuggestion(i)}>
 									No, continue chatting
 								</button>
 							</div>
@@ -1076,7 +1076,7 @@
 							{#if conversationFlows.flows[currentFlowId]?.flowType === 'options' && conversationFlows.flows[currentFlowId]?.options?.length > 0}
 								<div class="inline-options">
 									{#each conversationFlows.flows[currentFlowId].options as option}
-										<button on:click={() => selectOption(option.id)}>
+										<button onclick={() => selectOption(option.id)}>
 											{option.label}
 										</button>
 									{/each}
@@ -1133,13 +1133,13 @@
 
 											{#if input.type !== 'button'}
 												<button
-													on:click={() => submitInput(input.id, inputValues[input.id])}
+													onclick={() => submitInput(input.id, inputValues[input.id])}
 													disabled={!inputValues[input.id]}
 												>
 													Submit
 												</button>
 											{:else}
-												<button on:click={() => submitInput(input.id, input.label || true)}>
+												<button onclick={() => submitInput(input.id, input.label || true)}>
 													{input.label || 'Submit'}
 												</button>
 											{/if}
@@ -1207,7 +1207,7 @@
 
 									<button
 										class="form-submit-button"
-										on:click={submitForm}
+										onclick={submitForm}
 										disabled={!isFormValid || isLoading || isSubmittingForm}
 									>
 										{#if isSubmittingForm}
@@ -1243,16 +1243,16 @@
 				type="text"
 				bind:value={userInput}
 				placeholder="Ask a question about solar installation..."
-				on:keypress={(e) => e.key === 'Enter' && sendMessage()}
+				onkeypress={(e) => e.key === 'Enter' && sendMessage()}
 			/>
-			<button on:click={sendMessage} disabled={isLoading || !userInput.trim()}>
+			<button onclick={sendMessage} disabled={isLoading || !userInput.trim()}>
 				{isLoading ? 'Sending...' : 'Send'}
 			</button>
 		</div>
 	{/if}
 
 	<div class="reset-container">
-		<button class="reset-button" on:click={resetChat}>Reset Chat</button>
+		<button class="reset-button" onclick={resetChat}>Reset Chat</button>
 	</div>
 </div>
 

@@ -4,8 +4,9 @@
 	let { data } = $props();
 
 	let darkMode = $derived($isDarkMode);
-	const derivedData = $derived(data);
-	let { blogs, error, pagination } = derivedData;
+	let blogs = $derived(data.blogs);
+	let error = $derived(data.error);
+	let pagination = $derived(data.pagination);
 
 	function formatDate(dateString) {
 		if (!dateString) return '';

@@ -282,8 +282,8 @@
 
 			<div class="legal-links">
 				<p>
-					<a href="/terms-of-use">Terms of Use</a> |
-					<a href="/privacy-policy">Privacy Policy</a>
+					<a href="/us/terms-of-use">Terms of Use</a> |
+					<a href="/us/privacy-policy">Privacy Policy</a>
 				</p>
 			</div>
 		</section>

@@ -1,4 +1,4 @@
-<script context="module">
+<script module>
 	// Enhanced data objects with icons
 	const benefits = [
 		{
@@ -209,15 +209,7 @@
 	<link
 		rel="preload"
 		as="image"
-		href="/header/header_mobile.avif"
-		media="(max-width: 768px)"
-		fetchpriority="high"
-	/>
-	<link
-		rel="preload"
-		as="image"
-		href="/header/header_desktop.avif"
-		media="(min-width: 769px)"
+		href="/header/header.avif"
 		fetchpriority="high"
 	/>
 	<!-- Preconnect to optimize external resources -->
@@ -303,7 +295,7 @@
 			<source media="(min-width: 769px)" srcset="/header/header.avif" type="image/avif" />
 			<img
 				class="hero-image"
-				src="/header/header_mobile.avif"
+				src="/header/header.avif"
 				alt="Solar Panel Installation Business Growth"
 				width="768"
 				height="400"
@@ -316,7 +308,7 @@
 			<h1>GROW YOUR SOLAR BUSINESS</h1>
 			<h2>Get Discovered on Google & ChatGPT</h2>
 			<p>Connect directly with customers seeking solar installation services in your area</p>
-			<button class="cta-button pulse" on:click={navigateToBusinessForm}>
+			<button class="cta-button pulse" onclick={navigateToBusinessForm}>
 				<span>List My Business Now</span>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
@@ -365,7 +357,7 @@
 			</div>
 
 			<div class="cta-center">
-				<button class="cta-button" on:click={navigateToBusinessForm}>
+				<button class="cta-button" onclick={navigateToBusinessForm}>
 					<span>Get Started for Free</span>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -403,7 +395,7 @@
 			</div>
 
 			<div class="cta-center">
-				<button class="cta-button" on:click={navigateToBusinessForm}>
+				<button class="cta-button" onclick={navigateToBusinessForm}>
 					<span>List My Business</span>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -511,7 +503,7 @@
 			</div>
 
 			<div class="cta-center">
-				<button class="cta-button" on:click={navigateToBusinessForm}>
+				<button class="cta-button" onclick={navigateToBusinessForm}>
 					<span>Join These Businesses</span>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
@@ -556,7 +548,7 @@
       </div>
 
       <div class="cta-center">
-        <button class="cta-button" on:click={navigateToBusinessForm}>
+        <button class="cta-button" onclick={navigateToBusinessForm}>
           <span>Try It Now — Free</span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -603,7 +595,7 @@
 					Join thousands of solar installation companies already benefiting from Solar Vipani's
 					platform
 				</p>
-				<button class="cta-button large pulse" on:click={navigateToBusinessForm}>
+				<button class="cta-button large pulse" onclick={navigateToBusinessForm}>
 					<span>List My Business Now</span>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"

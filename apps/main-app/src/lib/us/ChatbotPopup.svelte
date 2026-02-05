@@ -5,7 +5,7 @@
 
 	// Store to maintain message history and popup state
 	let { messages = writable([]), isVisible = true } = $props();
-	let isManuallyDismissed = false;
+	let isManuallyDismissed = $state(false);
 
 	// Function to close the popup
 	function closePopup() {
