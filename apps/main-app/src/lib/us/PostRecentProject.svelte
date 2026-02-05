@@ -1,6 +1,5 @@
 <script>
-	export let show = false;
-	export let businessSlug = '';
+	let { show = $bindable(false), businessSlug = '' } = $props();
 
 	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
@@ -41,25 +40,31 @@
 	}
 
 	// Reset form data when modal is shown
-	$: if (show) {
-		resetForm();
-		isSubmitting = false;
-		errorMessage = '';
-	}
+	$effect(() => {
+		if (show) {
+			resetForm();
+			isSubmitting = false;
+			errorMessage = '';
+		}
+	});
 
 	// Fetch district automatically when pincode changes
-	$: if (
-		formData.pincode &&
-		formData.pincode.length === 6 &&
-		formData.pincode !== lastFetchedPincode
-	) {
-		fetchDistrictByPincode(formData.pincode);
-	}
+	$effect(() => {
+		if (
+			formData.pincode &&
+			formData.pincode.length === 6 &&
+			formData.pincode !== lastFetchedPincode
+		) {
+			fetchDistrictByPincode(formData.pincode);
+		}
+	});
 
 	// Fetch cities when district changes
-	$: if (formData.district && formData.district !== lastFetchedDistrict) {
-		fetchCitiesByDistrict(formData.district);
-	}
+	$effect(() => {
+		if (formData.district && formData.district !== lastFetchedDistrict) {
+			fetchCitiesByDistrict(formData.district);
+		}
+	});
 
 	function resetForm() {
 		formData = {

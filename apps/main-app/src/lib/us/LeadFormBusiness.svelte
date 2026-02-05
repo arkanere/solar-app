@@ -2,31 +2,31 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 
-	let name = '';
-	let phone = '';
-	let pinCode = '';
-	let comment = '';
-	let email = '';
+	let name = $state('');
+	let phone = $state('');
+	let pinCode = $state('');
+	let comment = $state('');
+	let email = $state('');
 	let urlParam = '';
 
 	// Placeholder text with line break
 	const commentPlaceholder = `Tell us about your requirement.
 Eg. I want a 6kW system for my home or I need solar panels for my business`;
 
-	let isSubmitting = false;
+	let isSubmitting = $state(false);
 
-	let errors = {
+	let errors = $state({
 		name: '',
 		phone: '',
 		pinCode: '',
 		email: '',
 		comment: ''
-	};
+	});
 
 	// ✅ Set the URL dynamically based on the current page
-	$: {
+	$effect(() => {
 		urlParam = $page.url.pathname;
-	}
+	});
 
 	// ✅ Phone Number Validation (10-16 digits with optional + prefix)
 	function validatePhoneNumber() {
@@ -110,7 +110,7 @@ Eg. I want a 6kW system for my home or I need solar panels for my business`;
 	}
 </script>
 
-<form on:submit|preventDefault={handleSubmit}>
+<form onsubmit={handleSubmit}>
 	<!-- Name Input -->
 	<div>
 		<label for="name">Name:</label>
@@ -123,7 +123,7 @@ Eg. I want a 6kW system for my home or I need solar panels for my business`;
 	<!-- Phone Number Input -->
 	<div>
 		<label for="phone">Phone Number:</label>
-		<input id="phone" type="text" bind:value={phone} required on:blur={validatePhoneNumber} />
+		<input id="phone" type="text" bind:value={phone} required onblur={validatePhoneNumber} />
 		{#if errors.phone}
 			<p class="error">{errors.phone}</p>
 		{/if}
@@ -132,7 +132,7 @@ Eg. I want a 6kW system for my home or I need solar panels for my business`;
 	<!-- Pin Code Input -->
 	<div>
 		<label for="pinCode">Pin Code:</label>
-		<input id="pinCode" type="text" bind:value={pinCode} required on:blur={validatePinCode} />
+		<input id="pinCode" type="text" bind:value={pinCode} required onblur={validatePinCode} />
 		{#if errors.pinCode}
 			<p class="error">{errors.pinCode}</p>
 		{/if}
@@ -141,7 +141,7 @@ Eg. I want a 6kW system for my home or I need solar panels for my business`;
 	<!-- Email Input -->
 	<div>
 		<label for="email">Email:</label>
-		<input id="email" type="email" bind:value={email} required on:blur={validateEmail} />
+		<input id="email" type="email" bind:value={email} required onblur={validateEmail} />
 		{#if errors.email}
 			<p class="error">{errors.email}</p>
 		{/if}

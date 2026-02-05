@@ -1,8 +1,7 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
 
-	export let businessName = '';
-	export let businessSlug = '';
+	let { businessName = '', businessSlug = '' } = $props();
 
 	const dispatch = createEventDispatcher();
 
@@ -28,9 +27,9 @@
 	};
 
 	// ✅ **Set the urlParam dynamically based on the businessSlug**
-	$: {
+	$effect(() => {
 		urlParam = `/solar-panel-installer/${businessSlug}`;
-	}
+	});
 
 	function validatePhoneNumber() {
 		if (!/^\+?\d{10,16}$/.test(phone)) {

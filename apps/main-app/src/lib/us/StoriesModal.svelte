@@ -11,8 +11,7 @@
 	import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
 	import { isDarkMode } from './themeStore.js';
 
-	let darkMode;
-	$: darkMode = $isDarkMode;
+	let darkMode = $derived($isDarkMode);
 
 	let currentStoryIndex = 0;
 	let storyProgress = 0;
@@ -134,18 +133,22 @@
 	}
 
 	// Auto-start stories when modal opens
-	$: if ($storiesModalOpen && $storiesData.length > 0 && !$storiesLoading) {
-		showViewAll = false;
-		currentStoryIndex = 0;
-		setTimeout(() => {
-			startStoryProgress();
-		}, 300);
-	}
+	$effect(() => {
+		if ($storiesModalOpen && $storiesData.length > 0 && !$storiesLoading) {
+			showViewAll = false;
+			currentStoryIndex = 0;
+			setTimeout(() => {
+				startStoryProgress();
+			}, 300);
+		}
+	});
 
 	// Load stories when modal opens
-	$: if ($storiesModalOpen && $storiesData.length === 0 && !$storiesLoading) {
-		loadStoriesData();
-	}
+	$effect(() => {
+		if ($storiesModalOpen && $storiesData.length === 0 && !$storiesLoading) {
+			loadStoriesData();
+		}
+	});
 
 	// Cleanup on component destroy
 	onDestroy(() => {

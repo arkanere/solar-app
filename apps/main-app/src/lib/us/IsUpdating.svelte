@@ -1,12 +1,14 @@
 <script>
-	export let show = false;
-	export let lead = null;
-	export let stages = {
-		0: 'New Inquiry',
-		1: 'Qualified',
-		2: 'Proposal Sent',
-		3: 'Won'
-	};
+	let {
+		show = $bindable(false),
+		lead = null,
+		stages = {
+			0: 'New Inquiry',
+			1: 'Qualified',
+			2: 'Proposal Sent',
+			3: 'Won'
+		}
+	} = $props();
 
 	import { createEventDispatcher, onMount } from 'svelte';
 	const dispatch = createEventDispatcher();
@@ -23,15 +25,17 @@
 	};
 
 	// Get appropriate stages based on lead category
-	$: currentStages = localLead && localLead.category === 2 ? nonExclusiveClaimedStages : stages;
+	let currentStages = $derived(localLead && localLead.category === 2 ? nonExclusiveClaimedStages : stages);
 
-	$: if (lead) {
-		// Ensure stage is a number when initializing the form
-		localLead = {
-			...lead,
-			stage: typeof lead.stage === 'number' ? lead.stage : Number(lead.stage)
-		};
-	}
+	$effect(() => {
+		if (lead) {
+			// Ensure stage is a number when initializing the form
+			localLead = {
+				...lead,
+				stage: typeof lead.stage === 'number' ? lead.stage : Number(lead.stage)
+			};
+		}
+	});
 
 	const close = () => {
 		show = false;

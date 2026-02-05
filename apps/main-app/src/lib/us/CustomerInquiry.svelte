@@ -3,10 +3,7 @@
 	import LeadProgressBar from './LeadProgressBar.svelte';
 	import LeadStageFilter from './LeadStageFilter.svelte';
 
-	export let leads = [];
-	export let businessInfo = {};
-	export let errorMessage = null;
-	export let isClaiming = false;
+	let { leads = [], businessInfo = {}, errorMessage = null, isClaiming = false } = $props();
 
 	const dispatch = createEventDispatcher();
 
@@ -201,10 +198,10 @@
 	}
 
 	// Update filtered leads when leads change
-	$: {
+	$effect(() => {
 		leads;
 		filterLeads();
-	}
+	});
 
 	// Delete lead function
 	async function deleteLead(lead) {

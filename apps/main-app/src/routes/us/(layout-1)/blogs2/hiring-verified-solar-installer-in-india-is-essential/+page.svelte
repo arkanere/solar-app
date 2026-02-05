@@ -2,10 +2,9 @@
 	import { isDarkMode } from '$lib/us/themeStore'; // Import from store if globally managed
 
 	// Initialize dark mode state
-	let darkMode;
 
 	// Use the global theme store
-	$: darkMode = $isDarkMode;
+	let darkMode = $derived($isDarkMode);
 </script>
 
 <main class={darkMode ? 'dark' : 'light'}>

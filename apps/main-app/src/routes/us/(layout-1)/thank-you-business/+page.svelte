@@ -1,7 +1,6 @@
 <script>
 	import { isDarkMode } from '$lib/us/themeStore'; // Import dark mode state from your store
-	let darkMode;
-	$: darkMode = $isDarkMode;
+	let darkMode = $derived($isDarkMode);
 </script>
 
 <!-- svelte-ignore a11y-img-redundant-alt -->

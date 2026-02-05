@@ -71,10 +71,10 @@
 	import AboutSolarVipani from '$lib/us/AboutSolarVipani.svelte';
 
 	// For data loading
-	export let data;
+	let { data } = $props();
 
 	// Reactive statement for dark mode
-	$: darkMode = $isDarkMode;
+	let darkMode = $derived($isDarkMode);
 
 	// Navigation function
 	const navigateToBusinessForm = () => goto('/us/business-form');
@@ -299,8 +299,8 @@
 	<!-- Hero Banner with Solar Panel Background -->
 	<div class="hero-banner">
 		<picture>
-			<source media="(max-width: 768px)" srcset="/header/header_mobile.avif" type="image/avif" />
-			<source media="(min-width: 769px)" srcset="/header/header_desktop.avif" type="image/avif" />
+			<source media="(max-width: 768px)" srcset="/header/header.avif" type="image/avif" />
+			<source media="(min-width: 769px)" srcset="/header/header.avif" type="image/avif" />
 			<img
 				class="hero-image"
 				src="/header/header_mobile.avif"

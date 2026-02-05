@@ -57,7 +57,7 @@
 		'Puerto Rico'
 	];
 
-	$: darkMode = $isDarkMode;
+	let darkMode = $derived($isDarkMode);
 
 	// Function to format state name for URL
 	function formatStateSlug(state) {

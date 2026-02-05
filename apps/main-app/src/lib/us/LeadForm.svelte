@@ -20,9 +20,9 @@
 	let isSubmitting = false;
 
 	// Get the path from the current page's URL
-	$: {
+	$effect(() => {
 		urlParam = $page.url.pathname; // Capture the current path (e.g., '/about-us')
-	}
+	});
 
 	function validateForm() {
 		errors = {

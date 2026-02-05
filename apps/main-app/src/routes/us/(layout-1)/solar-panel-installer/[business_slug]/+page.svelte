@@ -10,10 +10,11 @@
 	import { formatCityStateUrl } from '$lib/us/stateAbbreviations';
 
 	// Destructure page data with reactive declaration
-	$: ({ business, errorMessage } = $page.data);
-	$: darkMode = $isDarkMode;
-	$: businessSlug = business?.slug || '';
-	$: showProjects = business?.businessfilled && business?.tier3;
+	const pageData = $derived($page.data);
+	let { business, errorMessage } = pageData;
+	let darkMode = $derived($isDarkMode);
+	let businessSlug = $derived(business?.slug || '');
+	let showProjects = $derived(business?.businessfilled && business?.tier3);
 
 	// Function to make call with Umami tracking
 	function makeCall(phoneNumber, businessSlug) {

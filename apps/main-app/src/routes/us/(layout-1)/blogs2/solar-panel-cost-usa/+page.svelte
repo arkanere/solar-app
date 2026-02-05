@@ -2,8 +2,7 @@
 	import { isDarkMode } from '$lib/us/themeStore';
 	import LeadFormBusiness from '$lib/us/LeadFormBusiness.svelte';
 
-	let darkMode;
-	$: darkMode = $isDarkMode;
+	let darkMode = $derived($isDarkMode);
 
 	const lastUpdated = '2025-01-15';
 	const lastUpdatedDisplay = 'January 15, 2025';

@@ -6,14 +6,11 @@
 	import { isDarkMode } from '$lib/us/themeStore'; // Import from store if globally managed
 
 	// Initialize dark mode state
-	let darkMode;
-	let ChatBotBox;
-	let AboutSolarVipani;
-	let shouldLoadChatBot = false;
-	let shouldLoadAbout = false;
-
-	// Use the global theme store
-	$: darkMode = $isDarkMode;
+	let darkMode = $derived($isDarkMode);
+	let ChatBotBox = $state();
+	let AboutSolarVipani = $state();
+	let shouldLoadChatBot = $state(false);
+	let shouldLoadAbout = $state(false);
 
 	// Lazy load non-critical components after initial page load
 	onMount(async () => {
@@ -21,7 +18,7 @@
 		const aboutObserver = new IntersectionObserver(
 			async (entries) => {
 				if (entries[0].isIntersecting) {
-					const module = await import('$lib/AboutSolarVipani.svelte');
+					const module = await import('$lib/us/AboutSolarVipani.svelte');
 					AboutSolarVipani = module.default;
 					shouldLoadAbout = true;
 					aboutObserver.disconnect();
@@ -37,7 +34,7 @@
 
 		// Delay chatbot loading to improve initial page performance
 		setTimeout(async () => {
-			const module = await import('$lib/ChatBotBox.svelte');
+			const module = await import('$lib/us/ChatBotBox.svelte');
 			ChatBotBox = module.default;
 			shouldLoadChatBot = true;
 		}, 2000); // Load after 2 seconds to allow critical content to load first
@@ -92,14 +89,14 @@
 	<link
 		rel="preload"
 		as="image"
-		href="/header/header_desktop.avif"
+		href="/header/header.avif"
 		media="(min-width: 769px)"
 		fetchpriority="high"
 	/>
 	<link
 		rel="preload"
 		as="image"
-		href="/header/header_mobile.avif"
+		href="/header/header.avif"
 		media="(max-width: 768px)"
 		fetchpriority="high"
 	/>
@@ -198,11 +195,11 @@
 	<!-- Hero Banner Section -->
 	<div class="hero-banner">
 		<picture>
-			<source media="(max-width: 768px)" srcset="/header/header_mobile.avif" type="image/avif" />
-			<source media="(min-width: 769px)" srcset="/header/header_desktop.avif" type="image/avif" />
+			<source media="(max-width: 768px)" srcset="/header/header.avif" type="image/avif" />
+			<source media="(min-width: 769px)" srcset="/header/header.avif" type="image/avif" />
 			<img
 				class="hero-image"
-				src="/header/header_desktop.avif"
+				src="/header/header.avif"
 				alt="Solar Panel Installation in India"
 				width="1920"
 				height="600"
@@ -368,7 +365,7 @@
 		<!-- About Section (Lazy Loaded) -->
 		<div id="about-section">
 			{#if shouldLoadAbout && AboutSolarVipani}
-				<svelte:component this={AboutSolarVipani} />
+				<AboutSolarVipani />
 			{/if}
 		</div>
 	</div>

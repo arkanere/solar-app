@@ -3,9 +3,7 @@
 
 	const dispatch = createEventDispatcher();
 
-	export let selectedCategory = 'all';
-	export let selectedStage = 'all';
-	export let selectedStatus = 'all';
+	let { selectedCategory = 'all', selectedStage = 'all', selectedStatus = 'all' } = $props();
 
 	// Lead categories
 	const CATEGORIES = {
@@ -41,7 +39,7 @@
 	};
 
 	// Get appropriate stages based on selected category
-	$: currentStages = selectedCategory === '2' ? NON_EXCLUSIVE_CLAIMED_STAGES : STAGES;
+	let currentStages = $derived(selectedCategory === '2' ? NON_EXCLUSIVE_CLAIMED_STAGES : STAGES);
 
 	function handleCategoryChange() {
 		// Reset stage filter when category changes

@@ -1,7 +1,7 @@
 <script>
-	import { isDarkMode } from '$lib/themeStore';
+	import { isDarkMode } from '$lib/us/themeStore';
 
-	$: darkMode = $isDarkMode;
+	let darkMode = $derived($isDarkMode);
 </script>
 
 <section class="comparison-section" class:dark={darkMode}>

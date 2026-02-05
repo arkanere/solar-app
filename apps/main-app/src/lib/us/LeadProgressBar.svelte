@@ -1,7 +1,5 @@
 <script>
-	export let currentStage = 0;
-	export let leadCategory = 3; // 2 = Non-Exclusive-Claimed, 3 = Exclusive
-	export let isActive = true; // New prop to track if lead is active
+	let { currentStage = 0, leadCategory = 3, isActive = true } = $props(); // 2 = Non-Exclusive-Claimed, 3 = Exclusive
 
 	// Define stages for different lead categories
 	const exclusiveStages = ['New Inquiry', 'Contacted', 'Proposal/Quotation Sent', 'Won'];
@@ -17,13 +15,14 @@
 		'Won'
 	];
 
-	$: stages = leadCategory === 2 ? nonExclusiveClaimedDisplayStages : exclusiveStages;
+	let stages = $derived(leadCategory === 2 ? nonExclusiveClaimedDisplayStages : exclusiveStages);
 	// For non-exclusive claimed leads, adjust progress calculation to account for the extra display stage
-	$: progressPercentage =
+	let progressPercentage = $derived(
 		leadCategory === 2
 			? ((currentStage + 1) / (stages.length - 1)) * 100
-			: (currentStage / (stages.length - 1)) * 100;
-	$: progressColor = isActive ? 'active' : 'inactive';
+			: (currentStage / (stages.length - 1)) * 100
+	);
+	let progressColor = $derived(isActive ? 'active' : 'inactive');
 </script>
 
 <div class="progress-container">

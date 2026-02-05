@@ -2,24 +2,24 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores'; // Import the page store to access the URL
 
-	let name = '';
-	let phone = '';
-	let message = '';
-	let pincode = ''; // New pincode variable
-	let isSubmitting = false; // Track the submission state
-	let urlParam = '';
+	let name = $state('');
+	let phone = $state('');
+	let message = $state('');
+	let pincode = $state(''); // New pincode variable
+	let isSubmitting = $state(false); // Track the submission state
+	let urlParam = $state('');
 
-	let errors = {
+	let errors = $state({
 		name: '',
 		phone: '',
 		message: '',
 		pincode: '' // New pincode error
-	};
+	});
 
 	// Get the path from the current page's URL
-	$: {
+	$effect(() => {
 		urlParam = $page.url.pathname; // Capture the current path (e.g., '/about-us')
-	}
+	});
 
 	function validateForm() {
 		// Reset errors before validation
@@ -89,7 +89,7 @@
 	}
 </script>
 
-<form on:submit|preventDefault={handleSubmit}>
+<form onsubmit={handleSubmit}>
 	<!-- Name Input -->
 	<div>
 		<label for="name">Name:</label>

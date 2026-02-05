@@ -1,20 +1,19 @@
 <!-- BusinessDirectory.svelte -->
 
 <script>
-	import { isDarkMode } from '$lib/themeStore'; // Import the dark mode store
+	import { isDarkMode } from '$lib/us/themeStore'; // Import the dark mode store
 	import { goto } from '$app/navigation';
-	import { formatCountyStateUrl } from '$lib/stateAbbreviations';
-
-	// Reactive store for theme mode
-	$: darkMode = $isDarkMode;
-
+	import { formatCountyStateUrl } from '$lib/us/stateAbbreviations';
 	import { onMount } from 'svelte';
 
+	// Reactive store for theme mode
+	let darkMode = $derived($isDarkMode);
+
 	// Define reactive variables for state and county selection
-	let state = '';
-	let county = '';
-	let counties = [];
-	let isLoading = false;
+	let state = $state('');
+	let county = $state('');
+	let counties = $state([]);
+	let isLoading = $state(false);
 	let mounted = false;
 
 	// List of US states
@@ -149,7 +148,7 @@
 		<!-- State Dropdown -->
 		<div>
 			<label for="state">State:</label>
-			<select id="state" value={state} on:change={handleStateChange} required>
+			<select id="state" value={state} onchange={handleStateChange} required>
 				<option value="">Select a state</option>
 				{#each states as s}
 					<option value={s}>{s}</option>
@@ -164,7 +163,7 @@
 				id="county"
 				bind:value={county}
 				disabled={!state || isLoading}
-				on:change={handleCountySelection}
+				onchange={handleCountySelection}
 			>
 				<option value="">
 					{#if isLoading}
