@@ -7,7 +7,6 @@
   import StoriesModal from "$lib/in-new-rewrites/StoriesModal.svelte";
   import { Button } from "$lib/components/ui/button";
   import * as Dialog from "$lib/components/ui/dialog";
-  import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
 
   // Accept children snippet from SvelteKit
   let { children } = $props();
@@ -22,6 +21,7 @@
   // Translation modal state
   let showTranslationModal = $state(false);
   let selectedLanguage = $state("");
+  let showTranslateDropdown = $state(false);
 
   // Indian languages for translation
   const indianLanguages = [
@@ -208,19 +208,39 @@
   <!-- Right side buttons group -->
   <div class="flex items-center gap-[theme(--spacing-md)]">
     <!-- Translate Dropdown -->
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger class="border border-border cursor-pointer whitespace-nowrap text-foreground hover:bg-muted px-[theme(--button-padding-x-sm)] py-[theme(--button-padding-y-sm)] text-[theme(--font-size-sm)] rounded-[theme(--radius-md)] transition-all duration-[theme(--transition-default)]">
+    <div class="relative">
+      <button
+        onclick={() => showTranslateDropdown = !showTranslateDropdown}
+        class="border border-border cursor-pointer whitespace-nowrap text-foreground hover:bg-muted px-[theme(--button-padding-x-sm)] py-[theme(--button-padding-y-sm)] text-[theme(--font-size-sm)] rounded-[theme(--radius-md)] transition-all duration-[theme(--transition-default)]"
+      >
         🌐 Translate
-      </DropdownMenu.Trigger>
-      <DropdownMenu.Content>
-        {#each indianLanguages as language}
-          <DropdownMenu.Item onclick={() => selectLanguage(language)}>
-            {language.flag}
-            {language.name}
-          </DropdownMenu.Item>
-        {/each}
-      </DropdownMenu.Content>
-    </DropdownMenu.Root>
+      </button>
+
+      {#if showTranslateDropdown}
+        <div
+          role="menu"
+          tabindex="-1"
+          class="absolute right-0 mt-2 w-56 rounded-md border border-border bg-popover text-popover-foreground shadow-md z-50"
+          onmouseleave={() => showTranslateDropdown = false}
+        >
+          <div class="p-1">
+            {#each indianLanguages as language}
+              <button
+                role="menuitem"
+                onclick={() => {
+                  selectLanguage(language);
+                  showTranslateDropdown = false;
+                }}
+                class="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground transition-colors"
+              >
+                <span class="mr-2">{language.flag}</span>
+                <span>{language.name}</span>
+              </button>
+            {/each}
+          </div>
+        </div>
+      {/if}
+    </div>
 
     <button onclick={toggleTheme} class="border border-border cursor-pointer whitespace-nowrap text-foreground hover:bg-muted px-[theme(--button-padding-x-sm)] py-[theme(--button-padding-y-sm)] text-[theme(--font-size-sm)] rounded-[theme(--radius-md)] transition-all duration-[theme(--transition-default)]">
       {$isDarkMode ? "☀️ Light mode" : "🌙 Dark mode"}
