@@ -9,7 +9,7 @@
   import AboutSolarVipani from "$lib/in-new-rewrites/AboutSolarVipani.svelte";
 
   // Destructure page data using derived
-  const { business, projects = [], errorMessage } = $derived($page.data);
+  const { business, projects = [], errorMessage, lastUpdated } = $derived($page.data);
   const businessSlug = $derived(business?.slug || "");
   const showProjects = $derived(business?.businessfilled);
 
@@ -108,6 +108,15 @@
       <!-- Hero Section -->
       <div class="text-center px-[theme(--button-padding-x-lg)] py-[theme(--card-padding-y)] bg-primary rounded-[theme(--radius-xl)] text-primary-foreground mb-8 relative overflow-hidden">
         <h1 class="text-3xl md:text-4xl font-bold mb-2">{business.businessname}</h1>
+        {#if lastUpdated}
+          <p class="text-sm text-primary-foreground/80 mt-2 italic">
+            Last Update: {new Date(lastUpdated).toLocaleDateString("en-IN", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}
+          </p>
+        {/if}
         {#if business.businessfilled && business.tag !== "Blank"}
           <div class="inline-flex items-center text-xs font-medium uppercase tracking-widest mb-4">
             <span class="inline-flex items-center justify-center w-3.5 h-3.5 bg-success text-primary-foreground rounded-full text-xs font-bold mr-2">✓</span>

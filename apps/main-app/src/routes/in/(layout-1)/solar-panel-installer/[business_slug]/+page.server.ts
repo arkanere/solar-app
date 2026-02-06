@@ -70,10 +70,15 @@ export const load: PageServerLoad = async ({ params }) => {
 		return {
 			business,
 			projects,
+			lastUpdated: new Date().toISOString(),
 			user: null
 		};
 	} catch (error) {
 		console.error('Database query error:', error);
-		return { errorMessage: 'Failed to load business details', user: null };
+		return {
+			errorMessage: 'Failed to load business details',
+			lastUpdated: new Date().toISOString(),
+			user: null
+		};
 	}
 }
