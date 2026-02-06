@@ -3,11 +3,14 @@
 	import { goto } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 	import { isDarkMode } from '$lib/stores/theme.svelte';
+	import PasswordStrengthIndicator from '$lib/components/PasswordStrengthIndicator.svelte';
 
 	let newPassword = $state('');
 	let confirmPassword = $state('');
 	let errorMessage = $state('');
-	let isLoading = $state(false); // Loading state to lock the button
+	let isLoading = $state(false);
+	let passwordIndicator = $state<any>(null);
+	let isLinkInvalid = $state(false);
 
 	let business_slug = $page.params.business_slug;
 	let token = $page.params.token;
@@ -15,18 +18,26 @@
 	// Initialize dark mode state
 	let darkMode = $derived($isDarkMode);
 
+	// Check if password meets all requirements
+	let isPasswordValid = $derived(passwordIndicator?.allRequirementsMet ?? false);
+
 	async function handleSubmit(event) {
 		event.preventDefault();
 
 		// Clear any existing error messages
 		errorMessage = '';
 
+		if (!isPasswordValid) {
+			errorMessage = 'Please meet all password requirements';
+			return;
+		}
+
 		if (newPassword !== confirmPassword) {
 			errorMessage = 'Passwords do not match';
 			return;
 		}
 
-		isLoading = true; // Lock the button and change its color
+		isLoading = true;
 
 		try {
 			const response = await fetch(`/us/api/resetPassword`, {
@@ -41,15 +52,23 @@
 
 			if (response.ok && result.success) {
 				toast.success('Password has been reset successfully');
-				goto(`/us/login`); // Redirect after successful reset
+				goto(`/us/login`);
 			} else {
 				errorMessage = result.error || 'Failed to reset password. Please try again.';
+
+				// Check if link is invalid, expired, or already used
+				if (
+					errorMessage.includes('Invalid or expired') ||
+					errorMessage.includes('already been used')
+				) {
+					isLinkInvalid = true;
+				}
 			}
 		} catch (error) {
 			errorMessage = 'Error resetting password. Please try again later.';
 			console.error(error);
 		} finally {
-			isLoading = false; // Unlock the button after the process is complete
+			isLoading = false;
 		}
 	}
 </script>
@@ -68,6 +87,11 @@
 		<div class="form-group">
 			<label for="new-password">New Password</label>
 			<input id="new-password" type="password" bind:value={newPassword} required />
+			{#if newPassword}
+				<div class="password-indicator-wrapper">
+					<PasswordStrengthIndicator bind:this={passwordIndicator} password={newPassword} />
+				</div>
+			{/if}
 		</div>
 
 		<div class="form-group">
@@ -76,10 +100,20 @@
 		</div>
 
 		{#if errorMessage}
-			<p class="error-message">{errorMessage}</p>
+			<div class="error-container">
+				<p class="error-message">{errorMessage}</p>
+				{#if isLinkInvalid}
+					<div class="help-box">
+						<p>Please contact us to request a new password reset link:</p>
+						<a href="mailto:admin@solarvipani.com" class="contact-link">
+							admin@solarvipani.com
+						</a>
+					</div>
+				{/if}
+			</div>
 		{/if}
 
-		<button type="submit" disabled={isLoading} class:is-loading={isLoading}>
+		<button type="submit" disabled={isLoading || !isPasswordValid || !confirmPassword || isLinkInvalid} class:is-loading={isLoading}>
 			{#if isLoading}
 				Resetting...
 			{/if}
@@ -156,6 +190,10 @@
 		text-align: left;
 	}
 
+	.password-indicator-wrapper {
+		margin-top: 0.5rem;
+	}
+
 	label {
 		display: block;
 		margin-bottom: 0.5rem;
@@ -214,10 +252,42 @@
 		cursor: not-allowed;
 	}
 
+	.error-container {
+		margin-bottom: 1rem;
+	}
+
 	.error-message {
 		color: red;
 		font-size: 0.9rem;
+		margin-bottom: 0.75rem;
+	}
+
+	.help-box {
+		background-color: rgba(0, 0, 0, 0.05);
+		border: 1px solid rgba(0, 0, 0, 0.1);
+		border-radius: 6px;
+		padding: 0.875rem;
+		font-size: 0.875rem;
 		margin-top: 0.5rem;
+	}
+
+	.dark .help-box {
+		background-color: rgba(255, 255, 255, 0.05);
+		border-color: rgba(255, 255, 255, 0.1);
+	}
+
+	.help-box p {
+		margin: 0 0 0.5rem 0;
+	}
+
+	.contact-link {
+		color: var(--accent-color);
+		font-weight: 600;
+		text-decoration: none;
+	}
+
+	.contact-link:hover {
+		text-decoration: underline;
 	}
 
 	/* Responsive styling for mobile */

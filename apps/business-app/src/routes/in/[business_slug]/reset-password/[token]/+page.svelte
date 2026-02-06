@@ -5,20 +5,31 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
+	import PasswordStrengthIndicator from '$lib/components/PasswordStrengthIndicator.svelte';
 
 	let newPassword = $state('');
 	let confirmPassword = $state('');
 	let errorMessage = $state('');
 	let isLoading = $state(false);
+	let passwordIndicator = $state<any>(null);
+	let isLinkInvalid = $state(false);
 
 	let business_slug = $derived($page.params.business_slug);
 	let token = $derived($page.params.token);
+
+	// Check if password meets all requirements
+	let isPasswordValid = $derived(passwordIndicator?.allRequirementsMet ?? false);
 
 	async function handleSubmit(event) {
 		event.preventDefault();
 
 		// Clear any existing error messages
 		errorMessage = '';
+
+		if (!isPasswordValid) {
+			errorMessage = 'Please meet all password requirements';
+			return;
+		}
 
 		if (newPassword !== confirmPassword) {
 			errorMessage = 'Passwords do not match';
@@ -43,6 +54,14 @@
 				goto(`/in/login`);
 			} else {
 				errorMessage = result.error || 'Failed to reset password. Please try again.';
+
+				// Check if link is invalid, expired, or already used
+				if (
+					errorMessage.includes('Invalid or expired') ||
+					errorMessage.includes('already been used')
+				) {
+					isLinkInvalid = true;
+				}
 			}
 		} catch (error) {
 			errorMessage = 'Error resetting password. Please try again later.';
@@ -73,9 +92,12 @@
 		}}
 		class="w-full max-w-[500px] bg-card p-8 md:p-6 rounded-lg border border-border shadow-md transition-colors"
 	>
-		<div class="mb-6 text-left">
+		<div class="mb-4 text-left">
 			<Label for="new-password" class="block mb-2 font-bold">New Password</Label>
 			<Input id="new-password" type="password" bind:value={newPassword} required />
+			{#if newPassword}
+				<PasswordStrengthIndicator bind:this={passwordIndicator} password={newPassword} />
+			{/if}
 		</div>
 
 		<div class="mb-6 text-left">
@@ -84,10 +106,23 @@
 		</div>
 
 		{#if errorMessage}
-			<p class="text-destructive text-sm mb-4">{errorMessage}</p>
+			<div class="error-container mb-4">
+				<p class="text-destructive text-sm mb-2">{errorMessage}</p>
+				{#if isLinkInvalid}
+					<div class="help-text text-sm p-3 rounded-md bg-muted border border-border">
+						<p class="mb-2">Please contact us to request a new password reset link:</p>
+						<a
+							href="mailto:admin@solarvipani.com"
+							class="text-primary hover:underline font-semibold"
+						>
+							admin@solarvipani.com
+						</a>
+					</div>
+				{/if}
+			</div>
 		{/if}
 
-		<Button type="submit" disabled={isLoading} class="w-full mt-4">
+		<Button type="submit" disabled={isLoading || !isPasswordValid || !confirmPassword || isLinkInvalid} class="w-full mt-4">
 			{isLoading ? 'Resetting...' : 'Reset Password'}
 		</Button>
 	</form>
