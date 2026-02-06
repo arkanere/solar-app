@@ -220,10 +220,10 @@
 						{lead}
 						{businessInfo}
 						{isClaiming}
-						onupdate={handleLeadUpdate}
-						onclaim={handleLeadClaim}
-						onproposal={handleProposalOpen}
-						ondelete={handleDeleteRequest}
+						on:update={handleLeadUpdate}
+						on:claim={handleLeadClaim}
+						on:proposal={handleProposalOpen}
+						on:delete={handleDeleteRequest}
 					/>
 				{/each}
 			{:else}

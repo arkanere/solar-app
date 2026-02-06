@@ -91,6 +91,10 @@
 	}
 
 	function handleClaim() {
+		if (!businessInfo.id) {
+			console.error('ERROR: businessInfo.id is undefined!');
+			return;
+		}
 		dispatch('claim', { leadId: lead.id, businessId: businessInfo.id });
 	}
 
