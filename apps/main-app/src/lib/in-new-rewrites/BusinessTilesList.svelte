@@ -7,6 +7,7 @@
 	import { Phone, MessageCircle, MapPin, X } from '@lucide/svelte';
 	import LeadFormModal from '$lib/in-new-rewrites/LeadFormModal.svelte';
 	import { makeCall, openWhatsApp } from '$lib/constants/businessTracking';
+	import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
 
 	// State management
 	let visibleBusinesses = $state<any[]>([]);
@@ -32,6 +33,10 @@
 		const endIndex = Math.min(loadedCount + batchSize, businesses.length);
 		visibleBusinesses = [...visibleBusinesses, ...businesses.slice(startIndex, endIndex)];
 		loadedCount = endIndex;
+	}
+
+	function getProjectImageUrl(cloudinaryId: string): string {
+		return `https://res.cloudinary.com/${PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_fill,w_64,h_64,q_auto,f_auto/${cloudinaryId}`;
 	}
 
 </script>
@@ -86,6 +91,28 @@
 								</a>
 							</div>
 						{/if}
+					{/if}
+
+					{#if business.recent_projects?.length > 0}
+						<div class="flex items-center gap-3 pt-2">
+							<span class="text-xs text-muted-foreground">Recent Work</span>
+							<div class="flex gap-2">
+								{#each business.recent_projects.slice(0, 3) as project}
+									<a
+										href="/in/solar-panel-installer/{project.business_slug}/project/{project.project_slug}"
+										class="group block"
+										aria-label="View {project.title}"
+									>
+										<img
+											src={getProjectImageUrl(project.cloudinary_public_id)}
+											alt={project.title}
+											class="w-14 h-14 rounded-md object-cover transition-transform duration-200 group-hover:scale-105 shadow-sm"
+											loading="lazy"
+										/>
+									</a>
+								{/each}
+							</div>
+						</div>
 					{/if}
 				</Card.Content>
 

@@ -57,20 +57,69 @@ export const load: PageServerLoad = async ({ params }) => {
 
 		const district = districtResult.rows[0].district;
 
-		// Modified query: Sort businesses from the requested city to the top,
-		// then apply the existing sorting criteria within each group
+		// Fetch businesses (sorting deferred to transformation layer)
 		const districtBusinessesResult = await pool.query(
 			`SELECT businessname, description, phonenumber, slug, address, pluscode, state, city, tag, rscore, businessfilled, services
       FROM businesses_1
-      WHERE district = $1 AND isvisible = true
-      ORDER BY
-        CASE WHEN city = $2 THEN 0 ELSE 1 END, -- Sort businesses from selected city first
-        businessfilled DESC,
-        rscore DESC;`,
-			[district, city]
+      WHERE district = $1 AND isvisible = true`,
+			[district]
 		);
 
 		const businesses = districtBusinessesResult.rows;
+
+		// Fetch recent projects for each business (max 3 per business)
+		const businessSlugs = businesses.map((b) => b.slug);
+		let businessProjectsMap = new Map();
+
+		if (businessSlugs.length > 0) {
+			const projectsByBusinessResult = await pool.query(
+				`SELECT
+					business_slug,
+					project_slug,
+					title,
+					image_url,
+					cloudinary_public_id,
+					image_width,
+					image_height,
+					image_format,
+					project_date
+				FROM (
+					SELECT *,
+						ROW_NUMBER() OVER (PARTITION BY business_slug ORDER BY project_date DESC, created_at DESC) as rn
+					FROM projects
+					WHERE business_slug = ANY($1) AND isvisible = true
+				) ranked
+				WHERE rn <= 3`,
+				[businessSlugs]
+			);
+
+			// Group projects by business_slug
+			projectsByBusinessResult.rows.forEach((project) => {
+				if (!businessProjectsMap.has(project.business_slug)) {
+					businessProjectsMap.set(project.business_slug, []);
+				}
+				businessProjectsMap.get(project.business_slug).push(project);
+			});
+		}
+
+		// Transform: attach projects and re-sort by relevance
+		const businessesWithProjects = businesses
+			.map((business) => ({
+				...business,
+				recent_projects: businessProjectsMap.get(business.slug) || []
+			}))
+			.sort((a, b) => {
+				// Pure function sort: city match → project count → score
+				const aCityMatch = a.city === city ? 0 : 1;
+				const bCityMatch = b.city === city ? 0 : 1;
+				if (aCityMatch !== bCityMatch) return aCityMatch - bCityMatch;
+
+				const aProjectCount = a.recent_projects.length;
+				const bProjectCount = b.recent_projects.length;
+				if (aProjectCount !== bProjectCount) return bProjectCount - aProjectCount;
+
+				return (b.rscore || 0) - (a.rscore || 0);
+			});
 
 		// Fetch all cities in the same district
 		const citiesResult = await pool.query(
@@ -111,11 +160,11 @@ export const load: PageServerLoad = async ({ params }) => {
 		const recentProjects = projectsResult.rows;
 
 		// Return businesses from the district along with the district name, cities, and projects
-		if (businesses.length > 0) {
+		if (businessesWithProjects.length > 0) {
 			return {
 				city,
 				district,
-				businesses,
+				businesses: businessesWithProjects,
 				subset_cities_localities,
 				recentProjects,
 				lastUpdated: new Date().toISOString(),
