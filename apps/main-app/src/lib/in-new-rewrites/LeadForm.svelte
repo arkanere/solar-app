@@ -54,10 +54,10 @@
     isSubmitting = true;
 
     // Navigate to thank-you page immediately for better UX
-    goto('/thank-you');
+    goto('/in/thank-you');
 
     // Submit form in background (fire and forget)
-    fetch('/api/submitLead', {
+    fetch('/in/api/submitLead', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
