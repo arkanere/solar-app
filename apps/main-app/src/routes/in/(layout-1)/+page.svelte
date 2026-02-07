@@ -13,12 +13,25 @@
   let ChatbotPopup = $state(null);
   let shouldLoadAbout = $state(false);
   let shouldLoadChatbot = $state(false);
+  let videoLoaded = $state(false);
+  let videoRef = $state(null);
 
   // Extract recent projects from data
   const recentProjects = $derived(data?.recentProjects || []);
 
   // Lazy load non-critical components after initial page load
   onMount(async () => {
+    // Progressive enhancement: Load video after static image
+    if (videoRef) {
+      videoRef.addEventListener('loadeddata', () => {
+        videoLoaded = true;
+      });
+
+      videoRef.addEventListener('error', () => {
+        console.log('Video failed to load, using static image');
+      });
+    }
+
     // Load AboutSolarVipani component (bottom of page) with intersection observer
     const aboutObserver = new IntersectionObserver(
       async (entries) => {
@@ -230,9 +243,11 @@
 
 <main class="w-full bg-background text-foreground transition-colors duration-300 overflow-x-hidden dark:bg-background dark:text-foreground">
   <!-- Hero Banner Section -->
-  <div class="relative w-full h-[theme(--height-md)] flex items-center justify-center text-center overflow-hidden md:h-[theme(--height-xl)]">
+  <div class="relative w-full h-[theme(--height-lg)] flex items-center justify-center text-center overflow-hidden md:h-[42rem]">
+    <!-- Static Image - Always visible initially, fades out when video loads -->
     <img
-      class="absolute top-0 left-0 w-full h-full object-cover object-center z-0"
+      class="absolute top-0 left-0 w-full h-full object-cover object-center z-0 transition-opacity duration-1000"
+      class:opacity-0={videoLoaded}
       src="/header/header.avif"
       alt="Residential Solar Panel Installation in India"
       width="1920"
@@ -240,6 +255,21 @@
       fetchpriority="high"
       decoding="async"
     />
+
+    <!-- Video - Fades in once loaded -->
+    <video
+      bind:this={videoRef}
+      class="absolute top-0 left-0 w-full h-full object-cover object-center z-0 transition-opacity duration-1000"
+      class:opacity-0={!videoLoaded}
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="metadata"
+    >
+      <source src="/video/installation-video.mp4" type="video/mp4" />
+    </video>
+
     <div class="absolute top-0 left-0 w-full h-full z-10 bg-black/55"></div>
     <div class="relative z-20 max-w-3xl px-6">
       <h1 class="text-4xl md:text-5xl font-bold mb-6 text-primary-foreground leading-tight drop-shadow-lg">
