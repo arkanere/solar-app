@@ -82,7 +82,7 @@
 
 <svelte:head>
   <title
-    >Solar Vipani | India's #1 Solar Services Aggregator | Quickly Get Solar
+    >Solar Vipani | India's #1 Solar Quotation Service | Quickly Get Solar
     Quotations from 2-3 Verified Installers</title
   >
   <meta
