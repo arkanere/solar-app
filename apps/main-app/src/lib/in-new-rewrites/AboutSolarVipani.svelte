@@ -30,7 +30,7 @@
 
 	<CardContent class="gap-[theme(--card-gap)] flex flex-col">
 		<!-- About Container -->
-		<div class="flex items-center md:flex-col md:text-center gap-[theme(--card-gap)]">
+		<div class="flex flex-col items-center text-center md:flex-row md:items-center md:text-left gap-[theme(--card-gap)]">
 			<img
 				src="/logo.webp"
 				alt="Solarvipani Logo"
