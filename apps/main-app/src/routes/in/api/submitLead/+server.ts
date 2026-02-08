@@ -51,7 +51,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 		const referenceUuid = result.rows[0].reference_uuid;
 
 		// ✅ Use `fetch` from event
-		await fetch('/api/sendLeadSubmissionConfirmation', {
+		await fetch('/in/api/sendLeadSubmissionConfirmation', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
