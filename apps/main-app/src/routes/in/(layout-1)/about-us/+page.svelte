@@ -93,7 +93,7 @@
     <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] mb-[theme(--card-gap)] shadow-[theme(--shadow-md)]">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-[theme(--card-gap)]">
         <Card class="p-[theme(--spacing-lg)] border-t-[theme(--card-accent-border)] border-accent hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-md)] transition-all text-center">
-          <div class="text-4xl font-bold text-primary mb-[theme(--spacing-sm)]">450+</div>
+          <div class="text-4xl font-bold text-primary mb-[theme(--spacing-sm)]">500+</div>
           <h3 class="text-xl font-semibold text-primary mb-[theme(--spacing-sm)]">Verified Businesses</h3>
           <p class="text-foreground dark:text-foreground-secondary">Listed across India</p>
         </Card>

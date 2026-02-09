@@ -120,7 +120,7 @@
   />
   <meta
     property="og:description"
-    content="Connect with 450+ verified solar installers across India. Get up to ₹78,000 government subsidy. Save up to 95% on electricity bills. Free consultation & quotes."
+    content="Connect with 500+ verified solar installers across India. Get up to ₹78,000 government subsidy. Save up to 95% on electricity bills. Free consultation & quotes."
   />
   <meta property="og:image" content="https://solarvipani.com/logo512.png" />
   <meta property="og:image:width" content="512" />

@@ -65,7 +65,7 @@
   ];
 
   const stats = [
-    { number: "450+", label: "Businesses Listed" },
+    { number: "500+", label: "Businesses Listed" },
     { number: "5,000+", label: "Cities & Towns" },
   ];
 </script>

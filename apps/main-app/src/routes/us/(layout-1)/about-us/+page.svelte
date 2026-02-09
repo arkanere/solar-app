@@ -92,7 +92,7 @@
 		<!-- <section class="stats-section">
       <div class="stats-grid">
         <div class="stat-card highlight-card">
-          <div class="stat-number">450+</div>
+          <div class="stat-number">500+</div>
           <h3>Verified Businesses</h3>
           <p>Listed across India</p>
         </div>
