@@ -18,9 +18,11 @@
 	export type CustomerInquiryProps = {
 		leads?: Lead[];
 		businessInfo?: Record<string, any>;
+		businessSlug?: string;
 		errorMessage?: string | null;
 		isClaiming?: boolean;
 		onClaimLead?: (lead: any) => void;
+		mode?: 'full' | 'dashboard';
 	};
 </script>
 
@@ -39,10 +41,15 @@
 	let {
 		leads = $bindable([]),
 		businessInfo = {},
+		businessSlug = '',
 		errorMessage = null,
 		isClaiming = false,
-		onClaimLead = () => {}
+		onClaimLead = () => {},
+		mode = 'full'
 	}: CustomerInquiryProps = $props();
+
+	let isDashboard = $derived(mode === 'dashboard');
+	let dashboardLeads = $derived(leads.slice(0, 5));
 
 	// Parent-level state (modals only)
 	let showProposalModal = $state(false);
@@ -148,15 +155,77 @@
 </script>
 
 <!-- LEAD DATA SECTION -->
-<section id="lead-data">
-	<h2 class="text-2xl font-semibold text-left text-accent mb-4">Customer Inquiry</h2>
+<section id="lead-data" class={isDashboard ? 'space-y-4' : ''}>
+	<h2 class="text-2xl font-semibold text-accent {isDashboard ? '' : 'text-left mb-4'}">Customer Inquiry</h2>
 
 	{#if errorMessage}
-		<Alert.Root variant="destructive" class="mb-4">
-			<Alert.Title>Error</Alert.Title>
-			<Alert.Description>{errorMessage}</Alert.Description>
-		</Alert.Root>
+		{#if isDashboard}
+			<p class="text-destructive font-semibold p-4">{errorMessage}</p>
+		{:else}
+			<Alert.Root variant="destructive" class="mb-4">
+				<Alert.Title>Error</Alert.Title>
+				<Alert.Description>{errorMessage}</Alert.Description>
+			</Alert.Root>
+		{/if}
+	{:else if isDashboard}
+		<!-- Dashboard mode: flat list, limited to 5 -->
+		<div class="w-full max-w-[540px] mx-auto space-y-6">
+			{#if leads.length > 0}
+				{#each dashboardLeads as lead}
+					<LeadTile
+						{lead}
+						{businessInfo}
+						{isClaiming}
+						on:update={handleLeadUpdate}
+						on:claim={handleLeadClaim}
+						on:proposal={handleProposalOpen}
+						on:delete={handleDeleteRequest}
+					/>
+				{/each}
+				{#if leads.length > 5}
+					<Card.Root class="border-accent/20 bg-accent-muted">
+						<Card.Content class="pt-6 text-center">
+							<p class="text-sm text-accent">
+								<strong>Showing 5 of {leads.length} leads.</strong>
+								<a
+									href="/in/{businessSlug}/crm"
+									class="text-accent underline font-semibold hover:opacity-80 ml-1"
+								>
+									View all leads in CRM
+								</a>
+							</p>
+						</Card.Content>
+					</Card.Root>
+				{/if}
+			{:else}
+				<LeadTile
+					lead={{
+						id: 0,
+						name: 'John Doe',
+						phone: '+91 0123456789',
+						email: 'dummy@email.com',
+						stage: 0,
+						status: true,
+						category: 1,
+						business_notes: '',
+						received_at: new Date().toISOString(),
+						pin_code: '110001',
+						type: 'Residential - Independent Home',
+						comment: 'I want to install 3kW at my home. Please call me!'
+					}}
+					businessInfo={{}}
+					isDemo={true}
+				/>
+			{/if}
+		</div>
+
+		<div class="flex justify-center pt-6 border-t-2 border-border">
+			<Button size="lg" onclick={() => (window.location.href = `/in/${businessSlug}/crm`)}>
+				Open CRM
+			</Button>
+		</div>
 	{:else}
+		<!-- Full CRM mode: tabs + filters -->
 		<!-- Tab toggle -->
 		<div class="flex gap-1 p-1 bg-muted rounded-lg mb-6 max-w-[540px] mx-auto">
 			<button
