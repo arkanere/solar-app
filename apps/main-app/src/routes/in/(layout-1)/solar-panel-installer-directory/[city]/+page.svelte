@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from "svelte";
   import { page } from "$app/stores";
   import { Button } from "$lib/components/ui/button";
   import { Card } from "$lib/components/ui/card";
@@ -10,14 +11,13 @@
   import BusinessTilesList from "$lib/in-new-rewrites/BusinessTilesList.svelte";
   import RecommendedSolarSystems from "$lib/in-new-rewrites/RecommendedSolarSystems.svelte";
   import SolarComparisonTable from "$lib/in-new-rewrites/SolarComparisonTable.svelte";
+  import RecentProjectsCity from "$lib/in-new-rewrites/RecentProjectsCity.svelte";
 
   // Lazy-loaded components (non-critical)
-  let RecentProjectsCity = $state();
   let AboutSolarVipani = $state();
   let ChatbotPopup = $state();
 
   // Loading states
-  let shouldLoadRecentProjects = $state(false);
   let shouldLoadAbout = $state(false);
   let shouldLoadChatbot = $state(false);
 
@@ -61,18 +61,6 @@
   });
 
   function setupLazyLoading() {
-    const recentProjectsObserver = new IntersectionObserver(
-      async (entries) => {
-        if (entries[0].isIntersecting) {
-          const module = await import("$lib/in-new-rewrites/RecentProjectsCity.svelte");
-          RecentProjectsCity = module.default;
-          shouldLoadRecentProjects = true;
-          recentProjectsObserver.disconnect();
-        }
-      },
-      { rootMargin: "200px" },
-    );
-
     const aboutObserver = new IntersectionObserver(
       async (entries) => {
         if (entries[0].isIntersecting) {
@@ -88,12 +76,7 @@
     let chatbotTimer = null;
 
     setTimeout(() => {
-      const recentProjectsSection = document.querySelector("#recent-projects-section");
       const aboutSection = document.querySelector("#about-section");
-
-      if (recentProjectsSection) {
-        recentProjectsObserver.observe(recentProjectsSection);
-      }
 
       if (aboutSection) {
         aboutObserver.observe(aboutSection);
@@ -251,11 +234,7 @@
 
     <LeadFormSection city={cityName} hasBusinesses={businesses.length > 0} />
 
-    <div id="recent-projects-section">
-      {#if shouldLoadRecentProjects && RecentProjectsCity}
-        {@render RecentProjectsCity()}
-      {/if}
-    </div>
+    <RecentProjectsCity />
 
     <section id="services" class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">
       <div class="text-center mb-[theme(--spacing-2xl)]">
