@@ -167,27 +167,47 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 						businessname: string;
 						phonenumber: string | null;
 						email: string | null;
+						login_email: string;
+						login_password: string;
 						address: string | null;
 						website: string | null;
-					}>('SELECT slug, businessname, phonenumber, email, address, website FROM businesses_1 WHERE id = $1', [
+						rscore: number | null;
+						isvisible: boolean | null;
+						pluscode: string | null;
+						gstn: string | null;
+						tag: string | null;
+						services: string[] | null;
+						description: string | null;
+					}>('SELECT slug, businessname, phonenumber, email, login_email, login_password, address, website, rscore, isvisible, pluscode, gstn, tag, services, description FROM businesses_1 WHERE id = $1', [
 						mainBusinessId
 					]);
 					const main = mainResult.rows[0];
 					const branchSlug = `${main.slug}-branch-${Math.random().toString(16).slice(2, 8)}`;
 
 					const newBranchResult = await client.query<{ id: number }>(
-						`INSERT INTO businesses_1 (slug, businessname, phonenumber, email, address, website, district, state, city)
-						 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $7)
+						`INSERT INTO businesses_1
+						 (rscore, isvisible, pluscode, phonenumber, email, login_email, login_password,
+						  website, gstn, state, district, tag, slug, city, businessname, address, services, description)
+						 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $11, $14, $15, $16, $17)
 						 RETURNING id`,
 						[
-							branchSlug,
-							main.businessname,
+							main.rscore,
+							main.isvisible,
+							main.pluscode,
 							main.phonenumber,
 							main.email,
-							main.address,
+							main.login_email,
+							main.login_password,
 							main.website,
+							main.gstn,
+							leadState,
 							leadDistrict,
-							leadState
+							main.tag,
+							branchSlug,
+							main.businessname,
+							main.address,
+							main.services,
+							main.description ?? 'Solar panel installer'
 						]
 					);
 					const newBranchId = newBranchResult.rows[0].id;
