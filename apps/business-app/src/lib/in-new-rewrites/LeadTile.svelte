@@ -77,6 +77,8 @@
 		}
 	}
 
+	let notesDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
 	async function saveBusinessNotes() {
 		isSavingNotes = true;
 
@@ -88,6 +90,22 @@
 		setTimeout(() => {
 			notesSaved = false;
 		}, 3000);
+	}
+
+	function handleNotesInput() {
+		if (notesDebounceTimer) clearTimeout(notesDebounceTimer);
+		notesDebounceTimer = setTimeout(() => {
+			notesDebounceTimer = null;
+			saveBusinessNotes();
+		}, 800);
+	}
+
+	function handleNotesBlur() {
+		if (notesDebounceTimer) {
+			clearTimeout(notesDebounceTimer);
+			notesDebounceTimer = null;
+		}
+		saveBusinessNotes();
 	}
 
 	function handleClaim() {
@@ -341,22 +359,15 @@
 									rows={3}
 									disabled={isSavingNotes}
 									class="w-full"
+									oninput={handleNotesInput}
+									onblur={handleNotesBlur}
 								/>
-								<div class="flex items-center gap-3 mt-3">
-									<Button
-										variant="secondary"
-										onclick={saveBusinessNotes}
-										disabled={isSavingNotes}
-									>
-										{#if isSavingNotes}
-											Saving...
-										{:else}
-											Save
-										{/if}
-									</Button>
-									{#if notesSaved}
-										<span class="text-success font-semibold text-sm flex items-center gap-1">
-											<Check size={16} strokeWidth={2.5} />
+								<div class="flex items-center gap-1 mt-2 h-5">
+									{#if isSavingNotes}
+										<span class="text-muted-foreground text-xs">Saving...</span>
+									{:else if notesSaved}
+										<span class="text-success font-semibold text-xs flex items-center gap-1">
+											<Check size={12} strokeWidth={2.5} />
 											Saved
 										</span>
 									{/if}
