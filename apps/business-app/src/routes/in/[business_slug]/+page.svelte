@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { toast } from 'svelte-sonner';
-	import CustomerInquiryDashboardHome from '$lib/in-new-rewrites/CustomerInquiryDashboardHome.svelte';
+	import CustomerInquiry from '$lib/in-new-rewrites/CustomerInquiry.svelte';
 	import SetupProgressCard from '$lib/in-new-rewrites/SetupProgressCard.svelte';
 	import ShowEditProfile from '$lib/in-new-rewrites/ShowEditProfile.svelte';
 
@@ -96,12 +96,13 @@
 		/>
 
 		<!-- Customer Inquiry Dashboard -->
-		<CustomerInquiryDashboardHome
+		<CustomerInquiry
 			bind:leads
 			{businessInfo}
 			{businessSlug}
 			{errorMessage}
 			{isClaiming}
+			mode="dashboard"
 			onClaimLead={({ leadId, businessId }) => claimLead(leadId, businessId)}
 		/>
 	</div>
