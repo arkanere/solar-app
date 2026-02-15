@@ -47,6 +47,7 @@ interface LeadDataRow {
 	sv_comment_for_businesses: string | null;
 	urlparams: string | null;
 	district: string | null;
+	state: string | null;
 }
 
 interface EmailData {
@@ -129,12 +130,85 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 				);
 			}
 
+			// Determine effective business_id — auto-create branch if no presence in lead's district
+			let effectiveBusinessId = business_id;
+
+			const leadLocationResult = await client.query<{ district: string | null; state: string | null }>(
+				'SELECT district, state FROM leaddata WHERE id = $1',
+				[lead_id]
+			);
+			const leadDistrict = leadLocationResult.rows[0]?.district ?? null;
+			const leadState = leadLocationResult.rows[0]?.state ?? null;
+
+			if (leadDistrict) {
+				// Resolve main business ID (in case business_id belongs to a branch)
+				const parentResult = await client.query<{ main_id: number }>(
+					'SELECT main_id FROM branches WHERE branch_id = $1 AND isactive = true LIMIT 1',
+					[business_id]
+				);
+				const mainBusinessId =
+					parentResult.rows.length > 0 ? parentResult.rows[0].main_id : business_id;
+
+				// Check if main or any branch already serves the lead's district
+				const presenceResult = await client.query<{ id: number }>(
+					`SELECT b.id FROM businesses_1 b
+					 WHERE b.district = $1
+					 AND (b.id = $2 OR EXISTS (
+					     SELECT 1 FROM branches WHERE main_id = $2 AND branch_id = b.id AND isactive = true
+					 ))
+					 LIMIT 1`,
+					[leadDistrict, mainBusinessId]
+				);
+
+				if (presenceResult.rows.length === 0) {
+					// No presence — auto-create a branch in the lead's district
+					const mainResult = await client.query<{
+						slug: string;
+						businessname: string;
+						phonenumber: string | null;
+						email: string | null;
+						address: string | null;
+						website: string | null;
+					}>('SELECT slug, businessname, phonenumber, email, address, website FROM businesses_1 WHERE id = $1', [
+						mainBusinessId
+					]);
+					const main = mainResult.rows[0];
+					const branchSlug = `${main.slug}-branch-${Math.random().toString(16).slice(2, 8)}`;
+
+					const newBranchResult = await client.query<{ id: number }>(
+						`INSERT INTO businesses_1 (slug, businessname, phonenumber, email, address, website, district, state, city)
+						 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $7)
+						 RETURNING id`,
+						[
+							branchSlug,
+							main.businessname,
+							main.phonenumber,
+							main.email,
+							main.address,
+							main.website,
+							leadDistrict,
+							leadState
+						]
+					);
+					const newBranchId = newBranchResult.rows[0].id;
+
+					await client.query(
+						'INSERT INTO branches (main_id, branch_id, isactive) VALUES ($1, $2, true)',
+						[mainBusinessId, newBranchId]
+					);
+
+					effectiveBusinessId = newBranchId;
+				} else {
+					effectiveBusinessId = presenceResult.rows[0].id;
+				}
+			}
+
 			// Insert into leaddata_claimrequests
 			// Note: UNIQUE constraint on (lead_id, business_id) provides additional protection
 			const insertResult = await client
 				.query<ClaimRequestRow>(
 					'INSERT INTO leaddata_claimrequests (lead_id, claim_id, business_id) VALUES ($1, $2, $3) RETURNING id',
-					[lead_id, claim_id, business_id]
+					[lead_id, claim_id, effectiveBusinessId]
 				)
 				.catch((error: Error & { code?: string }) => {
 					// Handle unique constraint violation (PostgreSQL error code 23505)
@@ -188,14 +262,14 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 						originalLead.urlparams,
 						originalLead.district,
 						originalLead.id, // Set original_id to the original lead's ID
-						business_id // Set business_id from claim request
+						effectiveBusinessId // Set business_id to the branch serving the lead's district
 					]
 				);
 				newLead = newLeadResult.rows[0] ?? null;
 			}
 
 			// Prepare email data but don't send yet (move outside transaction)
-			emailData = { business_id, isallotted: true };
+			emailData = { business_id: effectiveBusinessId, isallotted: true };
 
 			await client.query('COMMIT');
 		} catch (error) {
