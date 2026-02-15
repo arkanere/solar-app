@@ -28,7 +28,7 @@
 		</div>
 	</CardHeader>
 
-	<CardContent class="gap-[theme(--card-gap)] flex flex-col">
+	<CardContent class="px-[theme(--card-padding-y)] gap-[theme(--card-gap)] flex flex-col">
 		<!-- About Container -->
 		<div class="flex flex-col items-center text-center md:flex-row md:items-center md:text-left gap-[theme(--card-gap)]">
 			<img
@@ -38,7 +38,7 @@
 				loading="lazy"
 			/>
 
-			<div class="flex-1 gap-[theme(--form-element-field-gap)] flex flex-col">
+			<div class="flex-1 w-full gap-[theme(--form-element-field-gap)] flex flex-col">
 				<p class="text-[theme(--font-size-lg)] leading-[theme(--font-size-lg--line-height)]">
 					We are your premier marketplace aggregator dedicated to connecting residential and business
 					customers with
