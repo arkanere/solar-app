@@ -132,6 +132,7 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 
 			// Determine effective business_id — auto-create branch if no presence in lead's district
 			let effectiveBusinessId = business_id;
+			let mainBusinessId = business_id;
 
 			const leadLocationResult = await client.query<{ district: string | null; state: string | null }>(
 				'SELECT district, state FROM leaddata WHERE id = $1',
@@ -146,7 +147,7 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 					'SELECT main_id FROM branches WHERE branch_id = $1 AND isactive = true LIMIT 1',
 					[business_id]
 				);
-				const mainBusinessId =
+				mainBusinessId =
 					parentResult.rows.length > 0 ? parentResult.rows[0].main_id : business_id;
 
 				// Check if main or any branch already serves the lead's district
