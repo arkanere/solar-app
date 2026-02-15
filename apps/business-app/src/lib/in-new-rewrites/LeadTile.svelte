@@ -197,7 +197,7 @@
 				</div>
 			{:else}
 				<!-- Claimed: Show Call Now Button -->
-				<div class="pt-2">
+				<div class="pt-2 flex flex-col gap-2">
 					<Button
 						class="w-full"
 						onclick={makeCall}
@@ -207,6 +207,17 @@
 						<Phone size={16} />
 						Call Now
 					</Button>
+					{#if lead.stage === 1 && lead.status}
+						<Button
+							variant="outline"
+							class="w-full"
+							onclick={handleGenerateProposal}
+							disabled={isDemo}
+						>
+							Generate Proposal
+							<ArrowRight size={16} />
+						</Button>
+					{/if}
 				</div>
 			{/if}
 		</div>
@@ -393,31 +404,17 @@
 	</Card.Content>
 
 	<!-- SECONDARY ACTION BUTTONS - Only for Claimed Leads When Expanded -->
-	{#if lead.category !== 1 && isExpanded}
-		{#if lead.stage === 1 && lead.status}
-			<Card.Footer
-				class="p-5 bg-muted/50 dark:bg-background-tertiary justify-center gap-4 flex-wrap"
+	{#if lead.category !== 1 && isExpanded && !lead.status}
+		<Card.Footer
+			class="p-5 bg-muted/50 dark:bg-background-tertiary justify-center gap-4 flex-wrap"
+		>
+			<Button
+				variant="destructive"
+				class="max-sm:w-full"
+				onclick={handleDelete}
 			>
-				<Button
-					class="shadow-md hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0 max-sm:w-full"
-					onclick={handleGenerateProposal}
-				>
-					Generate Proposal
-					<ArrowRight size={16} />
-				</Button>
-			</Card.Footer>
-		{:else if !lead.status}
-			<Card.Footer
-				class="p-5 bg-muted/50 dark:bg-background-tertiary justify-center gap-4 flex-wrap"
-			>
-				<Button
-					variant="destructive"
-					class="max-sm:w-full"
-					onclick={handleDelete}
-				>
-					Delete Lead
-				</Button>
-			</Card.Footer>
-		{/if}
+				Delete Lead
+			</Button>
+		</Card.Footer>
 	{/if}
 </Card.Root>
