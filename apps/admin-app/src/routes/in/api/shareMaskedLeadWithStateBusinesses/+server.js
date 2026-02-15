@@ -81,7 +81,6 @@ export async function POST({ request }) {
         ${lead.sv_comment_for_businesses ? `<p style="margin-top: 0.75rem; font-style: italic; color: #0056b3; background-color: rgba(0, 86, 179, 0.05); padding: 0.5rem; border-radius: 4px; border-left: 3px solid #0056b3;"><strong>Solarvipani.com Comment:</strong> ${escapeHtml(lead.sv_comment_for_businesses)}</p>` : ''}
         <p><strong>Created At:</strong> ${createdAtISTString}</p>
         
-        <p><strong>Important:</strong> Businesses that have either main branch or branch office in <a href="https://solarvipani.com/solar-panel-installer-directory/${lead.district.toLowerCase().replace(/\s+/g, '-')}" style="font-weight: bold;">${escapeHtml(lead.district)}</a> district can claim this lead by logging into their account.</p>
         `;
 
 		const subject = `New Solar Lead Inquiry in  ${escapeHtml(lead.district)}, ${escapeHtml(state)} - ${escapeHtml(lead.name)}`;
@@ -108,14 +107,6 @@ export async function POST({ request }) {
         <p style="margin-bottom: 2rem;">
         <a href="${magicLink}">Access Your Account</a>
         </p>
-        
-        <p><strong>How to Add Branch:</strong></p>
-        <ul>
-          <li>Log into your Solar Vipani business account</li>
-          <li>Go to "Branch Management" section</li>
-          <li>Click "Add New Branch" and enter branch details</li>
-          <li>This will expand your service coverage and lead eligibility</li>
-        </ul>
         
         <p> Few more businesses are invited to show interest. Therefore, the allotment is subject to certain conditions. </p>
         <p>For assistance, call us at <a href="tel:+918983066701">+91 8983066701</a></p>
@@ -145,14 +136,6 @@ export async function POST({ request }) {
 				const adminCopyMessage = emailTemplate + `
         <p><strong>Admin Note:</strong> This is a copy of the email sent to ${emailsSentCount} businesses in ${state}.</p>
         <p>If you need to access any business account, use the magic links in the admin summary email.</p>
-        
-        <p><strong>How to Add Branch:</strong></p>
-        <ul>
-          <li>Log into your Solar Vipani business account</li>
-          <li>Go to "Branch Management" section</li>
-          <li>Click "Add New Branch" and enter branch details</li>
-          <li>This will expand your service coverage and lead eligibility</li>
-        </ul>
         
         <p> Few more businesses are invited to show interest. Therefore, the allotment is subject to certain conditions. </p>
         <p>For assistance, call us at <a href="tel:+918983066701">+91 8983066701</a></p>
