@@ -49,7 +49,6 @@
 	}: CustomerInquiryProps = $props();
 
 	let isDashboard = $derived(mode === 'dashboard');
-	let dashboardLeads = $derived(leads.slice(0, 5));
 
 	// Parent-level state (modals only)
 	let showProposalModal = $state(false);
@@ -67,9 +66,8 @@
 
 	// Derive available (category 1) and my leads (category 2, 3, null/undefined)
 	let availableLeads = $derived(leads.filter((l) => l.category === 1));
-	let myLeads = $derived(
-		leads.filter((l) => l.category !== 1)
-	);
+	let myLeads = $derived(leads.filter((l) => l.category !== 1));
+	let dashboardLeads = $derived([...availableLeads, ...myLeads].slice(0, 5));
 
 	// Set default tab based on claimed leads on first load
 	$effect(() => {
@@ -168,7 +166,7 @@
 			</Alert.Root>
 		{/if}
 	{:else if isDashboard}
-		<!-- Dashboard mode: flat list, limited to 5 -->
+		<!-- Dashboard mode: available leads to claim, limited to 5 -->
 		<div class="w-full max-w-[540px] mx-auto space-y-6">
 			{#if leads.length > 0}
 				{#each dashboardLeads as lead}
@@ -191,7 +189,7 @@
 									href="/in/{businessSlug}/crm"
 									class="text-accent underline font-semibold hover:opacity-80 ml-1"
 								>
-									View all leads in CRM
+									View all in CRM
 								</a>
 							</p>
 						</Card.Content>
