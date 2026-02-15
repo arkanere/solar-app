@@ -8,6 +8,7 @@ interface Business {
 	id: number;
 	slug: string;
 	district: string;
+	state: string;
 	[key: string]: unknown;
 }
 
@@ -15,6 +16,7 @@ interface Branch {
 	id: number;
 	slug: string;
 	district: string;
+	state: string;
 }
 
 interface Lead {
@@ -56,11 +58,11 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 		}
 
 		const business = businessResult.rows[0] as Business;
-		const { district, id: businessId } = business; // Extract district & business ID
+		const { id: businessId, state } = business;
 
 		// ✅ Get all branch business IDs and slugs for this main business
 		const branchesResult = await pool.query(
-			`SELECT b.id, b.slug, b.district
+			`SELECT b.id, b.slug, b.district, b.state
 			FROM branches br
 			JOIN businesses_1 b ON br.branch_id = b.id
 			WHERE br.main_id = $1 AND br.isactive = true`,
@@ -70,8 +72,8 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 		// Create arrays of all business IDs (main + branches) and slugs for queries
 		const allBusinessIds = [businessId, ...branchesResult.rows.map((branch: Branch) => branch.id)];
 		const allSlugs = [business_slug, ...branchesResult.rows.map((branch: Branch) => branch.slug)];
-		const allDistricts = [district, ...branchesResult.rows.map((branch: Branch) => branch.district)];
-		const uniqueDistricts = [...new Set(allDistricts.filter((d: string | null) => d))]; // Remove duplicates and nulls
+		const allStates = [state, ...branchesResult.rows.map((branch: Branch) => branch.state)];
+		const uniqueStates = [...new Set(allStates.filter((s: string | null) => s))];
 
 		// ✅ Fetch exclusive leads for main business and all its branches
 		let exclusiveLeadResult = { rows: [] as Lead[] };
@@ -109,19 +111,19 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 			nonExclusiveClaimedResult.rows.map((lead: Lead) => lead.original_id)
 		);
 
-		// ✅ Fetch non-exclusive leads from all districts where main business and branches operate
+		// ✅ Fetch non-exclusive leads from all states where main business and branches operate
 		// Only exclude leads that are unavailable (claim_count > 4) AND older than 60 days
 		let nonExclusiveLeadResult = { rows: [] as Lead[] };
-		if (uniqueDistricts.length > 0) {
+		if (uniqueStates.length > 0) {
 			nonExclusiveLeadResult = await pool.query(
 				`SELECT *, COALESCE(claim_count, 0) as claim_count
 				FROM leaddata
 				WHERE category = 1
-				AND district = ANY($1)
+				AND state = ANY($1)
 				AND isvisible = true
 				AND NOT (COALESCE(claim_count, 0) > 4 AND created_at < NOW() - INTERVAL '60 days')
 				ORDER BY id DESC`,
-				[uniqueDistricts]
+				[uniqueStates]
 			);
 		}
 
