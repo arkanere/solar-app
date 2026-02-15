@@ -36,7 +36,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		// Get referrer information
 		const referrerResult = await pool.query(
 			`SELECT id, business_id, name, slug, phone, email, notes
-			FROM referrers_in
+			FROM in_referrers
 			WHERE business_id = $1 AND slug = $2`,
 			[business.id, referrerSlug]
 		);
