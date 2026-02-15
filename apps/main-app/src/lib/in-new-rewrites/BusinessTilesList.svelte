@@ -10,30 +10,12 @@
 	import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
 
 	// State management
-	let visibleBusinesses = $state<any[]>([]);
-	let loadedCount = $state(0);
 	let isModalOpen = $state(false);
 	let selectedBusinessName = $state('');
 	let selectedBusinessSlug = $state('');
 
-	const batchSize = 3;
-
-	// Reactive values from page store
-	let businesses = $derived($page.data.businesses || []);
-
-	// Auto-load first batch
-	$effect(() => {
-		if (loadedCount === 0 && businesses.length > 0) {
-			loadMoreBusinesses();
-		}
-	});
-
-	function loadMoreBusinesses() {
-		const startIndex = loadedCount;
-		const endIndex = Math.min(loadedCount + batchSize, businesses.length);
-		visibleBusinesses = [...visibleBusinesses, ...businesses.slice(startIndex, endIndex)];
-		loadedCount = endIndex;
-	}
+	// Reactive values from page store — rendered directly for SSR
+	const businesses = $derived($page.data.businesses || []);
 
 	function getProjectImageUrl(cloudinaryId: string): string {
 		return `https://res.cloudinary.com/${PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_fill,w_64,h_64,q_auto,f_auto/${cloudinaryId}`;
@@ -41,9 +23,9 @@
 
 </script>
 
-{#if visibleBusinesses.length > 0}
+{#if businesses.length > 0}
 	<section class="mx-auto w-full max-w-[theme(--max-width-4xl)] flex flex-col gap-[theme(--form-field-gap)] px-[theme(--button-padding-x-default)] my-[theme(--card-gap)]">
-		{#each visibleBusinesses as business}
+		{#each businesses as business}
 			<Card.Root class="shadow-[theme(--shadow-card)] transition-shadow duration-[theme(--duration-default)]">
 				<Card.Header class="flex flex-col sm:flex-row sm:items-start sm:justify-between border-b gap-[theme(--dropdown-menu-item-gap)] pb-[theme(--card-padding-y)]">
 					<h2 class="text-[length:theme(--font-size-xl)] leading-[theme(--font-size-xl--line-height)] font-semibold tracking-[theme(--tracking-heading)]">
@@ -139,11 +121,6 @@
 			</Card.Root>
 		{/each}
 
-		{#if loadedCount < businesses.length}
-			<div class="flex justify-center pt-[theme(--form-field-gap)]">
-				<Button variant="outline" onclick={loadMoreBusinesses}>LOAD MORE</Button>
-			</div>
-		{/if}
 	</section>
 {/if}
 

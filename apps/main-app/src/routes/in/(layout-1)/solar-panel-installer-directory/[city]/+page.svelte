@@ -1,9 +1,8 @@
 <script>
-  import { onMount } from "svelte";
   import { page } from "$app/stores";
   import { Button } from "$lib/components/ui/button";
   import { Card } from "$lib/components/ui/card";
-  import { generateCityJsonLD, injectJsonLDScripts } from "$lib/in/jsonLD";
+  import { generateCityJsonLD } from "$lib/in/jsonLD";
   import { generateFAQ } from "$lib/in/faqData";
   import { services } from "$lib/in/servicesData";
   import LeadFormSection from "$lib/in-new-rewrites/LeadFormSection.svelte";
@@ -34,6 +33,8 @@
   const district = $derived($page.data.district || "");
   const lastUpdated = $derived($page.data.lastUpdated);
 
+  const jsonLD = $derived(generateCityJsonLD(city, businesses));
+
   // Derived FAQ list for current city
   const faqList = $derived(generateFAQ(city));
 
@@ -57,20 +58,7 @@
 
   onMount(() => {
     setupLazyLoading();
-
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(() => {
-        injectJsonLD();
-      }, { timeout: 3000 });
-    } else {
-      setTimeout(() => injectJsonLD(), 2000);
-    }
   });
-
-  function injectJsonLD() {
-    const jsonLDData = generateCityJsonLD(city, businesses, district);
-    injectJsonLDScripts(jsonLDData);
-  }
 
   function setupLazyLoading() {
     const recentProjectsObserver = new IntersectionObserver(
@@ -222,6 +210,12 @@
     name="keywords"
     content="solar panel installers {cityName}, solar installation {cityName}, solar companies {cityName}, rooftop solar {cityName}, solar dealers {cityName}, solar energy {cityName}, solar panel price {cityName}, solar subsidy {cityName}"
   />
+
+  <!-- Structured Data (SSR) -->
+  {@html `<script type="application/ld+json">${jsonLD.jsonLD1}</script>`}
+  {@html `<script type="application/ld+json">${jsonLD.jsonLD2}</script>`}
+  {@html `<script type="application/ld+json">${jsonLD.breadcrumbSchema}</script>`}
+  {@html `<script type="application/ld+json">${jsonLD.organizationSchema}</script>`}
 </svelte:head>
 
 <main class="w-full bg-background text-foreground transition-colors duration-300 overflow-x-hidden">

@@ -89,22 +89,3 @@ export function generateCityJsonLD(city: string, businesses: any[]) {
   };
 }
 
-export function injectJsonLDScripts(jsonLDData: ReturnType<typeof generateCityJsonLD>) {
-  const fragment = document.createDocumentFragment();
-
-  const scripts = [
-    { type: 'application/ld+json', content: jsonLDData.jsonLD1 },
-    { type: 'application/ld+json', content: jsonLDData.jsonLD2 },
-    { type: 'application/ld+json', content: jsonLDData.breadcrumbSchema },
-    { type: 'application/ld+json', content: jsonLDData.organizationSchema },
-  ];
-
-  scripts.forEach(({ type, content }) => {
-    const script = document.createElement('script');
-    script.type = type;
-    script.textContent = content;
-    fragment.appendChild(script);
-  });
-
-  document.head.appendChild(fragment);
-}
