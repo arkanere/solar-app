@@ -12,6 +12,29 @@ interface ClaimRequestRow {
 	id: number;
 }
 
+interface NewLeadRow {
+	id: number;
+	name: string;
+	phone: string;
+	email: string | null;
+	pin_code: string;
+	district: string | null;
+	type: string | null;
+	comment: string | null;
+	created_at: string;
+	svnotes: string | null;
+	sv_comment_for_businesses: string | null;
+	urlparams: string | null;
+	isvisible: boolean;
+	category: number;
+	stage: number;
+	status: boolean;
+	claim_count: number;
+	original_id: number | null;
+	business_id: number | null;
+	business_notes: string | null;
+}
+
 interface LeadDataRow {
 	id: number;
 	name: string;
@@ -66,6 +89,7 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 		// Start a transaction
 		const client = await pool.connect();
 		let emailData: EmailData | null = null; // Store email data to send after transaction
+		let newLead: NewLeadRow | null = null;
 
 		try {
 			await client.query('BEGIN');
@@ -146,11 +170,12 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 				const originalLead = leadDataResult.rows[0];
 
 				// Create new lead entry for the allocated business
-				await client.query(
+				const newLeadResult = await client.query<NewLeadRow>(
 					`INSERT INTO leaddata
                      (name, phone, email, pin_code, type, comment, created_at, svnotes, sv_comment_for_businesses, urlparams, isvisible, category, district, stage, status, claim_count, original_id, business_id)
                     VALUES
-                     ($1, $2, $3, $4, $5, $6, NOW(), $7, $8, $9, true, 2, $10, 0, true, 0, $11, $12)`,
+                     ($1, $2, $3, $4, $5, $6, NOW(), $7, $8, $9, true, 2, $10, 0, true, 0, $11, $12)
+                    RETURNING *`,
 					[
 						originalLead.name,
 						originalLead.phone,
@@ -166,6 +191,7 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 						business_id // Set business_id from claim request
 					]
 				);
+				newLead = newLeadResult.rows[0] ?? null;
 			}
 
 			// Prepare email data but don't send yet (move outside transaction)
@@ -203,7 +229,7 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 			}
 		}
 
-		return json({ success: true });
+		return json({ success: true, newLead });
 	} catch (error) {
 		console.error('❌ Database connection error:', error);
 		return json(

@@ -45,8 +45,10 @@
 
 			if (result.success) {
 				leads = leads.filter((lead) => lead.id !== leadId);
+				if (result.newLead) {
+					leads = [result.newLead, ...leads];
+				}
 				toast.success('Lead claimed and allocated successfully!');
-				window.location.reload();
 			} else {
 				toast.error(result.error);
 			}

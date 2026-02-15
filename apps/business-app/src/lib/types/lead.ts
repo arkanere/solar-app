@@ -173,6 +173,7 @@ export interface LeadApiResponse {
 export interface ClaimApiResponse {
 	success: boolean;
 	error?: string;
+	newLead?: LeadData;
 }
 
 /**
