@@ -36,7 +36,6 @@
 	import * as Alert from '$lib/components/ui/alert';
 	import { Badge } from '$lib/components/ui/badge';
 	import { cn } from '$lib/utils';
-	import { getRelativeTime } from '$lib/in/utils/lead-helpers';
 	import { deleteLeadAPI } from '$lib/in/actions/lead-api';
 
 	let {
@@ -54,80 +53,48 @@
 	let leadToDelete: Lead | null = $state(null);
 	let isDeleting = $state(false);
 
-	// Filter state (specific to CRM view)
-	let selectedCategory = $state('all');
+	// Tab state: derived initial value from whether claimed leads exist
+	let activeTab = $state<'available' | 'my-leads'>('available');
+
+	// Stage/status filter state (only applies to My Leads tab)
 	let selectedStage = $state('all');
 	let selectedStatus = $state('all');
-	let filteredLeads: Lead[] = $state([]);
 
-	// Dummy test lead for new users
-	const dummyLead = {
-		name: 'John Doe',
-		received_at: new Date().toISOString(),
-		phone: '+91 0123456789',
-		email: 'dummy@email.com',
-		pin_code: '110001',
-		type: 'Residential - Independent Home',
-		comment: 'I want to install 3kW at my home. Please call me!'
-	};
+	// Derive available (category 1) and my leads (category 2, 3, null/undefined)
+	let availableLeads = $derived(leads.filter((l) => l.category === 1));
+	let myLeads = $derived(
+		leads.filter((l) => l.category !== 1)
+	);
 
-	// Pure filter function - data transformation only
-	function filterLeads() {
-		filteredLeads = leads.filter((lead) => {
-			// Category filter
-			if (selectedCategory !== 'all') {
-				const categoryValue = parseInt(selectedCategory);
-				// Handle exclusive leads (category 3 or null/undefined)
-				if (categoryValue === 3) {
-					if (lead.category !== 3 && lead.category !== null && lead.category !== undefined) {
-						return false;
-					}
-				} else {
-					if (lead.category !== categoryValue) {
-						return false;
-					}
-				}
-			}
-
-			// Stage filter
-			if (selectedStage !== 'all') {
-				const stageValue = parseInt(selectedStage);
-				if (lead.stage !== stageValue) {
-					return false;
-				}
-			}
-
-			// Status filter
-			if (selectedStatus !== 'all') {
-				const statusValue = selectedStatus === 'true';
-				if (lead.status !== statusValue) {
-					return false;
-				}
-			}
-
-			return true;
-		});
-	}
-
-	// Handle filter changes
-	function handleFilterChange(filters: {
-		selectedCategory: string;
-		selectedStage: string;
-		selectedStatus: string;
-	}) {
-		selectedCategory = filters.selectedCategory;
-		selectedStage = filters.selectedStage;
-		selectedStatus = filters.selectedStatus;
-		filterLeads();
-	}
-
-	// Update filtered leads when leads change
+	// Set default tab based on claimed leads on first load
 	$effect(() => {
-		leads;
-		filterLeads();
+		if (leads.length > 0 && myLeads.length > 0) {
+			activeTab = 'my-leads';
+		}
 	});
 
-	// Event handlers - simple data transformations
+	// Filtered my leads — applies stage/status only
+	let filteredMyLeads = $derived(
+		myLeads.filter((lead) => {
+			if (selectedStage !== 'all' && lead.stage !== parseInt(selectedStage)) return false;
+			if (selectedStatus !== 'all' && lead.status !== (selectedStatus === 'true')) return false;
+			return true;
+		})
+	);
+
+	// Count badges
+	let availableCount = $derived(availableLeads.length);
+	// Active leads not yet won
+	let myLeadsActionableCount = $derived(
+		myLeads.filter((l) => l.status === true && l.stage < 3).length
+	);
+
+	function handleFilterChange(filters: { selectedStage: string; selectedStatus: string }) {
+		selectedStage = filters.selectedStage;
+		selectedStatus = filters.selectedStatus;
+	}
+
+	// Event handlers
 	function handleLeadUpdate(event: CustomEvent) {
 		const { leadId, lead: updatedLead } = event.detail;
 		leads = leads.map((l) => (l.id === leadId ? { ...l, ...updatedLead } : l));
@@ -185,101 +152,179 @@
 <!-- LEAD DATA SECTION -->
 <section id="lead-data">
 	<h2 class="text-2xl font-semibold text-left text-accent mb-4">Customer Inquiry</h2>
+
 	{#if errorMessage}
 		<Alert.Root variant="destructive" class="mb-4">
 			<Alert.Title>Error</Alert.Title>
 			<Alert.Description>{errorMessage}</Alert.Description>
 		</Alert.Root>
 	{:else}
-		{#if leads.length > 0}
-			<LeadStageFilter
-				bind:selectedCategory
-				bind:selectedStage
-				bind:selectedStatus
-				onFilterChange={handleFilterChange}
-			/>
+		<!-- Tab toggle -->
+		<div class="flex gap-1 p-1 bg-muted rounded-lg mb-6 max-w-[540px] mx-auto">
+			<button
+				class={cn(
+					'flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors',
+					activeTab === 'available'
+						? 'bg-background shadow-sm text-foreground'
+						: 'text-muted-foreground hover:text-foreground'
+				)}
+				onclick={() => (activeTab = 'available')}
+			>
+				Available Leads
+				{#if availableCount > 0}
+					<span
+						class={cn(
+							'inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-xs font-semibold',
+							activeTab === 'available'
+								? 'bg-primary text-primary-foreground'
+								: 'bg-muted-foreground/20 text-muted-foreground'
+						)}
+					>
+						{availableCount}
+					</span>
+				{/if}
+			</button>
+			<button
+				class={cn(
+					'flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors',
+					activeTab === 'my-leads'
+						? 'bg-background shadow-sm text-foreground'
+						: 'text-muted-foreground hover:text-foreground'
+				)}
+				onclick={() => (activeTab = 'my-leads')}
+			>
+				My Leads
+				{#if myLeadsActionableCount > 0}
+					<span
+						class={cn(
+							'inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-xs font-semibold',
+							activeTab === 'my-leads'
+								? 'bg-primary text-primary-foreground'
+								: 'bg-muted-foreground/20 text-muted-foreground'
+						)}
+					>
+						{myLeadsActionableCount}
+					</span>
+				{/if}
+			</button>
+		</div>
 
-			{#if filteredLeads.length === 0}
-				<Card.Root class="border-2 border-dashed my-4">
+		<!-- Available Leads tab -->
+		{#if activeTab === 'available'}
+			<ul class="list-none p-0 w-full max-w-[540px] mx-auto">
+				{#if availableLeads.length > 0}
+					{#each availableLeads as lead}
+						<LeadTile
+							{lead}
+							{businessInfo}
+							{isClaiming}
+							on:update={handleLeadUpdate}
+							on:claim={handleLeadClaim}
+							on:proposal={handleProposalOpen}
+							on:delete={handleDeleteRequest}
+						/>
+					{/each}
+				{:else if leads.length === 0}
+					<!-- Dummy test lead for brand new users -->
+					<li class="mb-8">
+						<Card.Root class="border-2 border-dashed opacity-70">
+							<Card.Header class="border-b">
+								<Card.Title class="flex items-center gap-2">
+									John Doe
+									<Badge variant="outline" class="bg-warning-muted text-warning">Test Lead</Badge>
+								</Card.Title>
+							</Card.Header>
+							<Card.Content class="p-5">
+								<p class="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+									<Clock class="h-3.5 w-3.5 shrink-0" />
+									<span class="font-medium">Received:</span>
+									<span class="font-medium text-success">Just now</span>
+								</p>
+								<div class="flex items-center justify-between gap-4 mb-4 flex-wrap">
+									<p class="text-foreground m-0"><strong>Phone:</strong> +91 0123456789</p>
+									<Button variant="default" disabled class="opacity-50">
+										<Phone class="h-4 w-4 mr-2" />
+										CALL NOW
+									</Button>
+								</div>
+								<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+									<p class="text-foreground m-0">
+										<strong class="text-foreground-secondary">Email:</strong> dummy@email.com
+									</p>
+									<p class="text-foreground m-0">
+										<strong class="text-foreground-secondary">Pin Code:</strong> 110001
+									</p>
+									<p class="text-foreground m-0">
+										<strong class="text-foreground-secondary">Type:</strong> Residential - Independent
+										Home
+									</p>
+									<p class="text-foreground m-0 sm:col-span-2">
+										<strong class="text-foreground-secondary">Customer Comment:</strong> I want to
+										install 3kW at my home. Please call me!
+									</p>
+								</div>
+							</Card.Content>
+						</Card.Root>
+					</li>
+				{:else}
+					<Card.Root class="border-2 border-dashed my-4">
+						<Card.Content class="text-center p-8">
+							<p class="font-semibold text-lg text-muted-foreground mb-2">No available leads right now.</p>
+							<p class="text-sm text-muted-foreground italic">
+								New leads will appear here as they come in.
+							</p>
+						</Card.Content>
+					</Card.Root>
+				{/if}
+			</ul>
+		{/if}
+
+		<!-- My Leads tab -->
+		{#if activeTab === 'my-leads'}
+			{#if myLeads.length > 0}
+				<LeadStageFilter
+					bind:selectedStage
+					bind:selectedStatus
+					onFilterChange={handleFilterChange}
+				/>
+
+				{#if filteredMyLeads.length === 0}
+					<Card.Root class="border-2 border-dashed my-4">
+						<Card.Content class="text-center p-8">
+							<p class="font-semibold text-lg text-muted-foreground mb-2">
+								No leads match the selected filters.
+							</p>
+							<p class="text-sm text-muted-foreground italic">
+								Try adjusting your filters or clearing them to see more results.
+							</p>
+						</Card.Content>
+					</Card.Root>
+				{/if}
+
+				<ul class="list-none p-0 w-full max-w-[540px] mx-auto">
+					{#each filteredMyLeads as lead}
+						<LeadTile
+							{lead}
+							{businessInfo}
+							{isClaiming}
+							on:update={handleLeadUpdate}
+							on:claim={handleLeadClaim}
+							on:proposal={handleProposalOpen}
+							on:delete={handleDeleteRequest}
+						/>
+					{/each}
+				</ul>
+			{:else}
+				<Card.Root class="border-2 border-dashed my-4 max-w-[540px] mx-auto">
 					<Card.Content class="text-center p-8">
-						<p class="font-semibold text-lg text-muted-foreground mb-2">
-							No leads match the selected filters.
-						</p>
+						<p class="font-semibold text-lg text-muted-foreground mb-2">No claimed leads yet.</p>
 						<p class="text-sm text-muted-foreground italic">
-							Try adjusting your filters or clearing them to see more results.
+							Claim leads from the Available Leads tab to start managing them.
 						</p>
 					</Card.Content>
 				</Card.Root>
 			{/if}
 		{/if}
-
-		<ul class="list-none p-0 w-full max-w-[540px] mx-auto">
-			{#if leads.length > 0}
-				{#each filteredLeads as lead}
-					<LeadTile
-						{lead}
-						{businessInfo}
-						{isClaiming}
-						on:update={handleLeadUpdate}
-						on:claim={handleLeadClaim}
-						on:proposal={handleProposalOpen}
-						on:delete={handleDeleteRequest}
-					/>
-				{/each}
-			{:else}
-				<!-- Display dummy test lead when no leads exist -->
-				<li class="mb-8">
-					<Card.Root class="border-2 border-dashed opacity-70">
-						<Card.Header class="border-b">
-							<Card.Title class="flex items-center gap-2">
-								{dummyLead.name}
-								<Badge variant="outline" class="bg-warning-muted text-warning">Test Lead</Badge>
-							</Card.Title>
-						</Card.Header>
-						<Card.Content class="p-5">
-							<p class="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-								<Clock class="h-3.5 w-3.5 shrink-0" />
-								<span class="font-medium">Received:</span>
-								<span
-									class={cn(
-										'font-medium',
-										getRelativeTime(dummyLead.received_at).variant === 'time-fresh' && 'text-success',
-										getRelativeTime(dummyLead.received_at).variant === 'time-recent' && 'text-warning',
-										getRelativeTime(dummyLead.received_at).variant === 'time-old' &&
-											'text-muted-foreground'
-									)}>{getRelativeTime(dummyLead.received_at).text}</span
-								>
-							</p>
-							<div class="flex items-center justify-between gap-4 mb-4 flex-wrap">
-								<p class="text-foreground m-0"><strong>Phone:</strong> {dummyLead.phone}</p>
-								<Button variant="default" disabled class="opacity-50">
-									<Phone class="h-4 w-4 mr-2" />
-									CALL NOW
-								</Button>
-							</div>
-							<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-								<p class="text-foreground m-0">
-									<strong class="text-foreground-secondary">Email:</strong>
-									{dummyLead.email}
-								</p>
-								<p class="text-foreground m-0">
-									<strong class="text-foreground-secondary">Pin Code:</strong>
-									{dummyLead.pin_code}
-								</p>
-								<p class="text-foreground m-0">
-									<strong class="text-foreground-secondary">Type:</strong>
-									{dummyLead.type}
-								</p>
-								<p class="text-foreground m-0 sm:col-span-2">
-									<strong class="text-foreground-secondary">Customer Comment:</strong>
-									{dummyLead.comment}
-								</p>
-							</div>
-						</Card.Content>
-					</Card.Root>
-				</li>
-			{/if}
-		</ul>
 	{/if}
 </section>
 
