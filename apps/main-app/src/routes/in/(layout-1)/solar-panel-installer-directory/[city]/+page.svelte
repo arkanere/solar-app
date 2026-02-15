@@ -246,7 +246,7 @@
         <p class="text-lg leading-relaxed text-muted-foreground mb-8 max-w-2xl mx-auto">
           <strong>Are you a solar installer in this area? </strong>
         </p>
-        <Button class="font-semibold text-lg px-8 py-4 uppercase tracking-wider" onclick={() => (window.location.href = "/in/business-form")}>
+        <Button class="font-semibold text-lg px-8 py-4 uppercase tracking-wider whitespace-normal" onclick={() => (window.location.href = "/in/business-form")}>
           Join Our Network - Register Your Business
         </Button>
       </div>
