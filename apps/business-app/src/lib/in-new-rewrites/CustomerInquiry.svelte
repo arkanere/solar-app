@@ -26,7 +26,6 @@
 
 <script lang="ts">
 	import { toast } from 'svelte-sonner';
-	import { Clock, Phone } from '@lucide/svelte';
 	import LeadStageFilter from './LeadStageFilter.svelte';
 	import ProposalFormModal from './ProposalFormModal.svelte';
 	import LeadTile from './LeadTile.svelte';
@@ -34,7 +33,6 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Card from '$lib/components/ui/card';
 	import * as Alert from '$lib/components/ui/alert';
-	import { Badge } from '$lib/components/ui/badge';
 	import { cn } from '$lib/utils';
 	import { deleteLeadAPI } from '$lib/in/actions/lead-api';
 
@@ -226,46 +224,24 @@
 					{/each}
 				{:else if leads.length === 0}
 					<!-- Dummy test lead for brand new users -->
-					<li class="mb-8">
-						<Card.Root class="border-2 border-dashed opacity-70">
-							<Card.Header class="border-b">
-								<Card.Title class="flex items-center gap-2">
-									John Doe
-									<Badge variant="outline" class="bg-warning-muted text-warning">Test Lead</Badge>
-								</Card.Title>
-							</Card.Header>
-							<Card.Content class="p-5">
-								<p class="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-									<Clock class="h-3.5 w-3.5 shrink-0" />
-									<span class="font-medium">Received:</span>
-									<span class="font-medium text-success">Just now</span>
-								</p>
-								<div class="flex items-center justify-between gap-4 mb-4 flex-wrap">
-									<p class="text-foreground m-0"><strong>Phone:</strong> +91 0123456789</p>
-									<Button variant="default" disabled class="opacity-50">
-										<Phone class="h-4 w-4 mr-2" />
-										CALL NOW
-									</Button>
-								</div>
-								<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-									<p class="text-foreground m-0">
-										<strong class="text-foreground-secondary">Email:</strong> dummy@email.com
-									</p>
-									<p class="text-foreground m-0">
-										<strong class="text-foreground-secondary">Pin Code:</strong> 110001
-									</p>
-									<p class="text-foreground m-0">
-										<strong class="text-foreground-secondary">Type:</strong> Residential - Independent
-										Home
-									</p>
-									<p class="text-foreground m-0 sm:col-span-2">
-										<strong class="text-foreground-secondary">Customer Comment:</strong> I want to
-										install 3kW at my home. Please call me!
-									</p>
-								</div>
-							</Card.Content>
-						</Card.Root>
-					</li>
+					<LeadTile
+						lead={{
+							id: 0,
+							name: 'John Doe',
+							phone: '+91 0123456789',
+							email: 'dummy@email.com',
+							stage: 0,
+							status: true,
+							category: 1,
+							business_notes: '',
+							received_at: new Date().toISOString(),
+							pin_code: '110001',
+							type: 'Residential - Independent Home',
+							comment: 'I want to install 3kW at my home. Please call me!'
+						}}
+						businessInfo={{}}
+						isDemo={true}
+					/>
 				{:else}
 					<Card.Root class="border-2 border-dashed my-4">
 						<Card.Content class="text-center p-8">
