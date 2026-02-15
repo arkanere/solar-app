@@ -157,7 +157,7 @@
 			<!-- Location -->
 			<div class="flex items-center gap-2 text-sm">
 				<span class="font-semibold text-muted-foreground">Location:</span>
-				<span class="font-medium text-foreground">{lead.pin_code}</span>
+				<span class="font-medium text-foreground">{lead.pin_code}{lead.district ? ` (${lead.district})` : ''}</span>
 			</div>
 
 			<!-- Customer Comment -->
