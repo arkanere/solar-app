@@ -4,14 +4,13 @@
   import RecentProjectsHome from "$lib/in-new-rewrites/RecentProjectsHome.svelte";
   import LeadForm from "$lib/in-new-rewrites/LeadForm.svelte";
   import SolarComparisonTable from "$lib/in-new-rewrites/SolarComparisonTable.svelte";
+  import AboutSolarVipani from "$lib/in-new-rewrites/AboutSolarVipani.svelte";
 
   // Receive data from server
   let { data } = $props();
 
   // Initialize component state
-  let AboutSolarVipani = $state(null);
   let ChatbotPopup = $state(null);
-  let shouldLoadAbout = $state(false);
   let shouldLoadChatbot = $state(false);
   let videoLoaded = $state(false);
   let videoRef = $state(null);
@@ -32,26 +31,11 @@
       });
     }
 
-    // Load AboutSolarVipani component (bottom of page) with intersection observer
-    const aboutObserver = new IntersectionObserver(
-      async (entries) => {
-        if (entries[0].isIntersecting) {
-          const module = await import("$lib/in-new-rewrites/AboutSolarVipani.svelte");
-          AboutSolarVipani = module.default;
-          shouldLoadAbout = true;
-          aboutObserver.disconnect();
-        }
-      },
-      { rootMargin: "200px" },
-    );
-
     // Show chatbot popup when user reaches bottom of About section
     let chatbotTimer = null;
 
     const aboutSection = document.querySelector("#about-section");
     if (aboutSection) {
-      aboutObserver.observe(aboutSection);
-
       // Create a sentinel element at the bottom of the about section
       const bottomSentinel = document.createElement('div');
       bottomSentinel.style.position = 'absolute';
@@ -187,12 +171,7 @@
       "@type": "WebSite",
       "name": "Solar Vipani",
       "url": "https://solarvipani.com",
-      "description": "Find verified solar panel installers across India",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://solarvipani.com/solar-panel-installer-directory?search={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
+      "description": "Find verified solar panel installers across India"
     }
   </script>
 
@@ -473,17 +452,15 @@
       </div>
     </section>
 
-    <!-- About Section (Lazy Loaded) -->
+    <!-- About Section -->
     <div id="about-section">
-      {#if shouldLoadAbout && AboutSolarVipani}
-        {@render AboutSolarVipani()}
-      {/if}
+      <AboutSolarVipani />
     </div>
   </div>
 </main>
 
 <!-- Chatbot Popup (Lazy Loaded) -->
 {#if shouldLoadChatbot && ChatbotPopup}
-  {@render ChatbotPopup()}
+  <svelte:component this={ChatbotPopup} />
 {/if}
 
