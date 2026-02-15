@@ -26,12 +26,14 @@
 		lead: any;
 		businessInfo: Record<string, any>;
 		isClaiming?: boolean;
+		isDemo?: boolean;
 	};
 
 	let {
 		lead,
 		businessInfo,
-		isClaiming = false
+		isClaiming = false,
+		isDemo = false
 	}: LeadTileProps = $props();
 
 	const dispatch = createEventDispatcher();
@@ -126,19 +128,27 @@
 </script>
 
 <Card.Root
-	class="mb-8 p-0 break-words transition-all duration-200 overflow-hidden list-none hover:shadow-md"
+	class={cn(
+		'mb-8 p-0 break-words transition-all duration-200 overflow-hidden list-none hover:shadow-md',
+		isDemo && 'border-2 border-dashed opacity-70'
+	)}
 >
 	<!-- HEADER SECTION - Identity & Status -->
 	<Card.Header
 		class="flex-row justify-between items-center py-5 pb-2 border-b max-[480px]:flex-col max-[480px]:items-start max-[480px]:gap-3"
 	>
 		<Card.Title class="text-lg font-bold text-foreground leading-tight">{lead.name}</Card.Title>
-		<Badge
-			variant={lead.category === 1 ? 'outline' : lead.category === 2 ? 'secondary' : 'default'}
-			class="max-[480px]:self-start"
-		>
-			{getCategoryLabel(lead.category)}
-		</Badge>
+		<div class="flex items-center gap-2 max-[480px]:self-start">
+			{#if isDemo}
+				<Badge variant="outline" class="bg-warning-muted text-warning">Test Lead</Badge>
+			{:else}
+				<Badge
+					variant={lead.category === 1 ? 'outline' : lead.category === 2 ? 'secondary' : 'default'}
+				>
+					{getCategoryLabel(lead.category)}
+				</Badge>
+			{/if}
+		</div>
 	</Card.Header>
 
 	<!-- COMPACT INFO - Always Visible -->
@@ -179,7 +189,7 @@
 						<Button
 							class="w-full bg-success text-success-foreground hover:bg-success/90"
 							onclick={handleClaim}
-							disabled={isClaiming}
+							disabled={isClaiming || isDemo}
 						>
 							{isClaiming ? 'Claiming...' : 'Claim Now (Free)'}
 						</Button>
@@ -192,6 +202,7 @@
 						class="w-full"
 						onclick={makeCall}
 						title="Call {lead.name}"
+						disabled={isDemo}
 					>
 						<Phone size={16} />
 						Call Now
@@ -205,6 +216,7 @@
 			variant="ghost"
 			class="w-full rounded-none border-y border-border text-muted-foreground hover:text-foreground"
 			onclick={toggleLeadDetails}
+			disabled={isDemo}
 			aria-expanded={isExpanded}
 			aria-controls="details-{lead.id}"
 		>
