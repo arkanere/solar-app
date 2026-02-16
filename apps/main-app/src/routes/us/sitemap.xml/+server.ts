@@ -5,16 +5,16 @@ import { POSTGRES_URL } from '$env/static/private';
 const BASE_URL = 'https://solarvipani.com';
 
 const STATIC_PAGES = [
-	{ path: '/in/', changefreq: 'monthly', priority: '1.0' },
-	{ path: '/in/about-us', changefreq: 'monthly', priority: '0.8' },
-	{ path: '/in/terms-of-use', changefreq: 'monthly', priority: '0.8' },
-	{ path: '/in/privacy-policy', changefreq: 'monthly', priority: '0.8' },
-	{ path: '/in/data-deletion', changefreq: 'monthly', priority: '0.8' },
-	{ path: '/in/business-listing', changefreq: 'monthly', priority: '0.8' },
-	{ path: '/in/business-form', changefreq: 'monthly', priority: '0.8' },
-	{ path: '/in/solar-panel-installer-directory', changefreq: 'monthly', priority: '1.0' },
-	{ path: '/in/blogs', changefreq: 'monthly', priority: '0.8' },
-	{ path: '/in/recent-solar-installation-projects', changefreq: 'monthly', priority: '0.8' }
+	{ path: '/us/', changefreq: 'monthly', priority: '1.0' },
+	{ path: '/us/about-us', changefreq: 'monthly', priority: '0.8' },
+	{ path: '/us/terms-of-use', changefreq: 'monthly', priority: '0.8' },
+	{ path: '/us/privacy-policy', changefreq: 'monthly', priority: '0.8' },
+	{ path: '/us/data-deletion', changefreq: 'monthly', priority: '0.8' },
+	{ path: '/us/business-listing', changefreq: 'monthly', priority: '0.8' },
+	{ path: '/us/business-form', changefreq: 'monthly', priority: '0.8' },
+	{ path: '/us/solar-panel-installer-directory', changefreq: 'monthly', priority: '1.0' },
+	{ path: '/us/blogs', changefreq: 'monthly', priority: '0.8' },
+	{ path: '/us/recent-solar-installation-projects', changefreq: 'monthly', priority: '0.8' }
 ];
 
 function cityToSlug(city: string): string {
@@ -39,9 +39,9 @@ export const GET: RequestHandler = async () => {
 	const today = new Date().toISOString().split('T')[0];
 
 	const [citiesResult, businessesResult, blogsResult] = await Promise.all([
-		pool.query('SELECT DISTINCT city FROM locations ORDER BY city ASC'),
-		pool.query('SELECT slug FROM businesses_1 WHERE isvisible = true ORDER BY slug ASC'),
-		pool.query('SELECT slug, updated_at FROM in_blogs WHERE status = \'published\' ORDER BY updated_at DESC')
+		pool.query('SELECT DISTINCT city FROM us_locations ORDER BY city ASC'),
+		pool.query('SELECT slug FROM us_businesses WHERE isvisible = true ORDER BY slug ASC'),
+		pool.query('SELECT slug, updated_at FROM us_blogs WHERE status = \'published\' ORDER BY updated_at DESC')
 	]);
 
 	const parts: string[] = [
@@ -56,14 +56,14 @@ export const GET: RequestHandler = async () => {
 	for (const row of citiesResult.rows) {
 		const slug = cityToSlug(row.city);
 		parts.push(
-			urlEntry(`${BASE_URL}/in/solar-panel-installer-directory/${slug}`, today, 'weekly', '0.7')
+			urlEntry(`${BASE_URL}/us/solar-panel-installer-directory/${slug}`, today, 'weekly', '0.7')
 		);
 	}
 
 	for (const row of businessesResult.rows) {
 		if (row.slug) {
 			parts.push(
-				urlEntry(`${BASE_URL}/in/solar-panel-installer/${row.slug}`, today, 'monthly', '0.8')
+				urlEntry(`${BASE_URL}/us/solar-panel-installer/${row.slug}`, today, 'monthly', '0.8')
 			);
 		}
 	}
@@ -72,7 +72,7 @@ export const GET: RequestHandler = async () => {
 		if (row.slug) {
 			const lastmod = row.updated_at ? row.updated_at.toISOString().split('T')[0] : today;
 			parts.push(
-				urlEntry(`${BASE_URL}/in/blogs/${row.slug}`, lastmod, 'monthly', '0.6')
+				urlEntry(`${BASE_URL}/us/blogs/${row.slug}`, lastmod, 'monthly', '0.6')
 			);
 		}
 	}
