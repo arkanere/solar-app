@@ -288,10 +288,11 @@
 <!-- Desktop Sidebar -->
 <aside
 	class={cn(
-		'fixed top-0 left-0 h-screen flex flex-col z-sidebar overflow-x-hidden overflow-y-auto transition-all duration-300 ease-out',
+		'fixed left-0 flex flex-col z-sidebar overflow-x-hidden overflow-y-auto transition-all duration-300 ease-out',
 		'bg-card border-r border-border shadow-md hidden md:flex',
 		expanded ? 'w-[250px]' : 'w-[60px]'
 	)}
+	style="top: var(--ribbon-height); height: calc(100vh - var(--ribbon-height));"
 >
 	<!-- Brand Header -->
 	<div class="p-4 flex items-center justify-between min-h-[70px]">

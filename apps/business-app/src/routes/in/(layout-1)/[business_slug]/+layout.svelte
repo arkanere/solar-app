@@ -172,7 +172,7 @@
 	/* Mobile Menu Toggle Button */
 	.mobile-menu-toggle {
 		position: fixed;
-		top: 1rem;
+		top: calc(1rem + var(--ribbon-height));
 		left: 1rem;
 		z-index: calc(var(--z-sidebar) + 1);
 		display: none;
@@ -203,6 +203,7 @@
 	/* Layout Container */
 	.layout-container {
 		margin-left: 250px;
+		padding-top: var(--ribbon-height);
 		transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 		min-height: 100vh;
 		overflow-x: hidden; /* Prevents horizontal scroll without breaking fixed-position modals */
