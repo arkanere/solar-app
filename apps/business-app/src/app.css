@@ -260,6 +260,8 @@
 
 /* ===== CSS CUSTOM PROPERTIES FOR HSL VALUES ===== */
 :root {
+  --ribbon-height: 2.25rem;
+
   /* ===== LIGHT MODE (Linear-inspired) ===== */
 
   /* Backgrounds - Clean whites and light grays */
