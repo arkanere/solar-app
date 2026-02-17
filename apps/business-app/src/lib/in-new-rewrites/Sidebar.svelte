@@ -12,7 +12,6 @@
 		LayoutDashboard,
 		Users,
 		UserPlus,
-		Inbox,
 		Building2,
 		Handshake,
 		FolderKanban,
@@ -68,8 +67,7 @@
 			icon: Users,
 			items: [
 				{ label: 'Add Lead', icon: UserPlus, action: 'addLead', type: 'modal' },
-				{ label: 'CRM', icon: Users, href: `/in/${businessSlug}/crm`, type: 'link' },
-				{ label: 'Open Inquiries', icon: Inbox, href: `/in/${businessSlug}/open-inquiries`, type: 'link' }
+				{ label: 'CRM', icon: Users, href: `/in/${businessSlug}/crm`, type: 'link' }
 			]
 		},
 		{
