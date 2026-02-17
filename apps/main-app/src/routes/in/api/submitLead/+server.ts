@@ -11,28 +11,30 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 		const data: LeadData = await request.json();
 		const { name, phone, pinCode, type, comment, urlParam, email } = data;
 
-		// Get district from pincode mapping
+		// Get district and state from pincode mapping
 		let district = null;
+		let state = null;
 		if (pinCode) {
 			try {
 				const districtQuery = `
-					SELECT district FROM pincode_mapping
+					SELECT district, state FROM pincode_mapping
 					WHERE pincode = $1
 					LIMIT 1
 				`;
-				const districtResult = await pool.query<{ district: string }>(districtQuery, [pinCode]);
+				const districtResult = await pool.query<{ district: string; state: string }>(districtQuery, [pinCode]);
 				if (districtResult.rows.length > 0) {
 					district = districtResult.rows[0].district;
+					state = districtResult.rows[0].state;
 				}
 			} catch (districtError) {
 				console.log('District lookup failed for pincode:', pinCode, districtError);
-				// Continue with null district if lookup fails
+				// Continue with null district/state if lookup fails
 			}
 		}
 
 		const insertQuery = `
-            INSERT INTO LeadData (name, phone, pin_code, type, comment, urlparams, email, district)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            INSERT INTO LeadData (name, phone, pin_code, type, comment, urlparams, email, district, state)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING id, reference_uuid
         `;
 
@@ -44,7 +46,8 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 			comment,
 			urlParam,
 			email || null,
-			district
+			district,
+			state
 		]);
 
 		const leadId = result.rows[0].id;
