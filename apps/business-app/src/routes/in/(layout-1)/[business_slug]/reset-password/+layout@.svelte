@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
 	import { theme } from '$lib/stores/theme.svelte';
 	import { Toaster } from '$lib/components/ui/sonner';
-	import '../../../../app.css';
+	import '../../../../../app.css';
 
 	interface Props {
 		children: Snippet;
