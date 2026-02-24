@@ -34,9 +34,9 @@ export const load: PageServerLoad = async ({ params }) => {
 		// Directly query to find the district of the city (case-insensitive)
 		const districtResult = await pool.query(
 			`
-      SELECT district 
-      FROM locations 
-      WHERE LOWER(city) = LOWER($1) 
+      SELECT district
+      FROM locations
+      WHERE LOWER(city) = LOWER($1)
       LIMIT 1
       `,
 			[city]
@@ -44,8 +44,8 @@ export const load: PageServerLoad = async ({ params }) => {
 
 		// If no district is found, return an error message
 		if (districtResult.rows.length === 0) {
-			return { 
-				city, 
+			return {
+				city,
 				errorMessage: `No businesses found in ${city} or its district.`,
 				subset_cities_localities: [],
 				district: '',
@@ -56,6 +56,13 @@ export const load: PageServerLoad = async ({ params }) => {
 		}
 
 		const district = districtResult.rows[0].district;
+
+		// Lookup a real pincode for this district
+		const pincodeResult = await pool.query(
+			`SELECT pincode FROM pincode_mapping WHERE LOWER(district) = LOWER($1) LIMIT 1`,
+			[district]
+		);
+		const postalCode: string | undefined = pincodeResult.rows[0]?.pincode ?? undefined;
 
 		// Fetch businesses (sorting deferred to transformation layer)
 		const districtBusinessesResult = await pool.query(
@@ -164,6 +171,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			return {
 				city,
 				district,
+				postalCode,
 				businesses: businessesWithProjects,
 				subset_cities_localities,
 				recentProjects,
@@ -174,6 +182,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			return {
 				city,
 				district,
+				postalCode,
 				subset_cities_localities,
 				recentProjects,
 				lastUpdated: new Date().toISOString(),

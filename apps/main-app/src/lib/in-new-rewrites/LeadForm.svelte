@@ -13,9 +13,10 @@
     heading?: string;
     description?: string;
     showWrapper?: boolean;
+    submitLabel?: string;
   }
 
-  let { heading = 'Share Your Details', description = '', showWrapper = true } = $props();
+  let { heading = 'Share Your Details', description = '', showWrapper = true, submitLabel = 'Get Free Quotes' } = $props();
 
   let name = $state('');
   let phone = $state('');
@@ -176,7 +177,7 @@
             class="w-full mt-[theme(--spacing-sm)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all duration-[theme(--transition-default)]"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Submitting...' : 'Get Free Quotes'}
+            {isSubmitting ? 'Submitting...' : submitLabel}
           </Button>
         </form>
       </Card.Content>
@@ -278,7 +279,7 @@
       class="w-full mt-[theme(--spacing-sm)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all duration-[theme(--transition-default)]"
       disabled={isSubmitting}
     >
-      {isSubmitting ? 'Submitting...' : 'Get Free Quotes'}
+      {isSubmitting ? 'Submitting...' : submitLabel}
     </Button>
     </form>
   </div>

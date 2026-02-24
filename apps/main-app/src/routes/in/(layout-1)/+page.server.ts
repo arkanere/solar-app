@@ -54,15 +54,19 @@ export const load: PageServerLoad = async () => {
 
 			const projectsResult = await client.query<Project>(projectsQuery);
 
+			const dateModified = new Date().toISOString().split('T')[0];
+
 			return {
 				user: null,
-				recentProjects: projectsResult.rows
+				recentProjects: projectsResult.rows,
+				dateModified
 			};
 		} catch (queryError) {
 			console.error('Database query error:', queryError);
 			return {
 				user: null,
-				recentProjects: []
+				recentProjects: [],
+				dateModified: new Date().toISOString().split('T')[0]
 			};
 		} finally {
 			client.release();
@@ -71,7 +75,8 @@ export const load: PageServerLoad = async () => {
 		console.error('Database connection error:', connectionError);
 		return {
 			user: null,
-			recentProjects: []
+			recentProjects: [],
+			dateModified: new Date().toISOString().split('T')[0]
 		};
 	}
 };

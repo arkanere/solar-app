@@ -17,6 +17,7 @@
 
   // Extract recent projects from data
   const recentProjects = $derived(data?.recentProjects || []);
+  const dateModified = $derived(data?.dateModified ?? new Date().toISOString().split('T')[0]);
 
   // Lazy load non-critical components after initial page load
   onMount(async () => {
@@ -109,7 +110,7 @@
   <meta property="og:image" content="https://solarvipani.com/logo512.png" />
   <meta property="og:image:width" content="512" />
   <meta property="og:image:height" content="512" />
-  <meta property="og:url" content="https://solarvipani.com" />
+  <meta property="og:url" content="https://solarvipani.com/in" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Solar Vipani" />
   <meta property="og:locale" content="en_IN" />
@@ -127,7 +128,7 @@
   <meta name="twitter:image" content="https://solarvipani.com/logo512.png" />
 
   <!-- Canonical URL -->
-  <link rel="canonical" href="https://solarvipani.com" />
+  <link rel="canonical" href="https://solarvipani.com/in" />
 
   <!-- Preload critical hero image for faster LCP -->
   <link
@@ -141,8 +142,7 @@
   <link rel="preconnect" href="https://res.cloudinary.com" />
 
   <!-- JSON-LD Structured Data -->
-  <script type="application/ld+json">
-    {
+  {@html `<script type="application/ld+json">${JSON.stringify({
       "@context": "https://schema.org",
       "@type": "Organization",
       "name": "Solar Vipani",
@@ -161,17 +161,115 @@
         "@type": "ContactPoint",
         "contactType": "customer service",
         "availableLanguage": ["English", "Hindi"]
-      }
+      },
+      "dateModified": dateModified
+    })}<\/script>`}
+
+  {@html `<script type="application/ld+json">${JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Solar Vipani",
+      "url": "https://solarvipani.com",
+      "description": "Find verified solar panel installers across India",
+      "dateModified": dateModified
+    })}<\/script>`}
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://solarvipani.com/in"
+        }
+      ]
     }
   </script>
 
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Solar Vipani",
-      "url": "https://solarvipani.com",
-      "description": "Find verified solar panel installers across India"
+      "@type": "HowTo",
+      "name": "How to Get Solar Installation Quotes in India",
+      "description": "Get competitive solar installation quotes from verified installers in 4 simple steps",
+      "step": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "name": "Fill the Inquiry Form",
+          "text": "Share your basic details and energy requirements to help us understand your needs."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "name": "Receive Competitive Quotes",
+          "text": "Review quotes from 2-3 solar companies, comparing costs, equipment, and terms to find the perfect match."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 3,
+          "name": "Make an Informed Choice",
+          "text": "Select a provider with complete confidence, backed by transparent, verified information."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 4,
+          "name": "Share Your Success",
+          "text": "Join our community of solar adopters by sharing your experience, helping others on their journey to clean energy."
+        }
+      ]
+    }
+  </script>
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is the cost of solar panel installation in India?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A 3 kW rooftop solar system costs ₹1.5–2.5 lakh before subsidy. After the PM Surya Ghar Yojana subsidy of up to ₹78,000, the effective cost drops significantly. Exact pricing depends on your location, panel brand, and installer. Get free quotes from 2–3 verified installers to compare."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How much government subsidy can I get under PM Surya Ghar Yojana?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Under PM Surya Ghar Muft Bijli Yojana, residential customers can get up to ₹78,000 in direct subsidy: ₹30,000 per kW for the first 2 kW, and ₹18,000 per kW for the next 1 kW (capped at 3 kW). The subsidy is credited directly to your bank account after installation."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How long does it take to install solar panels?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A typical residential rooftop solar installation takes 1–3 days for physical installation. The complete process including site survey, permits, and net metering connection usually takes 2–6 weeks depending on your state's DISCOM."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I choose a verified solar installer?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Look for installers who are MNRE empanelled, have local installation experience, provide a 5-year workmanship warranty, and offer after-sales service. Solar Vipani connects you with pre-verified installers so you can compare 2–3 quotes with confidence."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is net metering and how does it benefit me?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Net metering lets you export surplus solar energy back to the grid and earn credits on your electricity bill. When your panels produce more than you consume — typically during daytime — the excess units are credited, reducing your monthly bill to near zero in many cases."
+          }
+        }
+      ]
     }
   </script>
 
@@ -371,6 +469,48 @@
             Save up to 80% on rising electricity costs with net metering and reduce dependency on the grid
           </p>
         </div>
+      </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">
+      <div class="text-center mb-[theme(--spacing-2xl)]">
+        <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Frequently Asked Questions</h2>
+        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+          <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+        </div>
+      </div>
+      <div class="max-w-3xl mx-auto divide-y divide-border">
+        {#each [
+          {
+            q: "What is the cost of solar panel installation in India?",
+            a: "A 3 kW rooftop solar system costs ₹1.5–2.5 lakh before subsidy. After the PM Surya Ghar Yojana subsidy of up to ₹78,000, the effective cost drops significantly. Exact pricing depends on your location, panel brand, and installer. Get free quotes from 2–3 verified installers to compare."
+          },
+          {
+            q: "How much government subsidy can I get under PM Surya Ghar Yojana?",
+            a: "Residential customers can get up to ₹78,000 in direct subsidy: ₹30,000 per kW for the first 2 kW, and ₹18,000 per kW for the next 1 kW (capped at 3 kW). The subsidy is credited directly to your bank account after installation."
+          },
+          {
+            q: "How long does it take to install solar panels?",
+            a: "Physical installation takes 1–3 days. The complete process including site survey, permits, and net metering connection usually takes 2–6 weeks depending on your state's DISCOM."
+          },
+          {
+            q: "How do I choose a verified solar installer?",
+            a: "Look for MNRE-empanelled installers with local experience, a 5-year workmanship warranty, and after-sales support. Solar Vipani connects you with pre-verified installers so you can compare 2–3 quotes with confidence."
+          },
+          {
+            q: "What is net metering and how does it benefit me?",
+            a: "Net metering lets you export surplus solar energy to the grid and earn bill credits. When your panels produce more than you consume — typically during daytime — the excess units offset your monthly bill, often reducing it to near zero."
+          }
+        ] as faq}
+          <details class="group py-[theme(--spacing-lg)] cursor-pointer">
+            <summary class="flex items-center justify-between gap-4 list-none font-semibold text-foreground text-base md:text-lg select-none">
+              <span>{faq.q}</span>
+              <span class="shrink-0 text-primary transition-transform duration-200 group-open:rotate-45">+</span>
+            </summary>
+            <p class="mt-[theme(--spacing-md)] text-foreground dark:text-foreground-secondary leading-relaxed">{faq.a}</p>
+          </details>
+        {/each}
       </div>
     </section>
 
