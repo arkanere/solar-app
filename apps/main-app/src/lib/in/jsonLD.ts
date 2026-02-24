@@ -1,34 +1,31 @@
 import { city_jsonLD1 } from './city_jsonLD1';
 
-const DEFAULT_BUSINESS = {
-  businessname: 'Solar Vipani',
-  phonenumber: '8983066701',
-};
+export function generateCityJsonLD(city: string, businesses: any[], postalCode?: string): { jsonLD1: string | null; jsonLD2: string | null; breadcrumbSchema: string; organizationSchema: string } {
+  const hasBusinesses = businesses.length > 0;
 
-export function generateCityJsonLD(city: string, businesses: any[]) {
-  const city_jsonLD_1 = city_jsonLD1(city);
+  const city_jsonLD_1 = hasBusinesses ? city_jsonLD1(city, postalCode) : null;
 
-  const city_jsonLD_2 = (businesses.length > 0 ? businesses : [DEFAULT_BUSINESS]).map((business) => ({
-    '@context': 'http://schema.org',
-    '@type': 'LocalBusiness',
-    name: business.businessname,
-    image: business.image || '',
-    address: {
-      '@type': 'PostalAddress',
-      streetAddress: business.address || '',
-      addresslocality: business.city || '',
-      addressRegion: business.state || '',
-      postalCode: business.postalcode || '',
-      addressCountry: 'IN',
-    },
-    url: `https://solarvipani.com/in/solar-panel-installer/${business.slug}`,
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: business.rating || '4.0',
-      ratingCount: business.reviewCount || '1',
-      bestRating: '5',
-    },
-  }));
+  const city_jsonLD_2 = hasBusinesses
+    ? businesses.map((business) => ({
+        '@context': 'http://schema.org',
+        '@type': 'LocalBusiness',
+        name: business.businessname,
+        image: business.image || '',
+        address: {
+          '@type': 'PostalAddress',
+          streetAddress: business.address || '',
+          addresslocality: business.city || '',
+          addressRegion: business.state || '',
+          postalCode: business.postalcode || '',
+          addressCountry: 'IN',
+        },
+        url: `https://solarvipani.com/in/solar-panel-installer/${business.slug}`,
+        areaServed: {
+          '@type': 'City',
+          name: city.replace('-', ' '),
+        },
+      }))
+    : null;
 
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
@@ -82,8 +79,8 @@ export function generateCityJsonLD(city: string, businesses: any[]) {
   };
 
   return {
-    jsonLD1: JSON.stringify(city_jsonLD_1),
-    jsonLD2: JSON.stringify(city_jsonLD_2),
+    jsonLD1: city_jsonLD_1 ? JSON.stringify(city_jsonLD_1) : null,
+    jsonLD2: city_jsonLD_2 ? JSON.stringify(city_jsonLD_2) : null,
     breadcrumbSchema: JSON.stringify(breadcrumbSchema),
     organizationSchema: JSON.stringify(organizationSchema),
   };

@@ -12,6 +12,7 @@
   import RecommendedSolarSystems from "$lib/in-new-rewrites/RecommendedSolarSystems.svelte";
   import SolarComparisonTable from "$lib/in-new-rewrites/SolarComparisonTable.svelte";
   import RecentProjectsCity from "$lib/in-new-rewrites/RecentProjectsCity.svelte";
+  import SubsidySection from "$lib/in-new-rewrites/SubsidySection.svelte";
 
   // Lazy-loaded components (non-critical)
   let AboutSolarVipani = $state();
@@ -31,14 +32,16 @@
   const businesses = $derived($page.data.businesses || []);
   const subset_cities_localities = $derived($page.data.subset_cities_localities || []);
   const district = $derived($page.data.district || "");
+  const postalCode = $derived($page.data.postalCode);
   const lastUpdated = $derived($page.data.lastUpdated);
 
-  const jsonLD = $derived(generateCityJsonLD(city, businesses));
+  const jsonLD = $derived(generateCityJsonLD(city, businesses, postalCode));
 
   // Derived FAQ list for current city
   const faqList = $derived(generateFAQ(city));
 
   const cityName = $derived(city.replace("-", " "));
+  const hasInstallers = $derived(businesses.length > 0);
 
   function toggleModal(businessName = "", businessSlug = "") {
     selectedBusinessName = businessName;
@@ -120,10 +123,12 @@
 </script>
 
 <svelte:head>
-  <title>Top Solar Panel Installers in {cityName} | Know Price | Verified Experts and Dealers</title>
+  <title>{hasInstallers ? `Top Solar Panel Installers in ${cityName} | Know Price | Verified Experts and Dealers` : `Solar Panel Installation in ${cityName} | Solar Vipani`}</title>
   <meta
     name="description"
-    content="Find the best solar panel installers in {cityName} on Solar Vipani. Start your Solar journey. Quickly Get Quotation from 2-3 Verified Solar Installers in {cityName}"
+    content={hasInstallers
+      ? `Find the best solar panel installers in ${cityName} on Solar Vipani. Start your Solar journey. Quickly Get Quotation from 2-3 Verified Solar Installers in ${cityName}`
+      : `Explore solar panel installation options in ${cityName}. Register your interest and get connected with verified solar installers as they join our network.`}
   />
 
   <!-- Canonical URL -->
@@ -133,17 +138,19 @@
   />
 
   <!-- Meta robots -->
-  <meta name="robots" content="index, follow" />
-  <meta name="googlebot" content="index, follow" />
+  <meta name="robots" content={hasInstallers ? "index, follow" : "noindex, follow"} />
+  <meta name="googlebot" content={hasInstallers ? "index, follow" : "noindex, follow"} />
 
   <!-- Open Graph Tags -->
   <meta
     property="og:title"
-    content="Top Solar Panel Installers in {cityName} | Solar Vipani"
+    content={hasInstallers ? `Top Solar Panel Installers in ${cityName} | Solar Vipani` : `Solar Panel Installation in ${cityName} | Solar Vipani`}
   />
   <meta
     property="og:description"
-    content="Find verified solar panel installers in {cityName}. Compare quotes, view profiles, and get expert solar installation services. Free consultation available."
+    content={hasInstallers
+      ? `Find verified solar panel installers in ${cityName}. Compare quotes, view profiles, and get expert solar installation services. Free consultation available.`
+      : `Explore solar panel installation options in ${cityName}. Register your interest and get connected with verified solar installers.`}
   />
   <meta property="og:type" content="website" />
   <meta
@@ -163,11 +170,13 @@
   <meta name="twitter:site" content="@solarvipani" />
   <meta
     name="twitter:title"
-    content="Top Solar Panel Installers in {cityName} | Solar Vipani"
+    content={hasInstallers ? `Top Solar Panel Installers in ${cityName} | Solar Vipani` : `Solar Panel Installation in ${cityName} | Solar Vipani`}
   />
   <meta
     name="twitter:description"
-    content="Find verified solar panel installers in {cityName}. Compare quotes and get expert installation services."
+    content={hasInstallers
+      ? `Find verified solar panel installers in ${cityName}. Compare quotes and get expert installation services.`
+      : `Explore solar panel installation options in ${cityName}. Register your interest and get connected with verified solar installers.`}
   />
   <meta name="twitter:image" content="https://solarvipani.com/logo.webp" />
   <meta
@@ -195,8 +204,12 @@
   />
 
   <!-- Structured Data (SSR) -->
-  {@html `<script type="application/ld+json">${jsonLD.jsonLD1}</script>`}
-  {@html `<script type="application/ld+json">${jsonLD.jsonLD2}</script>`}
+  {#if jsonLD.jsonLD1}
+    {@html `<script type="application/ld+json">${jsonLD.jsonLD1}</script>`}
+  {/if}
+  {#if jsonLD.jsonLD2}
+    {@html `<script type="application/ld+json">${jsonLD.jsonLD2}</script>`}
+  {/if}
   {@html `<script type="application/ld+json">${jsonLD.breadcrumbSchema}</script>`}
   {@html `<script type="application/ld+json">${jsonLD.organizationSchema}</script>`}
 </svelte:head>
@@ -204,7 +217,7 @@
 <main class="w-full bg-background text-foreground transition-colors duration-300 overflow-x-hidden">
   <div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
     <div class="text-center mb-[theme(--spacing-2xl)]">
-      <h1 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Top Rated Solar Panel Installers in {cityName}</h1>
+      <h1 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">{hasInstallers ? `Top Rated Solar Panel Installers in ${cityName}` : `Solar Panel Installation in ${cityName}`}</h1>
       {#if lastUpdated}
         <p class="text-sm text-muted-foreground mt-[theme(--spacing-lg)] italic">
           Last Update: {new Date(lastUpdated).toLocaleDateString("en-IN", {
@@ -263,6 +276,8 @@
     </section>
 
     {#if businesses.length > 0 && subset_cities_localities.length > 0}
+      <SubsidySection city={cityName} onGetQuote={scrollToLeadForm} />
+
       <RecommendedSolarSystems />
 
       <!-- Get Quotation Button after Recommended Solar Systems -->

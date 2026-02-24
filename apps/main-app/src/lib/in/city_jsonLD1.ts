@@ -3,7 +3,7 @@
 /**
  * Generates structured data for LocalBusiness
  */
-export function city_jsonLD1(city: string): Record<string, unknown> {
+export function city_jsonLD1(city: string, postalCode?: string): Record<string, unknown> {
 	return {
 		'@context': 'http://schema.org',
 		'@type': 'LocalBusiness',
@@ -13,16 +13,14 @@ export function city_jsonLD1(city: string): Record<string, unknown> {
 		address: {
 			'@type': 'PostalAddress',
 			addressRegion: city,
-			postalCode: '111111',
+			...(postalCode ? { postalCode } : {}),
 			addressCountry: 'IN'
 		},
-		priceRange: '$$$',
-		aggregateRating: {
-			'@type': 'AggregateRating',
-			ratingValue: '4.0',
-			ratingCount: '1',
-			bestRating: '5'
+		areaServed: {
+			'@type': 'City',
+			name: city.replace('-', ' ')
 		},
+		priceRange: '$$$',
 		telephone: '+918983066701'
 	};
 }

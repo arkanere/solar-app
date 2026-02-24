@@ -3,8 +3,13 @@
 
 	let { city = '', title = '', hasBusinesses = true } = $props();
 
-	const defaultTitle = $derived(city ? `Get 2-3 Free Quotes at ${city}` : 'Get Free Quote');
+	const defaultTitle = $derived(
+		hasBusinesses
+			? (city ? `Get 2-3 Free Quotes at ${city}` : 'Get Free Quote')
+			: `Be the First to Get Quotes When Installers Join ${city}`
+	);
 	const displayTitle = $derived(title || defaultTitle);
+	const submitLabel = $derived(hasBusinesses ? 'Get Free Quotes' : 'Submit');
 </script>
 
 <section id="lead-form-sv" class="mb-8 mx-auto max-w-[theme(--max-width-md)]">
@@ -14,7 +19,10 @@
 			<div class="flex justify-center items-center my-[theme(--spacing-lg)]">
 				<span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
 			</div>
+			{#if !hasBusinesses}
+				<p class="text-muted-foreground max-w-lg mx-auto">We're building our installer network in {city}. Share your details and we'll connect you with verified installers as soon as they're available.</p>
+			{/if}
 		</div>
-		<LeadForm showWrapper={false} />
+		<LeadForm showWrapper={false} {submitLabel} />
 	</div>
 </section>
