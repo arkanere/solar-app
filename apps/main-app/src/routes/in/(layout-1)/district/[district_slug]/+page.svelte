@@ -7,11 +7,31 @@
   const district = $derived($page.data.district);
   const cities = $derived($page.data.cities || []);
   const errorMessage = $derived($page.data.errorMessage);
+  const installerCount = $derived($page.data.installerCount || 0);
+  const latestProjectDate = $derived($page.data.latestProjectDate);
+  const lastUpdated = $derived($page.data.lastUpdated);
 
   // Function to format city name for URL
   function formatCitySlug(city) {
     return encodeURIComponent(city.toLowerCase());
   }
+
+  // Build ItemList structured data for SEO
+  let structuredData = $derived(JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": `Solar Panel Installers in ${district}`,
+    "description": `${installerCount} verified solar panel installers across ${cities.length} cities in ${district}.`,
+    "url": `https://solarvipani.com/in/district/${encodeURIComponent(district?.toLowerCase())}`,
+    "numberOfItems": cities.length,
+    "itemListElement": cities.map((c, i) => ({
+      "@type": "ListItem",
+      "position": i + 1,
+      "name": `Solar Panel Installers in ${c}`,
+      "url": `https://solarvipani.com/in/solar-panel-installer-directory/${encodeURIComponent(c.toLowerCase())}`,
+      "description": `Find verified solar panel installers in ${c}, ${district}`
+    }))
+  }));
 </script>
 
 <svelte:head>
@@ -22,17 +42,32 @@
     name="description"
     content="Find the best solar panel installers in {district}. Browse by city to find top solar companies in your area."
   />
+  <!-- Structured data for SEO -->
+  {@html `<script type="application/ld+json">${structuredData}</script>`}
 </svelte:head>
 
 <main class="w-full bg-background text-foreground transition-colors duration-300 overflow-x-hidden">
   <div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
     <div class="text-center mb-[theme(--spacing-2xl)]">
       <h1 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">
-        Solar Panel Installers in {district}
+        How Many Solar Installers Are Available in {district}?
       </h1>
       <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
         <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
       </div>
+      {#if installerCount > 0 || latestProjectDate || lastUpdated}
+        <div class="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+          {#if installerCount > 0}
+            <span><span class="font-semibold text-primary">{installerCount}</span> Verified {installerCount === 1 ? 'Installer' : 'Installers'}</span>
+          {/if}
+          {#if latestProjectDate}
+            <span>Latest Project: <span class="font-semibold text-primary">{new Date(latestProjectDate).toLocaleDateString("en-IN", { month: "long", year: "numeric" })}</span></span>
+          {/if}
+          {#if lastUpdated}
+            <span class="italic">Updated {new Date(lastUpdated).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</span>
+          {/if}
+        </div>
+      {/if}
     </div>
 
     {#if errorMessage}
