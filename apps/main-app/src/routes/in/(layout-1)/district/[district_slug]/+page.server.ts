@@ -41,12 +41,45 @@ export const load: PageServerLoad = async ({ params }) => {
 
 		const cities = citiesResult.rows.map((row) => row.city);
 
+		// Query installer count and latest activity for this district
+		const statsResult = await pool.query(
+			`
+			SELECT
+				COUNT(*) as installer_count,
+				MAX(created_at) as latest_installer_added
+			FROM businesses_1
+			WHERE LOWER(district) = LOWER($1) AND isvisible = true
+			`,
+			[districtFormatted]
+		);
+
+		const latestProjectResult = await pool.query(
+			`
+			SELECT MAX(p.project_date) as latest_project_date
+			FROM projects p
+			JOIN businesses_1 b ON p.business_slug = b.slug
+			WHERE LOWER(b.district) = LOWER($1) AND p.isvisible = true
+			`,
+			[districtFormatted]
+		);
+
+		const installerCount = Number(statsResult.rows[0]?.installer_count || 0);
+		const latestInstallerAdded = statsResult.rows[0]?.latest_installer_added || null;
+		const latestProjectDate = latestProjectResult.rows[0]?.latest_project_date || null;
+
+		// lastUpdated is the most recent real data change
+		const candidates = [latestInstallerAdded, latestProjectDate].filter(Boolean).map((d) => new Date(d));
+		const lastUpdated = candidates.length > 0 ? new Date(Math.max(...candidates.map((d) => d.getTime()))).toISOString() : null;
+
 		// Return cities from the district
 		if (cities.length > 0) {
 			return {
 				user: null,
 				district: districtFormatted,
-				cities: cities
+				cities: cities,
+				installerCount,
+				latestProjectDate,
+				lastUpdated
 			};
 		} else {
 			// Check if the district exists in our database
