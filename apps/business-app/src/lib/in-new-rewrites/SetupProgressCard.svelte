@@ -19,7 +19,7 @@
 	};
 
 	export type SetupProgressCardProps = {
-		business?: { description?: string; website?: string };
+		business?: { description?: string; website?: string; google_maps_link?: string; brands?: number[] };
 		businessSlug?: string;
 		projectsCount?: number;
 		claimedLeadsCount?: number;
@@ -56,13 +56,31 @@
 
 	let tasks = $derived([
 		{
-			id: 'complete-details',
-			title: 'Complete Business Details',
-			description: 'Add description',
+			id: 'add-brands',
+			title: 'Add Brands You Work With',
+			description: 'Let customers know which solar panel brands you install',
+			completed: Array.isArray(business.brands) && business.brands.length > 0,
+			action: 'openEditProfile',
+			actionLabel: 'Add Brands',
+			priority: 9
+		},
+		{
+			id: 'add-maps-link',
+			title: 'Add Google Maps Link',
+			description: 'Help customers find your business location',
+			completed: !!business.google_maps_link,
+			action: 'openEditProfile',
+			actionLabel: 'Add Maps Link',
+			priority: 8
+		},
+		{
+			id: 'add-description',
+			title: 'Add Business Description',
+			description: 'Tell customers what makes your business stand out',
 			completed: !!business.description,
 			action: 'openEditProfile',
-			actionLabel: 'Complete Profile',
-			priority: 9
+			actionLabel: 'Add Description',
+			priority: 7
 		},
 		{
 			id: 'claim-lead',
@@ -71,7 +89,7 @@
 			completed: claimedLeadsCount > 0,
 			action: `/in/${businessSlug}/crm`,
 			actionLabel: 'Go to CRM',
-			priority: 8
+			priority: 6
 		},
 		{
 			id: 'post-project',
@@ -80,8 +98,8 @@
 			completed: projectsCount > 0,
 			action: `/in/${businessSlug}/recent-projects`,
 			actionLabel: 'Add Project',
-			priority: 7
-		},
+			priority: 5
+		}
 	]);
 
 	let completedCount = $derived(tasks.filter((t) => t.completed).length);
