@@ -273,11 +273,6 @@
 			{/if}
 		</div>
 
-		<div class="flex justify-center pt-6 border-t-2 border-border">
-			<Button size="lg" onclick={() => (window.location.href = `/in/${businessSlug}/crm`)}>
-				Open CRM
-			</Button>
-		</div>
 	{:else}
 		<!-- Full CRM mode: tabs + filters -->
 		<!-- Tab toggle -->
