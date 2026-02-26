@@ -57,8 +57,9 @@ export class TokenManager {
 
 			const result = await client.query(
 				`SELECT id, businessname, slug, login_email, isvisible
-				 FROM businesses_1
-				 WHERE login_email = $1 AND isvisible = true AND slug NOT LIKE '%-branch-%'
+				 FROM businesses_1 b
+				 WHERE b.login_email = $1 AND b.isvisible = true
+				   AND NOT EXISTS (SELECT 1 FROM branches br WHERE br.branch_id = b.id AND br.isactive = true)
 				 LIMIT 1`,
 				[email]
 			);
