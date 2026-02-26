@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 	import CustomerInquiry from '$lib/in-new-rewrites/CustomerInquiry.svelte';
 	import SetupProgressCard from '$lib/in-new-rewrites/SetupProgressCard.svelte';
@@ -52,10 +53,8 @@
 
 			if (result.success) {
 				leads = leads.filter((lead) => lead.id !== leadId);
-				toast.success(
-					'Lead claimed and allocated successfully! Check your allocated leads section.'
-				);
-				window.location.reload();
+				toast.success('Lead claimed! Opening CRM...');
+				goto(`/in/${businessSlug}/crm`);
 			} else {
 				toast.error(result.error);
 			}

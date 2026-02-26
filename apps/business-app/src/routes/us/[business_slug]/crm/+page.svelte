@@ -61,13 +61,11 @@
 			const result = await response.json();
 
 			if (result.success) {
-				// Remove the claimed lead from the non-exclusive list since it's now allocated
 				leads = leads.filter((lead) => lead.id !== leadId);
-				toast.success(
-					'Lead claimed and allocated successfully! Check your allocated leads section.'
-				);
-				// Optionally refresh the page to show the new allocated lead
-				window.location.reload();
+				if (result.newLead) {
+					leads = [result.newLead, ...leads];
+				}
+				toast.success('Lead claimed successfully!');
 			} else {
 				toast.error(result.error);
 			}

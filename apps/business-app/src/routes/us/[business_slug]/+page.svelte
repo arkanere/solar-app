@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 	import { isDarkMode } from '$lib/stores/theme.svelte';
 	import ShowSupport from '$lib/us-new-rewrites/ShowSupport.svelte';
@@ -97,13 +98,9 @@
 			const result = await response.json();
 
 			if (result.success) {
-				// Remove the claimed lead from the non-exclusive list since it's now allocated
 				leads = leads.filter((lead) => lead.id !== leadId);
-				toast.success(
-					'Lead claimed and allocated successfully! Check your allocated leads section.'
-				);
-				// Optionally refresh the page to show the new allocated lead
-				window.location.reload();
+				toast.success('Lead claimed! Opening CRM...');
+				goto(`/us/${businessSlug}/crm`);
 			} else {
 				toast.error(result.error);
 			}
