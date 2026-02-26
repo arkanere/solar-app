@@ -19,7 +19,6 @@
 	let claimedLeadsCount = $derived(leadClaims?.length || 0);
 
 	// Local state
-	let isClaiming = $state(false);
 	let showEditProfile = $state(false);
 
 	// Computed business info
@@ -37,33 +36,10 @@
 			: {}
 	);
 
-	// Lead claiming function (specific to this page)
-	async function claimLead(leadId, businessId) {
-		if (isClaiming) return;
-		isClaiming = true;
-
-		try {
-			const response = await fetch('/in/api/claimLead', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ lead_id: leadId, business_id: businessId })
-			});
-
-			const result = await response.json();
-
-			if (result.success) {
-				leads = leads.filter((lead) => lead.id !== leadId);
-				toast.success('Lead claimed! Opening CRM...');
-				goto(`/in/${businessSlug}/crm`);
-			} else {
-				toast.error(result.error);
-			}
-		} catch (error) {
-			console.error('Claim Lead Error:', error);
-			toast.error('An error occurred while claiming the lead');
-		} finally {
-			isClaiming = false;
-		}
+	function handleClaimSuccess({ leadId, result }: { leadId: number; result: any }) {
+		leads = leads.filter((lead) => lead.id !== leadId);
+		toast.success('Lead claimed! Opening CRM...');
+		goto(`/in/${businessSlug}/crm`);
 	}
 
 	// Function to open edit profile modal
@@ -98,9 +74,8 @@
 			{businessInfo}
 			{businessSlug}
 			{errorMessage}
-			{isClaiming}
 			mode="dashboard"
-			onClaimLead={({ leadId, businessId }) => claimLead(leadId, businessId)}
+			onClaimSuccess={handleClaimSuccess}
 		/>
 	</div>
 </div>

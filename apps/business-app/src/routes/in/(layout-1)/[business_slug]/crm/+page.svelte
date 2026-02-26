@@ -11,9 +11,6 @@
 	let leadClaims = $derived($page.data.leadClaims || []);
 	let errorMessage = $derived($page.data.errorMessage);
 
-	// Local state
-	let isClaiming = $state(false);
-
 	// Computed business info
 	let businessInfo = $derived(
 		business
@@ -29,35 +26,12 @@
 			: {}
 	);
 
-	// Lead claiming function
-	async function claimLead(leadId, businessId) {
-		if (isClaiming) return;
-		isClaiming = true;
-
-		try {
-			const response = await fetch('/in/api/claimLead', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ lead_id: leadId, business_id: businessId })
-			});
-
-			const result = await response.json();
-
-			if (result.success) {
-				leads = leads.filter((lead) => lead.id !== leadId);
-				if (result.newLead) {
-					leads = [result.newLead, ...leads];
-				}
-				toast.success('Lead claimed and allocated successfully!');
-			} else {
-				toast.error(result.error);
-			}
-		} catch (error) {
-			console.error('Claim Lead Error:', error);
-			toast.error('An error occurred while claiming the lead');
-		} finally {
-			isClaiming = false;
+	function handleClaimSuccess({ leadId, result }: { leadId: number; result: any }) {
+		leads = leads.filter((lead) => lead.id !== leadId);
+		if (result.newLead) {
+			leads = [result.newLead, ...leads];
 		}
+		toast.success('Lead claimed and allocated successfully!');
 	}
 </script>
 
@@ -84,8 +58,7 @@
 			bind:leads
 			{businessInfo}
 			{errorMessage}
-			{isClaiming}
-			onClaimLead={({ leadId, businessId }) => claimLead(leadId, businessId)}
+			onClaimSuccess={handleClaimSuccess}
 		/>
 	</div>
 </div>
