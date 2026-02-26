@@ -395,6 +395,11 @@
 										Not Available. Claimed by Other Business
 									</p>
 								{:else if lead.category === 1}
+									{#if lead.claim_count > 0}
+										<p class="text-xs text-muted-foreground mb-1">
+											Claimed by {lead.claim_count} other {lead.claim_count === 1 ? 'business' : 'businesses'} in {lead.county}
+										</p>
+									{/if}
 									<Button
 										variant="default"
 										class="bg-green-600 hover:bg-green-700"

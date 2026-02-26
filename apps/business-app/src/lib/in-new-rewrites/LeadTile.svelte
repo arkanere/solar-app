@@ -186,6 +186,11 @@
 							Not Available. Claimed by Other Business
 						</p>
 					{:else}
+					{#if lead.claim_count > 0}
+						<p class="text-xs text-muted-foreground mb-2">
+							Claimed by {lead.claim_count} other {lead.claim_count === 1 ? 'business' : 'businesses'} in {lead.district}
+						</p>
+					{/if}
 						<Button
 							class="w-full bg-success text-success-foreground hover:bg-success/90"
 							onclick={handleClaim}
