@@ -4,7 +4,6 @@
 	import { isDarkMode } from '$lib/stores/theme.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
-	import { Progress } from '$lib/components/ui/progress';
 	import { cn } from '$lib/utils';
 	import { Target, AlertCircle } from '@lucide/svelte';
 
@@ -154,19 +153,12 @@
 		</Button>
 	</Card.Header>
 
-	{#if !isExpanded}
-		<Card.Content class="pb-6 pt-0">
-			<Progress value={progressPercent} class="h-2.5" />
-		</Card.Content>
-	{/if}
-
 	{#if isExpanded}
 		<Card.Content>
 			<div class="mb-6">
-				<p class="m-0 mb-2 text-sm font-semibold text-foreground">
+				<p class="m-0 text-sm font-semibold text-foreground">
 					Progress: {completedCount} of {totalCount} complete ({progressPercent}%)
 				</p>
-				<Progress value={progressPercent} class="h-2.5" />
 			</div>
 
 			<ul class="list-none p-0 m-0">
