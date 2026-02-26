@@ -114,6 +114,16 @@ export async function sendEmail(
 		};
 	}
 
+	const contactReminder = isHtml
+		? `<hr style="margin-top:2rem;border:none;border-top:1px solid #eee;">
+<p style="font-size:0.8rem;color:#888;margin-top:1rem;">
+  To ensure you never miss a lead notification from Solar Vipani,
+  please add <strong>admin@solarvipani.com</strong> to your contacts.
+</p>`
+		: `\n\n---\nTo ensure you never miss a lead notification from Solar Vipani, please add admin@solarvipani.com to your contacts.`;
+
+	const finalMessage = message + contactReminder;
+
 	// Prepare the email payload for Brevo
 	const emailData: BrevoEmailPayload = {
 		sender: {
@@ -122,7 +132,7 @@ export async function sendEmail(
 		},
 		to: recipientsArray.map((email) => ({ email })),
 		subject: subject,
-		...(isHtml ? { htmlContent: message } : { textContent: message })
+		...(isHtml ? { htmlContent: finalMessage } : { textContent: finalMessage })
 	};
 
 	try {
