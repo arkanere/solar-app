@@ -1,22 +1,38 @@
 <script lang="ts">
-	const items = [
-		'Reach 500+ solar EPC companies across India',
-		'Advertise your solar panels, inverters & accessories',
-		'Showcase your solar financing products to verified installers',
-		'Promote your solar events & training programs',
-		'Partner with India\'s growing EPC network'
+	const items: { text: string; url?: string }[] = [
+		{ text: 'Quality Clickss: Grow your business with Paid Ads on Google, Facebook, Instagram', url: 'https://qualityclickss.com/?ref=solarvipani' },
+		{ text: 'Reach 500+ solar EPC companies across India' },
+		{ text: 'Advertise your solar panels, inverters & accessories' },
+		{ text: 'Showcase your solar financing products to verified installers' },
+		{ text: 'Promote your solar events & training programs' },
+		{ text: 'Partner with India\'s growing EPC network' }
 	];
 
-	const ticker = items.join('  \u00a0\u2022\u00a0  ');
+	// Shuffle on each page load so all items get equal exposure over time
+	const shuffled = [...items].sort(() => Math.random() - 0.5);
+
+	const sep = '\u00a0\u00a0\u2022\u00a0\u00a0';
 </script>
 
 <div class="ribbon">
 	<span class="label">Sponsored</span>
 	<div class="divider"></div>
 	<div class="ticker-wrap">
+		{#snippet tickerContent()}
+			{#each shuffled as item, i}
+				{#if item.url}
+					<a href={item.url} target="_blank" rel="noopener noreferrer" class="ticker-link">{item.text}</a>
+				{:else}
+					<span>{item.text}</span>
+				{/if}
+				{#if i < shuffled.length - 1}<span class="sep">{sep}</span>{/if}
+			{/each}
+			<span class="sep">{sep}</span>
+		{/snippet}
+
 		<div class="ticker">
-			<span>{ticker}&nbsp;&nbsp;&nbsp;</span>
-			<span aria-hidden="true">{ticker}&nbsp;&nbsp;&nbsp;</span>
+			<span class="ticker-inner">{@render tickerContent()}</span>
+			<span class="ticker-inner" aria-hidden="true">{@render tickerContent()}</span>
 		</div>
 	</div>
 </div>
@@ -68,11 +84,29 @@
 	.ticker {
 		display: flex;
 		white-space: nowrap;
-		animation: scroll-left 40s linear infinite;
+		animation: scroll-left 50s linear infinite;
 	}
 
-	.ticker span {
+	.ticker-inner {
 		padding-left: 1rem;
+		display: inline-flex;
+		align-items: center;
+	}
+
+	.sep {
+		opacity: 0.5;
+	}
+
+	.ticker-link {
+		color: inherit;
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		text-decoration-color: currentColor;
+		opacity: 0.9;
+	}
+
+	.ticker-link:hover {
+		opacity: 1;
 	}
 
 	@keyframes scroll-left {
