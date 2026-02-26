@@ -82,6 +82,7 @@ export interface ClaimRequest {
 export interface ClaimRequestPayload {
 	lead_id: number;
 	business_id: number;
+	confirm_branch_creation?: boolean;
 }
 
 // ===== PROPOSAL TYPES =====

@@ -70,7 +70,7 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 			);
 		}
 
-		const { lead_id, business_id } = (await request.json()) as ClaimRequestPayload;
+		const { lead_id, business_id, confirm_branch_creation } = (await request.json()) as ClaimRequestPayload;
 
 		if (!lead_id || !business_id) {
 			return json(
@@ -162,7 +162,13 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 				);
 
 				if (presenceResult.rows.length === 0) {
-					// No presence — auto-create a branch in the lead's district
+					if (!confirm_branch_creation) {
+						await client.query('ROLLBACK');
+						client.release();
+						return json({ success: false, needsBranchConfirmation: true, district: leadDistrict });
+					}
+
+					// Confirmed — create a branch in the lead's district
 					const mainResult = await client.query<{
 						slug: string;
 						businessname: string;

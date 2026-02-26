@@ -20,8 +20,7 @@
 		businessInfo?: Record<string, any>;
 		businessSlug?: string;
 		errorMessage?: string | null;
-		isClaiming?: boolean;
-		onClaimLead?: (lead: any) => void;
+		onClaimSuccess?: (data: { leadId: number; result: any }) => void;
 		mode?: 'full' | 'dashboard';
 	};
 </script>
@@ -43,12 +42,18 @@
 		businessInfo = {},
 		businessSlug = '',
 		errorMessage = null,
-		isClaiming = false,
-		onClaimLead = () => {},
+		onClaimSuccess = () => {},
 		mode = 'full'
 	}: CustomerInquiryProps = $props();
 
 	let isDashboard = $derived(mode === 'dashboard');
+
+	// Claim state
+	let isClaiming = $state(false);
+	let showBranchConfirm = $state(false);
+	let branchConfirmDistrict = $state('');
+	let pendingClaimLeadId: number | null = $state(null);
+	let pendingClaimBusinessId: number | null = $state(null);
 
 	// Parent-level state (modals only)
 	let showProposalModal = $state(false);
@@ -103,11 +108,62 @@
 		leads = leads.map((l) => (l.id === leadId ? { ...l, ...updatedLead } : l));
 	}
 
-	function handleLeadClaim(event: CustomEvent) {
+	async function handleLeadClaim(event: CustomEvent) {
 		const { leadId, businessId } = event.detail;
-		if (!isClaiming) {
-			onClaimLead({ leadId, businessId });
+		if (isClaiming) return;
+		await claimLead(leadId, businessId, false);
+	}
+
+	async function claimLead(leadId: number, businessId: number, confirmBranch: boolean) {
+		isClaiming = true;
+		try {
+			const response = await fetch('/in/api/claimLead', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					lead_id: leadId,
+					business_id: businessId,
+					...(confirmBranch && { confirm_branch_creation: true })
+				})
+			});
+			const result = await response.json();
+
+			if (result.needsBranchConfirmation) {
+				pendingClaimLeadId = leadId;
+				pendingClaimBusinessId = businessId;
+				branchConfirmDistrict = result.district;
+				showBranchConfirm = true;
+				return;
+			}
+
+			if (result.success) {
+				onClaimSuccess({ leadId, result });
+			} else {
+				toast.error(result.error);
+			}
+		} catch (error) {
+			console.error('Claim Lead Error:', error);
+			toast.error('An error occurred while claiming the lead');
+		} finally {
+			isClaiming = false;
 		}
+	}
+
+	async function confirmBranchCreation() {
+		if (!pendingClaimLeadId || !pendingClaimBusinessId) return;
+		showBranchConfirm = false;
+		await claimLead(pendingClaimLeadId, pendingClaimBusinessId, true);
+		pendingClaimLeadId = null;
+		pendingClaimBusinessId = null;
+		branchConfirmDistrict = '';
+	}
+
+	function cancelBranchConfirm() {
+		showBranchConfirm = false;
+		pendingClaimLeadId = null;
+		pendingClaimBusinessId = null;
+		branchConfirmDistrict = '';
+		isClaiming = false;
 	}
 
 	function handleProposalOpen(event: CustomEvent) {
@@ -398,6 +454,35 @@
 				class="max-sm:w-full"
 			>
 				{isDeleting ? 'Deleting...' : 'Delete Lead'}
+			</Button>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>
+
+<!-- Branch Confirmation Dialog -->
+<Dialog.Root bind:open={showBranchConfirm}>
+	<Dialog.Content class="max-w-[400px]">
+		<Dialog.Header>
+			<Dialog.Title>New Branch Required</Dialog.Title>
+		</Dialog.Header>
+		<p class="m-0 leading-relaxed text-foreground">
+			This lead is from <strong>{branchConfirmDistrict}</strong> where you don't have a branch. Add a branch in <strong>{branchConfirmDistrict}</strong>?
+		</p>
+		<Dialog.Footer class="max-sm:flex-col">
+			<Button
+				variant="secondary"
+				onclick={cancelBranchConfirm}
+				disabled={isClaiming}
+				class="max-sm:w-full"
+			>
+				Cancel
+			</Button>
+			<Button
+				onclick={confirmBranchCreation}
+				disabled={isClaiming}
+				class="max-sm:w-full"
+			>
+				{isClaiming ? 'Creating...' : 'Add Branch & Claim'}
 			</Button>
 		</Dialog.Footer>
 	</Dialog.Content>
