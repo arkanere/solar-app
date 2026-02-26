@@ -88,8 +88,6 @@
 			{business}
 			{businessSlug}
 			{projectsCount}
-			{referrersCount}
-			{proposalsCount}
 			{claimedLeadsCount}
 			onOpenEditProfile={openEditProfile}
 		/>

@@ -6,7 +6,7 @@
 	import * as Card from '$lib/components/ui/card';
 	import { Progress } from '$lib/components/ui/progress';
 	import { cn } from '$lib/utils';
-	import { Target, CheckCircle2, AlertCircle } from '@lucide/svelte';
+	import { Target, AlertCircle } from '@lucide/svelte';
 
 	type Task = {
 		id: string;
@@ -15,14 +15,13 @@
 		completed: boolean;
 		action: string | null;
 		actionLabel: string;
+		priority: number;
 	};
 
 	export type SetupProgressCardProps = {
 		business?: { description?: string; website?: string };
 		businessSlug?: string;
 		projectsCount?: number;
-		referrersCount?: number;
-		proposalsCount?: number;
 		claimedLeadsCount?: number;
 		onOpenEditProfile?: () => void;
 	};
@@ -31,8 +30,6 @@
 		business = {},
 		businessSlug = '',
 		projectsCount = 0,
-		referrersCount = 0,
-		proposalsCount = 0,
 		claimedLeadsCount = 0,
 		onOpenEditProfile = () => {}
 	}: SetupProgressCardProps = $props();
@@ -59,36 +56,13 @@
 
 	let tasks = $derived([
 		{
-			id: 'profile-created',
-			title: 'Business Profile Created',
-			description: '',
-			completed: true,
-			action: null,
-			actionLabel: ''
-		},
-		{
 			id: 'complete-details',
 			title: 'Complete Business Details',
 			description: 'Add description',
 			completed: !!business.description,
 			action: 'openEditProfile',
-			actionLabel: 'Complete Profile'
-		},
-		{
-			id: 'post-project',
-			title: 'Post Your First Project',
-			description: 'Showcase your work to attract customers',
-			completed: projectsCount > 0,
-			action: `/in/${businessSlug}/recent-projects`,
-			actionLabel: 'Add Project'
-		},
-		{
-			id: 'add-referrers',
-			title: 'Add Referrers',
-			description: 'Build your referral network',
-			completed: referrersCount > 0,
-			action: `/in/${businessSlug}/referral`,
-			actionLabel: 'Add Referrer'
+			actionLabel: 'Complete Profile',
+			priority: 9
 		},
 		{
 			id: 'claim-lead',
@@ -96,21 +70,30 @@
 			description: '',
 			completed: claimedLeadsCount > 0,
 			action: `/in/${businessSlug}/crm`,
-			actionLabel: 'Go to CRM'
+			actionLabel: 'Go to CRM',
+			priority: 8
 		},
 		{
-			id: 'create-proposal',
-			title: 'Create First Proposal',
-			description: 'Generate professional quotes for customers',
-			completed: proposalsCount > 0,
-			action: `/in/${businessSlug}/proposal`,
-			actionLabel: 'Create Proposal'
-		}
+			id: 'post-project',
+			title: 'Post Your First Project',
+			description: 'Showcase your work to attract customers',
+			completed: projectsCount > 0,
+			action: `/in/${businessSlug}/recent-projects`,
+			actionLabel: 'Add Project',
+			priority: 7
+		},
 	]);
 
 	let completedCount = $derived(tasks.filter((t) => t.completed).length);
 	let totalCount = $derived(tasks.length);
 	let progressPercent = $derived(Math.round((completedCount / totalCount) * 100));
+
+	let visibleTasks = $derived(
+		tasks
+			.filter((t) => !t.completed)
+			.sort((a, b) => b.priority - a.priority)
+			.slice(0, 6)
+	);
 
 	function handleAction(task: Task) {
 		if (!task.action) return;
@@ -169,23 +152,17 @@
 			</div>
 
 			<ul class="list-none p-0 m-0">
-				{#each tasks as task}
+				{#each visibleTasks as task}
 					<li
 						class={cn(
 							'flex justify-between items-start gap-4 p-4 mb-3 rounded-lg transition-colors',
 							'max-sm:flex-col max-sm:items-stretch',
-							task.completed
-								? 'bg-success-muted border-l-[3px] border-l-success'
-								: 'bg-warning-muted border-l-[3px] border-l-warning'
+							'bg-warning-muted border-l-[3px] border-l-warning'
 						)}
 					>
 						<div class="flex items-start gap-3 flex-1">
 							<div class="shrink-0">
-								{#if task.completed}
-									<CheckCircle2 size={20} strokeWidth={2} class="text-success" />
-								{:else}
-									<AlertCircle size={20} strokeWidth={2} class="text-warning" />
-								{/if}
+								<AlertCircle size={20} strokeWidth={2} class="text-warning" />
 							</div>
 							<div class="flex-1">
 								<h4 class="m-0 mb-1 text-base font-semibold text-foreground">{task.title}</h4>
@@ -196,7 +173,7 @@
 								{/if}
 							</div>
 						</div>
-						{#if !task.completed && task.action}
+						{#if task.action}
 							<Button size="sm" class="shrink-0 max-sm:w-full" onclick={() => handleAction(task)}>
 								{task.actionLabel} →
 							</Button>
