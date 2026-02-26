@@ -399,6 +399,8 @@
 										<p class="text-xs text-muted-foreground mb-1">
 											Claimed by {lead.claim_count} other {lead.claim_count === 1 ? 'business' : 'businesses'} in {lead.county}
 										</p>
+									{:else}
+										<p class="text-xs text-muted-foreground mb-1">Be the first one to claim this inquiry</p>
 									{/if}
 									<Button
 										variant="default"
