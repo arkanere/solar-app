@@ -153,12 +153,12 @@
 
 <!-- Mobile Sheet -->
 <Sheet.Root open={mobileOpen} onOpenChange={(open) => isMobileMenuOpen.set(open)}>
-	<Sheet.Content side="left" class="w-[280px] p-0" style="top: var(--ribbon-height); height: calc(100vh - var(--ribbon-height));">
+	<Sheet.Content side="left" class="w-[280px] !h-auto p-0" style="top: var(--ribbon-height); bottom: 0;">
 		<!-- Hide the default close button from sheet-content.svelte; Sidebar has its own -->
 		<style>
 			[data-slot="sheet-content"] > button:last-child { display: none; }
 		</style>
-		<div class="h-full flex flex-col bg-card">
+		<div class="h-full flex flex-col bg-card overflow-hidden">
 			<!-- Brand Header -->
 			<div class="p-4 flex items-center justify-between min-h-[70px]">
 				<div class="flex flex-col items-center gap-2 overflow-hidden flex-1">
