@@ -164,7 +164,6 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 				if (presenceResult.rows.length === 0) {
 					if (!confirm_branch_creation) {
 						await client.query('ROLLBACK');
-						client.release();
 						return json({ success: false, needsBranchConfirmation: true, district: leadDistrict });
 					}
 
