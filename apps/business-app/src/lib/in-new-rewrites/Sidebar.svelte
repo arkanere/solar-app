@@ -181,7 +181,7 @@
 			<Separator />
 
 			<!-- Navigation -->
-			<nav class="flex-1 overflow-y-auto overflow-x-hidden py-2">
+			<nav class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden py-2">
 				{#each navSections as section}
 					{#if section.type === 'standalone'}
 						<div class="mb-1">
@@ -274,7 +274,7 @@
 			<Separator />
 
 			<!-- Logout -->
-			<div class="p-4">
+			<div class="shrink-0 p-4">
 				<form method="POST" action={`/in/${businessSlug}/logout`} onsubmit={handleLogout} class="m-0">
 					<button
 						type="submit"

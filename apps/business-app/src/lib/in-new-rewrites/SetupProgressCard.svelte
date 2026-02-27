@@ -35,7 +35,7 @@
 
 	let darkMode = $derived($isDarkMode);
 
-	let isExpanded = $state(true);
+	let isExpanded = $state(false);
 
 	onMount(() => {
 		if (browser) {
@@ -140,7 +140,7 @@
 					>
 					{#if !isExpanded}
 						<Card.Description class="mt-1"
-							>Progress: {completedCount} of {totalCount} complete ({progressPercent}%)</Card.Description
+							>{totalCount - completedCount} task{totalCount - completedCount !== 1 ? 's' : ''} remaining</Card.Description
 						>
 					{/if}
 				</div>
@@ -157,7 +157,7 @@
 		<Card.Content>
 			<div class="mb-6">
 				<p class="m-0 text-sm font-semibold text-foreground">
-					Progress: {completedCount} of {totalCount} complete ({progressPercent}%)
+					{totalCount - completedCount} task{totalCount - completedCount !== 1 ? 's' : ''} remaining
 				</p>
 			</div>
 
