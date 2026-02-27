@@ -87,16 +87,23 @@
 	}
 </script>
 
-<!-- Hamburger Menu Button (Mobile Only) -->
-<button
-	class="mobile-menu-toggle"
-	onclick={toggleMobileMenu}
-	aria-label="Toggle menu"
->
-	<span class="bg-accent"></span>
-	<span class="bg-accent"></span>
-	<span class="bg-accent"></span>
-</button>
+<!-- Mobile Top Bar (hidden when sidebar sheet is open) -->
+{#if !isMobileMenuOpen.isOpen}
+	<div class="mobile-topbar bg-card border-b border-border">
+		<button
+			class="mobile-menu-toggle"
+			onclick={toggleMobileMenu}
+			aria-label="Toggle menu"
+		>
+			<span class="bg-accent"></span>
+			<span class="bg-accent"></span>
+			<span class="bg-accent"></span>
+		</button>
+		{#if businessEmail}
+			<span class="mobile-topbar-email text-foreground-muted">{businessEmail}</span>
+		{/if}
+	</div>
+{/if}
 
 <!-- Sidebar -->
 <Sidebar
@@ -169,33 +176,45 @@
 {/if}
 
 <style>
-	/* Mobile Menu Toggle Button */
-	.mobile-menu-toggle {
-		position: fixed;
-		top: calc(1rem + var(--ribbon-height));
-		left: 1rem;
-		z-index: calc(var(--z-sidebar) + 1);
+	/* Mobile Top Bar */
+	.mobile-topbar {
 		display: none;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.625rem 1rem;
+		margin-top: var(--ribbon-height);
+	}
+
+	.mobile-menu-toggle {
+		display: flex;
 		flex-direction: column;
 		justify-content: space-between;
-		width: 30px;
-		height: 21px;
+		width: 24px;
+		height: 18px;
 		background: none;
 		border: none;
 		cursor: pointer;
 		padding: 0;
+		flex-shrink: 0;
 	}
 
 	.mobile-menu-toggle span {
 		display: block;
-		height: 3px;
+		height: 2.5px;
 		width: 100%;
-		border-radius: 3px;
-		transition: all 0.3s;
+		border-radius: 2px;
+	}
+
+	.mobile-topbar-email {
+		font-size: 0.75rem;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		min-width: 0;
 	}
 
 	@media (max-width: 767px) {
-		.mobile-menu-toggle {
+		.mobile-topbar {
 			display: flex;
 		}
 	}
@@ -217,6 +236,7 @@
 		.layout-container,
 		.layout-container.sidebar-collapsed {
 			margin-left: 0;
+			padding-top: 0;
 		}
 	}
 
