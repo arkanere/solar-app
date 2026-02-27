@@ -3,6 +3,7 @@
 	import { isDarkMode } from '$lib/stores/theme.svelte';
 	import { isSidebarExpanded, isMobileMenuOpen, expandedSections } from '$lib/in/sidebarStore.svelte';
 	import { onMount } from 'svelte';
+	import { afterNavigate } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
 	import * as Collapsible from '$lib/components/ui/collapsible';
 	import * as Sheet from '$lib/components/ui/sheet';
@@ -144,11 +145,19 @@
 			}
 		});
 	});
+
+	afterNavigate(() => {
+		isMobileMenuOpen.set(false);
+	});
 </script>
 
 <!-- Mobile Sheet -->
 <Sheet.Root open={mobileOpen} onOpenChange={(open) => isMobileMenuOpen.set(open)}>
-	<Sheet.Content side="left" class="w-[280px] p-0">
+	<Sheet.Content side="left" class="w-[280px] p-0" style="top: var(--ribbon-height); height: calc(100vh - var(--ribbon-height));">
+		<!-- Hide the default close button from sheet-content.svelte; Sidebar has its own -->
+		<style>
+			[data-slot="sheet-content"] > button:last-child { display: none; }
+		</style>
 		<div class="h-full flex flex-col bg-card">
 			<!-- Brand Header -->
 			<div class="p-4 flex items-center justify-between min-h-[70px]">
@@ -164,10 +173,8 @@
 						{/if}
 					</div>
 				</div>
-				<Sheet.Close asChild let:builder>
-					<Button {...builder} variant="ghost" size="icon" aria-label="Close menu">
-						<X size={24} strokeWidth={2} />
-					</Button>
+				<Sheet.Close aria-label="Close menu" class="rounded-md p-2 opacity-70 hover:opacity-100 transition-opacity">
+					<X size={24} strokeWidth={2} />
 				</Sheet.Close>
 			</div>
 
