@@ -4,6 +4,7 @@
 	import AddBranch from '$lib/in-new-rewrites/AddBranch.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
+	import * as Dialog from '$lib/components/ui/dialog';
 
 	// Access page data
 	let businessSlug = $derived($page.params.business_slug);
@@ -17,6 +18,35 @@
 
 	// State for add branch modal
 	let showAddBranch = $state(false);
+
+	// State for delete confirmation
+	let showDeleteConfirm = $state(false);
+	let branchToDelete: any = $state(null);
+	let deleting = $state(false);
+
+	async function deleteBranch() {
+		if (!branchToDelete) return;
+		deleting = true;
+		try {
+			const res = await fetch('/in/api/deleteBranch', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ branchId: branchToDelete.id })
+			});
+			const data = await res.json();
+			if (data.success) {
+				showDeleteConfirm = false;
+				branchToDelete = null;
+				window.location.reload();
+			} else {
+				alert(data.error || 'Failed to delete branch');
+			}
+		} catch {
+			alert('Failed to delete branch');
+		} finally {
+			deleting = false;
+		}
+	}
 
 	// Function to open edit profile modal
 	const openEditProfile = (branch: any) => {
@@ -150,6 +180,16 @@
 								>
 									Edit Details
 								</Button>
+								<Button
+									variant="outline"
+									class="flex-1 min-w-[120px] text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+									onclick={() => {
+										branchToDelete = branch;
+										showDeleteConfirm = true;
+									}}
+								>
+									Delete
+								</Button>
 							</div>
 						</div>
 					{/if}
@@ -187,3 +227,23 @@
 		onBranchAdded={handleBranchAdded}
 	/>
 {/if}
+
+<!-- Delete Confirmation Dialog -->
+<Dialog.Root bind:open={showDeleteConfirm}>
+	<Dialog.Content class="sm:max-w-md">
+		<Dialog.Header>
+			<Dialog.Title>Delete Branch</Dialog.Title>
+			<Dialog.Description>
+				Are you sure you want to delete <strong>{branchToDelete?.businessname}</strong> ({branchToDelete?.city})? This action cannot be undone.
+			</Dialog.Description>
+		</Dialog.Header>
+		<Dialog.Footer class="gap-2">
+			<Button variant="outline" onclick={() => (showDeleteConfirm = false)} disabled={deleting}>
+				Cancel
+			</Button>
+			<Button variant="destructive" onclick={deleteBranch} disabled={deleting}>
+				{deleting ? 'Deleting...' : 'Delete'}
+			</Button>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>
