@@ -10,7 +10,7 @@
 </script>
 
 <div
-	class="border border-inner-glow bg-card shadow-xs gradient-subtle backdrop-glass {className}"
+	class="border bg-card shadow-xs {className}"
 	style="border-radius: var(--container-radius); padding: var(--container-padding); transition: var(--container-transition);"
 	{...rest}
 >
