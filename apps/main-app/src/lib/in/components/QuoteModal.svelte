@@ -6,12 +6,12 @@
 </script>
 
 <Dialog.Root bind:open={isModalOpen}>
-	<Dialog.Content class="max-w-[theme(--max-width-sm)] gap-[theme(--dialog-content-gap)]">
-		<Dialog.Header class="gap-[theme(--dialog-header-gap)]">
+	<Dialog.Content class="max-w-sm gap-4">
+		<Dialog.Header class="gap-2">
 			<Dialog.Title>Get Quotation</Dialog.Title>
 			<Dialog.Close />
 		</Dialog.Header>
-		<div class="py-[theme(--dialog-content-padding)]">
+		<div class="py-6">
 			<LeadFormModal {businessName} {businessSlug} />
 		</div>
 	</Dialog.Content>

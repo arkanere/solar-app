@@ -14,26 +14,6 @@
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
 
-  /* Font Sizes with Line Heights */
-  --font-size-xs: 0.75rem;
-  --font-size-xs--line-height: 1rem;
-  --font-size-sm: 0.875rem;
-  --font-size-sm--line-height: 1.25rem;
-  --font-size-base: 1rem;
-  --font-size-base--line-height: 1.5rem;
-  --font-size-lg: 1.125rem;
-  --font-size-lg--line-height: 1.75rem;
-  --font-size-xl: 1.25rem;
-  --font-size-xl--line-height: 1.75rem;
-  --font-size-2xl: 1.5rem;
-  --font-size-2xl--line-height: 2rem;
-  --font-size-3xl: 1.875rem;
-  --font-size-3xl--line-height: 2.25rem;
-  --font-size-4xl: 2.25rem;
-  --font-size-4xl--line-height: 2.5rem;
-  --font-size-5xl: 3rem;
-  --font-size-5xl--line-height: 3.5rem;
-
   /* Shadows (Linear uses very subtle, diffused shadows) */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
@@ -47,20 +27,19 @@
   --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
-  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-linear: linear;
 
   /* Transition Durations */
   --duration-fast: 100ms;
   --duration-default: 150ms;
-  --duration-slow: 200ms;
+  --duration-slow: 250ms;
   --duration-slower: 300ms;
   --duration-slower-extended: 500ms;
 
-  /* Phase 1.1: Transition utilities with easing */
-  --transition-default: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-fast: 100ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  /* Transition shorthands (duration + easing) */
+  --transition-default: var(--duration-default) var(--ease-default);
+  --transition-fast: var(--duration-fast) var(--ease-default);
+  --transition-slow: var(--duration-slow) var(--ease-default);
 
   /* Phase 1.3: Scale utilities for interactive feedback */
   --hover-scale: 1.02;
@@ -79,11 +58,10 @@
   --z-tooltip: 1300;
   --z-toast: 1400;
 
-  /* Focus Ring Tokens */
-  --ring-width: 2px;
+  /* Shared interactive tokens */
+  --ring-width: 3px;
   --ring-offset-width: 2px;
-  --button-ring-width: 3px;
-
+  --disabled-opacity: 0.5;
   /* Button Component Tokens */
   --button-gap: 0.5rem;
   --button-height-default: 2.25rem;
@@ -94,32 +72,21 @@
   --button-padding-x-sm: 0.75rem;
   --button-padding-y-sm: 0.25rem;
   --button-padding-x-lg: 1.5rem;
-  --button-icon-size-default: 2.25rem;
-  --button-icon-size-sm: 2rem;
-  --button-icon-size-lg: 2.5rem;
-
   /* Input Component Tokens */
   --input-height: 2.25rem;
   --input-padding-x: 0.75rem;
   --input-padding-y-default: 0.25rem;
   --input-padding-y-file: 0.375rem;
-  --input-ring-width: 3px;
-
   /* Checkbox Component Tokens */
   --checkbox-size: 1rem;
   --checkbox-radius: 0.25rem;
   --checkbox-icon-size: 0.875rem;
-  --checkbox-ring-width: 3px;
-
   /* Switch Component Tokens */
   --switch-track-height: 1.15rem;
   --switch-track-width: 2rem;
   --switch-thumb-size: 1rem;
   --switch-thumb-offset: calc(100% - 2px);
-  --switch-ring-width: 3px;
-
   /* Select Component Tokens */
-  --select-trigger-ring-width: 3px;
   --select-trigger-height-default: 2.25rem;
   --select-trigger-height-sm: 2rem;
   --select-trigger-padding-x: 0.75rem;
@@ -133,15 +100,12 @@
   --radio-item-size: 1rem;
   --radio-item-radius: 100%;
   --radio-item-shadow: var(--shadow-xs);
-  --radio-item-ring-width: 3px;
   --radio-indicator-size: 0.5rem;
 
   /* Textarea Component Tokens */
   --textarea-min-height: 4rem;
   --textarea-padding-x: 0.75rem;
   --textarea-padding-y: 0.5rem;
-  --textarea-ring-width: 3px;
-
   /* Dropdown Menu Component Tokens */
   --dropdown-menu-content-min-width: 8rem;
   --dropdown-menu-content-padding: 0.25rem;
@@ -155,7 +119,7 @@
   --dropdown-menu-label-inset-padding: 2rem;
   --dropdown-menu-separator-margin-x: -0.25rem;
   --dropdown-menu-separator-margin-y: 0.25rem;
-  --dropdown-menu-shortcut-font-size: var(--font-size-xs);
+  --dropdown-menu-shortcut-font-size: 0.75rem;
   --dropdown-menu-shortcut-tracking: var(--tracking-widest);
   --dropdown-menu-icon-size: 1rem;
   --dropdown-menu-transition-duration: var(--duration-default);
@@ -165,60 +129,6 @@
   --card-padding-y: 1.5rem;
   --card-radius: var(--radius-xl);
   --card-shadow: var(--shadow-sm);
-
-  /* Dialog Component Tokens */
-  --dialog-content-gap: 1rem;
-  --dialog-content-radius: var(--radius-lg);
-  --dialog-content-padding: 1.5rem;
-  --dialog-content-shadow: var(--shadow-lg);
-  --dialog-content-transition: var(--duration-slow);
-  --dialog-max-height: 85vh;
-  --dialog-max-width-responsive: 90%;
-  --dialog-close-position-end: 1rem;
-  --dialog-close-position-top: 1rem;
-  --dialog-close-radius: var(--radius);
-  --dialog-close-transition: var(--duration-default);
-  --dialog-close-ring-width: 2px;
-  --dialog-close-ring-offset: 2px;
-  --dialog-header-gap: 0.5rem;
-  --dialog-footer-gap: 0.5rem;
-  --dialog-title-font-size: var(--font-size-lg);
-  --dialog-title-line-height: 1.25rem;
-  --dialog-title-font-weight: 600;
-  --dialog-description-font-size: var(--font-size-sm);
-  --dialog-description-color: hsl(var(--muted-foreground));
-
-  /* Alert Dialog Component Tokens */
-  --alert-dialog-content-gap: 1rem;
-  --alert-dialog-content-radius: var(--radius-lg);
-  --alert-dialog-content-padding: 1.5rem;
-  --alert-dialog-content-shadow: var(--shadow-lg);
-  --alert-dialog-content-transition: var(--duration-slow);
-  --alert-dialog-header-gap: 0.5rem;
-  --alert-dialog-footer-gap: 0.5rem;
-  --alert-dialog-title-font-size: var(--font-size-lg);
-  --alert-dialog-title-font-weight: 600;
-  --alert-dialog-description-font-size: var(--font-size-sm);
-  --alert-dialog-description-color: hsl(var(--muted-foreground));
-
-  /* Sheet Component Tokens */
-  --sheet-content-gap: 1rem;
-  --sheet-content-shadow: var(--shadow-lg);
-  --sheet-content-transition-open: var(--duration-slower-extended);
-  --sheet-content-transition-close: var(--duration-slower);
-  --sheet-close-position-end: 1rem;
-  --sheet-close-position-top: 1rem;
-  --sheet-close-radius: var(--radius-xs);
-  --sheet-close-transition: var(--duration-default);
-  --sheet-close-ring-width: 2px;
-  --sheet-close-ring-offset: 2px;
-  --sheet-header-gap: 0.375rem;
-  --sheet-header-padding: 1rem;
-  --sheet-footer-gap: 0.5rem;
-  --sheet-footer-padding: 1rem;
-  --sheet-title-font-weight: 600;
-  --sheet-description-font-size: var(--font-size-sm);
-  --sheet-description-color: hsl(var(--muted-foreground));
 
   /* Popover Component Tokens */
   --popover-content-width: 18rem;
@@ -233,7 +143,7 @@
   --tooltip-content-padding-y: 0.375rem;
   --tooltip-content-radius: var(--radius-md);
   --tooltip-content-z-index: var(--z-tooltip);
-  --tooltip-content-font-size: var(--font-size-xs);
+  --tooltip-content-font-size: 0.75rem;
   --tooltip-content-bg: hsl(var(--foreground));
   --tooltip-content-text: hsl(var(--background));
   --tooltip-arrow-size: 0.625rem;
@@ -270,11 +180,9 @@
   --badge-padding-y: 0.125rem;
   --badge-gap: 0.25rem;
   --badge-radius: 9999px;
-  --badge-font-size: var(--font-size-xs);
+  --badge-font-size: 0.75rem;
   --badge-font-weight: 500;
   --badge-icon-size: 0.75rem;
-  --badge-ring-width: 3px;
-
   /* Alert Component Tokens */
   --alert-radius: var(--radius-lg);
   --alert-padding-x: 1rem;
@@ -285,11 +193,10 @@
   --alert-icon-translate-y: 0.125rem;
   --alert-shadow: var(--shadow-xs);
   --alert-description-color: hsl(var(--muted-foreground));
-  --alert-description-font-size: var(--font-size-sm);
+  --alert-description-font-size: 0.875rem;
   --alert-description-gap: 0.25rem;
   --alert-description-line-height: 1.625;
   --alert-title-font-weight: 500;
-  --alert-title-tracking: -0.025em;
   --alert-title-min-height: 1rem;
 
   /* Progress Component Tokens */
@@ -297,8 +204,6 @@
   --progress-radius: 9999px;
   --progress-bg: hsl(var(--primary) / 0.2);
   --progress-indicator-bg: hsl(var(--primary));
-  --progress-indicator-transition: all 150ms ease;
-
   /* Skeleton Component Tokens */
   --skeleton-radius: var(--radius-md);
   --skeleton-animation-duration: 2s;
@@ -308,7 +213,7 @@
   --separator-color: hsl(var(--border));
 
   /* Table Component Tokens */
-  --table-font-size: var(--font-size-sm);
+  --table-font-size: 0.875rem;
   --table-head-height: 2.5rem;
   --table-head-padding-x: 0.5rem;
   --table-cell-padding: 0.5rem;
@@ -329,26 +234,11 @@
   --tabs-trigger-padding-x: 0.5rem;
   --tabs-trigger-padding-y: 0.25rem;
   --tabs-trigger-radius: var(--radius-md);
-  --tabs-trigger-font-size: var(--font-size-sm);
+  --tabs-trigger-font-size: 0.875rem;
   --tabs-trigger-font-weight: 500;
   --tabs-trigger-height-calc: calc(100% - 1px);
-  --tabs-trigger-ring-width: var(--button-ring-width);
   --tabs-trigger-shadow: var(--shadow-sm);
   --tabs-trigger-svg-size: 1rem;
-
-  /* Opacity Scale */
-  --opacity-0: 0;
-  --opacity-5: 0.05;
-  --opacity-10: 0.1;
-  --opacity-20: 0.2;
-  --opacity-30: 0.3;
-  --opacity-40: 0.4;
-  --opacity-50: 0.5;
-  --opacity-60: 0.6;
-  --opacity-70: 0.7;
-  --opacity-80: 0.8;
-  --opacity-90: 0.9;
-  --opacity-100: 1;
 
   /* Letter Spacing (Tracking) */
   --tracking-tighter: -0.05em;
@@ -362,20 +252,6 @@
   --tracking-heading: -0.02em;
   --tracking-body: 0;
   --tracking-ui: 0.01em;
-
-  /* Max Width Scale */
-  --max-width-xs: 20rem;
-  --max-width-sm: 24rem;
-  --max-width-md: 28rem;
-  --max-width-lg: 32rem;
-  --max-width-xl: 36rem;
-  --max-width-2xl: 42rem;
-  --max-width-3xl: 48rem;
-  --max-width-4xl: 56rem;
-  --max-width-5xl: 64rem;
-  --max-width-6xl: 72rem;
-  --max-width-7xl: 80rem;
-  --max-width-full: 100%;
 
   /* Height Scale */
   --height-xs: 12rem;
@@ -422,13 +298,6 @@
   --backdrop-blur-light: blur(4px);
   --backdrop-blur-heavy: blur(8px);
 
-  /* ===== MUTED TEXT COLOR TOKENS ===== */
-  /* Text color hierarchy for improved readability and reduced eye strain */
-  --color-text-primary: hsl(0 0% 5%);      /* Primary text - Light mode */
-  --color-text-secondary: hsl(0 0% 40%);   /* Secondary text - Light mode */
-  --color-text-tertiary: hsl(0 0% 60%);    /* Tertiary/hint text - Light mode */
-  --color-text-muted: hsl(0 0% 70%);       /* Muted/disabled text - Light mode */
-
   /* ===== COLOR TOKENS FOR TAILWIND V4 ===== */
   /* These enable classes like bg-background, text-foreground, etc. */
 
@@ -440,7 +309,6 @@
   /* Foreground/text colors */
   --color-foreground: hsl(var(--foreground));
   --color-foreground-secondary: hsl(var(--foreground-secondary));
-  --color-foreground-muted: hsl(var(--foreground-muted));
 
   /* Border colors */
   --color-border: hsl(var(--border));
@@ -451,6 +319,7 @@
   /* Primary */
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-hover: var(--primary-hover);
 
   /* Secondary */
   --color-secondary: hsl(var(--secondary));
@@ -462,12 +331,12 @@
 
   /* Accent */
   --color-accent: hsl(var(--accent));
-  --color-accent-hover: hsl(var(--accent-hover));
+  --color-accent-hover: var(--accent-hover);
   --color-accent-foreground: hsl(var(--accent-foreground));
   --color-accent-muted: hsl(var(--accent-muted));
 
   /* Secondary (Solar Amber) */
-  --color-secondary-hover: hsl(var(--secondary-hover));
+  --color-secondary-hover: var(--secondary-hover);
   --color-secondary-muted: hsl(var(--secondary-muted));
 
   /* Card */
@@ -481,6 +350,7 @@
   /* Destructive */
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-destructive-hover: var(--destructive-hover);
   --color-destructive-muted: hsl(var(--destructive-muted));
 
   /* Success */
@@ -493,28 +363,20 @@
   --color-warning-foreground: hsl(var(--warning-foreground));
   --color-warning-muted: hsl(var(--warning-muted));
 
-  /* Overlay */
-  --color-overlay: rgba(0, 0, 0, 0.5);
-  --color-overlay-light: rgba(255, 255, 255, 0.7);
-
-  /* Link */
-  --color-link: hsl(var(--primary));
-  --color-link-hover: hsl(var(--primary) / 0.8);
-
   /* Calendar Component Tokens */
   --calendar-root-padding: 0.75rem;
   --calendar-cell-size: 2rem;
   --calendar-cell-gap: 0.25rem;
-  --calendar-cell-text-size: var(--font-size-sm);
+  --calendar-cell-text-size: 0.875rem;
   --calendar-cell-radius-start: var(--radius-md);
   --calendar-cell-radius-end: var(--radius-md);
   --calendar-day-gap: 0.25rem;
-  --calendar-day-text-size: var(--font-size-sm);
-  --calendar-day-inner-text-size: var(--font-size-xs);
+  --calendar-day-text-size: 0.875rem;
+  --calendar-day-inner-text-size: 0.75rem;
   --calendar-head-cell-text-size: 0.8rem;
   --calendar-head-cell-radius: var(--radius-md);
   --calendar-head-cell-font-weight: 400;
-  --calendar-heading-text-size: var(--font-size-sm);
+  --calendar-heading-text-size: 0.875rem;
   --calendar-heading-font-weight: 500;
   --calendar-grid-margin-top: 1rem;
   --calendar-grid-gap: 0.25rem;
@@ -522,7 +384,6 @@
   --calendar-nav-button-size: 2rem;
   --calendar-nav-button-padding: 0;
   --calendar-nav-icon-size: 1rem;
-  --calendar-disabled-opacity: 0.5;
 
   /* Slider Component Tokens */
   --slider-track-height: 0.5rem;
@@ -534,17 +395,15 @@
   --slider-thumb-border: 2px solid white;
   --slider-thumb-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   --slider-hover-thumb-opacity: 0.9;
-  --slider-disabled-opacity: 0.5;
 
   /* Navigation Menu Component Tokens */
   --navigation-menu-trigger-height: 2.25rem;
   --navigation-menu-trigger-padding-x: 1rem;
   --navigation-menu-trigger-padding-y: 0.5rem;
   --navigation-menu-trigger-radius: var(--radius-md);
-  --navigation-menu-trigger-font-size: var(--font-size-sm);
+  --navigation-menu-trigger-font-size: 0.875rem;
   --navigation-menu-trigger-icon-size: 0.75rem;
   --navigation-menu-trigger-icon-margin-start: 0.25rem;
-  --navigation-menu-trigger-ring-width: 3px;
   --navigation-menu-viewport-offset: 0.375rem;
   --navigation-menu-viewport-radius: var(--radius-md);
   --navigation-menu-content-padding: 0.5rem;
@@ -553,9 +412,8 @@
   --navigation-menu-link-gap: 0.25rem;
   --navigation-menu-link-padding: 0.5rem;
   --navigation-menu-link-radius: var(--radius-sm);
-  --navigation-menu-link-font-size: var(--font-size-sm);
+  --navigation-menu-link-font-size: 0.875rem;
   --navigation-menu-link-icon-size: 1rem;
-  --navigation-menu-link-ring-width: 3px;
   --navigation-menu-indicator-height: 0.375rem;
   --navigation-menu-indicator-marker-height: 0.5rem;
   --navigation-menu-indicator-marker-width: 0.5rem;
@@ -565,10 +423,9 @@
 
   /* Label Component Tokens */
   --label-gap: 0.5rem;
-  --label-font-size: var(--font-size-sm);
+  --label-font-size: 0.875rem;
   --label-line-height: 1;
   --label-font-weight: 500;
-  --label-disabled-opacity: 0.5;
 
   /* Generic Icon Size Tokens */
   --icon-size-sm: 0.75rem;
@@ -580,10 +437,10 @@
   --form-fieldset-gap: 0.5rem;
   --form-field-gap: 0.5rem;
   --form-element-field-gap: 0.5rem;
-  --form-field-errors-font-size: var(--font-size-sm);
+  --form-field-errors-font-size: 0.875rem;
   --form-field-errors-font-weight: 500;
-  --form-description-font-size: var(--font-size-sm);
-  --form-legend-font-size: var(--font-size-sm);
+  --form-description-font-size: 0.875rem;
+  --form-legend-font-size: 0.875rem;
   --form-legend-line-height: 1;
   --form-legend-font-weight: 500;
 
@@ -592,17 +449,6 @@
   --container-radius: var(--radius-lg);
   --container-shadow: var(--shadow-xs);
   --container-transition: var(--transition-default);
-
-  /* Spacing Scale for Micro Spacing */
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 0.75rem;
-  --spacing-lg: 1rem;
-  --spacing-xl: 1.5rem;
-  --spacing-2xl: 2rem;
-  --spacing-3xl: 3rem;
-  --spacing-4xl: 4rem;
-  --spacing-5xl: 5rem;
 
   /* Step Indicator Component Tokens */
   --step-indicator-size: 1.5rem;
@@ -618,44 +464,6 @@
   --divider-line-width: 5rem;
   --divider-line-height: 0.25rem;
 
-  /* Colors for Tailwind v4 - with hover variants that have opacity baked in */
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-  --color-primary-hover: var(--primary-hover);
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-  --color-secondary-hover: var(--secondary-hover);
-  --color-secondary-muted: hsl(var(--secondary-muted));
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-accent-hover: var(--accent-hover);
-  --color-accent-muted: hsl(var(--accent-muted));
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-  --color-destructive-hover: var(--destructive-hover);
-  --color-destructive-muted: hsl(var(--destructive-muted));
-  --color-success: hsl(var(--success));
-  --color-success-foreground: hsl(var(--success-foreground));
-  --color-success-muted: hsl(var(--success-muted));
-  --color-warning: hsl(var(--warning));
-  --color-warning-foreground: hsl(var(--warning-foreground));
-  --color-warning-muted: hsl(var(--warning-muted));
-  --color-background: hsl(var(--background));
-  --color-background-secondary: hsl(var(--background-secondary));
-  --color-background-tertiary: hsl(var(--background-tertiary));
-  --color-foreground: hsl(var(--foreground));
-  --color-foreground-secondary: hsl(var(--foreground-secondary));
-  --color-foreground-muted: hsl(var(--foreground-muted));
-  --color-border: hsl(var(--border));
-  --color-border-hover: hsl(var(--border-hover));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
 }
 
 /* ===== KEYFRAMES ===== */
@@ -830,7 +638,7 @@
 
   /* 9.2 Add placeholder styling for better visual hierarchy */
   ::placeholder {
-    color: hsl(var(--foreground-muted));
+    color: hsl(var(--muted-foreground));
     opacity: 0.7;
   }
 }
@@ -873,20 +681,6 @@
     background: rgba(0, 0, 0, 0.2);
   }
 
-  /* Text color utilities for muted text hierarchy */
-  .text-primary {
-    color: var(--color-text-primary);
-  }
-  .text-secondary {
-    color: var(--color-text-secondary);
-  }
-  .text-tertiary {
-    color: var(--color-text-tertiary);
-  }
-  .text-muted {
-    color: var(--color-text-muted);
-  }
-
   /* Phase 3.3: Typography weight utilities for standardized font weights */
   .font-ui {
     @apply font-medium;
@@ -901,7 +695,7 @@
   /* Phase 5.4: Add optical sizing for display text */
   .text-display {
     font-optical-sizing: auto;
-    letter-spacing: -0.025em;
+    letter-spacing: var(--tracking-tight);
   }
 
   /* Skeleton loading shimmer utility - Phase 2.2 */
@@ -1008,60 +802,54 @@
   /* Foreground/Text - Near-blacks for high contrast */
   --foreground: 0 0% 9%;            /* #171717 - Primary text */
   --foreground-secondary: 0 0% 32%; /* #525252 - Secondary text */
-  --foreground-muted: 0 0% 45%;     /* #737373 - Muted/placeholder text */
+  /* Borders */
+  --border: 0 0% 90%;               /* #E5E5E5 */
+  --border-hover: 0 0% 83%;         /* #D4D4D4 */
 
-  /* Borders - Subtle grays */
-  --border: 0 0% 90%;               /* #E5E5E5 - Default borders */
-  --border-hover: 0 0% 83%;         /* #D4D4D4 - Hover state borders */
+  /* Primary - Sun Orange (brand identity) */
+  --primary: 24 100% 50%;           /* #FF6600 */
+  --primary-foreground: 0 0% 100%;
+  --primary-hover: hsl(var(--primary) / 0.9);
 
-  /* Accent - Sun Orange (solar energy, warmth, brand identity) */
-  --accent: 24 100% 50%;            /* #FF6600 - Primary accent (sun orange) */
-  --accent-hover: 20 100% 42%;      /* #D65500 - Accent hover */
-  --accent-foreground: 0 0% 100%;   /* White text on accent */
-  --accent-muted: 30 100% 93%;      /* #FFECD9 - Light orange bg */
+  /* Accent = Primary (single brand color) */
+  --accent: var(--primary);
+  --accent-foreground: var(--primary-foreground);
+  --accent-hover: hsl(var(--accent) / 0.9);
+  --accent-muted: 30 100% 93%;      /* #FFECD9 */
 
-  /* Secondary - Hill Green (nature, eco-friendly, sustainability) */
-  --secondary: 122 39% 49%;         /* #4CAF50 - Secondary accent (nature green) */
-  --secondary-hover: 122 39% 42%;   /* #43A047 - Secondary hover */
-  --secondary-foreground: 0 0% 100%;/* White text on secondary */
-  --secondary-muted: 122 39% 92%;   /* #E8F5E9 - Light green bg */
+  /* Secondary - Hill Green (eco, sustainability) */
+  --secondary: 122 39% 49%;         /* #4CAF50 */
+  --secondary-foreground: 0 0% 100%;
+  --secondary-hover: hsl(var(--secondary) / 0.8);
+  --secondary-muted: 122 39% 92%;   /* #E8F5E9 */
 
-  /* Semantic - Success (green - same as secondary) */
-  --success: 122 39% 49%;           /* #4CAF50 */
-  --success-foreground: 0 0% 100%;
-  --success-muted: 122 39% 92%;     /* #E8F5E9 */
+  /* Success = Secondary (green means both eco and success) */
+  --success: var(--secondary);
+  --success-foreground: var(--secondary-foreground);
+  --success-muted: var(--secondary-muted);
 
-  /* Semantic - Warning (sun gold) */
-  --warning: 42 100% 50%;           /* #FFAA00 - Sun gold */
+  /* Warning - Sun gold */
+  --warning: 42 100% 50%;           /* #FFAA00 */
   --warning-foreground: 0 0% 9%;
-  --warning-muted: 45 100% 90%;     /* #FFF3CC - Light gold bg */
+  --warning-muted: 45 100% 90%;     /* #FFF3CC */
 
-  /* Semantic - Destructive (red) */
+  /* Destructive */
   --destructive: 0 84% 60%;         /* #EF4444 */
   --destructive-foreground: 0 0% 100%;
+  --destructive-hover: hsl(var(--destructive) / 0.9);
   --destructive-muted: 0 93% 94%;   /* #FEE2E2 */
 
   /* Component surfaces */
-  --card: 0 0% 100%;                /* White cards */
+  --card: 0 0% 100%;
   --card-foreground: 0 0% 9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 9%;
+  --popover: var(--card);
+  --popover-foreground: var(--card-foreground);
   --muted: 0 0% 96%;
   --muted-foreground: 0 0% 45%;
 
   /* Form elements */
-  --input: 0 0% 90%;                /* Input borders */
-  --ring: 24 100% 50%;              /* Focus ring color - Sun Orange */
-
-  /* Primary (shadcn compatibility - same as accent) */
-  --primary: 24 100% 50%;
-  --primary-foreground: 0 0% 100%;
-
-  /* Hover color variants with opacity baked in */
-  --primary-hover: hsl(var(--primary) / 0.9);
-  --secondary-hover: hsl(var(--secondary) / 0.8);
-  --accent-hover: hsl(var(--accent) / 0.9);
-  --destructive-hover: hsl(var(--destructive) / 0.9);
+  --input: 0 0% 90%;
+  --ring: var(--primary);
 }
 
 .dark {
@@ -1079,22 +867,12 @@
   /* Foreground/Text - Bright for contrast */
   --foreground: 0 0% 98%;           /* #FAFAFA - Primary text */
   --foreground-secondary: 0 0% 64%; /* #A3A3A3 - Secondary text */
-  --foreground-muted: 0 0% 45%;     /* #737373 - Muted text */
-
-  /* Dark mode text color hierarchy */
-  --color-text-primary: hsl(0 0% 95%);     /* Off-white */
-  --color-text-secondary: hsl(0 0% 75%);   /* Light grey */
-  --color-text-tertiary: hsl(0 0% 55%);    /* Medium grey */
-  --color-text-muted: hsl(0 0% 35%);       /* Muted grey */
-
   /* Borders - Subtle dark borders */
   --border: 0 0% 18%;               /* #2E2E2E - Default borders */
   --border-hover: 0 0% 25%;         /* #404040 - Hover borders */
 
-  /* Accent - Sun Orange (brighter in dark mode) */
-  --accent: 24 100% 55%;            /* #FF7A1A - Brighter orange */
+  /* Accent overrides (accent inherits --primary via var()) */
   --accent-hover: 24 100% 50%;
-  --accent-foreground: 0 0% 100%;
   --accent-muted: 24 60% 20%;       /* #522600 - Dark orange bg */
 
   /* Secondary - Hill Green (brighter in dark mode) */
@@ -1102,11 +880,7 @@
   --secondary-hover: 122 50% 50%;
   --secondary-foreground: 0 0% 100%;
   --secondary-muted: 122 40% 18%;   /* #1A3D1B - Dark green bg */
-
-  /* Semantic colors - Adjusted for dark */
-  --success: 122 50% 55%;
-  --success-foreground: 0 0% 100%;
-  --success-muted: 122 40% 18%;
+  /* success inherits --secondary via var() */
 
   --warning: 42 100% 55%;           /* Sun gold - brighter */
   --warning-foreground: 0 0% 9%;
@@ -1116,21 +890,20 @@
   --destructive-foreground: 0 0% 100%;
   --destructive-muted: 0 40% 15%;
 
+  /* Primary brand color - brighter in dark */
+  --primary: 24 100% 55%;
+  --primary-foreground: 0 0% 100%;
+  /* ring inherits --primary via var() */
+
   /* Component surfaces */
   --card: 0 0% 10%;
   --card-foreground: 0 0% 98%;
-  --popover: 0 0% 10%;
-  --popover-foreground: 0 0% 98%;
+  /* popover inherits --card via var() */
   --muted: 0 0% 15%;
   --muted-foreground: 0 0% 64%;
 
   /* Form elements */
   --input: 0 0% 18%;
-  --ring: 24 100% 55%;              /* Sun Orange */
-
-  /* Primary (shadcn compatibility) */
-  --primary: 24 100% 55%;
-  --primary-foreground: 0 0% 100%;
 }
 
 /* ===== BASE STYLES ===== */

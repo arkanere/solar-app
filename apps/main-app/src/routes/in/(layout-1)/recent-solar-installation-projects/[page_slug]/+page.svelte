@@ -86,31 +86,31 @@
 
 <main class="w-full bg-background text-foreground transition-colors duration-300 overflow-x-hidden">
 	<div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
-		<div class="text-center mb-[theme(--spacing-2xl)]">
-			<h1 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Recent Solar Installation Projects</h1>
-			<div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+		<div class="text-center mb-8">
+			<h1 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">Recent Solar Installation Projects</h1>
+			<div class="flex justify-center items-center my-4">
 				<span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
 			</div>
 			<p class="text-center text-foreground dark:text-foreground-secondary">Showing page {currentPage} of {totalPages}</p>
 		</div>
 
-		<section id="recent-projects" class="w-full mb-[theme(--spacing-2xl)]">
+		<section id="recent-projects" class="w-full mb-8">
 			{#if !data.success}
-			<Alert variant="destructive" class="mb-[theme(--spacing-lg)]">
+			<Alert variant="destructive" class="mb-4">
 				<AlertTitle>Error</AlertTitle>
 				<AlertDescription>
 					{data.error || 'Failed to load projects'}
 				</AlertDescription>
 			</Alert>
 		{:else if projects.length === 0}
-			<Alert variant="warning" class="mb-[theme(--spacing-lg)]">
+			<Alert variant="warning" class="mb-4">
 				<AlertTitle>No Projects</AlertTitle>
 				<AlertDescription>
 					No projects found on this page.
 				</AlertDescription>
 			</Alert>
 		{:else}
-			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] w-full mb-[theme(--spacing-lg)]">
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] w-full mb-4">
 				{#each projects as project (project.id)}
 					<a
 						href="/in/solar-panel-installer/{project.business_slug}/project/{project.project_slug}"
@@ -141,8 +141,8 @@
 						</div>
 
 						<!-- Project Details -->
-						<CardContent class="py-[theme(--card-padding-y)] px-[theme(--card-padding-y)] space-y-[theme(--spacing-sm)] flex-1 flex flex-col justify-between">
-							<div class="space-y-[theme(--spacing-sm)]">
+						<CardContent class="py-[theme(--card-padding-y)] px-[theme(--card-padding-y)] space-y-2 flex-1 flex flex-col justify-between">
+							<div class="space-y-2">
 								<h3 class="text-lg font-semibold text-primary line-clamp-2">
 									{project.title}
 								</h3>
@@ -173,7 +173,7 @@
 
 			<!-- Pagination -->
 			{#if totalPages > 1}
-				<div class="flex justify-center items-center gap-[theme(--spacing-sm)] mt-[theme(--spacing-2xl)] flex-wrap">
+				<div class="flex justify-center items-center gap-2 mt-8 flex-wrap">
 					<!-- Previous button -->
 					{#if currentPage > 1}
 						<Button
@@ -192,9 +192,9 @@
 					<!-- Page numbers -->
 					{#each paginationLinks as link}
 						{#if link === '...'}
-							<span class="px-[theme(--spacing-sm)] text-foreground dark:text-foreground-secondary">...</span>
+							<span class="px-2 text-foreground dark:text-foreground-secondary">...</span>
 						{:else if link === currentPage}
-							<span class="px-[theme(--spacing-md)] py-[theme(--spacing-sm)] bg-primary text-primary-foreground font-medium rounded-[theme(--radius-md)]">
+							<span class="px-3 py-2 bg-primary text-primary-foreground font-medium rounded-[theme(--radius-md)]">
 								{link}
 							</span>
 						{:else}

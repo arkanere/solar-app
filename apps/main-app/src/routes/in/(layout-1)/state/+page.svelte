@@ -94,14 +94,14 @@
 	/>
 </svelte:head>
 
-<main class="w-full bg-background text-foreground overflow-x-hidden transition-colors duration-300 flex flex-col items-center px-[theme(--container-padding)] py-[theme(--spacing-2xl)] min-h-screen">
+<main class="w-full bg-background text-foreground overflow-x-hidden transition-colors duration-300 flex flex-col items-center px-[theme(--container-padding)] py-8 min-h-screen">
 	<!-- State List Section -->
-	<div class="max-w-4xl w-full mb-[theme(--spacing-3xl)]">
-		<h1 class="text-[theme(--font-size-3xl)] md:text-[theme(--font-size-4xl)] font-semibold text-center mb-[theme(--spacing-lg)] text-primary">
+	<div class="max-w-4xl w-full mb-12">
+		<h1 class="text-3xl md:text-4xl font-semibold text-center mb-4 text-primary">
 			Solar Panel Installers by State
 		</h1>
 
-		<p class="text-center text-muted-foreground mb-[theme(--spacing-2xl)] text-[theme(--font-size-lg)]">
+		<p class="text-center text-muted-foreground mb-8 text-lg">
 			Browse solar panel installers by state. We have listings in <span class="font-semibold text-foreground">{states.length} states</span> across India.
 		</p>
 
@@ -112,10 +112,10 @@
 						href={`/in/state/${formatStateSlug(state)}`}
 						class="block h-full bg-card rounded-[theme(--radius-xl)] p-[theme(--card-padding-y)] border border-border hover:shadow-lg hover:border-primary/50 transition-all duration-300 hover:-translate-y-1"
 					>
-						<h2 class="text-[theme(--font-size-xl)] font-semibold mb-[theme(--spacing-sm)] text-primary">
+						<h2 class="text-xl font-semibold mb-2 text-primary">
 							{state}
 						</h2>
-						<p class="text-muted-foreground mb-[theme(--spacing-lg)] flex-grow">
+						<p class="text-muted-foreground mb-4 flex-grow">
 							Find solar installers in {state}
 						</p>
 						<div class="flex items-center text-primary font-medium">
@@ -140,14 +140,14 @@
 	</div>
 
 	<!-- Services Section -->
-	<div class="max-w-4xl w-full mb-[theme(--spacing-3xl)]">
-		<h2 class="text-[theme(--font-size-2xl)] font-semibold text-center mb-[theme(--spacing-2xl)] text-secondary">
+	<div class="max-w-4xl w-full mb-12">
+		<h2 class="text-2xl font-semibold text-center mb-8 text-foreground-secondary">
 			Services Provided by Solar Panel Installers
 		</h2>
 		<ul class="grid grid-cols-1 md:grid-cols-2 gap-[theme(--card-gap)] list-none p-0">
 			<li>
 				<Card class="hover:shadow-md transition-all duration-300">
-					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-md)]">Solar panel installations at Homes, Apartments, and Businesses</strong>
+					<strong class="block text-lg text-primary mb-3">Solar panel installations at Homes, Apartments, and Businesses</strong>
 					<p class="text-muted-foreground leading-relaxed">
 						Professional installation of solar panels tailored to residential, commercial, and
 						industrial needs. Commonly used systems for independant homes and bunglows are <strong
@@ -159,7 +159,7 @@
 			</li>
 			<li>
 				<Card class="hover:shadow-md transition-all duration-300">
-					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-md)]">Solar Modules and Inverters</strong>
+					<strong class="block text-lg text-primary mb-3">Solar Modules and Inverters</strong>
 					<p class="text-muted-foreground leading-relaxed">
 						Supply and installation of high-quality solar modules and inverters to ensure efficient
 						energy generation.
@@ -168,7 +168,7 @@
 			</li>
 			<li>
 				<Card class="hover:shadow-md transition-all duration-300">
-					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-md)]">
+					<strong class="block text-lg text-primary mb-3">
 						Documentation and Permissions for Subsidy under <a
 							href="/in/blogs/pm-surya-ghar-yojana"
 							target="_blank"
@@ -185,7 +185,7 @@
 			</li>
 			<li>
 				<Card class="hover:shadow-md transition-all duration-300">
-					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-md)]">Net Metering</strong>
+					<strong class="block text-lg text-primary mb-3">Net Metering</strong>
 					<p class="text-muted-foreground leading-relaxed">
 						Setup of net metering systems to help you save on electricity bills by feeding surplus
 						power back into the grid.
@@ -194,7 +194,7 @@
 			</li>
 			<li>
 				<Card class="hover:shadow-md transition-all duration-300">
-					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-md)]">Solar Financing through Banks and NBFCs</strong>
+					<strong class="block text-lg text-primary mb-3">Solar Financing through Banks and NBFCs</strong>
 					<p class="text-muted-foreground leading-relaxed">
 						Guidance on financing options, loans, and schemes offered by banks and non-banking
 						financial companies. Nowadays <strong> Zero cost EMI schemes </strong>have become popular.
@@ -203,7 +203,7 @@
 			</li>
 			<li>
 				<Card class="hover:shadow-md transition-all duration-300">
-					<strong class="block text-[theme(--font-size-lg)] text-primary mb-[theme(--spacing-md)]">Routine Maintenance and Cleaning</strong>
+					<strong class="block text-lg text-primary mb-3">Routine Maintenance and Cleaning</strong>
 					<p class="text-muted-foreground leading-relaxed">
 						Regular maintenance and cleaning services to keep your solar system running efficiently.
 					</p>
@@ -213,8 +213,8 @@
 	</div>
 
 	<!-- FAQ Section -->
-	<div class="max-w-4xl w-full mb-[theme(--spacing-3xl)]">
-		<h2 class="text-[theme(--font-size-2xl)] font-semibold text-center mb-[theme(--spacing-2xl)] text-secondary">
+	<div class="max-w-4xl w-full mb-12">
+		<h2 class="text-2xl font-semibold text-center mb-8 text-foreground-secondary">
 			Frequently Asked Questions
 		</h2>
 		<Accordion class="w-full">
@@ -223,7 +223,7 @@
 					<AccordionTrigger class="text-primary font-semibold">
 						{item.question}
 					</AccordionTrigger>
-					<AccordionContent class="text-muted-foreground text-[theme(--font-size-sm)] leading-relaxed">
+					<AccordionContent class="text-muted-foreground text-sm leading-relaxed">
 						{item.answer}
 					</AccordionContent>
 				</AccordionItem>
@@ -233,11 +233,11 @@
 
 	<!-- About Section -->
 	<div class="max-w-4xl w-full">
-		<h2 class="text-[theme(--font-size-2xl)] font-semibold text-center mb-[theme(--spacing-2xl)] text-secondary">
+		<h2 class="text-2xl font-semibold text-center mb-8 text-foreground-secondary">
 			About Solarvipani
 		</h2>
 
-		<Card class="flex flex-col md:flex-row gap-[theme(--spacing-2xl)] items-center mb-[theme(--spacing-2xl)]">
+		<Card class="flex flex-col md:flex-row gap-8 items-center mb-8">
 			<!-- Logo -->
 			<img
 				src="/logo.webp"
@@ -250,7 +250,7 @@
 
 			<!-- Text -->
 			<div class="flex-grow">
-				<p class="text-muted-foreground text-[theme(--font-size-lg)] leading-relaxed">
+				<p class="text-muted-foreground text-lg leading-relaxed">
 					We are your premier marketplace aggregator dedicated to connecting residential and
 					business customers with <a
 						href="/in/blogs/hiring-verified-solar-installer-in-india-is-essential"
@@ -267,8 +267,8 @@
 
 		<!-- Social Media Links -->
 		<div class="text-center">
-			<h4 class="text-[theme(--font-size-lg)] font-semibold text-foreground mb-[theme(--spacing-lg)]">Follow us on:</h4>
-			<div class="flex flex-wrap justify-center gap-[theme(--spacing-lg)]">
+			<h4 class="text-lg font-semibold text-foreground mb-4">Follow us on:</h4>
+			<div class="flex flex-wrap justify-center gap-4">
 				<a
 					href="https://www.facebook.com/p/Solar-Vipani-61556033262509/"
 					target="_blank"

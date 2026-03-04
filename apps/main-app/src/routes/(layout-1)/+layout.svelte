@@ -196,17 +196,17 @@
   <!-- Heavy analytics scripts moved to loadAnalytics() function for deferred loading -->
 </svelte:head>
 
-<nav class="flex flex-wrap items-center w-full justify-between border-b border-border bg-background text-foreground p-[theme(--container-padding)] gap-[theme(--spacing-2xl)] transition-colors duration-[theme(--transition-default)]">
+<nav class="flex flex-wrap items-center w-full justify-between border-b border-border bg-background text-foreground p-[theme(--container-padding)] gap-8 transition-colors duration-[theme(--transition-default)]">
   <!-- Spacer for left alignment -->
   <div></div>
 
   <!-- Right side buttons group -->
-  <div class="flex items-center gap-[theme(--spacing-md)]">
+  <div class="flex items-center gap-3">
     <!-- Translate Dropdown -->
     <div class="relative">
       <button
         onclick={() => showTranslateDropdown = !showTranslateDropdown}
-        class="border border-border cursor-pointer whitespace-nowrap text-foreground hover:bg-muted px-[theme(--button-padding-x-sm)] py-[theme(--button-padding-y-sm)] text-[theme(--font-size-sm)] rounded-[theme(--radius-md)] transition-all duration-[theme(--transition-default)]"
+        class="border border-border cursor-pointer whitespace-nowrap text-foreground hover:bg-muted px-[theme(--button-padding-x-sm)] py-[theme(--button-padding-y-sm)] text-sm rounded-[theme(--radius-md)] transition-all duration-[theme(--transition-default)]"
       >
         🌐 Translate
       </button>
@@ -257,11 +257,11 @@
 
     <div class="space-y-[theme(--card-gap)]">
       <div>
-        <h4 class="text-[theme(--font-size-base)] font-semibold text-primary mb-[theme(--spacing-md)]">📱 On Mobile:</h4>
-        <div class="space-y-[theme(--spacing-lg)]">
+        <h4 class="text-base font-semibold text-primary mb-3">📱 On Mobile:</h4>
+        <div class="space-y-4">
           {#each ["Tap the three dots menu (⋮) in your browser", "Look for \"Translate\" option", "Select your language"] as step, i}
-            <div class="flex items-start gap-[theme(--spacing-lg)]">
-              <div class="flex items-center justify-center w-[theme(--step-indicator-size)] h-[theme(--step-indicator-size)] rounded-full bg-primary text-primary-foreground text-[theme(--font-size-xs)] font-bold flex-shrink-0">
+            <div class="flex items-start gap-4">
+              <div class="flex items-center justify-center w-[theme(--step-indicator-size)] h-[theme(--step-indicator-size)] rounded-full bg-primary text-primary-foreground text-xs font-bold flex-shrink-0">
                 {i + 1}
               </div>
               <strong class="block pt-[0.125rem]">{step}</strong>
@@ -271,11 +271,11 @@
       </div>
 
       <div>
-        <h4 class="text-[theme(--font-size-base)] font-semibold text-primary mb-[theme(--spacing-md)]">💻 On Desktop:</h4>
-        <div class="space-y-[theme(--spacing-lg)]">
+        <h4 class="text-base font-semibold text-primary mb-3">💻 On Desktop:</h4>
+        <div class="space-y-4">
           {#each ["Right-click anywhere on this page", "Look for \"Translate\" option", "Click to translate"] as step, i}
-            <div class="flex items-start gap-[theme(--spacing-lg)]">
-              <div class="flex items-center justify-center w-[theme(--step-indicator-size)] h-[theme(--step-indicator-size)] rounded-full bg-primary text-primary-foreground text-[theme(--font-size-xs)] font-bold flex-shrink-0">
+            <div class="flex items-start gap-4">
+              <div class="flex items-center justify-center w-[theme(--step-indicator-size)] h-[theme(--step-indicator-size)] rounded-full bg-primary text-primary-foreground text-xs font-bold flex-shrink-0">
                 {i + 1}
               </div>
               <strong class="block pt-[0.125rem]">{step}</strong>
@@ -284,9 +284,9 @@
         </div>
       </div>
 
-      <div class="border-t border-border pt-[theme(--spacing-lg)]">
-        <h4 class="text-[theme(--font-size-base)] font-semibold mb-[theme(--spacing-sm)]">💡 Alternative methods:</h4>
-        <div class="space-y-[theme(--spacing-xs)] text-[theme(--font-size-sm)] text-foreground-secondary">
+      <div class="border-t border-border pt-4">
+        <h4 class="text-base font-semibold mb-2">💡 Alternative methods:</h4>
+        <div class="space-y-1 text-sm text-foreground-secondary">
           <p><strong>Chrome users:</strong> Look for the translate icon 🌐 in your address bar</p>
           <p><strong>Safari (iPhone/iPad):</strong> Tap the "aA" button in address bar</p>
           <p><strong>Other browsers:</strong> Check browser settings for translation options</p>

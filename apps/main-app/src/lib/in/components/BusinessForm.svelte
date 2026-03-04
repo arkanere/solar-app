@@ -168,10 +168,10 @@
   });
 </script>
 
-<Card.Root class="w-full max-w-[theme(--max-width-3xl)] mx-auto">
+<Card.Root class="w-full max-w-3xl mx-auto">
   <Card.Header class="py-[theme(--card-padding-y)]">
-    <h1 class="text-[theme(--font-size-2xl)] font-semibold tracking-[theme(--tracking-heading)]">Get listed by filling the form below</h1>
-    <p class="text-[theme(--font-size-sm)] mt-[theme(--form-field-gap)] text-muted-foreground">It takes 90 seconds to fill this form</p>
+    <h1 class="text-2xl font-semibold tracking-[theme(--tracking-heading)]">Get listed by filling the form below</h1>
+    <p class="text-sm mt-[theme(--form-field-gap)] text-muted-foreground">It takes 90 seconds to fill this form</p>
   </Card.Header>
 
   <Card.Content>
@@ -210,7 +210,7 @@
       <!-- Address -->
       <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="address">Address</Label>
-        <p class="text-[theme(--font-size-xs)] text-muted-foreground">Complete address helps in finding your business</p>
+        <p class="text-xs text-muted-foreground">Complete address helps in finding your business</p>
         <Input
           id="address"
           type="text"
@@ -223,7 +223,7 @@
       <!-- Plus Code -->
       <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="plusCode">Plus Code</Label>
-        <p class="text-[theme(--font-size-xs)] text-muted-foreground">For navigation on google maps</p>
+        <p class="text-xs text-muted-foreground">For navigation on google maps</p>
         <Input
           id="plusCode"
           type="text"
@@ -272,7 +272,7 @@
       <!-- Email -->
       <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="email">Business Email</Label>
-        <p class="text-[theme(--font-size-xs)] text-muted-foreground">Will be displayed on the business profile page</p>
+        <p class="text-xs text-muted-foreground">Will be displayed on the business profile page</p>
         <Input
           id="email"
           type="email"
@@ -285,7 +285,7 @@
       <!-- Login Email -->
       <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
         <Label for="login_email">Login Email</Label>
-        <p class="text-[theme(--font-size-xs)] text-muted-foreground">You will receive login instructions here</p>
+        <p class="text-xs text-muted-foreground">You will receive login instructions here</p>
         <Input
           id="login_email"
           type="email"
@@ -358,10 +358,10 @@
 
       <!-- Info Messages -->
       <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
-        <p class="text-[theme(--font-size-sm)] text-muted-foreground">
+        <p class="text-sm text-muted-foreground">
           You will be redirected after submission. Ensure the next page confirms your submission.
         </p>
-        <p class="text-[theme(--font-size-sm)] text-muted-foreground">
+        <p class="text-sm text-muted-foreground">
           In case of any issue, call us at <a href="tel:+918983066701" class="text-primary underline">+91 8983066701</a>
         </p>
       </div>

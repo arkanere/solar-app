@@ -44,7 +44,7 @@
 	/>
 </svelte:head>
 
-<main class="min-h-screen flex flex-col items-center justify-center px-[theme(--container-padding)] md:px-[theme(--container-padding)] py-[theme(--spacing-2xl)] transition-colors duration-[theme(--transition-default)] bg-background text-foreground">
+<main class="min-h-screen flex flex-col items-center justify-center px-[theme(--container-padding)] md:px-[theme(--container-padding)] py-8 transition-colors duration-[theme(--transition-default)] bg-background text-foreground">
 	<!-- Business Form Component -->
 	<Card class="w-full max-w-2xl">
 		<BusinessForm />

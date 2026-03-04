@@ -61,7 +61,7 @@
 		height: var(--slider-track-height);
 		border-radius: var(--slider-track-radius);
 		background: var(--slider-track-bg);
-		${disabled ? `opacity: var(--slider-disabled-opacity)` : ''}
+		${disabled ? `opacity: var(--disabled-opacity)` : ''}
 	`}
 	{...restProps}
 />

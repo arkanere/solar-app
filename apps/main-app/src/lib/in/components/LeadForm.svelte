@@ -77,9 +77,9 @@
 
 {#if showWrapper}
   <div class="py-[theme(--button-padding-y-default)] flex justify-center">
-    <Card.Root class="w-full max-w-[theme(--max-width-md)]">
+    <Card.Root class="w-full max-w-md">
       <Card.Header class="py-[theme(--card-padding-y)]">
-        <h2 class="text-[theme(--font-size-lg)] font-semibold tracking-[theme(--tracking-ui)]">{heading}</h2>
+        <h2 class="text-lg font-semibold tracking-[theme(--tracking-ui)]">{heading}</h2>
       </Card.Header>
 
       <Card.Content class="pb-[theme(--card-padding-y)]">
@@ -174,7 +174,7 @@
           <!-- Submit Button -->
           <Button
             type="submit"
-            class="w-full mt-[theme(--spacing-sm)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all duration-[theme(--transition-default)]"
+            class="w-full mt-2 hover:-translate-y-[theme(--hover-lift-sm)] transition-all duration-[theme(--transition-default)]"
             disabled={isSubmitting}
           >
             {isSubmitting ? 'Submitting...' : submitLabel}
@@ -184,7 +184,7 @@
     </Card.Root>
   </div>
 {:else}
-  <div class="w-full max-w-[theme(--max-width-md)] mx-auto py-[theme(--button-padding-y-default)]">
+  <div class="w-full max-w-md mx-auto py-[theme(--button-padding-y-default)]">
     <form onsubmit={handleSubmit} class="flex flex-col gap-[theme(--form-field-gap)]">
     <!-- Name Field -->
     <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
@@ -276,7 +276,7 @@
     <!-- Submit Button -->
     <Button
       type="submit"
-      class="w-full mt-[theme(--spacing-sm)] hover:-translate-y-[theme(--hover-lift-sm)] transition-all duration-[theme(--transition-default)]"
+      class="w-full mt-2 hover:-translate-y-[theme(--hover-lift-sm)] transition-all duration-[theme(--transition-default)]"
       disabled={isSubmitting}
     >
       {isSubmitting ? 'Submitting...' : submitLabel}

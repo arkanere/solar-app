@@ -20,11 +20,11 @@
 </script>
 
 <section id="subsidy-section" class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">
-	<div class="text-center mb-[theme(--spacing-2xl)]">
-		<h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">
+	<div class="text-center mb-8">
+		<h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">
 			Solar Subsidy in {city} — PM Surya Ghar Yojana
 		</h2>
-		<div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+		<div class="flex justify-center items-center my-4">
 			<span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
 		</div>
 		<p class="text-foreground dark:text-foreground-secondary max-w-2xl mx-auto text-base leading-relaxed">
@@ -32,7 +32,7 @@
 		</p>
 	</div>
 
-	<Card.Root class="border-0 shadow-[theme(--shadow-card)] mb-[theme(--spacing-2xl)]">
+	<Card.Root class="border-0 shadow-[theme(--shadow-card)] mb-8">
 		<Card.Content class="p-0">
 			<div class="overflow-x-auto">
 				<Table.Root>
@@ -61,8 +61,8 @@
 		</Card.Content>
 	</Card.Root>
 
-	<div class="grid grid-cols-1 md:grid-cols-2 gap-[theme(--card-gap)] mb-[theme(--spacing-2xl)]">
-		<div class="rounded-[theme(--radius-md)] bg-[hsl(var(--accent)/0.1)] p-[theme(--spacing-lg)]">
+	<div class="grid grid-cols-1 md:grid-cols-2 gap-[theme(--card-gap)] mb-8">
+		<div class="rounded-[theme(--radius-md)] bg-[hsl(var(--accent)/0.1)] p-4">
 			<strong class="block text-base font-semibold text-primary mb-2">How the Subsidy Works</strong>
 			<ul class="text-sm text-foreground dark:text-foreground-secondary space-y-1 list-disc list-inside leading-relaxed">
 				<li>Subsidy is ₹30,000/kW for first 2 kW</li>
@@ -72,7 +72,7 @@
 				<li>Installer must be DISCOM-empanelled to avail subsidy</li>
 			</ul>
 		</div>
-		<div class="rounded-[theme(--radius-md)] bg-[hsl(var(--accent)/0.1)] p-[theme(--spacing-lg)]">
+		<div class="rounded-[theme(--radius-md)] bg-[hsl(var(--accent)/0.1)] p-4">
 			<strong class="block text-base font-semibold text-primary mb-2">Steps to Get the Subsidy</strong>
 			<ol class="text-sm text-foreground dark:text-foreground-secondary space-y-1 list-decimal list-inside leading-relaxed">
 				<li>Register at <strong>pmsuryaghar.gov.in</strong></li>
@@ -84,7 +84,7 @@
 		</div>
 	</div>
 
-	<p class="text-xs text-muted-foreground text-center mb-[theme(--spacing-2xl)]">
+	<p class="text-xs text-muted-foreground text-center mb-8">
 		* Costs are indicative estimates for {city} region. Final pricing depends on roof type, panel brand, inverter, and installation complexity. Annual savings based on ₹7/unit average tariff.
 	</p>
 

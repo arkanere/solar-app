@@ -1,7 +1,7 @@
 <script lang="ts" module>
 	import { tv, type VariantProps } from "tailwind-variants";
 	export const sheetVariants = tv({
-		base: "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-50 flex flex-col gap-[var(--sheet-content-gap)] shadow-lg transition ease-in-out data-[state=closed]:duration-[var(--sheet-content-transition-close)] data-[state=open]:duration-[var(--sheet-content-transition-open)]",
+		base: "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-50 flex flex-col gap-4 shadow-lg transition ease-in-out data-[state=closed]:duration-[var(--duration-slower)] data-[state=open]:duration-[var(--duration-slower-extended)]",
 		variants: {
 			side: {
 				top: "data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top inset-x-0 top-0 h-auto border-b",
@@ -50,7 +50,7 @@
 	>
 		{@render children?.()}
 		<SheetPrimitive.Close
-			class="ring-offset-background focus-visible:ring-ring absolute end-[var(--sheet-close-position-end)] top-[var(--sheet-close-position-top)] rounded-[var(--sheet-close-radius)] opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-[var(--sheet-close-ring-width)] focus-visible:ring-offset-[var(--sheet-close-ring-offset)] focus-visible:outline-hidden disabled:pointer-events-none"
+			class="ring-offset-background focus-visible:ring-ring absolute end-4 top-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-[2px] focus-visible:ring-offset-[2px] focus-visible:outline-hidden disabled:pointer-events-none"
 		>
 			<XIcon class="size-4" />
 			<span class="sr-only">Close</span>

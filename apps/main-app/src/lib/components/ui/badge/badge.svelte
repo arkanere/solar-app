@@ -9,7 +9,7 @@
 			" [&]:py-[var(--badge-padding-y)]" +
 			" [&]:text-[var(--badge-font-size)]" +
 			" [&]:font-[var(--badge-font-weight)]" +
-			" [&]:focus-visible:ring-[var(--badge-ring-width)]" +
+			" [&]:focus-visible:ring-[var(--ring-width)]" +
 			" [&>svg]:pointer-events-none" +
 			" [&>svg]:size-[var(--badge-icon-size)]",
 		variants: {

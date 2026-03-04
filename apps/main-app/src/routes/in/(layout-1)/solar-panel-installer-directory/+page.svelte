@@ -147,10 +147,10 @@
 <main class="w-full bg-background text-foreground transition-colors duration-[theme(--transition-default)] overflow-x-hidden dark:bg-background dark:text-foreground">
   <div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
     <!-- Solar Panel Installers by State Section -->
-    <section class="mb-[theme(--spacing-2xl)]">
-      <div class="text-center mb-[theme(--spacing-2xl)]">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Where Can You Find Verified Solar Panel Installers in India?</h2>
-        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+    <section class="mb-8">
+      <div class="text-center mb-8">
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">Where Can You Find Verified Solar Panel Installers in India?</h2>
+        <div class="flex justify-center items-center my-4">
           <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
         </div>
         <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
@@ -163,15 +163,15 @@
       {#if activeStates.length > 0}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)]">
           {#each activeStates as state}
-            <div class="flex flex-col h-full bg-card rounded-[theme(--radius-lg)] border border-border hover:shadow-[theme(--shadow-card-hover)] transition-all duration-300 hover:-translate-y-1 p-[theme(--spacing-lg)]">
-              <h3 class="text-lg font-semibold mb-[theme(--spacing-sm)] text-primary">
+            <div class="flex flex-col h-full bg-card rounded-[theme(--radius-lg)] border border-border hover:shadow-[theme(--shadow-card-hover)] transition-all duration-300 hover:-translate-y-1 p-4">
+              <h3 class="text-lg font-semibold mb-2 text-primary">
                 {state}
               </h3>
-              <p class="text-sm text-muted-foreground mb-[theme(--spacing-lg)]">
+              <p class="text-sm text-muted-foreground mb-4">
                 {getInstallerCount(state)} Verified {getInstallerCount(state) === 1 ? 'Installer' : 'Installers'}
               </p>
 
-              <div class="flex items-center justify-center font-medium text-primary mt-auto gap-[theme(--spacing-xs)] group">
+              <div class="flex items-center justify-center font-medium text-primary mt-auto gap-1 group">
                 <Button asChild variant="default" class="w-full">
                   <a href={`/in/state/${formatStateSlug(state)}`} rel="noopener" class="flex items-center justify-center gap-2">
                     <span>Find Installers</span>
@@ -197,20 +197,20 @@
 
       <!-- Coming Soon States -->
       {#if comingSoonStates.length > 0}
-        <div class="mt-[theme(--spacing-2xl)]">
-          <h3 class="text-xl font-semibold mb-[theme(--spacing-sm)] text-muted-foreground">Expanding Soon</h3>
-          <p class="text-sm text-muted-foreground mb-[theme(--spacing-lg)]">We're working on bringing verified installers to these states.</p>
+        <div class="mt-8">
+          <h3 class="text-xl font-semibold mb-2 text-muted-foreground">Expanding Soon</h3>
+          <p class="text-sm text-muted-foreground mb-4">We're working on bringing verified installers to these states.</p>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)]">
             {#each comingSoonStates as state}
-              <div class="flex flex-col h-full bg-card rounded-[theme(--radius-lg)] border border-border/50 p-[theme(--spacing-lg)] opacity-75">
-                <h3 class="text-lg font-semibold mb-[theme(--spacing-sm)] text-primary">
+              <div class="flex flex-col h-full bg-card rounded-[theme(--radius-lg)] border border-border/50 p-4 opacity-75">
+                <h3 class="text-lg font-semibold mb-2 text-primary">
                   {state}
                 </h3>
-                <p class="text-sm text-muted-foreground mb-[theme(--spacing-lg)]">
+                <p class="text-sm text-muted-foreground mb-4">
                   Coming Soon
                 </p>
 
-                <div class="flex items-center justify-center font-medium text-primary mt-auto gap-[theme(--spacing-xs)] group">
+                <div class="flex items-center justify-center font-medium text-primary mt-auto gap-1 group">
                   <Button asChild variant="outline" class="w-full">
                     <a href={`/in/state/${formatStateSlug(state)}`} rel="noopener" class="flex items-center justify-center gap-2">
                       <span>View State</span>

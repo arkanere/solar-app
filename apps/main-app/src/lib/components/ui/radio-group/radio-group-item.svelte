@@ -14,7 +14,7 @@
 	bind:ref
 	data-slot="radio-group-item"
 	class={cn(
-		"border-input text-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 aspect-square size-[var(--radio-item-size)] shrink-0 rounded-[var(--radio-item-radius)] border shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[var(--radio-item-ring-width)] disabled:cursor-not-allowed disabled:opacity-50",
+		"border-input text-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 aspect-square size-[var(--radio-item-size)] shrink-0 rounded-[var(--radio-item-radius)] border shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[var(--ring-width)] disabled:cursor-not-allowed disabled:opacity-50",
 		className
 	)}
 	{...restProps}

@@ -325,10 +325,10 @@
 
   <div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
     <!-- Value Proposition Section -->
-    <Card class="p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)]">
-      <div class="text-center mb-[theme(--spacing-2xl)]">
-        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Why List Your Business with Solar Vipani?</h2>
-        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+    <Card class="p-[theme(--card-padding-y)] mb-8">
+      <div class="text-center mb-8">
+        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-4">Why List Your Business with Solar Vipani?</h2>
+        <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
         <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
@@ -338,21 +338,21 @@
         </p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-[theme(--card-gap)] mb-[theme(--spacing-2xl)]">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-[theme(--card-gap)] mb-8">
         {#each benefits as benefit}
-          <Card class="text-center flex flex-col items-center p-[theme(--spacing-lg)]">
-            <div class="w-16 h-16 flex items-center justify-center text-primary mb-[theme(--spacing-lg)] rounded-full bg-primary/10">{@html benefit.icon}</div>
-            <h3 class="text-xl font-semibold text-primary mb-[theme(--spacing-md)]">{benefit.title}</h3>
+          <Card class="text-center flex flex-col items-center p-4">
+            <div class="w-16 h-16 flex items-center justify-center text-primary mb-4 rounded-full bg-primary/10">{@html benefit.icon}</div>
+            <h3 class="text-xl font-semibold text-primary mb-3">{benefit.title}</h3>
             <div class="text-foreground dark:text-foreground-secondary text-sm">
               {#each benefit.descriptions as description}
-                <p class="mb-[theme(--spacing-sm)]">{description}</p>
+                <p class="mb-2">{description}</p>
               {/each}
             </div>
           </Card>
         {/each}
       </div>
 
-      <div class="text-center mt-[theme(--spacing-2xl)]">
+      <div class="text-center mt-8">
         <Button onclick={navigateToBusinessForm} class="uppercase tracking-wider gap-2">
           <span>Get Started for Free</span>
           <svg
@@ -375,24 +375,24 @@
     </Card>
 
     <!-- Social Proof Section -->
-    <Card class="bg-accent-muted p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)]">
-      <div class="text-center mb-[theme(--spacing-2xl)]">
-        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Join the Solar Installer Community</h2>
-        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+    <Card class="bg-accent-muted p-[theme(--card-padding-y)] mb-8">
+      <div class="text-center mb-8">
+        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-4">Join the Solar Installer Community</h2>
+        <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
       </div>
 
-      <div class="flex justify-center flex-wrap gap-[theme(--spacing-2xl)] mb-[theme(--spacing-2xl)]">
+      <div class="flex justify-center flex-wrap gap-8 mb-8">
         {#each stats as stat}
-          <Card class="w-48 text-center p-[theme(--spacing-lg)]">
-            <div class="text-5xl font-bold text-primary mb-[theme(--spacing-sm)]">{stat.number}</div>
+          <Card class="w-48 text-center p-4">
+            <div class="text-5xl font-bold text-primary mb-2">{stat.number}</div>
             <div class="text-lg font-semibold text-foreground dark:text-foreground-secondary">{stat.label}</div>
           </Card>
         {/each}
       </div>
 
-      <div class="text-center mt-[theme(--spacing-2xl)]">
+      <div class="text-center mt-8">
         <Button onclick={navigateToBusinessForm} class="uppercase tracking-wider gap-2">
           <span>List My Business</span>
           <svg
@@ -415,10 +415,10 @@
     </Card>
 
     <!-- Recently Joined Verified Installers -->
-    <Card class="p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)] bg-[hsl(var(--accent)/0.1)]">
-      <div class="text-center mb-[theme(--spacing-2xl)]">
-        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Recently Joined Verified Installers</h2>
-        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+    <Card class="p-[theme(--card-padding-y)] mb-8 bg-[hsl(var(--accent)/0.1)]">
+      <div class="text-center mb-8">
+        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-4">Recently Joined Verified Installers</h2>
+        <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
         <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
@@ -426,7 +426,7 @@
         </p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] mb-[theme(--spacing-2xl)]">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] mb-8">
         {#if data && data.businesses && data.businesses.length > 0}
           {#each data.businesses as business}
             <a
@@ -435,8 +435,8 @@
               rel="noopener noreferrer"
               class="no-underline text-inherit block transition-transform duration-[theme(--transition-default)]"
             >
-              <Card class="relative h-full flex flex-col overflow-hidden p-[theme(--spacing-lg)]">
-                <div class="absolute flex items-center text-primary-foreground text-xs font-semibold bg-success top-[theme(--spacing-xs)] right-[theme(--spacing-xs)] gap-[theme(--spacing-xs)] px-[theme(--spacing-sm)] py-[theme(--spacing-xs)] rounded-full">
+              <Card class="relative h-full flex flex-col overflow-hidden p-4">
+                <div class="absolute flex items-center text-primary-foreground text-xs font-semibold bg-success top-1 right-1 gap-1 px-2 py-1 rounded-full">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="18"
@@ -453,9 +453,9 @@
                   >
                   <span>Verified</span>
                 </div>
-                <h3 class="text-lg font-semibold text-primary pr-[theme(--spacing-2xl)]">{business.businessname}</h3>
-                <div class="flex flex-col mt-auto gap-[theme(--spacing-sm)]">
-                  <div class="flex items-center text-foreground dark:text-foreground-secondary text-sm gap-[theme(--spacing-sm)]">
+                <h3 class="text-lg font-semibold text-primary pr-8">{business.businessname}</h3>
+                <div class="flex flex-col mt-auto gap-2">
+                  <div class="flex items-center text-foreground dark:text-foreground-secondary text-sm gap-2">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
@@ -471,7 +471,7 @@
                     >
                     <span>{business.city}, {business.state}</span>
                   </div>
-                  <div class="flex items-center text-foreground dark:text-foreground-secondary text-sm gap-[theme(--spacing-sm)]">
+                  <div class="flex items-center text-foreground dark:text-foreground-secondary text-sm gap-2">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
@@ -502,7 +502,7 @@
         {/if}
       </div>
 
-      <div class="text-center mt-[theme(--spacing-2xl)]">
+      <div class="text-center mt-8">
         <Button onclick={navigateToBusinessForm} class="uppercase tracking-wider gap-2">
           <span>Join These Businesses</span>
           <svg
@@ -524,10 +524,10 @@
     </Card>
 
     <!-- How It Works Video Section -->
-    <Card class="text-center p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)]" id="product-working">
-      <div class="text-center mb-[theme(--spacing-2xl)]">
-        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">See How It Works</h2>
-        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+    <Card class="text-center p-[theme(--card-padding-y)] mb-8" id="product-working">
+      <div class="text-center mb-8">
+        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-4">See How It Works</h2>
+        <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
         <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
@@ -548,7 +548,7 @@
         </iframe>
       </div>
 
-      <div class="text-center mt-[theme(--spacing-2xl)]">
+      <div class="text-center mt-8">
         <Button onclick={navigateToBusinessForm} class="uppercase tracking-wider gap-2">
           <span>Try It Now — Free</span>
           <svg
@@ -570,18 +570,18 @@
     </Card>
 
     <!-- FAQs Section -->
-    <Card class="p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)]">
-      <div class="text-center mb-[theme(--spacing-2xl)]">
-        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-[theme(--spacing-lg)]">Frequently Asked Questions</h2>
-        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+    <Card class="p-[theme(--card-padding-y)] mb-8">
+      <div class="text-center mb-8">
+        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-4">Frequently Asked Questions</h2>
+        <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
       </div>
 
       <div class="flex flex-col items-center gap-[theme(--card-gap)] max-w-2xl mx-auto">
         {#each faqs as faq}
-          <Card class="p-[theme(--spacing-lg)] w-full">
-            <h3 class="text-lg font-semibold text-primary mb-[theme(--spacing-md)]">{faq.question}</h3>
+          <Card class="p-4 w-full">
+            <h3 class="text-lg font-semibold text-primary mb-3">{faq.question}</h3>
             <p class="text-foreground dark:text-foreground-secondary text-sm">{faq.answer}</p>
           </Card>
         {/each}
@@ -589,16 +589,16 @@
     </Card>
 
     <!-- Need Assistance Section -->
-    <Card class="p-[theme(--card-padding-y)] mb-[theme(--spacing-2xl)]">
-      <div class="text-center mb-[theme(--spacing-2xl)]">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">We're Here to Help</h2>
-        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+    <Card class="p-[theme(--card-padding-y)] mb-8">
+      <div class="text-center mb-8">
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">We're Here to Help</h2>
+        <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
       </div>
 
-      <div class="flex justify-center gap-[theme(--spacing-2xl)] flex-wrap">
-        <Card class="p-[theme(--spacing-lg)] text-center w-64">
+      <div class="flex justify-center gap-8 flex-wrap">
+        <Card class="p-4 text-center w-64">
           <div class="text-primary mb-4 flex justify-center">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -623,7 +623,7 @@
           >
         </Card>
 
-        <Card class="p-[theme(--spacing-lg)] text-center w-64">
+        <Card class="p-4 text-center w-64">
           <div class="text-primary mb-4 flex justify-center">
             <svg
               xmlns="http://www.w3.org/2000/svg"

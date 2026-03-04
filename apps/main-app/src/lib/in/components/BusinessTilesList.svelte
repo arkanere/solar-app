@@ -24,11 +24,11 @@
 </script>
 
 {#if businesses.length > 0}
-	<section class="mx-auto w-full max-w-[theme(--max-width-4xl)] flex flex-col gap-[theme(--form-field-gap)] px-[theme(--button-padding-x-default)] my-[theme(--card-gap)]">
+	<section class="mx-auto w-full max-w-4xl flex flex-col gap-[theme(--form-field-gap)] px-[theme(--button-padding-x-default)] my-[theme(--card-gap)]">
 		{#each businesses as business}
 			<Card.Root class="shadow-[theme(--shadow-card)] transition-shadow duration-[theme(--duration-default)]">
 				<Card.Header class="flex flex-col sm:flex-row sm:items-start sm:justify-between border-b gap-[theme(--dropdown-menu-item-gap)] pb-[theme(--card-padding-y)]">
-					<h2 class="text-[length:theme(--font-size-xl)] leading-[theme(--font-size-xl--line-height)] font-semibold tracking-[theme(--tracking-heading)]">
+					<h2 class="text-xl font-semibold tracking-[theme(--tracking-heading)]">
 						<a
 							href={`/in/solar-panel-installer/${business.slug}`}
 							class="text-primary hover:opacity-80 underline-offset-2 hover:underline transition-all duration-[theme(--transition-default)]"
@@ -38,7 +38,7 @@
 					</h2>
 					{#if business.tag}
 						<Badge variant="secondary" class="whitespace-nowrap">
-							<span class="inline-flex items-center justify-center w-4 h-4 mr-1 rounded-full text-success-foreground bg-success text-[length:theme(--font-size-xs)] font-bold">
+							<span class="inline-flex items-center justify-center w-4 h-4 mr-1 rounded-full text-success-foreground bg-success text-xs font-bold">
 								✓
 							</span>
 							{business.tag}
@@ -127,12 +127,12 @@
 <Dialog.Root bind:open={isModalOpen}>
 	<Dialog.Content class="max-w-md">
 		<div class="flex items-center justify-between">
-			<h2 class="text-[length:theme(--font-size-lg)] leading-[theme(--font-size-lg--line-height)] font-semibold">Request a Free Quote</h2>
+			<h2 class="text-lg font-semibold">Request a Free Quote</h2>
 			<Dialog.Close class="rounded-md opacity-70 hover:opacity-100">
 				<X class="w-4 h-4" />
 			</Dialog.Close>
 		</div>
-		<p class="text-[length:theme(--font-size-sm)] leading-[theme(--font-size-sm--line-height)] text-foreground-secondary">From {selectedBusinessName}</p>
+		<p class="text-sm text-foreground-secondary">From {selectedBusinessName}</p>
 		<LeadFormModal businessName={selectedBusinessName} businessSlug={selectedBusinessSlug} />
 	</Dialog.Content>
 </Dialog.Root>

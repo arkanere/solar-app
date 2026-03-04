@@ -730,7 +730,7 @@
 <div class="flex flex-col w-full h-[700px] min-h-[600px] max-h-screen rounded-[theme(--radius-lg)] border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
   <!-- Header -->
   <div class="flex items-center justify-between p-[theme(--card-padding-y)] border-b border-[hsl(var(--border))] bg-[hsl(var(--primary))]">
-    <h3 class="text-[length:var(--font-size-lg)] font-semibold text-[hsl(var(--primary-foreground))] leading-[var(--font-size-lg--line-height)]">Calculate Price and Savings</h3>
+    <h3 class="text-lg font-semibold text-[hsl(var(--primary-foreground))]">Calculate Price and Savings</h3>
     {#if onClose}
       <Button variant="ghost" size="sm" onclick={onClose} class="rounded-[theme(--badge-radius)] w-[2rem] h-[2rem] p-0">
         <X class="w-[1.25rem] h-[1.25rem]" />
@@ -746,7 +746,7 @@
           <img src="https://api.dicebear.com/9.x/bottts/svg?seed=SolarBot" alt="Bot" class="w-[2rem] h-[2rem] rounded-[theme(--badge-radius)] flex-shrink-0 mt-[theme(--form-element-field-gap)]" />
         {/if}
         <Card class="max-w-[85%] {message.role === 'user' ? 'bg-[hsl(var(--primary))]' : 'bg-[hsl(var(--card))]'} border border-[hsl(var(--border))]">
-          <CardContent class="pt-[theme(--card-padding-y)] text-[length:var(--font-size-sm)] {message.role === 'user' ? 'text-[hsl(var(--primary-foreground))]' : 'text-[hsl(var(--foreground))]'}">
+          <CardContent class="pt-[theme(--card-padding-y)] text-sm {message.role === 'user' ? 'text-[hsl(var(--primary-foreground))]' : 'text-[hsl(var(--foreground))]'}">
             <p class="whitespace-pre-wrap break-words">{@html message.content}</p>
 
             <!-- Guided flow suggestion -->
@@ -787,7 +787,7 @@
                         <Input type="text" bind:value={inputValues[input.id]} placeholder={input.placeholder || ""} class="flex-1" />
                       {/if}
                       {#if input.unit}
-                        <span class="text-[length:var(--font-size-sm)] text-[hsl(var(--muted-foreground))]">{input.unit}</span>
+                        <span class="text-sm text-[hsl(var(--muted-foreground))]">{input.unit}</span>
                       {/if}
                     </div>
                     <Button onclick={() => submitInput(input.id, inputValues[input.id])} disabled={!inputValues[input.id]} class="w-full" variant="default">
@@ -820,7 +820,7 @@
                     {/if}
 
                     {#if formErrors[input.id]}
-                      <span class="text-[length:var(--font-size-xs)] text-[hsl(var(--destructive))]">{formErrors[input.id]}</span>
+                      <span class="text-xs text-[hsl(var(--destructive))]">{formErrors[input.id]}</span>
                     {/if}
                   </div>
                 {/each}
