@@ -216,10 +216,10 @@
 
 <main class="w-full bg-background text-foreground transition-colors duration-300 overflow-x-hidden">
   <div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
-    <div class="text-center mb-[theme(--spacing-2xl)]">
-      <h1 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">{hasInstallers ? `Who Are the Top Rated Solar Panel Installers in ${cityName}?` : `What Does Solar Panel Installation Cost in ${cityName}?`}</h1>
+    <div class="text-center mb-8">
+      <h1 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">{hasInstallers ? `Who Are the Top Rated Solar Panel Installers in ${cityName}?` : `What Does Solar Panel Installation Cost in ${cityName}?`}</h1>
       {#if lastUpdated}
-        <p class="text-sm text-muted-foreground mt-[theme(--spacing-lg)] italic">
+        <p class="text-sm text-muted-foreground mt-4 italic">
           Last Update: {new Date(lastUpdated).toLocaleDateString("en-IN", {
             day: "numeric",
             month: "long",
@@ -250,9 +250,9 @@
     <RecentProjectsCity />
 
     <section id="services" class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">
-      <div class="text-center mb-[theme(--spacing-2xl)]">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">What Services Do Solar Panel Installers in {cityName} Provide?</h2>
-        <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+      <div class="text-center mb-8">
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">What Services Do Solar Panel Installers in {cityName} Provide?</h2>
+        <div class="flex justify-center items-center my-4">
           <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
         </div>
       </div>
@@ -288,9 +288,9 @@
       </div>
 
       <section id="people-also-ask" class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">
-        <div class="text-center mb-[theme(--spacing-2xl)]">
-          <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">What Do People Ask About Solar Installation in {cityName}?</h2>
-          <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+        <div class="text-center mb-8">
+          <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">What Do People Ask About Solar Installation in {cityName}?</h2>
+          <div class="flex justify-center items-center my-4">
             <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
           </div>
         </div>
@@ -307,9 +307,9 @@
 
     {#if district}
       <section class="mb-8 rounded-[theme(--radius-lg)] bg-[hsl(var(--accent)/0.1)] p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">
-        <div class="text-center mb-[theme(--spacing-2xl)]">
-          <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Where Else Can You Find Solar Installers in {district} District?</h2>
-          <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+        <div class="text-center mb-8">
+          <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">Where Else Can You Find Solar Installers in {district} District?</h2>
+          <div class="flex justify-center items-center my-4">
             <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
           </div>
           <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">If you're interested in exploring other solar businesses in {district}, visit our district directory page.</p>

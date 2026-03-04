@@ -48,7 +48,7 @@
   />
 </svelte:head>
 
-<main class="min-h-screen p-8 transition-colors duration-300 bg-[hsl(var(--background))] text-[var(--color-text-primary)] dark:bg-[hsl(var(--background))]">
+<main class="min-h-screen p-8 transition-colors duration-300 bg-[hsl(var(--background))] text-foreground dark:bg-[hsl(var(--background))]">
   <div class="max-w-2xl mx-auto">
     <h1 class="text-5xl font-semibold text-center mb-6 leading-tight md:text-4xl">Data Deletion Request</h1>
 
@@ -107,7 +107,7 @@
             bind:value={formData.email}
             required
             placeholder="Enter your email address (business or personal)"
-            class="w-full px-3 py-2 border border-[hsl(var(--border))] rounded transition-colors duration-300 focus:outline-none focus:border-[hsl(var(--accent))] dark:bg-[hsl(var(--background-secondary))] dark:border-[hsl(var(--border))] dark:text-[var(--color-text-primary)]"
+            class="w-full px-3 py-2 border border-[hsl(var(--border))] rounded transition-colors duration-300 focus:outline-none focus:border-[hsl(var(--accent))] dark:bg-[hsl(var(--background-secondary))] dark:border-[hsl(var(--border))] dark:text-foreground"
           />
         </div>
 
@@ -118,7 +118,7 @@
             id="phone"
             bind:value={formData.phone}
             placeholder="Enter your phone number (optional)"
-            class="w-full px-3 py-2 border border-[hsl(var(--border))] rounded transition-colors duration-300 focus:outline-none focus:border-[hsl(var(--accent))] dark:bg-[hsl(var(--background-secondary))] dark:border-[hsl(var(--border))] dark:text-[var(--color-text-primary)]"
+            class="w-full px-3 py-2 border border-[hsl(var(--border))] rounded transition-colors duration-300 focus:outline-none focus:border-[hsl(var(--accent))] dark:bg-[hsl(var(--background-secondary))] dark:border-[hsl(var(--border))] dark:text-foreground"
           />
         </div>
 
@@ -129,7 +129,7 @@
             bind:value={formData.reason}
             placeholder="Please let us know why you're requesting data deletion (customers and installers welcome)"
             rows="4"
-            class="w-full px-3 py-2 border border-[hsl(var(--border))] rounded transition-colors duration-300 focus:outline-none focus:border-[hsl(var(--accent))] resize-vertical min-h-24 dark:bg-[hsl(var(--background-secondary))] dark:border-[hsl(var(--border))] dark:text-[var(--color-text-primary)]"
+            class="w-full px-3 py-2 border border-[hsl(var(--border))] rounded transition-colors duration-300 focus:outline-none focus:border-[hsl(var(--accent))] resize-vertical min-h-24 dark:bg-[hsl(var(--background-secondary))] dark:border-[hsl(var(--border))] dark:text-foreground"
           ></textarea>
         </div>
 
@@ -142,7 +142,7 @@
         <button
           type="submit"
           disabled={submitting}
-          class="w-full py-2 px-8 bg-[hsl(var(--accent))] text-[var(--color-text-primary)] rounded font-semibold transition-all duration-300 cursor-pointer hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
+          class="w-full py-2 px-8 bg-[hsl(var(--accent))] text-foreground rounded font-semibold transition-all duration-300 cursor-pointer hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {submitting ? "Submitting..." : "Submit Deletion Request"}
         </button>

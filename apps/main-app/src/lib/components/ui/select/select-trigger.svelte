@@ -23,7 +23,7 @@
 		"rounded-[var(--radius-md)]",
 		"px-[var(--select-trigger-padding-x)]",
 		"py-[var(--select-trigger-padding-y)]",
-		"focus-visible:ring-[var(--select-trigger-ring-width)]",
+		"focus-visible:ring-[var(--ring-width)]",
 		"data-[size=default]:h-[var(--select-trigger-height-default)]",
 		"data-[size=sm]:h-[var(--select-trigger-height-sm)]",
 		"[&_svg:not([class*='size-'])]:size-[var(--select-trigger-icon-size)]",

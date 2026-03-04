@@ -17,22 +17,22 @@
   let { projects = [] } = $props<{ projects: Project[] }>();
 </script>
 
-<Card.Root class="border-0 shadow-[theme(--shadow-lg)] mb-[theme(--spacing-2xl)]">
+<Card.Root class="border-0 shadow-[theme(--shadow-lg)] mb-8">
   <Card.Header class="text-center pb-[theme(--card-padding-y)]">
-    <Card.Title class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">
+    <Card.Title class="text-3xl md:text-4xl font-semibold mb-4 text-primary">
       Recent Solar Installation Projects
     </Card.Title>
-    <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+    <div class="flex justify-center items-center my-4">
       <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
     </div>
-    <Card.Description class="text-[theme(--font-size-base)] max-w-[theme(--max-width-2xl)] mx-auto">
+    <Card.Description class="text-base max-w-2xl mx-auto">
       Explore real solar installations completed by our verified installers across India
     </Card.Description>
   </Card.Header>
 
   <Card.Content>
     {#if projects && projects.length > 0}
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] mb-[theme(--spacing-2xl)]">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] mb-8">
         {#each projects as project (project.id)}
           <a
             href="/in/solar-panel-installer/{project.business_slug}/project/{project.project_slug}"
@@ -62,11 +62,11 @@
                 {/if}
               </div>
 
-              <Card.Content class="pt-[theme(--spacing-lg)]">
-                <h3 class="line-clamp-2 text-primary font-semibold text-[theme(--font-size-lg)] mb-[theme(--spacing-md)]">
+              <Card.Content class="pt-4">
+                <h3 class="line-clamp-2 text-primary font-semibold text-lg mb-3">
                   {project.title}
                 </h3>
-                <div class="text-muted-foreground flex flex-col gap-[theme(--spacing-xs)] text-[theme(--font-size-sm)]">
+                <div class="text-muted-foreground flex flex-col gap-1 text-sm">
                   <p>Pincode: {project.pincode || "N/A"}</p>
                   <p>Completed on: {formatDate(project.project_date)}</p>
                   <p>

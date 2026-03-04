@@ -20,7 +20,7 @@
 		bind:ref
 		data-slot="alert-dialog-content"
 		class={cn(
-			"backdrop-glass data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-[var(--alert-dialog-content-gap)] rounded-[length:var(--alert-dialog-content-radius)] border-inner-glow p-[length:var(--alert-dialog-content-padding)] shadow-[var(--alert-dialog-content-shadow)] duration-[var(--alert-dialog-content-transition)] sm:max-w-lg",
+			"backdrop-glass data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border-inner-glow p-6 shadow-lg duration-[var(--duration-slow)] sm:max-w-lg",
 			className
 		)}
 		{...restProps}

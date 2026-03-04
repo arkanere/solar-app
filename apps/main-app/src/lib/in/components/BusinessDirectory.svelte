@@ -56,10 +56,10 @@
 	}
 </script>
 
-<div class="w-full max-w-[theme(--max-width-sm)] mx-auto">
+<div class="w-full max-w-sm mx-auto">
 	<Card.Root class="border border-[theme(--color-border)] shadow-[theme(--shadow-lg)]">
 		<Card.Header>
-			<Card.Title class="text-[theme(--font-size-2xl)] leading-[theme(--font-size-2xl--line-height)]">Solar Installer Directory</Card.Title>
+			<Card.Title class="text-2xl">Solar Installer Directory</Card.Title>
 			<Card.Description>
 				Select state and district to view installer listings
 			</Card.Description>

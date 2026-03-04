@@ -93,31 +93,31 @@
     `}
 </svelte:head>
 
-<main class="w-full min-h-screen bg-background text-foreground transition-colors duration-300 dark:bg-background dark:text-foreground flex flex-col items-center py-[theme(--spacing-lg)] px-[theme(--container-padding)] md:py-[theme(--spacing-3xl)]">
-	<div class="max-w-3xl w-full mb-[theme(--spacing-3xl)]">
-		<header class="mb-[theme(--spacing-xl)] pb-[theme(--spacing-md)] border-b border-border">
-			<h1 class="text-[theme(--font-size-4xl)] md:text-5xl font-bold mb-[theme(--spacing-md)] leading-tight">{blog.title}</h1>
+<main class="w-full min-h-screen bg-background text-foreground transition-colors duration-300 dark:bg-background dark:text-foreground flex flex-col items-center py-4 px-[theme(--container-padding)] md:py-12">
+	<div class="max-w-3xl w-full mb-12">
+		<header class="mb-6 pb-3 border-b border-border">
+			<h1 class="text-4xl md:text-5xl font-bold mb-3 leading-tight">{blog.title}</h1>
 			{#if blog.author_name}
-				<p class="text-[theme(--font-size-base)] mb-[theme(--spacing-xs)]">
+				<p class="text-base mb-1">
 					By <a href="/about-us" class="text-primary hover:underline">
 						{blog.author_name}
 					</a>
 				</p>
 			{/if}
 			{#if blog.published_at}
-				<p class="text-[theme(--font-size-base)] opacity-80">
+				<p class="text-base opacity-80">
 					Published: <time datetime={blog.published_at}>{formatDate(blog.published_at)}</time>
 				</p>
 			{/if}
 			{#if blog.updated_at && blog.updated_at !== blog.published_at}
-				<p class="text-[theme(--font-size-base)] opacity-80 italic">
+				<p class="text-base opacity-80 italic">
 					Last updated: <time datetime={blog.updated_at}>{formatDate(blog.updated_at)}</time>
 				</p>
 			{/if}
 		</header>
 
 		{#if getFeaturedImageUrl(blog.featured_image)}
-			<div class="w-full mb-[theme(--spacing-xl)] rounded-[theme(--radius-lg)] overflow-hidden">
+			<div class="w-full mb-6 rounded-[theme(--radius-lg)] overflow-hidden">
 				<img
 					src={getFeaturedImageUrl(blog.featured_image)}
 					alt={getFeaturedImageAlt(blog.featured_image)}
@@ -127,19 +127,19 @@
 		{/if}
 
 		{#if blog.tags && blog.tags.length > 0}
-			<div class="flex gap-[theme(--spacing-sm)] flex-wrap mb-[theme(--spacing-xl)]">
+			<div class="flex gap-2 flex-wrap mb-6">
 				{#each blog.tags as tag}
 					<Badge variant="default">{tag}</Badge>
 				{/each}
 			</div>
 		{/if}
 
-		<div class="prose prose-invert max-w-none mb-[theme(--spacing-xl)] text-[theme(--font-size-lg)] leading-relaxed">
+		<div class="prose prose-invert max-w-none mb-6 text-lg leading-relaxed">
 			{@html blog.content}
 		</div>
 
 		{#if blog.categories && blog.categories.length > 0}
-			<div class="mt-[theme(--spacing-xl)] pt-[theme(--spacing-md)] border-t border-border opacity-80 text-[theme(--font-size-base)]">
+			<div class="mt-6 pt-3 border-t border-border opacity-80 text-base">
 				<strong>Categories:</strong>
 				{#each blog.categories as category, index}
 					<span>{category}{index < blog.categories.length - 1 ? ', ' : ''}</span>
@@ -148,9 +148,9 @@
 		{/if}
 	</div>
 
-	<section id="lead-form-sv" class="w-full max-w-[theme(--max-width-md)] mx-auto rounded-[theme(--radius-xl)] bg-gradient-to-r from-primary to-primary text-primary-foreground p-[theme(--spacing-lg)] md:p-[theme(--spacing-3xl)] text-center shadow-[theme(--shadow-lg)]">
-		<h2 class="text-[theme(--font-size-3xl)] md:text-4xl font-semibold mb-[theme(--spacing-md)] text-primary-foreground">Get Your Free Solar Quote Today</h2>
-		<p class="text-[theme(--font-size-base)] md:text-[theme(--font-size-lg)] mb-[theme(--spacing-xl)] text-primary-foreground/90 mx-auto">
+	<section id="lead-form-sv" class="w-full max-w-md mx-auto rounded-[theme(--radius-xl)] bg-gradient-to-r from-primary to-primary text-primary-foreground p-4 md:p-12 text-center shadow-[theme(--shadow-lg)]">
+		<h2 class="text-3xl md:text-4xl font-semibold mb-3 text-primary-foreground">Get Your Free Solar Quote Today</h2>
+		<p class="text-base md:text-lg mb-6 text-primary-foreground/90 mx-auto">
 			Connect with verified solar installers in your area and receive personalized quotes.
 			Free consultation and competitive pricing guaranteed.
 		</p>

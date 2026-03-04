@@ -13,7 +13,7 @@
 <div
 	bind:this={ref}
 	data-slot="alert-title"
-	class={cn("col-start-2 line-clamp-1 min-h-[var(--alert-title-min-height)] font-[var(--alert-title-font-weight)] tracking-[var(--alert-title-tracking)]", className)}
+	class={cn("col-start-2 line-clamp-1 min-h-[var(--alert-title-min-height)] font-[var(--alert-title-font-weight)] tracking-[var(--tracking-tight)]", className)}
 	{...restProps}
 >
 	{@render children?.()}

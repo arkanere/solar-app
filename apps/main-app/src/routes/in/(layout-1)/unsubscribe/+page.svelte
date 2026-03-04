@@ -55,25 +55,25 @@
 </script>
 
 <div class="flex items-center justify-center min-h-screen bg-background p-[theme(--container-padding)]">
-	<Card class="w-full max-w-[theme(--max-width-sm)] text-center">
+	<Card class="w-full max-w-sm text-center">
 		<CardContent class="pt-[theme(--card-padding-y)] px-[theme(--card-padding-y)]">
 			{#if isConfirming}
-				<h1 class="text-[theme(--font-size-3xl)] font-display mb-[theme(--spacing-xl)] text-primary">
+				<h1 class="text-3xl font-display mb-6 text-primary">
 					Confirm Unsubscription
 				</h1>
 
-				<p class="text-[theme(--font-size-base)] leading-[theme(--font-size-base--line-height)] text-secondary mb-[theme(--spacing-xl)]">
+				<p class="text-base text-foreground-secondary mb-6">
 					Please confirm that you want to unsubscribe<br />
 					<strong>{email}</strong> from our email list.
 				</p>
 
 				{#if errorMessage}
-					<Alert variant="destructive" class="my-[theme(--spacing-lg)]">
+					<Alert variant="destructive" class="my-4">
 						<AlertDescription>{errorMessage}</AlertDescription>
 					</Alert>
 				{/if}
 
-				<div class="mt-[theme(--spacing-xl)]">
+				<div class="mt-6">
 					<Button
 						variant="default"
 						onclick={handleConfirm}
@@ -84,7 +84,7 @@
 					</Button>
 				</div>
 			{:else if isSuccess}
-				<div class="w-[theme(--icon-size-xl)] h-[theme(--icon-size-xl)] mx-auto mb-[theme(--spacing-xl)] text-success flex justify-center">
+				<div class="w-[theme(--icon-size-xl)] h-[theme(--icon-size-xl)] mx-auto mb-6 text-success flex justify-center">
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						viewBox="0 0 24 24"
@@ -99,11 +99,11 @@
 					</svg>
 				</div>
 
-				<h1 class="text-[theme(--font-size-3xl)] font-display mb-[theme(--spacing-xl)] text-primary">
+				<h1 class="text-3xl font-display mb-6 text-primary">
 					Unsubscription was successful!
 				</h1>
 
-				<p class="text-[theme(--font-size-base)] leading-[theme(--font-size-base--line-height)] text-secondary mb-[theme(--spacing-xl)]">
+				<p class="text-base text-foreground-secondary mb-6">
 					We have informed the sender of this email that<br />
 					you don't want to receive more email from<br />
 					them.

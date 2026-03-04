@@ -34,16 +34,16 @@
 
 <section class="flex flex-col gap-[theme(--card-gap)] px-[theme(--container-padding)] py-[theme(--card-gap)] md:px-8">
 	<div class="flex flex-col items-center justify-center gap-[theme(--form-element-field-gap)] text-center">
-		<h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">
+		<h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">
 			Simplifying Solar For Everyone All over India
 		</h2>
-		<div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+		<div class="flex justify-center items-center my-4">
 			<span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
 		</div>
 	</div>
 
 	<div class="flex justify-center">
-		<Card class="w-full max-w-[theme(--max-width-4xl)]">
+		<Card class="w-full max-w-4xl">
 			<CardContent class="pt-[theme(--card-padding-y)]">
 				<div class="overflow-x-auto">
 					<Table.Root>

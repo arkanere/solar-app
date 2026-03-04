@@ -53,24 +53,24 @@
 
 <main class="min-h-screen p-[theme(--container-padding)] transition-colors duration-300 bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
   <div class="max-w-2xl mx-auto">
-    <h1 class="text-[2.25rem] font-semibold text-center mb-[theme(--spacing-lg)] leading-tight md:text-[1.875rem]">Data Deletion Request</h1>
+    <h1 class="text-[2.25rem] font-semibold text-center mb-4 leading-tight md:text-[1.875rem]">Data Deletion Request</h1>
 
-    <div class="mb-[theme(--spacing-2xl)]">
-      <p class="text-[theme(--font-size-lg)] leading-relaxed mb-[theme(--spacing-lg)]">
+    <div class="mb-8">
+      <p class="text-lg leading-relaxed mb-4">
         We respect your privacy and your right to control your personal data.
         Whether you are a customer or a registered solar installer on our
         platform, if you would like to request deletion of your personal
         information from our database, please fill out the form below.
       </p>
 
-      <Card class="mb-[theme(--spacing-2xl)]">
+      <Card class="mb-8">
         <CardHeader>
           <CardTitle>What data will be deleted?</CardTitle>
         </CardHeader>
-        <CardContent class="gap-[theme(--spacing-md)]">
+        <CardContent class="gap-3">
           <div>
-            <h4 class="font-semibold mb-[theme(--spacing-sm)] text-[theme(--font-size-base)]">For Customers:</h4>
-            <ul class="pl-[theme(--spacing-lg)] space-y-[theme(--spacing-xs)]">
+            <h4 class="font-semibold mb-2 text-base">For Customers:</h4>
+            <ul class="pl-4 space-y-1">
               <li class="leading-relaxed">Your contact information (phone number, email address)</li>
               <li class="leading-relaxed">Lead submissions and requirements</li>
               <li class="leading-relaxed">Account information and preferences</li>
@@ -79,8 +79,8 @@
           </div>
 
           <div>
-            <h4 class="font-semibold mb-[theme(--spacing-sm)] text-[theme(--font-size-base)]">For Solar Installers/Businesses:</h4>
-            <ul class="pl-[theme(--spacing-lg)] space-y-[theme(--spacing-xs)]">
+            <h4 class="font-semibold mb-2 text-base">For Solar Installers/Businesses:</h4>
+            <ul class="pl-4 space-y-1">
               <li class="leading-relaxed">Business profile and contact information</li>
               <li class="leading-relaxed">Service area and specialization details</li>
               <li class="leading-relaxed">Lead claims and interaction history</li>
@@ -94,10 +94,10 @@
     </div>
 
     {#if submitted}
-      <Alert class="mb-[theme(--spacing-2xl)] bg-[hsl(var(--success))] border-[hsl(var(--success))]">
+      <Alert class="mb-8 bg-[hsl(var(--success))] border-[hsl(var(--success))]">
         <AlertTitle>Request Submitted Successfully!</AlertTitle>
         <AlertDescription>
-          <p class="mb-[theme(--spacing-md)]">
+          <p class="mb-3">
             Your data deletion request has been received. We will process your
             request within 30 days and send you a confirmation email once
             completed.
@@ -111,14 +111,14 @@
         </AlertDescription>
       </Alert>
     {:else}
-      <Card class="mb-[theme(--spacing-2xl)]">
+      <Card class="mb-8">
         <CardHeader>
           <CardTitle>Request Data Deletion</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onsubmit={handleSubmit} class="gap-[theme(--spacing-lg)] flex flex-col">
-            <div class="gap-[theme(--spacing-sm)] flex flex-col">
-              <label for="email" class="font-semibold text-[theme(--font-size-sm)]">Email Address *</label>
+          <form onsubmit={handleSubmit} class="gap-4 flex flex-col">
+            <div class="gap-2 flex flex-col">
+              <label for="email" class="font-semibold text-sm">Email Address *</label>
               <Input
                 type="email"
                 id="email"
@@ -128,8 +128,8 @@
               />
             </div>
 
-            <div class="gap-[theme(--spacing-sm)] flex flex-col">
-              <label for="phone" class="font-semibold text-[theme(--font-size-sm)]">Phone Number</label>
+            <div class="gap-2 flex flex-col">
+              <label for="phone" class="font-semibold text-sm">Phone Number</label>
               <Input
                 type="tel"
                 id="phone"
@@ -138,8 +138,8 @@
               />
             </div>
 
-            <div class="gap-[theme(--spacing-sm)] flex flex-col">
-              <label for="reason" class="font-semibold text-[theme(--font-size-sm)]">Reason for Deletion (Optional)</label>
+            <div class="gap-2 flex flex-col">
+              <label for="reason" class="font-semibold text-sm">Reason for Deletion (Optional)</label>
               <Textarea
                 id="reason"
                 bind:value={formData.reason}
@@ -170,8 +170,8 @@
       <CardHeader>
         <CardTitle>Important Information</CardTitle>
       </CardHeader>
-      <CardContent class="gap-[theme(--spacing-md)] flex flex-col">
-        <ul class="pl-[theme(--spacing-lg)] space-y-[theme(--spacing-xs)]">
+      <CardContent class="gap-3 flex flex-col">
+        <ul class="pl-4 space-y-1">
           <li class="leading-relaxed">Data deletion requests are processed within 30 business days</li>
           <li class="leading-relaxed">
             You will receive a confirmation email once your data has been deleted

@@ -23,6 +23,6 @@
 	<div
 		data-slot="progress-indicator"
 		class="h-full w-full flex-1"
-		style="background-color: var(--progress-indicator-bg); transform: translateX(-{100 - (100 * (value ?? 0)) / (max ?? 1)}%); transition: var(--progress-indicator-transition);"
+		style="background-color: var(--progress-indicator-bg); transform: translateX(-{100 - (100 * (value ?? 0)) / (max ?? 1)}%); transition: all 150ms ease;"
 	></div>
 </ProgressPrimitive.Root>

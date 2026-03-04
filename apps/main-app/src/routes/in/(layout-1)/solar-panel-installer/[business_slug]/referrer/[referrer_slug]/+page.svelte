@@ -18,20 +18,20 @@
   <div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
     {#if errorMessage}
       <!-- Error Message -->
-      <section class="my-8 mx-auto max-w-[theme(--max-width-md)]">
+      <section class="my-8 mx-auto max-w-md">
         <div class="rounded-[theme(--radius-lg)] p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] bg-destructive-muted border border-destructive">
           <p class="text-center text-destructive font-semibold text-lg">{errorMessage}</p>
         </div>
       </section>
     {:else if business && referrer}
       <!-- Referrer Info Card -->
-      <section class="mt-8 mb-6 mx-auto max-w-[theme(--max-width-md)]">
+      <section class="mt-8 mb-6 mx-auto max-w-md">
         <div class="rounded-[theme(--radius-lg)] p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] bg-card border-2 border-primary/20">
           <div class="text-center">
-            <h2 class="text-2xl md:text-3xl font-bold text-primary mb-[theme(--spacing-md)]">
+            <h2 class="text-2xl md:text-3xl font-bold text-primary mb-3">
               Welcome, {referrer.name}!
             </h2>
-            <p class="text-foreground dark:text-foreground-secondary text-lg mb-[theme(--spacing-sm)]">
+            <p class="text-foreground dark:text-foreground-secondary text-lg mb-2">
               This is your referral submission page for <strong class="text-primary">{business.businessname}</strong>
             </p>
             <p class="text-sm text-muted-foreground mt-3">
@@ -42,11 +42,11 @@
       </section>
 
       <!-- Lead Form Section -->
-      <section id="lead-form-sv" class="mb-8 mx-auto max-w-[theme(--max-width-md)]">
+      <section id="lead-form-sv" class="mb-8 mx-auto max-w-md">
         <div class="rounded-[theme(--radius-lg)] p-[theme(--card-padding-y)] shadow-[theme(--shadow-lg)] bg-gradient-to-br from-primary/10 to-primary/5">
-          <div class="text-center mb-[theme(--spacing-2xl)]">
-            <h1 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Submit Customer Details</h1>
-            <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+          <div class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">Submit Customer Details</h1>
+            <div class="flex justify-center items-center my-4">
               <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
             </div>
             <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
@@ -58,7 +58,7 @@
       </section>
     {:else}
       <!-- Loading State -->
-      <section class="my-8 mx-auto max-w-[theme(--max-width-md)]">
+      <section class="my-8 mx-auto max-w-md">
         <div class="rounded-[theme(--radius-lg)] p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] bg-card">
           <p class="text-center text-foreground">Loading...</p>
         </div>

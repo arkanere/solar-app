@@ -175,17 +175,17 @@
       <!-- Business Details - Single Combined Card -->
       <section class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] transition-all w-full">
         <!-- Section Header -->
-        <div class="text-center mb-[theme(--spacing-2xl)]">
-          <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Business Information</h2>
-          <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+        <div class="text-center mb-8">
+          <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">Business Information</h2>
+          <div class="flex justify-center items-center my-4">
             <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
           </div>
         </div>
 
-        <div class="flex flex-col gap-[theme(--spacing-2xl)]">
+        <div class="flex flex-col gap-8">
           <!-- Description Section -->
           {#if business.businessfilled && business.description}
-            <div class="flex flex-col gap-[theme(--spacing-md)]">
+            <div class="flex flex-col gap-3">
               <h3 class="text-xl font-semibold text-primary m-0">About</h3>
               <p class="m-0 leading-relaxed text-foreground dark:text-foreground-secondary">{business.description}</p>
             </div>
@@ -193,7 +193,7 @@
 
           <!-- Services Section -->
           {#if business.businessfilled && business.services && business.services.length > 0}
-            <div class="flex flex-col gap-[theme(--spacing-md)]">
+            <div class="flex flex-col gap-3">
               <h3 class="text-xl font-semibold text-primary m-0">Services</h3>
               <div class="flex flex-wrap gap-2">
                 {#each business.services as serviceId}
@@ -207,7 +207,7 @@
 
           <!-- Brands Section -->
           {#if business.businessfilled && business.brands && business.brands.length > 0}
-            <div class="flex flex-col gap-[theme(--spacing-md)]">
+            <div class="flex flex-col gap-3">
               <h3 class="text-xl font-semibold text-primary m-0">Brands</h3>
               <div class="flex flex-wrap gap-2">
                 {#each business.brands as brandId}
@@ -222,9 +222,9 @@
           <!-- Contact & Location Combined -->
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-[theme(--card-gap)]">
             <!-- Contact Information -->
-            <div class="flex flex-col gap-[theme(--spacing-md)]">
+            <div class="flex flex-col gap-3">
               <h3 class="text-xl font-semibold text-primary m-0">Contact Information</h3>
-              <div class="flex flex-col gap-[theme(--spacing-lg)]">
+              <div class="flex flex-col gap-4">
                 {#if business.phonenumber}
                   <div class="flex items-start gap-4">
                     <svg
@@ -343,9 +343,9 @@
             </div>
 
             <!-- Location Information -->
-            <div class="flex flex-col gap-[theme(--spacing-md)]">
+            <div class="flex flex-col gap-3">
               <h3 class="text-xl font-semibold text-primary m-0">Location</h3>
-              <div class="flex flex-col gap-[theme(--spacing-lg)]">
+              <div class="flex flex-col gap-4">
                 {#if business.address}
                   <div class="flex items-start gap-4">
                     <svg
@@ -454,9 +454,9 @@
       <!-- Recent Projects Section -->
       {#if showProjects}
         <section class="rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] mb-8 transition-all w-full">
-          <div class="text-center mb-[theme(--spacing-2xl)]">
-            <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Recent Solar Panel Installation Projects</h2>
-            <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+          <div class="text-center mb-8">
+            <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">Recent Solar Panel Installation Projects</h2>
+            <div class="flex justify-center items-center my-4">
               <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
             </div>
           </div>
@@ -466,7 +466,7 @@
               No recent projects found for this business.
             </div>
           {:else}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] mt-[theme(--spacing-2xl)]">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] mt-8">
               {#each projects as project (project.id)}
                 <div class="rounded-[theme(--radius-lg)] overflow-hidden shadow-[theme(--shadow-md)] transition-all hover:shadow-lg hover:-translate-y-1 bg-card h-full">
                   <a
@@ -523,14 +523,14 @@
       <!-- Other Businesses in the City -->
       {#if business.city}
         <section class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] transition-all w-full">
-          <div class="text-center mb-[theme(--spacing-2xl)]">
-            <h2 class="text-3xl md:text-4xl font-semibold mb-[theme(--spacing-lg)] text-primary">Find Other Solar Businesses in {business.city}</h2>
-            <div class="flex justify-center items-center my-[theme(--spacing-lg)]">
+          <div class="text-center mb-8">
+            <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">Find Other Solar Businesses in {business.city}</h2>
+            <div class="flex justify-center items-center my-4">
               <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
             </div>
           </div>
           <div class="text-center">
-            <p class="text-lg mb-[theme(--spacing-lg)] text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
+            <p class="text-lg mb-4 text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
               If you're interested in exploring other solar businesses in {business.city},
               visit our directory page.
             </p>
