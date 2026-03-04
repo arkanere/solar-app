@@ -39,7 +39,9 @@ export const GET: RequestHandler = async () => {
 	const today = new Date().toISOString().split('T')[0];
 
 	const [citiesResult, businessesResult, blogsResult] = await Promise.all([
-		pool.query('SELECT DISTINCT city FROM locations ORDER BY city ASC'),
+		pool.query(`SELECT DISTINCT l.city FROM locations l
+			INNER JOIN businesses_1 b ON LOWER(b.district) = LOWER(l.district) AND b.isvisible = true
+			ORDER BY l.city ASC`),
 		pool.query('SELECT slug FROM businesses_1 WHERE isvisible = true ORDER BY slug ASC'),
 		pool.query('SELECT slug, updated_at FROM in_blogs WHERE status = \'published\' ORDER BY updated_at DESC')
 	]);

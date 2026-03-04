@@ -1,6 +1,7 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
+import { stateToAbbr } from '$lib/us/stateAbbreviations';
 
 const BASE_URL = 'https://solarvipani.com';
 
@@ -17,8 +18,10 @@ const STATIC_PAGES = [
 	{ path: '/us/recent-solar-installation-projects', changefreq: 'monthly', priority: '0.8' }
 ];
 
-function cityToSlug(city: string): string {
-	return city.toLowerCase().replace(/\s+/g, '-');
+function cityStateSlug(city: string, state: string): string {
+	const citySlug = city.toLowerCase().replace(/\s+/g, '-');
+	const stateAbbr = stateToAbbr[state as keyof typeof stateToAbbr] || state.toLowerCase();
+	return `${citySlug}-${stateAbbr}`;
 }
 
 function escapeXml(unsafe: string): string {
@@ -39,9 +42,13 @@ export const GET: RequestHandler = async () => {
 	const today = new Date().toISOString().split('T')[0];
 
 	const [citiesResult, businessesResult, blogsResult] = await Promise.all([
-		pool.query('SELECT DISTINCT city FROM us_locations ORDER BY city ASC'),
+		pool.query(`SELECT DISTINCT l.city, l.state FROM us_locations l
+			INNER JOIN us_businesses b ON LOWER(b.county) = LOWER(l.county) AND b.state = l.state AND b.isvisible = true
+			ORDER BY l.state ASC, l.city ASC`),
 		pool.query('SELECT slug FROM us_businesses WHERE isvisible = true ORDER BY slug ASC'),
-		pool.query('SELECT slug, updated_at FROM us_blogs WHERE status = \'published\' ORDER BY updated_at DESC')
+		pool.query(
+			"SELECT slug, updated_at FROM us_blogs WHERE status = 'published' ORDER BY updated_at DESC"
+		)
 	]);
 
 	const parts: string[] = [
@@ -54,9 +61,14 @@ export const GET: RequestHandler = async () => {
 	}
 
 	for (const row of citiesResult.rows) {
-		const slug = cityToSlug(row.city);
+		const slug = cityStateSlug(row.city, row.state);
 		parts.push(
-			urlEntry(`${BASE_URL}/us/solar-panel-installer-directory/${slug}`, today, 'weekly', '0.7')
+			urlEntry(
+				`${BASE_URL}/us/solar-panel-installer-directory/${slug}`,
+				today,
+				'weekly',
+				'0.7'
+			)
 		);
 	}
 
@@ -71,9 +83,7 @@ export const GET: RequestHandler = async () => {
 	for (const row of blogsResult.rows) {
 		if (row.slug) {
 			const lastmod = row.updated_at ? row.updated_at.toISOString().split('T')[0] : today;
-			parts.push(
-				urlEntry(`${BASE_URL}/us/blogs/${row.slug}`, lastmod, 'monthly', '0.6')
-			);
+			parts.push(urlEntry(`${BASE_URL}/us/blogs/${row.slug}`, lastmod, 'monthly', '0.6'));
 		}
 	}
 
