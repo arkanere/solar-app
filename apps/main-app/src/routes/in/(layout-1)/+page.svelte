@@ -601,6 +601,6 @@
 
 <!-- Chatbot Popup (Lazy Loaded) -->
 {#if shouldLoadChatbot && ChatbotPopup}
-  <svelte:component this={ChatbotPopup} />
+  <ChatbotPopup />
 {/if}
 
