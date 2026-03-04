@@ -44,6 +44,7 @@
 
 	// Generate the city-state URL slug
 	let cityStateSlug = $derived(state ? formatCityStateUrl(city, state) : city.toLowerCase());
+	let hasInstallers = $derived(businesses.length > 0);
 
 	// Function to toggle modal visibility
 	function toggleModal(businessName = '', businessSlug = '') {
@@ -322,8 +323,8 @@
 	/>
 
 	<!-- Meta robots -->
-	<meta name="robots" content="index, follow" />
-	<meta name="googlebot" content="index, follow" />
+	<meta name="robots" content={hasInstallers ? "index, follow" : "noindex, follow"} />
+	<meta name="googlebot" content={hasInstallers ? "index, follow" : "noindex, follow"} />
 
 	<!-- Open Graph Tags -->
 	<meta
