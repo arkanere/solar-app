@@ -1,6 +1,5 @@
 import type { PageServerLoad } from './$types';
 import { pool } from '$lib/server/db';
-import { capitalizeCityName } from '$lib/server/format';
 
 export const config = {
 	isr: {
@@ -9,24 +8,21 @@ export const config = {
 };
 
 export const load: PageServerLoad = async ({ params }) => {
-	const cityParam = params.city;
-	const city = capitalizeCityName(cityParam);
+	const citySlug = params.city.toLowerCase();
 
 	try {
 		const districtResult = await pool.query(
-			`
-      SELECT district
-      FROM locations
-      WHERE LOWER(city) = LOWER($1)
-      LIMIT 1
-      `,
-			[city]
+			`SELECT city, district
+			FROM locations
+			WHERE LOWER(REGEXP_REPLACE(city, '\\s+', '-', 'g')) = $1
+			LIMIT 1`,
+			[citySlug]
 		);
 
 		if (districtResult.rows.length === 0) {
 			return {
-				city,
-				errorMessage: `No businesses found in ${city} or its district.`,
+				city: citySlug,
+				errorMessage: `No businesses found for this location.`,
 				subset_cities_localities: [],
 				district: '',
 				recentProjects: [],
@@ -34,6 +30,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			};
 		}
 
+		const city = districtResult.rows[0].city;
 		const district = districtResult.rows[0].district;
 
 		const pincodeResult = await pool.query(
@@ -161,7 +158,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	} catch (error) {
 		console.error('Database query error:', error);
 		return {
-			city,
+			city: citySlug,
 			errorMessage: 'Failed to load businesses',
 			subset_cities_localities: [],
 			district: '',
