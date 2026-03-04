@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* ===== THEME CONFIGURATION (Linear-inspired) ===== */
+/* ===== THEME CONFIGURATION ===== */
 @theme {
   /* Base radius for border-radius calculations */
   --radius: 0.375rem;
@@ -14,14 +14,14 @@
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
 
-  /* Shadows (Linear uses very subtle, diffused shadows) */
+  /* Shadows */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
   --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.02);
   --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.06), 0 4px 8px rgba(0, 0, 0, 0.03);
   --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.08), 0 6px 12px rgba(0, 0, 0, 0.04);
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08);
-  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-card: none;
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.08);
 
   /* Animation timing */
   --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
@@ -40,11 +40,6 @@
   --transition-default: var(--duration-default) var(--ease-default);
   --transition-fast: var(--duration-fast) var(--ease-default);
   --transition-slow: var(--duration-slow) var(--ease-default);
-
-  /* Phase 1.3: Scale utilities for interactive feedback */
-  --hover-scale: 1.02;
-  --hover-scale-subtle: 1.01;
-  --active-scale: 0.98;
 
   /* Z-Index Scale (layering system) */
   --z-base: 0;
@@ -248,7 +243,7 @@
   --tracking-wider: 0.05em;
   --tracking-widest: 0.1em;
 
-  /* Phase 5.2: Letter-spacing refinements for typography hierarchy */
+  /* Letter-spacing for typography hierarchy */
   --tracking-heading: -0.02em;
   --tracking-body: 0;
   --tracking-ui: 0.01em;
@@ -269,34 +264,10 @@
   --animate-slide-in-from-top: slide-in-from-top 0.2s ease-out;
   --animate-slide-in-from-bottom: slide-in-from-bottom 0.2s ease-out;
 
-  /* Phase 2.1: Spatial relationship animations */
+  /* Spatial animations */
   --animation-enter-fast: slide-in-from-bottom 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --animation-enter-slow: slide-in-from-bottom 250ms cubic-bezier(0.4, 0, 0.2, 1);
   --animation-scale-in: scale-in 150ms cubic-bezier(0.4, 0, 0.2, 1);
-
-  /* Phase 7.1: Pulse animation for attention */
-  --animate-pulse-subtle: pulse-subtle 2s ease-in-out infinite;
-
-  /* Phase 7.2: Bounce entrance animation */
-  --animate-bounce-in: bounce-in 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-
-  /* ===== GRADIENT TOKENS ===== */
-  /* Subtle gradients for Linear design system metallic sheen effect */
-  --gradient-subtle-vertical: linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.95) 100%);
-  --gradient-subtle-horizontal: linear-gradient(90deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.95) 100%);
-
-  /* Overlay gradients */
-  --gradient-overlay-dark: linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.6) 100%);
-  --gradient-overlay-primary: linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, hsl(var(--primary) / 0.7) 100%);
-
-  /* ===== BORDER TOKENS ===== */
-  /* Inner glow border - signature Linear design effect */
-  --border-inner-glow: 1px solid hsl(var(--border) / 0.5);
-
-  /* ===== GLASSMORPHISM TOKENS ===== */
-  /* Backdrop blur values for glassmorphism effects */
-  --backdrop-blur-light: blur(4px);
-  --backdrop-blur-heavy: blur(8px);
 
   /* ===== COLOR TOKENS FOR TAILWIND V4 ===== */
   /* These enable classes like bg-background, text-foreground, etc. */
@@ -525,7 +496,6 @@
   }
 }
 
-/* Phase 2.1: Spatial relationship animations */
 @keyframes slide-in-from-left {
   from {
     opacity: 0;
@@ -559,16 +529,7 @@
   }
 }
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-2px);
-  }
-}
-
-/* Phase 2.2: Skeleton loading shimmer animation */
+/* Skeleton loading shimmer animation */
 @keyframes shimmer {
   0% {
     background-position: -1000px 0;
@@ -578,32 +539,7 @@
   }
 }
 
-/* Phase 7.1: Pulse animation for subtle attention-grabbing */
-@keyframes pulse-subtle {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
-/* Phase 7.2: Bounce entrance animation */
-@keyframes bounce-in {
-  0% {
-    transform: scale(0.95);
-    opacity: 0;
-  }
-  70% {
-    transform: scale(1.02);
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-/* ===== PHASE 1.2: BASE INTERACTIVE TRANSITIONS ===== */
+/* ===== BASE INTERACTIVE TRANSITIONS ===== */
 @layer base {
   button,
   a,
@@ -614,20 +550,18 @@
     transition: all var(--transition-default);
   }
 
-  /* ===== PHASE 5: TYPOGRAPHY POLISH ===== */
-  /* 5.1 Add text-balance for headings */
+  /* Text-balance for headings */
   h1, h2, h3, h4, h5, h6 {
     text-wrap: balance;
   }
 
-  /* 5.3 Add heading base styles with letter-spacing and font-features */
+  /* Heading base styles */
   h1, h2, h3 {
     letter-spacing: var(--tracking-heading);
     font-feature-settings: "ss01", "ss02";
   }
 
-  /* ===== PHASE 9: FORM ELEMENT REFINEMENT ===== */
-  /* 9.1 Add input focus glow for form inputs */
+  /* Input focus glow */
   input:focus,
   select:focus,
   textarea:focus {
@@ -636,7 +570,7 @@
     outline: none;
   }
 
-  /* 9.2 Add placeholder styling for better visual hierarchy */
+  /* Placeholder styling */
   ::placeholder {
     color: hsl(var(--muted-foreground));
     opacity: 0.7;
@@ -655,33 +589,7 @@
     @apply text-primary hover:opacity-80;
   }
 
-  /* Gradient utilities */
-  .gradient-subtle {
-    background: var(--gradient-subtle-vertical);
-  }
-  .gradient-subtle-h {
-    background: var(--gradient-subtle-horizontal);
-  }
-
-  /* Border utilities */
-  .border-inner-glow {
-    border: var(--border-inner-glow);
-  }
-
-  /* Glassmorphism utilities */
-  .backdrop-glass {
-    backdrop-filter: var(--backdrop-blur-light);
-    -webkit-backdrop-filter: var(--backdrop-blur-light);
-    background: rgba(0, 0, 0, 0.1);
-  }
-
-  .backdrop-glass-heavy {
-    backdrop-filter: var(--backdrop-blur-heavy);
-    -webkit-backdrop-filter: var(--backdrop-blur-heavy);
-    background: rgba(0, 0, 0, 0.2);
-  }
-
-  /* Phase 3.3: Typography weight utilities for standardized font weights */
+  /* Typography weight utilities */
   .font-ui {
     @apply font-medium;
   }
@@ -692,25 +600,19 @@
     @apply font-semibold;
   }
 
-  /* Phase 5.4: Add optical sizing for display text */
+  /* Optical sizing for display text */
   .text-display {
     font-optical-sizing: auto;
     letter-spacing: var(--tracking-tight);
   }
 
-  /* Skeleton loading shimmer utility - Phase 2.2 */
+  /* Skeleton loading shimmer */
   .skeleton-shimmer {
     animation: shimmer var(--skeleton-animation-duration) infinite;
     background-size: 1000px 100%;
   }
 
-  /* Phase 2.2: Focus-within ring for form groups */
-  .focus-within-ring:focus-within {
-    box-shadow: 0 0 0 2px hsl(var(--ring) / 0.3);
-  }
-
-  /* ===== PHASE 3: CARD INTERACTION POLISH ===== */
-  /* 3.1 Card hover utilities with lift effect */
+  /* Card hover with subtle lift */
   .card-interactive {
     transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
                 box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -723,18 +625,12 @@
     transform: translateY(0);
   }
 
-  /* 3.2 Subtle border glow on hover */
-  .card-hover-glow:hover {
-    border-color: hsl(var(--border-hover));
-  }
-
-  /* ===== PHASE 4: BUTTON/LINK FEEDBACK ===== */
-  /* 4.1 Pressed state utilities for buttons */
+  /* Button pressed state */
   .btn-press:active {
     transform: scale(0.98);
   }
 
-  /* 4.2 Default link transitions for unstyled links */
+  /* Default link transitions */
   a:not([class]) {
     color: hsl(var(--primary));
     transition: color 150ms ease, opacity 150ms ease;
@@ -743,68 +639,26 @@
     opacity: 0.8;
   }
 
-  /* ===== PHASE 6: SELECTION & CURSOR REFINEMENT ===== */
-  /* 6.2 Add cursor utilities for interactive elements */
-  .cursor-pointer {
-    cursor: pointer;
-  }
-  .cursor-grab {
-    cursor: grab;
-  }
-  .cursor-grab:active {
-    cursor: grabbing;
-  }
-
-  /* ===== PHASE 7: MICRO-INTERACTION UTILITIES ===== */
-  /* 7.1 Apply pulse-subtle animation utility */
-  .animate-pulse-subtle {
-    animation: var(--animate-pulse-subtle);
-  }
-
-  /* 7.2 Apply bounce-in animation utility */
-  .animate-bounce-in {
-    animation: var(--animate-bounce-in);
-  }
-
-  /* 7.3 Hover glow utility for accent effects */
-  .hover-glow {
-    transition: box-shadow 200ms ease;
-  }
-  .hover-glow:hover {
-    box-shadow: 0 0 20px hsl(var(--accent) / 0.15);
-  }
-
-  /* ===== PHASE 10: CONTAINER & LAYOUT UTILITIES ===== */
-  /* 10.1 Container query support for responsive component behavior */
-  .container-query {
-    container-type: inline-size;
-  }
-
-  /* 10.2 Content-visibility for performance optimization */
-  .content-lazy {
-    content-visibility: auto;
-    contain-intrinsic-size: auto 500px;
-  }
 }
 
 /* ===== CSS CUSTOM PROPERTIES FOR HSL VALUES ===== */
 :root {
-  /* Phase 8.1: Smooth theme transition for background and text color */
+  /* Smooth theme transition */
   transition: background-color 300ms ease, color 300ms ease;
 
   /* ===== LIGHT MODE (Solar Vipani Brand) ===== */
 
-  /* Backgrounds - Clean whites and light grays */
-  --background: 0 0% 98%;           /* #FAFAFA - Main background */
-  --background-secondary: 0 0% 96%; /* #F5F5F5 - Secondary surfaces */
-  --background-tertiary: 0 0% 92%;  /* #EBEBEB - Tertiary/hover states */
+  /* Backgrounds - Warm cream tones */
+  --background: 40 33% 97%;          /* Warm cream - main background */
+  --background-secondary: 40 20% 95%; /* Slightly deeper cream */
+  --background-tertiary: 38 14% 91%; /* Warm tertiary/hover */
 
-  /* Foreground/Text - Near-blacks for high contrast */
-  --foreground: 0 0% 9%;            /* #171717 - Primary text */
-  --foreground-secondary: 0 0% 32%; /* #525252 - Secondary text */
+  /* Foreground/Text - Warm near-blacks for high contrast */
+  --foreground: 30 8% 10%;           /* Warm dark - primary text */
+  --foreground-secondary: 30 5% 32%; /* Warm gray - secondary text */
   /* Borders */
-  --border: 0 0% 90%;               /* #E5E5E5 */
-  --border-hover: 0 0% 83%;         /* #D4D4D4 */
+  --border: 35 12% 88%;              /* Warm border */
+  --border-hover: 35 8% 82%;         /* Warm border hover */
 
   /* Primary - Sun Orange (brand identity) */
   --primary: 24 100% 50%;           /* #FF6600 */
@@ -841,35 +695,35 @@
 
   /* Component surfaces */
   --card: 0 0% 100%;
-  --card-foreground: 0 0% 9%;
+  --card-foreground: 30 8% 10%;
   --popover: var(--card);
   --popover-foreground: var(--card-foreground);
-  --muted: 0 0% 96%;
-  --muted-foreground: 0 0% 45%;
+  --muted: 40 15% 95%;
+  --muted-foreground: 30 5% 45%;
 
   /* Form elements */
-  --input: 0 0% 90%;
+  --input: 35 12% 88%;
   --ring: var(--primary);
 }
 
 .dark {
   /* ===== DARK MODE (Solar Vipani Brand) ===== */
 
-  /* Phase 8.2: Refined dark mode shadows for better depth perception */
+  /* Dark mode shadows */
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3);
   --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.4);
 
-  /* Backgrounds - Deep blacks */
-  --background: 0 0% 5%;            /* #0D0D0D - Main background */
-  --background-secondary: 0 0% 10%; /* #1A1A1A - Secondary surfaces */
-  --background-tertiary: 0 0% 15%;  /* #262626 - Tertiary surfaces */
+  /* Backgrounds - Deep warm blacks */
+  --background: 30 6% 6%;            /* Warm dark background */
+  --background-secondary: 30 5% 10%; /* Warm secondary */
+  --background-tertiary: 30 4% 15%;  /* Warm tertiary */
 
-  /* Foreground/Text - Bright for contrast */
-  --foreground: 0 0% 98%;           /* #FAFAFA - Primary text */
-  --foreground-secondary: 0 0% 64%; /* #A3A3A3 - Secondary text */
-  /* Borders - Subtle dark borders */
-  --border: 0 0% 18%;               /* #2E2E2E - Default borders */
-  --border-hover: 0 0% 25%;         /* #404040 - Hover borders */
+  /* Foreground/Text - Warm bright for contrast */
+  --foreground: 40 20% 97%;          /* Warm light text */
+  --foreground-secondary: 30 5% 64%; /* Warm secondary text */
+  /* Borders - Warm subtle dark borders */
+  --border: 30 5% 18%;               /* Warm dark border */
+  --border-hover: 30 4% 25%;         /* Warm dark border hover */
 
   /* Accent overrides (accent inherits --primary via var()) */
   --accent-hover: 24 100% 50%;
@@ -896,14 +750,14 @@
   /* ring inherits --primary via var() */
 
   /* Component surfaces */
-  --card: 0 0% 10%;
-  --card-foreground: 0 0% 98%;
+  --card: 30 5% 10%;
+  --card-foreground: 40 20% 97%;
   /* popover inherits --card via var() */
-  --muted: 0 0% 15%;
-  --muted-foreground: 0 0% 64%;
+  --muted: 30 4% 15%;
+  --muted-foreground: 30 5% 64%;
 
   /* Form elements */
-  --input: 0 0% 18%;
+  --input: 30 5% 18%;
 }
 
 /* ===== BASE STYLES ===== */
@@ -934,14 +788,14 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Phase 2.1: Focus visible styling - subtle ring with inner/outer contrast */
+/* Focus visible ring */
 :focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring) / 0.5);
   transition: box-shadow var(--transition-default);
 }
 
-/* Phase 6.1: Selection styling - refined for minimal elegance */
+/* Selection styling */
 ::selection {
   background-color: hsl(var(--accent) / 0.15);
   color: inherit;
@@ -990,20 +844,3 @@ html {
   }
 }
 
-/* Utility class to force reduced motion */
-.motion-reduce {
-  animation-duration: 0.01ms !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: 0.01ms !important;
-}
-
-/* Utility class to preserve motion (opt-in for essential animations) */
-.motion-safe {
-  /* Applied only when user has no motion preference */
-}
-@media (prefers-reduced-motion: no-preference) {
-  .motion-safe {
-    animation-duration: inherit;
-    transition-duration: inherit;
-  }
-}
