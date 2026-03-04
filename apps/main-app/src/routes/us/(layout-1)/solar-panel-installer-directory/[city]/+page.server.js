@@ -10,46 +10,38 @@ import { parseCityStateParam } from '$lib/us/stateAbbreviations';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ params }) {
-	const cityStateParam = params.city; // The city-state from the URL (e.g., "greenville-al")
+	const cityStateParam = params.city;
 
-	// Parse the city and state from the URL parameter
-	const { city, state } = parseCityStateParam(cityStateParam);
+	const { city: cityFromSlug, state } = parseCityStateParam(cityStateParam);
+	const citySlug = cityFromSlug.toLowerCase().replace(/\s+/g, '-');
 
 	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
-		// Determine which query to use based on whether state was provided
 		let countyResult;
 
 		if (state) {
-			// New behavior: Query using both city and state for precise matching
 			countyResult = await pool.query(
-				`
-				SELECT county, city, state
+				`SELECT county, city, state
 				FROM us_locations
-				WHERE LOWER(city) = LOWER($1) AND state = $2
-				LIMIT 1
-				`,
-				[city, state]
+				WHERE LOWER(REGEXP_REPLACE(city, '\\s+', '-', 'g')) = $1 AND state = $2
+				LIMIT 1`,
+				[citySlug, state]
 			);
 		} else {
-			// Fallback: Old behavior for backward compatibility (no state provided)
 			countyResult = await pool.query(
-				`
-				SELECT district as county, city
+				`SELECT district as county, city
 				FROM locations
-				WHERE LOWER(city) = LOWER($1)
-				LIMIT 1
-				`,
-				[city]
+				WHERE LOWER(REGEXP_REPLACE(city, '\\s+', '-', 'g')) = $1
+				LIMIT 1`,
+				[citySlug]
 			);
 		}
 
-		// If no location is found, return an error message
 		if (countyResult.rows.length === 0) {
-			const locationStr = state ? `${city}, ${state}` : city;
+			const locationStr = state ? `${cityFromSlug}, ${state}` : cityFromSlug;
 			return {
-				city,
+				city: cityFromSlug,
 				state,
 				errorMessage: `No businesses found in ${locationStr}.`,
 				subset_cities_localities: [],
@@ -60,9 +52,9 @@ export async function load({ params }) {
 			};
 		}
 
+		const city = countyResult.rows[0].city;
 		const county = countyResult.rows[0].county;
 		const matchedState = countyResult.rows[0].state || state;
-		// For backward compatibility, also set district
 		const district = county;
 
 		// Modified query: Sort businesses from the requested city to the top,
@@ -180,7 +172,7 @@ export async function load({ params }) {
 	} catch (error) {
 		console.error('Database query error:', error);
 		return {
-			city,
+			city: cityFromSlug,
 			state,
 			errorMessage: 'Failed to load businesses',
 			subset_cities_localities: [],

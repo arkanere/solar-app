@@ -5,56 +5,38 @@ import { POSTGRES_URL } from '$env/static/private';
 
 const pool = createPool({ connectionString: POSTGRES_URL });
 
-// Utility function to capitalize city names
-function capitalizeCityName(city: string): string {
-	return city
-		.split(/([\s-])/g) // Split on spaces or hyphens while keeping the delimiters
-		.map((part) => {
-			// If it's not a delimiter (i.e., it's a word), capitalize it
-			if (!part.match(/[\s-]/)) {
-				return part.charAt(0).toUpperCase() + part.slice(1);
-			}
-			// If it's a delimiter, return it unchanged
-			return part;
-		})
-		.join(''); // Join back together, preserving original delimiters
-}
-
 export const GET: RequestHandler = async ({ url }) => {
 	const cityParam = url.searchParams.get('city');
-	const limit = url.searchParams.get('limit') || 6; // Default to 6 recent projects for city view
+	const limit = url.searchParams.get('limit') || 6;
 
 	if (!cityParam) {
 		return json({ success: false, error: 'City parameter is required' }, { status: 400 });
 	}
 
-	// Capitalize the city name for proper database matching
-	const city = capitalizeCityName(cityParam);
+	const citySlug = cityParam.toLowerCase();
 
 	try {
 		const client = await pool.connect();
 
 		try {
-			// Get the district for the city using locations table
-			const districtQuery = `
-        SELECT district 
-        FROM locations 
-        WHERE city = $1 
-        LIMIT 1
-      `;
-
-			const districtResult = await client.query(districtQuery, [city]);
+			const districtResult = await client.query(
+				`SELECT city, district FROM locations
+				WHERE LOWER(REGEXP_REPLACE(city, '\\s+', '-', 'g')) = $1
+				LIMIT 1`,
+				[citySlug]
+			);
 
 			if (districtResult.rows.length === 0) {
 				return json(
 					{
 						success: false,
-						error: `No district found for city: ${city}`
+						error: `No district found for city: ${citySlug}`
 					},
 					{ status: 404 }
 				);
 			}
 
+			const city = districtResult.rows[0].city;
 			const district = districtResult.rows[0].district;
 
 			// Query all projects from the district
