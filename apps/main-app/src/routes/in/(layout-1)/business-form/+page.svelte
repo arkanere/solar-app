@@ -1,5 +1,5 @@
 <script>
-	import BusinessForm from '$lib/in-new-rewrites/BusinessForm.svelte';
+	import BusinessForm from '$lib/in/components/BusinessForm.svelte';
 	import { Card } from '$lib/components/ui/card';
 </script>
 

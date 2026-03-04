@@ -1,6 +1,5 @@
 import type { PageServerLoad } from './$types';
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
 import { error } from '@sveltejs/kit';
 
 interface Blog {
@@ -23,9 +22,6 @@ interface Blog {
 
 export const load: PageServerLoad = async ({ params }) => {
 	try {
-		const pool = createPool({ connectionString: POSTGRES_URL });
-
-		// Fetch the blog post by slug
 		const result = await pool.query<Blog>(
 			`
 			SELECT
@@ -56,15 +52,11 @@ export const load: PageServerLoad = async ({ params }) => {
 
 		const blog = result.rows[0];
 
-		// Increment view count asynchronously (don't await to avoid blocking)
 		pool
 			.query('UPDATE in_blogs SET view_count = view_count + 1 WHERE slug = $1', [params.slug])
 			.catch((err) => console.error('Error updating view count:', err));
 
-		return {
-			user: null,
-			blog
-		};
+		return { blog };
 	} catch (err) {
 		console.error('Error loading blog:', err);
 		if (err instanceof Error && 'status' in err && err.status === 404) {

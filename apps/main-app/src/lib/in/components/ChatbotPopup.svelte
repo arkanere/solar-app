@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as Dialog from '$lib/components/ui/dialog';
-	import ChatBotBox from '$lib/in-new-rewrites/ChatBotBox.svelte';
+	import ChatBotBox from '$lib/in/components/ChatBotBox.svelte';
 	import type { Writable } from 'svelte/store';
 
 	const { messages, isVisible = $bindable(true) }: { messages?: Writable<unknown[]>; isVisible?: boolean } = $props();

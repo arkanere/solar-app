@@ -72,7 +72,7 @@
 
 <script>
   import { goto } from "$app/navigation";
-  import AboutSolarVipani from "$lib/in-new-rewrites/AboutSolarVipani.svelte";
+  import AboutSolarVipani from "$lib/in/components/AboutSolarVipani.svelte";
   import { Button } from "$lib/components/ui/button";
   import { Card } from "$lib/components/ui/card";
 

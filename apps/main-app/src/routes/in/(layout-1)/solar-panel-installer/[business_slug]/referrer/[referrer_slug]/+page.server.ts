@@ -1,23 +1,17 @@
-// src/routes/in/(layout-1)/solar-panel-installer/[business_slug]/referrer/[referrer_slug]/+page.server.ts
-
 import type { PageServerLoad } from './$types';
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
 
 export const config = {
 	isr: {
-		expiration: 604800 // 7 days
+		expiration: 604800
 	}
 };
-
-const pool = createPool({ connectionString: POSTGRES_URL });
 
 export const load: PageServerLoad = async ({ params }) => {
 	const businessSlug = params.business_slug;
 	const referrerSlug = params.referrer_slug;
 
 	try {
-		// Get business information
 		const businessResult = await pool.query(
 			`SELECT id, businessname, slug FROM businesses_1 WHERE slug = $1 AND isvisible = true`,
 			[businessSlug]
@@ -33,7 +27,6 @@ export const load: PageServerLoad = async ({ params }) => {
 
 		const business = businessResult.rows[0];
 
-		// Get referrer information
 		const referrerResult = await pool.query(
 			`SELECT id, business_id, name, slug, phone, email, notes
 			FROM in_referrers

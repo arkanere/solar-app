@@ -1,37 +1,18 @@
 import type { PageServerLoad } from './$types';
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
+import { capitalizeCityName } from '$lib/server/format';
+
 export const config = {
 	isr: {
-		expiration: 604800 // 7 days
+		expiration: 604800
 	}
 };
 
-
 export const load: PageServerLoad = async ({ params }) => {
-	const cityParam = params.city; // The city from the URL (e.g., "dallas")
-
-	// Utility function to capitalize city names
-	function capitalizeCityName(city: string) {
-		return city
-			.split(/([\s-])/g) // Split on spaces or hyphens while keeping the delimiters
-			.map((part, _) => {
-				// If it's not a delimiter (i.e., it's a word), capitalize it
-				if (!part.match(/[\s-]/)) {
-					return part.charAt(0).toUpperCase() + part.slice(1);
-				}
-				// If it's a delimiter, return it unchanged
-				return part;
-			})
-			.join(''); // Join back together, preserving original delimiters
-	}
-	// Capitalize the city name for proper database matching
+	const cityParam = params.city;
 	const city = capitalizeCityName(cityParam);
 
-	const pool = createPool({ connectionString: POSTGRES_URL });
-
 	try {
-		// Directly query to find the district of the city (case-insensitive)
 		const districtResult = await pool.query(
 			`
       SELECT district
@@ -42,7 +23,6 @@ export const load: PageServerLoad = async ({ params }) => {
 			[city]
 		);
 
-		// If no district is found, return an error message
 		if (districtResult.rows.length === 0) {
 			return {
 				city,
@@ -50,21 +30,18 @@ export const load: PageServerLoad = async ({ params }) => {
 				subset_cities_localities: [],
 				district: '',
 				recentProjects: [],
-				lastUpdated: new Date().toISOString(),
-				user: null
+				lastUpdated: new Date().toISOString()
 			};
 		}
 
 		const district = districtResult.rows[0].district;
 
-		// Lookup a real pincode for this district
 		const pincodeResult = await pool.query(
 			`SELECT pincode FROM pincode_mapping WHERE LOWER(district) = LOWER($1) LIMIT 1`,
 			[district]
 		);
 		const postalCode: string | undefined = pincodeResult.rows[0]?.pincode ?? undefined;
 
-		// Fetch businesses (sorting deferred to transformation layer)
 		const districtBusinessesResult = await pool.query(
 			`SELECT businessname, description, phonenumber, slug, address, pluscode, state, city, tag, rscore, businessfilled, services
       FROM businesses_1
@@ -74,7 +51,6 @@ export const load: PageServerLoad = async ({ params }) => {
 
 		const businesses = districtBusinessesResult.rows;
 
-		// Fetch recent projects for each business (max 3 per business)
 		const businessSlugs = businesses.map((b) => b.slug);
 		let businessProjectsMap = new Map();
 
@@ -100,7 +76,6 @@ export const load: PageServerLoad = async ({ params }) => {
 				[businessSlugs]
 			);
 
-			// Group projects by business_slug
 			projectsByBusinessResult.rows.forEach((project) => {
 				if (!businessProjectsMap.has(project.business_slug)) {
 					businessProjectsMap.set(project.business_slug, []);
@@ -109,14 +84,12 @@ export const load: PageServerLoad = async ({ params }) => {
 			});
 		}
 
-		// Transform: attach projects and re-sort by relevance
 		const businessesWithProjects = businesses
 			.map((business) => ({
 				...business,
 				recent_projects: businessProjectsMap.get(business.slug) || []
 			}))
 			.sort((a, b) => {
-				// Pure function sort: city match → project count → score
 				const aCityMatch = a.city === city ? 0 : 1;
 				const bCityMatch = b.city === city ? 0 : 1;
 				if (aCityMatch !== bCityMatch) return aCityMatch - bCityMatch;
@@ -128,7 +101,6 @@ export const load: PageServerLoad = async ({ params }) => {
 				return (b.rscore || 0) - (a.rscore || 0);
 			});
 
-		// Fetch all cities in the same district
 		const citiesResult = await pool.query(
 			`SELECT DISTINCT city
 			FROM locations
@@ -139,15 +111,14 @@ export const load: PageServerLoad = async ({ params }) => {
 
 		const subset_cities_localities = citiesResult.rows.map((row) => row.city);
 
-		// Fetch recent projects for the district
 		const projectsResult = await pool.query(
-			`SELECT 
-				id, 
-				business_slug, 
+			`SELECT
+				id,
+				business_slug,
 				project_slug,
-				title, 
-				pincode, 
-				project_date, 
+				title,
+				pincode,
+				project_date,
 				created_at,
 				image_url,
 				cloudinary_public_id,
@@ -155,9 +126,9 @@ export const load: PageServerLoad = async ({ params }) => {
 				image_height,
 				image_format,
 				district
-			FROM projects 
+			FROM projects
 			WHERE district = $1 AND isvisible = true
-			ORDER BY 
+			ORDER BY
 				project_date DESC,
 				created_at DESC
 			LIMIT 6`,
@@ -166,7 +137,6 @@ export const load: PageServerLoad = async ({ params }) => {
 
 		const recentProjects = projectsResult.rows;
 
-		// Return businesses from the district along with the district name, cities, and projects
 		if (businessesWithProjects.length > 0) {
 			return {
 				city,
@@ -175,8 +145,7 @@ export const load: PageServerLoad = async ({ params }) => {
 				businesses: businessesWithProjects,
 				subset_cities_localities,
 				recentProjects,
-				lastUpdated: new Date().toISOString(),
-				user: null
+				lastUpdated: new Date().toISOString()
 			};
 		} else {
 			return {
@@ -186,20 +155,18 @@ export const load: PageServerLoad = async ({ params }) => {
 				subset_cities_localities,
 				recentProjects,
 				lastUpdated: new Date().toISOString(),
-				errorMessage: `No businesses found in ${city} or its district: ${district}.`,
-				user: null
+				errorMessage: `No businesses found in ${city} or its district: ${district}.`
 			};
 		}
 	} catch (error) {
 		console.error('Database query error:', error);
-		return { 
-			city, 
+		return {
+			city,
 			errorMessage: 'Failed to load businesses',
 			subset_cities_localities: [],
 			district: '',
 			recentProjects: [],
-			lastUpdated: new Date().toISOString(),
-			user: null
+			lastUpdated: new Date().toISOString()
 		};
 	}
 }

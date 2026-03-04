@@ -4,7 +4,7 @@
   import { storiesModalOpen } from "$lib/in/storiesStore.js";
   import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
   import { page } from "$app/stores";
-  import StoriesModal from "$lib/in-new-rewrites/StoriesModal.svelte";
+  import StoriesModal from "$lib/in/components/StoriesModal.svelte";
   import { Button } from "$lib/components/ui/button";
   import * as Dialog from "$lib/components/ui/dialog";
 

@@ -15,7 +15,7 @@
     storiesError,
     closeStoriesModal,
     loadStoriesData,
-  } from "../in/storiesStore.js";
+  } from "../storiesStore.js";
   import { formatBusinessName, formatDate, getImageUrl } from "$lib/constants/projectFormatters";
 
 

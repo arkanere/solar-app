@@ -12,7 +12,7 @@ export function setupLazyLoading(setState: (key: keyof LazyLoadState, value: any
   const recentProjectsObserver = new IntersectionObserver(
     async (entries) => {
       if (entries[0].isIntersecting) {
-        const module = await import('$lib/in-new-rewrites/RecentProjectsCity.svelte');
+        const module = await import('$lib/in/components/RecentProjectsCity.svelte');
         setState('RecentProjectsCity', module.default);
         setState('shouldLoadRecentProjects', true);
         recentProjectsObserver.disconnect();
@@ -25,7 +25,7 @@ export function setupLazyLoading(setState: (key: keyof LazyLoadState, value: any
   const aboutObserver = new IntersectionObserver(
     async (entries) => {
       if (entries[0].isIntersecting) {
-        const module = await import('$lib/in-new-rewrites/AboutSolarVipani.svelte');
+        const module = await import('$lib/in/components/AboutSolarVipani.svelte');
         setState('AboutSolarVipani', module.default);
         setState('shouldLoadAbout', true);
         aboutObserver.disconnect();
@@ -68,7 +68,7 @@ export function setupLazyLoading(setState: (key: keyof LazyLoadState, value: any
               chatbotTimer = setTimeout(async () => {
                 const currentChatbot = (setState as any).__state?.ChatbotPopup;
                 if (!currentChatbot) {
-                  const module = await import('$lib/in-new-rewrites/ChatbotPopup.svelte');
+                  const module = await import('$lib/in/components/ChatbotPopup.svelte');
                   setState('ChatbotPopup', module.default);
                 }
                 setState('shouldLoadChatbot', true);

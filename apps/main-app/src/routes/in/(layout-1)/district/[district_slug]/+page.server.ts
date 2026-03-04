@@ -1,39 +1,31 @@
 import type { PageServerLoad } from './$types';
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
+import { slugToName, mostRecentDate } from '$lib/server/format';
+
 export const config = {
 	isr: {
-		expiration: 86400 // 24 hours
+		expiration: 86400
 	}
 };
 
-
 export const load: PageServerLoad = async ({ params }) => {
-	const districtSlug = params.district_slug; // The district slug from the URL
+	const districtSlug = params.district_slug;
 
 	if (!districtSlug) {
 		return {
-			user: null,
 			district: '',
 			errorMessage: 'Invalid district URL format'
 		};
 	}
 
-	// Format the district name properly (capitalize each word)
-	const districtFormatted = districtSlug
-		.split('-')
-		.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-		.join(' ');
-
-	const pool = createPool({ connectionString: POSTGRES_URL });
+	const districtFormatted = slugToName(districtSlug);
 
 	try {
-		// Query to get all cities from the specified district
 		const citiesResult = await pool.query(
 			`
       SELECT DISTINCT city
-      FROM locations 
-      WHERE LOWER(district) = LOWER($1) 
+      FROM locations
+      WHERE LOWER(district) = LOWER($1)
       ORDER BY city ASC
       `,
 			[districtFormatted]
@@ -41,7 +33,6 @@ export const load: PageServerLoad = async ({ params }) => {
 
 		const cities = citiesResult.rows.map((row) => row.city);
 
-		// Query installer count and latest activity for this district
 		const statsResult = await pool.query(
 			`
 			SELECT
@@ -67,27 +58,22 @@ export const load: PageServerLoad = async ({ params }) => {
 		const latestInstallerAdded = statsResult.rows[0]?.latest_installer_added || null;
 		const latestProjectDate = latestProjectResult.rows[0]?.latest_project_date || null;
 
-		// lastUpdated is the most recent real data change
-		const candidates = [latestInstallerAdded, latestProjectDate].filter(Boolean).map((d) => new Date(d));
-		const lastUpdated = candidates.length > 0 ? new Date(Math.max(...candidates.map((d) => d.getTime()))).toISOString() : null;
+		const lastUpdated = mostRecentDate([latestInstallerAdded, latestProjectDate]);
 
-		// Return cities from the district
 		if (cities.length > 0) {
 			return {
-				user: null,
 				district: districtFormatted,
-				cities: cities,
+				cities,
 				installerCount,
 				latestProjectDate,
 				lastUpdated
 			};
 		} else {
-			// Check if the district exists in our database
 			const districtCheckResult = await pool.query(
 				`
         SELECT DISTINCT district
-        FROM locations 
-        WHERE LOWER(district) = LOWER($1) 
+        FROM locations
+        WHERE LOWER(district) = LOWER($1)
         LIMIT 1
         `,
 				[districtFormatted]
@@ -95,14 +81,12 @@ export const load: PageServerLoad = async ({ params }) => {
 
 			if (districtCheckResult.rows.length > 0) {
 				return {
-					user: null,
 					district: districtFormatted,
 					cities: [],
 					errorMessage: `No cities found in ${districtFormatted}.`
 				};
 			} else {
 				return {
-					user: null,
 					district: districtFormatted,
 					cities: [],
 					errorMessage: `${districtFormatted} is not a recognized district or we don't have coverage in this area yet.`
@@ -112,7 +96,6 @@ export const load: PageServerLoad = async ({ params }) => {
 	} catch (error) {
 		console.error('Database query error:', error);
 		return {
-			user: null,
 			district: districtFormatted,
 			cities: [],
 			errorMessage: 'Failed to load cities'

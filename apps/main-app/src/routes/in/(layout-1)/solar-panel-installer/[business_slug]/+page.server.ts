@@ -1,22 +1,16 @@
-// src/routes/in/(layout-1)/solar-panel-installer/[business_slug]/+page.server.js
-
 import type { PageServerLoad } from './$types';
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
+
 export const config = {
 	isr: {
-		expiration: 604800 // 7 days
+		expiration: 604800
 	}
 };
-
-
-const pool = createPool({ connectionString: POSTGRES_URL });
 
 export const load: PageServerLoad = async ({ params }) => {
 	const slug = params.business_slug;
 
 	try {
-		// Query the database for the business with the matching slug
 		const businessResult = await pool.query(
 			`SELECT businessname, description, phonenumber, email, website,
 			slug, address, district,
@@ -26,23 +20,21 @@ export const load: PageServerLoad = async ({ params }) => {
 		);
 
 		if (businessResult.rows.length === 0) {
-			return { errorMessage: `No business found`, user: null };
+			return { errorMessage: `No business found` };
 		}
 
 		const business = businessResult.rows[0];
 
-		// Fetch projects data if business is filled
 		let projects = [];
 		if (business.businessfilled) {
-			// Extract main business slug by removing branch suffix if present
 			let mainBusinessSlug = slug;
 			const branchPattern = /-branch-[a-zA-Z0-9]+$/;
 			if (branchPattern.test(slug)) {
 				mainBusinessSlug = slug.replace(branchPattern, '');
 			}
 
-			const projectsQuery = `
-				SELECT
+			const projectsResult = await pool.query(
+				`SELECT
 					id,
 					business_slug,
 					project_slug,
@@ -60,25 +52,22 @@ export const load: PageServerLoad = async ({ params }) => {
 				WHERE business_slug = $1
 				AND (isvisible = TRUE OR isvisible IS NULL)
 				ORDER BY project_date DESC, created_at DESC
-				LIMIT 10
-			`;
-
-			const projectsResult = await pool.query(projectsQuery, [mainBusinessSlug]);
+				LIMIT 10`,
+				[mainBusinessSlug]
+			);
 			projects = projectsResult.rows;
 		}
 
 		return {
 			business,
 			projects,
-			lastUpdated: new Date().toISOString(),
-			user: null
+			lastUpdated: new Date().toISOString()
 		};
 	} catch (error) {
 		console.error('Database query error:', error);
 		return {
 			errorMessage: 'Failed to load business details',
-			lastUpdated: new Date().toISOString(),
-			user: null
+			lastUpdated: new Date().toISOString()
 		};
 	}
 }
