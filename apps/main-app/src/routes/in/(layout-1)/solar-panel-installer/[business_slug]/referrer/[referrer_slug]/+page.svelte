@@ -1,6 +1,6 @@
 <script>
   import { page } from "$app/stores";
-  import LeadForm from "$lib/in-new-rewrites/LeadForm.svelte";
+  import LeadForm from "$lib/in/components/LeadForm.svelte";
 
   const { business, referrer, errorMessage } = $derived($page.data);
 </script>

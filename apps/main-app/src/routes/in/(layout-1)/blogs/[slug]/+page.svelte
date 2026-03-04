@@ -1,5 +1,5 @@
 <script>
-	import LeadForm from '$lib/in-new-rewrites/LeadForm.svelte';
+	import LeadForm from '$lib/in/components/LeadForm.svelte';
 	import { Badge } from '$lib/components/ui/badge';
 
 	const { data } = $props();

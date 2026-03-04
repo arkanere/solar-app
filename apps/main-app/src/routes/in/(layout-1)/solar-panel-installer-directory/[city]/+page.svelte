@@ -6,13 +6,13 @@
   import { generateCityJsonLD } from "$lib/in/jsonLD";
   import { generateFAQ } from "$lib/in/faqData";
   import { services } from "$lib/in/servicesData";
-  import LeadFormSection from "$lib/in-new-rewrites/LeadFormSection.svelte";
-  import QuoteModal from "$lib/in-new-rewrites/QuoteModal.svelte";
-  import BusinessTilesList from "$lib/in-new-rewrites/BusinessTilesList.svelte";
-  import RecommendedSolarSystems from "$lib/in-new-rewrites/RecommendedSolarSystems.svelte";
-  import SolarComparisonTable from "$lib/in-new-rewrites/SolarComparisonTable.svelte";
-  import RecentProjectsCity from "$lib/in-new-rewrites/RecentProjectsCity.svelte";
-  import SubsidySection from "$lib/in-new-rewrites/SubsidySection.svelte";
+  import LeadFormSection from "$lib/in/components/LeadFormSection.svelte";
+  import QuoteModal from "$lib/in/components/QuoteModal.svelte";
+  import BusinessTilesList from "$lib/in/components/BusinessTilesList.svelte";
+  import RecommendedSolarSystems from "$lib/in/components/RecommendedSolarSystems.svelte";
+  import SolarComparisonTable from "$lib/in/components/SolarComparisonTable.svelte";
+  import RecentProjectsCity from "$lib/in/components/RecentProjectsCity.svelte";
+  import SubsidySection from "$lib/in/components/SubsidySection.svelte";
 
   // Lazy-loaded components (non-critical)
   let AboutSolarVipani = $state();
@@ -67,7 +67,7 @@
     const aboutObserver = new IntersectionObserver(
       async (entries) => {
         if (entries[0].isIntersecting) {
-          const module = await import("$lib/in-new-rewrites/AboutSolarVipani.svelte");
+          const module = await import("$lib/in/components/AboutSolarVipani.svelte");
           AboutSolarVipani = module.default;
           shouldLoadAbout = true;
           aboutObserver.disconnect();
@@ -99,7 +99,7 @@
               if (!chatbotTimer) {
                 chatbotTimer = setTimeout(async () => {
                   if (!ChatbotPopup) {
-                    const module = await import("$lib/in-new-rewrites/ChatbotPopup.svelte");
+                    const module = await import("$lib/in/components/ChatbotPopup.svelte");
                     ChatbotPopup = module.default;
                   }
                   shouldLoadChatbot = true;

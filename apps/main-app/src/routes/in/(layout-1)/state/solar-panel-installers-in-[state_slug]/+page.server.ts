@@ -1,20 +1,17 @@
 import type { PageServerLoad } from './$types';
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
+import { slugToName, mostRecentDate } from '$lib/server/format';
+
 export const config = {
 	isr: {
-		expiration: 86400 // 24 hours
+		expiration: 86400
 	}
 };
 
-
 export const load: PageServerLoad = async ({ params }) => {
-	const stateSlug = params.state_slug; // The state slug from the URL (e.g., "solar-panel-installers-in-maharashtra")
+	const stateSlug = params.state_slug;
 
-	// Extract the state name from the slug parameter directly
 	let stateName = '';
-
-	// Handle both formats: "state_slug" or fully formed "solar-panel-installers-in-state_slug"
 	if (stateSlug.startsWith('solar-panel-installers-in-')) {
 		stateName = stateSlug.replace('solar-panel-installers-in-', '');
 	} else {
@@ -24,26 +21,18 @@ export const load: PageServerLoad = async ({ params }) => {
 	if (!stateName) {
 		return {
 			state: '',
-			errorMessage: 'Invalid state URL format',
-			user: null
+			errorMessage: 'Invalid state URL format'
 		};
 	}
 
-	// Format the state name properly (capitalize each word)
-	const stateFormatted = stateName
-		.split('-')
-		.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-		.join(' ');
-
-	const pool = createPool({ connectionString: POSTGRES_URL });
+	const stateFormatted = slugToName(stateName);
 
 	try {
-		// Query to get all districts from the specified state
 		const districtsResult = await pool.query(
 			`
       SELECT DISTINCT district
-      FROM locations 
-      WHERE LOWER(state) = LOWER($1) 
+      FROM locations
+      WHERE LOWER(state) = LOWER($1)
       ORDER BY district ASC
       `,
 			[stateFormatted]
@@ -51,7 +40,6 @@ export const load: PageServerLoad = async ({ params }) => {
 
 		const districts = districtsResult.rows.map((row) => row.district);
 
-		// Query installer counts per district for this state
 		const districtCountsResult = await pool.query(
 			`
 			SELECT LOWER(district) as district, COUNT(*) as count
@@ -67,7 +55,6 @@ export const load: PageServerLoad = async ({ params }) => {
 			districtInstallerCounts[row.district] = Number(row.count);
 		}
 
-		// Query installer count and latest activity for this state
 		const statsResult = await pool.query(
 			`
 			SELECT
@@ -93,11 +80,8 @@ export const load: PageServerLoad = async ({ params }) => {
 		const latestInstallerAdded = statsResult.rows[0]?.latest_installer_added || null;
 		const latestProjectDate = latestProjectResult.rows[0]?.latest_project_date || null;
 
-		// lastUpdated is the most recent real data change — whichever is newer
-		const candidates = [latestInstallerAdded, latestProjectDate].filter(Boolean).map((d) => new Date(d));
-		const lastUpdated = candidates.length > 0 ? new Date(Math.max(...candidates.map((d) => d.getTime()))).toISOString() : null;
+		const lastUpdated = mostRecentDate([latestInstallerAdded, latestProjectDate]);
 
-		// Return districts from the state
 		if (districts.length > 0) {
 			return {
 				state: stateFormatted,
@@ -105,16 +89,14 @@ export const load: PageServerLoad = async ({ params }) => {
 				districtInstallerCounts,
 				installerCount,
 				latestProjectDate,
-				lastUpdated,
-				user: null
+				lastUpdated
 			};
 		} else {
-			// Check if the state exists in our database
 			const stateCheckResult = await pool.query(
 				`
-        SELECT DISTINCT state 
-        FROM locations 
-        WHERE LOWER(state) = LOWER($1) 
+        SELECT DISTINCT state
+        FROM locations
+        WHERE LOWER(state) = LOWER($1)
         LIMIT 1
         `,
 				[stateFormatted]
@@ -123,14 +105,12 @@ export const load: PageServerLoad = async ({ params }) => {
 			if (stateCheckResult.rows.length > 0) {
 				return {
 					state: stateFormatted,
-					errorMessage: `No districts found in ${stateFormatted}.`,
-					user: null
+					errorMessage: `No districts found in ${stateFormatted}.`
 				};
 			} else {
 				return {
 					state: stateFormatted,
-					errorMessage: `${stateFormatted} is not a recognized state or we don't have coverage in this area yet.`,
-					user: null
+					errorMessage: `${stateFormatted} is not a recognized state or we don't have coverage in this area yet.`
 				};
 			}
 		}
@@ -138,8 +118,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		console.error('Database query error:', error);
 		return {
 			state: stateFormatted,
-			errorMessage: 'Failed to load solar panel installers',
-			user: null
+			errorMessage: 'Failed to load solar panel installers'
 		};
 	}
 }

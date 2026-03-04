@@ -3,10 +3,10 @@
   import { goto } from "$app/navigation";
   import { Button } from "$lib/components/ui/button";
   import { Card } from "$lib/components/ui/card";
-  import LeadFormSection from "$lib/in-new-rewrites/LeadFormSection.svelte";
-  import SolarSizeCalculator from "$lib/in-new-rewrites/SolarSizeCalculator.svelte";
+  import LeadFormSection from "$lib/in/components/LeadFormSection.svelte";
+  import SolarSizeCalculator from "$lib/in/components/SolarSizeCalculator.svelte";
   import { PUBLIC_CLOUDINARY_CLOUD_NAME } from "$env/static/public";
-  import AboutSolarVipani from "$lib/in-new-rewrites/AboutSolarVipani.svelte";
+  import AboutSolarVipani from "$lib/in/components/AboutSolarVipani.svelte";
 
   // Destructure page data using derived
   const { business, projects = [], errorMessage, lastUpdated } = $derived($page.data);

@@ -1,26 +1,20 @@
-// src/routes/solar-panel-installer/[business_slug]/project/[project_slug]/+page.server.js
-
 import type { PageServerLoad } from './$types';
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
 import { error } from '@sveltejs/kit';
+
 export const config = {
 	isr: {
-		expiration: 86400 // 24 hours
+		expiration: 86400
 	}
 };
-
 
 export const load: PageServerLoad = async ({ params }) => {
 	const { business_slug, project_slug } = params;
 
-	const pool = createPool({ connectionString: POSTGRES_URL });
-
 	try {
-		// Query to get both business and project information with district
 		const result = await pool.query(
 			`
-      SELECT 
+      SELECT
         p.id as project_id,
         p.title as project_title,
         p.pincode,
@@ -35,8 +29,8 @@ export const load: PageServerLoad = async ({ params }) => {
         b.city as business_city
       FROM projects p
       INNER JOIN businesses_1 b ON p.business_slug = b.slug
-      WHERE p.project_slug = $1 
-        AND b.slug = $2 
+      WHERE p.project_slug = $1
+        AND b.slug = $2
         AND b.isvisible = true
         AND p.isvisible = true
     `,
@@ -62,14 +56,12 @@ export const load: PageServerLoad = async ({ params }) => {
 					businessname: data.businessname,
 					slug: data.business_slug,
 					city: data.business_city
-				},
-				user: null
+				}
 			};
 		} else {
-			// Check if business exists but project doesn't
 			const businessCheck = await pool.query(
 				`
-        SELECT businessname FROM businesses_1 
+        SELECT businessname FROM businesses_1
         WHERE slug = $1 AND isvisible = true
       `,
 				[business_slug]

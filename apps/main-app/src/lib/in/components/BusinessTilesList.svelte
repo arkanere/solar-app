@@ -5,7 +5,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { Phone, MessageCircle, MapPin, X } from '@lucide/svelte';
-	import LeadFormModal from '$lib/in-new-rewrites/LeadFormModal.svelte';
+	import LeadFormModal from '$lib/in/components/LeadFormModal.svelte';
 	import { makeCall, openWhatsApp } from '$lib/constants/businessTracking';
 	import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
 

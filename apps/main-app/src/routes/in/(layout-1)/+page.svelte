@@ -1,10 +1,10 @@
 <script>
   import { onMount } from "svelte";
-  import BusinessDirectory from "$lib/in-new-rewrites/BusinessDirectory.svelte";
-  import RecentProjectsHome from "$lib/in-new-rewrites/RecentProjectsHome.svelte";
-  import LeadForm from "$lib/in-new-rewrites/LeadForm.svelte";
-  import SolarComparisonTable from "$lib/in-new-rewrites/SolarComparisonTable.svelte";
-  import AboutSolarVipani from "$lib/in-new-rewrites/AboutSolarVipani.svelte";
+  import BusinessDirectory from "$lib/in/components/BusinessDirectory.svelte";
+  import RecentProjectsHome from "$lib/in/components/RecentProjectsHome.svelte";
+  import LeadForm from "$lib/in/components/LeadForm.svelte";
+  import SolarComparisonTable from "$lib/in/components/SolarComparisonTable.svelte";
+  import AboutSolarVipani from "$lib/in/components/AboutSolarVipani.svelte";
 
   // Receive data from server
   let { data } = $props();
@@ -55,7 +55,7 @@
             if (!chatbotTimer) {
               chatbotTimer = setTimeout(async () => {
                 if (!ChatbotPopup) {
-                  const module = await import("$lib/in-new-rewrites/ChatbotPopup.svelte");
+                  const module = await import("$lib/in/components/ChatbotPopup.svelte");
                   ChatbotPopup = module.default;
                 }
                 shouldLoadChatbot = true;

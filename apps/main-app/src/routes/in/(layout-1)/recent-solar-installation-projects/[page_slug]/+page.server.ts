@@ -1,107 +1,82 @@
 import type { PageServerLoad } from './$types';
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
 import { error } from '@sveltejs/kit';
+
 export const config = {
 	isr: {
-		expiration: 86400 // 24 hours
+		expiration: 86400
 	}
 };
 
-
-const pool = createPool({ connectionString: POSTGRES_URL });
-
 export const load: PageServerLoad = async ({ params }) => {
 	const pageSlug = params.page_slug;
-	
-	// Parse page number from slug (e.g., "2" -> 2)
 	const page = parseInt(pageSlug, 10);
-	
-	// Validate page number
+
 	if (isNaN(page) || page < 1) {
 		throw error(404, 'Invalid page number');
 	}
-	
-	const limit = 9; // Projects per page
+
+	const limit = 9;
 	const offset = (page - 1) * limit;
 
 	try {
-		const client = await pool.connect();
+		const projectsResult = await pool.query(
+			`SELECT
+				id,
+				business_slug,
+				title,
+				pincode,
+				project_date,
+				created_at,
+				image_url,
+				cloudinary_public_id,
+				image_width,
+				image_height,
+				image_format,
+				project_slug
+			FROM projects
+			WHERE isvisible = true
+			AND business_slug IS NOT NULL
+			ORDER BY project_date DESC
+			LIMIT $1 OFFSET $2`,
+			[limit, offset]
+		);
 
-		try {
-			// Query to get paginated projects from all businesses
-			const projectsQuery = `
-        SELECT 
-          id, 
-          business_slug, 
-          title, 
-          pincode, 
-          project_date, 
-          created_at,
-          image_url,
-          cloudinary_public_id,
-          image_width,
-          image_height,
-          image_format,
-          project_slug
-        FROM projects 
-        WHERE isvisible = true
-        AND business_slug IS NOT NULL
-        ORDER BY project_date DESC
-        LIMIT $1 OFFSET $2
-      `;
+		const countResult = await pool.query(
+			`SELECT COUNT(*) AS total
+			FROM projects
+			WHERE isvisible = true
+			AND business_slug IS NOT NULL`
+		);
 
-			// Query to get total count of visible projects
-			const countQuery = `
-        SELECT COUNT(*) AS total
-        FROM projects
-        WHERE isvisible = true
-        AND business_slug IS NOT NULL
-      `;
+		const totalProjects = parseInt(countResult.rows[0].total, 10);
+		const totalPages = Math.ceil(totalProjects / limit);
 
-			const projectsResult = await client.query(projectsQuery, [limit, offset]);
-			const countResult = await client.query(countQuery);
-
-			const totalProjects = parseInt(countResult.rows[0].total, 10);
-			const totalPages = Math.ceil(totalProjects / limit);
-			
-			// If page number is greater than total pages, throw 404
-			if (page > totalPages && totalPages > 0) {
-				throw error(404, 'Page not found');
-			}
-
-			return {
-				user: null,
-				success: true,
-				projects: projectsResult.rows,
-				pagination: {
-					currentPage: page,
-					totalPages: totalPages,
-					totalProjects: totalProjects,
-					limit: limit,
-					hasMore: page < totalPages
-				},
-				debug: {
-					timestamp: new Date().toISOString(),
-					projectCount: projectsResult.rowCount
-				}
-			};
-		} catch (queryError) {
-			console.error('Database query error:', queryError);
-			return {
-				user: null,
-				success: false,
-				error: 'Failed to fetch projects: ' + (queryError instanceof Error ? queryError.message : String(queryError))
-			};
-		} finally {
-			client.release();
+		if (page > totalPages && totalPages > 0) {
+			throw error(404, 'Page not found');
 		}
-	} catch (connectionError) {
-		console.error('Database connection error:', connectionError);
+
 		return {
-			user: null,
+			success: true,
+			projects: projectsResult.rows,
+			pagination: {
+				currentPage: page,
+				totalPages,
+				totalProjects,
+				limit,
+				hasMore: page < totalPages
+			},
+			debug: {
+				timestamp: new Date().toISOString(),
+				projectCount: projectsResult.rowCount
+			}
+		};
+	} catch (err) {
+		if (typeof err === 'object' && err !== null && 'status' in err) throw err;
+		console.error('Database query error:', err);
+		return {
 			success: false,
-			error: 'Database connection error: ' + (connectionError instanceof Error ? connectionError.message : String(connectionError))
+			error: 'Failed to fetch projects: ' + (err instanceof Error ? err.message : String(err))
 		};
 	}
 }

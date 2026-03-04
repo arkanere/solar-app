@@ -1,18 +1,14 @@
 import type { PageServerLoad } from './$types';
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
+
 export const config = {
 	isr: {
-		expiration: 604800 // 7 days
+		expiration: 604800
 	}
 };
 
-
 export const load: PageServerLoad = async () => {
-	const pool = createPool({ connectionString: POSTGRES_URL });
-
 	try {
-		// Query to get the 10 latest verified businesses
 		const latestBusinessesResult = await pool.query(
 			`SELECT
         id,
@@ -31,17 +27,13 @@ export const load: PageServerLoad = async () => {
 
 		const businesses = latestBusinessesResult.rows;
 
-		// Return the businesses or an error message if none found
 		if (businesses.length > 0) {
-			return {
-				user: null,
-				businesses
-			};
+			return { businesses };
 		} else {
-			return { user: null, errorMessage: 'No verified businesses found.' };
+			return { errorMessage: 'No verified businesses found.' };
 		}
 	} catch (error) {
 		console.error('Database query error:', error);
-		return { user: null, errorMessage: 'Failed to load businesses' };
+		return { errorMessage: 'Failed to load businesses' };
 	}
 }
