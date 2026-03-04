@@ -843,9 +843,9 @@
 
     {#if isLoading}
       <div class="flex gap-[theme(--form-element-field-gap)] items-center">
-        <Badge variant="outline" class="animate-pulse-subtle bg-[hsl(var(--background-secondary))]">●</Badge>
-        <Badge variant="outline" class="animate-pulse-subtle bg-[hsl(var(--muted))]" style="animation-delay: 200ms">●</Badge>
-        <Badge variant="outline" class="animate-pulse-subtle bg-[hsl(var(--muted))]" style="animation-delay: 400ms">●</Badge>
+        <Badge variant="outline" class="animate-pulse bg-[hsl(var(--background-secondary))]">●</Badge>
+        <Badge variant="outline" class="animate-pulse bg-[hsl(var(--muted))]" style="animation-delay: 200ms">●</Badge>
+        <Badge variant="outline" class="animate-pulse bg-[hsl(var(--muted))]" style="animation-delay: 400ms">●</Badge>
       </div>
     {/if}
 
