@@ -69,5 +69,10 @@ export async function resolveGeoSlug(
 		return { type: 'brand', data: brandResult.rows[0] };
 	}
 
+	const sizeMatch = slug.match(/^(\d+)kw-solar-system$/);
+	if (sizeMatch) {
+		return { type: 'size', data: { sizeKw: parseInt(sizeMatch[1], 10), slug } };
+	}
+
 	return null;
 }
