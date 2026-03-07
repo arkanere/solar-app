@@ -25,6 +25,7 @@ const STATIC_PAGES: SitemapEntry[] = [
 		priority: '1.0'
 	},
 	{ loc: `${BASE_URL}/in/blogs`, lastmod: '', changefreq: 'monthly', priority: '0.8' },
+	{ loc: `${BASE_URL}/in/blog/`, lastmod: '', changefreq: 'weekly', priority: '0.8' },
 	{
 		loc: `${BASE_URL}/in/recent-solar-installation-projects`,
 		lastmod: '',
@@ -53,7 +54,8 @@ export async function generateSitemapEntries(pool: Pool): Promise<SitemapEntry[]
 		blogPostsResult,
 		geoStatesResult,
 		geoDistrictsResult,
-		geoCitiesResult
+		geoCitiesResult,
+		authorsResult
 	] = await Promise.all([
 		pool.query(`SELECT DISTINCT l.city FROM locations l
 			INNER JOIN businesses_1 b ON LOWER(b.district) = LOWER(l.district) AND b.isvisible = true
@@ -90,7 +92,8 @@ export async function generateSitemapEntries(pool: Pool): Promise<SitemapEntry[]
 			`SELECT DISTINCT l.state, l.district, l.city FROM locations l
 			 INNER JOIN businesses_1 b ON LOWER(b.district) = LOWER(l.district) AND b.isvisible = true
 			 ORDER BY l.state, l.district, l.city ASC`
-		)
+		),
+		pool.query(`SELECT slug FROM authors ORDER BY slug`)
 	]);
 
 	// Existing city pages — priority 0.7
@@ -220,6 +223,16 @@ export async function generateSitemapEntries(pool: Pool): Promise<SitemapEntry[]
 			lastmod: today,
 			changefreq: 'weekly',
 			priority: '0.7'
+		});
+	}
+
+	// Author profiles — priority 0.5
+	for (const row of authorsResult.rows) {
+		entries.push({
+			loc: `${BASE_URL}/in/authors/${row.slug}/`,
+			lastmod: today,
+			changefreq: 'monthly',
+			priority: '0.5'
 		});
 	}
 
