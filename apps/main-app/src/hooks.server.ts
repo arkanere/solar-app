@@ -10,6 +10,10 @@ function seoRedirect(pathname: string): string | null | 'needs-db' {
 	if (pathname === '/in/state/') return '/in/solar/';
 	if (pathname === '/in/state') return '/in/solar/';
 
+	// /in/solar-panel-installer/[slug]/project/[project_slug] → /in/project/[project_slug]
+	const projectMatch = pathname.match(/^\/in\/solar-panel-installer\/[^/]+\/project\/(.+)$/);
+	if (projectMatch) return `/in/project/${projectMatch[1]}`;
+
 	// /in/solar-panel-installer/[slug] → /in/installer/[slug]
 	const installerMatch = pathname.match(/^\/in\/solar-panel-installer\/(.+)$/);
 	if (installerMatch) return `/in/installer/${installerMatch[1]}`;

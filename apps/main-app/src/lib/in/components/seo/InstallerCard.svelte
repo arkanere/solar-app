@@ -21,7 +21,7 @@
 				<Card.Header class="flex flex-col sm:flex-row sm:items-start sm:justify-between border-b gap-2 pb-4">
 					<h3 class="text-xl font-semibold">
 						<a
-							href={`/in/solar-panel-installer/${business.slug}`}
+							href={`/in/installer/${business.slug}/`}
 							class="text-primary hover:opacity-80 underline-offset-2 hover:underline transition-all"
 						>
 							{business.businessname}
@@ -60,7 +60,7 @@
 							<div class="flex gap-2">
 								{#each business.recent_projects.slice(0, 3) as project}
 									<a
-										href="/in/solar-panel-installer/{project.business_slug}/project/{project.project_slug}"
+										href="/in/project/{project.project_slug}/"
 										class="group block"
 										aria-label="View {project.title}"
 									>
