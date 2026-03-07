@@ -50,7 +50,10 @@ export async function generateSitemapEntries(pool: Pool): Promise<SitemapEntry[]
 		subsidiesResult,
 		discomsResult,
 		banksResult,
-		blogPostsResult
+		blogPostsResult,
+		geoStatesResult,
+		geoDistrictsResult,
+		geoCitiesResult
 	] = await Promise.all([
 		pool.query(`SELECT DISTINCT l.city FROM locations l
 			INNER JOIN businesses_1 b ON LOWER(b.district) = LOWER(l.district) AND b.isvisible = true
@@ -72,6 +75,21 @@ export async function generateSitemapEntries(pool: Pool): Promise<SitemapEntry[]
 		),
 		pool.query(
 			"SELECT slug, updated_at FROM in_blog_posts WHERE status = 'published' ORDER BY updated_at DESC"
+		),
+		pool.query(
+			`SELECT DISTINCT l.state FROM locations l
+			 INNER JOIN businesses_1 b ON LOWER(b.state) = LOWER(l.state) AND b.isvisible = true
+			 ORDER BY l.state ASC`
+		),
+		pool.query(
+			`SELECT DISTINCT l.state, l.district FROM locations l
+			 INNER JOIN businesses_1 b ON LOWER(b.district) = LOWER(l.district) AND b.isvisible = true
+			 ORDER BY l.state, l.district ASC`
+		),
+		pool.query(
+			`SELECT DISTINCT l.state, l.district, l.city FROM locations l
+			 INNER JOIN businesses_1 b ON LOWER(b.district) = LOWER(l.district) AND b.isvisible = true
+			 ORDER BY l.state, l.district, l.city ASC`
 		)
 	]);
 
@@ -173,6 +191,36 @@ export async function generateSitemapEntries(pool: Pool): Promise<SitemapEntry[]
 				priority: '0.5'
 			});
 		}
+	}
+
+	// Geographic state hubs — priority 0.9
+	for (const row of geoStatesResult.rows) {
+		entries.push({
+			loc: `${BASE_URL}/in/solar/${toSlug(row.state)}/`,
+			lastmod: today,
+			changefreq: 'weekly',
+			priority: '0.9'
+		});
+	}
+
+	// Geographic district pillars — priority 1.0
+	for (const row of geoDistrictsResult.rows) {
+		entries.push({
+			loc: `${BASE_URL}/in/solar/${toSlug(row.state)}/${toSlug(row.district)}/`,
+			lastmod: today,
+			changefreq: 'weekly',
+			priority: '1.0'
+		});
+	}
+
+	// Geographic city pages — priority 0.7
+	for (const row of geoCitiesResult.rows) {
+		entries.push({
+			loc: `${BASE_URL}/in/solar/${toSlug(row.state)}/${toSlug(row.district)}/${toSlug(row.city)}/`,
+			lastmod: today,
+			changefreq: 'weekly',
+			priority: '0.7'
+		});
 	}
 
 	return entries;
