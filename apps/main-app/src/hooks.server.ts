@@ -22,6 +22,10 @@ function seoRedirect(pathname: string): string | null | 'needs-db' {
 	const blogMatch = pathname.match(/^\/in\/blogs\/(.+)$/);
 	if (blogMatch) return `/in/blog/${blogMatch[1]}`;
 
+	// /in/rooftop-solar/roi/ → /in/solar-financing/roi/
+	if (pathname === '/in/rooftop-solar/roi/' || pathname === '/in/rooftop-solar/roi')
+		return '/in/solar-financing/roi/';
+
 	// /in/state/solar-panel-installers-in-[state] → /in/solar/[state]/
 	const stateMatch = pathname.match(/^\/in\/state\/solar-panel-installers-in-(.+)$/);
 	if (stateMatch) return `/in/solar/${stateMatch[1]}/`;
