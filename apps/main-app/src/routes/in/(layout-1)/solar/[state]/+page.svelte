@@ -1,6 +1,6 @@
 <script lang="ts">
 	import GeoDirectory from '$lib/in/components/seo/GeoDirectory.svelte';
-	import { breadcrumbLD, faqLD } from '$lib/server/seo';
+	import { breadcrumbLD, faqLD } from '$lib/seo';
 	import { generateStateFAQ } from '$lib/in/faqData';
 
 	let { data } = $props();

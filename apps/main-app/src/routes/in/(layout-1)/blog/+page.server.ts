@@ -13,8 +13,8 @@ export const load: PageServerLoad = async ({ url }) => {
 
 	const [postsResult, countResult] = await Promise.all([
 		pool.query(
-			`SELECT bp.title, bp.slug, bp.excerpt, bp.featured_image, bp.published_at,
-			        a.name as author_name, a.slug as author_slug, a.photo as author_photo
+			`SELECT bp.title, bp.slug, bp.meta_description, bp.published_at,
+			        a.name as author_name, a.slug as author_slug, a.photo_url as author_photo
 			 FROM in_blog_posts bp
 			 LEFT JOIN authors a ON bp.author_slug = a.slug
 			 WHERE bp.status = 'published'

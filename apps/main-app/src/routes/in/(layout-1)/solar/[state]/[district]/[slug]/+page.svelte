@@ -4,7 +4,7 @@
 	import SubsidySection from '$lib/in/components/SubsidySection.svelte';
 	import LeadFormSection from '$lib/in/components/LeadFormSection.svelte';
 	import QuoteModal from '$lib/in/components/QuoteModal.svelte';
-	import { breadcrumbLD, faqLD } from '$lib/server/seo';
+	import { breadcrumbLD, faqLD } from '$lib/seo';
 	import { generateFAQ } from '$lib/in/faqData';
 
 	// Union return type from load — access page-type-specific fields via d
