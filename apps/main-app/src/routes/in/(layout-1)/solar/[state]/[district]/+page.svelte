@@ -5,7 +5,7 @@
 	import RecommendedSolarSystems from '$lib/in/components/RecommendedSolarSystems.svelte';
 	import LeadFormSection from '$lib/in/components/LeadFormSection.svelte';
 	import QuoteModal from '$lib/in/components/QuoteModal.svelte';
-	import { breadcrumbLD, localBusinessLD, faqLD } from '$lib/server/seo';
+	import { breadcrumbLD, localBusinessLD, faqLD } from '$lib/seo';
 	import { generateDistrictFAQ } from '$lib/in/faqData';
 
 	let { data } = $props();

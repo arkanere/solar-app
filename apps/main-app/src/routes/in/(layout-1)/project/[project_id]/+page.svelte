@@ -52,6 +52,8 @@
 		}
 		return project.image_url || null;
 	}
+
+	const heroSrc = getHeroImage();
 </script>
 
 <svelte:head>
@@ -77,7 +79,6 @@
 	</nav>
 
 	<!-- Hero Image -->
-	{@const heroSrc = getHeroImage()}
 	{#if heroSrc}
 		<div class="mb-8 rounded-xl overflow-hidden shadow-md">
 			<img

@@ -25,11 +25,10 @@
 			<BlogPostCard
 				title={post.title}
 				slug={post.slug}
-				excerpt={post.excerpt}
+				excerpt={post.meta_description}
 				authorName={post.author_name}
 				authorSlug={post.author_slug}
 				publishedAt={post.published_at}
-				image={post.featured_image}
 			/>
 		{/each}
 	</div>

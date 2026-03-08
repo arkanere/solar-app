@@ -10,10 +10,10 @@
 
 	interface Props {
 		district?: string;
-		state?: string;
+		stateName?: string;
 	}
 
-	let { district = '', state = '' } = $props();
+	let { district = '', stateName = '' } = $props();
 
 	let businessName = $state('');
 	let contactName = $state('');
@@ -64,7 +64,7 @@
 					email,
 					city,
 					district: district || city,
-					state,
+					state: stateName,
 					services,
 					experience
 				})

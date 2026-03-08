@@ -43,8 +43,8 @@ export const load: PageServerLoad = async ({ params }) => {
 				[city, district]
 			),
 			pool.query(
-				`SELECT id, business_slug, project_slug, title, pincode, project_date, created_at,
-				        image_url, cloudinary_public_id, image_width, image_height, image_format
+				`SELECT p.id, p.business_slug, p.project_slug, p.title, p.pincode, p.project_date, p.created_at,
+				        p.image_url, p.cloudinary_public_id, p.image_width, p.image_height, p.image_format
 				 FROM projects p
 				 JOIN businesses_1 b ON p.business_slug = b.slug
 				 WHERE LOWER(b.city) = LOWER($1) AND LOWER(b.district) = LOWER($2) AND p.isvisible = true

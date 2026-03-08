@@ -83,7 +83,7 @@
 
 	<!-- Sign-up form -->
 	<div class="flex justify-center">
-		<PartnerSignupForm district={data.district} state={data.state} />
+		<PartnerSignupForm district={data.district} stateName={data.state} />
 	</div>
 
 	<!-- Testimonials -->
