@@ -30,10 +30,14 @@ export const load: PageServerLoad = async ({ params }) => {
 		)
 	]);
 
-	const clusterData = clusterResult.rows[0];
-	if (!clusterData) {
-		error(404, 'Page not found');
-	}
+	const clusterData = clusterResult.rows[0] ?? {
+		slug,
+		h1: `Rooftop Solar ${slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}`,
+		meta_title: `Rooftop Solar ${slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')} — Guide for India | Solar Vipani`,
+		meta_description: `Learn about rooftop solar ${slug.replace(/-/g, ' ')} in India. Compare options, get pricing, and find the best solutions.`,
+		content: [],
+		faq: []
+	};
 
 	return {
 		pageType: 'cluster' as const,
