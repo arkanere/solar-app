@@ -133,12 +133,19 @@
 					name: '1.6 Solar Inverters',
 					pillar: { label: 'Solar Inverters', href: '/in/solar-inverters/' },
 					clusters: [
-						{ label: 'Price', href: '/in/solar-inverters/price/', status: 'content - to be added' },
-						{ label: 'Types', href: '/in/solar-inverters/types/', status: 'content - to be added' },
-						{ label: 'On-Grid', href: '/in/solar-inverters/on-grid/', status: 'content - to be added' },
-						{ label: 'Off-Grid', href: '/in/solar-inverters/off-grid/', status: 'content - to be added' },
-						{ label: 'Hybrid', href: '/in/solar-inverters/hybrid/', status: 'content - to be added' },
-						{ label: 'Micro Inverter', href: '/in/solar-inverters/micro-inverter/', status: 'content - to be added' }
+						{ label: 'Price', href: '/in/solar-inverters/price/' },
+						{ label: 'Types', href: '/in/solar-inverters/types/' },
+						{ label: 'On-Grid', href: '/in/solar-inverters/on-grid/' },
+						{ label: 'Off-Grid', href: '/in/solar-inverters/off-grid/' },
+						{ label: 'Hybrid', href: '/in/solar-inverters/hybrid/' },
+						{ label: 'Micro Inverter', href: '/in/solar-inverters/micro-inverter/' },
+						{ label: 'String Inverter', href: '/in/solar-inverters/string-inverter/', status: 'content - to be added' },
+						{ label: 'Hybrid Inverter', href: '/in/solar-inverters/hybrid-inverter/', status: 'content - to be added' },
+						{ label: 'On-Grid Inverter', href: '/in/solar-inverters/on-grid-inverter/', status: 'content - to be added' },
+						{ label: 'Off-Grid Inverter', href: '/in/solar-inverters/off-grid-inverter/', status: 'content - to be added' },
+						{ label: 'Sizing', href: '/in/solar-inverters/sizing/', status: 'content - to be added' },
+						{ label: 'For Home', href: '/in/solar-inverters/for-home/', status: 'content - to be added' },
+						{ label: 'For Commercial', href: '/in/solar-inverters/for-commercial/', status: 'content - to be added' }
 					],
 					dynamic: [
 						{ label: 'Brand — Microtek', href: '/in/solar-inverters/microtek/', type: 'brand' },
