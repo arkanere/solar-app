@@ -123,13 +123,12 @@
 						{ label: 'Controller', href: '/in/solar-pumps/controller/' },
 						{ label: 'For Home', href: '/in/solar-pumps/for-home/' },
 						{ label: 'KUSUM Yojana', href: '/in/solar-pumps/kusum-yojana/' },
-						{ label: 'Types', href: '/in/solar-pumps/types/', status: 'content - to be added' },
-						{ label: 'AC Pump', href: '/in/solar-pumps/ac-pump/', status: 'content - to be added' },
-						{ label: 'DC Pump', href: '/in/solar-pumps/dc-pump/', status: 'content - to be added' },
-						{ label: 'For Agriculture', href: '/in/solar-pumps/for-agriculture/', status: 'content - to be added' },
-						{ label: 'KUSUM Scheme', href: '/in/solar-pumps/kusum-scheme/', status: 'content - to be added' },
-						{ label: 'Sizing', href: '/in/solar-pumps/sizing/', status: 'content - to be added' },
-						{ label: 'Maintenance', href: '/in/solar-pumps/maintenance/', status: 'content - to be added' }
+						{ label: 'Types', href: '/in/solar-pumps/types/' },
+						{ label: 'AC Pump', href: '/in/solar-pumps/ac-pump/' },
+						{ label: 'DC Pump', href: '/in/solar-pumps/dc-pump/' },
+						{ label: 'For Agriculture', href: '/in/solar-pumps/for-agriculture/' },
+						{ label: 'Sizing', href: '/in/solar-pumps/sizing/' },
+						{ label: 'Maintenance', href: '/in/solar-pumps/maintenance/' }
 					],
 					dynamic: [
 						{ label: 'Brand — Shakti', href: '/in/solar-pumps/shakti/', type: 'brand' },
