@@ -31,10 +31,10 @@
 						{ label: 'Commercial', href: '/in/rooftop-solar/commercial/' },
 						{ label: 'Complete System', href: '/in/rooftop-solar/complete-system/' },
 						{ label: 'Cost Per Watt', href: '/in/rooftop-solar/cost-per-watt/' },
-						{ label: 'Benefits', href: '/in/rooftop-solar/benefits/', status: 'content - to be added' },
-						{ label: 'Maintenance', href: '/in/rooftop-solar/maintenance/', status: 'content - to be added' },
-						{ label: 'Net Metering', href: '/in/rooftop-solar/net-metering/', status: 'content - to be added' },
-						{ label: 'Residential', href: '/in/rooftop-solar/residential/', status: 'content - to be added' }
+						{ label: 'Benefits', href: '/in/rooftop-solar/benefits/' },
+						{ label: 'Maintenance', href: '/in/rooftop-solar/maintenance/' },
+						{ label: 'Net Metering', href: '/in/rooftop-solar/net-metering/' },
+						{ label: 'Residential', href: '/in/rooftop-solar/residential/' }
 					]
 				},
 				{
