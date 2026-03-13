@@ -145,13 +145,13 @@
 						{ label: 'Off-Grid', href: '/in/solar-inverters/off-grid/' },
 						{ label: 'Hybrid', href: '/in/solar-inverters/hybrid/' },
 						{ label: 'Micro Inverter', href: '/in/solar-inverters/micro-inverter/' },
-						{ label: 'String Inverter', href: '/in/solar-inverters/string-inverter/', status: 'content - to be added' },
-						{ label: 'Hybrid Inverter', href: '/in/solar-inverters/hybrid-inverter/', status: 'content - to be added' },
-						{ label: 'On-Grid Inverter', href: '/in/solar-inverters/on-grid-inverter/', status: 'content - to be added' },
-						{ label: 'Off-Grid Inverter', href: '/in/solar-inverters/off-grid-inverter/', status: 'content - to be added' },
-						{ label: 'Sizing', href: '/in/solar-inverters/sizing/', status: 'content - to be added' },
-						{ label: 'For Home', href: '/in/solar-inverters/for-home/', status: 'content - to be added' },
-						{ label: 'For Commercial', href: '/in/solar-inverters/for-commercial/', status: 'content - to be added' }
+						{ label: 'String Inverter', href: '/in/solar-inverters/string-inverter/' },
+						{ label: 'Hybrid Inverter', href: '/in/solar-inverters/hybrid-inverter/' },
+						{ label: 'On-Grid Inverter', href: '/in/solar-inverters/on-grid-inverter/' },
+						{ label: 'Off-Grid Inverter', href: '/in/solar-inverters/off-grid-inverter/' },
+						{ label: 'Sizing', href: '/in/solar-inverters/sizing/' },
+						{ label: 'For Home', href: '/in/solar-inverters/for-home/' },
+						{ label: 'For Commercial', href: '/in/solar-inverters/for-commercial/' }
 					],
 					dynamic: [
 						{ label: 'Brand — Microtek', href: '/in/solar-inverters/microtek/', type: 'brand' },
