@@ -156,10 +156,18 @@
 					name: '1.7 Solar Financing',
 					pillar: { label: 'Solar Financing', href: '/in/solar-financing/' },
 					clusters: [
-						{ label: 'Solar Loan', href: '/in/solar-financing/solar-loan/', status: 'content - to be added' },
-						{ label: 'EMI', href: '/in/solar-financing/emi/', status: 'content - to be added' },
-						{ label: 'Free Solar Scheme', href: '/in/solar-financing/free-solar-scheme/', status: 'content - to be added' },
-						{ label: 'ROI', href: '/in/solar-financing/roi/', status: 'content - to be added' }
+						{ label: 'Solar Loan', href: '/in/solar-financing/solar-loan/' },
+						{ label: 'EMI', href: '/in/solar-financing/emi/' },
+						{ label: 'Free Solar Scheme', href: '/in/solar-financing/free-solar-scheme/' },
+						{ label: 'ROI', href: '/in/solar-financing/roi/' },
+						{ label: 'EMI Options', href: '/in/solar-financing/emi-options/' },
+						{ label: 'Interest Rates', href: '/in/solar-financing/interest-rates/' },
+						{ label: 'Eligibility', href: '/in/solar-financing/eligibility/' },
+						{ label: 'Documents Required', href: '/in/solar-financing/documents-required/' },
+						{ label: 'Payback Period', href: '/in/solar-financing/payback-period/' },
+						{ label: 'Lease vs Loan', href: '/in/solar-financing/lease-vs-loan/' },
+						{ label: 'Commercial Financing', href: '/in/solar-financing/commercial-financing/' },
+						{ label: 'Green Bonds', href: '/in/solar-financing/green-bonds/' }
 					],
 					dynamic: [
 						{ label: 'Bank — SBI', href: '/in/solar-financing/sbi/', type: 'bank' },
