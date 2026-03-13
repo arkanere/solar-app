@@ -50,10 +50,10 @@
 						{ label: 'Brands', href: '/in/solar-panels/brands/' },
 						{ label: 'Mono vs Poly', href: '/in/solar-panels/monocrystalline-vs-polycrystalline/' },
 						{ label: 'Buying Guide', href: '/in/solar-panels/buying-guide/' },
-						{ label: 'Half-Cut', href: '/in/solar-panels/half-cut/', status: 'content - to be added' },
-						{ label: 'Warranty', href: '/in/solar-panels/warranty/', status: 'content - to be added' },
-						{ label: 'For Home', href: '/in/solar-panels/for-home/', status: 'content - to be added' },
-						{ label: 'For Commercial', href: '/in/solar-panels/for-commercial/', status: 'content - to be added' }
+						{ label: 'Half-Cut', href: '/in/solar-panels/half-cut/' },
+						{ label: 'Warranty', href: '/in/solar-panels/warranty/' },
+						{ label: 'For Home', href: '/in/solar-panels/for-home/' },
+						{ label: 'For Commercial', href: '/in/solar-panels/for-commercial/' }
 					],
 					dynamic: [
 						{ label: 'Brand — Tata Solar', href: '/in/solar-panels/tata-solar/', type: 'brand' },
