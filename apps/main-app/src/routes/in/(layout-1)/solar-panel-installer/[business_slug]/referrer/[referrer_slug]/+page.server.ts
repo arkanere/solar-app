@@ -43,8 +43,9 @@ export const load: PageServerLoad = async ({ params }) => {
 			businessSlug,
 			referrerSlug
 		};
-	} catch (error) {
-		console.error('Database query error:', error);
+	} catch (err) {
+		if (err?.status) throw err;
+		console.error('Database query error:', err);
 		return {
 			errorMessage: 'Failed to load page details',
 			businessSlug,

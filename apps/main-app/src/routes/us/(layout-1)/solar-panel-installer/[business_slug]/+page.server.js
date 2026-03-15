@@ -53,8 +53,9 @@ export async function load({ params }) {
 			business,
 			errorMessage: null
 		};
-	} catch (error) {
-		console.error('Database query error:', error);
+	} catch (err) {
+		if (err?.status) throw err;
+		console.error('Database query error:', err);
 		return {
 			business: null,
 			errorMessage: 'Failed to load business data'
