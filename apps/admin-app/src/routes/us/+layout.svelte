@@ -1,5 +1,6 @@
 <script>
   import { isDarkMode, toggleTheme, initializeTheme } from "$lib/themeStore";
+  import Breadcrumb from '$lib/components/Breadcrumb.svelte';
   import { onMount } from "svelte";
 
   // SvelteKit automatically provides these props to layouts
@@ -105,6 +106,8 @@
     <button class="logout-btn" on:click={handleLogout}>Logout</button>
   </div>
 </nav>
+
+<Breadcrumb />
 
 <slot></slot>
 

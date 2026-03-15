@@ -57,6 +57,18 @@
 				<h3>US Portal</h3>
 				<p>Manage US operations and businesses</p>
 			</a>
+
+			<a href="/business-onboarding" class="portal-card">
+				<div class="card-icon">BO</div>
+				<h3>Business Onboarding</h3>
+				<p>Find businesses and monitor invitation email campaigns</p>
+			</a>
+
+			<a href="/callsafe/business-onboarding/invitation-email-campaign" class="portal-card">
+				<div class="card-icon">CS</div>
+				<h3>CallSafe Campaign</h3>
+				<p>Monitor CallSafe invitation email campaigns</p>
+			</a>
 		</div>
 	</main>
 </div>
