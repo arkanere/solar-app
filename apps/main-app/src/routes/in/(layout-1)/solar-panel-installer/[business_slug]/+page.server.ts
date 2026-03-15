@@ -64,8 +64,9 @@ export const load: PageServerLoad = async ({ params }) => {
 			projects,
 			lastUpdated: new Date().toISOString()
 		};
-	} catch (error) {
-		console.error('Database query error:', error);
+	} catch (err) {
+		if (err?.status) throw err;
+		console.error('Database query error:', err);
 		return {
 			errorMessage: 'Failed to load business details',
 			lastUpdated: new Date().toISOString()
