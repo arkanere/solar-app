@@ -1,4 +1,5 @@
 import type { PageServerLoad } from './$types';
+import { error } from '@sveltejs/kit';
 import { pool } from '$lib/server/db';
 
 export const config = {
@@ -20,7 +21,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		);
 
 		if (businessResult.rows.length === 0) {
-			return { errorMessage: `No business found` };
+			error(404, { message: `No business found for "${slug}"` });
 		}
 
 		const business = businessResult.rows[0];

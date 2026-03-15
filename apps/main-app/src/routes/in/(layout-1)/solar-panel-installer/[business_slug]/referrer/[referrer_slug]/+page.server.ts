@@ -1,4 +1,5 @@
 import type { PageServerLoad } from './$types';
+import { error } from '@sveltejs/kit';
 import { pool } from '$lib/server/db';
 
 export const config = {
@@ -18,11 +19,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		);
 
 		if (businessResult.rows.length === 0) {
-			return {
-				errorMessage: 'Business not found',
-				businessSlug,
-				referrerSlug
-			};
+			error(404, { message: 'Business not found' });
 		}
 
 		const business = businessResult.rows[0];
@@ -35,12 +32,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		);
 
 		if (referrerResult.rows.length === 0) {
-			return {
-				errorMessage: 'Referrer not found',
-				business,
-				businessSlug,
-				referrerSlug
-			};
+			error(404, { message: 'Referrer not found' });
 		}
 
 		const referrer = referrerResult.rows[0];
