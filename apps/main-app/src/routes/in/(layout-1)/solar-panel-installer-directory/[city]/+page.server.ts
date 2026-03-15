@@ -149,8 +149,9 @@ export const load: PageServerLoad = async ({ params }) => {
 				errorMessage: `No businesses found in ${city} or its district: ${district}.`
 			};
 		}
-	} catch (error) {
-		console.error('Database query error:', error);
+	} catch (err) {
+		if (err?.status) throw err; // Re-throw HttpError (404)
+		console.error('Database query error:', err);
 		return {
 			city: citySlug,
 			errorMessage: 'Failed to load businesses',

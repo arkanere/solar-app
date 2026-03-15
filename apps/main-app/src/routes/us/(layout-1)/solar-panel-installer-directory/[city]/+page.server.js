@@ -4,7 +4,7 @@ export const config = {
 	}
 };
 
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { parseCityStateParam } from '$lib/us/stateAbbreviations';
@@ -19,16 +19,36 @@ export async function load({ params }) {
 	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
-		const countyResult = await pool.query(
-			`SELECT county, city, state
-			FROM us_locations
-			WHERE LOWER(REGEXP_REPLACE(city, '\\s+', '-', 'g')) = $1 AND state = $2
-			LIMIT 1`,
-			[citySlug, state]
-		);
+		let countyResult;
+
+		if (state) {
+			countyResult = await pool.query(
+				`SELECT county, city, state
+				FROM us_locations
+				WHERE LOWER(REGEXP_REPLACE(city, '\\s+', '-', 'g')) = $1 AND state = $2
+				LIMIT 1`,
+				[citySlug, state]
+			);
+		} else {
+			// Old sitemap URLs without state — look up city and redirect to canonical URL
+			countyResult = await pool.query(
+				`SELECT county, city, state,
+					LOWER(REGEXP_REPLACE(city, '\\s+', '-', 'g')) as city_slug,
+					LOWER(REGEXP_REPLACE(state, '\\s+', '-', 'g')) as state_slug
+				FROM us_locations
+				WHERE LOWER(REGEXP_REPLACE(city, '\\s+', '-', 'g')) = $1
+				LIMIT 1`,
+				[cityStateParam.toLowerCase()]
+			);
+
+			if (countyResult.rows.length > 0) {
+				const { city_slug, state_slug } = countyResult.rows[0];
+				redirect(301, `/us/solar-panel-installer-directory/${city_slug}-${state_slug}`);
+			}
+		}
 
 		if (countyResult.rows.length === 0) {
-			error(404, { message: `No location found for "${cityFromSlug}, ${state}"` });
+			error(404, { message: `No location found for "${cityFromSlug}"` });
 		}
 
 		const city = countyResult.rows[0].city;
@@ -107,6 +127,7 @@ export async function load({ params }) {
 			};
 		}
 	} catch (err) {
+		if (err?.status) throw err; // Re-throw HttpError (404) and Redirect (301)
 		console.error('Database query error:', err);
 		return {
 			city: cityFromSlug,
