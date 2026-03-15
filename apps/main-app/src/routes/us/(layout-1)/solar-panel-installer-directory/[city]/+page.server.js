@@ -7,7 +7,7 @@ export const config = {
 import { error, redirect } from '@sveltejs/kit';
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
-import { parseCityStateParam } from '$lib/us/stateAbbreviations';
+import { parseCityStateParam, formatCityStateUrl } from '$lib/us/stateAbbreviations';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ params }) {
@@ -32,9 +32,7 @@ export async function load({ params }) {
 		} else {
 			// Old sitemap URLs without state — look up city and redirect to canonical URL
 			countyResult = await pool.query(
-				`SELECT county, city, state,
-					LOWER(REGEXP_REPLACE(city, '\\s+', '-', 'g')) as city_slug,
-					LOWER(REGEXP_REPLACE(state, '\\s+', '-', 'g')) as state_slug
+				`SELECT county, city, state
 				FROM us_locations
 				WHERE LOWER(REGEXP_REPLACE(city, '\\s+', '-', 'g')) = $1
 				LIMIT 1`,
@@ -42,8 +40,9 @@ export async function load({ params }) {
 			);
 
 			if (countyResult.rows.length > 0) {
-				const { city_slug, state_slug } = countyResult.rows[0];
-				redirect(301, `/us/solar-panel-installer-directory/${city_slug}-${state_slug}`);
+				const { city, state: matchedState } = countyResult.rows[0];
+				const canonicalSlug = formatCityStateUrl(city, matchedState);
+				redirect(301, `/us/solar-panel-installer-directory/${canonicalSlug}`);
 			}
 		}
 
