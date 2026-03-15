@@ -4,6 +4,7 @@ export const config = {
 	}
 };
 
+import { error } from '@sveltejs/kit';
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { parseCityStateParam } from '$lib/us/stateAbbreviations';
@@ -18,113 +19,54 @@ export async function load({ params }) {
 	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
-		let countyResult;
-
-		if (state) {
-			countyResult = await pool.query(
-				`SELECT county, city, state
-				FROM us_locations
-				WHERE LOWER(REGEXP_REPLACE(city, '\\s+', '-', 'g')) = $1 AND state = $2
-				LIMIT 1`,
-				[citySlug, state]
-			);
-		} else {
-			countyResult = await pool.query(
-				`SELECT district as county, city
-				FROM locations
-				WHERE LOWER(REGEXP_REPLACE(city, '\\s+', '-', 'g')) = $1
-				LIMIT 1`,
-				[citySlug]
-			);
-		}
+		const countyResult = await pool.query(
+			`SELECT county, city, state
+			FROM us_locations
+			WHERE LOWER(REGEXP_REPLACE(city, '\\s+', '-', 'g')) = $1 AND state = $2
+			LIMIT 1`,
+			[citySlug, state]
+		);
 
 		if (countyResult.rows.length === 0) {
-			const locationStr = state ? `${cityFromSlug}, ${state}` : cityFromSlug;
-			return {
-				city: cityFromSlug,
-				state,
-				errorMessage: `No businesses found in ${locationStr}.`,
-				subset_cities_localities: [],
-				county: '',
-				district: '',
-				recentProjects: [],
-				lastUpdated: new Date().toISOString()
-			};
+			error(404, { message: `No location found for "${cityFromSlug}, ${state}"` });
 		}
 
 		const city = countyResult.rows[0].city;
 		const county = countyResult.rows[0].county;
-		const matchedState = countyResult.rows[0].state || state;
-		const district = county;
+		const matchedState = countyResult.rows[0].state;
 
-		// Modified query: Sort businesses from the requested city to the top,
-		// then apply the existing sorting criteria within each group
-		let districtBusinessesResult;
-
-		if (state) {
-			// Use us_businesses table with county AND state filter for precise matching
-			districtBusinessesResult = await pool.query(
-				`SELECT businessname, description, phonenumber, slug, address, pluscode, state, city, county, tag, rscore, businessfilled, tier3, services
-				FROM us_businesses
-				WHERE county = $1 AND state = $2 AND isvisible = true
-				ORDER BY
-					CASE WHEN LOWER(city) = LOWER($3) THEN 0 ELSE 1 END, -- Sort businesses from selected city first
-					businessfilled DESC,
-					tier3 DESC,
-					rscore DESC`,
-				[county, matchedState, city]
-			);
-		} else {
-			// Fallback to old table for backward compatibility
-			districtBusinessesResult = await pool.query(
-				`SELECT businessname, description, phonenumber, slug, address, pluscode, state, city, tag, rscore, businessfilled, tier3, services
-				FROM businesses_1
-				WHERE district = $1 AND isvisible = true
-				ORDER BY
-					CASE WHEN LOWER(city) = LOWER($2) THEN 0 ELSE 1 END, -- Sort businesses from selected city first
-					businessfilled DESC,
-					tier3 DESC,
-					rscore DESC`,
-				[district, city]
-			);
-		}
+		const districtBusinessesResult = await pool.query(
+			`SELECT businessname, description, phonenumber, slug, address, pluscode, state, city, county, tag, rscore, businessfilled, tier3, services
+			FROM us_businesses
+			WHERE county = $1 AND state = $2 AND isvisible = true
+			ORDER BY
+				CASE WHEN LOWER(city) = LOWER($3) THEN 0 ELSE 1 END,
+				businessfilled DESC,
+				tier3 DESC,
+				rscore DESC`,
+			[county, matchedState, city]
+		);
 
 		const businesses = districtBusinessesResult.rows;
 
-		// Fetch all cities in the same county/district
-		let citiesResult;
-
-		if (state) {
-			// Get cities from us_locations with state filter for precise matching
-			citiesResult = await pool.query(
-				`SELECT DISTINCT city, state
-				FROM us_locations
-				WHERE county = $1 AND state = $2
-				ORDER BY city ASC`,
-				[county, matchedState]
-			);
-		} else {
-			// Fallback to old table
-			citiesResult = await pool.query(
-				`SELECT DISTINCT city
-				FROM locations
-				WHERE district = $1
-				ORDER BY city ASC`,
-				[district]
-			);
-		}
+		const citiesResult = await pool.query(
+			`SELECT DISTINCT city, state
+			FROM us_locations
+			WHERE county = $1 AND state = $2
+			ORDER BY city ASC`,
+			[county, matchedState]
+		);
 
 		const subset_cities_localities = citiesResult.rows.map((row) => row.city);
 
-		// Fetch recent projects for the district
 		const projectsResult = await pool.query(
-			`SELECT 
-				id, 
-				business_slug, 
+			`SELECT
+				id,
+				business_slug,
 				project_slug,
-				title, 
-				pincode, 
-				project_date, 
+				title,
+				pincode,
+				project_date,
 				created_at,
 				image_url,
 				cloudinary_public_id,
@@ -132,52 +74,46 @@ export async function load({ params }) {
 				image_height,
 				image_format,
 				district
-			FROM projects 
+			FROM projects
 			WHERE district = $1 AND isvisible = true
-			ORDER BY 
+			ORDER BY
 				project_date DESC,
 				created_at DESC
 			LIMIT 6`,
-			[district]
+			[county]
 		);
 
 		const recentProjects = projectsResult.rows;
 
-		// Return businesses from the county/district along with location data, cities, and projects
 		if (businesses.length > 0) {
 			return {
 				city,
 				state: matchedState,
 				county,
-				district, // For backward compatibility
 				businesses,
 				subset_cities_localities,
 				recentProjects,
 				lastUpdated: new Date().toISOString()
 			};
 		} else {
-			const locationStr = matchedState ? `${city}, ${matchedState}` : city;
-			const countyStr = county || district;
 			return {
 				city,
 				state: matchedState,
 				county,
-				district, // For backward compatibility
 				subset_cities_localities,
 				recentProjects,
 				lastUpdated: new Date().toISOString(),
-				errorMessage: `No businesses found in ${locationStr} or its county: ${countyStr}.`
+				errorMessage: `No businesses found in ${city}, ${matchedState} or its county: ${county}.`
 			};
 		}
-	} catch (error) {
-		console.error('Database query error:', error);
+	} catch (err) {
+		console.error('Database query error:', err);
 		return {
 			city: cityFromSlug,
 			state,
 			errorMessage: 'Failed to load businesses',
 			subset_cities_localities: [],
 			county: '',
-			district: '',
 			recentProjects: [],
 			lastUpdated: new Date().toISOString()
 		};

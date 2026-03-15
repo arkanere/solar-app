@@ -1,4 +1,5 @@
 import type { PageServerLoad } from './$types';
+import { error } from '@sveltejs/kit';
 import { pool } from '$lib/server/db';
 
 export const config = {
@@ -20,14 +21,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		);
 
 		if (districtResult.rows.length === 0) {
-			return {
-				city: citySlug,
-				errorMessage: `No businesses found for this location.`,
-				subset_cities_localities: [],
-				district: '',
-				recentProjects: [],
-				lastUpdated: new Date().toISOString()
-			};
+			error(404, { message: `No location found for "${citySlug}"` });
 		}
 
 		const city = districtResult.rows[0].city;
