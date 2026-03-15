@@ -4,6 +4,7 @@ export const config = {
 	}
 };
 
+import { error } from '@sveltejs/kit';
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 
@@ -39,20 +40,13 @@ export async function load({ params }) {
 		);
 
 		if (businessResult.rows.length === 0) {
-			return {
-				business: null,
-				errorMessage: `Business with slug "${businessSlug}" not found.`
-			};
+			error(404, { message: `Business "${businessSlug}" not found` });
 		}
 
 		const business = businessResult.rows[0];
 
-		// Check if business is visible
 		if (!business.isvisible) {
-			return {
-				business: null,
-				errorMessage: `This business listing is not currently available.`
-			};
+			error(404, { message: `This business listing is not currently available` });
 		}
 
 		return {
