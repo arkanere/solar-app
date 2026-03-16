@@ -32,12 +32,12 @@
 	const faqItems = $derived(isCity ? generateFAQ(d.city) : []);
 
 	const breadcrumb = $derived(breadcrumbLD([
-		{ name: 'Home', url: 'https://solarvipani.com/in/' },
-		{ name: 'Solar', url: 'https://solarvipani.com/in/solar/' },
-		{ name: d.state, url: `https://solarvipani.com/in/solar/${d.stateSlug}/` },
-		{ name: d.district, url: `https://solarvipani.com/in/solar/${d.stateSlug}/${d.districtSlug}/` },
+		{ name: 'Home', url: 'https://solarvipani.com/in' },
+		{ name: 'Solar', url: 'https://solarvipani.com/in/solar' },
+		{ name: d.state, url: `https://solarvipani.com/in/solar/${d.stateSlug}` },
+		{ name: d.district, url: `https://solarvipani.com/in/solar/${d.stateSlug}/${d.districtSlug}` },
 		{ name: isCity ? d.city : isBrand ? d.brandName : `${d.sizeKw}kW Solar`,
-		  url: `https://solarvipani.com/in/solar/${d.stateSlug}/${d.districtSlug}/${isCity ? d.citySlug : isBrand ? d.brandSlug : `${d.sizeKw}kw-solar-system`}/` }
+		  url: `https://solarvipani.com/in/solar/${d.stateSlug}/${d.districtSlug}/${isCity ? d.citySlug : isBrand ? d.brandSlug : `${d.sizeKw}kw-solar-system`}` }
 	]));
 
 	const faqSchema = $derived(faqItems.length > 0 ? faqLD(faqItems) : null);
@@ -56,7 +56,7 @@
 <svelte:head>
 	<title>{pageTitle} | Solar Vipani</title>
 	<meta name="description" content={metaDescription} />
-	<link rel="canonical" href="https://solarvipani.com/in/solar/{d.stateSlug}/{d.districtSlug}/{isCity ? d.citySlug : isBrand ? d.brandSlug : `${d.sizeKw}kw-solar-system`}/" />
+	<link rel="canonical" href="https://solarvipani.com/in/solar/{d.stateSlug}/{d.districtSlug}/{isCity ? d.citySlug : isBrand ? d.brandSlug : `${d.sizeKw}kw-solar-system`}" />
 	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
 	{#if faqSchema}
 		{@html `<script type="application/ld+json">${JSON.stringify(faqSchema)}</script>`}
@@ -67,10 +67,10 @@
 	<!-- Breadcrumb -->
 	<nav class="text-sm text-muted-foreground mb-6" aria-label="Breadcrumb">
 		<ol class="flex flex-wrap gap-1">
-			<li><a href="/in/" class="hover:text-primary">Home</a> /</li>
-			<li><a href="/in/solar/" class="hover:text-primary">Solar</a> /</li>
-			<li><a href="/in/solar/{d.stateSlug}/" class="hover:text-primary">{d.state}</a> /</li>
-			<li><a href="/in/solar/{d.stateSlug}/{d.districtSlug}/" class="hover:text-primary">{d.district}</a> /</li>
+			<li><a href="/in" class="hover:text-primary">Home</a> /</li>
+			<li><a href="/in/solar" class="hover:text-primary">Solar</a> /</li>
+			<li><a href="/in/solar/{d.stateSlug}" class="hover:text-primary">{d.state}</a> /</li>
+			<li><a href="/in/solar/{d.stateSlug}/{d.districtSlug}" class="hover:text-primary">{d.district}</a> /</li>
 			<li class="text-foreground font-medium">
 				{isCity ? d.city : isBrand ? d.brandName : `${d.sizeKw}kW Solar System`}
 			</li>
@@ -128,7 +128,7 @@
 		<InstallerCard businesses={d.businesses} />
 	{:else}
 		<div class="text-center py-8 mb-8 bg-muted/50 rounded-lg">
-			<p class="text-muted-foreground">No installers found for this specific filter. <a href="/in/solar/{d.stateSlug}/{d.districtSlug}/" class="text-primary hover:underline">View all installers in {d.district}</a></p>
+			<p class="text-muted-foreground">No installers found for this specific filter. <a href="/in/solar/{d.stateSlug}/{d.districtSlug}" class="text-primary hover:underline">View all installers in {d.district}</a></p>
 		</div>
 	{/if}
 
@@ -161,7 +161,7 @@
 
 	<!-- Back link -->
 	<div class="mt-8">
-		<a href="/in/solar/{d.stateSlug}/{d.districtSlug}/" class="text-primary hover:underline text-sm">
+		<a href="/in/solar/{d.stateSlug}/{d.districtSlug}" class="text-primary hover:underline text-sm">
 			← All installers in {d.district}
 		</a>
 	</div>

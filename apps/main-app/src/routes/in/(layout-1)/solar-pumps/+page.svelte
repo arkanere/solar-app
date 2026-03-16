@@ -5,8 +5,8 @@
 	let { data } = $props();
 
 	const breadcrumb = $derived(breadcrumbLD([
-		{ name: 'Home', url: 'https://solarvipani.com/in/' },
-		{ name: 'Solar Pumps', url: 'https://solarvipani.com/in/solar-pumps/' }
+		{ name: 'Home', url: 'https://solarvipani.com/in' },
+		{ name: 'Solar Pumps', url: 'https://solarvipani.com/in/solar-pumps' }
 	]));
 
 	const faqSchema = $derived(
@@ -17,7 +17,7 @@
 <svelte:head>
 	<title>{data.pillarData.meta_title}</title>
 	<meta name="description" content={data.pillarData.meta_description} />
-	<link rel="canonical" href="https://solarvipani.com/in/solar-pumps/" />
+	<link rel="canonical" href="https://solarvipani.com/in/solar-pumps" />
 	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
 	{#if faqSchema}
 		{@html `<script type="application/ld+json">${JSON.stringify(faqSchema)}</script>`}

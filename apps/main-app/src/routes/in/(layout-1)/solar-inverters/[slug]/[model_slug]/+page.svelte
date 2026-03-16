@@ -5,10 +5,10 @@
 	let { data } = $props();
 
 	const breadcrumb = $derived(breadcrumbLD([
-		{ name: 'Home', url: 'https://solarvipani.com/in/' },
-		{ name: 'Solar Inverters', url: 'https://solarvipani.com/in/solar-inverters/' },
-		{ name: data.brand.name, url: `https://solarvipani.com/in/solar-inverters/${data.brand.slug}/` },
-		{ name: data.product.name, url: `https://solarvipani.com/in/solar-inverters/${data.brand.slug}/${data.product.model_slug}/` }
+		{ name: 'Home', url: 'https://solarvipani.com/in' },
+		{ name: 'Solar Inverters', url: 'https://solarvipani.com/in/solar-inverters' },
+		{ name: data.brand.name, url: `https://solarvipani.com/in/solar-inverters/${data.brand.slug}` },
+		{ name: data.product.name, url: `https://solarvipani.com/in/solar-inverters/${data.brand.slug}/${data.product.model_slug}` }
 	]));
 
 	const productSchema = $derived(productLD({
@@ -23,7 +23,7 @@
 <svelte:head>
 	<title>{data.product.name} — {data.brand.name} | Solar Vipani</title>
 	<meta name="description" content="{data.product.name} by {data.brand.name}. View specifications, price range and datasheet." />
-	<link rel="canonical" href="https://solarvipani.com/in/solar-inverters/{data.brand.slug}/{data.product.model_slug}/" />
+	<link rel="canonical" href="https://solarvipani.com/in/solar-inverters/{data.brand.slug}/{data.product.model_slug}" />
 	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
 	{@html `<script type="application/ld+json">${JSON.stringify(productSchema)}</script>`}
 </svelte:head>

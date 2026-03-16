@@ -10,11 +10,11 @@
 	const isBrand = $derived(d.pageType === 'brand');
 
 	const breadcrumb = $derived(breadcrumbLD([
-		{ name: 'Home', url: 'https://solarvipani.com/in/' },
-		{ name: 'Solar Panels', url: 'https://solarvipani.com/in/solar-panels/' },
+		{ name: 'Home', url: 'https://solarvipani.com/in' },
+		{ name: 'Solar Panels', url: 'https://solarvipani.com/in/solar-panels' },
 		{
 			name: isCluster ? d.clusterData.h1 : d.brand.name,
-			url: `https://solarvipani.com/in/solar-panels/${isCluster ? d.clusterData.slug : d.brand.slug}/`
+			url: `https://solarvipani.com/in/solar-panels/${isCluster ? d.clusterData.slug : d.brand.slug}`
 		}
 	]));
 
@@ -38,7 +38,7 @@
 <svelte:head>
 	<title>{metaTitle}</title>
 	<meta name="description" content={metaDescription} />
-	<link rel="canonical" href="https://solarvipani.com/in/solar-panels/{canonicalSlug}/" />
+	<link rel="canonical" href="https://solarvipani.com/in/solar-panels/{canonicalSlug}" />
 	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
 	{#if faqSchema}
 		{@html `<script type="application/ld+json">${JSON.stringify(faqSchema)}</script>`}
