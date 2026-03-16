@@ -8,9 +8,9 @@
 	const faqItems = $derived(generateStateFAQ(data.state, data.districtCount));
 
 	const breadcrumb = $derived(breadcrumbLD([
-		{ name: 'Home', url: 'https://solarvipani.com/in/' },
-		{ name: 'Solar', url: 'https://solarvipani.com/in/solar/' },
-		{ name: data.state, url: `https://solarvipani.com/in/solar/${data.stateSlug}/` }
+		{ name: 'Home', url: 'https://solarvipani.com/in' },
+		{ name: 'Solar', url: 'https://solarvipani.com/in/solar' },
+		{ name: data.state, url: `https://solarvipani.com/in/solar/${data.stateSlug}` }
 	]));
 
 	const faqSchema = $derived(faqLD(faqItems));
@@ -18,7 +18,7 @@
 	const directoryItems = $derived(
 		data.districts.map((d: { name: string; slug: string; installerCount: number }) => ({
 			...d,
-			href: `/in/solar/${data.stateSlug}/${d.slug}/`
+			href: `/in/solar/${data.stateSlug}/${d.slug}`
 		}))
 	);
 </script>
@@ -26,7 +26,7 @@
 <svelte:head>
 	<title>Solar Panel Installers in {data.state} — Districts & Cities | Solar Vipani</title>
 	<meta name="description" content="Find {data.installerCount} verified solar installers across {data.districtCount} districts in {data.state}. Browse by district to compare quotes and get the best solar deals." />
-	<link rel="canonical" href="https://solarvipani.com/in/solar/{data.stateSlug}/" />
+	<link rel="canonical" href="https://solarvipani.com/in/solar/{data.stateSlug}" />
 	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
 	{@html `<script type="application/ld+json">${JSON.stringify(faqSchema)}</script>`}
 </svelte:head>
@@ -35,8 +35,8 @@
 	<!-- Breadcrumb -->
 	<nav class="text-sm text-muted-foreground mb-6" aria-label="Breadcrumb">
 		<ol class="flex flex-wrap gap-1">
-			<li><a href="/in/" class="hover:text-primary">Home</a> /</li>
-			<li><a href="/in/solar/" class="hover:text-primary">Solar</a> /</li>
+			<li><a href="/in" class="hover:text-primary">Home</a> /</li>
+			<li><a href="/in/solar" class="hover:text-primary">Solar</a> /</li>
 			<li class="text-foreground font-medium">{data.state}</li>
 		</ol>
 	</nav>
@@ -57,7 +57,7 @@
 		<div class="bg-accent/10 rounded-lg p-4 mb-8">
 			<p class="text-sm">
 				<strong class="text-primary">{data.state} Solar Subsidy:</strong> Residents can avail the PM Surya Ghar Yojana subsidy of up to ₹78,000.
-				<a href="/in/solar/subsidy/{data.subsidy.state_slug}/" class="text-primary hover:underline ml-1">View details →</a>
+				<a href="/in/solar/subsidy/{data.subsidy.state_slug}" class="text-primary hover:underline ml-1">View details →</a>
 			</p>
 		</div>
 	{/if}

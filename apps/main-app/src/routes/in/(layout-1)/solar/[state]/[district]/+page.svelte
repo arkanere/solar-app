@@ -17,10 +17,10 @@
 	const faqItems = $derived(generateDistrictFAQ(data.district, data.state, data.installerCount));
 
 	const breadcrumb = $derived(breadcrumbLD([
-		{ name: 'Home', url: 'https://solarvipani.com/in/' },
-		{ name: 'Solar', url: 'https://solarvipani.com/in/solar/' },
-		{ name: data.state, url: `https://solarvipani.com/in/solar/${data.stateSlug}/` },
-		{ name: data.district, url: `https://solarvipani.com/in/solar/${data.stateSlug}/${data.districtSlug}/` }
+		{ name: 'Home', url: 'https://solarvipani.com/in' },
+		{ name: 'Solar', url: 'https://solarvipani.com/in/solar' },
+		{ name: data.state, url: `https://solarvipani.com/in/solar/${data.stateSlug}` },
+		{ name: data.district, url: `https://solarvipani.com/in/solar/${data.stateSlug}/${data.districtSlug}` }
 	]));
 
 	const businessLDs = $derived(
@@ -47,7 +47,7 @@
 <svelte:head>
 	<title>Solar Panel Installers in {data.district}, {data.state} | Solar Vipani</title>
 	<meta name="description" content="Find {data.installerCount} verified solar panel installers in {data.district}, {data.state}. Compare quotes, view recent projects, and get the best solar installation deals." />
-	<link rel="canonical" href="https://solarvipani.com/in/solar/{data.stateSlug}/{data.districtSlug}/" />
+	<link rel="canonical" href="https://solarvipani.com/in/solar/{data.stateSlug}/{data.districtSlug}" />
 	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
 	{#each businessLDs as ld}
 		{@html `<script type="application/ld+json">${JSON.stringify(ld)}</script>`}
@@ -59,9 +59,9 @@
 	<!-- Breadcrumb -->
 	<nav class="text-sm text-muted-foreground mb-6" aria-label="Breadcrumb">
 		<ol class="flex flex-wrap gap-1">
-			<li><a href="/in/" class="hover:text-primary">Home</a> /</li>
-			<li><a href="/in/solar/" class="hover:text-primary">Solar</a> /</li>
-			<li><a href="/in/solar/{data.stateSlug}/" class="hover:text-primary">{data.state}</a> /</li>
+			<li><a href="/in" class="hover:text-primary">Home</a> /</li>
+			<li><a href="/in/solar" class="hover:text-primary">Solar</a> /</li>
+			<li><a href="/in/solar/{data.stateSlug}" class="hover:text-primary">{data.state}</a> /</li>
 			<li class="text-foreground font-medium">{data.district}</li>
 		</ol>
 	</nav>
@@ -128,7 +128,7 @@
 			<div class="flex flex-wrap gap-2">
 				{#each data.cities as city}
 					<a
-						href="/in/solar/{data.stateSlug}/{data.districtSlug}/{toSlug(city)}/"
+						href="/in/solar/{data.stateSlug}/{data.districtSlug}/{toSlug(city)}"
 						class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors"
 					>
 						{city}
@@ -147,7 +147,7 @@
 			<div class="flex flex-wrap gap-2">
 				{#each data.nearbyDistricts as nd}
 					<a
-						href="/in/solar/{data.stateSlug}/{nd.slug}/"
+						href="/in/solar/{data.stateSlug}/{nd.slug}"
 						class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors"
 					>
 						{nd.name} ({nd.installerCount})
@@ -165,7 +165,7 @@
 		<div class="flex flex-wrap gap-2">
 			{#each COMMON_SIZES as size}
 				<a
-					href="/in/solar/{data.stateSlug}/{data.districtSlug}/{size}kw-solar-system/"
+					href="/in/solar/{data.stateSlug}/{data.districtSlug}/{size}kw-solar-system"
 					class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors"
 				>
 					{size}kW Solar System

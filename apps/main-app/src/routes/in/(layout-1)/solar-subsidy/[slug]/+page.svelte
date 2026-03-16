@@ -31,18 +31,18 @@
 
 	const breadcrumbItems = $derived.by(() => {
 		const items = [
-			{ name: 'Home', url: 'https://solarvipani.com/in/' },
-			{ name: 'Solar Subsidy', url: 'https://solarvipani.com/in/solar-subsidy/' }
+			{ name: 'Home', url: 'https://solarvipani.com/in' },
+			{ name: 'Solar Subsidy', url: 'https://solarvipani.com/in/solar-subsidy' }
 		];
 		if (isDiscom && d.stateSubsidy) {
 			items.push({
 				name: d.stateSubsidy.state_name,
-				url: `https://solarvipani.com/in/solar-subsidy/${d.discom.state_slug}/`
+				url: `https://solarvipani.com/in/solar-subsidy/${d.discom.state_slug}`
 			});
 		}
 		items.push({
 			name: isCluster ? d.clusterData.h1 : isState ? d.subsidy.state_name : d.discom.name,
-			url: `https://solarvipani.com/in/solar-subsidy/${canonicalSlug}/`
+			url: `https://solarvipani.com/in/solar-subsidy/${canonicalSlug}`
 		});
 		return items;
 	});
@@ -61,7 +61,7 @@
 <svelte:head>
 	<title>{pageTitle}</title>
 	<meta name="description" content={pageDescription} />
-	<link rel="canonical" href="https://solarvipani.com/in/solar-subsidy/{canonicalSlug}/" />
+	<link rel="canonical" href="https://solarvipani.com/in/solar-subsidy/{canonicalSlug}" />
 	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
 	{#if faqSchema}
 		{@html `<script type="application/ld+json">${JSON.stringify(faqSchema)}</script>`}

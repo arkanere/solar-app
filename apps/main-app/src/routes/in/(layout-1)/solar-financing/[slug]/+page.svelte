@@ -22,11 +22,11 @@
 	const canonicalSlug = $derived(isCluster ? d.clusterData.slug : d.bank.slug);
 
 	const breadcrumb = $derived(breadcrumbLD([
-		{ name: 'Home', url: 'https://solarvipani.com/in/' },
-		{ name: 'Solar Financing', url: 'https://solarvipani.com/in/solar-financing/' },
+		{ name: 'Home', url: 'https://solarvipani.com/in' },
+		{ name: 'Solar Financing', url: 'https://solarvipani.com/in/solar-financing' },
 		{
 			name: isCluster ? d.clusterData.h1 : d.bank.name,
-			url: `https://solarvipani.com/in/solar-financing/${canonicalSlug}/`
+			url: `https://solarvipani.com/in/solar-financing/${canonicalSlug}`
 		}
 	]));
 
@@ -40,7 +40,7 @@
 <svelte:head>
 	<title>{pageTitle}</title>
 	<meta name="description" content={pageDescription} />
-	<link rel="canonical" href="https://solarvipani.com/in/solar-financing/{canonicalSlug}/" />
+	<link rel="canonical" href="https://solarvipani.com/in/solar-financing/{canonicalSlug}" />
 	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
 	{#if faqSchema}
 		{@html `<script type="application/ld+json">${JSON.stringify(faqSchema)}</script>`}
