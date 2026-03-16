@@ -16,7 +16,7 @@
 
 <div class="max-w-6xl mx-auto px-4 py-8">
 	<Breadcrumb items={[
-		{ name: 'Home', href: '/in/' },
+		{ name: 'Home', href: '/in' },
 		{ name: pillarData.h1, href: '' }
 	]} />
 
@@ -41,7 +41,7 @@
 			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 				{#each clusters as cluster}
 					<a
-						href="/in/{cluster.pillarSlug}/{cluster.slug}/"
+						href="/in/{cluster.pillarSlug}/{cluster.slug}"
 						class="block border rounded-lg p-4 hover:border-primary hover:shadow-sm transition-all"
 					>
 						<h3 class="font-medium text-foreground">{cluster.name}</h3>
@@ -55,7 +55,7 @@
 
 	<div class="text-center mt-8 mb-8">
 		<a
-			href="/in/get-quotes/"
+			href="/in/get-quotes"
 			class="inline-block bg-primary text-primary-foreground font-semibold px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
 		>
 			Get Free Solar Quotes
