@@ -1,11 +1,8 @@
 <script>
   import { toggleTheme, initializeTheme, isDarkMode } from "$lib/themeStore.svelte";
   import { writable } from "svelte/store";
-  import { storiesModalOpen } from "$lib/in/storiesStore.js";
   import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
   import { page } from "$app/stores";
-  import StoriesModal from "$lib/in/components/StoriesModal.svelte";
-  import { Button } from "$lib/components/ui/button";
   import * as Dialog from "$lib/components/ui/dialog";
 
   // Accept children snippet from SvelteKit
@@ -23,6 +20,33 @@
   let selectedLanguage = $state("");
   let showTranslateDropdown = $state(false);
 
+  // Solar Guide dropdown state
+  let showSolarGuide = $state(false);
+
+  const solarGuideLinks = [
+    { group: "Getting Started", items: [
+      { href: "/in/rooftop-solar", label: "Rooftop Solar" },
+      { href: "/in/solar-installation", label: "Solar Installation" },
+    ]},
+    { group: "Products", items: [
+      { href: "/in/solar-panels", label: "Solar Panels" },
+      { href: "/in/solar-inverters", label: "Solar Inverters" },
+      { href: "/in/solar-pumps", label: "Solar Pumps" },
+    ]},
+    { group: "Money", items: [
+      { href: "/in/solar-subsidy", label: "Solar Subsidy" },
+      { href: "/in/solar-financing", label: "Solar Financing" },
+    ]},
+  ];
+
+  // Find Solar dropdown state
+  let showFindSolar = $state(false);
+
+  const findSolarLinks = [
+    { href: "/in/solar", label: "Solar Directory" },
+    { href: "/in/recent-solar-installation-projects", label: "Recent Projects" },
+  ];
+
   // Indian languages for translation
   const indianLanguages = [
     { code: "hi", name: "हिन्दी (Hindi)", flag: "🇮🇳" },
@@ -33,9 +57,6 @@
     { code: "gu", name: "ગુજરાતી (Gujarati)", flag: "🇮🇳" },
     { code: "more", name: "More Languages", flag: "🌍" },
   ];
-
-  // Reactive variables for store subscriptions
-  let storiesOpen = $derived($storiesModalOpen);
 
   // Reactive variable for current page path - format for CallSafe (only a-z, A-Z, 0-9, -, _)
   const currentPath = $derived(
@@ -90,11 +111,6 @@
         }
       }
     });
-  }
-
-  // Function to open stories modal
-  function openStoriesModal() {
-    storiesModalOpen.set(true);
   }
 
   // Handle language selection
@@ -192,21 +208,93 @@
   <!-- Heavy analytics scripts moved to loadAnalytics() function for deferred loading -->
 </svelte:head>
 
-<nav class="flex flex-wrap items-center w-full justify-between border-b border-border bg-background text-foreground p-[theme(--container-padding)] gap-8 transition-colors duration-[theme(--transition-default)]">
-  <!-- Left side navigation links -->
-  <div class="flex items-center gap-8 flex-wrap">
-    <a href="/in" class="no-underline text-lg font-medium transition-colors duration-[theme(--transition-default)] hover:text-primary whitespace-nowrap">Solar Vipani</a>
-    <a href="/in/business-listing" class="no-underline text-base font-medium transition-colors duration-[theme(--transition-default)] hover:text-primary whitespace-nowrap">List Business</a>
-    <a href="/in/recent-solar-installation-projects" class="no-underline text-base font-medium transition-colors duration-[theme(--transition-default)] hover:text-primary whitespace-nowrap">Recent Projects</a>
-    <a href="/in/solar" class="no-underline text-base font-medium transition-colors duration-[theme(--transition-default)] hover:text-primary whitespace-nowrap">Directory</a>
-    <Button variant="default" onclick={openStoriesModal} class="rounded-full">
-      Stories
-    </Button>
-    <a href="/in/about-us" class="no-underline text-base font-medium transition-colors duration-[theme(--transition-default)] hover:text-primary whitespace-nowrap">About us</a>
+<nav class="flex flex-wrap items-center w-full justify-between border-b border-border bg-background text-foreground p-[theme(--container-padding)] gap-4 transition-colors duration-[theme(--transition-default)]">
+  <!-- Left: brand + learn/find dropdowns -->
+  <div class="flex items-center gap-6 flex-wrap">
+    <a href="/in" class="no-underline text-lg font-semibold transition-colors duration-[theme(--transition-default)] hover:text-primary whitespace-nowrap">Solar Vipani</a>
+
+    <!-- Solar Guide Dropdown -->
+    <div class="relative">
+      <button
+        onclick={() => { showSolarGuide = !showSolarGuide; showFindSolar = false; }}
+        class="flex items-center gap-1 cursor-pointer text-sm font-medium transition-colors duration-[theme(--transition-default)] hover:text-primary whitespace-nowrap bg-transparent border-none text-foreground"
+      >
+        Solar Guide
+        <svg class="w-3.5 h-3.5 transition-transform duration-200" class:rotate-180={showSolarGuide} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+      </button>
+
+      {#if showSolarGuide}
+        <div
+          role="menu"
+          tabindex="-1"
+          class="absolute left-0 mt-2 w-56 rounded-md border border-border bg-popover text-popover-foreground shadow-md z-50"
+          onmouseleave={() => showSolarGuide = false}
+        >
+          <div class="p-2">
+            {#each solarGuideLinks as group, i}
+              {#if i > 0}
+                <div class="my-1 h-px bg-border"></div>
+              {/if}
+              <p class="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{group.group}</p>
+              {#each group.items as link}
+                <a
+                  href={link.href}
+                  onclick={() => showSolarGuide = false}
+                  class="flex w-full items-center rounded-sm px-2 py-1.5 text-sm no-underline text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                >
+                  {link.label}
+                </a>
+              {/each}
+            {/each}
+          </div>
+        </div>
+      {/if}
+    </div>
+
+    <!-- Find Solar Dropdown -->
+    <div class="relative">
+      <button
+        onclick={() => { showFindSolar = !showFindSolar; showSolarGuide = false; }}
+        class="flex items-center gap-1 cursor-pointer text-sm font-medium transition-colors duration-[theme(--transition-default)] hover:text-primary whitespace-nowrap bg-transparent border-none text-foreground"
+      >
+        Find Solar
+        <svg class="w-3.5 h-3.5 transition-transform duration-200" class:rotate-180={showFindSolar} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+      </button>
+
+      {#if showFindSolar}
+        <div
+          role="menu"
+          tabindex="-1"
+          class="absolute left-0 mt-2 w-52 rounded-md border border-border bg-popover text-popover-foreground shadow-md z-50"
+          onmouseleave={() => showFindSolar = false}
+        >
+          <div class="p-2">
+            {#each findSolarLinks as link}
+              <a
+                href={link.href}
+                onclick={() => showFindSolar = false}
+                class="flex w-full items-center rounded-sm px-2 py-1.5 text-sm no-underline text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+              >
+                {link.label}
+              </a>
+            {/each}
+          </div>
+        </div>
+      {/if}
+    </div>
   </div>
 
-  <!-- Right side buttons group -->
-  <div class="flex items-center gap-3">
+  <!-- Right: primary CTA + secondary links + utilities -->
+  <div class="flex items-center gap-3 flex-wrap">
+    <a
+      href="/in/get-quotes"
+      class="no-underline text-sm font-semibold text-primary-foreground bg-primary hover:bg-primary-hover px-4 py-2 rounded-[theme(--radius-md)] transition-all duration-[theme(--transition-default)] whitespace-nowrap"
+    >
+      Get Quotes
+    </a>
+
+    <a href="/in/business-listing" class="no-underline text-sm font-medium text-foreground transition-colors duration-[theme(--transition-default)] hover:text-primary whitespace-nowrap">List Business</a>
+
     <!-- Translate Dropdown -->
     <div class="relative">
       <button
@@ -250,8 +338,71 @@
 
 {@render children?.()}
 
-<!-- Stories Modal -->
-<StoriesModal />
+<!-- Footer -->
+<footer class="border-t border-border bg-background text-foreground mt-8">
+  <div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8 py-8">
+      <!-- Solar Topics -->
+      <div>
+        <h4 class="text-sm font-semibold text-primary mb-3">Solar Topics</h4>
+        <ul class="space-y-2 list-none p-0 m-0">
+          {#each [
+            { href: "/in/rooftop-solar", label: "Rooftop Solar" },
+            { href: "/in/solar-panels", label: "Solar Panels" },
+            { href: "/in/solar-inverters", label: "Solar Inverters" },
+            { href: "/in/solar-installation", label: "Solar Installation" },
+            { href: "/in/solar-subsidy", label: "Solar Subsidy" },
+            { href: "/in/solar-financing", label: "Solar Financing" },
+            { href: "/in/solar-pumps", label: "Solar Pumps" },
+          ] as link}
+            <li><a href={link.href} class="text-sm text-foreground no-underline hover:text-primary transition-colors">{link.label}</a></li>
+          {/each}
+        </ul>
+      </div>
+
+      <!-- Find Solar -->
+      <div>
+        <h4 class="text-sm font-semibold text-primary mb-3">Find Solar</h4>
+        <ul class="space-y-2 list-none p-0 m-0">
+          <li><a href="/in/solar" class="text-sm text-foreground no-underline hover:text-primary transition-colors">Solar Directory</a></li>
+          <li><a href="/in/recent-solar-installation-projects" class="text-sm text-foreground no-underline hover:text-primary transition-colors">Recent Projects</a></li>
+          <li><a href="/in/get-quotes" class="text-sm text-foreground no-underline hover:text-primary transition-colors">Get Quotes</a></li>
+        </ul>
+      </div>
+
+      <!-- Company -->
+      <div>
+        <h4 class="text-sm font-semibold text-primary mb-3">Company</h4>
+        <ul class="space-y-2 list-none p-0 m-0">
+          <li><a href="/in/about-us" class="text-sm text-foreground no-underline hover:text-primary transition-colors">About Us</a></li>
+          <li><a href="/in/blogs" class="text-sm text-foreground no-underline hover:text-primary transition-colors">Blog</a></li>
+          <li><a href="/in/business-listing" class="text-sm text-foreground no-underline hover:text-primary transition-colors">List Your Business</a></li>
+        </ul>
+      </div>
+
+      <!-- Tools -->
+      <div>
+        <h4 class="text-sm font-semibold text-primary mb-3">Tools</h4>
+        <ul class="space-y-2 list-none p-0 m-0">
+          <li><a href="/in/tools/solar-calculator" class="text-sm text-foreground no-underline hover:text-primary transition-colors">Solar Calculator</a></li>
+          <li><a href="/in/tools/emi-calculator" class="text-sm text-foreground no-underline hover:text-primary transition-colors">EMI Calculator</a></li>
+        </ul>
+      </div>
+
+      <!-- Brand -->
+      <div>
+        <h4 class="text-sm font-semibold text-primary mb-3">Solar Vipani</h4>
+        <p class="text-sm text-foreground dark:text-foreground-secondary leading-relaxed">
+          India's #1 platform connecting homeowners with verified solar installers.
+        </p>
+      </div>
+    </div>
+
+    <div class="border-t border-border pt-4 pb-2 text-center">
+      <p class="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} Solar Vipani. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
 
 <!-- Translation Instructions Modal -->
 <Dialog.Root bind:open={showTranslationModal}>

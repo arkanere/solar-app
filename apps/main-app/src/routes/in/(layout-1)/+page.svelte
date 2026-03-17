@@ -375,6 +375,39 @@
     <!-- Solar Comparison Section -->
     <SolarComparisonTable />
 
+    <!-- Solar Knowledge Hub — authority links to all 7 pillar pages -->
+    <section class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">
+      <div class="text-center mb-8">
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">Solar Knowledge Hub</h2>
+        <div class="flex justify-center items-center my-4">
+          <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+        </div>
+        <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
+          Everything you need to know before going solar — from panels and inverters to subsidies and financing
+        </p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-[theme(--card-gap)]">
+        {#each [
+          { href: "/in/rooftop-solar", title: "Rooftop Solar", desc: "System sizing, costs, and what to expect from a rooftop installation", icon: "☀️" },
+          { href: "/in/solar-panels", title: "Solar Panels", desc: "Compare panel brands, technologies, and specifications", icon: "🔋" },
+          { href: "/in/solar-inverters", title: "Solar Inverters", desc: "On-grid, hybrid, and micro inverter options for your system", icon: "⚡" },
+          { href: "/in/solar-installation", title: "Solar Installation", desc: "Site assessment, installation process, and timeline", icon: "🔧" },
+          { href: "/in/solar-subsidy", title: "Solar Subsidy", desc: "PM Surya Ghar Yojana, state subsidies, and how to apply", icon: "🏛️" },
+          { href: "/in/solar-financing", title: "Solar Financing", desc: "Solar loans, EMI options, and bank schemes", icon: "💳" },
+          { href: "/in/solar-pumps", title: "Solar Pumps", desc: "Agricultural and residential solar pump solutions", icon: "💧" }
+        ] as pillar}
+          <a
+            href={pillar.href}
+            class="group flex flex-col border border-border rounded-[theme(--radius-lg)] bg-background p-6 no-underline transition-all duration-[theme(--transition-default)] hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-sm)]"
+          >
+            <span class="text-3xl mb-3">{pillar.icon}</span>
+            <h3 class="text-lg font-semibold text-primary mb-2 group-hover:text-primary-hover transition-colors">{pillar.title}</h3>
+            <p class="text-sm text-foreground dark:text-foreground-secondary leading-relaxed">{pillar.desc}</p>
+          </a>
+        {/each}
+      </div>
+    </section>
+
     <!-- How It Works Section -->
     <section class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">
       <div class="text-center mb-8">
