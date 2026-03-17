@@ -4,7 +4,7 @@ import { error } from '@sveltejs/kit';
 import { resolveGeoSlug } from '$lib/server/slug-resolver';
 
 export const config = {
-	isr: { expiration: 86400 }
+	isr: { expiration: 604800 }
 };
 
 export const load: PageServerLoad = async ({ params }) => {
@@ -39,18 +39,17 @@ export const load: PageServerLoad = async ({ params }) => {
 			pool.query(
 				`SELECT businessname, description, phonenumber, slug, address, pluscode, state, city, tag, rscore, businessfilled, services
 				 FROM businesses_1
-				 WHERE LOWER(city) = LOWER($1) AND LOWER(district) = LOWER($2) AND isvisible = true`,
-				[city, district]
+				 WHERE LOWER(district) = LOWER($1) AND isvisible = true`,
+				[district]
 			),
 			pool.query(
 				`SELECT p.id, p.business_slug, p.project_slug, p.title, p.pincode, p.project_date, p.created_at,
 				        p.image_url, p.cloudinary_public_id, p.image_width, p.image_height, p.image_format
 				 FROM projects p
-				 JOIN businesses_1 b ON p.business_slug = b.slug
-				 WHERE LOWER(b.city) = LOWER($1) AND LOWER(b.district) = LOWER($2) AND p.isvisible = true
+				 WHERE LOWER(p.district) = LOWER($1) AND p.isvisible = true
 				 ORDER BY p.project_date DESC, p.created_at DESC
 				 LIMIT 6`,
-				[city, district]
+				[district]
 			),
 			pool.query(
 				`SELECT pincode FROM pincode_mapping WHERE LOWER(district) = LOWER($1) LIMIT 1`,
@@ -81,10 +80,20 @@ export const load: PageServerLoad = async ({ params }) => {
 			}
 		}
 
-		const businesses = businessesResult.rows.map((b: Record<string, unknown>) => ({
-			...b,
-			recent_projects: businessProjectsMap.get(b.slug as string) || []
-		}));
+		const businesses = businessesResult.rows
+			.map((b: Record<string, unknown>) => ({
+				...b,
+				recent_projects: businessProjectsMap.get(b.slug as string) || []
+			}))
+			.sort((a: Record<string, unknown>, b: Record<string, unknown>) => {
+				const aCityMatch = (a.city as string)?.toLowerCase() === city.toLowerCase() ? 0 : 1;
+				const bCityMatch = (b.city as string)?.toLowerCase() === city.toLowerCase() ? 0 : 1;
+				if (aCityMatch !== bCityMatch) return aCityMatch - bCityMatch;
+				const aProjects = (a.recent_projects as unknown[]).length;
+				const bProjects = (b.recent_projects as unknown[]).length;
+				if (aProjects !== bProjects) return bProjects - aProjects;
+				return ((b.rscore as number) || 0) - ((a.rscore as number) || 0);
+			});
 
 		return {
 			pageType: 'city' as const,

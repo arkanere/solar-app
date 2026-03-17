@@ -51,7 +51,9 @@
 
 	function handleDistrictSelection() {
 		if (selectedState && selectedDistrict) {
-			goto(`/in/solar-panel-installer-directory/${selectedDistrict.toLowerCase()}`);
+			const stateSlug = selectedState.toLowerCase().replace(/\s+/g, '-');
+			const districtSlug = selectedDistrict.toLowerCase().replace(/\s+/g, '-');
+			goto(`/in/solar/${stateSlug}/${districtSlug}`);
 		}
 	}
 </script>

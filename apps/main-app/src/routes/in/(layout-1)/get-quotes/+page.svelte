@@ -45,7 +45,7 @@
 		<div class="flex items-center gap-2 bg-muted rounded-lg px-4 py-2">
 			<FolderCheck class="w-5 h-5 text-primary" />
 			<span class="font-semibold">{data.projectCount}+</span>
-			<span class="text-muted-foreground">Completed Projects</span>
+			<span class="text-muted-foreground">Verified Projects</span>
 		</div>
 	</div>
 
