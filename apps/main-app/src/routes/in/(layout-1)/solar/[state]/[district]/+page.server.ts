@@ -3,7 +3,7 @@ import { pool } from '$lib/server/db';
 import { error } from '@sveltejs/kit';
 
 export const config = {
-	isr: { expiration: 86400 }
+	isr: { expiration: 604800 }
 };
 
 export const load: PageServerLoad = async ({ params }) => {
@@ -42,8 +42,8 @@ export const load: PageServerLoad = async ({ params }) => {
 				[district]
 			),
 			pool.query(
-				`SELECT DISTINCT city FROM locations WHERE LOWER(district) = LOWER($1) ORDER BY city ASC`,
-				[district]
+				`SELECT DISTINCT city FROM locations WHERE LOWER(district) = LOWER($1) AND LOWER(state) = LOWER($2) ORDER BY city ASC`,
+				[district, state]
 			),
 			pool.query(
 				`SELECT state_slug, state_name FROM state_subsidies

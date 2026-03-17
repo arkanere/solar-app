@@ -198,7 +198,7 @@
     <a href="/in" class="no-underline text-lg font-medium transition-colors duration-[theme(--transition-default)] hover:text-primary whitespace-nowrap">Solar Vipani</a>
     <a href="/in/business-listing" class="no-underline text-base font-medium transition-colors duration-[theme(--transition-default)] hover:text-primary whitespace-nowrap">List Business</a>
     <a href="/in/recent-solar-installation-projects" class="no-underline text-base font-medium transition-colors duration-[theme(--transition-default)] hover:text-primary whitespace-nowrap">Recent Projects</a>
-    <a href="/in/solar-panel-installer-directory" class="no-underline text-base font-medium transition-colors duration-[theme(--transition-default)] hover:text-primary whitespace-nowrap">Directory</a>
+    <a href="/in/solar" class="no-underline text-base font-medium transition-colors duration-[theme(--transition-default)] hover:text-primary whitespace-nowrap">Directory</a>
     <Button variant="default" onclick={openStoriesModal} class="rounded-full">
       Stories
     </Button>

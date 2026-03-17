@@ -39,15 +39,55 @@
 
 	const faqSchema = $derived(faqLD(faqItems));
 
+	const hasInstallers = $derived(data.installerCount > 0);
+
+	const title = $derived(
+		hasInstallers
+			? `Top Solar Panel Installers in ${data.district}, ${data.state} | Solar Vipani`
+			: `Solar Panel Installation in ${data.district}, ${data.state} | Solar Vipani`
+	);
+
+	const description = $derived(
+		hasInstallers
+			? `Find ${data.installerCount} verified solar panel installers in ${data.district}, ${data.state}. Compare quotes, view recent projects, and get the best solar installation deals.`
+			: `Explore solar panel installation options in ${data.district}, ${data.state}. Register your interest and get connected with verified solar installers.`
+	);
+
+	const canonicalUrl = $derived(`https://solarvipani.com/in/solar/${data.stateSlug}/${data.districtSlug}`);
+
 	function toSlug(str: string): string {
 		return str.toLowerCase().replace(/\s+/g, '-');
 	}
 </script>
 
 <svelte:head>
-	<title>Solar Panel Installers in {data.district}, {data.state} | Solar Vipani</title>
-	<meta name="description" content="Find {data.installerCount} verified solar panel installers in {data.district}, {data.state}. Compare quotes, view recent projects, and get the best solar installation deals." />
-	<link rel="canonical" href="https://solarvipani.com/in/solar/{data.stateSlug}/{data.districtSlug}" />
+	<title>{title}</title>
+	<meta name="description" content={description} />
+	{#if !hasInstallers}
+		<meta name="robots" content="noindex, follow" />
+		<meta name="googlebot" content="noindex, follow" />
+	{/if}
+	<link rel="canonical" href={canonicalUrl} />
+
+	<meta property="og:title" content={title} />
+	<meta property="og:description" content={description} />
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content={canonicalUrl} />
+	<meta property="og:image" content="https://solarvipani.com/logo.webp" />
+	<meta property="og:image:alt" content="Solar panel installers in {data.district}" />
+	<meta property="og:site_name" content="Solar Vipani" />
+	<meta property="og:locale" content="en_IN" />
+
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:site" content="@solarvipani" />
+	<meta name="twitter:title" content={title} />
+	<meta name="twitter:description" content={description} />
+	<meta name="twitter:image" content="https://solarvipani.com/logo.webp" />
+	<meta name="twitter:image:alt" content="Solar panel installers in {data.district}" />
+
+	<meta name="geo.region" content="IN" />
+	<meta name="geo.placename" content="{data.district}, {data.state}" />
+
 	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
 	{#each businessLDs as ld}
 		{@html `<script type="application/ld+json">${JSON.stringify(ld)}</script>`}

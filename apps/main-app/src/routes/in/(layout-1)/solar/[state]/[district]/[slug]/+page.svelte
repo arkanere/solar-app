@@ -4,7 +4,7 @@
 	import SubsidySection from '$lib/in/components/SubsidySection.svelte';
 	import LeadFormSection from '$lib/in/components/LeadFormSection.svelte';
 	import QuoteModal from '$lib/in/components/QuoteModal.svelte';
-	import { breadcrumbLD, faqLD } from '$lib/seo';
+	import { breadcrumbLD, localBusinessLD, faqLD } from '$lib/seo';
 	import { generateFAQ } from '$lib/in/faqData';
 
 	// Union return type from load — access page-type-specific fields via d
@@ -42,6 +42,24 @@
 
 	const faqSchema = $derived(faqItems.length > 0 ? faqLD(faqItems) : null);
 
+	const businessLDs = $derived(
+		(d.businesses || []).slice(0, 5).map((b: Record<string, any>) =>
+			localBusinessLD({
+				name: b.businessname as string,
+				slug: b.slug as string,
+				address: (b.address as string) || '',
+				city: (b.city as string) || d.district,
+				state: d.state,
+				postalCode: d.postalCode || '',
+				phone: b.phonenumber as string | undefined
+			})
+		)
+	);
+
+	const canonicalSlug = $derived(isCity ? d.citySlug : isBrand ? d.brandSlug : `${d.sizeKw}kw-solar-system`);
+	const canonicalUrl = $derived(`https://solarvipani.com/in/solar/${d.stateSlug}/${d.districtSlug}/${canonicalSlug}`);
+	const locationName = $derived(isCity ? d.city : d.district);
+
 	const SUBSIDY_TABLE = [
 		{ size: 1, grossCost: '₹65,000–₹80,000', subsidy: '₹30,000', netCost: '₹35,000–₹50,000' },
 		{ size: 2, grossCost: '₹1,30,000–₹1,60,000', subsidy: '₹60,000', netCost: '₹70,000–₹1,00,000' },
@@ -56,8 +74,35 @@
 <svelte:head>
 	<title>{pageTitle} | Solar Vipani</title>
 	<meta name="description" content={metaDescription} />
-	<link rel="canonical" href="https://solarvipani.com/in/solar/{d.stateSlug}/{d.districtSlug}/{isCity ? d.citySlug : isBrand ? d.brandSlug : `${d.sizeKw}kw-solar-system`}" />
+	{#if d.installerCount === 0}
+		<meta name="robots" content="noindex, follow" />
+		<meta name="googlebot" content="noindex, follow" />
+	{/if}
+	<link rel="canonical" href={canonicalUrl} />
+
+	<meta property="og:title" content="{pageTitle} | Solar Vipani" />
+	<meta property="og:description" content={metaDescription} />
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content={canonicalUrl} />
+	<meta property="og:image" content="https://solarvipani.com/logo.webp" />
+	<meta property="og:image:alt" content="Solar panel installers in {locationName}" />
+	<meta property="og:site_name" content="Solar Vipani" />
+	<meta property="og:locale" content="en_IN" />
+
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:site" content="@solarvipani" />
+	<meta name="twitter:title" content="{pageTitle} | Solar Vipani" />
+	<meta name="twitter:description" content={metaDescription} />
+	<meta name="twitter:image" content="https://solarvipani.com/logo.webp" />
+	<meta name="twitter:image:alt" content="Solar panel installers in {locationName}" />
+
+	<meta name="geo.region" content="IN" />
+	<meta name="geo.placename" content="{locationName}, {d.state}" />
+
 	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
+	{#each businessLDs as ld}
+		{@html `<script type="application/ld+json">${JSON.stringify(ld)}</script>`}
+	{/each}
 	{#if faqSchema}
 		{@html `<script type="application/ld+json">${JSON.stringify(faqSchema)}</script>`}
 	{/if}
