@@ -50,21 +50,27 @@
 	const faqSchema = faqLD(faqs);
 
 	// Form state
+	let selectedState = $state('');
 	let selectedDistrict = $state('');
 	let monthlyBill = $state(2000);
 	let ratePerUnit = $state(8);
 	let systemType = $state('on-grid');
 	let hasCalculated = $state(false);
 
-	// Unique states for grouping
 	const states = $derived(
 		[...new Set(data.districts.map((d: { state: string }) => d.state))].sort() as string[]
+	);
+
+	const filteredDistricts = $derived(
+		selectedState
+			? data.districts.filter((d: { state: string }) => d.state === selectedState)
+			: []
 	);
 
 	const selectedDistrictData = $derived(
 		data.districts.find(
 			(d: { district: string; state: string }) =>
-				`${d.state}|${d.district}` === selectedDistrict
+				d.state === selectedState && d.district === selectedDistrict
 		)
 	);
 
@@ -139,25 +145,31 @@
 	<!-- Calculator Form -->
 	<div class="rounded-lg border bg-card p-6 shadow-[theme(--shadow-xs)] mb-8">
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-			<!-- Location -->
+			<!-- State -->
 			<div class="flex flex-col gap-2">
-				<Label for="district">Your Location</Label>
-				<Select.Root type="single" bind:value={selectedDistrict}>
+				<Label for="state">State</Label>
+				<Select.Root type="single" bind:value={selectedState} onValueChange={() => { selectedDistrict = ''; }}>
 					<Select.Trigger class="w-full">
-						{#if selectedDistrictData}
-							{selectedDistrictData.district}, {selectedDistrictData.state}
-						{:else}
-							Select district
-						{/if}
+						{selectedState || 'Select state'}
 					</Select.Trigger>
 					<Select.Content class="max-h-60">
 						{#each states as state}
-							<Select.GroupHeading class="px-2 py-1 text-xs font-semibold text-muted-foreground">
-								{state}
-							</Select.GroupHeading>
-							{#each data.districts.filter((d: { state: string }) => d.state === state) as d}
-								<Select.Item value="{d.state}|{d.district}">{d.district}</Select.Item>
-							{/each}
+							<Select.Item value={state}>{state}</Select.Item>
+						{/each}
+					</Select.Content>
+				</Select.Root>
+			</div>
+
+			<!-- District -->
+			<div class="flex flex-col gap-2">
+				<Label for="district">District</Label>
+				<Select.Root type="single" bind:value={selectedDistrict} disabled={!selectedState}>
+					<Select.Trigger class="w-full">
+						{selectedDistrict || 'Select district'}
+					</Select.Trigger>
+					<Select.Content class="max-h-60">
+						{#each filteredDistricts as d}
+							<Select.Item value={d.district}>{d.district}</Select.Item>
 						{/each}
 					</Select.Content>
 				</Select.Root>

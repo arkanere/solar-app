@@ -5,7 +5,7 @@
 	import { breadcrumbLD, webAppLD } from '$lib/seo';
 	import Breadcrumb from '$lib/in/components/seo/Breadcrumb.svelte';
 	import FAQ from '$lib/in/components/seo/FAQ.svelte';
-	import { CheckCircle, XCircle, ArrowRight } from '@lucide/svelte';
+	import { CheckCircle, XCircle, ArrowRight, Info } from '@lucide/svelte';
 
 	let { data } = $props();
 
@@ -20,7 +20,7 @@
 	const webApp = webAppLD({
 		name: 'Solar Subsidy Checker',
 		description:
-			'Check central and state solar subsidies for your system. See PM Surya Ghar subsidy amounts, state top-ups, and eligibility.',
+			'Check PM Surya Ghar Yojana central solar subsidy for your system size. See subsidy amounts, eligibility, and savings.',
 		url: `${BASE_URL}/in/tools/subsidy-checker/`
 	});
 
@@ -58,17 +58,10 @@
 	};
 
 	// Form state
-	let selectedStateSlug = $state('');
 	let systemSizeKw = $state(3);
 	let connectionType = $state('residential');
 	let gridConnection = $state('yes');
 	let hasChecked = $state(false);
-
-	const selectedState = $derived(
-		data.states.find(
-			(s: { slug: string }) => s.slug === selectedStateSlug
-		)
-	);
 
 	// Central subsidy calculation (PM Surya Ghar slabs)
 	const centralSubsidy = $derived.by(() => {
@@ -79,7 +72,6 @@
 		return 78000; // max for 3+ kW
 	});
 
-	// Eligibility checks
 	const isEligibleCentral = $derived(
 		connectionType === 'residential' && gridConnection === 'yes'
 	);
@@ -93,7 +85,6 @@
 		return reasons;
 	});
 
-	// Estimated system cost for context
 	const estimatedCost = $derived(
 		Math.round(systemSizeKw * (systemSizeKw <= 3 ? 55000 : systemSizeKw <= 5 ? 50000 : 45000))
 	);
@@ -110,10 +101,10 @@
 </script>
 
 <svelte:head>
-	<title>Solar Subsidy Checker — Check PM Surya Ghar & State Subsidies | Solar Vipani</title>
+	<title>Solar Subsidy Checker — PM Surya Ghar Yojana Subsidy Calculator | Solar Vipani</title>
 	<meta
 		name="description"
-		content="Check solar panel subsidies for your state and system size. See PM Surya Ghar central subsidy, state top-ups, eligibility, and total savings. Free subsidy calculator."
+		content="Check PM Surya Ghar Yojana central solar subsidy for your system size. See subsidy amounts, eligibility, and net cost after subsidy. Free subsidy calculator."
 	/>
 	<link rel="canonical" href="{BASE_URL}/in/tools/subsidy-checker/" />
 	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
@@ -132,28 +123,40 @@
 
 	<h1 class="text-3xl md:text-4xl font-bold text-primary mb-4">Solar Subsidy Checker</h1>
 	<p class="text-muted-foreground mb-8 max-w-2xl">
-		Check the central and state solar subsidies applicable to your system. Enter your state, system
-		size, and connection type to see the subsidy amount and eligibility.
+		Check your eligibility and subsidy amount under the PM Surya Ghar Yojana — the Government of
+		India's national rooftop solar subsidy scheme.
 	</p>
 
-	<!-- Checker Form -->
+	<!-- PM Surya Ghar Yojana Info -->
 	<div class="rounded-lg border bg-card p-6 shadow-[theme(--shadow-xs)] mb-8">
-		<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-			<!-- State -->
-			<div class="flex flex-col gap-2">
-				<Label for="state">State</Label>
-				<Select.Root type="single" bind:value={selectedStateSlug}>
-					<Select.Trigger class="w-full">
-						{selectedState ? selectedState.name : 'Select your state'}
-					</Select.Trigger>
-					<Select.Content class="max-h-60">
-						{#each data.states as s}
-							<Select.Item value={s.slug}>{s.name}</Select.Item>
-						{/each}
-					</Select.Content>
-				</Select.Root>
+		<h2 class="text-xl font-semibold text-primary mb-3">PM Surya Ghar Yojana</h2>
+		<p class="text-sm text-muted-foreground mb-4">
+			A central government scheme providing direct subsidy for residential rooftop solar systems
+			across India. Applicable to on-grid systems installed by registered vendors.
+		</p>
+		<div class="rounded-lg bg-muted p-4">
+			<h3 class="font-semibold text-sm mb-2">Subsidy Slabs</h3>
+			<div class="space-y-1 text-sm text-muted-foreground">
+				<div class="flex justify-between">
+					<span>Up to 2 kW</span>
+					<span class="font-medium text-foreground">Rs 30,000 / kW</span>
+				</div>
+				<div class="flex justify-between">
+					<span>2 – 3 kW</span>
+					<span class="font-medium text-foreground">Rs 18,000 / kW</span>
+				</div>
+				<div class="flex justify-between">
+					<span>Above 3 kW</span>
+					<span class="font-medium text-foreground">Max Rs 78,000</span>
+				</div>
 			</div>
+		</div>
+	</div>
 
+	<!-- Calculator Form -->
+	<div class="rounded-lg border bg-card p-6 shadow-[theme(--shadow-xs)] mb-8">
+		<h2 class="text-lg font-semibold text-primary mb-4">Calculate Your Subsidy</h2>
+		<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 			<!-- Connection Type -->
 			<div class="flex flex-col gap-2">
 				<Label for="connection">Connection Type</Label>
@@ -173,6 +176,20 @@
 				</Select.Root>
 			</div>
 
+			<!-- Grid Connection -->
+			<div class="flex flex-col gap-2">
+				<Label for="grid">Grid Connection</Label>
+				<Select.Root type="single" bind:value={gridConnection}>
+					<Select.Trigger class="w-full">
+						{gridConnection === 'yes' ? 'Yes (On-Grid)' : 'No (Off-Grid)'}
+					</Select.Trigger>
+					<Select.Content>
+						<Select.Item value="yes">Yes (On-Grid)</Select.Item>
+						<Select.Item value="no">No (Off-Grid)</Select.Item>
+					</Select.Content>
+				</Select.Root>
+			</div>
+
 			<!-- System Size -->
 			<div class="flex flex-col gap-2">
 				<div class="flex justify-between items-baseline">
@@ -187,21 +204,7 @@
 					bind:value={systemSizeKw}
 					class="w-full"
 				/>
-				<div class="text-muted-foreground text-xs">1 kW - 10 kW</div>
-			</div>
-
-			<!-- Grid Connection -->
-			<div class="flex flex-col gap-2">
-				<Label for="grid">Grid Connection</Label>
-				<Select.Root type="single" bind:value={gridConnection}>
-					<Select.Trigger class="w-full">
-						{gridConnection === 'yes' ? 'Yes (On-Grid)' : 'No (Off-Grid)'}
-					</Select.Trigger>
-					<Select.Content>
-						<Select.Item value="yes">Yes (On-Grid)</Select.Item>
-						<Select.Item value="no">No (Off-Grid)</Select.Item>
-					</Select.Content>
-				</Select.Root>
+				<div class="text-muted-foreground text-xs">1 kW – 10 kW</div>
 			</div>
 		</div>
 
@@ -228,10 +231,10 @@
 					<CheckCircle class="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
 					<div>
 						<p class="font-medium text-green-700 dark:text-green-400">
-							Eligible for Central Subsidy
+							Eligible for PM Surya Ghar Subsidy
 						</p>
 						<p class="text-sm text-green-600 dark:text-green-500">
-							Your system qualifies for PM Surya Ghar central subsidy.
+							Your system qualifies for the central government subsidy.
 						</p>
 					</div>
 				{:else}
@@ -265,48 +268,23 @@
 							: 'Not applicable'}
 					</span>
 				</div>
-				{#if selectedState?.stateTopup}
-					<div class="flex justify-between text-sm">
-						<span class="text-muted-foreground">State Top-up ({selectedState.name})</span>
-						<span class="font-medium text-green-600">{selectedState.stateTopup}</span>
-					</div>
-				{/if}
 				<div class="flex justify-between text-sm border-t pt-2">
-					<span class="font-semibold">Net Cost (after central subsidy)</span>
+					<span class="font-semibold">Net Cost (after subsidy)</span>
 					<span class="font-bold text-primary">{formatCurrency(netCost)}</span>
 				</div>
 			</div>
 
-			<!-- Subsidy Slab Info -->
-			{#if isEligibleCentral}
-				<div class="mt-6 rounded-lg bg-muted p-4">
-					<h3 class="font-semibold text-sm mb-2">PM Surya Ghar Subsidy Slabs</h3>
-					<div class="space-y-1 text-sm text-muted-foreground">
-						<div class="flex justify-between">
-							<span>Up to 2 kW</span>
-							<span>Rs 30,000 / kW</span>
-						</div>
-						<div class="flex justify-between">
-							<span>2 - 3 kW</span>
-							<span>Rs 18,000 / kW</span>
-						</div>
-						<div class="flex justify-between">
-							<span>Above 3 kW</span>
-							<span>Max Rs 78,000</span>
-						</div>
-					</div>
+			<!-- State Subsidies — Coming Soon -->
+			<div class="mt-6 flex items-start gap-3 rounded-lg bg-muted p-4">
+				<Info class="w-5 h-5 text-primary shrink-0 mt-0.5" />
+				<div>
+					<p class="font-semibold text-sm">State Subsidies</p>
+					<p class="text-sm text-muted-foreground">
+						State-specific top-up subsidies are coming soon. We are compiling data for all
+						states.
+					</p>
 				</div>
-			{/if}
-
-			<!-- State-specific info -->
-			{#if selectedState?.eligibility}
-				<div class="mt-4 rounded-lg bg-muted p-4">
-					<h3 class="font-semibold text-sm mb-2">
-						{selectedState.name} — Eligibility Notes
-					</h3>
-					<p class="text-sm text-muted-foreground">{selectedState.eligibility}</p>
-				</div>
-			{/if}
+			</div>
 
 			<!-- CTA -->
 			<div class="mt-6 rounded-lg bg-primary/5 p-4">
@@ -337,15 +315,6 @@
 
 	<!-- Authority links -->
 	<div class="flex flex-wrap gap-3 text-sm mb-8">
-		{#if selectedState}
-			<a
-				href="/in/solar-subsidy/{selectedState.slug}/"
-				class="text-primary hover:underline"
-			>
-				{selectedState.name} Subsidy Details
-			</a>
-			<span class="text-muted-foreground">|</span>
-		{/if}
 		<a href="/in/solar-subsidy/how-to-apply/" class="text-primary hover:underline">
 			How to Apply for Solar Subsidy
 		</a>
