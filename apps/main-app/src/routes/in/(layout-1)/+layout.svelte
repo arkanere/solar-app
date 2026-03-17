@@ -386,6 +386,7 @@
         <ul class="space-y-2 list-none p-0 m-0">
           <li><a href="/in/tools/solar-calculator" class="text-sm text-foreground no-underline hover:text-primary transition-colors">Solar Calculator</a></li>
           <li><a href="/in/tools/emi-calculator" class="text-sm text-foreground no-underline hover:text-primary transition-colors">EMI Calculator</a></li>
+          <li><a href="/in/tools/subsidy-checker" class="text-sm text-foreground no-underline hover:text-primary transition-colors">Subsidy Checker</a></li>
         </ul>
       </div>
 

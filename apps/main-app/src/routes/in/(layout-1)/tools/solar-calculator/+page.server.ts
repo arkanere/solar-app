@@ -6,15 +6,14 @@ export const config = {
 };
 
 export const load: PageServerLoad = async () => {
-	const [districtsResult, statsResult, subsidyResult] = await Promise.all([
+	const [locationsResult, installerCountsResult, statsResult, subsidyResult] = await Promise.all([
 		pool.query(
-			`SELECT DISTINCT l.state, l.district,
-			        (SELECT COUNT(*) FROM businesses_1 b
-			         WHERE LOWER(b.district) = LOWER(l.district)
-			         AND LOWER(b.state) = LOWER(l.state)
-			         AND b.isvisible = true) as installer_count
-			 FROM locations l
-			 ORDER BY l.state, l.district`
+			`SELECT DISTINCT state, district FROM locations ORDER BY state, district`
+		),
+		pool.query(
+			`SELECT LOWER(state) as state, LOWER(district) as district, COUNT(*) as cnt
+			 FROM businesses_1 WHERE isvisible = true
+			 GROUP BY LOWER(state), LOWER(district)`
 		),
 		pool.query(
 			`SELECT COUNT(*) as total_installers FROM businesses_1 WHERE isvisible = true`
@@ -27,13 +26,18 @@ export const load: PageServerLoad = async () => {
 		)
 	]);
 
-	const districts = districtsResult.rows.map(
-		(r: { state: string; district: string; installer_count: string }) => ({
+	const countMap = new Map<string, number>();
+	for (const r of installerCountsResult.rows) {
+		countMap.set(`${r.state}|${r.district}`, Number(r.cnt));
+	}
+
+	const districts = locationsResult.rows.map(
+		(r: { state: string; district: string }) => ({
 			state: r.state,
 			district: r.district,
 			slug: r.district.toLowerCase().replace(/\s+/g, '-'),
 			stateSlug: r.state.toLowerCase().replace(/\s+/g, '-'),
-			installerCount: parseInt(r.installer_count)
+			installerCount: countMap.get(`${r.state.toLowerCase()}|${r.district.toLowerCase()}`) || 0
 		})
 	);
 

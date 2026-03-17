@@ -171,7 +171,7 @@
 						href="/in/solar/{area.state_slug}/{area.district_slug}/"
 						class="bg-muted px-3 py-1.5 rounded-lg text-sm font-medium hover:text-primary hover:bg-muted/80 transition-colors"
 					>
-						{area.district}
+						{area.city}
 					</a>
 				{/each}
 			</div>

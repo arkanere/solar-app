@@ -3,7 +3,7 @@ import { pool } from '$lib/server/db';
 import { error } from '@sveltejs/kit';
 
 export const config = {
-	isr: { expiration: 86400 }
+	isr: { expiration: 604800 }
 };
 
 export const load: PageServerLoad = async ({ params }) => {
@@ -42,12 +42,13 @@ export const load: PageServerLoad = async ({ params }) => {
 			[mainSlug]
 		),
 		pool.query(
-			`SELECT DISTINCT l.district, l.state,
+			`SELECT DISTINCT l.city,
 			        LOWER(REPLACE(l.state, ' ', '-')) as state_slug,
-			        LOWER(REPLACE(l.district, ' ', '-')) as district_slug
+			        LOWER(REPLACE(l.district, ' ', '-')) as district_slug,
+			        LOWER(REPLACE(l.city, ' ', '-')) as city_slug
 			 FROM locations l
-			 WHERE LOWER(l.district) = LOWER($1) OR LOWER(l.state) = LOWER($2)
-			 ORDER BY l.district
+			 WHERE LOWER(l.district) = LOWER($1) AND LOWER(l.state) = LOWER($2)
+			 ORDER BY l.city
 			 LIMIT 20`,
 			[business.district, business.state]
 		)
