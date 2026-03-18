@@ -293,7 +293,7 @@
       Get Quotes
     </a>
 
-    <a href="/in/business-listing" class="no-underline text-sm font-medium text-foreground transition-colors duration-[theme(--transition-default)] hover:text-primary whitespace-nowrap">List Business</a>
+    <a href="/in/partners" class="no-underline text-sm font-medium text-foreground transition-colors duration-[theme(--transition-default)] hover:text-primary whitespace-nowrap">Partner with Us</a>
 
     <!-- Translate Dropdown -->
     <div class="relative">
@@ -376,7 +376,7 @@
         <ul class="space-y-2 list-none p-0 m-0">
           <li><a href="/in/about-us" class="text-sm text-foreground no-underline hover:text-primary transition-colors">About Us</a></li>
           <li><a href="/in/blogs" class="text-sm text-foreground no-underline hover:text-primary transition-colors">Blog</a></li>
-          <li><a href="/in/business-listing" class="text-sm text-foreground no-underline hover:text-primary transition-colors">List Your Business</a></li>
+          <li><a href="/in/partners" class="text-sm text-foreground no-underline hover:text-primary transition-colors">Partner with Us</a></li>
         </ul>
       </div>
 
