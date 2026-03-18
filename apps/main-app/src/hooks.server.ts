@@ -5,6 +5,8 @@ import { POSTGRES_URL } from '$env/static/private';
 
 function seoRedirect(pathname: string): string | null | 'needs-db' {
 	// Static redirects
+	if (pathname === '/in/business-listing/' || pathname === '/in/business-listing') return '/in/partners/';
+	if (pathname === '/in/business-form/' || pathname === '/in/business-form') return '/in/partners/join/';
 	if (pathname === '/in/solar-panel-installer-directory/') return '/in/solar/';
 	if (pathname === '/in/solar-panel-installer-directory') return '/in/solar/';
 	if (pathname === '/in/state/') return '/in/solar/';
