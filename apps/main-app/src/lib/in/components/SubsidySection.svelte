@@ -90,7 +90,7 @@
 
 	<div class="text-center">
 		<Button
-			class="font-semibold text-lg px-10 py-4 uppercase tracking-wide"
+			class="font-semibold text-sm md:text-lg px-4 md:px-10 py-3 md:py-4 uppercase tracking-wide max-w-full whitespace-normal"
 			onclick={onGetQuote}
 		>
 			Check Subsidy Eligibility — Get Free Quote

@@ -58,10 +58,29 @@
 	};
 
 	// Form state
+	let selectedState = $state('');
+	let selectedDistrict = $state('');
 	let systemSizeKw = $state(3);
 	let connectionType = $state('residential');
 	let gridConnection = $state('yes');
 	let hasChecked = $state(false);
+
+	const states = $derived(
+		[...new Set(data.districts.map((d: { state: string }) => d.state))].sort() as string[]
+	);
+
+	const filteredDistricts = $derived(
+		selectedState
+			? data.districts.filter((d: { state: string }) => d.state === selectedState)
+			: []
+	);
+
+	const selectedDistrictData = $derived(
+		data.districts.find(
+			(d: { district: string; state: string }) =>
+				d.state === selectedState && d.district === selectedDistrict
+		)
+	);
 
 	// Central subsidy calculation (PM Surya Ghar slabs)
 	const centralSubsidy = $derived.by(() => {
@@ -127,36 +146,40 @@
 		India's national rooftop solar subsidy scheme.
 	</p>
 
-	<!-- PM Surya Ghar Yojana Info -->
-	<div class="rounded-lg border bg-card p-6 shadow-[theme(--shadow-xs)] mb-8">
-		<h2 class="text-xl font-semibold text-primary mb-3">PM Surya Ghar Yojana</h2>
-		<p class="text-sm text-muted-foreground mb-4">
-			A central government scheme providing direct subsidy for residential rooftop solar systems
-			across India. Applicable to on-grid systems installed by registered vendors.
-		</p>
-		<div class="rounded-lg bg-muted p-4">
-			<h3 class="font-semibold text-sm mb-2">Subsidy Slabs</h3>
-			<div class="space-y-1 text-sm text-muted-foreground">
-				<div class="flex justify-between">
-					<span>Up to 2 kW</span>
-					<span class="font-medium text-foreground">Rs 30,000 / kW</span>
-				</div>
-				<div class="flex justify-between">
-					<span>2 – 3 kW</span>
-					<span class="font-medium text-foreground">Rs 18,000 / kW</span>
-				</div>
-				<div class="flex justify-between">
-					<span>Above 3 kW</span>
-					<span class="font-medium text-foreground">Max Rs 78,000</span>
-				</div>
-			</div>
-		</div>
-	</div>
-
 	<!-- Calculator Form -->
 	<div class="rounded-lg border bg-card p-6 shadow-[theme(--shadow-xs)] mb-8">
-		<h2 class="text-lg font-semibold text-primary mb-4">Calculate Your Subsidy</h2>
-		<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+		<h2 class="text-lg font-semibold text-primary mb-4">Check Your Subsidy Eligibility</h2>
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+			<!-- State -->
+			<div class="flex flex-col gap-2">
+				<Label for="state">State</Label>
+				<Select.Root type="single" bind:value={selectedState} onValueChange={() => { selectedDistrict = ''; }}>
+					<Select.Trigger class="w-full">
+						{selectedState || 'Select state'}
+					</Select.Trigger>
+					<Select.Content class="max-h-60">
+						{#each states as state}
+							<Select.Item value={state}>{state}</Select.Item>
+						{/each}
+					</Select.Content>
+				</Select.Root>
+			</div>
+
+			<!-- District -->
+			<div class="flex flex-col gap-2">
+				<Label for="district">District</Label>
+				<Select.Root type="single" bind:value={selectedDistrict} disabled={!selectedState}>
+					<Select.Trigger class="w-full">
+						{selectedDistrict || 'Select district'}
+					</Select.Trigger>
+					<Select.Content class="max-h-60">
+						{#each filteredDistricts as d}
+							<Select.Item value={d.district}>{d.district}</Select.Item>
+						{/each}
+					</Select.Content>
+				</Select.Root>
+			</div>
+
 			<!-- Connection Type -->
 			<div class="flex flex-col gap-2">
 				<Label for="connection">Connection Type</Label>
@@ -191,7 +214,7 @@
 			</div>
 
 			<!-- System Size -->
-			<div class="flex flex-col gap-2">
+			<div class="flex flex-col gap-2 md:col-span-2">
 				<div class="flex justify-between items-baseline">
 					<Label for="size">System Size</Label>
 					<span class="text-primary text-lg font-semibold">{systemSizeKw} kW</span>
@@ -223,28 +246,28 @@
 
 			<!-- Eligibility Status -->
 			<div
-				class="flex items-start gap-3 rounded-lg p-4 mb-6 {isEligibleCentral
-					? 'bg-green-50 dark:bg-green-950/20'
-					: 'bg-red-50 dark:bg-red-950/20'}"
+				class="flex items-start gap-3 rounded-lg border p-4 mb-6 {isEligibleCentral
+					? 'border-green-600/30 bg-green-600/10'
+					: 'border-red-600/30 bg-red-600/10'}"
 			>
 				{#if isEligibleCentral}
-					<CheckCircle class="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+					<CheckCircle class="w-5 h-5 text-primary shrink-0 mt-0.5" />
 					<div>
-						<p class="font-medium text-green-700 dark:text-green-400">
+						<p class="font-semibold text-foreground">
 							Eligible for PM Surya Ghar Subsidy
 						</p>
-						<p class="text-sm text-green-600 dark:text-green-500">
+						<p class="text-sm text-muted-foreground">
 							Your system qualifies for the central government subsidy.
 						</p>
 					</div>
 				{:else}
-					<XCircle class="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+					<XCircle class="w-5 h-5 text-destructive shrink-0 mt-0.5" />
 					<div>
-						<p class="font-medium text-red-700 dark:text-red-400">
+						<p class="font-semibold text-foreground">
 							Not Eligible for Central Subsidy
 						</p>
 						{#each eligibilityReasons as reason}
-							<p class="text-sm text-red-600 dark:text-red-500">{reason}</p>
+							<p class="text-sm text-muted-foreground">{reason}</p>
 						{/each}
 					</div>
 				{/if}
@@ -274,30 +297,64 @@
 				</div>
 			</div>
 
+			<!-- PM Surya Ghar Yojana Info -->
+			<div class="mt-6 rounded-lg border p-4">
+				<h3 class="font-semibold text-primary mb-2">PM Surya Ghar Yojana — Subsidy Slabs</h3>
+				<p class="text-sm text-muted-foreground mb-3">
+					Central government scheme providing direct subsidy for residential rooftop solar. Applicable to on-grid systems installed by registered vendors.
+				</p>
+				<div class="space-y-1 text-sm text-muted-foreground">
+					<div class="flex justify-between">
+						<span>Up to 2 kW</span>
+						<span class="font-medium text-foreground">Rs 30,000 / kW</span>
+					</div>
+					<div class="flex justify-between">
+						<span>2 – 3 kW</span>
+						<span class="font-medium text-foreground">Rs 18,000 / kW</span>
+					</div>
+					<div class="flex justify-between">
+						<span>Above 3 kW</span>
+						<span class="font-medium text-foreground">Max Rs 78,000</span>
+					</div>
+				</div>
+			</div>
+
 			<!-- State Subsidies — Coming Soon -->
 			<div class="mt-6 flex items-start gap-3 rounded-lg bg-muted p-4">
 				<Info class="w-5 h-5 text-primary shrink-0 mt-0.5" />
 				<div>
-					<p class="font-semibold text-sm">State Subsidies</p>
+					<p class="font-semibold text-sm">{selectedState} State Subsidy</p>
 					<p class="text-sm text-muted-foreground">
-						State-specific top-up subsidies are coming soon. We are compiling data for all
-						states.
+						Top-up subsidy data for {selectedState} is coming soon. Some states offer additional subsidies on top of the central PM Surya Ghar scheme.
 					</p>
 				</div>
 			</div>
 
 			<!-- CTA -->
 			<div class="mt-6 rounded-lg bg-primary/5 p-4">
-				<p class="text-sm text-muted-foreground mb-3">
-					Get exact quotes with subsidy applied from
-					<strong class="text-foreground">{data.totalInstallers}+ verified installers</strong>.
-				</p>
-				<a
-					href="/in/get-quotes/"
-					class="inline-flex items-center gap-2 bg-primary text-primary-foreground font-semibold px-6 py-2.5 rounded-lg hover:opacity-90 transition-opacity text-sm"
-				>
-					Get Quotes with Subsidy Applied <ArrowRight class="w-4 h-4" />
-				</a>
+				{#if selectedDistrictData && selectedDistrictData.installerCount > 0}
+					<p class="text-sm text-muted-foreground mb-3">
+						Based on our network, <strong class="text-foreground">{selectedDistrictData.installerCount} verified installers</strong> in
+						<strong class="text-foreground">{selectedDistrictData.district}</strong> can install this system.
+					</p>
+					<a
+						href="/in/solar/{selectedDistrictData.stateSlug}/{selectedDistrictData.slug}/"
+						class="inline-flex items-center gap-2 bg-primary text-primary-foreground font-semibold px-6 py-2.5 rounded-lg hover:opacity-90 transition-opacity text-sm"
+					>
+						Get Quotes with Subsidy Applied <ArrowRight class="w-4 h-4" />
+					</a>
+				{:else}
+					<p class="text-sm text-muted-foreground mb-3">
+						Get exact quotes with subsidy applied from
+						<strong class="text-foreground">{data.totalInstallers}+ verified installers</strong>.
+					</p>
+					<a
+						href="/in/get-quotes/"
+						class="inline-flex items-center gap-2 bg-primary text-primary-foreground font-semibold px-6 py-2.5 rounded-lg hover:opacity-90 transition-opacity text-sm"
+					>
+						Get Quotes with Subsidy Applied <ArrowRight class="w-4 h-4" />
+					</a>
+				{/if}
 			</div>
 
 			<!-- Related tools -->
