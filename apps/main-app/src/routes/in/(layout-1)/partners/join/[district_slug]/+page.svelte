@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { breadcrumbLD } from '$lib/seo';
-	import PartnerSignupForm from '$lib/in/components/seo/PartnerSignupForm.svelte';
-	import InstallerTestimonial from '$lib/in/components/seo/InstallerTestimonial.svelte';
+	import BusinessForm from '$lib/in/components/BusinessForm.svelte';
+	import { Card } from '$lib/components/ui/card';
 	import { Users, MapPin, TrendingUp } from '@lucide/svelte';
 
 	let { data } = $props();
@@ -11,18 +11,12 @@
 			{ name: 'Home', url: 'https://solarvipani.com/in/' },
 			{ name: 'Partners', url: 'https://solarvipani.com/in/partners/' },
 			{ name: 'Join', url: 'https://solarvipani.com/in/partners/join/' },
-			{ name: data.district, url: `https://solarvipani.com/in/partners/join/${data.districtSlug}/` }
+			{
+				name: data.district,
+				url: `https://solarvipani.com/in/partners/join/${data.districtSlug}/`
+			}
 		])
 	);
-
-	const testimonials = $derived([
-		{
-			name: 'Local Installer',
-			business: 'Solar Solutions',
-			district: data.district,
-			text: `Joining Solar Vipani's network in ${data.district} has helped us tap into the growing demand for rooftop solar. The verified leads save us time and marketing costs.`
-		}
-	]);
 
 	const nearbyWithInstallers = $derived(
 		data.nearbyDistricts.filter((d: { installerCount: number }) => d.installerCount > 0)
@@ -30,10 +24,43 @@
 </script>
 
 <svelte:head>
+	<!-- Meta Pixel Code -->
+	<script>
+		!(function (f, b, e, v, n, t, s) {
+			if (f.fbq) return;
+			n = f.fbq = function () {
+				n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+			};
+			if (!f._fbq) f._fbq = n;
+			n.push = n;
+			n.loaded = !0;
+			n.version = '2.0';
+			n.queue = [];
+			t = b.createElement(e);
+			t.async = !0;
+			t.src = v;
+			s = b.getElementsByTagName(e)[0];
+			s.parentNode.insertBefore(t, s);
+		})(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+		fbq('init', '1226087962095221');
+		fbq('track', 'PageView');
+	</script>
+	<noscript>
+		<img
+			height="1"
+			width="1"
+			style="display:none"
+			src="https://www.facebook.com/tr?id=1226087962095221&ev=PageView&noscript=1"
+			alt="Facebook Pixel"
+		/>
+	</noscript>
+
 	<title>Become a Solar Installer Partner in {data.district} | Solar Vipani</title>
 	<meta
 		name="description"
-		content="Join Solar Vipani's installer network in {data.district}, {data.state}. {data.recentLeadCount > 0 ? `${data.recentLeadCount} homeowners requested solar quotes last month.` : ''} Get verified leads and grow your business."
+		content="Join Solar Vipani's installer network in {data.district}, {data.state}. {data.recentLeadCount > 0
+			? `${data.recentLeadCount} homeowners requested solar quotes last month.`
+			: ''} Get verified leads and grow your business."
 	/>
 	<link rel="canonical" href="https://solarvipani.com/in/partners/join/{data.districtSlug}/" />
 	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
@@ -56,7 +83,8 @@
 
 	{#if data.recentLeadCount > 0}
 		<p class="mx-auto mb-6 max-w-2xl text-center text-lg text-muted-foreground">
-			<strong class="text-foreground">{data.recentLeadCount} homeowners</strong> in {data.district} requested solar quotes in the last month
+			<strong class="text-foreground">{data.recentLeadCount} homeowners</strong> in {data.district}
+			requested solar quotes in the last month
 		</p>
 	{/if}
 
@@ -81,18 +109,12 @@
 		{/if}
 	</div>
 
-	<!-- Sign-up form -->
+	<!-- Business Form -->
 	<div class="flex justify-center">
-		<PartnerSignupForm district={data.district} stateName={data.state} />
+		<Card class="w-full max-w-2xl">
+			<BusinessForm />
+		</Card>
 	</div>
-
-	<!-- Testimonials -->
-	<section class="mt-12">
-		<h2 class="mb-6 text-center text-2xl font-semibold text-foreground">
-			What Installers in {data.state} Say
-		</h2>
-		<InstallerTestimonial {testimonials} />
-	</section>
 
 	<!-- Nearby districts -->
 	{#if nearbyWithInstallers.length > 0}
