@@ -139,6 +139,44 @@
 	<!-- Subsidy -->
 	<SubsidySection city={data.district} onGetQuote={() => (isModalOpen = true)} />
 
+	<!-- Get Quotes CTA -->
+	<div class="text-center mb-8">
+		<a
+			href="/in/get-quotes/"
+			class="inline-block bg-primary text-primary-foreground font-semibold px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
+		>
+			Get Free Solar Quotes in {data.district}
+		</a>
+	</div>
+
+	<!-- Solar Guides -->
+	<section class="mb-8">
+		<h2 class="text-2xl font-semibold text-primary mb-4">Solar Guides</h2>
+		<p class="text-sm text-muted-foreground mb-3">
+			Not sure where to start? These guides can help you make an informed decision.
+		</p>
+		<div class="flex flex-wrap gap-2">
+			<a
+				href="/in/rooftop-solar/cost/"
+				class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors"
+			>
+				Solar System Cost Guide
+			</a>
+			<a
+				href="/in/solar-subsidy/pm-surya-ghar/"
+				class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors"
+			>
+				PM Surya Ghar Subsidy
+			</a>
+			<a
+				href="/in/solar-installation/process/"
+				class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors"
+			>
+				Installation Process
+			</a>
+		</div>
+	</section>
+
 	<!-- Recommended Systems -->
 	<RecommendedSolarSystems />
 

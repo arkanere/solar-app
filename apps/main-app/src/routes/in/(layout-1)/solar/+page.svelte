@@ -50,10 +50,29 @@
 	<!-- State directory -->
 	<GeoDirectory items={directoryItems} title="Browse by State" />
 
+	<!-- Solar Guides -->
+	<section class="mb-8">
+		<h2 class="text-lg font-semibold text-primary mb-3">Solar Guides</h2>
+		<div class="flex flex-wrap gap-2">
+			<a href="/in/rooftop-solar/" class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
+				Rooftop Solar Guide
+			</a>
+			<a href="/in/solar-subsidy/" class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
+				Solar Subsidy Guide
+			</a>
+			<a href="/in/solar-financing/" class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
+				Solar Financing
+			</a>
+			<a href="/in/solar-panels/" class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
+				Solar Panels
+			</a>
+		</div>
+	</section>
+
 	<!-- CTA -->
 	<div class="text-center mt-8 mb-8">
 		<a
-			href="/in/get-quotes"
+			href="/in/get-quotes/"
 			class="inline-block bg-primary text-primary-foreground font-semibold px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
 		>
 			Get Free Solar Quotes

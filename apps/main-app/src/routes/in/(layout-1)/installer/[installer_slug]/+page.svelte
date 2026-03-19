@@ -168,7 +168,7 @@
 			<div class="flex flex-wrap gap-2">
 				{#each serviceAreas as area}
 					<a
-						href="/in/solar/{area.state_slug}/{area.district_slug}/"
+						href="/in/solar/{area.state_slug}/{area.district_slug}/{area.city_slug}/"
 						class="bg-muted px-3 py-1.5 rounded-lg text-sm font-medium hover:text-primary hover:bg-muted/80 transition-colors"
 					>
 						{area.city}
@@ -281,6 +281,16 @@
 
 	<!-- CTA -->
 	<LeadFormSection city={b.city} title="Get a Quote from {b.businessname}" hasBusinesses={true} />
+
+	<!-- Get Quotes CTA -->
+	<div class="text-center mb-8">
+		<a
+			href="/in/get-quotes/"
+			class="inline-block bg-primary text-primary-foreground font-semibold px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
+		>
+			Get Free Solar Quotes
+		</a>
+	</div>
 
 	<!-- Back link -->
 	{#if stateSlug && districtSlug}

@@ -3,7 +3,7 @@
 	import ContentSections from './ContentSections.svelte';
 	import FAQ from './FAQ.svelte';
 
-	let { discom, stateSubsidy }: {
+	let { discom, stateSubsidy, siblingDiscoms = [] }: {
 		discom: {
 			slug: string;
 			name: string;
@@ -15,6 +15,7 @@
 			faq: { question: string; answer: string }[] | null;
 		};
 		stateSubsidy: { state_name: string } | null;
+		siblingDiscoms?: { slug: string; name: string }[];
 	} = $props();
 
 	const stateName = $derived(stateSubsidy?.state_name ?? discom.state_slug);
@@ -58,6 +59,32 @@
 	{/if}
 
 	<ContentSections sections={discom.content ?? []} />
+
+	<!-- Related guide -->
+	<section class="mb-8">
+		<p class="text-sm text-muted-foreground">
+			Learn more about net metering policies →
+			<a href="/in/solar-subsidy/net-metering/" class="text-primary hover:underline font-medium">
+				Net Metering Guide
+			</a>
+		</p>
+	</section>
+
+	{#if siblingDiscoms.length > 0}
+		<section class="mb-8">
+			<h2 class="text-lg font-semibold text-primary mb-3">Other DISCOMs in {stateName}</h2>
+			<div class="flex flex-wrap gap-2">
+				{#each siblingDiscoms as sibling}
+					<a
+						href="/in/solar-subsidy/{sibling.slug}/"
+						class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors"
+					>
+						{sibling.name}
+					</a>
+				{/each}
+			</div>
+		</section>
+	{/if}
 
 	<FAQ items={discom.faq ?? []} title="FAQs — {discom.name}" />
 

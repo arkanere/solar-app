@@ -51,6 +51,7 @@
 		siblingClusters={d.siblingClusters}
 		pillarSlug={d.pillarSlug}
 		pillarName={d.pillarName}
+		topDistricts={d.topDistricts}
 	/>
 {:else if isBrand}
 	<BrandPage

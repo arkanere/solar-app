@@ -54,6 +54,9 @@
 	}
 
 	const heroSrc = getHeroImage();
+
+	const sizeMatch = $derived(project.title.match(/(\d+)\s*kw/i));
+	const sizeKw = $derived(sizeMatch ? parseInt(sizeMatch[1]) : null);
 </script>
 
 <svelte:head>
@@ -130,22 +133,47 @@
 		</div>
 	</section>
 
+	<!-- System size guide link -->
+	{#if sizeKw}
+		<p class="text-sm text-muted-foreground mb-8">
+			Learn about {sizeKw}kW systems →
+			<a href="/in/rooftop-solar/{sizeKw}kw-system/" class="text-primary hover:underline font-medium">
+				Complete {sizeKw}kW Solar System Guide
+			</a>
+		</p>
+	{/if}
+
 	<!-- Location Context -->
 	{#if stateSlug && districtSlug && project.district}
 		<section class="mb-8">
 			<h2 class="text-lg font-semibold text-primary mb-2">Location</h2>
 			<p class="text-muted-foreground">
 				This project is in
+				{#if project.city}
+					<a href="/in/solar/{stateSlug}/{districtSlug}/{project.city.toLowerCase().replace(/\s+/g, '-')}/" class="text-primary hover:underline">
+						{project.city}
+					</a>,
+				{/if}
 				<a href="/in/solar/{stateSlug}/{districtSlug}/" class="text-primary hover:underline">
 					{project.district}
 				</a>.
-				View more solar installers and projects in this district.
+				View more solar installers and projects in this area.
 			</p>
 		</section>
 	{/if}
 
 	<!-- CTA -->
 	<LeadFormSection city={business.city || ''} title="Want a Similar System? Get Quotes." hasBusinesses={true} />
+
+	<!-- Get Quotes CTA -->
+	<div class="text-center mb-8">
+		<a
+			href="/in/get-quotes/"
+			class="inline-block bg-primary text-primary-foreground font-semibold px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
+		>
+			Get Free Solar Quotes
+		</a>
+	</div>
 
 	<!-- Back link -->
 	<div class="mt-8">

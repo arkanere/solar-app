@@ -3,6 +3,7 @@ import { pool } from '$lib/server/db';
 import { error } from '@sveltejs/kit';
 import { isClusterSlug } from '$lib/in/pillar-config';
 import { resolveSubsidySlug } from '$lib/server/slug-resolver';
+import { getTopDistricts } from '$lib/server/queries';
 
 export const config = {
 	isr: { expiration: 604800 }
@@ -15,7 +16,7 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	// 1. Check cluster whitelist
 	if (isClusterSlug(PILLAR, slug)) {
-		const [clusterResult, siblingsResult] = await Promise.all([
+		const [clusterResult, siblingsResult, topDistricts] = await Promise.all([
 			pool.query(
 				`SELECT slug, h1, meta_title, meta_description, content, faq
 				 FROM seo_pages WHERE slug = $1 AND pillar_slug = $2 AND status = $3`,
@@ -26,7 +27,8 @@ export const load: PageServerLoad = async ({ params }) => {
 				 WHERE pillar_slug = $1 AND page_type = $2 AND status = $3
 				 ORDER BY slug ASC`,
 				[PILLAR, 'cluster', 'published']
-			)
+			),
+			getTopDistricts()
 		]);
 
 		const clusterData = clusterResult.rows[0];
@@ -39,7 +41,8 @@ export const load: PageServerLoad = async ({ params }) => {
 			clusterData,
 			siblingClusters: siblingsResult.rows,
 			pillarSlug: PILLAR,
-			pillarName: 'Solar Subsidy'
+			pillarName: 'Solar Subsidy',
+			topDistricts
 		};
 	}
 
@@ -80,7 +83,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		const discomSlug = resolved.data.slug as string;
 		const stateSlug = resolved.data.state_slug as string;
 
-		const [discomResult, stateResult] = await Promise.all([
+		const [discomResult, stateResult, siblingsResult] = await Promise.all([
 			pool.query(
 				`SELECT slug, name, state_slug, net_metering_policy, tariff_structure,
 				        application_process, content, faq
@@ -90,6 +93,12 @@ export const load: PageServerLoad = async ({ params }) => {
 			pool.query(
 				`SELECT state_name FROM state_subsidies WHERE state_slug = $1`,
 				[stateSlug]
+			),
+			pool.query(
+				`SELECT slug, name FROM discoms
+				 WHERE state_slug = $1 AND slug != $2 AND status = $3
+				 ORDER BY name ASC`,
+				[stateSlug, discomSlug, 'published']
 			)
 		]);
 
@@ -102,6 +111,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			pageType: 'discom' as const,
 			discom,
 			stateSubsidy: stateResult.rows[0] ?? null,
+			siblingDiscoms: siblingsResult.rows,
 			pillarSlug: PILLAR,
 			pillarName: 'Solar Subsidy'
 		};

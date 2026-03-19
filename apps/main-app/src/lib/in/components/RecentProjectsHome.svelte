@@ -35,7 +35,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] mb-8">
         {#each projects as project (project.id)}
           <a
-            href="/in/solar-panel-installer/{project.business_slug}/project/{project.project_slug}"
+            href="/in/project/{project.project_slug}/"
             rel="noopener"
             class="group"
           >

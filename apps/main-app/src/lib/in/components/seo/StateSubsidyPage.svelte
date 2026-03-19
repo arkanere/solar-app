@@ -65,6 +65,17 @@
 
 	<ContentSections sections={subsidy.content ?? []} />
 
+	<!-- Funnel link to state hub -->
+	<section class="mb-8 bg-accent/10 rounded-lg p-6">
+		<p class="text-sm text-muted-foreground mb-2">Ready to install solar with subsidy benefits?</p>
+		<a
+			href="/in/solar/{subsidy.state_slug}/"
+			class="text-primary font-semibold hover:underline"
+		>
+			Find verified solar installers in {subsidy.state_name} →
+		</a>
+	</section>
+
 	{#if discoms.length > 0}
 		<section class="mb-8">
 			<h2 class="text-2xl font-semibold text-primary mb-4">DISCOMs in {subsidy.state_name}</h2>
@@ -80,6 +91,19 @@
 			</div>
 		</section>
 	{/if}
+
+	<!-- Related guides -->
+	<section class="mb-8">
+		<h2 class="text-lg font-semibold text-primary mb-3">Related Guides</h2>
+		<div class="flex flex-wrap gap-2">
+			<a href="/in/solar-subsidy/state-wise/" class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
+				State-wise Subsidy Comparison
+			</a>
+			<a href="/in/solar-subsidy/how-to-apply/" class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
+				How to Apply for Subsidy
+			</a>
+		</div>
+	</section>
 
 	<FAQ items={subsidy.faq ?? []} title="FAQs — Solar Subsidy in {subsidy.state_name}" />
 

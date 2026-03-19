@@ -74,9 +74,10 @@
 		siblingClusters={d.siblingClusters}
 		pillarSlug={d.pillarSlug}
 		pillarName={d.pillarName}
+		topDistricts={d.topDistricts}
 	/>
 {:else if isState}
 	<StateSubsidyPage subsidy={d.subsidy} discoms={d.discoms} />
 {:else if isDiscom}
-	<DiscomPage discom={d.discom} stateSubsidy={d.stateSubsidy} />
+	<DiscomPage discom={d.discom} stateSubsidy={d.stateSubsidy} siblingDiscoms={d.siblingDiscoms} />
 {/if}

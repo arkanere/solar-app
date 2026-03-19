@@ -6,7 +6,7 @@ export const config = {
 };
 
 export const load: PageServerLoad = async () => {
-	const [pillarResult, clustersResult, banksResult] = await Promise.all([
+	const [pillarResult, clustersResult, banksResult, bankListResult] = await Promise.all([
 		pool.query(
 			`SELECT h1, meta_title, meta_description, content, faq
 			 FROM seo_pages WHERE slug = $1 AND status = $2`,
@@ -20,6 +20,11 @@ export const load: PageServerLoad = async () => {
 		),
 		pool.query(
 			`SELECT COUNT(*) as total FROM solar_financing_banks WHERE status = $1`,
+			['published']
+		),
+		pool.query(
+			`SELECT slug, name FROM solar_financing_banks
+			 WHERE status = $1 ORDER BY name ASC`,
 			['published']
 		)
 	]);
@@ -37,9 +42,15 @@ export const load: PageServerLoad = async () => {
 		pillarSlug: 'solar-financing'
 	}));
 
+	const bankSchemes = bankListResult.rows.map((r: { slug: string; name: string }) => ({
+		name: r.name,
+		href: `/in/solar-financing/${r.slug}/`
+	}));
+
 	return {
 		pillarData,
 		clusters,
-		stats: { stateCount: Number(banksResult.rows[0]?.total || 0) }
+		stats: { stateCount: Number(banksResult.rows[0]?.total || 0) },
+		bankSchemes
 	};
 };

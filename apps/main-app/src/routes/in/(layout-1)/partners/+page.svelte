@@ -315,7 +315,7 @@ import AboutSolarVipani from '$lib/in/components/AboutSolarVipani.svelte';
 				{#if data.businesses && data.businesses.length > 0}
 					{#each data.businesses as business}
 						<a
-							href={`/solar-panel-installer/${business.slug}`}
+							href={`/in/solar-panel-installer/${business.slug}/`}
 							target="_blank"
 							rel="noopener noreferrer"
 							class="block no-underline"

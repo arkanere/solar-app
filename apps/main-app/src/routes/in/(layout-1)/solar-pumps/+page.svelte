@@ -24,4 +24,8 @@
 	{/if}
 </svelte:head>
 
-<PillarPage pillarData={data.pillarData} clusters={data.clusters} stats={data.stats} />
+<PillarPage
+	pillarData={data.pillarData}
+	clusters={data.clusters}
+	stats={data.stats}
+/>

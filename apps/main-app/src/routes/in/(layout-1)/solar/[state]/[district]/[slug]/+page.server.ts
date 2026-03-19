@@ -95,6 +95,20 @@ export const load: PageServerLoad = async ({ params }) => {
 				return ((b.rscore as number) || 0) - ((a.rscore as number) || 0);
 			});
 
+		// Fetch sibling cities
+		const siblingCitiesResult = await pool.query(
+			`SELECT DISTINCT city FROM businesses_1
+			 WHERE LOWER(district) = LOWER($1) AND isvisible = true
+			   AND LOWER(REPLACE(city, ' ', '-')) != $2
+			 ORDER BY city ASC LIMIT 5`,
+			[district, slug]
+		);
+
+		const siblingCities = siblingCitiesResult.rows.map((r: { city: string }) => ({
+			name: r.city,
+			slug: r.city.toLowerCase().replace(/\s+/g, '-')
+		}));
+
 		return {
 			pageType: 'city' as const,
 			state,
@@ -107,6 +121,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			recentProjects: projectsResult.rows,
 			postalCode: pincodeResult.rows[0]?.pincode || null,
 			installerCount: businesses.length,
+			siblingCities,
 			lastUpdated: new Date().toISOString()
 		};
 	}

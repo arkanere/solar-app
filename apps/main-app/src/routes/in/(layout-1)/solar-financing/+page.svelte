@@ -24,4 +24,13 @@
 	{/if}
 </svelte:head>
 
-<PillarPage pillarData={data.pillarData} clusters={data.clusters} stats={data.stats} />
+<PillarPage
+	pillarData={data.pillarData}
+	clusters={data.clusters}
+	stats={data.stats}
+	siblingPillars={[
+		{ name: 'Solar Subsidy', href: '/in/solar-subsidy/' }
+	]}
+	toolLink={{ name: 'EMI Calculator', href: '/in/tools/emi-calculator/' }}
+	entitySection={{ title: 'Bank Solar Loan Schemes', items: data.bankSchemes }}
+/>
