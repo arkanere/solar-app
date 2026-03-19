@@ -3,7 +3,7 @@
 	import ContentSections from './ContentSections.svelte';
 	import FAQ from './FAQ.svelte';
 
-	let { bank }: {
+	let { bank, siblingBanks = [] }: {
 		bank: {
 			slug: string;
 			name: string;
@@ -15,6 +15,7 @@
 			content: { heading: string; body: string }[] | null;
 			faq: { question: string; answer: string }[] | null;
 		};
+		siblingBanks?: { slug: string; name: string }[];
 	} = $props();
 </script>
 
@@ -70,6 +71,35 @@
 	{/if}
 
 	<ContentSections sections={bank.content ?? []} />
+
+	<!-- Related links -->
+	<section class="mb-8">
+		<h2 class="text-lg font-semibold text-primary mb-3">Related Resources</h2>
+		<div class="flex flex-wrap gap-2">
+			<a href="/in/solar-financing/solar-loan/" class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
+				Solar Loan Guide
+			</a>
+			<a href="/in/tools/emi-calculator/" class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
+				EMI Calculator
+			</a>
+		</div>
+	</section>
+
+	{#if siblingBanks.length > 0}
+		<section class="mb-8">
+			<h2 class="text-lg font-semibold text-primary mb-3">Other Bank Schemes</h2>
+			<div class="flex flex-wrap gap-2">
+				{#each siblingBanks as sibling}
+					<a
+						href="/in/solar-financing/{sibling.slug}/"
+						class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors"
+					>
+						{sibling.name}
+					</a>
+				{/each}
+			</div>
+		</section>
+	{/if}
 
 	<FAQ items={bank.faq ?? []} title="FAQs — {bank.name} Solar Loan" />
 

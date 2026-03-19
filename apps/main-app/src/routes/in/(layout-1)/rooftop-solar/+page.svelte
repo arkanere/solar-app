@@ -24,4 +24,13 @@
 	{/if}
 </svelte:head>
 
-<PillarPage pillarData={data.pillarData} clusters={data.clusters} stats={data.stats} />
+<PillarPage
+	pillarData={data.pillarData}
+	clusters={data.clusters}
+	stats={data.stats}
+	siblingPillars={[
+		{ name: 'Solar Subsidy Guide', href: '/in/solar-subsidy/' },
+		{ name: 'Installation Process', href: '/in/solar-installation/' }
+	]}
+	toolLink={{ name: 'Solar Calculator', href: '/in/tools/solar-calculator/' }}
+/>

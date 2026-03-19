@@ -60,6 +60,8 @@
 	const canonicalUrl = $derived(`https://solarvipani.com/in/solar/${d.stateSlug}/${d.districtSlug}/${canonicalSlug}`);
 	const locationName = $derived(isCity ? d.city : d.district);
 
+	const COMMON_SIZES = [1, 2, 3, 5, 10];
+
 	const SUBSIDY_TABLE = [
 		{ size: 1, grossCost: '₹65,000–₹80,000', subsidy: '₹30,000', netCost: '₹35,000–₹50,000' },
 		{ size: 2, grossCost: '₹1,30,000–₹1,60,000', subsidy: '₹60,000', netCost: '₹70,000–₹1,00,000' },
@@ -162,6 +164,16 @@
 		</section>
 	{/if}
 
+	<!-- Size cluster link -->
+	{#if isSize}
+		<p class="text-sm text-muted-foreground mb-8">
+			Understand what a {d.sizeKw}kW system powers →
+			<a href="/in/rooftop-solar/{d.sizeKw}kw-system/" class="text-primary hover:underline font-medium">
+				Complete {d.sizeKw}kW Solar System Guide
+			</a>
+		</p>
+	{/if}
+
 	<!-- Lead Form -->
 	<LeadFormSection city={isCity ? d.city : d.district} hasBusinesses={d.businesses?.length > 0} />
 
@@ -204,9 +216,53 @@
 		</section>
 	{/if}
 
+	<!-- Sibling city links -->
+	{#if isCity && d.siblingCities?.length > 0}
+		<section class="mb-8">
+			<h2 class="text-lg font-semibold text-primary mb-3">Nearby Areas</h2>
+			<div class="flex flex-wrap gap-2">
+				{#each d.siblingCities as sc}
+					<a
+						href="/in/solar/{d.stateSlug}/{d.districtSlug}/{sc.slug}/"
+						class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors"
+					>
+						{sc.name}
+					</a>
+				{/each}
+			</div>
+		</section>
+	{/if}
+
+	<!-- Sibling size links -->
+	{#if isSize}
+		<section class="mb-8">
+			<h2 class="text-lg font-semibold text-primary mb-3">Other System Sizes</h2>
+			<div class="flex flex-wrap gap-2">
+				{#each COMMON_SIZES.filter(s => s !== d.sizeKw) as size}
+					<a
+						href="/in/solar/{d.stateSlug}/{d.districtSlug}/{size}kw-solar-system/"
+						class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors"
+					>
+						{size}kW Solar System
+					</a>
+				{/each}
+			</div>
+		</section>
+	{/if}
+
+	<!-- Get Quotes CTA -->
+	<div class="text-center mb-8">
+		<a
+			href="/in/get-quotes/"
+			class="inline-block bg-primary text-primary-foreground font-semibold px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
+		>
+			Get Free Solar Quotes in {isCity ? d.city : d.district}
+		</a>
+	</div>
+
 	<!-- Back link -->
 	<div class="mt-8">
-		<a href="/in/solar/{d.stateSlug}/{d.districtSlug}" class="text-primary hover:underline text-sm">
+		<a href="/in/solar/{d.stateSlug}/{d.districtSlug}/" class="text-primary hover:underline text-sm">
 			← All installers in {d.district}
 		</a>
 	</div>

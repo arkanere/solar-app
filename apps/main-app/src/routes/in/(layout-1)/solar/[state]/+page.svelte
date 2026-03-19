@@ -18,7 +18,7 @@
 	const directoryItems = $derived(
 		data.districts.map((d: { name: string; slug: string; installerCount: number }) => ({
 			...d,
-			href: `/in/solar/${data.stateSlug}/${d.slug}`
+			href: `/in/solar/${data.stateSlug}/${d.slug}/`
 		}))
 	);
 </script>
@@ -35,8 +35,8 @@
 	<!-- Breadcrumb -->
 	<nav class="text-sm text-muted-foreground mb-6" aria-label="Breadcrumb">
 		<ol class="flex flex-wrap gap-1">
-			<li><a href="/in" class="hover:text-primary">Home</a> /</li>
-			<li><a href="/in/solar" class="hover:text-primary">Solar</a> /</li>
+			<li><a href="/in/" class="hover:text-primary">Home</a> /</li>
+			<li><a href="/in/solar/" class="hover:text-primary">Solar</a> /</li>
 			<li class="text-foreground font-medium">{data.state}</li>
 		</ol>
 	</nav>
@@ -57,10 +57,20 @@
 		<div class="bg-accent/10 rounded-lg p-4 mb-8">
 			<p class="text-sm">
 				<strong class="text-primary">{data.state} Solar Subsidy:</strong> Residents can avail the PM Surya Ghar Yojana subsidy of up to ₹78,000.
-				<a href="/in/solar/subsidy/{data.subsidy.state_slug}" class="text-primary hover:underline ml-1">View details →</a>
+				<a href="/in/solar-subsidy/{data.subsidy.state_slug}/" class="text-primary hover:underline ml-1">View details →</a>
 			</p>
 		</div>
 	{/if}
+
+	<!-- Get Quotes CTA -->
+	<div class="text-center mb-8">
+		<a
+			href="/in/get-quotes/"
+			class="inline-block bg-primary text-primary-foreground font-semibold px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
+		>
+			Get Free Solar Quotes in {data.state}
+		</a>
+	</div>
 
 	<!-- District directory -->
 	<GeoDirectory items={directoryItems} title="Browse by District" />

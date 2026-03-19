@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import * as Select from '$lib/components/ui/select';
 	import * as Card from '$lib/components/ui/card';
 	import * as Label from '$lib/components/ui/label';
@@ -11,6 +10,14 @@
 	let districts = $state<string[]>([]);
 	let isLoading = $state(false);
 	let mounted = $state(false);
+
+	const toSlug = (s: string) => s.toLowerCase().replace(/\s+/g, '-');
+
+	const districtHref = $derived(
+		selectedState && selectedDistrict
+			? `/in/solar/${toSlug(selectedState)}/${toSlug(selectedDistrict)}/`
+			: undefined
+	);
 
 	$effect(() => {
 		mounted = true;
@@ -46,14 +53,6 @@
 		districts = [];
 		if (selectedState && mounted) {
 			updateDistricts(selectedState);
-		}
-	}
-
-	function handleDistrictSelection() {
-		if (selectedState && selectedDistrict) {
-			const stateSlug = selectedState.toLowerCase().replace(/\s+/g, '-');
-			const districtSlug = selectedDistrict.toLowerCase().replace(/\s+/g, '-');
-			goto(`/in/solar/${stateSlug}/${districtSlug}`);
 		}
 	}
 </script>
@@ -104,13 +103,17 @@
 				</Select.Root>
 			</div>
 
-			<Button
-				onclick={handleDistrictSelection}
-				disabled={!selectedState || !selectedDistrict}
-				class="w-full mt-[theme(--card-gap)]"
-			>
-				View Installers
-			</Button>
+			{#if districtHref}
+				<a href={districtHref}>
+					<Button class="w-full mt-[theme(--card-gap)]">
+						View Installers
+					</Button>
+				</a>
+			{:else}
+				<Button disabled class="w-full mt-[theme(--card-gap)]">
+					View Installers
+				</Button>
+			{/if}
 		</Card.Content>
 	</Card.Root>
 </div>

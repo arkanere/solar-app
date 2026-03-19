@@ -6,7 +6,7 @@ export const config = {
 };
 
 export const load: PageServerLoad = async () => {
-	const [pillarResult, clustersResult, statsResult] = await Promise.all([
+	const [pillarResult, clustersResult, statsResult, statesResult] = await Promise.all([
 		pool.query(
 			`SELECT h1, meta_title, meta_description, content, faq
 			 FROM seo_pages WHERE slug = $1 AND status = $2`,
@@ -20,6 +20,11 @@ export const load: PageServerLoad = async () => {
 		),
 		pool.query(
 			`SELECT COUNT(*) as total FROM state_subsidies WHERE status = $1`,
+			['published']
+		),
+		pool.query(
+			`SELECT state_slug, state_name FROM state_subsidies
+			 WHERE status = $1 ORDER BY state_name ASC`,
 			['published']
 		)
 	]);
@@ -37,9 +42,15 @@ export const load: PageServerLoad = async () => {
 		pillarSlug: 'solar-subsidy'
 	}));
 
+	const stateSubsidies = statesResult.rows.map((r: { state_slug: string; state_name: string }) => ({
+		name: r.state_name,
+		href: `/in/solar-subsidy/${r.state_slug}/`
+	}));
+
 	return {
 		pillarData,
 		clusters,
-		stats: { stateCount: Number(statsResult.rows[0]?.total || 0) }
+		stats: { stateCount: Number(statsResult.rows[0]?.total || 0) },
+		stateSubsidies
 	};
 };

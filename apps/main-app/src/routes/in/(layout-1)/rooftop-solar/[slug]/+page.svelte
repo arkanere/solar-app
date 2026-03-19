@@ -30,4 +30,5 @@
 	siblingClusters={data.siblingClusters}
 	pillarSlug={data.pillarSlug}
 	pillarName={data.pillarName}
+	topDistricts={data.topDistricts}
 />

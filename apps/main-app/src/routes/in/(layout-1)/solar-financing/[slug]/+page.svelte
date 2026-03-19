@@ -53,7 +53,8 @@
 		siblingClusters={d.siblingClusters}
 		pillarSlug={d.pillarSlug}
 		pillarName={d.pillarName}
+		topDistricts={d.topDistricts}
 	/>
 {:else if isBank}
-	<BankSchemePage bank={d.bank} />
+	<BankSchemePage bank={d.bank} siblingBanks={d.siblingBanks} />
 {/if}
