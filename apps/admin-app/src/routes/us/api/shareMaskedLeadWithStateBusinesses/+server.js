@@ -144,35 +144,6 @@ export async function POST({ request }) {
 			}
 		}
 
-		// Send single copy to admin after all business emails are sent
-		if (emailsSentCount > 0) {
-			try {
-				// Use the first business's magic link for admin copy (or create a generic message)
-				const firstBusiness = businesses[0];
-				const adminCopyMessage = emailTemplate + `
-        <p><strong>Admin Note:</strong> This is a copy of the email sent to ${emailsSentCount} businesses in ${state}.</p>
-        <p>If you need to access any business account, use the magic links in the admin summary email.</p>
-        
-        <p><strong>How to Add Branch:</strong></p>
-        <ul>
-          <li>Log into your Solar Vipani business account</li>
-          <li>Go to "Branch Management" section</li>
-          <li>Click "Add New Branch" and enter branch details</li>
-          <li>This will expand your service coverage and lead eligibility</li>
-        </ul>
-        
-        <p> Few more businesses are invited to show interest. Therefore, the allotment is subject to certain conditions. </p>
-        <p>Team</p>
-        <p><strong>Solar Vipani</strong></p>
-        `;
-
-				await sendEmail([adminEmail], `[COPY] ${subject}`, adminCopyMessage, { isHtml: true });
-				console.log(`✅ Single admin copy sent for lead shared with ${emailsSentCount} businesses`);
-			} catch (error) {
-				console.error('❌ Failed to send admin copy:', error);
-			}
-		}
-
 		// Send email to admin with business details
 		const adminMessage = `
       <h2>Lead Shared with State Businesses</h2>
