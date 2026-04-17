@@ -5,7 +5,7 @@ import { isClusterSlug } from '$lib/in/pillar-config';
 import { getTopDistricts } from '$lib/server/queries';
 
 export const config = {
-	isr: { expiration: 604800 }
+	isr: { expiration: 1296000 }
 };
 
 const PILLAR = 'solar-financing';

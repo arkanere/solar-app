@@ -4,7 +4,7 @@
 
 	let name = $state('');
 	let phone = $state('');
-	let pinCode = $state('');
+	let zipCode = $state('');
 	let comment = $state('');
 	let email = $state('');
 	let urlParam = '';
@@ -18,7 +18,7 @@ Eg. I want a 6kW system for my home or I need solar panels for my business`;
 	let errors = $state({
 		name: '',
 		phone: '',
-		pinCode: '',
+		zipCode: '',
 		email: '',
 		comment: ''
 	});
@@ -50,20 +50,19 @@ Eg. I want a 6kW system for my home or I need solar panels for my business`;
 		}
 	}
 
-	// ✅ Pin Code Validation (Exactly 6 Digits)
-	function validatePinCode() {
-		if (!/^\d{6}$/.test(pinCode)) {
-			errors.pinCode = 'Pin code must be exactly 6 digits';
+	function validateZipCode() {
+		if (!/^\d{5}$/.test(zipCode)) {
+			errors.zipCode = 'Zip code must be exactly 5 digits';
 			return false;
 		} else {
-			errors.pinCode = '';
+			errors.zipCode = '';
 			return true;
 		}
 	}
 
 	// ✅ Form Validation
 	function validateForm() {
-		errors = { name: '', phone: '', pinCode: '', email: '', comment: '' };
+		errors = { name: '', phone: '', zipCode: '', email: '', comment: '' };
 		let isValid = true;
 
 		if (name.trim() === '') {
@@ -71,7 +70,7 @@ Eg. I want a 6kW system for my home or I need solar panels for my business`;
 			isValid = false;
 		}
 		if (!validatePhoneNumber()) isValid = false;
-		if (!validatePinCode()) isValid = false;
+		if (!validateZipCode()) isValid = false;
 		if (!validateEmail()) isValid = false;
 		if (comment.trim() === '') {
 			errors.comment = 'Comment is required';
@@ -91,13 +90,13 @@ Eg. I want a 6kW system for my home or I need solar panels for my business`;
 				const response = await fetch('/us/api/submitLead', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({ name, phone, pinCode, comment, email, urlParam })
+					body: JSON.stringify({ name, phone, zipCode, comment, email, urlParam })
 				});
 
 				const result = await response.json();
 
 				if (result.success) {
-					goto(`/thank-you?ref=${result.reference_uuid}`);
+					goto('/us/thank-you');
 				} else {
 					console.error('Submission failed:', result.error);
 				}
@@ -129,12 +128,12 @@ Eg. I want a 6kW system for my home or I need solar panels for my business`;
 		{/if}
 	</div>
 
-	<!-- Pin Code Input -->
+	<!-- Zip Code Input -->
 	<div>
-		<label for="pinCode">Pin Code:</label>
-		<input id="pinCode" type="text" bind:value={pinCode} required onblur={validatePinCode} />
-		{#if errors.pinCode}
-			<p class="error">{errors.pinCode}</p>
+		<label for="zipCode">Zip Code:</label>
+		<input id="zipCode" type="text" bind:value={zipCode} required onblur={validateZipCode} />
+		{#if errors.zipCode}
+			<p class="error">{errors.zipCode}</p>
 		{/if}
 	</div>
 

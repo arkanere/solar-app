@@ -7,7 +7,6 @@
 	// Get reactive data from the page store
 	let county = $derived($page.data.county);
 	let cities = $derived($page.data.cities || []);
-	let errorMessage = $derived($page.data.errorMessage);
 	let darkMode = $derived($isDarkMode);
 </script>
 
@@ -22,15 +21,7 @@
 <main class={darkMode ? 'dark' : 'light'}>
 	<h1>Solar Panel Installers in {county} County</h1>
 
-	{#if errorMessage}
-		<div class="error-message" role="alert">
-			<p>{errorMessage}</p>
-		</div>
-	{:else if cities.length === 0}
-		<div class="warning-message" role="alert">
-			<p>No cities found in {county} County.</p>
-		</div>
-	{:else}
+	{#if cities.length > 0}
 		<p class="intro-text">
 			Browse solar panel installers in {county} County by city. We have listings in {cities.length}
 			cities.
@@ -190,37 +181,6 @@
 		text-align: center;
 		margin-bottom: 2rem;
 		font-size: 1.1rem;
-	}
-
-	.error-message,
-	.warning-message {
-		padding: 1rem;
-		border-radius: 8px;
-		margin-bottom: 1.5rem;
-	}
-
-	.error-message {
-		background-color: #ffebee;
-		border: 1px solid #f44336;
-		color: #b71c1c;
-	}
-
-	.dark .error-message {
-		background-color: rgba(244, 67, 54, 0.2);
-		border-color: #f44336;
-		color: #ef9a9a;
-	}
-
-	.warning-message {
-		background-color: #fff8e1;
-		border: 1px solid #ffc107;
-		color: #ff6f00;
-	}
-
-	.dark .warning-message {
-		background-color: rgba(255, 193, 7, 0.2);
-		border-color: #ffc107;
-		color: #ffcc80;
 	}
 
 	/* Cities grid */

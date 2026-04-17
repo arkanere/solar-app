@@ -3,7 +3,7 @@ import { pool } from '$lib/server/db';
 import { error } from '@sveltejs/kit';
 
 export const config = {
-	isr: { expiration: 604800 }
+	isr: { expiration: 1296000 }
 };
 
 export const load: PageServerLoad = async ({ params }) => {

@@ -2,7 +2,7 @@ import type { PageServerLoad } from './$types';
 import { pool } from '$lib/server/db';
 
 export const config = {
-	isr: { expiration: 604800 }
+	isr: { expiration: 1296000 }
 };
 
 export const load: PageServerLoad = async () => {

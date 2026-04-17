@@ -4,7 +4,7 @@
 
 	let name = '';
 	let phone = '';
-	let pinCode = '';
+	let zipCode = '';
 	let type = '';
 	let comment = '';
 	let urlParam = ''; // New variable to capture the path from the URL
@@ -12,7 +12,7 @@
 	let errors = {
 		name: '',
 		phone: '',
-		pinCode: '',
+		zipCode: '',
 		type: ''
 	};
 
@@ -28,7 +28,7 @@
 		errors = {
 			name: '',
 			phone: '',
-			pinCode: '',
+			zipCode: '',
 			type: ''
 		};
 
@@ -46,9 +46,8 @@
 			isValid = false;
 		}
 
-		// Validation for Pin Code
-		if (!/^\d{6}$/.test(pinCode)) {
-			errors.pinCode = 'Pin code must be exactly 6 digits';
+		if (!/^\d{5}$/.test(zipCode)) {
+			errors.zipCode = 'Zip code must be exactly 5 digits';
 			isValid = false;
 		}
 
@@ -73,13 +72,13 @@
 					headers: {
 						'Content-Type': 'application/json'
 					},
-					body: JSON.stringify({ name, phone, pinCode, type, comment, urlParam })
+					body: JSON.stringify({ name, phone, zipCode, type, comment, urlParam })
 				});
 
 				const result = await response.json();
 
 				if (result.success) {
-					goto('/thank-you');
+					goto('/us/thank-you');
 				} else {
 					console.error('Submission failed:', result.error);
 				}
@@ -113,12 +112,12 @@
 		{/if}
 	</div>
 
-	<!-- Pin Code Input -->
+	<!-- Zip Code Input -->
 	<div>
-		<label for="pinCode">Pin Code:</label>
-		<input id="pinCode" type="text" bind:value={pinCode} placeholder="Pin Code" />
-		{#if errors.pinCode}
-			<p class="error">{errors.pinCode}</p>
+		<label for="zipCode">Zip Code:</label>
+		<input id="zipCode" type="text" bind:value={zipCode} placeholder="Zip Code" />
+		{#if errors.zipCode}
+			<p class="error">{errors.zipCode}</p>
 		{/if}
 	</div>
 

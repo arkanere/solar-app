@@ -20,6 +20,10 @@ interface Blog {
 	view_count: number;
 }
 
+export const config = {
+	isr: { expiration: 5184000 }
+};
+
 export const load: PageServerLoad = async ({ params }) => {
 	try {
 		const result = await pool.query<Blog>(

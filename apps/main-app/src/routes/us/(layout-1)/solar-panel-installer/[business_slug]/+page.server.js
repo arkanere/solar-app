@@ -1,6 +1,6 @@
 export const config = {
 	isr: {
-		expiration: 604800 // 7 days
+		expiration: 1296000
 	}
 };
 

@@ -31,7 +31,7 @@
 			{#each projects as project (project.id)}
 				<div class="project-card">
 					<a
-						href="/solar-panel-installer/{project.business_slug}/project/{project.project_slug}"
+						href="/us/solar-panel-installer/{project.business_slug}/project/{project.project_slug}"
 						class="project-link"
 					>
 						<div class="project-image">
