@@ -90,6 +90,7 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 		// Start a transaction
 		const client = await pool.connect();
 		let emailData: EmailData | null = null; // Store email data to send after transaction
+		let customerEmailData: { lead_id: number; business_id: number } | null = null;
 		let newLead: NewLeadRow | null = null;
 
 		try {
@@ -296,6 +297,7 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 
 			// Prepare email data but don't send yet (move outside transaction)
 			emailData = { business_id: mainBusinessId, isallotted: true };
+			customerEmailData = { lead_id, business_id: effectiveBusinessId };
 
 			await client.query('COMMIT');
 		} catch (error) {
@@ -325,7 +327,24 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 				}
 			} catch (emailError) {
 				console.error('❌ Error sending lead allotment email:', emailError);
-				// Don't fail the whole request if email fails - claim was successful
+			}
+		}
+
+		if (customerEmailData) {
+			try {
+				const response = await fetch('/in/api/sendLeadClaimNotificationToCustomer', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(customerEmailData)
+				});
+
+				const emailResult = (await response.json()) as { success: boolean; error?: string };
+
+				if (!emailResult.success) {
+					console.error('❌ Failed to send customer claim notification:', emailResult.error);
+				}
+			} catch (emailError) {
+				console.error('❌ Error sending customer claim notification:', emailError);
 			}
 		}
 
