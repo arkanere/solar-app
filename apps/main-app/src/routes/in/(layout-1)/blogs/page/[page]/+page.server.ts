@@ -2,6 +2,10 @@ import type { PageServerLoad } from './$types';
 import { pool } from '$lib/server/db';
 import { redirect } from '@sveltejs/kit';
 
+export const config = {
+	isr: { expiration: 1296000 }
+};
+
 export const load: PageServerLoad = async ({ params }) => {
 	const page = parseInt(params.page);
 

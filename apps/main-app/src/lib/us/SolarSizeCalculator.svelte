@@ -1,14 +1,12 @@
 <script>
 	import { isDarkMode } from '$lib/us/themeStore'; // Assuming this store is globally managed
 
-	let currentBill = $state(1500); // Initial value for current electricity bill in Rupees
-	let ratePerUnit = $state(9); // Initial value for electricity rate per unit in Rupees
+	let currentBill = $state(150);
+	let ratePerUnit = $state(0.15);
 	let solarSystemSize = $state(null);
 
-	// Dark mode state from the store
 	let darkMode = $derived($isDarkMode);
 
-	// Recalculate solar system size whenever input values change
 	$effect(() => {
 		if (currentBill && ratePerUnit) {
 			calculateSolarSystemSize();
@@ -16,14 +14,12 @@
 	});
 
 	function calculateSolarSystemSize() {
-		const monthlyConsumption = currentBill / ratePerUnit;
-		const avgSunlightHours = 5; // Average sunlight hours per day
+		const monthlyConsumptionKWh = currentBill / ratePerUnit;
+		const avgSunlightHours = 5;
 		const daysInMonth = 30;
-		const efficiencyFactor = 1.15; // Accounting for losses in the system
-
-		// Calculate the required solar panel size in kW
-		const solarSystemSizeKW = monthlyConsumption / 100;
-
+		const efficiencyFactor = 1.15;
+		const dailyConsumptionKWh = monthlyConsumptionKWh / daysInMonth;
+		const solarSystemSizeKW = (dailyConsumptionKWh / avgSunlightHours) * efficiencyFactor;
 		solarSystemSize = solarSystemSizeKW.toFixed(2);
 	}
 </script>
@@ -36,24 +32,24 @@
 		<div class="slider-group">
 			<div class="slider-label">
 				<label for="currentBill">Monthly Electricity Bill :</label>
-				<span><strong>{currentBill} ₹</strong></span>
+				<span><strong>${currentBill}</strong></span>
 			</div>
 			<input
 				type="range"
 				id="currentBill"
-				min="500"
-				max="5000"
-				step="100"
+				min="50"
+				max="500"
+				step="10"
 				bind:value={currentBill}
 			/>
 		</div>
 
 		<div class="slider-group">
 			<div class="slider-label">
-				<label for="ratePerUnit">Electricity Rate per Unit :</label>
-				<span><strong>{ratePerUnit} ₹</strong> </span>
+				<label for="ratePerUnit">Electricity Rate per kWh :</label>
+				<span><strong>${ratePerUnit}</strong></span>
 			</div>
-			<input type="range" id="ratePerUnit" min="3" max="15" step="0.5" bind:value={ratePerUnit} />
+			<input type="range" id="ratePerUnit" min="0.08" max="0.40" step="0.01" bind:value={ratePerUnit} />
 		</div>
 
 		{#if solarSystemSize !== null}

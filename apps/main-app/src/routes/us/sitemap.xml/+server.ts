@@ -14,9 +14,20 @@ const STATIC_PAGES = [
 	{ path: '/us/business-listing', changefreq: 'monthly', priority: '0.8' },
 	{ path: '/us/business-form', changefreq: 'monthly', priority: '0.8' },
 	{ path: '/us/solar-panel-installer-directory', changefreq: 'monthly', priority: '1.0' },
+	{ path: '/us/state', changefreq: 'weekly', priority: '0.9' },
 	{ path: '/us/blogs', changefreq: 'monthly', priority: '0.8' },
 	{ path: '/us/recent-solar-installation-projects', changefreq: 'monthly', priority: '0.8' }
 ];
+
+function stateSlug(state: string): string {
+	return state.toLowerCase().replace(/\s+/g, '-');
+}
+
+function countyStateSlug(county: string, state: string): string {
+	const countySlug = county.toLowerCase().replace(/\s+/g, '-');
+	const stateAbbr = stateToAbbr[state as keyof typeof stateToAbbr] || state.toLowerCase();
+	return `${countySlug}-${stateAbbr}`;
+}
 
 function cityStateSlug(city: string, state: string): string {
 	const citySlug = city.toLowerCase().replace(/\s+/g, '-');
@@ -41,7 +52,17 @@ export const GET: RequestHandler = async () => {
 	const pool = createPool({ connectionString: POSTGRES_URL });
 	const today = new Date().toISOString().split('T')[0];
 
-	const [citiesResult, businessesResult, blogsResult] = await Promise.all([
+	const [statesResult, countiesResult, citiesResult, businessesResult, blogsResult] = await Promise.all([
+		pool.query(
+			`SELECT DISTINCT l.state FROM us_locations l
+			 INNER JOIN us_businesses b ON b.state = l.state AND b.isvisible = true
+			 ORDER BY l.state ASC`
+		),
+		pool.query(
+			`SELECT DISTINCT l.county, l.state FROM us_locations l
+			 INNER JOIN us_businesses b ON LOWER(b.county) = LOWER(l.county) AND b.state = l.state AND b.isvisible = true
+			 ORDER BY l.state ASC, l.county ASC`
+		),
 		pool.query(`SELECT DISTINCT l.city, l.state FROM us_locations l
 			INNER JOIN us_businesses b ON LOWER(b.county) = LOWER(l.county) AND b.state = l.state AND b.isvisible = true
 			ORDER BY l.state ASC, l.city ASC`),
@@ -58,6 +79,28 @@ export const GET: RequestHandler = async () => {
 
 	for (const page of STATIC_PAGES) {
 		parts.push(urlEntry(`${BASE_URL}${page.path}`, today, page.changefreq, page.priority));
+	}
+
+	for (const row of statesResult.rows) {
+		parts.push(
+			urlEntry(
+				`${BASE_URL}/us/state/solar-panel-installers-in-${stateSlug(row.state)}`,
+				today,
+				'weekly',
+				'0.8'
+			)
+		);
+	}
+
+	for (const row of countiesResult.rows) {
+		parts.push(
+			urlEntry(
+				`${BASE_URL}/us/county/${countyStateSlug(row.county, row.state)}`,
+				today,
+				'weekly',
+				'0.7'
+			)
+		);
 	}
 
 	for (const row of citiesResult.rows) {

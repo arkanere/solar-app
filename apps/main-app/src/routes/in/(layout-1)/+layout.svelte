@@ -82,6 +82,8 @@
     setTimeout(() => {
       loadAnalytics();
     }, 3000); // Load analytics after 3 seconds
+
+    trackEngagement();
   });
 
   function trackCallSafeEvents() {
@@ -117,6 +119,37 @@
   function selectLanguage(language) {
     selectedLanguage = language.name;
     showTranslationModal = true;
+  }
+
+  function trackEngagement() {
+    let visibleMs = 0;
+    let hadInteraction = false;
+    let fired = false;
+    let lastVisible = document.visibilityState === 'visible' ? Date.now() : 0;
+
+    function onInteraction() { hadInteraction = true; }
+    document.addEventListener('scroll', onInteraction, { once: true, passive: true });
+    document.addEventListener('mousemove', onInteraction, { once: true, passive: true });
+    document.addEventListener('touchstart', onInteraction, { once: true, passive: true });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden' && lastVisible) {
+        visibleMs += Date.now() - lastVisible;
+        lastVisible = 0;
+      } else if (document.visibilityState === 'visible') {
+        lastVisible = Date.now();
+      }
+    });
+
+    const interval = setInterval(() => {
+      if (fired) { clearInterval(interval); return; }
+      const total = visibleMs + (lastVisible ? Date.now() - lastVisible : 0);
+      if (total >= 10000 && hadInteraction && window.umami) {
+        window.umami.track('engaged');
+        fired = true;
+        clearInterval(interval);
+      }
+    }, 2000);
   }
 
   function loadAnalytics() {

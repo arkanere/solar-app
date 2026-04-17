@@ -222,7 +222,7 @@
 						<div class="installer-details">
 							<h3>
 								<a
-									href="/solar-panel-installer/{$storiesData[currentStoryIndex].business_slug}"
+									href="/us/solar-panel-installer/{$storiesData[currentStoryIndex].business_slug}"
 									class="installer-link"
 									on:click={closeStory}
 								>

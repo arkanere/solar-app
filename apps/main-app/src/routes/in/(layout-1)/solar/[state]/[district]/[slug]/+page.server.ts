@@ -4,7 +4,7 @@ import { error } from '@sveltejs/kit';
 import { resolveGeoSlug } from '$lib/server/slug-resolver';
 
 export const config = {
-	isr: { expiration: 604800 }
+	isr: { expiration: 1296000 }
 };
 
 export const load: PageServerLoad = async ({ params }) => {

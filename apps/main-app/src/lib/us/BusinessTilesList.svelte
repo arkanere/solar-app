@@ -80,7 +80,7 @@
 				<li class="business-card">
 					<div class="business-header">
 						<h2>
-							<a href={`/solar-panel-installer/${business.slug}`} class="business-link"
+							<a href={`/us/solar-panel-installer/${business.slug}`} class="business-link"
 								>{business.businessname}</a
 							>
 						</h2>

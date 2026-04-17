@@ -7,7 +7,7 @@
 
 	let name = '';
 	let phone = '';
-	let pinCode = '';
+	let zipCode = '';
 	let type = '';
 	let comment = '';
 	let email = '';
@@ -20,7 +20,7 @@
 	let errors = {
 		name: '',
 		phone: '',
-		pinCode: '',
+		zipCode: '',
 		type: '',
 		email: '',
 		comment: ''
@@ -51,18 +51,18 @@
 		}
 	}
 
-	function validatePinCode() {
-		if (!/^\d{6}$/.test(pinCode)) {
-			errors.pinCode = 'Pin code must be exactly 6 digits';
+	function validateZipCode() {
+		if (!/^\d{5}$/.test(zipCode)) {
+			errors.zipCode = 'Zip code must be exactly 5 digits';
 			return false;
 		} else {
-			errors.pinCode = '';
+			errors.zipCode = '';
 			return true;
 		}
 	}
 
 	function validateForm() {
-		errors = { name: '', phone: '', pinCode: '', type: '', email: '', comment: '' };
+		errors = { name: '', phone: '', zipCode: '', type: '', email: '', comment: '' };
 		let isValid = true;
 
 		if (name.trim() === '') {
@@ -70,7 +70,7 @@
 			isValid = false;
 		}
 		if (!validatePhoneNumber()) isValid = false;
-		if (!validatePinCode()) isValid = false;
+		if (!validateZipCode()) isValid = false;
 		if (type.trim() === '') {
 			errors.type = 'Type is required';
 			isValid = false;
@@ -88,11 +88,11 @@
 	function resetForm() {
 		name = '';
 		phone = '';
-		pinCode = '';
+		zipCode = '';
 		type = '';
 		comment = '';
 		email = '';
-		errors = { name: '', phone: '', pinCode: '', type: '', email: '', comment: '' };
+		errors = { name: '', phone: '', zipCode: '', type: '', email: '', comment: '' };
 	}
 
 	async function handleSubmit(event) {
@@ -110,7 +110,7 @@
 					body: JSON.stringify({
 						name,
 						phone,
-						pinCode,
+						zipCode,
 						type,
 						comment,
 						email,
@@ -130,7 +130,7 @@
 					dispatch('leadAdded', {
 						name,
 						phone,
-						pinCode,
+						zipCode,
 						type,
 						comment,
 						email
@@ -175,12 +175,12 @@
 		{/if}
 	</div>
 
-	<!-- Pin Code Input -->
+	<!-- Zip Code Input -->
 	<div>
-		<label for="pinCode">Pin Code:</label>
-		<input id="pinCode" type="text" bind:value={pinCode} required on:blur={validatePinCode} />
-		{#if errors.pinCode}
-			<p class="error">{errors.pinCode}</p>
+		<label for="zipCode">Zip Code:</label>
+		<input id="zipCode" type="text" bind:value={zipCode} required on:blur={validateZipCode} />
+		{#if errors.zipCode}
+			<p class="error">{errors.zipCode}</p>
 		{/if}
 	</div>
 

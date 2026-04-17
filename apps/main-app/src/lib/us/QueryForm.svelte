@@ -76,7 +76,7 @@
 				const result = await response.json();
 
 				if (result.success) {
-					goto('/thank-you');
+					goto('/us/thank-you');
 				} else {
 					console.error('Submission failed:', result.error);
 					isSubmitting = false; // Re-enable the submit button if submission failed

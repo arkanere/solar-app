@@ -5,7 +5,7 @@
 
 	let name = $state('');
 	let phone = $state('');
-	let pinCode = $state('');
+	let zipCode = $state('');
 	let type = $state('');
 	let comment = $state('');
 	let email = $state('');
@@ -16,7 +16,7 @@
 	let errors = $state({
 		name: '',
 		phone: '',
-		pinCode: '',
+		zipCode: '',
 		type: '',
 		email: '',
 		comment: ''
@@ -47,18 +47,18 @@
 		}
 	}
 
-	function validatePinCode() {
-		if (!/^\d{6}$/.test(pinCode)) {
-			errors.pinCode = 'Pin code must be exactly 6 digits';
+	function validateZipCode() {
+		if (!/^\d{5}$/.test(zipCode)) {
+			errors.zipCode = 'Zip code must be exactly 5 digits';
 			return false;
 		} else {
-			errors.pinCode = '';
+			errors.zipCode = '';
 			return true;
 		}
 	}
 
 	function validateForm() {
-		errors = { name: '', phone: '', pinCode: '', type: '', email: '', comment: '' };
+		errors = { name: '', phone: '', zipCode: '', type: '', email: '', comment: '' };
 		let isValid = true;
 
 		if (name.trim() === '') {
@@ -66,7 +66,7 @@
 			isValid = false;
 		}
 		if (!validatePhoneNumber()) isValid = false;
-		if (!validatePinCode()) isValid = false;
+		if (!validateZipCode()) isValid = false;
 		if (type.trim() === '') {
 			errors.type = 'Type is required';
 			isValid = false;
@@ -92,7 +92,7 @@
 					body: JSON.stringify({
 						name,
 						phone,
-						pinCode,
+						zipCode,
 						type,
 						comment,
 						email,
@@ -104,7 +104,7 @@
 				const result = await response.json();
 
 				if (result.success) {
-					goto('/thank-you');
+					goto('/us/thank-you');
 				} else {
 					console.error('Submission failed:', result.error);
 				}
@@ -136,12 +136,12 @@
 		{/if}
 	</div>
 
-	<!-- Pin Code Input -->
+	<!-- Zip Code Input -->
 	<div>
-		<label for="pinCode">Pin Code:</label>
-		<input id="pinCode" type="text" bind:value={pinCode} required onblur={validatePinCode} />
-		{#if errors.pinCode}
-			<p class="error">{errors.pinCode}</p>
+		<label for="zipCode">Zip Code:</label>
+		<input id="zipCode" type="text" bind:value={zipCode} required onblur={validateZipCode} />
+		{#if errors.zipCode}
+			<p class="error">{errors.zipCode}</p>
 		{/if}
 	</div>
 

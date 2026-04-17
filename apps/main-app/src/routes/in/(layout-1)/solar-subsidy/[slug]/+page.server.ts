@@ -6,7 +6,7 @@ import { resolveSubsidySlug } from '$lib/server/slug-resolver';
 import { getTopDistricts } from '$lib/server/queries';
 
 export const config = {
-	isr: { expiration: 604800 }
+	isr: { expiration: 1296000 }
 };
 
 const PILLAR = 'solar-subsidy';
