@@ -88,14 +88,20 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 		}
 
 		// Claim gate: businesses with 10+ claimed leads must meet requirements
+		const gateBranchesRes = await pool.query(
+			`SELECT branch_id FROM branches WHERE main_id = $1 AND isactive = true`,
+			[business_id]
+		);
+		const gateAllIds = [business_id, ...gateBranchesRes.rows.map((r: { branch_id: number }) => r.branch_id)];
+
 		const [gateClaimedRes, gateStaleRes, gateProjectsRes, gateRecentRes, gateBizRes] = await Promise.all([
 			pool.query(
-				`SELECT COUNT(*) as count FROM leaddata WHERE business_id = $1 AND category = 2 AND isvisible = true`,
-				[business_id]
+				`SELECT COUNT(*) as count FROM leaddata WHERE business_id = ANY($1) AND category = 2 AND isvisible = true`,
+				[gateAllIds]
 			),
 			pool.query(
-				`SELECT COUNT(*) as count FROM leaddata WHERE business_id = $1 AND category = 2 AND isvisible = true AND stage = 0 AND status = true`,
-				[business_id]
+				`SELECT COUNT(*) as count FROM leaddata WHERE business_id = ANY($1) AND category = 2 AND isvisible = true AND stage = 0 AND status = true`,
+				[gateAllIds]
 			),
 			pool.query(
 				`SELECT COUNT(*) as count FROM projects WHERE business_slug = $1 AND isvisible = true`,
