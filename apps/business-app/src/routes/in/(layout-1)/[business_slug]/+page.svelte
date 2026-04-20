@@ -3,25 +3,13 @@
 	import { goto } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 	import CustomerInquiry from '$lib/in-new-rewrites/CustomerInquiry.svelte';
-	import SetupProgressCard from '$lib/in-new-rewrites/SetupProgressCard.svelte';
-	import ShowEditProfile from '$lib/in-new-rewrites/ShowEditProfile.svelte';
 
-	// Destructure page data
 	let businessSlug = $derived($page.params.business_slug);
 	let business = $derived($page.data.business);
-	let branches = $derived($page.data.branches || []);
 	let leads = $state($page.data.leads || []);
-	let leadClaims = $derived($page.data.leadClaims || []);
-	let projectsCount = $derived($page.data.projectsCount || 0);
-	let referrersCount = $derived($page.data.referrersCount || 0);
-	let proposalsCount = $derived($page.data.proposalsCount || 0);
 	let errorMessage = $derived($page.data.errorMessage);
-	let claimedLeadsCount = $derived(leadClaims?.length || 0);
+	let claimGate = $derived($page.data.claimGate);
 
-	// Local state
-	let showEditProfile = $state(false);
-
-	// Computed business info
 	let businessInfo = $derived(
 		business
 			? {
@@ -41,52 +29,18 @@
 		toast.success('Lead claimed! Opening CRM...');
 		goto(`/in/${businessSlug}/crm`);
 	}
-
-	// Function to open edit profile modal
-	function openEditProfile() {
-		console.log('Opening edit profile with business data:', business);
-		console.log('Phone number:', business?.phonenumber);
-		showEditProfile = true;
-	}
-
-	// Handle profile updated event
-	function handleProfileUpdated() {
-		showEditProfile = false;
-		window.location.reload();
-	}
 </script>
 
-<!-- Main Content -->
 <div class="min-h-screen py-8 md:py-4 transition-colors duration-300 bg-background text-foreground">
 	<div class="w-full max-w-[1200px] px-4 md:px-3 max-[480px]:px-2 mx-auto">
-		<!-- Setup Progress Card -->
-		<SetupProgressCard
-			{business}
-			{businessSlug}
-			{projectsCount}
-			{claimedLeadsCount}
-			onOpenEditProfile={openEditProfile}
-		/>
-
-		<!-- Customer Inquiry Dashboard -->
 		<CustomerInquiry
 			bind:leads
 			{businessInfo}
 			{businessSlug}
 			{errorMessage}
 			mode="dashboard"
+			claimBlocked={claimGate?.isBlocked ?? false}
 			onClaimSuccess={handleClaimSuccess}
 		/>
 	</div>
 </div>
-
-<!-- Edit Profile Modal -->
-{#if showEditProfile && business}
-	<ShowEditProfile
-		bind:show={showEditProfile}
-		businessInfo={business}
-		{businessSlug}
-		onClose={() => (showEditProfile = false)}
-		onUpdated={handleProfileUpdated}
-	/>
-{/if}

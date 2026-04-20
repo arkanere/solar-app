@@ -22,6 +22,7 @@
 		errorMessage?: string | null;
 		onClaimSuccess?: (data: { leadId: number; result: any }) => void;
 		mode?: 'full' | 'dashboard';
+		claimBlocked?: boolean;
 	};
 </script>
 
@@ -43,7 +44,8 @@
 		businessSlug = '',
 		errorMessage = null,
 		onClaimSuccess = () => {},
-		mode = 'full'
+		mode = 'full',
+		claimBlocked = false
 	}: CustomerInquiryProps = $props();
 
 	let isDashboard = $derived(mode === 'dashboard');
@@ -230,6 +232,7 @@
 						{lead}
 						{businessInfo}
 						{isClaiming}
+						{claimBlocked}
 						on:update={handleLeadUpdate}
 						on:claim={handleLeadClaim}
 						on:proposal={handleProposalOpen}

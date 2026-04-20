@@ -27,13 +27,15 @@
 		businessInfo: Record<string, any>;
 		isClaiming?: boolean;
 		isDemo?: boolean;
+		claimBlocked?: boolean;
 	};
 
 	let {
 		lead,
 		businessInfo,
 		isClaiming = false,
-		isDemo = false
+		isDemo = false,
+		claimBlocked = false
 	}: LeadTileProps = $props();
 
 	const dispatch = createEventDispatcher();
@@ -185,6 +187,16 @@
 						<p class="font-semibold text-muted-foreground text-sm">
 							Not Available. Claimed by Other Business
 						</p>
+					{:else if claimBlocked}
+						<p class="text-xs text-destructive font-semibold mb-2">
+							Claiming paused — complete the requirements shown above to resume
+						</p>
+						<Button
+							class="w-full"
+							disabled={true}
+						>
+							Claim Now (Free)
+						</Button>
 					{:else}
 					{#if lead.claim_count > 0}
 						<p class="text-xs text-muted-foreground mb-2">
