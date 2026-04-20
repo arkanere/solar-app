@@ -121,7 +121,8 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 				WHERE category = 1
 				AND state = ANY($1)
 				AND isvisible = true
-				AND NOT (COALESCE(claim_count, 0) > 4 AND created_at < NOW() - INTERVAL '60 days')
+				AND created_at >= NOW() - INTERVAL '15 days'
+				AND NOT (COALESCE(claim_count, 0) > 4)
 				ORDER BY id DESC`,
 				[uniqueStates]
 			);

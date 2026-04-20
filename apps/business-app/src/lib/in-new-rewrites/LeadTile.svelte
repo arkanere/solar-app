@@ -156,6 +156,14 @@
 	<!-- COMPACT INFO - Always Visible -->
 	<Card.Content class="p-0">
 		<div class="px-6 py-4 space-y-3 border-b border-border">
+			<!-- Received Time (above the fold for available leads) -->
+			{#if lead.category === 1}
+				<div class="flex items-center gap-2 text-sm">
+					<span class="font-semibold text-muted-foreground">Received:</span>
+					<Badge variant={getRelativeTime(lead.created_at).variant}>{getRelativeTime(lead.created_at).text}</Badge>
+				</div>
+			{/if}
+
 			<!-- Location -->
 			<div class="flex items-center gap-2 text-sm">
 				<span class="font-semibold text-muted-foreground">Location:</span>
@@ -263,11 +271,13 @@
 				class="p-5 bg-background-secondary dark:bg-background-secondary border-b border-border transition-all duration-300 ease-in-out"
 				id="details-{lead.id}"
 			>
-				<!-- RECEIVED TIME -->
-				<div class="flex items-start gap-2 mb-3 text-sm">
-					<span class="font-semibold text-muted-foreground">Received:</span>
-					<span class="font-medium text-foreground">{getRelativeTime(lead.created_at).text}</span>
-				</div>
+				<!-- RECEIVED TIME (hidden for available leads since it's above the fold) -->
+				{#if lead.category !== 1}
+					<div class="flex items-start gap-2 mb-3 text-sm">
+						<span class="font-semibold text-muted-foreground">Received:</span>
+						<span class="font-medium text-foreground">{getRelativeTime(lead.created_at).text}</span>
+					</div>
+				{/if}
 
 				<!-- PHONE NUMBER -->
 				<div class="flex items-center gap-2 mb-3 text-sm">
