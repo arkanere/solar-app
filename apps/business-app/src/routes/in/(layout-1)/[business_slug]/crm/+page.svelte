@@ -10,6 +10,7 @@
 	let leads = $state($page.data.leads || []);
 	let leadClaims = $derived($page.data.leadClaims || []);
 	let errorMessage = $derived($page.data.errorMessage);
+	let claimGate = $derived($page.data.claimGate);
 
 	// Computed business info
 	let businessInfo = $derived(
@@ -58,6 +59,7 @@
 			bind:leads
 			{businessInfo}
 			{errorMessage}
+			claimBlocked={claimGate?.isBlocked ?? false}
 			onClaimSuccess={handleClaimSuccess}
 		/>
 	</div>

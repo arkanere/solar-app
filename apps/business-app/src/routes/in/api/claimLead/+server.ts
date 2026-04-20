@@ -87,6 +87,50 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 			);
 		}
 
+		// Claim gate: businesses with 10+ claimed leads must meet requirements
+		const [gateClaimedRes, gateStaleRes, gateProjectsRes, gateRecentRes, gateBizRes] = await Promise.all([
+			pool.query(
+				`SELECT COUNT(*) as count FROM leaddata WHERE business_id = $1 AND category = 2 AND isvisible = true`,
+				[business_id]
+			),
+			pool.query(
+				`SELECT COUNT(*) as count FROM leaddata WHERE business_id = $1 AND category = 2 AND isvisible = true AND stage = 0 AND status = true`,
+				[business_id]
+			),
+			pool.query(
+				`SELECT COUNT(*) as count FROM projects WHERE business_slug = $1 AND isvisible = true`,
+				[sessionResult.session.businessSlug]
+			),
+			pool.query(
+				`SELECT COUNT(*) as count FROM projects WHERE business_slug = $1 AND isvisible = true AND created_at > NOW() - INTERVAL '60 days'`,
+				[sessionResult.session.businessSlug]
+			),
+			pool.query(
+				`SELECT description, brands, google_maps_link FROM businesses_1 WHERE id = $1`,
+				[business_id]
+			)
+		]);
+
+		const gateTotalClaimed = parseInt(gateClaimedRes.rows[0]?.count || '0');
+		if (gateTotalClaimed >= 10) {
+			const gateStaleClaimed = parseInt(gateStaleRes.rows[0]?.count || '0');
+			const gateProjectsCount = parseInt(gateProjectsRes.rows[0]?.count || '0');
+			const gateRecentProject = parseInt(gateRecentRes.rows[0]?.count || '0') > 0;
+			const biz = gateBizRes.rows[0];
+			const gateProfileComplete = !!biz?.description
+				&& Array.isArray(biz?.brands) && biz.brands.length > 0
+				&& !!biz?.google_maps_link;
+			const gateStalePercent = gateTotalClaimed > 0 ? (gateStaleClaimed / gateTotalClaimed) * 100 : 0;
+
+			const blocked = gateStalePercent > 50 || gateProjectsCount < 6 || !gateRecentProject || !gateProfileComplete;
+			if (blocked) {
+				return json(
+					{ success: false, error: 'Claiming paused — update your leads, post projects, and complete your profile to resume' },
+					{ status: 403 }
+				);
+			}
+		}
+
 		// Start a transaction
 		const client = await pool.connect();
 		let emailData: EmailData | null = null; // Store email data to send after transaction

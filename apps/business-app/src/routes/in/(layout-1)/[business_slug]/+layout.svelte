@@ -2,6 +2,9 @@
 	import { page } from '$app/stores';
 	import { isSidebarExpanded, isMobileMenuOpen } from '$lib/in/sidebarStore.svelte';
 	import Sidebar from '$lib/in-new-rewrites/Sidebar.svelte';
+	import SetupProgressCard from '$lib/in-new-rewrites/SetupProgressCard.svelte';
+	import ClaimGateCard from '$lib/in-new-rewrites/ClaimGateCard.svelte';
+	import ShowEditProfile from '$lib/in-new-rewrites/ShowEditProfile.svelte';
 	import PostRecentProject from '$lib/in-new-rewrites/PostRecentProject.svelte';
 	import AddBranch from '$lib/in-new-rewrites/AddBranch.svelte';
 	import ShowSupport from '$lib/in-new-rewrites/ShowSupport.svelte';
@@ -45,6 +48,22 @@
 		: {});
 
 	let businessEmail = $derived(business?.email || '');
+
+	// Setup progress & claim gate from layout server
+	let setupProgress = $derived(data.setupProgress);
+	let claimGate = $derived(data.claimGate);
+
+	// Edit profile modal (needed by SetupProgressCard and ClaimGateCard)
+	let showEditProfile = $state(false);
+
+	function openEditProfile() {
+		showEditProfile = true;
+	}
+
+	function handleProfileUpdated() {
+		showEditProfile = false;
+		window.location.reload();
+	}
 
 	// Sidebar action handlers
 	function handleAddLead() {
@@ -120,6 +139,24 @@
 <!-- Main Content Area -->
 <div class="layout-container {expanded ? 'sidebar-expanded' : 'sidebar-collapsed'}">
 	<main class="min-h-screen bg-background text-foreground transition-colors duration-300">
+		{#if business && setupProgress}
+			<div class="w-full max-w-[1200px] px-4 md:px-3 max-[480px]:px-2 mx-auto pt-4">
+				<SetupProgressCard
+					{business}
+					{businessSlug}
+					projectsCount={setupProgress.projectsCount}
+					claimedLeadsCount={setupProgress.claimedLeadsCount}
+					onOpenEditProfile={openEditProfile}
+				/>
+				{#if claimGate}
+					<ClaimGateCard
+						{claimGate}
+						{businessSlug}
+						onOpenEditProfile={openEditProfile}
+					/>
+				{/if}
+			</div>
+		{/if}
 		{@render children?.()}
 	</main>
 </div>
@@ -163,6 +200,16 @@
 
 {#if showRankingPolicy}
 	<ShowRankingPolicy bind:show={showRankingPolicy} onClose={() => (showRankingPolicy = false)} />
+{/if}
+
+{#if showEditProfile && business}
+	<ShowEditProfile
+		bind:show={showEditProfile}
+		businessInfo={business}
+		{businessSlug}
+		onClose={() => (showEditProfile = false)}
+		onUpdated={handleProfileUpdated}
+	/>
 {/if}
 
 {#if showAddBranch}
