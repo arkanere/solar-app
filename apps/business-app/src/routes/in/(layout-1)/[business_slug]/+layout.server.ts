@@ -89,16 +89,23 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 					const business = businessResult.rows[0] as BusinessRow;
 					const businessId = business.id;
 
+					// Get all branch IDs so lead counts include branch-assigned leads
+					const branchesRes = await pool.query(
+						`SELECT branch_id FROM branches WHERE main_id = $1 AND isactive = true`,
+						[businessId]
+					);
+					const allBusinessIds = [businessId, ...branchesRes.rows.map((r: { branch_id: number }) => r.branch_id)];
+
 					const [claimedRes, staleRes, projectsRes, recentProjectRes] = await Promise.all([
 						pool.query(
 							`SELECT COUNT(*) as count FROM leaddata
-							 WHERE business_id = $1 AND category = 2 AND isvisible = true`,
-							[businessId]
+							 WHERE business_id = ANY($1) AND category = 2 AND isvisible = true`,
+							[allBusinessIds]
 						),
 						pool.query(
 							`SELECT COUNT(*) as count FROM leaddata
-							 WHERE business_id = $1 AND category = 2 AND isvisible = true AND stage = 0 AND status = true`,
-							[businessId]
+							 WHERE business_id = ANY($1) AND category = 2 AND isvisible = true AND stage = 0 AND status = true`,
+							[allBusinessIds]
 						),
 						pool.query(
 							'SELECT COUNT(*) as count FROM projects WHERE business_slug = $1 AND isvisible = true',
