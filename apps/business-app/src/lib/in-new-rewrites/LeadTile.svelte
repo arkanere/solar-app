@@ -4,9 +4,8 @@
 	import LeadProgressBar from './LeadProgressBar.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
-	import * as Select from '$lib/components/ui/select';
+	import * as Dialog from '$lib/components/ui/dialog';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import { Label } from '$lib/components/ui/label';
 	import { Badge } from '$lib/components/ui/badge';
 	import { cn } from '$lib/utils';
 	import {
@@ -14,12 +13,13 @@
 		Mail,
 		ChevronDown,
 		ChevronRight,
-		Info,
 		ArrowRight,
-		Check
+		Check,
+		X,
+		Trophy
 	} from '@lucide/svelte';
-	import { getStagesMapForCategory, getCategoryLabel } from '$lib/constants/lead';
-	import { getRelativeTime, getNextAction, formatLeadForProposal, trackCallEvent } from '$lib/in/utils/lead-helpers';
+	import { getCategoryLabel } from '$lib/constants/lead';
+	import { getRelativeTime, formatLeadForProposal, trackCallEvent } from '$lib/in/utils/lead-helpers';
 	import { updateLeadAPI } from '$lib/in/actions/lead-api';
 
 	type LeadTileProps = {
@@ -46,15 +46,14 @@
 	let notesSaved = $state(false);
 	let notesCollapsed = $state(true);
 
-	// Get appropriate stages based on lead category
-	let stagesMap = $derived(getStagesMapForCategory(lead.category));
-	let stageOptions = $derived(
-		Object.entries(stagesMap)
-			.filter(([key]) => key !== 'all')
-			.map(([value, label]) => ({ value: Number(value), label }))
-	);
-
-	let nextAction = $derived(getNextAction(lead.stage, lead.category, lead.status));
+	let nextStageLabel = $derived.by(() => {
+		if (lead.stage >= 3 || !lead.status) return null;
+		const labels: Record<number, string> = { 0: 'Mark Contacted', 1: 'Mark Proposal Sent', 2: 'Mark as Won' };
+		return labels[lead.stage] ?? null;
+	});
+	let isAdvancing = $state(false);
+	let showDeactivateConfirm = $state(false);
+	let isDeactivating = $state(false);
 
 	function toggleLeadDetails() {
 		isExpanded = !isExpanded;
@@ -112,16 +111,26 @@
 		saveBusinessNotes();
 	}
 
+	async function advanceStage() {
+		if (lead.stage >= 3 || isAdvancing) return;
+		isAdvancing = true;
+		await handleUpdateLead({ stage: lead.stage + 1 });
+		isAdvancing = false;
+	}
+
+	async function confirmDeactivate() {
+		isDeactivating = true;
+		await handleUpdateLead({ status: false });
+		isDeactivating = false;
+		showDeactivateConfirm = false;
+	}
+
 	function handleClaim() {
 		if (!businessInfo.id) {
 			console.error('ERROR: businessInfo.id is undefined!');
 			return;
 		}
 		dispatch('claim', { leadId: lead.id, businessId: businessInfo.id });
-	}
-
-	function handleDelete() {
-		dispatch('delete', { leadId: lead.id });
 	}
 
 	function handleGenerateProposal() {
@@ -160,7 +169,7 @@
 			{#if lead.category === 1}
 				<div class="flex items-center gap-2 text-sm">
 					<span class="font-semibold text-muted-foreground">Received:</span>
-					<Badge variant={getRelativeTime(lead.created_at).variant}>{getRelativeTime(lead.created_at).text}</Badge>
+					<Badge variant={getRelativeTime(lead.created_at).variant as any}>{getRelativeTime(lead.created_at).text}</Badge>
 				</div>
 			{/if}
 
@@ -174,18 +183,6 @@
 			<div class="text-sm">
 				<p class="text-foreground leading-relaxed italic">"{lead.comment}"</p>
 			</div>
-
-			<!-- Next Step Hint - For Claimed Leads -->
-			{#if lead.category !== 1 && nextAction}
-				<div
-					class="flex items-start gap-2 p-3 bg-accent-muted border-l-[3px] border-accent rounded text-sm"
-				>
-					<Info size={14} class="text-accent shrink-0 mt-0.5" />
-					<span class="text-foreground-secondary leading-snug"
-						><strong>Next:</strong> {nextAction}</span
-					>
-				</div>
-			{/if}
 
 			<!-- Primary Action Button -->
 			{#if lead.category === 1}
@@ -223,27 +220,61 @@
 					{/if}
 				</div>
 			{:else}
-				<!-- Claimed: Show Call Now Button -->
-				<div class="pt-2 flex flex-col gap-2">
-					<Button
-						class="w-full"
-						onclick={makeCall}
-						title="Call {lead.name}"
-						disabled={isDemo}
-					>
-						<Phone size={16} />
-						Call Now
-					</Button>
-					{#if lead.stage === 1 && lead.status}
+				<!-- Claimed Lead: Progress + Actions -->
+				<div class="pt-2 space-y-3">
+					<LeadProgressBar
+						currentStage={lead.stage}
+						leadCategory={lead.category}
+						isActive={lead.status}
+					/>
+
+					{#if lead.status}
 						<Button
-							variant="outline"
 							class="w-full"
-							onclick={handleGenerateProposal}
+							onclick={makeCall}
+							title="Call {lead.name}"
 							disabled={isDemo}
 						>
-							Generate Proposal
-							<ArrowRight size={16} />
+							<Phone size={16} />
+							Call Now
 						</Button>
+						{#if lead.stage === 1}
+							<Button
+								variant="outline"
+								class="w-full"
+								onclick={handleGenerateProposal}
+								disabled={isDemo}
+							>
+								Generate Proposal
+								<ArrowRight size={16} />
+							</Button>
+						{/if}
+						<div class="flex gap-2">
+							{#if nextStageLabel}
+								<Button
+									variant={lead.stage === 2 ? 'default' : 'secondary'}
+									class="flex-1 {lead.stage === 2 ? 'bg-success text-success-foreground hover:bg-success/90' : ''}"
+									onclick={advanceStage}
+									disabled={isAdvancing || isDemo}
+								>
+									{#if lead.stage === 2}
+										<Trophy size={16} />
+									{:else}
+										<ArrowRight size={16} />
+									{/if}
+									{isAdvancing ? 'Updating...' : nextStageLabel}
+								</Button>
+							{/if}
+							<Button
+								variant="outline"
+								class="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+								onclick={() => (showDeactivateConfirm = true)}
+								disabled={isDemo}
+								title="Mark as inactive"
+							>
+								<X size={16} />
+							</Button>
+						</div>
 					{/if}
 				</div>
 			{/if}
@@ -317,72 +348,6 @@
 				{/if}
 
 				{#if lead.category !== 1}
-					<!-- WORKFLOW SECTION - Progress & Stage -->
-					<div class="p-5 border-b border-border">
-						<h4
-							class="m-0 mb-3 text-sm font-semibold text-foreground-secondary uppercase tracking-wide"
-						>
-							Workflow
-						</h4>
-						<div class="flex flex-wrap gap-4 mt-4 mb-5 max-sm:flex-col">
-							<div class="flex-1 min-w-[140px] flex flex-col gap-1.5 max-sm:min-w-full">
-								<Label for="stage-{lead.id}" class="text-xs font-semibold text-foreground-secondary"
-									>Current Stage</Label
-								>
-								<Select.Root
-									type="single"
-									bind:value={lead.stage}
-									onValueChange={(v) => {
-										if (v?.value !== undefined) {
-											lead.stage = v.value;
-											handleUpdateLead({ stage: lead.stage });
-										}
-									}}
-								>
-									<Select.Trigger id="stage-{lead.id}">
-										{stagesMap[lead.stage] || 'Select stage'}
-									</Select.Trigger>
-									<Select.Content>
-										{#each stageOptions as option}
-											<Select.Item value={option.value}>{option.label}</Select.Item>
-										{/each}
-									</Select.Content>
-								</Select.Root>
-							</div>
-
-							<div class="flex-1 min-w-[140px] flex flex-col gap-1.5 max-sm:min-w-full">
-								<Label
-									for="status-{lead.id}"
-									class="text-xs font-semibold text-foreground-secondary">Lead Status</Label
-								>
-								<Select.Root
-									type="single"
-									bind:value={lead.status}
-									onValueChange={(v) => {
-										if (v?.value !== undefined) {
-											lead.status = v.value;
-											handleUpdateLead({ status: lead.status });
-										}
-									}}
-								>
-									<Select.Trigger id="status-{lead.id}">
-										{lead.status ? 'Active' : 'Inactive'}
-									</Select.Trigger>
-									<Select.Content>
-										<Select.Item value={true}>Active</Select.Item>
-										<Select.Item value={false}>Inactive</Select.Item>
-									</Select.Content>
-								</Select.Root>
-							</div>
-						</div>
-
-						<LeadProgressBar
-							currentStage={lead.stage}
-							leadCategory={lead.category}
-							isActive={lead.status}
-						/>
-					</div>
-
 					<!-- NOTES SECTION -->
 					<div class="border-b border-border">
 						<Button
@@ -432,18 +397,32 @@
 		{/if}
 	</Card.Content>
 
-	<!-- SECONDARY ACTION BUTTONS - Only for Claimed Leads When Expanded -->
-	{#if lead.category !== 1 && isExpanded && !lead.status}
-		<Card.Footer
-			class="p-5 bg-muted/50 dark:bg-background-tertiary justify-center gap-4 flex-wrap"
-		>
-			<Button
-				variant="destructive"
-				class="max-sm:w-full"
-				onclick={handleDelete}
-			>
-				Delete Lead
-			</Button>
-		</Card.Footer>
-	{/if}
+	<!-- Deactivate Confirmation Dialog -->
+	<Dialog.Root bind:open={showDeactivateConfirm}>
+		<Dialog.Content class="max-w-[480px]">
+			<Dialog.Header>
+				<Dialog.Title>Mark as Inactive?</Dialog.Title>
+			</Dialog.Header>
+			<p class="m-0 leading-relaxed text-foreground">
+				This will remove <strong>{lead.name}</strong>'s inquiry from your active leads. You won't see it in your list anymore.
+			</p>
+			<Dialog.Footer class="max-sm:flex-col">
+				<Button
+					variant="secondary"
+					onclick={() => (showDeactivateConfirm = false)}
+					disabled={isDeactivating}
+					class="max-sm:w-full"
+				>
+					Cancel
+				</Button>
+				<Button
+					onclick={confirmDeactivate}
+					disabled={isDeactivating}
+					class="max-sm:w-full !bg-red-600 !hover:bg-red-700 !text-white"
+				>
+					{isDeactivating ? 'Deactivating...' : 'Yes, Mark Inactive'}
+				</Button>
+			</Dialog.Footer>
+		</Dialog.Content>
+	</Dialog.Root>
 </Card.Root>
