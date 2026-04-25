@@ -196,7 +196,7 @@
 
 	<!-- Subsidy (city only) -->
 	{#if isCity}
-		<SubsidySection city={d.city} onGetQuote={() => (isModalOpen = true)} />
+		<SubsidySection city={d.city} />
 	{/if}
 
 	<!-- FAQ (city only) -->

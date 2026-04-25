@@ -23,7 +23,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		console.log('Generated token:', magicLinkToken);
 
 		// Check if user exists, if not create them
-		const existingUserQuery = 'SELECT id FROM users WHERE email = $1';
+		const existingUserQuery = 'SELECT id FROM in_user WHERE email = $1';
 		const existingUserResult = await pool.query(existingUserQuery, [email]);
 
 		let userId: number;
@@ -32,7 +32,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			userId = existingUserResult.rows[0].id;
 			console.log('Updating existing user with ID:', userId);
 			const updateResult = await pool.query(
-				'UPDATE users SET magic_link_token = $1, name = COALESCE($2, name) WHERE id = $3',
+				'UPDATE in_user SET magic_link_token = $1, name = COALESCE($2, name) WHERE id = $3',
 				[magicLinkToken, name || null, userId]
 			);
 			console.log('Update result:', updateResult);
@@ -40,7 +40,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			// Create new user
 			console.log('Creating new user');
 			const newUserResult = await pool.query(
-				'INSERT INTO users (email, name, magic_link_token) VALUES ($1, $2, $3) RETURNING id',
+				'INSERT INTO in_user (email, name, magic_link_token) VALUES ($1, $2, $3) RETURNING id',
 				[email, name || null, magicLinkToken]
 			);
 			userId = newUserResult.rows[0].id;

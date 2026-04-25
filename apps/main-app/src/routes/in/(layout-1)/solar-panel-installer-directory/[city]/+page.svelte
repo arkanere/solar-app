@@ -276,7 +276,7 @@
     </section>
 
     {#if businesses.length > 0 && subset_cities_localities.length > 0}
-      <SubsidySection city={cityName} onGetQuote={scrollToLeadForm} />
+      <SubsidySection city={cityName} />
 
       <RecommendedSolarSystems />
 

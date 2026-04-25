@@ -1,14 +1,12 @@
 <script lang="ts">
 	import * as Table from '$lib/components/ui/table';
 	import * as Card from '$lib/components/ui/card';
-	import { Button } from '$lib/components/ui/button';
 
 	interface Props {
 		city: string;
-		onGetQuote: () => void;
 	}
 
-	const { city, onGetQuote }: Props = $props();
+	const { city }: Props = $props();
 
 	const subsidyRows = [
 		{ size: '1 kW', grossCost: '₹65,000 – ₹80,000', centralSubsidy: '₹30,000', netCost: '₹35,000 – ₹50,000', annualSavings: '~₹7,000' },
@@ -88,12 +86,4 @@
 		* Costs are indicative estimates for {city} region. Final pricing depends on roof type, panel brand, inverter, and installation complexity. Annual savings based on ₹7/unit average tariff.
 	</p>
 
-	<div class="text-center">
-		<Button
-			class="font-semibold text-sm md:text-lg px-4 md:px-10 py-3 md:py-4 uppercase tracking-wide max-w-full whitespace-normal"
-			onclick={onGetQuote}
-		>
-			Check Subsidy Eligibility — Get Free Quote
-		</Button>
-	</div>
 </section>

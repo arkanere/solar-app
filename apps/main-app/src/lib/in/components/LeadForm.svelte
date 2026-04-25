@@ -6,7 +6,6 @@
   import { Textarea } from '$lib/components/ui/textarea';
   import * as Card from '$lib/components/ui/card';
   import * as Alert from '$lib/components/ui/alert';
-  import { goto } from '$app/navigation';
   import { validatePhone, validateEmail, validatePinCode } from '$lib/constants/formValidation';
 
   interface Props {
@@ -55,7 +54,7 @@
     isSubmitting = true;
 
     // Navigate to thank-you page immediately for better UX
-    goto('/in/thank-you');
+    window.location.href = 'https://user.solarvipani.com/in/thank-you';
 
     // Submit form in background (fire and forget)
     fetch('/in/api/submitLead', {
