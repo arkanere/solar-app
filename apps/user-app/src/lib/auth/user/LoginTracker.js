@@ -18,7 +18,7 @@ export class LoginTracker {
 		try {
 			// Update only if last_login is null or older than throttle threshold
 			const result = await pool.query(
-				`UPDATE users
+				`UPDATE in_user
 				 SET last_login = NOW()
 				 WHERE id = $1
 				   AND (last_login IS NULL OR last_login < NOW() - INTERVAL '${throttleHours} hours')
@@ -34,7 +34,7 @@ export class LoginTracker {
 				};
 			} else {
 				// Get current last_login for reference
-				const currentResult = await pool.query('SELECT last_login FROM users WHERE id = $1', [
+				const currentResult = await pool.query('SELECT last_login FROM in_user WHERE id = $1', [
 					userId
 				]);
 
@@ -61,7 +61,7 @@ export class LoginTracker {
 	 */
 	static async getLastLogin(userId) {
 		try {
-			const result = await pool.query('SELECT last_login FROM users WHERE id = $1', [userId]);
+			const result = await pool.query('SELECT last_login FROM in_user WHERE id = $1', [userId]);
 			return result.rows[0]?.last_login || null;
 		} catch (error) {
 			console.error('❌ Error getting last_login:', error);

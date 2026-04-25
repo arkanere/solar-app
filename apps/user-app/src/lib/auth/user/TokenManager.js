@@ -15,7 +15,7 @@ export class TokenManager {
 			// Query user with matching token
 			const result = await pool.query(
 				`SELECT id, email, name, magic_link_token, created_at
-				 FROM users
+				 FROM in_user
 				 WHERE magic_link_token = $1 AND magic_link_token IS NOT NULL`,
 				[token]
 			);
@@ -52,7 +52,7 @@ export class TokenManager {
 
 			const result = await client.query(
 				`SELECT id, email, name, created_at
-				 FROM users
+				 FROM in_user
 				 WHERE email = $1
 				 LIMIT 1`,
 				[email]
@@ -89,7 +89,7 @@ export class TokenManager {
 		try {
 			const result = await pool.query(
 				`SELECT id, email, name, created_at
-				 FROM users
+				 FROM in_user
 				 WHERE id = $1`,
 				[userId]
 			);
@@ -122,7 +122,7 @@ export class TokenManager {
 	static async clearMagicLinkToken(userId) {
 		try {
 			await pool.query(
-				`UPDATE users
+				`UPDATE in_user
 				 SET magic_link_token = NULL
 				 WHERE id = $1`,
 				[userId]
