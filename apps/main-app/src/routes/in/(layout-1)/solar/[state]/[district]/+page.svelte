@@ -137,7 +137,7 @@
 	{/if}
 
 	<!-- Subsidy -->
-	<SubsidySection city={data.district} onGetQuote={() => (isModalOpen = true)} />
+	<SubsidySection city={data.district} />
 
 	<!-- Get Quotes CTA -->
 	<div class="text-center mb-8">

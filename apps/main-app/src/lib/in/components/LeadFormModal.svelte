@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
@@ -43,7 +42,7 @@
 			isSubmitting = true;
 
 			// Navigate to thank-you page immediately for better UX
-			goto('/in/thank-you');
+			window.location.href = 'https://user.solarvipani.com/in/thank-you';
 
 			// Submit form in background (fire and forget)
 			fetch('/in/api/submitLead', {
