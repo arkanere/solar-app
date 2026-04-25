@@ -347,7 +347,7 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 
 			// Prepare email data but don't send yet (move outside transaction)
 			emailData = { business_id: mainBusinessId, isallotted: true };
-			customerEmailData = { lead_id, business_id: effectiveBusinessId };
+			customerEmailData = { lead_id, business_id: effectiveBusinessId, is_first_claim: claim_id === 0 };
 
 			await client.query('COMMIT');
 		} catch (error) {
