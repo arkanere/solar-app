@@ -116,14 +116,10 @@
 
 		<h2>Next Steps</h2>
 
-		{#if customerDetails && customerDetails.hasVerifiedBusinessInDistrict}
-			<p>We will call you within 24 hours to gather the exact requirement and clear any doubts that you may have.</p>
-			<p>After gathering your exact requirement, we will reshare your requirement with 2-3 verified installers in your area so that they can provide you with the quotation.</p>
-		{:else if customerDetails && !customerDetails.hasVerifiedBusinessInDistrict}
+		{#if customerDetails && !customerDetails.hasVerifiedBusinessInDistrict}
 			<p>Once we have verified installers in your district, we will connect you with 2-3 qualified installers who can provide you with competitive quotations.</p>
 		{:else}
-			<p>We will call you within 24 hours to gather the exact requirement and clear any doubts that you may have.</p>
-			<p>After gathering your exact requirement, we will reshare your requirement with 2-3 verified installers in your area so that they can provide you with the quotation.</p>
+			<p>We will share your details with our installer partners. They will reach out to you to know your requirements in detail, arrange a site visit if required and then share a quote. You will receive quotes from 2-3 verified installers in your area.</p>
 		{/if}
 
 		<p>

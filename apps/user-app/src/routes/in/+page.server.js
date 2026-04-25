@@ -1,19 +1,17 @@
 export const prerender = false;
 import { redirect } from '@sveltejs/kit';
 import { UserAuthService } from '$lib/auth/user/index.js';
+import { SessionManager } from '$lib/auth/user/SessionManager.js';
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ cookies }) {
 	const authService = new UserAuthService();
-
-	// Validate session
 	const sessionResult = authService.validateSession(cookies);
 
 	if (!sessionResult.success) {
-		// No valid session, redirect to home
-		throw redirect(302, '/');
+		return { user: null, leads: [], claimedBusinesses: [] };
 	}
 
 	const pool = createPool({ connectionString: POSTGRES_URL });
@@ -21,16 +19,13 @@ export async function load({ cookies }) {
 	let claimedBusinesses = [];
 
 	try {
-		// Fetch all leads for this user based on email
-		// Only show leads with category null or 1
-		const query = `
-			SELECT id, name, phone, pin_code, type, comment, email, district, created_at
+		const result = await pool.query(
+			`SELECT id, name, phone, pin_code, type, comment, email, district, created_at
 			FROM LeadData
 			WHERE email = $1 AND isvisible = true AND (category IS NULL OR category = 1)
-			ORDER BY created_at DESC
-		`;
-
-		const result = await pool.query(query, [sessionResult.user.email]);
+			ORDER BY created_at DESC`,
+			[sessionResult.user.email]
+		);
 		leads = result.rows.map((lead) => ({
 			id: lead.id,
 			name: lead.name,
@@ -43,11 +38,9 @@ export async function load({ cookies }) {
 			submittedAt: lead.created_at
 		}));
 
-		// Fetch claimed businesses for the user's leads
-		// Find category=2 leads that match the user's leads by phone, name, and pin_code
 		if (leads.length > 0) {
-			const claimedQuery = `
-				SELECT DISTINCT
+			const claimedResult = await pool.query(
+				`SELECT DISTINCT
 					l_claimed.id as claim_id,
 					l_claimed.created_at as claim_date,
 					l_claimed.stage,
@@ -81,10 +74,9 @@ export async function load({ cookies }) {
 				WHERE l_original.email = $1
 				AND l_original.isvisible = true
 				AND (l_original.category IS NULL OR l_original.category = 1)
-				ORDER BY l_claimed.created_at DESC
-			`;
-
-			const claimedResult = await pool.query(claimedQuery, [sessionResult.user.email]);
+				ORDER BY l_claimed.created_at DESC`,
+				[sessionResult.user.email]
+			);
 			claimedBusinesses = claimedResult.rows.map((claim) => ({
 				claimId: claim.claim_id,
 				claimDate: claim.claim_date,
@@ -109,13 +101,15 @@ export async function load({ cookies }) {
 		}
 	} catch (err) {
 		console.error('Error fetching user leads:', err);
-		// Continue without leads if there's an error
 	}
 
-	// Return user data from session and their leads
-	return {
-		user: sessionResult.user,
-		leads,
-		claimedBusinesses
-	};
+	return { user: sessionResult.user, leads, claimedBusinesses };
 }
+
+/** @type {import('./$types').Actions} */
+export const actions = {
+	logout: async ({ cookies }) => {
+		SessionManager.clearSession(cookies);
+		throw redirect(302, '/in');
+	}
+};
