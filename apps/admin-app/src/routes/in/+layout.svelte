@@ -51,6 +51,7 @@
       {/if}
     </li>
     <li><a href="/in/businesses">View Business Data</a></li>
+    <li><a href="/in/users">Users</a></li>
     <li><a href="/in/queries">View Queries</a></li>
     <li><a href="/in/blogs">Blogs</a></li>
     <li
