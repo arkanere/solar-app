@@ -73,7 +73,7 @@
 
 	// Derive available (category 1) and my leads (category 2, 3, null/undefined)
 	let availableLeads = $derived(leads.filter((l) => l.category === 1));
-	let myLeads = $derived(leads.filter((l) => l.category !== 1));
+	let myLeads = $derived(leads.filter((l) => l.category !== 1 && l.status !== false));
 	let dashboardLeads = $derived([...availableLeads, ...myLeads].slice(0, 5));
 
 	// Set default tab based on claimed leads on first load
