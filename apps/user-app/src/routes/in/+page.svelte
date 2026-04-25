@@ -2,7 +2,6 @@
 	/** @type {import('./$types').PageData} */
 	export let data;
 
-	// Format date for display
 	function formatDate(dateString) {
 		if (!dateString) return '';
 		const date = new Date(dateString);
@@ -15,7 +14,6 @@
 		});
 	}
 
-	// Function to get stage label
 	function getStageLabel(stage) {
 		const stages = {
 			0: 'New Inquiry',
@@ -26,18 +24,13 @@
 		return stages[stage] || 'Under Review';
 	}
 
-	// Group claimed businesses by original lead
 	function groupClaimsByLead(claimedBusinesses) {
 		const grouped = new Map();
-
 		claimedBusinesses.forEach((claim) => {
 			const key = claim.originalLeadId;
-			if (!grouped.has(key)) {
-				grouped.set(key, []);
-			}
+			if (!grouped.has(key)) grouped.set(key, []);
 			grouped.get(key).push(claim);
 		});
-
 		return grouped;
 	}
 
@@ -50,10 +43,28 @@
 </svelte:head>
 
 <main>
-	<section class="welcome-section">
-		<h1>Welcome, {data.user.name || 'User'}!</h1>
-		<p class="email">{data.user.email}</p>
-	</section>
+	{#if !data.user}
+		<section class="login-section">
+			<div class="login-card">
+				<h1>Track Your Solar Inquiry</h1>
+				<p class="login-subtitle">
+					To view your inquiry status and installer interest, please use the sign-in link sent to
+					you by email from Solar Vipani.
+				</p>
+				<p class="login-hint">
+					The link is sent automatically when an installer expresses interest in your inquiry.
+					Check your inbox for an email from <strong>Solar Vipani</strong>.
+				</p>
+			</div>
+		</section>
+	{:else}
+		<section class="welcome-section">
+			<h1>Welcome, {data.user.name || 'User'}!</h1>
+			<p class="email">{data.user.email}</p>
+			<form method="POST" action="?/logout" class="logout-form">
+				<button type="submit" class="logout-btn">Sign Out</button>
+			</form>
+		</section>
 
 	<section class="dashboard-content">
 		<h2>Your Solar Inquiry</h2>
@@ -198,6 +209,7 @@
 			</p>
 		{/if}
 	</section>
+	{/if}
 </main>
 
 <style>
@@ -281,6 +293,43 @@
 		transition: background-color var(--transition-medium);
 	}
 
+	/* Login section */
+	.login-section {
+		display: flex;
+		justify-content: center;
+		align-items: flex-start;
+		padding: var(--section-padding);
+		width: 100%;
+		max-width: var(--container-width);
+	}
+
+	.login-card {
+		background: var(--light-card-bg);
+		border-radius: var(--border-radius-lg);
+		box-shadow: var(--shadow-md);
+		padding: 2.5rem 2rem;
+		width: 100%;
+		max-width: 440px;
+	}
+
+	.login-card h1 {
+		font-size: 1.8rem;
+		color: var(--primary-color);
+		margin-bottom: 0.75rem;
+	}
+
+	.login-subtitle {
+		color: var(--text-dark);
+		font-size: 1rem;
+		margin-bottom: 1rem;
+	}
+
+	.login-hint {
+		color: var(--text-medium);
+		font-size: 0.9rem;
+		margin: 0;
+	}
+
 	/* Welcome section with gradient background */
 	.welcome-section {
 		text-align: center;
@@ -304,6 +353,26 @@
 		opacity: 0.9;
 		margin: 0;
 		color: rgba(255, 255, 255, 0.9);
+	}
+
+	.logout-form {
+		margin-top: 1.25rem;
+	}
+
+	.logout-btn {
+		background: rgba(255, 255, 255, 0.15);
+		color: white;
+		border: 1px solid rgba(255, 255, 255, 0.5);
+		padding: 0.45rem 1.25rem;
+		border-radius: var(--border-radius-sm);
+		font-size: 0.9rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition: background var(--transition-fast);
+	}
+
+	.logout-btn:hover {
+		background: rgba(255, 255, 255, 0.28);
 	}
 
 	/* Dashboard content section */
