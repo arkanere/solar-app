@@ -16,6 +16,65 @@
 	let confirmActionType = '';
 	let isExecutingAction = false;
 
+	// State for WhatsApp reminder modal
+	let showWhatsappModal = false;
+	let whatsappBusinesses = [];
+	let whatsappLead = null;
+	let isLoadingBusinesses = false;
+
+	async function openWhatsappModal(lead) {
+		if (!lead.district || lead.district.trim() === '') {
+			alert('District is missing for this lead.');
+			return;
+		}
+		whatsappLead = lead;
+		isLoadingBusinesses = true;
+		showWhatsappModal = true;
+
+		try {
+			const response = await fetch('/in/api/getDistrictBusinessesWhatsapp', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ district: lead.district, lead_id: lead.id })
+			});
+			const result = await response.json();
+			if (result.success) {
+				whatsappBusinesses = result.businesses;
+			} else {
+				alert(result.error || 'Failed to fetch businesses.');
+				showWhatsappModal = false;
+			}
+		} catch (error) {
+			console.error(error);
+			alert('Error fetching businesses.');
+			showWhatsappModal = false;
+		} finally {
+			isLoadingBusinesses = false;
+		}
+	}
+
+	function closeWhatsappModal() {
+		showWhatsappModal = false;
+		whatsappBusinesses = [];
+		whatsappLead = null;
+	}
+
+	function openWhatsappLink(business) {
+		const url = getWhatsappLink(business);
+		window.open(url, 'whatsapp-reminder');
+	}
+
+	function getWhatsappLink(business) {
+		let phone = business.whatsapp.replace(/[^0-9]/g, '');
+		phone = phone.replace(/^0+/, '');
+		if (!phone.startsWith('91') || phone.length === 10) {
+			phone = '91' + phone;
+		}
+		const sharedDate = new Date(whatsappLead.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+		const message = `Dear ${business.businessname}, we received a solar installation inquiry and shared it with you at ${business.login_email} from admin@solarvipani.com around ${sharedDate}. Please check.`;
+		return `https://web.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
+	}
+
 	$: darkMode = $isDarkMode; // Watch for changes in dark mode state
 
 	// Function for editing a lead - now uses a modal instead of navigation
@@ -300,6 +359,12 @@
 					>
 						Share masked details with Verified Businesses in the State
 					</button>
+					<button
+						class="whatsapp-reminder-button"
+						on:click={() => openWhatsappModal(lead)}
+					>
+						WhatsApp Reminder
+					</button>
 				</li>
 			{/each}
 		</ul>
@@ -369,6 +434,42 @@
 						<button type="submit">Save</button>
 					</div>
 				</form>
+			</div>
+		</div>
+	{/if}
+
+	<!-- WhatsApp Reminder Modal -->
+	{#if showWhatsappModal}
+		<div class="modal-overlay" on:click={closeWhatsappModal}>
+			<div class="modal-content" on:click|stopPropagation>
+				<h2>Send WhatsApp Reminder</h2>
+				<p class="modal-subtitle">Lead: {whatsappLead?.name} | District: {whatsappLead?.district}</p>
+				{#if isLoadingBusinesses}
+					<p>Loading businesses...</p>
+				{:else if whatsappBusinesses.length === 0}
+					<p>No businesses with WhatsApp numbers found in this district.</p>
+				{:else}
+					<div class="whatsapp-business-list">
+						{#each whatsappBusinesses as business}
+							{#if business.has_claimed}
+								<span class="whatsapp-business-btn claimed">
+									{business.businessname} ✓ Claimed
+								</span>
+							{:else}
+								<button
+									type="button"
+									class="whatsapp-business-btn"
+									on:click={() => openWhatsappLink(business)}
+								>
+									{business.businessname}
+								</button>
+							{/if}
+						{/each}
+					</div>
+				{/if}
+				<div class="modal-buttons">
+					<button type="button" on:click={closeWhatsappModal}>Close</button>
+				</div>
 			</div>
 		</div>
 	{/if}
@@ -683,6 +784,52 @@
 		display: flex;
 		justify-content: space-between;
 		margin-top: 1rem;
+	}
+
+	/* WhatsApp button */
+	.whatsapp-reminder-button {
+		background-color: #25d366;
+		color: white;
+	}
+
+	.whatsapp-reminder-button:hover {
+		background-color: #1da851;
+	}
+
+	.modal-subtitle {
+		font-size: 0.9rem;
+		margin-bottom: 1rem;
+		color: #666;
+	}
+
+	.whatsapp-business-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		max-height: 50vh;
+		overflow-y: auto;
+	}
+
+	.whatsapp-business-btn {
+		display: block;
+		padding: 0.75rem 1rem;
+		background-color: #25d366;
+		color: white;
+		text-decoration: none;
+		border-radius: 5px;
+		font-weight: 500;
+		text-align: center;
+		transition: background-color 0.2s;
+	}
+
+	.whatsapp-business-btn:hover {
+		background-color: #1da851;
+	}
+
+	.whatsapp-business-btn.claimed {
+		background-color: #9ca3af;
+		cursor: default;
+		pointer-events: none;
 	}
 
 	/* Confirmation modal specific styles */
