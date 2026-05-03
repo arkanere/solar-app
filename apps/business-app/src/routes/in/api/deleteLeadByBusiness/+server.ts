@@ -28,10 +28,16 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			);
 		}
 
-		// First, verify the lead belongs to the logged-in business
-		const verifyQuery = `
-            SELECT business_id FROM leaddata WHERE id = $1
-        `;
+		// Get all business IDs this session can manage (main + branches)
+		const mainBusinessId = sessionResult.session.businessId;
+		const branchResult = await pool.query<{ branch_id: number }>(
+			'SELECT branch_id FROM branches WHERE main_id = $1 AND isactive = true',
+			[mainBusinessId]
+		);
+		const allowedBusinessIds = [mainBusinessId, ...branchResult.rows.map(r => r.branch_id)];
+
+		// Verify the lead exists and belongs to main business or its branches
+		const verifyQuery = `SELECT business_id FROM leaddata WHERE id = $1`;
 		const verifyResult = await pool.query<{ business_id: number | null }>(verifyQuery, [id]);
 
 		if (verifyResult.rows.length === 0) {
@@ -41,9 +47,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			);
 		}
 
-		// Check if the lead belongs to this business
 		const leadBusinessId = verifyResult.rows[0].business_id;
-		if (leadBusinessId && leadBusinessId !== sessionResult.session.businessId) {
+		if (leadBusinessId && !allowedBusinessIds.includes(leadBusinessId)) {
 			return json(
 				{ success: false, error: 'Forbidden - You can only delete your own leads' },
 				{ status: 403 }
