@@ -57,7 +57,7 @@
     window.location.href = 'https://user.solarvipani.com/in/thank-you';
 
     // Submit form in background (fire and forget)
-    fetch('/in/api/submitLead', {
+    fetch('https://user.solarvipani.com/in/api/submitLead', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
