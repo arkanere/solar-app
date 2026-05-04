@@ -4,6 +4,7 @@
 
 	$: customerDetails = data?.customerDetails || null;
 	$: error = data?.error || null;
+	$: installers = data?.installers || [];
 
 	function formatDate(dateString) {
 		if (!dateString) return '';
@@ -103,23 +104,31 @@
 				</div>
 			</div>
 
-			{#if !customerDetails.hasVerifiedBusinessInDistrict && customerDetails.district}
-				<div class="alert-warning">
-					<h3>Service Area Update</h3>
-					<p>
-						We are expanding to <strong>{customerDetails.district}</strong>. We will reach out to you
-						once we have a verified installer there.
-					</p>
-				</div>
-			{/if}
+		{/if}
+
+		{#if installers.length > 0}
+			<h2>{customerDetails?.isExclusiveLead ? 'Your Solar Installer' : 'Top Solar Installers in Your Area'}</h2>
+			<div class="installers-list">
+				{#each installers as installer}
+					<div class="installer-card">
+						<strong>{installer.businessname}</strong>
+						{#if installer.address}
+							<span class="installer-address">{installer.address}</span>
+						{/if}
+						{#if installer.phonenumber}
+							<a href="tel:{installer.phonenumber}" class="installer-phone">{installer.phonenumber}</a>
+						{/if}
+					</div>
+				{/each}
+			</div>
 		{/if}
 
 		<h2>Next Steps</h2>
 
-		{#if customerDetails && !customerDetails.hasVerifiedBusinessInDistrict}
-			<p>Once we have verified installers in your district, we will connect you with 2-3 qualified installers who can provide you with competitive quotations.</p>
+		{#if installers.length > 0}
+			<p>One of our verified solar installers in your area will reach out to you in a couple of days to assist you further. In case you are looking to talk to someone right away, you can directly call the installers using the above contact details.</p>
 		{:else}
-			<p>We will share your details with our installer partners. They will reach out to you to know your requirements in detail, arrange a site visit if required and then share a quote. You will receive quotes from 2-3 verified installers in your area.</p>
+			<p>We are expanding to your area. We will reach out to you once we have a verified installer there.</p>
 		{/if}
 
 		<p>
@@ -216,22 +225,33 @@
 		word-break: break-word;
 	}
 
-	.alert-warning {
-		background: #fff8e1;
-		border: 1px solid #ffc107;
+	.installers-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		margin-bottom: 1.5rem;
+	}
+
+	.installer-card {
+		background: #ffffff;
+		border: 1px solid #e2e8f0;
 		border-radius: 8px;
 		padding: 1rem 1.25rem;
-		margin-bottom: 1.5rem;
-		text-align: center;
+		text-align: left;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
 	}
 
-	.alert-warning h3 {
-		color: #e65100;
+	.installer-address {
+		color: #666;
+		font-size: 0.875rem;
 	}
 
-	.alert-warning p {
-		color: #7f5200;
-		margin: 0;
+	.installer-phone {
+		color: #0056b3;
+		font-size: 0.875rem;
+		font-weight: 500;
 	}
 
 	@media (max-width: 576px) {
