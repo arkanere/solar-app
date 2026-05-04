@@ -14,7 +14,7 @@ export async function load({ url }) {
 
 	try {
 		const result = await pool.query(
-			`SELECT id, name, phone, pin_code, type, comment, email, district, created_at, isvisible
+			`SELECT id, name, phone, pin_code, type, comment, email, district, state, urlparams, created_at, isvisible
 			FROM LeadData
 			WHERE reference_uuid = $1
 			LIMIT 1`,
@@ -31,22 +31,35 @@ export async function load({ url }) {
 			return { customerDetails: null, error: 'Details not found' };
 		}
 
-		let hasVerifiedBusinessInDistrict = false;
-		if (lead.district) {
-			try {
-				const businessResult = await pool.query(
-					`SELECT COUNT(*) as business_count
-					FROM businesses_1
-					WHERE district = $1 AND isvisible = true
-					LIMIT 1`,
+		let installers = [];
+		const isExclusiveLead = lead.urlparams && (lead.urlparams.includes('/solar-panel-installer/') || lead.urlparams.includes('/installer/'));
+
+		try {
+			if (isExclusiveLead) {
+				const slugMatch = lead.urlparams.match(/\/(?:solar-panel-installer|installer)\/([^/?#]+)/);
+				if (slugMatch) {
+					const bizResult = await pool.query(
+						`SELECT businessname, address, phonenumber
+						 FROM businesses_1
+						 WHERE slug = $1 AND isvisible = true
+						 LIMIT 1`,
+						[slugMatch[1]]
+					);
+					installers = bizResult.rows;
+				}
+			} else if (lead.district) {
+				const bizResult = await pool.query(
+					`SELECT businessname, address, phonenumber
+					 FROM businesses_1
+					 WHERE LOWER(district) = LOWER($1) AND isvisible = true
+					 ORDER BY rscore DESC NULLS LAST
+					 LIMIT 5`,
 					[lead.district]
 				);
-				hasVerifiedBusinessInDistrict = businessResult.rows[0].business_count > 0;
-			} catch {
-				hasVerifiedBusinessInDistrict = true;
+				installers = bizResult.rows;
 			}
-		} else {
-			hasVerifiedBusinessInDistrict = true;
+		} catch {
+			// ignore
 		}
 
 		return {
@@ -60,8 +73,9 @@ export async function load({ url }) {
 				email: lead.email,
 				district: lead.district,
 				submittedAt: lead.created_at,
-				hasVerifiedBusinessInDistrict
-			}
+				isExclusiveLead
+			},
+			installers
 		};
 	} catch (err) {
 		console.error('Error fetching lead details:', err);
