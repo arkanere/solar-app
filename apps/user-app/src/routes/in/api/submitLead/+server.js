@@ -39,7 +39,7 @@ export async function POST({ request, fetch }) {
 		await fetch('/in/api/sendLeadSubmissionConfirmation', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ id: leadId, name, phone, pinCode, type, comment, urlParam, email })
+			body: JSON.stringify({ id: leadId, name, phone, pinCode, type, comment, urlParam, email, district, state })
 		});
 
 		return json({ success: true, reference_uuid: referenceUuid });
