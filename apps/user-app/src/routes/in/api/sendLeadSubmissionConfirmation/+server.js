@@ -1,10 +1,12 @@
 import { json } from '@sveltejs/kit';
 import { sendEmail } from '$lib/sendEmail.js';
+import { createPool } from '@vercel/postgres';
+import { POSTGRES_URL } from '$env/static/private';
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request, fetch }) {
 	try {
-		const { name, phone, pinCode, comment, urlParam, email } = await request.json();
+		const { name, phone, pinCode, comment, urlParam, email, district, state } = await request.json();
 
 		if (!email) {
 			return json({ success: false, error: 'No email provided for confirmation' }, { status: 400 });
@@ -30,6 +32,51 @@ export async function POST({ request, fetch }) {
 			}
 		}
 
+		let installers = [];
+		try {
+			const pool = createPool({ connectionString: POSTGRES_URL });
+			if (isExclusiveLead) {
+				const slugMatch = urlParam.match(/\/(?:solar-panel-installer|installer)\/([^/?#]+)/);
+				if (slugMatch) {
+					const result = await pool.query(
+						`SELECT businessname, address, phonenumber
+						 FROM businesses_1
+						 WHERE slug = $1 AND isvisible = true
+						 LIMIT 1`,
+						[slugMatch[1]]
+					);
+					installers = result.rows;
+				}
+			} else if (district) {
+				const result = await pool.query(
+					`SELECT businessname, address, phonenumber
+					 FROM businesses_1
+					 WHERE LOWER(district) = LOWER($1) AND isvisible = true
+					 ORDER BY rscore DESC NULLS LAST
+					 LIMIT 5`,
+					[district]
+				);
+				installers = result.rows;
+			}
+		} catch (e) {
+			console.error('Error fetching installers for email:', e);
+		}
+
+		const installersHeading = isExclusiveLead ? 'Your Solar Installer:' : 'Top Solar Installers in Your Area:';
+		const installersHtml = installers.length > 0 ? `
+			<p><strong>${installersHeading}</strong></p>
+			<table style="width:100%; border-collapse:collapse; margin-bottom:16px;">
+				${installers.map(b => `
+				<tr style="border-bottom:1px solid #eee;">
+					<td style="padding:8px 4px;">
+						<strong>${b.businessname}</strong>
+						${b.address ? `<br><span style="color:#666; font-size:13px;">${b.address}</span>` : ''}
+						${b.phonenumber ? `<br><a href="tel:${b.phonenumber}" style="color:#0056b3; font-size:13px;">${b.phonenumber}</a>` : ''}
+					</td>
+				</tr>`).join('')}
+			</table>
+		` : '';
+
 		const adminEmail = 'admin@solarvipani.com';
 		const subject = 'Thank You for Your Inquiry - Solar Vipani';
 
@@ -45,7 +92,8 @@ export async function POST({ request, fetch }) {
 					<li><strong>Pin Code:</strong> ${pinCode}</li>
 					<li><strong>Comment:</strong> ${comment}</li>
 				</ul>
-				<p>One of our team members or a verified solar installer in your area will be in touch with you shortly to assist you further.</p>
+				${installersHtml}
+				<p>The installer will reach out to you in a couple of days to assist you further. In case you are looking to talk to someone right away, you can directly call the installer using the above contact details.</p>
 				<p>If you have any questions or need immediate assistance, feel free to contact us at <a href="mailto:admin@solarvipani.com">admin@solarvipani.com</a>.</p>
 				<p>Thank you for choosing Solar Vipani. We look forward to helping you find the perfect solar solution!</p>
 				<p>Best Regards,<br><strong>Solar Vipani Team</strong></p>
@@ -65,7 +113,8 @@ export async function POST({ request, fetch }) {
 				<p><strong>Track Your Solar Journey:</strong></p>
 				<p>Access your personalized dashboard to track your installation progress and view interested installers: <a href="${magicLinkUrl}" style="color: #0056b3; font-weight: bold;">Click here to access your dashboard</a></p>
 				` : ''}
-				<p>One of our team members or a verified solar installer in your area will be in touch with you shortly to assist you further.</p>
+				${installersHtml}
+				<p>One of our verified solar installers in your area will reach out to you in a couple of days to assist you further. In case you are looking to talk to someone right away, you can directly call the installers using the above contact details.</p>
 				<p>If you have any questions or need immediate assistance, feel free to contact us at <a href="mailto:admin@solarvipani.com">admin@solarvipani.com</a>.</p>
 				<p>Thank you for choosing Solar Vipani. We look forward to helping you find the perfect solar solution!</p>
 				<p>Best Regards,<br><strong>Solar Vipani Team</strong></p>
