@@ -321,7 +321,7 @@
 	{:else if leads.length > 0}
 		<ul>
 			{#each leads as lead}
-				<li>
+				<li class={lead.has_business_in_district ? '' : 'no-business-in-district'}>
 					<h2>{lead.name}</h2>
 					<p>Lead Id: {lead.id}</p>
 					<p>Phone: {lead.phone}</p>
@@ -593,10 +593,20 @@
 		border: 1px solid var(--light-border-color);
 	}
 
+	.light li.no-business-in-district {
+		background-color: #fff3cd;
+		border: 1px solid #ffc107;
+	}
+
 	/* Dark mode list item */
 	.dark li {
 		background-color: #333;
 		border: 1px solid var(--dark-border-color);
+	}
+
+	.dark li.no-business-in-district {
+		background-color: #4a3f2a;
+		border: 1px solid #ffc107;
 	}
 
 	/* Lead name styling */
