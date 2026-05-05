@@ -114,7 +114,11 @@ export async function POST({ request, fetch }) {
 				<p>Access your personalized dashboard to track your installation progress and view interested installers: <a href="${magicLinkUrl}" style="color: #0056b3; font-weight: bold;">Click here to access your dashboard</a></p>
 				` : ''}
 				${installersHtml}
+				${installers.length > 0 ? `
 				<p>One of our verified solar installers in your area will reach out to you in a couple of days to assist you further. In case you are looking to talk to someone right away, you can directly call the installers using the above contact details.</p>
+				` : `
+				<p>We currently don't have a solar installation partner in your area, but we're expanding rapidly across India. As soon as a verified installer joins in your area, we will reach out to you with their details so you can get started on your solar journey.</p>
+				`}
 				<p>If you have any questions or need immediate assistance, feel free to contact us at <a href="mailto:admin@solarvipani.com">admin@solarvipani.com</a>.</p>
 				<p>Thank you for choosing Solar Vipani. We look forward to helping you find the perfect solar solution!</p>
 				<p>Best Regards,<br><strong>Solar Vipani Team</strong></p>
