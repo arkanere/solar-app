@@ -16,6 +16,93 @@
 	let confirmActionType = '';
 	let isExecutingAction = false;
 
+	// State for pincode mapping modal
+	let showPincodeModal = false;
+	let pincodeLead = null;
+	let pincodeDistrict = '';
+	let pincodeState = '';
+	let isSavingPincode = false;
+	let isLoadingDistricts = false;
+	let availableDistricts = [];
+
+	const INDIAN_STATES = [
+		"Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar",
+		"Chandigarh", "Chhattisgarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Goa",
+		"Gujarat", "Haryana", "Himachal Pradesh", "Jammu and Kashmir", "Jharkhand", "Karnataka",
+		"Kerala", "Ladakh", "Lakshadweep", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya",
+		"Mizoram", "Nagaland", "Odisha", "Puducherry", "Punjab", "Rajasthan", "Sikkim",
+		"Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal"
+	];
+
+	function openPincodeModal(lead) {
+		pincodeLead = lead;
+		pincodeDistrict = '';
+		pincodeState = '';
+		availableDistricts = [];
+		showPincodeModal = true;
+	}
+
+	function closePincodeModal() {
+		showPincodeModal = false;
+		pincodeLead = null;
+		pincodeDistrict = '';
+		pincodeState = '';
+		availableDistricts = [];
+	}
+
+	async function onStateChange() {
+		pincodeDistrict = '';
+		availableDistricts = [];
+		if (!pincodeState) return;
+
+		isLoadingDistricts = true;
+		try {
+			const response = await fetch('/in/api/getDistrictsByState', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ state: pincodeState })
+			});
+			const result = await response.json();
+			availableDistricts = result.districts || [];
+		} catch (error) {
+			console.error(error);
+		} finally {
+			isLoadingDistricts = false;
+		}
+	}
+
+	async function savePincodeMapping() {
+		if (!pincodeDistrict || !pincodeState) {
+			alert('Both state and district are required.');
+			return;
+		}
+		isSavingPincode = true;
+		try {
+			const response = await fetch('/in/api/addPincodeMapping', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					pincode: pincodeLead.pin_code,
+					district: pincodeDistrict,
+					state: pincodeState
+				})
+			});
+			const result = await response.json();
+			if (result.success) {
+				leads = leads.map(l => l.id === pincodeLead.id ? { ...l, district: pincodeDistrict } : l);
+				alert('Pincode mapping added successfully!');
+				closePincodeModal();
+			} else {
+				alert(result.error || 'Failed to add pincode mapping.');
+			}
+		} catch (error) {
+			console.error(error);
+			alert('Error saving pincode mapping.');
+		} finally {
+			isSavingPincode = false;
+		}
+	}
+
 	// State for WhatsApp reminder modal
 	let showWhatsappModal = false;
 	let whatsappBusinesses = [];
@@ -365,6 +452,14 @@
 					>
 						WhatsApp Reminder
 					</button>
+					{#if !lead.district || lead.district.trim() === ''}
+						<button
+							class="pincode-mapping-button"
+							on:click={() => openPincodeModal(lead)}
+						>
+							Add Pincode Mapping
+						</button>
+					{/if}
 				</li>
 			{/each}
 		</ul>
@@ -470,6 +565,46 @@
 				<div class="modal-buttons">
 					<button type="button" on:click={closeWhatsappModal}>Close</button>
 				</div>
+			</div>
+		</div>
+	{/if}
+
+	<!-- Pincode Mapping Modal -->
+	{#if showPincodeModal && pincodeLead}
+		<div class="modal-overlay" on:click={closePincodeModal}>
+			<div class="modal-content" on:click|stopPropagation>
+				<h2>Add Pincode Mapping</h2>
+				<p class="modal-subtitle">Pincode: <strong>{pincodeLead.pin_code}</strong> | Lead: {pincodeLead.name}</p>
+				<form on:submit|preventDefault={savePincodeMapping}>
+					<label>
+						State:
+						<select bind:value={pincodeState} on:change={onStateChange} required>
+							<option value="">-- Select State --</option>
+							{#each INDIAN_STATES as state}
+								<option value={state}>{state}</option>
+							{/each}
+						</select>
+					</label>
+					<label>
+						District:
+						{#if isLoadingDistricts}
+							<p>Loading districts...</p>
+						{:else}
+							<select bind:value={pincodeDistrict} required disabled={!pincodeState}>
+								<option value="">-- Select District --</option>
+								{#each availableDistricts as district}
+									<option value={district}>{district}</option>
+								{/each}
+							</select>
+						{/if}
+					</label>
+					<div class="modal-buttons">
+						<button type="button" on:click={closePincodeModal} disabled={isSavingPincode}>Cancel</button>
+						<button type="submit" disabled={isSavingPincode}>
+							{isSavingPincode ? 'Saving...' : 'Save Mapping'}
+						</button>
+					</div>
+				</form>
 			</div>
 		</div>
 	{/if}
@@ -688,6 +823,15 @@
 
 	.dark .share-button {
 		background-color: #339af0; /* Light blue for dark mode */
+	}
+
+	.pincode-mapping-button {
+		background-color: #ff9800;
+		color: white;
+	}
+
+	.pincode-mapping-button:hover {
+		background-color: #e68900;
 	}
 
 	/* Modal Styling */
