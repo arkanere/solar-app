@@ -31,6 +31,7 @@ export interface LeadData {
 	original_id: number | null; // For allocated leads, references the original lead
 	business_id: number | null; // Business this lead is assigned to (null for category 1)
 	business_notes: string | null; // Private notes from business
+	qualification_score: number | null;
 }
 
 /**
@@ -52,6 +53,7 @@ export interface LeadDataPartial {
 	sv_comment_for_businesses: string | null;
 	type: string | null;
 	business_notes: string | null;
+	qualification_score: number | null;
 }
 
 /**

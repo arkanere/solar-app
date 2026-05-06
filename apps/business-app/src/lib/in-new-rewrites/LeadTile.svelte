@@ -337,6 +337,16 @@
 					</div>
 				{/if}
 
+				<!-- QUALIFICATION SCORE -->
+				{#if lead.qualification_score != null}
+					<div class="flex items-start gap-2 mb-3 text-sm">
+						<span class="font-semibold text-muted-foreground">Qualification Score:</span>
+						<Badge variant={lead.qualification_score >= 7 ? 'default' : lead.qualification_score >= 4 ? 'secondary' : 'outline'}>
+							{lead.qualification_score}/10
+						</Badge>
+					</div>
+				{/if}
+
 				<!-- SOLAR VIPANI NOTES -->
 				{#if lead.sv_comment_for_businesses}
 					<div
