@@ -13,15 +13,24 @@ export async function POST({ request }) {
 		}
 
 		const result = await pool.query(
-			`SELECT b.id, b.businessname, b.whatsapp, b.login_email,
+			`SELECT b.id, b.businessname,
+			        COALESCE(NULLIF(b.whatsapp, ''), main_b.whatsapp) AS whatsapp,
+			        b.login_email,
 			        CASE WHEN cr.id IS NOT NULL THEN true ELSE false END AS has_claimed
 			 FROM businesses_1 b
+			 LEFT JOIN businesses_1 main_b ON (
+			   b.slug LIKE '%-branch-%'
+			   AND main_b.slug = SPLIT_PART(b.slug, '-branch-', 1)
+			   AND main_b.isvisible = true
+			 )
 			 LEFT JOIN leaddata_claimrequests cr
 			   ON cr.business_id = b.id AND cr.lead_id = $2
 			 WHERE b.district = $1
 			   AND b.isvisible = true
-			   AND b.whatsapp IS NOT NULL
-			   AND b.whatsapp <> ''
+			   AND (
+			     (b.whatsapp IS NOT NULL AND b.whatsapp <> '')
+			     OR (main_b.whatsapp IS NOT NULL AND main_b.whatsapp <> '')
+			   )
 			 ORDER BY b.businessname`,
 			[district, lead_id]
 		);
