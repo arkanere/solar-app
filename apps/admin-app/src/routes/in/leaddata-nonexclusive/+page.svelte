@@ -187,7 +187,8 @@
 			district,
 			category,
 			stage,
-			status
+			status,
+			qualification_score
 		} = selectedLead;
 
 		try {
@@ -210,7 +211,8 @@
 					district,
 					category,
 					stage,
-					status
+					status,
+					qualification_score
 				})
 			});
 
@@ -427,6 +429,7 @@
 					<p>Business ID: {lead.business_id}</p>
 					<p>Stage: {getStageLabel(lead.stage)}</p>
 					<p>Status: {lead.status ? 'Active' : 'Inactive'}</p>
+					<p>Qualification Score: {lead.qualification_score ?? 'N/A'}</p>
 					<p>Email Invites Sent: {lead.email_invite_count || 0}</p>
 					<button class="edit-button" on:click={() => editLead(lead.id)}> Edit </button>
 					<button
@@ -524,6 +527,10 @@
 							<option value={true}>Active</option>
 							<option value={false}>Inactive</option>
 						</select>
+					</label>
+					<label>
+						Qualification Score (0-10):
+						<input type="number" bind:value={selectedLead.qualification_score} min="0" max="10" />
 					</label>
 					<div class="modal-buttons">
 						<button type="button" on:click={cancelEdit}>Cancel</button>

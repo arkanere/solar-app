@@ -21,7 +21,8 @@ export async function POST({ request }) {
 			district,
 			category,
 			stage,
-			status
+			status,
+			qualification_score
 		} = data;
 
 		if (!id) {
@@ -42,8 +43,9 @@ export async function POST({ request }) {
                 district = $9,
                 category = $10,
                 stage = $11,
-                status = $12
-            WHERE id = $13
+                status = $12,
+                qualification_score = $13
+            WHERE id = $14
             RETURNING *;
         `;
 
@@ -61,6 +63,7 @@ export async function POST({ request }) {
 			category,
 			stage,
 			status,
+			qualification_score ?? null,
 			id
 		]);
 

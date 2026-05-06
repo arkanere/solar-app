@@ -13,6 +13,7 @@
 		pin_code?: string;
 		type?: string;
 		comment?: string;
+		qualification_score?: number | null;
 	};
 
 	export type CustomerInquiryProps = {
