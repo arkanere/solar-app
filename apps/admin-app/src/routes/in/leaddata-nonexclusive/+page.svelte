@@ -84,7 +84,8 @@
 				body: JSON.stringify({
 					pincode: pincodeLead.pin_code,
 					district: pincodeDistrict,
-					state: pincodeState
+					state: pincodeState,
+					leadId: pincodeLead.id
 				})
 			});
 			const result = await response.json();

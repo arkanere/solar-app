@@ -5,7 +5,7 @@ import { POSTGRES_URL } from '$env/static/private';
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
 	try {
-		const { pincode, district, state } = await request.json();
+		const { pincode, district, state, leadId } = await request.json();
 
 		if (!pincode || !district || !state) {
 			return json({ success: false, error: 'Pincode, district, and state are required' }, { status: 400 });
@@ -29,6 +29,18 @@ export async function POST({ request }) {
 				[pincode, district, state]
 			);
 		}
+
+		if (leadId) {
+			await pool.query(
+				'UPDATE leaddata SET district = $1, state = $2 WHERE id = $3',
+				[district, state, leadId]
+			);
+		}
+
+		await pool.query(
+			'UPDATE leaddata SET district = $1, state = $2 WHERE pin_code = $3 AND (district IS NULL OR district = $4)',
+			[district, state, pincode, '']
+		);
 
 		return json({ success: true });
 	} catch (error) {
