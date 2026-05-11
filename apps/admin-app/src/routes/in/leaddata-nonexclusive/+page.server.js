@@ -11,8 +11,8 @@ export async function load() {
 
 	try {
 		const result = await pool.query(
-			'SELECT * FROM leaddata WHERE isvisible = true AND status = true AND urlparams NOT LIKE $1 AND urlparams != $2 AND (category IS NULL OR category <> $3) ORDER BY id DESC;',
-			['%solar-panel-installer/%', '/campaign/shunya-solar-pune-rooftop-installation', 2]
+			'SELECT * FROM leaddata WHERE isvisible = true AND status = true AND urlparams NOT LIKE $1 AND (category IS NULL OR category <> $2) ORDER BY id DESC;',
+			['%/installer/%', 2]
 		);
 
 		if (result.rows.length > 0) {
