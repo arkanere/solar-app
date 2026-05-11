@@ -76,12 +76,16 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 		// ✅ Fetch exclusive leads for main business and all its branches
 		let exclusiveLeadResult = { rows: [] as Lead[] };
 		if (allSlugs.length > 0) {
+			const conditions = allSlugs.flatMap((_, index) => {
+				const i = index * 2;
+				return [`urlparams LIKE $${i + 1}`, `urlparams LIKE $${i + 2}`];
+			});
 			exclusiveLeadResult = await pool.query(
 				`SELECT * FROM leaddata
 				WHERE isvisible = true
-				AND (${allSlugs.map((_, index) => `urlparams LIKE $${index + 1}`).join(' OR ')})
+				AND (${conditions.join(' OR ')})
 				ORDER BY id DESC`,
-				allSlugs.map((slug) => `/solar-panel-installer/${slug}%`)
+				allSlugs.flatMap((slug) => [`/solar-panel-installer/${slug}%`, `%/installer/${slug}%`])
 			);
 		}
 
