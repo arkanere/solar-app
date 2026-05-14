@@ -5,6 +5,8 @@
 	import { onMount } from 'svelte';
 	// import ChatbotWidget from '$lib/us/ChatbotWidget.svelte';
 	import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
+	import { afterNavigate } from '$app/navigation';
+	import { initPosthog, capturePageview } from '$lib/posthog';
 
 	let { children } = $props();
 
@@ -32,6 +34,10 @@
 		}
 
 		trackEngagement();
+	});
+
+	afterNavigate(({ to }) => {
+		if (to?.url) capturePageview(to.url.href);
 	});
 
 	function trackEngagement() {
@@ -66,7 +72,9 @@
 	}
 
 	function loadAllAnalytics() {
-		// Priority 1: Core analytics (Google Analytics, Umami)
+		// Priority 1: PostHog + Core analytics
+		initPosthog();
+		capturePageview(window.location.href);
 		loadGoogleAnalytics();
 		loadUmami();
 

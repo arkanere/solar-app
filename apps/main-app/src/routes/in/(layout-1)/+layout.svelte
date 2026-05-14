@@ -4,6 +4,8 @@
   import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
   import { page } from "$app/stores";
   import * as Dialog from "$lib/components/ui/dialog";
+  import { afterNavigate } from "$app/navigation";
+  import { initPosthog, capturePageview } from "$lib/posthog";
 
   // Accept children snippet from SvelteKit
   let { children } = $props();
@@ -66,6 +68,11 @@
       .replace(/-+/g, "-") || // Replace multiple hyphens with single
     "home" // Default to 'home' for root path
   );
+
+  // Track SPA page navigations — must be called at component init level
+  afterNavigate(({ to }) => {
+    if (to?.url) capturePageview(to.url.href);
+  });
 
   // Initialize the theme when the component is mounted
   $effect(() => {
@@ -153,6 +160,10 @@
   }
 
   function loadAnalytics() {
+    // Load PostHog
+    initPosthog();
+    capturePageview(window.location.href);
+
     // Load Hotjar
     if (typeof window !== "undefined" && !window.hj) {
       (function (h, o, t, j, a, r) {

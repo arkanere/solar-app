@@ -7,6 +7,7 @@
   import * as Card from '$lib/components/ui/card';
   import * as Alert from '$lib/components/ui/alert';
   import { validatePhone, validateEmail, validatePinCode } from '$lib/constants/formValidation';
+  import { capture } from '$lib/posthog';
 
   interface Props {
     heading?: string;
@@ -52,6 +53,8 @@
     if (!validateForm()) return;
 
     isSubmitting = true;
+
+    capture('quote_submitted', { source_url: urlParam });
 
     // Navigate to thank-you page immediately for better UX
     window.location.href = 'https://user.solarvipani.com/in/thank-you';
