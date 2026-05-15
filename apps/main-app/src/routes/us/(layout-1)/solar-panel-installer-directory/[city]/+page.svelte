@@ -1000,6 +1000,7 @@
 		section h2 {
 			font-size: 1.6rem;
 		}
+	}
 
 	@media (max-width: 768px) {
 		h1 {
