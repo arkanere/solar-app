@@ -39,18 +39,12 @@
 
 	const faqSchema = $derived(faqLD(faqItems));
 
-	const hasInstallers = $derived(data.installerCount > 0);
-
 	const title = $derived(
-		hasInstallers
-			? `Top Solar Panel Installers in ${data.district}, ${data.state} | Solar Vipani`
-			: `Solar Panel Installation in ${data.district}, ${data.state} | Solar Vipani`
+		`Top Solar Panel Installers in ${data.district}, ${data.state} | Solar Vipani`
 	);
 
 	const description = $derived(
-		hasInstallers
-			? `Find ${data.installerCount} verified solar panel installers in ${data.district}, ${data.state}. Compare quotes, view recent projects, and get the best solar installation deals.`
-			: `Explore solar panel installation options in ${data.district}, ${data.state}. Register your interest and get connected with verified solar installers.`
+		`Find ${data.installerCount} verified solar panel installers in ${data.district}, ${data.state}. Compare quotes, view recent projects, and get the best solar installation deals.`
 	);
 
 	const canonicalUrl = $derived(`https://solarvipani.com/in/solar/${data.stateSlug}/${data.districtSlug}`);
@@ -63,10 +57,6 @@
 <svelte:head>
 	<title>{title}</title>
 	<meta name="description" content={description} />
-	{#if !hasInstallers}
-		<meta name="robots" content="noindex, follow" />
-		<meta name="googlebot" content="noindex, follow" />
-	{/if}
 	<link rel="canonical" href={canonicalUrl} />
 
 	<meta property="og:title" content={title} />
@@ -121,15 +111,13 @@
 	</div>
 
 	<!-- Lead Form CTA -->
-	<LeadFormSection city={data.district} hasBusinesses={data.businesses?.length > 0} />
+	<LeadFormSection city={data.district} hasBusinesses={true} />
 
 	<!-- Installer Cards -->
-	{#if data.businesses?.length > 0}
-		<h2 class="text-2xl font-semibold text-primary mb-4">
-			Top Solar Installers in {data.district}
-		</h2>
-		<InstallerCard businesses={data.businesses} />
-	{/if}
+	<h2 class="text-2xl font-semibold text-primary mb-4">
+		Top Solar Installers in {data.district}
+	</h2>
+	<InstallerCard businesses={data.businesses} />
 
 	<!-- Recent Projects -->
 	{#if data.recentProjects?.length > 0}
