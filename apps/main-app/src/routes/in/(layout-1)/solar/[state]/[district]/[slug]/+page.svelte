@@ -76,10 +76,6 @@
 <svelte:head>
 	<title>{pageTitle} | Solar Vipani</title>
 	<meta name="description" content={metaDescription} />
-	{#if d.installerCount === 0}
-		<meta name="robots" content="noindex, follow" />
-		<meta name="googlebot" content="noindex, follow" />
-	{/if}
 	<link rel="canonical" href={canonicalUrl} />
 
 	<meta property="og:title" content="{pageTitle} | Solar Vipani" />
@@ -175,19 +171,13 @@
 	{/if}
 
 	<!-- Lead Form -->
-	<LeadFormSection city={isCity ? d.city : d.district} hasBusinesses={d.businesses?.length > 0} />
+	<LeadFormSection city={isCity ? d.city : d.district} hasBusinesses={true} />
 
 	<!-- Installer Cards -->
-	{#if d.businesses?.length > 0}
-		<h2 class="text-2xl font-semibold text-primary mb-4">
-			{isBrand ? `${d.brandName} ` : ''}Solar Installers in {isCity ? d.city : d.district}
-		</h2>
-		<InstallerCard businesses={d.businesses} />
-	{:else}
-		<div class="text-center py-8 mb-8 bg-muted/50 rounded-lg">
-			<p class="text-muted-foreground">No installers found for this specific filter. <a href="/in/solar/{d.stateSlug}/{d.districtSlug}" class="text-primary hover:underline">View all installers in {d.district}</a></p>
-		</div>
-	{/if}
+	<h2 class="text-2xl font-semibold text-primary mb-4">
+		{isBrand ? `${d.brandName} ` : ''}Solar Installers in {isCity ? d.city : d.district}
+	</h2>
+	<InstallerCard businesses={d.businesses} />
 
 	<!-- Recent Projects (city only) -->
 	{#if isCity && d.recentProjects?.length > 0}
