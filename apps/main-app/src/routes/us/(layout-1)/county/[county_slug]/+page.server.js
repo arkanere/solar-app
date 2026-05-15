@@ -61,9 +61,22 @@ export async function load({ params }) {
 		error(404, `County "${locationStr}" not found`);
 	}
 
+	const resolvedState = state || citiesResult.rows[0]?.state || '';
+
+	const businessCountResult = await pool.query(
+		`SELECT 1 FROM us_businesses
+		 WHERE county = $1 AND state = $2 AND isvisible = true
+		 LIMIT 1`,
+		[countyFormatted, resolvedState]
+	);
+
+	if (businessCountResult.rows.length === 0) {
+		error(404, `No solar installers found in ${countyFormatted} County, ${resolvedState}`);
+	}
+
 	return {
 		county: countyFormatted,
-		state: state || citiesResult.rows[0]?.state || '',
+		state: resolvedState,
 		cities: citiesResult.rows
 	};
 }
