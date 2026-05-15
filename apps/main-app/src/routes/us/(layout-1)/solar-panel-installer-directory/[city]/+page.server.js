@@ -104,27 +104,19 @@ export async function load({ params }) {
 
 		const recentProjects = projectsResult.rows;
 
-		if (businesses.length > 0) {
-			return {
-				city,
-				state: matchedState,
-				county,
-				businesses,
-				subset_cities_localities,
-				recentProjects,
-				lastUpdated: new Date().toISOString()
-			};
-		} else {
-			return {
-				city,
-				state: matchedState,
-				county,
-				subset_cities_localities,
-				recentProjects,
-				lastUpdated: new Date().toISOString(),
-				errorMessage: `No businesses found in ${city}, ${matchedState} or its county: ${county}.`
-			};
+		if (businesses.length === 0) {
+			error(404, { message: `No solar installers found in ${city}, ${matchedState}` });
 		}
+
+		return {
+			city,
+			state: matchedState,
+			county,
+			businesses,
+			subset_cities_localities,
+			recentProjects,
+			lastUpdated: new Date().toISOString()
+		};
 	} catch (err) {
 		if (err?.status) throw err; // Re-throw HttpError (404) and Redirect (301)
 		console.error('Database query error:', err);

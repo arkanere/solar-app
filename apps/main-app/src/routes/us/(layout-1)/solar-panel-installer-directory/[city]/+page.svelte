@@ -38,13 +38,11 @@
 	let subset_cities_localities = $derived($page.data.subset_cities_localities || []);
 	let district = $derived($page.data.district || '');
 	let recentProjects = $derived($page.data.recentProjects || []);
-	let errorMessage = $derived($page.data.errorMessage);
 	let lastUpdated = $derived($page.data.lastUpdated);
 	let darkMode = $derived($isDarkMode);
 
 	// Generate the city-state URL slug
 	let cityStateSlug = $derived(state ? formatCityStateUrl(city, state) : city.toLowerCase());
-	let hasInstallers = $derived(businesses.length > 0);
 
 	// Function to toggle modal visibility
 	function toggleModal(businessName = '', businessSlug = '') {
@@ -323,8 +321,8 @@
 	/>
 
 	<!-- Meta robots -->
-	<meta name="robots" content={hasInstallers ? "index, follow" : "noindex, follow"} />
-	<meta name="googlebot" content={hasInstallers ? "index, follow" : "noindex, follow"} />
+	<meta name="robots" content="index, follow" />
+	<meta name="googlebot" content="index, follow" />
 
 	<!-- Open Graph Tags -->
 	<meta
@@ -412,49 +410,19 @@
 		</p>
 	{/if}
 
-	<!-- Conditional rendering based on businesses availability -->
-	{#if businesses.length === 0}
-		<!-- Combined No Installers + Business Recruitment Section -->
-		<section id="no-installers" class="combined-recruitment-section">
-			<div class="combined-content">
-				<h2>We're Expanding to {city.replace('-', ' ')} - Join Us!</h2>
-				<p class="expansion-message">
-					<strong>Are you a solar installer in this area? </strong>
-				</p>
-
-				<button
-					class="primary-recruitment-cta"
-					onclick={() => (window.location.href = '/us/business-form')}
-				>
-					Join Our Network - Register Your Business
-				</button>
-			</div>
-		</section>
-	{:else}
-		<section id="BusinessTilesList">
-			<BusinessTilesList />
-		</section>
-	{/if}
+	<section id="BusinessTilesList">
+		<BusinessTilesList />
+	</section>
 
 	<section id="lead-form-sv">
-		{#if businesses.length === 0}
-			<h2>
-				Be the First to Get Quotes When Installers Join {city.replace('-', ' ')}
-			</h2>
-			<p class="lead-form-subtitle">
-				Submit your requirements and we'll notify you as soon as verified installers become
-				available in your area.
-			</p>
-		{:else}
-			<h2>
-				Quickly Get Quotation from 2-3 Verified Solar Installers in {city.replace('-', ' ')}
-			</h2>
-			<p class="privacy-note">
-				Be assured, we follow highest privacy standards to keep your details safe. <a
-					href="/us/privacy-policy">Learn more</a
-				>
-			</p>
-		{/if}
+		<h2>
+			Quickly Get Quotation from 2-3 Verified Solar Installers in {city.replace('-', ' ')}
+		</h2>
+		<p class="privacy-note">
+			Be assured, we follow highest privacy standards to keep your details safe. <a
+				href="/us/privacy-policy">Learn more</a
+			>
+		</p>
 		<LeadFormBusiness />
 	</section>
 
@@ -521,7 +489,7 @@
 		</div>
 	</section>
 
-	{#if businesses.length > 0 && subset_cities_localities.length > 0}
+	{#if subset_cities_localities.length > 0}
 		<RecommendedSolarSystems />
 
 		<!-- Get Quotation Button after Recommended Solar Systems -->
@@ -598,7 +566,7 @@
 	{/if}
 
 	<!-- Solar Comparison Section -->
-	{#if businesses.length > 0 && subset_cities_localities.length > 0}
+	{#if subset_cities_localities.length > 0}
 		<SolarComparisonTable />
 
 		<!-- Get Quotation Button after Solar Comparison Table -->
@@ -965,15 +933,6 @@
 		max-width: 800px;
 	}
 
-	.lead-form-subtitle {
-		color: rgba(255, 255, 255, 0.9);
-		font-size: 1.1rem;
-		margin-bottom: 1.5rem;
-		max-width: 600px;
-		margin-left: auto;
-		margin-right: auto;
-	}
-
 	.privacy-note {
 		color: rgba(255, 255, 255, 0.85);
 		font-size: 0.95rem;
@@ -1032,89 +991,6 @@
 		color: var(--text-dark);
 	}
 
-	/* Combined Recruitment Section Styling - Similar to AboutSolarVipani */
-	.combined-recruitment-section {
-		padding: var(--section-padding);
-		margin-top: 3rem;
-		margin-bottom: 2rem;
-		border-radius: var(--border-radius-lg);
-		background-color: var(--light-card-bg);
-		box-shadow: var(--shadow-md);
-		transition: background-color var(--transition-medium);
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		font-family: var(--font-family);
-		line-height: var(--body-line-height);
-		color: var(--text-dark);
-	}
-
-	.dark .combined-recruitment-section {
-		background-color: var(--dark-card-bg);
-		color: var(--text-light);
-	}
-
-	.combined-content {
-		width: 100%;
-		text-align: center;
-	}
-
-	.combined-content h2 {
-		font-size: 2.2rem;
-		font-weight: 600;
-		margin-bottom: 1rem;
-		color: var(--primary-color);
-	}
-
-	.dark .combined-content h2 {
-		color: var(--primary-light);
-	}
-
-	.expansion-message {
-		font-size: 1.1rem;
-		line-height: 1.7;
-		color: var(--text-medium);
-		margin-bottom: 2rem;
-		max-width: 700px;
-		margin-left: auto;
-		margin-right: auto;
-	}
-
-	.dark .expansion-message {
-		color: #cbd5e0;
-	}
-
-	.expansion-message strong {
-		color: var(--primary-color);
-		font-weight: 600;
-	}
-
-	.dark .expansion-message strong {
-		color: #90caf9;
-	}
-
-	.primary-recruitment-cta {
-		background-color: var(--primary-color);
-		color: white;
-		font-weight: 600;
-		font-size: 1.1rem;
-		padding: 1rem 2rem;
-		border-radius: var(--border-radius-sm);
-		border: none;
-		cursor: pointer;
-		transition:
-			background-color var(--transition-fast),
-			transform var(--transition-fast);
-		margin: 0 0 1.5rem 0;
-		text-transform: uppercase;
-		letter-spacing: 0.5px;
-	}
-
-	.primary-recruitment-cta:hover {
-		background-color: var(--primary-hover);
-		transform: translateY(-2px);
-	}
-
 	/* Responsive design */
 	@media (max-width: 992px) {
 		h1 {
@@ -1124,11 +1000,6 @@
 		section h2 {
 			font-size: 1.6rem;
 		}
-
-		.combined-content h2 {
-			font-size: 2rem;
-		}
-	}
 
 	@media (max-width: 768px) {
 		h1 {
@@ -1168,14 +1039,6 @@
 			padding: 1.5rem;
 		}
 
-		/* Mobile styles for combined section */
-		.combined-recruitment-section {
-			padding: 1.5rem 1rem;
-		}
-
-		.combined-content h2 {
-			font-size: 1.8rem;
-		}
 	}
 
 	/* District link section styling */
@@ -1252,11 +1115,6 @@
 
 		.services-content {
 			padding: 2rem 0.5rem;
-		}
-
-		/* Extra small mobile styles for combined section */
-		.combined-recruitment-section {
-			padding: 1.5rem 0.5rem;
 		}
 
 		/* Mobile optimization for quotation buttons */
