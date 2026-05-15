@@ -6,6 +6,7 @@
 	import Breadcrumb from '$lib/in/components/seo/Breadcrumb.svelte';
 	import FAQ from '$lib/in/components/seo/FAQ.svelte';
 	import { CheckCircle, XCircle, ArrowRight, Info } from '@lucide/svelte';
+	import { capture } from '$lib/posthog';
 
 	let { data } = $props();
 
@@ -111,6 +112,13 @@
 
 	function handleCheck() {
 		hasChecked = true;
+		capture('subsidy_checked', {
+			system_size_kw: systemSizeKw,
+			eligible: isEligibleCentral,
+			subsidy_amount: centralSubsidy,
+			net_cost: netCost,
+			state: selectedState
+		});
 	}
 
 	function formatCurrency(n: number): string {

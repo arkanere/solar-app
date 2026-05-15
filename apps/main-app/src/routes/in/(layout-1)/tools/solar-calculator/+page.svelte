@@ -6,6 +6,7 @@
 	import FAQ from '$lib/in/components/seo/FAQ.svelte';
 	import Breadcrumb from '$lib/in/components/seo/Breadcrumb.svelte';
 	import { Sun, Zap, IndianRupee, Clock, ArrowRight } from '@lucide/svelte';
+	import { capture } from '$lib/posthog';
 
 	let { data } = $props();
 
@@ -107,6 +108,14 @@
 
 	function handleCalculate() {
 		hasCalculated = true;
+		capture('solar_calculator_used', {
+			monthly_bill: monthlyBill,
+			system_size_kw: systemSizeKw,
+			net_cost: netCost,
+			payback_years: paybackYears,
+			state: selectedState,
+			district: selectedDistrict
+		});
 	}
 
 	function formatCurrency(n: number): string {

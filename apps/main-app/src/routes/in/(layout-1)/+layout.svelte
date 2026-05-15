@@ -5,7 +5,7 @@
   import { page } from "$app/stores";
   import * as Dialog from "$lib/components/ui/dialog";
   import { afterNavigate } from "$app/navigation";
-  import { initPosthog, capturePageview } from "$lib/posthog";
+  import { initPosthog, capturePageview, capture } from "$lib/posthog";
 
   // Accept children snippet from SvelteKit
   let { children } = $props();
@@ -332,6 +332,7 @@
   <div class="flex items-center gap-3 flex-wrap">
     <a
       href="/in/get-quotes"
+      onclick={() => capture('get_quotes_cta_clicked', { source: 'nav' })}
       class="no-underline text-sm font-semibold text-primary-foreground bg-primary hover:bg-primary-hover px-4 py-2 rounded-[theme(--radius-md)] transition-all duration-[theme(--transition-default)] whitespace-nowrap"
     >
       Get Quotes
