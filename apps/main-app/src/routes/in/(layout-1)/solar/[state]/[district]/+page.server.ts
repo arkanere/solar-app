@@ -108,6 +108,10 @@ export const load: PageServerLoad = async ({ params }) => {
 			installerCount: parseInt(r.installer_count)
 		}));
 
+	if (businesses.length === 0) {
+		error(404, `No solar installers found in ${district}, ${state}`);
+	}
+
 	return {
 		state,
 		stateSlug,
