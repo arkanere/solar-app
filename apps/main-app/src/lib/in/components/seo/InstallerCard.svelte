@@ -4,6 +4,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Phone, MessageCircle, MapPin } from '@lucide/svelte';
 	import { makeCall, openWhatsApp } from '$lib/constants/businessTracking';
+	import { capture } from '$lib/posthog';
 	import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,6 +23,7 @@
 					<h3 class="text-xl font-semibold">
 						<a
 							href={`/in/installer/${business.slug}/`}
+							onclick={() => capture('installer_card_clicked', { business_slug: business.slug, city: business.city })}
 							class="text-primary hover:opacity-80 underline-offset-2 hover:underline transition-all"
 						>
 							{business.businessname}
