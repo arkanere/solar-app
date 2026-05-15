@@ -109,6 +109,10 @@ export const load: PageServerLoad = async ({ params }) => {
 			slug: r.city.toLowerCase().replace(/\s+/g, '-')
 		}));
 
+		if (businesses.length === 0) {
+			error(404, `No solar installers found in ${city}, ${district}`);
+		}
+
 		return {
 			pageType: 'city' as const,
 			state,
@@ -138,6 +142,10 @@ export const load: PageServerLoad = async ({ params }) => {
 			[district, `%${brandName.toLowerCase()}%`]
 		);
 
+		if (businessesResult.rows.length === 0) {
+			error(404, `No ${brandName} solar installers found in ${district}`);
+		}
+
 		return {
 			pageType: 'brand' as const,
 			state,
@@ -161,6 +169,10 @@ export const load: PageServerLoad = async ({ params }) => {
 			 WHERE LOWER(district) = LOWER($1) AND isvisible = true`,
 			[district]
 		);
+
+		if (businessesResult.rows.length === 0) {
+			error(404, `No solar installers found in ${district}`);
+		}
 
 		return {
 			pageType: 'size' as const,
