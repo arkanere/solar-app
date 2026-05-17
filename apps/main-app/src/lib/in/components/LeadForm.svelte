@@ -56,13 +56,11 @@
 
     capture('quote_submitted', { source_url: urlParam });
 
-    // Navigate to thank-you page immediately for better UX
-    window.location.href = 'https://user.solarvipani.com/in/thank-you';
-
-    // Submit form in background (fire and forget)
+    // keepalive ensures the request survives page navigation
     fetch('https://user.solarvipani.com/in/api/submitLead', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      keepalive: true,
       body: JSON.stringify({
         name,
         phone,
@@ -74,6 +72,8 @@
     }).catch((error) => {
       console.error('Error submitting form:', error);
     });
+
+    window.location.href = 'https://user.solarvipani.com/in/thank-you';
   }
 </script>
 
