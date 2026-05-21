@@ -81,5 +81,11 @@
       {/each}
     </div>
   </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-border px-8 py-8 text-center text-sm text-foreground-secondary">
+    <p class="mb-2">Solar Vipani connects homeowners and businesses with verified solar panel installers to compare quotes and go solar.</p>
+    <a href="/in/privacy-policy" class="text-accent hover:underline">Privacy Policy</a>
+  </footer>
 </main>
 
