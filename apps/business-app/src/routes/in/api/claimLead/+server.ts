@@ -2,7 +2,13 @@ import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/in/auth/business';
+import { sendEmail } from '$lib/in/sendEmail';
+import { v4 as uuidv4 } from 'uuid';
 import type { ClaimRequestPayload } from '$lib/types/lead';
+
+// Allow time for the full claim pipeline including Brevo calls — the default
+// limit kills the function mid-run and silently drops the notification emails
+export const config = { maxDuration: 60 };
 
 interface ClaimCountRow {
 	claim_count: number;
@@ -50,12 +56,7 @@ interface LeadDataRow {
 	state: string | null;
 }
 
-interface EmailData {
-	business_id: number;
-	isallotted: boolean;
-}
-
-export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
+export const POST: RequestHandler = async ({ request, cookies }) => {
 	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
@@ -139,8 +140,10 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 
 		// Start a transaction
 		const client = await pool.connect();
-		let emailData: EmailData | null = null; // Store email data to send after transaction
-		let customerEmailData: { lead_id: number; business_id: number } | null = null;
+		// Email inputs captured during the transaction, sent after commit
+		let allotmentBusinessId: number | null = null;
+		let customerBusinessId: number | null = null;
+		let customer: { name: string; email: string | null } | null = null;
 		let newLead: NewLeadRow | null = null;
 
 		try {
@@ -319,6 +322,7 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 
 			if (leadDataResult.rows.length > 0) {
 				const originalLead = leadDataResult.rows[0];
+				customer = { name: originalLead.name, email: originalLead.email };
 
 				// Create new lead entry for the allocated business
 				const newLeadResult = await client.query<NewLeadRow>(
@@ -346,8 +350,8 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 			}
 
 			// Prepare email data but don't send yet (move outside transaction)
-			emailData = { business_id: mainBusinessId, isallotted: true };
-			customerEmailData = { lead_id, business_id: effectiveBusinessId, is_first_claim: claim_id === 0 };
+			allotmentBusinessId = mainBusinessId;
+			customerBusinessId = effectiveBusinessId;
 
 			await client.query('COMMIT');
 		} catch (error) {
@@ -359,44 +363,115 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 			client.release();
 		}
 
-		// Send email AFTER transaction commits (outside transaction for better performance)
-		if (emailData) {
+		// Send emails AFTER transaction commits, directly and in parallel —
+		// internal fetch hops added latency and hid Brevo failures
+		const adminEmail = 'admin@solarvipani.com';
+
+		const sendAllotmentEmail = async () => {
+			if (!allotmentBusinessId) return;
 			try {
-				const response = await fetch('/in/api/sendLeadAllotmentStatus', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify(emailData)
-				});
+				const bizResult = await pool.query<{
+					businessname: string;
+					login_email: string;
+					slug: string;
+					magic_link_token: string;
+				}>(
+					'SELECT businessname, login_email, slug, magic_link_token FROM businesses_1 WHERE id = $1 LIMIT 1',
+					[allotmentBusinessId]
+				);
+				if (bizResult.rows.length === 0) {
+					console.error('❌ Allotment email skipped: business not found', allotmentBusinessId);
+					return;
+				}
+				const { businessname, login_email, slug, magic_link_token } = bizResult.rows[0];
+				const magicLink = `https://business.solarvipani.com/in/${slug}/signin-link/${magic_link_token}`;
 
-				const emailResult = (await response.json()) as { success: boolean; error?: string };
+				const subject = 'Lead Allotment Status Update - Solar Vipani';
+				const message = `
+    <p>Dear ${businessname},</p>
+    <p>We wanted to inform you that the allotment status of the lead claimed by you is available.</p>
+    <p><strong>Status:</strong> Allotted</p>
+    <p>A new lead has been successfully allotted to your business. You can view the details by logging into your Solar Vipani business account.</p>
+    <p style="margin-bottom: 2rem;">
+        <a href="${magicLink}" style="color: blue; text-decoration: underline;">Access Your Business Account</a>
+    </p>
+    <p>If you have any questions, feel free to contact us at <a href="tel:+918983066701">+91 8983066701</a>.</p>
+    <p>Best Regards,</p>
+    <p><strong>Solar Vipani Team</strong></p>
+    `;
 
-				if (!emailResult.success) {
-					console.error('❌ Failed to send lead allotment email:', emailResult.error);
+				const result = await sendEmail([login_email, adminEmail], subject, message, { isHtml: true });
+				if (!result.success) {
+					console.error('❌ Failed to send lead allotment email:', result.error);
 				}
 			} catch (emailError) {
 				console.error('❌ Error sending lead allotment email:', emailError);
 			}
-		}
+		};
 
-		if (customerEmailData) {
+		const sendCustomerEmail = async () => {
+			if (!customerBusinessId || !customer?.email) return;
 			try {
-				const response = await fetch('/in/api/sendLeadClaimNotificationToCustomer', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify(customerEmailData)
-				});
+				const bizResult = await pool.query<{
+					businessname: string;
+					phonenumber: string | null;
+					email: string | null;
+					slug: string;
+				}>(
+					'SELECT businessname, phonenumber, email, slug FROM businesses_1 WHERE id = $1',
+					[customerBusinessId]
+				);
+				if (bizResult.rows.length === 0) {
+					console.error('❌ Customer email skipped: business not found', customerBusinessId);
+					return;
+				}
+				const business = bizResult.rows[0];
+				const profileLink = `https://solarvipani.com/in/installer/${business.slug}`;
 
-				const emailResult = (await response.json()) as { success: boolean; error?: string };
+				// Update-then-insert keeps this safe whether or not the customer
+				// already has an in_user row (works without a unique constraint)
+				const magicLinkToken = uuidv4();
+				const updateResult = await pool.query(
+					'UPDATE in_user SET magic_link_token = $1, name = COALESCE($2, name) WHERE email = $3',
+					[magicLinkToken, customer.name || null, customer.email]
+				);
+				if (updateResult.rowCount === 0) {
+					await pool.query(
+						'INSERT INTO in_user (email, name, magic_link_token) VALUES ($1, $2, $3)',
+						[customer.email, customer.name || null, magicLinkToken]
+					);
+				}
+				const customerAccountLink = `https://user.solarvipani.com/signin-link/${magicLinkToken}`;
 
-				if (!emailResult.success) {
-					console.error('❌ Failed to send customer claim notification:', emailResult.error);
+				const subject = 'A Solar Installer is Interested in Your Inquiry - Solar Vipani';
+				const message = `
+    <p>Dear ${customer.name},</p>
+    <p>Great news! A verified solar installer has shown interest in your inquiry on Solar Vipani.</p>
+    <p><strong>Installer Details:</strong></p>
+    <ul>
+        <li><strong>Name:</strong> ${business.businessname}</li>
+        <li><strong>Phone:</strong> ${business.phonenumber || 'N/A'}</li>
+        <li><strong>Email:</strong> ${business.email || 'N/A'}</li>
+        <li><strong>View Profile:</strong> <a href="${profileLink}" style="color: #0056b3;">${business.businessname}</a></li>
+    </ul>
+    <p>One of our verified installers will reach out to you shortly to discuss your solar energy needs.</p>
+    <p style="margin-top: 20px;"><strong>Track your inquiry:</strong></p>
+    <p><a href="${customerAccountLink}" style="display: inline-block; padding: 10px 20px; background-color: #0056b3; color: #ffffff; text-decoration: none; border-radius: 5px;">View Your Account</a></p>
+    <p style="font-size: 12px; color: #666;">This link is unique to you and gives you access to your Solar Vipani customer account.</p>
+    <p>If you have any questions, feel free to contact us at <a href="mailto:admin@solarvipani.com">admin@solarvipani.com</a>.</p>
+    <p>Best Regards,<br><strong>Solar Vipani Team</strong></p>
+    `;
+
+				const result = await sendEmail([customer.email, adminEmail], subject, message, { isHtml: true });
+				if (!result.success) {
+					console.error('❌ Failed to send customer claim notification:', result.error);
 				}
 			} catch (emailError) {
 				console.error('❌ Error sending customer claim notification:', emailError);
 			}
-		}
+		};
+
+		await Promise.all([sendAllotmentEmail(), sendCustomerEmail()]);
 
 		return json({ success: true, newLead });
 	} catch (error) {
