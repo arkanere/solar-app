@@ -117,6 +117,7 @@ export async function POST({ request }) {
         <a href="${magicLink}" style="color: blue; text-decoration: underline;">Claim the Lead</a>
         </p>
         <p> Few more businesses are invited to show interest. Therefore, the allotment is subject to certain conditions. </p>
+        <p><strong>To get more leads, add all the cities where you do business to your profile.</strong></p>
         <p>For assistance, call us at <a href="tel:+918983066701">+91 8983066701</a></p>
         <p>Team</p>
         <p><strong>Solar Vipani</strong></p>
