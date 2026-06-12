@@ -1,4 +1,6 @@
 <script>
+	import BillUpload from '$lib/components/BillUpload.svelte';
+
 	/** @type {import('./$types').PageData} */
 	export let data;
 
@@ -114,6 +116,10 @@
 								<span class="label">Requirements:</span>
 								<span class="value">{lead.comment}</span>
 							</div>
+						</div>
+
+						<div class="lead-bill-upload">
+							<BillUpload leadId={lead.id} billUrl={lead.billUrl} billFormat={lead.billFormat} />
 						</div>
 					</div>
 				{/each}
@@ -472,6 +478,10 @@
 	/* Lead details section */
 	.lead-details {
 		padding: 1.5rem;
+	}
+
+	.lead-bill-upload {
+		padding: 0 1.5rem 1rem;
 	}
 
 	.detail-row {

@@ -20,7 +20,7 @@ export async function load({ cookies }) {
 
 	try {
 		const result = await pool.query(
-			`SELECT id, name, phone, pin_code, type, comment, email, district, created_at
+			`SELECT id, name, phone, pin_code, type, comment, email, district, created_at, bill_url, bill_format
 			FROM LeadData
 			WHERE email = $1 AND isvisible = true AND (category IS NULL OR category = 1)
 			ORDER BY created_at DESC`,
@@ -35,7 +35,9 @@ export async function load({ cookies }) {
 			comment: lead.comment,
 			email: lead.email,
 			district: lead.district,
-			submittedAt: lead.created_at
+			submittedAt: lead.created_at,
+			billUrl: lead.bill_url,
+			billFormat: lead.bill_format
 		}));
 
 		if (leads.length > 0) {

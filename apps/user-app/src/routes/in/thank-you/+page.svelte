@@ -1,10 +1,13 @@
 <script>
+	import BillUpload from '$lib/components/BillUpload.svelte';
+
 	/** @type {import('./$types').PageData} */
 	export let data;
 
 	$: customerDetails = data?.customerDetails || null;
 	$: error = data?.error || null;
 	$: installers = data?.installers || [];
+	$: referenceUuid = data?.referenceUuid || '';
 
 	function formatDate(dateString) {
 		if (!dateString) return '';
@@ -100,6 +103,11 @@
 				</div>
 			</div>
 
+			<BillUpload
+				leadRef={referenceUuid}
+				billUrl={customerDetails.billUrl}
+				billFormat={customerDetails.billFormat}
+			/>
 		{/if}
 
 		{#if installers.length > 0}
