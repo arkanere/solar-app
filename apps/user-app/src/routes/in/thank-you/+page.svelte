@@ -60,13 +60,9 @@
 <main>
 	{#if error}
 		<h1>Details not found</h1>
-		<p>The requested information could not be found. Please contact us if you need assistance.</p>
-		<p>
-			If you'd like to speak with us, feel free to give us a call at
-			<a href="tel:+918983066701">+91 8983066701</a>
-		</p>
+		<p>The requested information could not be found.</p>
 	{:else}
-		<h1>We have received your details.</h1>
+		<h1>Thank you! We've received your details.</h1>
 
 		{#if customerDetails}
 			<div class="details-card">
@@ -126,15 +122,11 @@
 		<h2>Next Steps</h2>
 
 		{#if installers.length > 0}
-			<p>One of our verified solar installers in your area will reach out to you in a couple of days to assist you further. In case you are looking to talk to someone right away, you can directly call the installers using the above contact details.</p>
+			<p>One of our verified solar installers in your area will reach out to you shortly. If you'd like to talk to someone right away, you can directly call the installers using the above contact details.</p>
 		{:else}
-			<p>We are expanding to your area. We will reach out to you once we have a verified installer there.</p>
+			<p>We're currently expanding to your area and will connect you with a verified installer as soon as one is available.</p>
 		{/if}
 
-		<p>
-			If you'd like to speak with us right away, feel free to give us a call at
-			<a href="tel:+918983066701">+91 8983066701</a>
-		</p>
 	{/if}
 </main>
 
