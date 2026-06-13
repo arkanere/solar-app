@@ -138,7 +138,6 @@
 				name="services"
 				bind:value={updatedBusiness.services}
 				on:input={updatedBusiness.services}
-				required
 			/>
 		</div>
 
