@@ -9,18 +9,17 @@ export async function load() {
 
 	try {
 		const result = await pool.query(
-			`SELECT u.id, u.name, u.email, u.magic_link_token, u.created_at, u.feedback_email_sent_at,
-				EXISTS (
-					SELECT 1 FROM LeadData l
-					WHERE l.email = u.email AND l.bill_url IS NOT NULL
-				) AS has_bill
-			FROM in_user u
-			ORDER BY u.id DESC`
+			`SELECT f.user_id, u.name, u.email, u.magic_link_token,
+				f.got_callback, f.got_quotation, f.recommendation_rating,
+				f.suggestions, f.updated_at
+			FROM in_user_feedback f
+			JOIN in_user u ON u.id = f.user_id
+			ORDER BY f.updated_at DESC`
 		);
 
-		return { users: result.rows };
+		return { feedback: result.rows };
 	} catch (error) {
 		console.error('Database query error:', error);
-		return { errorMessage: 'Failed to load user data' };
+		return { errorMessage: 'Failed to load feedback data' };
 	}
 }

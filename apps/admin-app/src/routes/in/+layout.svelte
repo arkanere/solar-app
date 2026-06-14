@@ -15,6 +15,7 @@
   let analyticsDropdownVisible = false;
   let controlTowerDropdownVisible = false;
   let leadDataDropdownVisible = false;
+  let usersDropdownVisible = false;
 
   async function handleLogout() {
     try {
@@ -51,7 +52,19 @@
       {/if}
     </li>
     <li><a href="/in/businesses">View Business Data</a></li>
-    <li><a href="/in/users">Users</a></li>
+    <li
+      class="dropdown"
+      on:mouseenter={() => (usersDropdownVisible = true)}
+      on:mouseleave={() => (usersDropdownVisible = false)}
+    >
+      <a href="/in/users">Users</a>
+      {#if usersDropdownVisible}
+        <div class="dropdown-content">
+          <a href="/in/users">View Users</a>
+          <a href="/in/feedback">User Feedback</a>
+        </div>
+      {/if}
+    </li>
     <li><a href="/in/queries">View Queries</a></li>
     <li><a href="/in/blogs">Blogs</a></li>
     <li
