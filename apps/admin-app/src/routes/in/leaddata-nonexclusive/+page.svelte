@@ -159,7 +159,8 @@
 			phone = '91' + phone;
 		}
 		const sharedDate = new Date(whatsappLead.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-		const message = `Dear ${business.businessname}, we received a solar installation inquiry and shared it with you at ${business.login_email} from admin@solarvipani.com around ${sharedDate}. Please check.`;
+		const customerComment = whatsappLead.comment ? `\n\nCustomer Comment: ${whatsappLead.comment}` : '';
+		const message = `Dear ${business.businessname}, we received a solar installation inquiry and shared it with you at ${business.login_email} from admin@solarvipani.com around ${sharedDate}. Please check.${customerComment}`;
 		return `https://web.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
 	}
 
