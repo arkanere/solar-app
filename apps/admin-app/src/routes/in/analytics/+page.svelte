@@ -26,6 +26,14 @@
 		</div>
 		
 		<div class="card">
+			<h2>Businesses Onboarded</h2>
+			<p>Track daily onboarding rates and trends for visible businesses</p>
+			<a href="/admin/analytics/businesses-onboarded" class="analytics-link">
+				View Onboarding Analytics →
+			</a>
+		</div>
+
+		<div class="card">
 			<h2>State-wise Businesses</h2>
 			<p>View businesses by state with analytics and complete business listings</p>
 			<a href="/admin/analytics/businesses-statewise" class="analytics-link">
