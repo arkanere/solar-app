@@ -8,195 +8,96 @@ export async function load() {
 	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
-		// 1. Total leads (excluding category = 2, but including NULL category - same logic as lead-generation)
-		const totalLeadsResult = await pool.query(
-			'SELECT COUNT(*) as total FROM leaddata WHERE isvisible = true AND (category != 2 OR category IS NULL)'
+		const now = new Date();
+		const baseWhere = "isvisible = true AND category = 2";
+
+		const fifteenDaysAgo = new Date(now);
+		fifteenDaysAgo.setDate(now.getDate() - 15);
+
+		const thirtyDaysAgo = new Date(now);
+		thirtyDaysAgo.setDate(now.getDate() - 30);
+
+		const ninetyDaysAgo = new Date(now);
+		ninetyDaysAgo.setDate(now.getDate() - 90);
+
+		const [last90Result, last30Result, last15Result] = await Promise.all([
+			pool.query(
+				`SELECT COUNT(*) as count FROM leaddata WHERE ${baseWhere} AND created_at >= $1`,
+				[ninetyDaysAgo.toISOString()]
+			),
+			pool.query(
+				`SELECT COUNT(*) as count FROM leaddata WHERE ${baseWhere} AND created_at >= $1`,
+				[thirtyDaysAgo.toISOString()]
+			),
+			pool.query(
+				`SELECT COUNT(*) as count FROM leaddata WHERE ${baseWhere} AND created_at >= $1`,
+				[fifteenDaysAgo.toISOString()]
+			)
+		]);
+
+		const last90Count = parseInt(last90Result.rows[0].count);
+		const last30Count = parseInt(last30Result.rows[0].count);
+		const last15Count = parseInt(last15Result.rows[0].count);
+
+		const sixMonthsAgo = new Date(now);
+		sixMonthsAgo.setDate(now.getDate() - 180);
+
+		const dailyCountsResult = await pool.query(
+			`SELECT DATE(created_at) as day, COUNT(*) as count
+			 FROM leaddata
+			 WHERE ${baseWhere} AND created_at >= $1
+			 GROUP BY DATE(created_at)
+			 ORDER BY day`,
+			[sixMonthsAgo.toISOString()]
 		);
 
-		// 2. Distribution of leads by claim count (0, 1, 2, 3, 4, 5 businesses)
-		const claimDistributionResult = await pool.query(`
-			SELECT 
-				SUM(CASE WHEN claim_count = 0 OR claim_count IS NULL THEN 1 ELSE 0 END) as leads_claimed_by_0,
-				SUM(CASE WHEN claim_count = 1 THEN 1 ELSE 0 END) as leads_claimed_by_1,
-				SUM(CASE WHEN claim_count = 2 THEN 1 ELSE 0 END) as leads_claimed_by_2,
-				SUM(CASE WHEN claim_count = 3 THEN 1 ELSE 0 END) as leads_claimed_by_3,
-				SUM(CASE WHEN claim_count = 4 THEN 1 ELSE 0 END) as leads_claimed_by_4,
-				SUM(CASE WHEN claim_count >= 5 THEN 1 ELSE 0 END) as leads_claimed_by_5_or_more
-			FROM leaddata 
-			WHERE isvisible = true 
-			  AND (category != 2 OR category IS NULL)
-		`);
+		const dailyCounts = new Map();
+		for (const row of dailyCountsResult.rows) {
+			dailyCounts.set(row.day.toISOString().split('T')[0], parseInt(row.count));
+		}
 
-		// Get actual leads for each claim category with claiming businesses (limited to 50 per category for performance)
-		const leadsBy0ClaimsResult = await pool.query(`
-			SELECT 
-				l.id, l.name, l.phone, l.email, l.pin_code, l.district, l.created_at, l.claim_count,
-				ARRAY[]::TEXT[] as claiming_businesses
-			FROM leaddata l
-			WHERE l.isvisible = true 
-			  AND (l.category != 2 OR l.category IS NULL)
-			  AND (l.claim_count = 0 OR l.claim_count IS NULL)
-			ORDER BY l.created_at DESC
-			LIMIT 50
-		`);
+		const trendData = [];
+		for (let weeksAgo = 12; weeksAgo >= 0; weeksAgo--) {
+			const refDate = new Date(now);
+			refDate.setDate(now.getDate() - weeksAgo * 7);
+			const refDateStr = refDate.toISOString().split('T')[0];
 
-		const leadsBy1ClaimResult = await pool.query(`
-			SELECT 
-				l.id, l.name, l.phone, l.email, l.pin_code, l.district, l.created_at, l.claim_count,
-				COALESCE(
-					ARRAY(
-						SELECT b.businessname 
-						FROM leaddata claimed 
-						JOIN businesses_1 b ON claimed.business_id = b.id 
-						WHERE claimed.original_id = l.id AND claimed.category = 2
-						ORDER BY b.businessname
-					), 
-					ARRAY[]::TEXT[]
-				) as claiming_businesses
-			FROM leaddata l
-			WHERE l.isvisible = true 
-			  AND (l.category != 2 OR l.category IS NULL)
-			  AND l.claim_count = 1
-			ORDER BY l.created_at DESC
-			LIMIT 50
-		`);
+			const sumForPeriod = (days) => {
+				let total = 0;
+				for (let d = 0; d < days; d++) {
+					const date = new Date(refDate);
+					date.setDate(refDate.getDate() - d);
+					const key = date.toISOString().split('T')[0];
+					total += dailyCounts.get(key) || 0;
+				}
+				return total;
+			};
 
-		const leadsBy2ClaimsResult = await pool.query(`
-			SELECT 
-				l.id, l.name, l.phone, l.email, l.pin_code, l.district, l.created_at, l.claim_count,
-				COALESCE(
-					ARRAY(
-						SELECT b.businessname 
-						FROM leaddata claimed 
-						JOIN businesses_1 b ON claimed.business_id = b.id 
-						WHERE claimed.original_id = l.id AND claimed.category = 2
-						ORDER BY b.businessname
-					), 
-					ARRAY[]::TEXT[]
-				) as claiming_businesses
-			FROM leaddata l
-			WHERE l.isvisible = true 
-			  AND (l.category != 2 OR l.category IS NULL)
-			  AND l.claim_count = 2
-			ORDER BY l.created_at DESC
-			LIMIT 50
-		`);
-
-		const leadsBy3ClaimsResult = await pool.query(`
-			SELECT 
-				l.id, l.name, l.phone, l.email, l.pin_code, l.district, l.created_at, l.claim_count,
-				COALESCE(
-					ARRAY(
-						SELECT b.businessname 
-						FROM leaddata claimed 
-						JOIN businesses_1 b ON claimed.business_id = b.id 
-						WHERE claimed.original_id = l.id AND claimed.category = 2
-						ORDER BY b.businessname
-					), 
-					ARRAY[]::TEXT[]
-				) as claiming_businesses
-			FROM leaddata l
-			WHERE l.isvisible = true 
-			  AND (l.category != 2 OR l.category IS NULL)
-			  AND l.claim_count = 3
-			ORDER BY l.created_at DESC
-			LIMIT 50
-		`);
-
-		const leadsBy4ClaimsResult = await pool.query(`
-			SELECT 
-				l.id, l.name, l.phone, l.email, l.pin_code, l.district, l.created_at, l.claim_count,
-				COALESCE(
-					ARRAY(
-						SELECT b.businessname 
-						FROM leaddata claimed 
-						JOIN businesses_1 b ON claimed.business_id = b.id 
-						WHERE claimed.original_id = l.id AND claimed.category = 2
-						ORDER BY b.businessname
-					), 
-					ARRAY[]::TEXT[]
-				) as claiming_businesses
-			FROM leaddata l
-			WHERE l.isvisible = true 
-			  AND (l.category != 2 OR l.category IS NULL)
-			  AND l.claim_count = 4
-			ORDER BY l.created_at DESC
-			LIMIT 50
-		`);
-
-		const leadsBy5OrMoreClaimsResult = await pool.query(`
-			SELECT 
-				l.id, l.name, l.phone, l.email, l.pin_code, l.district, l.created_at, l.claim_count,
-				COALESCE(
-					ARRAY(
-						SELECT b.businessname 
-						FROM leaddata claimed 
-						JOIN businesses_1 b ON claimed.business_id = b.id 
-						WHERE claimed.original_id = l.id AND claimed.category = 2
-						ORDER BY b.businessname
-					), 
-					ARRAY[]::TEXT[]
-				) as claiming_businesses
-			FROM leaddata l
-			WHERE l.isvisible = true 
-			  AND (l.category != 2 OR l.category IS NULL)
-			  AND l.claim_count >= 5
-			ORDER BY l.created_at DESC
-			LIMIT 50
-		`);
-
-		const distribution = claimDistributionResult.rows[0] || {
-			leads_claimed_by_0: 0,
-			leads_claimed_by_1: 0,
-			leads_claimed_by_2: 0,
-			leads_claimed_by_3: 0,
-			leads_claimed_by_4: 0,
-			leads_claimed_by_5_or_more: 0
-		};
+			trendData.push({
+				date: refDateStr,
+				avg90: parseFloat((sumForPeriod(90) / 90).toFixed(1)),
+				avg30: parseFloat((sumForPeriod(30) / 30).toFixed(1)),
+				avg15: parseFloat((sumForPeriod(15) / 15).toFixed(1))
+			});
+		}
 
 		return {
 			analytics: {
-				totalLeads: parseInt(totalLeadsResult.rows[0].total),
-				claimDistribution: {
-					zeroClaims: parseInt(distribution.leads_claimed_by_0) || 0,
-					oneClaim: parseInt(distribution.leads_claimed_by_1) || 0,
-					twoClaims: parseInt(distribution.leads_claimed_by_2) || 0,
-					threeClaims: parseInt(distribution.leads_claimed_by_3) || 0,
-					fourClaims: parseInt(distribution.leads_claimed_by_4) || 0,
-					fiveOrMoreClaims: parseInt(distribution.leads_claimed_by_5_or_more) || 0
-				},
-				leadsByCategory: {
-					zeroClaims: leadsBy0ClaimsResult.rows,
-					oneClaim: leadsBy1ClaimResult.rows,
-					twoClaims: leadsBy2ClaimsResult.rows,
-					threeClaims: leadsBy3ClaimsResult.rows,
-					fourClaims: leadsBy4ClaimsResult.rows,
-					fiveOrMoreClaims: leadsBy5OrMoreClaimsResult.rows
-				}
+				avgDaily90: (last90Count / 90).toFixed(1),
+				avgDaily30: (last30Count / 30).toFixed(1),
+				avgDaily15: (last15Count / 15).toFixed(1),
+				trendData
 			}
 		};
 	} catch (error) {
 		console.error('Leads claimed analytics query error:', error);
-		return { 
+		return {
 			error: 'Failed to load leads claimed analytics data',
 			analytics: {
-				totalLeads: 0,
-				claimDistribution: {
-					zeroClaims: 0,
-					oneClaim: 0,
-					twoClaims: 0,
-					threeClaims: 0,
-					fourClaims: 0,
-					fiveOrMoreClaims: 0
-				},
-				leadsByCategory: {
-					zeroClaims: [],
-					oneClaim: [],
-					twoClaims: [],
-					threeClaims: [],
-					fourClaims: [],
-					fiveOrMoreClaims: []
-				}
+				avgDaily90: '0',
+				avgDaily30: '0',
+				avgDaily15: '0',
+				trendData: []
 			}
 		};
 	}
