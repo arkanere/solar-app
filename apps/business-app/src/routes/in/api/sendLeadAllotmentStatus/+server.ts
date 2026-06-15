@@ -22,7 +22,7 @@ interface BusinessResult {
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
-		const { business_id, isallotted } = (await request.json()) as LeadAllotmentRequest;
+		const { business_id } = (await request.json()) as LeadAllotmentRequest;
 
 		// Fetch business details
 		const businessResult = await pool.query<BusinessResult>(
@@ -41,17 +41,11 @@ export const POST: RequestHandler = async ({ request }) => {
 		const magicLink = `https://business.solarvipani.com/in/${slug}/signin-link/${magic_link_token}`;
 
 		// Email content
-		const subject = `Lead Allotment Status Update - Solar Vipani`;
+		const subject = `New Lead Allotted - Solar Vipani`;
 		const message = `
     <p>Dear ${businessname},</p>
-    <p>We wanted to inform you that the allotment status of the lead claimed by you is available.</p>
-    <p><strong>Status:</strong> ${isallotted ? 'Allotted' : 'Not Allotted'}</p>
-
-    ${
-			isallotted
-				? `<p>A new lead has been successfully allotted to your business. You can view the details by logging into your Solar Vipani business account.</p>`
-				: `<p>Lead could not be allotted to your business. You can check for updates or take action by logging into your Solar Vipani business account.</p>`
-		}
+    <p>Great news! A new lead has been successfully allotted to your business.</p>
+    <p>You can view the lead details by logging into your Solar Vipani business account.</p>
 
     <p style="margin-bottom: 2rem;">
         <a href="${magicLink}" style="color: blue; text-decoration: underline;">Access Your Business Account</a>
@@ -60,6 +54,12 @@ export const POST: RequestHandler = async ({ request }) => {
     <p>If you have any questions, feel free to contact us at <a href="tel:+918983066701">+91 8983066701</a>.</p>
     <p>Best Regards,</p>
     <p><strong>Solar Vipani Team</strong></p>
+
+    <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e0e0e0;" />
+    <p style="font-size: 0.9rem; color: #555;">
+        Looking for a digital marketing agency to run ads on Facebook, Instagram and Google?
+        Check out <a href="https://qualityclickss.com/" style="color: blue; text-decoration: underline;">Quality Clickss</a>.
+    </p>
     `;
 
 		// Send email to business and admin
