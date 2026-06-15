@@ -1,20 +1,103 @@
 <script>
 	import { page } from '$app/stores';
 	import { isDarkMode } from '$lib/themeStore';
+	import { onMount, afterUpdate } from 'svelte';
+	import { Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend, Filler } from 'chart.js';
+
+	Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend, Filler);
 
 	$: darkMode = $isDarkMode;
-	
-	// Get data from page data (server-side)
 	$: analytics = $page.data.analytics || {};
 	$: error = $page.data.error;
-	
-	// Calculate weekly totals for display
-	$: weeklyTotal = analytics.weeklyBreakdown ? 
-		analytics.weeklyBreakdown.reduce((sum, week) => sum + week.count, 0) : 0;
-	
-	// Calculate daily totals for display
-	$: dailyTotal = analytics.dailyBreakdown ? 
-		analytics.dailyBreakdown.reduce((sum, day) => sum + day.count, 0) : 0;
+
+	let canvas;
+	let chart;
+
+	function buildChart() {
+		if (!canvas || !analytics.trendData?.length) return;
+
+		const textColor = darkMode ? '#f0f0f0' : '#333';
+		const gridColor = darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+
+		const labels = analytics.trendData.map(d => {
+			const date = new Date(d.date + 'T00:00:00');
+			return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+		});
+
+		const data = {
+			labels,
+			datasets: [
+				{
+					label: 'Avg Daily (90 days)',
+					data: analytics.trendData.map(d => d.avg90),
+					borderColor: '#0056b3',
+					backgroundColor: 'rgba(0, 86, 179, 0.1)',
+					fill: true,
+					tension: 0.3,
+					pointRadius: 4
+				},
+				{
+					label: 'Avg Daily (30 days)',
+					data: analytics.trendData.map(d => d.avg30),
+					borderColor: '#28a745',
+					backgroundColor: 'rgba(40, 167, 69, 0.1)',
+					fill: true,
+					tension: 0.3,
+					pointRadius: 4
+				},
+				{
+					label: 'Avg Daily (15 days)',
+					data: analytics.trendData.map(d => d.avg15),
+					borderColor: '#fd7e14',
+					backgroundColor: 'rgba(253, 126, 20, 0.1)',
+					fill: true,
+					tension: 0.3,
+					pointRadius: 4
+				}
+			]
+		};
+
+		if (chart) chart.destroy();
+
+		chart = new Chart(canvas, {
+			type: 'line',
+			data,
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				interaction: { mode: 'index', intersect: false },
+				plugins: {
+					legend: {
+						labels: { color: textColor, usePointStyle: true, padding: 20 }
+					},
+					tooltip: {
+						callbacks: {
+							label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y} leads/day`
+						}
+					}
+				},
+				scales: {
+					x: {
+						ticks: { color: textColor },
+						grid: { color: gridColor }
+					},
+					y: {
+						beginAtZero: true,
+						ticks: { color: textColor },
+						grid: { color: gridColor },
+						title: {
+							display: true,
+							text: 'Avg Leads / Day',
+							color: textColor
+						}
+					}
+				}
+			}
+		});
+	}
+
+	onMount(() => buildChart());
+	afterUpdate(() => buildChart());
 </script>
 
 <main class={darkMode ? 'dark' : 'light'}>
@@ -26,75 +109,31 @@
 	{#if error}
 		<div class="error">{error}</div>
 	{:else}
-		<!-- Main Stats Grid -->
 		<div class="stats-grid">
-			<div class="stat-card primary">
-				<h2>Total Leads</h2>
-				<div class="stat-number">{analytics.totalLeads?.toLocaleString() || 0}</div>
-				<div class="stat-label">All time</div>
+			<div class="stat-card">
+				<h2>Last 3 Months</h2>
+				<div class="stat-number">{analytics.avgDaily90}</div>
+				<div class="stat-label">avg leads / day</div>
 			</div>
 
 			<div class="stat-card">
-				<h2>Today</h2>
-				<div class="stat-number">{analytics.today || 0}</div>
-				<div class="stat-label">New leads today</div>
+				<h2>Last Month</h2>
+				<div class="stat-number">{analytics.avgDaily30}</div>
+				<div class="stat-label">avg leads / day</div>
 			</div>
 
 			<div class="stat-card">
-				<h2>Last 7 Days</h2>
-				<div class="stat-number">{dailyTotal}</div>
-				<div class="stat-label">Total this week</div>
-			</div>
-
-			<div class="stat-card success">
-				<h2>Last 30 Days</h2>
-				<div class="stat-number">{analytics.last30Days || 0}</div>
-				<div class="stat-label">Total this month</div>
+				<h2>Last 15 Days</h2>
+				<div class="stat-number">{analytics.avgDaily15}</div>
+				<div class="stat-label">avg leads / day</div>
 			</div>
 		</div>
 
-		<!-- Weekly Breakdown -->
-		{#if analytics.weeklyBreakdown && analytics.weeklyBreakdown.length > 0}
-			<div class="breakdown-section">
-				<h3>Last 4 Weeks - Week by Week</h3>
-				<div class="breakdown-grid">
-					{#each analytics.weeklyBreakdown as week}
-						<div class="breakdown-card">
-							<div class="breakdown-header">
-								<h4>{week.week}</h4>
-								<span class="breakdown-date">{week.weekStart} to {week.weekEnd}</span>
-							</div>
-							<div class="breakdown-number">{week.count}</div>
-							<div class="breakdown-label">leads</div>
-						</div>
-					{/each}
-				</div>
+		<div class="chart-section">
+			<h3>Average Daily Leads - Trend (Last 3 Months)</h3>
+			<div class="chart-container">
+				<canvas bind:this={canvas}></canvas>
 			</div>
-		{/if}
-
-		<!-- Daily Breakdown -->
-		{#if analytics.dailyBreakdown && analytics.dailyBreakdown.length > 0}
-			<div class="breakdown-section">
-				<h3>Last 7 Days - Day by Day</h3>
-				<div class="breakdown-grid daily">
-					{#each analytics.dailyBreakdown as day}
-						<div class="breakdown-card daily-card">
-							<div class="breakdown-header">
-								<h4>{day.dayName}</h4>
-								<span class="breakdown-date">{day.date}</span>
-							</div>
-							<div class="breakdown-number">{day.count}</div>
-							<div class="breakdown-label">leads</div>
-						</div>
-					{/each}
-				</div>
-			</div>
-		{/if}
-
-		<!-- Actions Section -->
-		<div class="actions-section">
-			<a href="/admin/leaddata" class="action-link">View All Leads</a>
-			<a href="/admin/allclaims" class="action-link">View Lead Claims</a>
 		</div>
 	{/if}
 </main>
@@ -107,8 +146,6 @@
 		--light-primary-text-color: #333;
 		--dark-primary-text-color: #f0f0f0;
 		--accent-color: #0056b3;
-		--hover-color: #003366;
-		--success-color: #28a745;
 		--card-light-bg: #fff;
 		--card-dark-bg: #333;
 		--border-light: #ddd;
@@ -204,14 +241,6 @@
 		transform: translateY(-2px);
 	}
 
-	.stat-card.primary {
-		border-left: 4px solid var(--accent-color);
-	}
-
-	.stat-card.success {
-		border-left: 4px solid var(--success-color);
-	}
-
 	.stat-card h2 {
 		font-size: 1rem;
 		margin-bottom: 1rem;
@@ -226,191 +255,54 @@
 		color: var(--accent-color);
 	}
 
-	.stat-card.success .stat-number {
-		color: var(--success-color);
-	}
-
 	.stat-label {
 		font-size: 0.9rem;
 		opacity: 0.7;
 	}
 
-	/* Breakdown sections */
-	.breakdown-section {
+	.chart-section {
 		margin-bottom: 3rem;
-		width: 100%;
 	}
 
-	.breakdown-section h3 {
-		font-size: 1.5rem;
-		margin-bottom: 1.5rem;
+	.chart-section h3 {
+		font-size: 1.3rem;
+		margin-bottom: 1rem;
 		color: var(--accent-color);
-		text-align: center;
 	}
 
-	.breakdown-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-		gap: 1rem;
-	}
-
-	.breakdown-grid.daily {
-		grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-	}
-
-	.breakdown-card {
+	.chart-container {
+		position: relative;
+		height: 400px;
 		padding: 1.5rem;
 		border-radius: 8px;
-		text-align: center;
-		transition: transform 0.2s ease, box-shadow 0.2s ease;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 	}
 
-	.light .breakdown-card {
+	.light .chart-container {
 		background-color: var(--card-light-bg);
 		border: 1px solid var(--border-light);
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	}
 
-	.dark .breakdown-card {
+	.dark .chart-container {
 		background-color: var(--card-dark-bg);
 		border: 1px solid var(--border-dark);
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 	}
 
-	.breakdown-card:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-	}
-
-	.dark .breakdown-card:hover {
-		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-	}
-
-	.breakdown-header {
-		margin-bottom: 1rem;
-	}
-
-	.breakdown-header h4 {
-		font-size: 1.1rem;
-		margin-bottom: 0.25rem;
-		font-weight: 600;
-	}
-
-	.breakdown-date {
-		font-size: 0.8rem;
-		opacity: 0.7;
-	}
-
-	.breakdown-number {
-		font-size: 2rem;
-		font-weight: 700;
-		color: var(--accent-color);
-		margin-bottom: 0.25rem;
-	}
-
-	.breakdown-label {
-		font-size: 0.9rem;
-		opacity: 0.8;
-	}
-
-	.daily-card .breakdown-number {
-		font-size: 1.8rem;
-	}
-
-	.daily-card .breakdown-header h4 {
-		font-size: 1rem;
-	}
-
-	/* Actions section */
-	.actions-section {
-		display: flex;
-		gap: 1rem;
-		justify-content: center;
-		flex-wrap: wrap;
-	}
-
-	.action-link {
-		display: inline-block;
-		color: white;
-		background-color: var(--accent-color);
-		text-decoration: none;
-		padding: 0.75rem 1.5rem;
-		border-radius: 4px;
-		font-weight: 600;
-		transition: background-color 0.3s ease;
-	}
-
-	.action-link:hover {
-		background-color: var(--hover-color);
-	}
-
-	/* Responsive design */
 	@media (max-width: 768px) {
 		.stats-grid {
-			grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+			grid-template-columns: 1fr;
 		}
-		
-		.breakdown-grid {
-			grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-		}
-		
-		.breakdown-grid.daily {
-			grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-		}
-		
-		.breakdown-card {
-			padding: 1rem;
-		}
-		
-		.daily-card .breakdown-number {
-			font-size: 1.5rem;
-		}
-		
+
 		.stat-number {
 			font-size: 2rem;
 		}
-		
-		.breakdown-number {
-			font-size: 1.6rem;
-		}
-		
-		.breakdown-section h3 {
-			font-size: 1.3rem;
-		}
-		
+
 		h1 {
 			font-size: 1.8rem;
 		}
-		
-		.actions-section {
-			flex-direction: column;
-			align-items: center;
-		}
-	}
 
-	@media (max-width: 480px) {
-		.stats-grid {
-			grid-template-columns: 1fr 1fr;
-		}
-		
-		.breakdown-grid {
-			grid-template-columns: 1fr 1fr;
-		}
-		
-		.breakdown-grid.daily {
-			grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-		}
-		
-		.stat-number {
-			font-size: 1.8rem;
-		}
-		
-		.breakdown-number {
-			font-size: 1.4rem;
-		}
-		
-		.daily-card .breakdown-number {
-			font-size: 1.3rem;
+		.chart-container {
+			height: 300px;
 		}
 	}
 </style>

@@ -8,95 +8,98 @@ export async function load() {
 	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
-		// Get current date and calculate date ranges
 		const now = new Date();
+		const baseWhere = "isvisible = true AND (category != 2 OR category IS NULL)";
+
+		const fifteenDaysAgo = new Date(now);
+		fifteenDaysAgo.setDate(now.getDate() - 15);
+
 		const thirtyDaysAgo = new Date(now);
 		thirtyDaysAgo.setDate(now.getDate() - 30);
-		
-		const sevenDaysAgo = new Date(now);
-		sevenDaysAgo.setDate(now.getDate() - 7);
 
-		// 1. Total leads generated (excluding category = 2, but including NULL category)
-		const totalLeadsResult = await pool.query(
-			'SELECT COUNT(*) as total FROM leaddata WHERE isvisible = true AND (category != 2 OR category IS NULL)'
-		);
-		
-		// 2. Leads generated last 30 days (excluding category = 2, but including NULL category)
-		const last30DaysResult = await pool.query(
-			'SELECT COUNT(*) as count FROM leaddata WHERE isvisible = true AND (category != 2 OR category IS NULL) AND created_at >= $1',
-			[thirtyDaysAgo.toISOString()]
+		const ninetyDaysAgo = new Date(now);
+		ninetyDaysAgo.setDate(now.getDate() - 90);
+
+		const [last90Result, last30Result, last15Result] = await Promise.all([
+			pool.query(
+				`SELECT COUNT(*) as count FROM leaddata WHERE ${baseWhere} AND created_at >= $1`,
+				[ninetyDaysAgo.toISOString()]
+			),
+			pool.query(
+				`SELECT COUNT(*) as count FROM leaddata WHERE ${baseWhere} AND created_at >= $1`,
+				[thirtyDaysAgo.toISOString()]
+			),
+			pool.query(
+				`SELECT COUNT(*) as count FROM leaddata WHERE ${baseWhere} AND created_at >= $1`,
+				[fifteenDaysAgo.toISOString()]
+			)
+		]);
+
+		const last90Count = parseInt(last90Result.rows[0].count);
+		const last30Count = parseInt(last30Result.rows[0].count);
+		const last15Count = parseInt(last15Result.rows[0].count);
+
+		// Fetch daily lead counts for the last 6 months (to compute rolling averages over last 3 months)
+		const sixMonthsAgo = new Date(now);
+		sixMonthsAgo.setDate(now.getDate() - 180);
+
+		const dailyCountsResult = await pool.query(
+			`SELECT DATE(created_at) as day, COUNT(*) as count
+			 FROM leaddata
+			 WHERE ${baseWhere} AND created_at >= $1
+			 GROUP BY DATE(created_at)
+			 ORDER BY day`,
+			[sixMonthsAgo.toISOString()]
 		);
 
-		// 3. Leads generated in last 4 weeks, week by week (excluding category = 2)
-		const weeklyResults = [];
-		for (let i = 0; i < 4; i++) {
-			const weekStart = new Date(now);
-			weekStart.setDate(now.getDate() - (7 * (i + 1)));
-			const weekEnd = new Date(weekStart);
-			weekEnd.setDate(weekStart.getDate() + 7);
-			
-			const weekResult = await pool.query(
-				'SELECT COUNT(*) as count FROM leaddata WHERE isvisible = true AND (category != 2 OR category IS NULL) AND created_at >= $1 AND created_at < $2',
-				[weekStart.toISOString(), weekEnd.toISOString()]
-			);
-			
-			weeklyResults.push({
-				week: `Week ${4-i}`,
-				weekStart: weekStart.toISOString().split('T')[0],
-				weekEnd: weekEnd.toISOString().split('T')[0],
-				count: parseInt(weekResult.rows[0].count)
-			});
+		const dailyCounts = new Map();
+		for (const row of dailyCountsResult.rows) {
+			dailyCounts.set(row.day.toISOString().split('T')[0], parseInt(row.count));
 		}
 
-		// 4. Leads generated last 7 days, day by day (excluding category = 2)
-		const dailyResults = [];
-		for (let i = 6; i >= 0; i--) {
-			const day = new Date(now);
-			day.setDate(now.getDate() - i);
-			const dayStart = new Date(day);
-			dayStart.setHours(0, 0, 0, 0);
-			const dayEnd = new Date(day);
-			dayEnd.setHours(23, 59, 59, 999);
-			
-			const dayResult = await pool.query(
-				'SELECT COUNT(*) as count FROM leaddata WHERE isvisible = true AND (category != 2 OR category IS NULL) AND created_at >= $1 AND created_at <= $2',
-				[dayStart.toISOString(), dayEnd.toISOString()]
-			);
-			
-			dailyResults.push({
-				date: day.toISOString().split('T')[0],
-				dayName: day.toLocaleDateString('en-US', { weekday: 'short' }),
-				count: parseInt(dayResult.rows[0].count)
+		// Compute rolling averages at weekly intervals over the last 3 months
+		const trendData = [];
+		for (let weeksAgo = 12; weeksAgo >= 0; weeksAgo--) {
+			const refDate = new Date(now);
+			refDate.setDate(now.getDate() - weeksAgo * 7);
+			const refDateStr = refDate.toISOString().split('T')[0];
+
+			const sumForPeriod = (days) => {
+				let total = 0;
+				for (let d = 0; d < days; d++) {
+					const date = new Date(refDate);
+					date.setDate(refDate.getDate() - d);
+					const key = date.toISOString().split('T')[0];
+					total += dailyCounts.get(key) || 0;
+				}
+				return total;
+			};
+
+			trendData.push({
+				date: refDateStr,
+				avg90: parseFloat((sumForPeriod(90) / 90).toFixed(1)),
+				avg30: parseFloat((sumForPeriod(30) / 30).toFixed(1)),
+				avg15: parseFloat((sumForPeriod(15) / 15).toFixed(1))
 			});
 		}
-
-		// Additional metrics (excluding category = 2)
-		const todayStart = new Date(now);
-		todayStart.setHours(0, 0, 0, 0);
-		const todayResult = await pool.query(
-			'SELECT COUNT(*) as count FROM leaddata WHERE isvisible = true AND (category != 2 OR category IS NULL) AND created_at >= $1',
-			[todayStart.toISOString()]
-		);
 
 		return {
 			analytics: {
-				totalLeads: parseInt(totalLeadsResult.rows[0].total),
-				last30Days: parseInt(last30DaysResult.rows[0].count),
-				today: parseInt(todayResult.rows[0].count),
-				weeklyBreakdown: weeklyResults.reverse(), // Show most recent week first
-				dailyBreakdown: dailyResults
+				avgDaily90: (last90Count / 90).toFixed(1),
+				avgDaily30: (last30Count / 30).toFixed(1),
+				avgDaily15: (last15Count / 15).toFixed(1),
+				trendData
 			}
 		};
 	} catch (error) {
 		console.error('Analytics query error:', error);
-		return { 
+		return {
 			error: 'Failed to load analytics data',
 			analytics: {
-				totalLeads: 0,
-				last30Days: 0,
-				today: 0,
-				weeklyBreakdown: [],
-				dailyBreakdown: []
+				avgDaily90: '0',
+				avgDaily30: '0',
+				avgDaily15: '0',
+				trendData: []
 			}
 		};
 	}
