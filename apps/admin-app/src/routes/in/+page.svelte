@@ -28,7 +28,7 @@
     { href: "/in/analytics/business-login", label: "Business Login" },
     { href: "/in/analytics/businesses", label: "Businesses" },
     { href: "/in/analytics/businesses-onboarded", label: "Businesses Onboarded" },
-    { href: "/business-onboarding", label: "Business Onboarding" },
+    { href: "/in/business-onboarding", label: "Business Onboarding" },
     { href: "/in/analytics/businesses-branches", label: "Businesses Branches" },
     { href: "/in/analytics/businesses-statewise", label: "Businesses Statewise" },
     { href: "/in/analytics/coverage", label: "Coverage" },

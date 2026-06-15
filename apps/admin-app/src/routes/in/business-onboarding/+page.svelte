@@ -9,13 +9,13 @@
 	</header>
 
 	<div class="cards">
-		<a href="/business-onboarding/find-businesses" class="card">
+		<a href="/in/business-onboarding/find-businesses" class="card">
 			<div class="card-icon">FB</div>
 			<h3>Find Businesses</h3>
 			<p>Search and discover new businesses to onboard</p>
 		</a>
 
-		<a href="/business-onboarding/invitation-email-campaign" class="card">
+		<a href="/in/business-onboarding/invitation-email-campaign" class="card">
 			<div class="card-icon">EM</div>
 			<h3>Invitation Email Campaign</h3>
 			<p>Monitor outbound email campaigns to businesses</p>

@@ -9,11 +9,11 @@
 		if (filters.search) params.set('search', filters.search);
 		if (filters.emailStatus !== 'all') params.set('email_status', filters.emailStatus);
 		const query = params.toString();
-		window.location.href = '/business-onboarding/find-businesses/us' + (query ? '?' + query : '');
+		window.location.href = '/in/business-onboarding/find-businesses/in' + (query ? '?' + query : '');
 	}
 
 	function clearFilters() {
-		window.location.href = '/business-onboarding/find-businesses/us';
+		window.location.href = '/in/business-onboarding/find-businesses/in';
 	}
 
 	function goToPage(p) {
@@ -22,25 +22,25 @@
 		if (filters.search) params.set('search', filters.search);
 		if (filters.emailStatus !== 'all') params.set('email_status', filters.emailStatus);
 		params.set('page', p);
-		window.location.href = '/business-onboarding/find-businesses/us?' + params.toString();
+		window.location.href = '/in/business-onboarding/find-businesses/in?' + params.toString();
 	}
 
 	function formatDate(dateString) {
 		if (!dateString) return '-';
-		return new Date(dateString).toLocaleDateString('en-US', {
+		return new Date(dateString).toLocaleDateString('en-IN', {
 			year: 'numeric', month: 'short', day: 'numeric'
 		});
 	}
 </script>
 
 <svelte:head>
-	<title>USA Businesses - Solar Vipani Admin</title>
+	<title>India Businesses - Solar Vipani Admin</title>
 </svelte:head>
 
 <div class="page">
 	<header>
-		<h1>USA - Master Business List</h1>
-		<a href="/business-onboarding/find-businesses" class="back-link">Back</a>
+		<h1>India - Master Business List</h1>
+		<a href="/in/business-onboarding/find-businesses" class="back-link">Back</a>
 	</header>
 
 	{#if error}
@@ -115,8 +115,6 @@
 							<th>Contact Person</th>
 							<th>Mobile</th>
 							<th>State</th>
-							<th>County</th>
-							<th>Website</th>
 							<th>Emails Sent</th>
 							<th>Last Sent</th>
 							<th>Unsub</th>
@@ -131,14 +129,6 @@
 								<td>{biz.contact_person || '-'}</td>
 								<td>{biz.mobile_number || '-'}</td>
 								<td>{biz.state || '-'}</td>
-								<td>{biz.county || '-'}</td>
-								<td>
-									{#if biz.website}
-										<a href={biz.website} target="_blank" class="link">{biz.website}</a>
-									{:else}
-										-
-									{/if}
-								</td>
 								<td>{biz.number_of_emails_sent || 0}</td>
 								<td>{formatDate(biz.earlier_date)}</td>
 								<td>{biz.unsubscribe === 1 ? 'Yes' : 'No'}</td>
@@ -202,7 +192,7 @@
 		background: #f8f9fa; border: 1px solid #e9ecef;
 		border-radius: 8px; padding: 16px; text-align: center;
 	}
-	.stat-value { font-size: 28px; font-weight: bold; color: #1565c0; }
+	.stat-value { font-size: 28px; font-weight: bold; color: #e65100; }
 	.stat-label { font-size: 13px; color: #666; margin-top: 4px; }
 
 	.section { margin-bottom: 30px; }
@@ -242,8 +232,6 @@
 	tr:hover { background: #f8f9fa; }
 
 	.email-cell { font-family: monospace; font-size: 13px; }
-	.link { color: #0077cc; text-decoration: none; font-size: 13px; }
-	.link:hover { text-decoration: underline; }
 	.empty { color: #999; font-style: italic; }
 
 	.pagination {

@@ -6,10 +6,9 @@ export async function load({ url }) {
 
 	const dateFrom = url.searchParams.get('from') || '';
 	const dateTo = url.searchParams.get('to') || '';
-	const table = url.searchParams.get('table') || 'all';
 
 	try {
-		let conditions = [];
+		let conditions = ["db_table = 'masterlist_indian_businesses'"];
 		let params = [];
 		let paramIndex = 1;
 
@@ -23,29 +22,23 @@ export async function load({ url }) {
 			params.push(dateTo);
 			paramIndex++;
 		}
-		if (table !== 'all') {
-			conditions.push(`db_table = $${paramIndex}`);
-			params.push(table);
-			paramIndex++;
-		}
 
-		const whereClause = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
+		const whereClause = 'WHERE ' + conditions.join(' AND ');
 
 		const dailySummary = await pool.query(
 			`SELECT
 				DATE(sent_at) as date,
-				db_table,
 				COUNT(*) as emails_sent
 			FROM installer_invitation_email_campaign_log
 			${whereClause}
-			GROUP BY DATE(sent_at), db_table
+			GROUP BY DATE(sent_at)
 			ORDER BY DATE(sent_at) DESC`,
 			params
 		);
 
 		const recentEmails = await pool.query(
 			`SELECT
-				id, db_table, business_id, recipient_email, vendor_name,
+				id, business_id, recipient_email, vendor_name,
 				state, email_number, campaign_run_id, sent_at
 			FROM installer_invitation_email_campaign_log
 			${whereClause}
@@ -63,23 +56,14 @@ export async function load({ url }) {
 				MIN(sent_at) as first_sent,
 				MAX(sent_at) as last_sent
 			FROM installer_invitation_email_campaign_log
-		`);
-
-		const tableStats = await pool.query(`
-			SELECT
-				db_table,
-				COUNT(*) as total_sent,
-				COUNT(DISTINCT recipient_email) as unique_recipients
-			FROM installer_invitation_email_campaign_log
-			GROUP BY db_table
+			WHERE db_table = 'masterlist_indian_businesses'
 		`);
 
 		return {
 			dailySummary: dailySummary.rows,
 			recentEmails: recentEmails.rows,
 			stats: stats.rows[0],
-			tableStats: tableStats.rows,
-			filters: { dateFrom, dateTo, table }
+			filters: { dateFrom, dateTo }
 		};
 	} catch (error) {
 		console.error('Error loading campaign data:', error);
@@ -87,8 +71,7 @@ export async function load({ url }) {
 			dailySummary: [],
 			recentEmails: [],
 			stats: {},
-			tableStats: [],
-			filters: { dateFrom, dateTo, table },
+			filters: { dateFrom, dateTo },
 			error: 'Failed to load campaign data'
 		};
 	}

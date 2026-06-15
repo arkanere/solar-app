@@ -1,7 +1,7 @@
 <script>
 	export let data;
 
-	$: ({ dailySummary, recentEmails, stats, tableStats, filters, error } = data);
+	$: ({ dailySummary, recentEmails, stats, filters, error } = data);
 
 	function formatDate(dateString) {
 		if (!dateString) return '-';
@@ -25,23 +25,16 @@
 		});
 	}
 
-	function formatTableName(name) {
-		if (name === 'masterlist_indian_businesses') return 'India';
-		if (name === 'masterlist_usa_businesses') return 'USA';
-		return name;
-	}
-
 	function applyFilters() {
 		const params = new URLSearchParams();
 		if (filters.dateFrom) params.set('from', filters.dateFrom);
 		if (filters.dateTo) params.set('to', filters.dateTo);
-		if (filters.table !== 'all') params.set('table', filters.table);
 		const query = params.toString();
-		window.location.href = '/business-onboarding/invitation-email-campaign' + (query ? '?' + query : '');
+		window.location.href = '/in/business-onboarding/invitation-email-campaign' + (query ? '?' + query : '');
 	}
 
 	function clearFilters() {
-		window.location.href = '/business-onboarding/invitation-email-campaign';
+		window.location.href = '/in/business-onboarding/invitation-email-campaign';
 	}
 </script>
 
@@ -52,7 +45,7 @@
 <div class="page">
 	<header>
 		<h1>Invitation Email Campaign</h1>
-		<a href="/business-onboarding" class="back-link">Back to Business Onboarding</a>
+		<a href="/in/business-onboarding" class="back-link">Back to Business Onboarding</a>
 	</header>
 
 	{#if error}
@@ -79,22 +72,6 @@
 		</div>
 	</div>
 
-	<!-- Per-table Stats -->
-	{#if tableStats.length > 0}
-		<div class="section">
-			<h2>By Source Table</h2>
-			<div class="stats-grid small">
-				{#each tableStats as ts}
-					<div class="stat-card">
-						<div class="stat-value">{ts.total_sent}</div>
-						<div class="stat-label">{formatTableName(ts.db_table)} - Sent</div>
-						<div class="stat-sub">{ts.unique_recipients} unique</div>
-					</div>
-				{/each}
-			</div>
-		</div>
-	{/if}
-
 	<!-- Filters -->
 	<div class="section">
 		<h2>Filters</h2>
@@ -107,15 +84,7 @@
 				To
 				<input type="date" bind:value={filters.dateTo} />
 			</label>
-			<label>
-				Source
-				<select bind:value={filters.table}>
-					<option value="all">All</option>
-					<option value="masterlist_indian_businesses">India</option>
-					<option value="masterlist_usa_businesses">USA</option>
-				</select>
-			</label>
-			<button class="btn-apply" on:click={applyFilters}>Apply</button>
+<button class="btn-apply" on:click={applyFilters}>Apply</button>
 			<button class="btn-clear" on:click={clearFilters}>Clear</button>
 		</div>
 	</div>
@@ -131,7 +100,6 @@
 					<thead>
 						<tr>
 							<th>Date</th>
-							<th>Source</th>
 							<th>Emails Sent</th>
 						</tr>
 					</thead>
@@ -139,7 +107,6 @@
 						{#each dailySummary as row}
 							<tr>
 								<td>{formatDate(row.date)}</td>
-								<td><span class="badge badge-{formatTableName(row.db_table).toLowerCase()}">{formatTableName(row.db_table)}</span></td>
 								<td>{row.emails_sent}</td>
 							</tr>
 						{/each}
@@ -160,7 +127,6 @@
 					<thead>
 						<tr>
 							<th>Sent At</th>
-							<th>Source</th>
 							<th>Vendor Name</th>
 							<th>Email</th>
 							<th>State</th>
@@ -172,7 +138,6 @@
 						{#each recentEmails as email}
 							<tr>
 								<td>{formatDateTime(email.sent_at)}</td>
-								<td><span class="badge badge-{formatTableName(email.db_table).toLowerCase()}">{formatTableName(email.db_table)}</span></td>
 								<td>{email.vendor_name || '-'}</td>
 								<td class="email-cell">{email.recipient_email}</td>
 								<td>{email.state || '-'}</td>

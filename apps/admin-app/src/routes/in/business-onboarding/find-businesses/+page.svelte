@@ -5,17 +5,17 @@
 <div class="page">
 	<header>
 		<h1>Find Businesses</h1>
-		<a href="/business-onboarding" class="back-link">Back to Business Onboarding</a>
+		<a href="/in/business-onboarding" class="back-link">Back to Business Onboarding</a>
 	</header>
 
 	<div class="cards">
-		<a href="/business-onboarding/find-businesses/in" class="card">
+		<a href="/in/business-onboarding/find-businesses/in" class="card">
 			<div class="card-icon">IN</div>
 			<h3>India Businesses</h3>
 			<p>View master list of Indian solar businesses</p>
 		</a>
 
-		<a href="/business-onboarding/find-businesses/us" class="card">
+		<a href="/in/business-onboarding/find-businesses/us" class="card">
 			<div class="card-icon">US</div>
 			<h3>USA Businesses</h3>
 			<p>View master list of USA solar businesses</p>
