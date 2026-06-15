@@ -4,6 +4,7 @@
 	import { toast } from 'svelte-sonner';
 	import { isDarkMode } from '$lib/stores/theme.svelte';
 	import ShowSupport from '$lib/us-new-rewrites/ShowSupport.svelte';
+	import ShowDeleteAccount from '$lib/us-new-rewrites/ShowDeleteAccount.svelte';
 	import ShowRankingPolicy from '$lib/us-new-rewrites/ShowRankingPolicy.svelte';
 	import PostRecentProject from '$lib/us-new-rewrites/PostRecentProject.svelte';
 	import AddBranch from '$lib/us-new-rewrites/AddBranch.svelte';
@@ -18,6 +19,7 @@
 	// Initialize state variables
 	let recentProjects = $state([]);
 	let showSupport = $state(false);
+	let showDeleteAccount = $state(false);
 	let showRankingPolicy = $state(false);
 	let showPostRecentProject = $state(false);
 	let showAddBranch = $state(false);
@@ -42,6 +44,7 @@
 
 	// UI toggle functions
 	const toggleSupport = () => (showSupport = !showSupport);
+	const toggleDeleteAccount = () => (showDeleteAccount = !showDeleteAccount);
 	const toggleRankingPolicy = () => (showRankingPolicy = !showRankingPolicy);
 	const togglePostRecentProject = () => (showPostRecentProject = !showPostRecentProject);
 	const toggleAddBranch = () => (showAddBranch = !showAddBranch);
@@ -158,6 +161,7 @@
 				<li><button on:click={toggleRankingPolicy}>Policy</button></li>
 				-->
 		<li><button onclick={toggleSupport}>Support</button></li>
+		<li><button onclick={toggleDeleteAccount}>Delete Account</button></li>
 		<li>
 			<form method="POST" action={`/us/${businessSlug}/logout`}>
 				<button type="submit">Logout</button>
@@ -205,6 +209,10 @@
 
 {#if showSupport}
 	<ShowSupport show={showSupport} on:close={() => (showSupport = false)} />
+{/if}
+
+{#if showDeleteAccount}
+	<ShowDeleteAccount bind:show={showDeleteAccount} onClose={() => (showDeleteAccount = false)} />
 {/if}
 
 {#if showRankingPolicy}

@@ -20,6 +20,7 @@
 		Settings,
 		MessageCircle,
 		ScrollText,
+		Trash2,
 		LogOut,
 		X,
 		ChevronDown
@@ -34,6 +35,7 @@
 		onPostProject?: () => void;
 		onPolicy?: () => void;
 		onSupport?: () => void;
+		onDeleteAccount?: () => void;
 	};
 
 	let {
@@ -44,7 +46,8 @@
 		onAddBranch = () => {},
 		onPostProject = () => {},
 		onPolicy = () => {},
-		onSupport = () => {}
+		onSupport = () => {},
+		onDeleteAccount = () => {}
 	}: SidebarProps = $props();
 
 	let darkMode = $derived($isDarkMode);
@@ -105,13 +108,14 @@
 			icon: Settings,
 			items: [
 				{ label: 'Support', icon: MessageCircle, action: 'support', type: 'modal' },
-				{ label: 'Policy', icon: ScrollText, action: 'policy', type: 'modal' }
+				{ label: 'Policy', icon: ScrollText, action: 'policy', type: 'modal' },
+				{ label: 'Delete Account', icon: Trash2, action: 'deleteAccount', type: 'modal' }
 			]
 		}
 	]);
 
 	function handleItemClick(item) {
-		const callbacks = { addLead: onAddLead, addBranch: onAddBranch, postProject: onPostProject, policy: onPolicy, support: onSupport };
+		const callbacks = { addLead: onAddLead, addBranch: onAddBranch, postProject: onPostProject, policy: onPolicy, support: onSupport, deleteAccount: onDeleteAccount };
 		callbacks[item.action]?.();
 		if (window.innerWidth < 768) isMobileMenuOpen.set(false);
 	}

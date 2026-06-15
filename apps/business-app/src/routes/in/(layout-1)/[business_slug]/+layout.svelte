@@ -8,6 +8,7 @@
 	import PostRecentProject from '$lib/in-new-rewrites/PostRecentProject.svelte';
 	import AddBranch from '$lib/in-new-rewrites/AddBranch.svelte';
 	import ShowSupport from '$lib/in-new-rewrites/ShowSupport.svelte';
+	import ShowDeleteAccount from '$lib/in-new-rewrites/ShowDeleteAccount.svelte';
 	import ShowRankingPolicy from '$lib/in-new-rewrites/ShowRankingPolicy.svelte';
 	import LeadFormModalBusiness from '$lib/in-new-rewrites/LeadFormModalBusiness.svelte';
 	import type { Snippet } from 'svelte';
@@ -29,6 +30,7 @@
 
 	// Modal states (lifted from individual pages)
 	let showSupport = $state(false);
+	let showDeleteAccount = $state(false);
 	let showRankingPolicy = $state(false);
 	let showPostRecentProject = $state(false);
 	let showAddBranch = $state(false);
@@ -86,6 +88,10 @@
 		showSupport = true;
 	}
 
+	function handleDeleteAccount() {
+		showDeleteAccount = true;
+	}
+
 	// Handle events from modals
 	function handleBranchAdded(event) {
 		window.location.reload();
@@ -134,6 +140,7 @@
 	onPostProject={handlePostProject}
 	onPolicy={handlePolicy}
 	onSupport={handleSupport}
+	onDeleteAccount={handleDeleteAccount}
 />
 
 <!-- Main Content Area -->
@@ -191,6 +198,13 @@
 		{businessSlug}
 		onClose={() => (showPostRecentProject = false)}
 		onPosted={handleProjectPosted}
+	/>
+{/if}
+
+{#if showDeleteAccount}
+	<ShowDeleteAccount
+		bind:show={showDeleteAccount}
+		onClose={() => (showDeleteAccount = false)}
 	/>
 {/if}
 
