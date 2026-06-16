@@ -32,7 +32,7 @@ interface EmailData {
 	isallotted: boolean;
 }
 
-export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
+export const POST: RequestHandler = async ({ request, cookies }) => {
 	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
@@ -238,16 +238,58 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 
 		if (customerEmailData) {
 			try {
-				const response = await fetch('/us/api/sendLeadClaimNotificationToCustomer', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify(customerEmailData)
-				});
+				const leadResult = await pool.query<{ name: string; email: string | null }>(
+					'SELECT name, email FROM us_leaddata WHERE id = $1',
+					[customerEmailData.lead_id]
+				);
+				const lead = leadResult.rows[0];
 
-				const emailResult = (await response.json()) as { success: boolean; error?: string };
+				if (!lead?.email) {
+					// No customer email on file — nothing to notify
+				} else {
+					const bizResult = await pool.query<{
+						businessname: string;
+						phonenumber: string | null;
+						email: string | null;
+						slug: string;
+					}>(
+						'SELECT businessname, phonenumber, email, slug FROM businesses_1 WHERE id = $1',
+						[customerEmailData.business_id]
+					);
 
-				if (!emailResult.success) {
-					console.error('❌ Failed to send customer claim notification:', emailResult.error);
+					if (bizResult.rows.length === 0) {
+						console.error(
+							'❌ Customer notification skipped: business not found',
+							customerEmailData.business_id
+						);
+					} else {
+						const business = bizResult.rows[0];
+						const profileLink = `https://solarvipani.com/us/solar-panel-installer/${business.slug}`;
+						const adminEmail = 'admin@solarvipani.com';
+
+						const subject = 'A Solar Installer is Interested in Your Inquiry - Solar Vipani';
+						const message = `
+    <p>Dear ${lead.name},</p>
+    <p>Great news! A verified solar installer has shown interest in your inquiry on Solar Vipani.</p>
+    <p><strong>Installer Details:</strong></p>
+    <ul>
+        <li><strong>Name:</strong> ${business.businessname}</li>
+        <li><strong>Phone:</strong> ${business.phonenumber || 'N/A'}</li>
+        <li><strong>Email:</strong> ${business.email || 'N/A'}</li>
+        <li><strong>View Profile:</strong> <a href="${profileLink}" style="color: #0056b3;">${business.businessname}</a></li>
+    </ul>
+    <p>One of our verified installers will reach out to you shortly to discuss your solar energy needs.</p>
+    <p>If you have any questions, feel free to contact us at <a href="mailto:admin@solarvipani.com">admin@solarvipani.com</a>.</p>
+    <p>Best Regards,<br><strong>Solar Vipani Team</strong></p>
+    `;
+
+						const result = await sendEmail([lead.email, adminEmail], subject, message, {
+							isHtml: true
+						});
+						if (!result.success) {
+							console.error('❌ Failed to send customer claim notification:', result.error);
+						}
+					}
 				}
 			} catch (emailError) {
 				console.error('❌ Error sending customer claim notification:', emailError);
