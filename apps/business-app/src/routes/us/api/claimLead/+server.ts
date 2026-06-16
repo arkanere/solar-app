@@ -2,6 +2,7 @@ import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/us/auth/business';
+import { sendEmail } from '$lib/us/sendEmail';
 import type { ClaimRequestPayload } from '$lib/types/lead';
 
 interface ClaimCountRow {
@@ -186,18 +187,49 @@ export const POST: RequestHandler = async ({ request, fetch, cookies }) => {
 		// Send email AFTER transaction commits (outside transaction for better performance)
 		if (emailData) {
 			try {
-				const response = await fetch('/us/api/sendLeadAllotmentStatus', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify(emailData)
-				});
+				const bizResult = await pool.query<{
+					businessname: string;
+					login_email: string;
+					slug: string;
+					magic_link_token: string;
+				}>(
+					'SELECT businessname, login_email, slug, magic_link_token FROM businesses_1 WHERE id = $1 LIMIT 1',
+					[emailData.business_id]
+				);
 
-				const emailResult = (await response.json()) as { success: boolean; error?: string };
+				if (bizResult.rows.length === 0) {
+					console.error('❌ Allotment email skipped: business not found', emailData.business_id);
+				} else {
+					const { businessname, login_email, slug, magic_link_token } = bizResult.rows[0];
+					const adminEmail = 'admin@solarvipani.com';
+					const magicLink = `https://business.solarvipani.com/us/${slug}/signin-link/${magic_link_token}`;
 
-				if (!emailResult.success) {
-					console.error('❌ Failed to send lead allotment email:', emailResult.error);
+					const subject = 'New Lead Allotted - Solar Vipani';
+					const message = `
+    <p>Dear ${businessname},</p>
+    <p>Great news! A new lead has been successfully allotted to your business.</p>
+    <p>You can view the lead details by logging into your Solar Vipani business account.</p>
+
+    <p style="margin-bottom: 2rem;">
+        <a href="${magicLink}" style="color: blue; text-decoration: underline;">Access Your Business Account</a>
+    </p>
+
+    <p>Best Regards,</p>
+    <p><strong>Solar Vipani Team</strong></p>
+
+    <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e0e0e0;" />
+    <p style="font-size: 0.9rem; color: #555;">
+        Looking for a digital marketing agency to run ads on Facebook, Instagram and Google?
+        Check out <a href="https://qualityclickss.com/" style="color: blue; text-decoration: underline;">Quality Clickss</a>.
+    </p>
+    `;
+
+					const result = await sendEmail([login_email, adminEmail], subject, message, {
+						isHtml: true
+					});
+					if (!result.success) {
+						console.error('❌ Failed to send lead allotment email:', result.error);
+					}
 				}
 			} catch (emailError) {
 				console.error('❌ Error sending lead allotment email:', emailError);
