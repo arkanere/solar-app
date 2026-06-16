@@ -2,9 +2,9 @@
 
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
+import { sendEmail } from '$lib/sendEmail';
 
-export async function POST({ request, fetch }) {
-	// ✅ Use `fetch` from event
+export async function POST({ request }) {
 	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
@@ -52,15 +52,52 @@ export async function POST({ request, fetch }) {
 			}
 		}
 
-		// ✅ Call /api/sendLeadAllotmentStatus to notify the business
-		await fetch('/api/sendLeadAllotmentStatus', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
-				business_id,
-				isallotted
-			})
-		});
+		// Notify the business when the lead has been allotted
+		if (isallotted) {
+			try {
+				const bizResult = await pool.query(
+					'SELECT businessname, login_email, slug, magic_link_token FROM businesses_1 WHERE id = $1 LIMIT 1',
+					[business_id]
+				);
+
+				if (bizResult.rows.length === 0) {
+					console.error('❌ Allotment email skipped: business not found', business_id);
+				} else {
+					const { businessname, login_email, slug, magic_link_token } = bizResult.rows[0];
+					const adminEmail = 'admin@solarvipani.com';
+					const magicLink = `https://business.solarvipani.com/us/${slug}/signin-link/${magic_link_token}`;
+
+					const subject = 'New Lead Allotted - Solar Vipani';
+					const message = `
+    <p>Dear ${businessname},</p>
+    <p>Great news! A new lead has been successfully allotted to your business.</p>
+    <p>You can view the lead details by logging into your Solar Vipani business account.</p>
+
+    <p style="margin-bottom: 2rem;">
+        <a href="${magicLink}" style="color: blue; text-decoration: underline;">Access Your Business Account</a>
+    </p>
+
+    <p>Best Regards,</p>
+    <p><strong>Solar Vipani Team</strong></p>
+
+    <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e0e0e0;" />
+    <p style="font-size: 0.9rem; color: #555;">
+        Looking for a digital marketing agency to run ads on Facebook, Instagram and Google?
+        Check out <a href="https://qualityclickss.com/" style="color: blue; text-decoration: underline;">Quality Clickss</a>.
+    </p>
+    `;
+
+					const result = await sendEmail([login_email, adminEmail], subject, message, {
+						isHtml: true
+					});
+					if (!result.success) {
+						console.error('❌ Failed to send lead allotment email:', result.error);
+					}
+				}
+			} catch (emailError) {
+				console.error('❌ Error sending lead allotment email:', emailError);
+			}
+		}
 
 		return new Response(JSON.stringify({ success: true }), { status: 200 });
 	} catch (error) {
