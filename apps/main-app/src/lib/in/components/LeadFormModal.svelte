@@ -41,10 +41,8 @@
 		if (isValid) {
 			isSubmitting = true;
 
-			// Navigate to thank-you page immediately for better UX
-			window.location.href = 'https://user.solarvipani.com/in/thank-you';
+			window.location.href = `https://user.solarvipani.com/in/thank-you?pincode=${encodeURIComponent(pinCode)}`;
 
-			// Submit form in background (fire and forget)
 			fetch('/in/api/submitLead', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
