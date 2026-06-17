@@ -19,6 +19,13 @@ Thumbs.db
 # Server scripts env files
 scripts/server-scripts/.env
 
+# Secrets — GCP service-account keys and other credential files
+solar-vipani-*.json
+*-service-account*.json
+*.serviceaccount.json
+*.pem
+*.key
+
 # n8n
 scripts/n8n/.n8n
 python-scripts-automation/n8n/.n8n
@@ -80,3 +87,6 @@ apps/*/.svelte-kit
 apps/*/.vercel
 apps/*/build
 apps/*/.output
+
+# Local archive of dead CSV data dumps moved out of served static/ folders
+data-archive
