@@ -1,4 +1,5 @@
 <script lang="ts">
+	import HeroVideoBanner from '$lib/in/components/seo/HeroVideoBanner.svelte';
 	import InstallerCard from '$lib/in/components/seo/InstallerCard.svelte';
 	import ProjectGallery from '$lib/in/components/seo/ProjectGallery.svelte';
 	import SubsidySection from '$lib/in/components/SubsidySection.svelte';
@@ -85,6 +86,9 @@
 	{@html `<script type="application/ld+json">${JSON.stringify(faqSchema)}</script>`}
 </svelte:head>
 
+<!-- Hero -->
+<HeroVideoBanner title="Solar Panel Installers in {data.district}, {data.state}" />
+
 <div class="max-w-6xl mx-auto px-4 py-8">
 	<!-- Breadcrumb -->
 	<nav class="text-sm text-muted-foreground mb-6" aria-label="Breadcrumb">
@@ -96,18 +100,10 @@
 		</ol>
 	</nav>
 
-	<!-- Hero -->
-	<h1 class="text-3xl md:text-4xl font-bold text-primary mb-4">
-		Solar Panel Installers in {data.district}, {data.state}
-	</h1>
-
 	<!-- Snapshot bar -->
 	<div class="flex flex-wrap gap-4 mb-8 text-sm">
 		<span class="bg-muted rounded-lg px-3 py-1.5 font-medium">{data.installerCount} Installers</span>
 		<span class="bg-muted rounded-lg px-3 py-1.5 font-medium">{data.cities.length} Cities</span>
-		{#if data.postalCode}
-			<span class="bg-muted rounded-lg px-3 py-1.5 font-medium">PIN: {data.postalCode}</span>
-		{/if}
 	</div>
 
 	<!-- Lead Form CTA -->
