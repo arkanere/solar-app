@@ -56,7 +56,6 @@
 
     capture('quote_submitted', { source_url: urlParam });
 
-    // keepalive ensures the request survives page navigation
     fetch('https://user.solarvipani.com/in/api/submitLead', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -73,7 +72,7 @@
       console.error('Error submitting form:', error);
     });
 
-    window.location.href = 'https://user.solarvipani.com/in/thank-you';
+    window.location.href = `https://user.solarvipani.com/in/thank-you?pincode=${encodeURIComponent(pinCode)}`;
   }
 </script>
 
