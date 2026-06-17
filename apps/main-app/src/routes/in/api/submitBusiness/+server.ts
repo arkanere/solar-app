@@ -71,33 +71,29 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 		}
 
 		// Set default values for non-form fields
-		const rscore = 0; // Default value for rscore
-		const isvisible = 0; // Assuming 1 means visible
-		const tag = 'blank'; // Default tag
-		const slug = null; // Empty slug for now
-		const notes = null; // Empty notes for now
-		const login_password = 'businessadminzpassword';
+		const rscore = 0;
+		const isvisible = 0;
+		const tag = 'blank';
+		const slug = null;
+		const notes = null;
 
-		// If any optional fields are missing, insert NULL for those values
 		const insertQuery = `
             INSERT INTO businesses_1 (
-                rscore, isvisible, pluscode, phonenumber, whatsapp, email, login_email, website, gstn, state, district, tag, slug, notes, city, businessname, address,
-            login_password)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+                rscore, isvisible, pluscode, phonenumber, whatsapp, email, login_email, website, gstn, state, district, tag, slug, notes, city, businessname, address)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
             RETURNING id
         `;
 
-		// Use NULL for optional fields if they are not provided or empty
 		const result = await pool.query<{ id: number }>(insertQuery, [
 			rscore,
 			isvisible,
-			plusCode || null, // If plusCode is not provided, insert NULL
+			plusCode || null,
 			phoneNumber,
-			whatsappNumber || null, // If whatsappNumber is not provided, insert NULL
-			email || null, // If email is not provided, insert NULL
-			login_email || 'admin@example.com',
-			website || null, // If website is not provided, insert NULL
-			gstn || null, // If GSTN is not provided, insert NULL
+			whatsappNumber || null,
+			email || null,
+			login_email || null,
+			website || null,
+			gstn || null,
 			state,
 			district,
 			tag,
@@ -105,8 +101,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 			notes,
 			city,
 			businessName,
-			address,
-			login_password
+			address
 		]);
 
 		const businessId = result.rows[0].id;
