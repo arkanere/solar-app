@@ -84,7 +84,7 @@ export const POST: RequestHandler = async ({ request }) => {
         ${lead.sv_comment_for_businesses ? `<p style="margin-top: 0.75rem; font-style: italic; color: hsl(209 100% 35%); background-color: rgba(74, 144, 226, 0.1); padding: 0.5rem; border-radius: 4px; border-left: 3px solid hsl(209 100% 35%);"><strong>Solarvipani.com Comment:</strong> ${lead.sv_comment_for_businesses}</p>` : ''}
         <p><strong>Created At:</strong> ${createdAtISTString}</p>
         
-        <p><strong>Important:</strong> Businesses that have either main branch or branch office in <a href="https://solarvipani.com/solar-panel-installer-directory/${lead.district.toLowerCase().replace(/\s+/g, '-')}" style="font-weight: bold;">${lead.district}</a> district can claim this lead by logging into their account.</p>
+        <p><strong>Important:</strong> Businesses that have either main branch or branch office in <a href="https://solarvipani.com/in/solar/${state.toLowerCase().replace(/\s+/g, '-')}/${lead.district.toLowerCase().replace(/\s+/g, '-')}/" style="font-weight: bold;">${lead.district}</a> district can claim this lead by logging into their account.</p>
         `;
 
 		        const subject = `New Solar Lead Inquiry in  ${lead.district}, ${state} - ${lead.name}`;
