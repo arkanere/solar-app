@@ -42,6 +42,18 @@
 	const stateSlug = $derived(b.state?.toLowerCase().replace(/ /g, '-') || '');
 	const districtSlug = $derived(b.district?.toLowerCase().replace(/ /g, '-') || '');
 
+	// Normalize the stored map value into an absolute Google Maps URL. Some
+	// records store only a place name (e.g. "Trichy") or a plus code instead of
+	// a full URL, which would otherwise be treated as a relative link and
+	// resolve to the current installer path.
+	const mapUrl = $derived.by(() => {
+		const raw = b.google_maps_link?.trim();
+		if (!raw) return '';
+		if (/^https?:\/\//i.test(raw)) return raw;
+		const query = [raw, b.city, b.state].filter(Boolean).join(', ');
+		return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+	});
+
 	const breadcrumb = $derived(
 		breadcrumbLD([
 			{ name: 'Home', url: 'https://solarvipani.com/in/' },
@@ -265,12 +277,12 @@
 							</div>
 						</div>
 					{/if}
-					{#if b.google_maps_link}
+					{#if mapUrl}
 						<div class="flex items-start gap-3">
 							<ExternalLink class="w-5 h-5 text-primary shrink-0 mt-0.5" />
 							<div>
 								<p class="text-sm text-muted-foreground font-medium">Map</p>
-								<a href={b.google_maps_link} target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">View on Google Maps</a>
+								<a href={mapUrl} target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">View on Google Maps</a>
 							</div>
 						</div>
 					{/if}
