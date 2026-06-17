@@ -25,7 +25,6 @@ const STATIC_PAGES: SitemapEntry[] = [
 		priority: '1.0'
 	},
 	{ loc: `${BASE_URL}/in/blogs`, lastmod: '', changefreq: 'monthly', priority: '0.8' },
-	{ loc: `${BASE_URL}/in/blog/`, lastmod: '', changefreq: 'weekly', priority: '0.8' },
 	{
 		loc: `${BASE_URL}/in/recent-solar-installation-projects`,
 		lastmod: '',
@@ -51,7 +50,6 @@ export async function generateSitemapEntries(pool: Pool): Promise<SitemapEntry[]
 		subsidiesResult,
 		discomsResult,
 		banksResult,
-		blogPostsResult,
 		geoStatesResult,
 		geoDistrictsResult,
 		geoCitiesResult,
@@ -65,18 +63,17 @@ export async function generateSitemapEntries(pool: Pool): Promise<SitemapEntry[]
 			"SELECT slug, updated_at FROM in_blogs WHERE status = 'published' ORDER BY updated_at DESC"
 		),
 		pool.query(
-			"SELECT slug, page_type, updated_at FROM seo_pages WHERE status = 'published' ORDER BY slug"
+			"SELECT slug, pillar_slug, page_type, updated_at FROM seo_pages WHERE status = 'published' ORDER BY slug"
 		),
-		pool.query("SELECT slug FROM solar_brands WHERE status = 'published' ORDER BY slug"),
+		pool.query(
+			"SELECT slug, product_category FROM solar_brands WHERE status = 'published' ORDER BY slug"
+		),
 		pool.query(
 			"SELECT state_slug FROM state_subsidies WHERE status = 'published' ORDER BY state_slug"
 		),
 		pool.query("SELECT slug FROM discoms WHERE status = 'published' ORDER BY slug"),
 		pool.query(
 			"SELECT slug FROM solar_financing_banks WHERE status = 'published' ORDER BY slug"
-		),
-		pool.query(
-			"SELECT slug, updated_at FROM in_blog_posts WHERE status = 'published' ORDER BY updated_at DESC"
 		),
 		pool.query(
 			`SELECT DISTINCT l.state FROM locations l
@@ -110,7 +107,7 @@ export async function generateSitemapEntries(pool: Pool): Promise<SitemapEntry[]
 	for (const row of businessesResult.rows) {
 		if (row.slug) {
 			entries.push({
-				loc: `${BASE_URL}/in/solar-panel-installer/${row.slug}`,
+				loc: `${BASE_URL}/in/installer/${row.slug}`,
 				lastmod: today,
 				changefreq: 'monthly',
 				priority: '0.8'
@@ -131,69 +128,58 @@ export async function generateSitemapEntries(pool: Pool): Promise<SitemapEntry[]
 		}
 	}
 
-	// SEO pages — priority by type
+	// SEO pages — pillar landing at /in/{pillar_slug}, clusters at /in/{pillar_slug}/{slug}
 	for (const row of seoPagesResult.rows) {
-		const priority = row.page_type === 'pillar' ? '0.9' : '0.8';
+		const isPillar = row.page_type === 'pillar';
 		const lastmod = row.updated_at ? row.updated_at.toISOString().split('T')[0] : today;
 		entries.push({
-			loc: `${BASE_URL}/in/solar/${row.slug}`,
+			loc: isPillar
+				? `${BASE_URL}/in/${row.pillar_slug}`
+				: `${BASE_URL}/in/${row.pillar_slug}/${row.slug}`,
 			lastmod,
 			changefreq: 'weekly',
-			priority
+			priority: isPillar ? '0.9' : '0.8'
 		});
 	}
 
-	// Brand pages — priority 0.7
+	// Brand pages — /in/solar-{product_category}/{slug} — priority 0.7
 	for (const row of brandsResult.rows) {
 		entries.push({
-			loc: `${BASE_URL}/in/solar/brands/${row.slug}`,
+			loc: `${BASE_URL}/in/solar-${row.product_category}/${row.slug}`,
 			lastmod: today,
 			changefreq: 'monthly',
 			priority: '0.7'
 		});
 	}
 
-	// State subsidy pages — priority 0.9
+	// State subsidy pages — /in/solar-subsidy/{state_slug} — priority 0.9
 	for (const row of subsidiesResult.rows) {
 		entries.push({
-			loc: `${BASE_URL}/in/solar/subsidy/${row.state_slug}`,
+			loc: `${BASE_URL}/in/solar-subsidy/${row.state_slug}`,
 			lastmod: today,
 			changefreq: 'monthly',
 			priority: '0.9'
 		});
 	}
 
-	// Discom pages — priority 0.7
+	// Discom pages — resolved under /in/solar-subsidy/{slug} — priority 0.7
 	for (const row of discomsResult.rows) {
 		entries.push({
-			loc: `${BASE_URL}/in/solar/discom/${row.slug}`,
+			loc: `${BASE_URL}/in/solar-subsidy/${row.slug}`,
 			lastmod: today,
 			changefreq: 'monthly',
 			priority: '0.7'
 		});
 	}
 
-	// Financing bank pages — priority 0.7
+	// Financing bank pages — /in/solar-financing/{slug} — priority 0.7
 	for (const row of banksResult.rows) {
 		entries.push({
-			loc: `${BASE_URL}/in/solar/financing/${row.slug}`,
+			loc: `${BASE_URL}/in/solar-financing/${row.slug}`,
 			lastmod: today,
 			changefreq: 'monthly',
 			priority: '0.7'
 		});
-	}
-
-	// New blog posts — priority 0.5
-	for (const row of blogPostsResult.rows) {
-		if (row.slug) {
-			const lastmod = row.updated_at ? row.updated_at.toISOString().split('T')[0] : today;
-			entries.push({
-				loc: `${BASE_URL}/in/blog/${row.slug}`,
-				lastmod,
-				changefreq: 'monthly',
-				priority: '0.5'
-			});
-		}
 	}
 
 	// Geographic state hubs — priority 0.9
