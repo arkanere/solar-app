@@ -21,7 +21,9 @@
 
   // Lazy load non-critical components after initial page load
   onMount(async () => {
-    // Progressive enhancement: Load video after static image
+    // Progressive enhancement: the hero video (~4.5MB) is decorative and fades
+    // in over the static AVIF (the LCP element). We defer its download until the
+    // browser is idle so it never competes with the LCP image for bandwidth.
     if (videoRef) {
       videoRef.addEventListener('loadeddata', () => {
         videoLoaded = true;
@@ -30,6 +32,19 @@
       videoRef.addEventListener('error', () => {
         console.log('Video failed to load, using static image');
       });
+
+      const startVideoLoad = () => {
+        videoRef.src = "/video/installation-video.mp4";
+        videoRef.load();
+      };
+
+      // requestIdleCallback runs after the page is interactive and the LCP image
+      // has had the connection to itself; setTimeout is the Safari fallback.
+      if ("requestIdleCallback" in window) {
+        requestIdleCallback(startVideoLoad, { timeout: 3000 });
+      } else {
+        setTimeout(startVideoLoad, 2000);
+      }
     }
 
     // Show chatbot popup when user reaches bottom of About section
@@ -333,7 +348,7 @@
       decoding="async"
     />
 
-    <!-- Video - Fades in once loaded -->
+    <!-- Video - src is attached after idle (see onMount), then fades in once loaded -->
     <video
       bind:this={videoRef}
       class="absolute top-0 left-0 w-full h-full object-cover object-center z-0 transition-opacity duration-1000"
@@ -342,10 +357,8 @@
       muted
       loop
       playsinline
-      preload="metadata"
-    >
-      <source src="/video/installation-video.mp4" type="video/mp4" />
-    </video>
+      preload="none"
+    ></video>
 
     <div class="absolute top-0 left-0 w-full h-full z-10 bg-black/55"></div>
     <div class="relative z-20 max-w-3xl px-6">
@@ -353,7 +366,7 @@
         Get 2-3 Free Quotes from Verified Installers in Your Area
       </h1>
       <h2 class="text-2xl md:text-3xl font-medium mb-6 text-primary-foreground leading-snug drop-shadow-lg">
-        Save 10-20% on installation costs with competitive quotes
+        Save 10-20% on installation costs with competitive solar quotations online
       </h2>
     </div>
   </div>
@@ -363,7 +376,7 @@
     <section id="lead-form-sv" class="mb-8 mx-auto max-w-md">
       <div class="rounded-[theme(--radius-lg)] p-[theme(--card-padding-y)] shadow-[theme(--shadow-lg)] bg-gradient-to-br from-primary/10 to-primary/5">
         <div class="text-center mb-8">
-          <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">Get Your Free Quotes</h2>
+          <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">Get Your Free Solar Quotation Online</h2>
           <div class="flex justify-center items-center my-4">
             <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
           </div>
@@ -445,6 +458,14 @@
             Join our community of solar adopters by sharing your experience, helping others on their journey to clean energy.
           </p>
         </div>
+      </div>
+      <div class="text-center mt-8">
+        <a
+          href="/in/get-quotes/"
+          class="inline-block bg-primary text-primary-foreground font-semibold px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
+        >
+          Get a Free Solar Quotation Online
+        </a>
       </div>
     </section>
 
