@@ -1,4 +1,5 @@
 <script lang="ts">
+	import HeroVideoBanner from '$lib/in/components/seo/HeroVideoBanner.svelte';
 	import InstallerCard from '$lib/in/components/seo/InstallerCard.svelte';
 	import ProjectGallery from '$lib/in/components/seo/ProjectGallery.svelte';
 	import SubsidySection from '$lib/in/components/SubsidySection.svelte';
@@ -106,6 +107,9 @@
 	{/if}
 </svelte:head>
 
+<!-- Hero -->
+<HeroVideoBanner title={pageTitle} />
+
 <div class="max-w-6xl mx-auto px-4 py-8">
 	<!-- Breadcrumb -->
 	<nav class="text-sm text-muted-foreground mb-6" aria-label="Breadcrumb">
@@ -120,14 +124,9 @@
 		</ol>
 	</nav>
 
-	<h1 class="text-3xl md:text-4xl font-bold text-primary mb-4">{pageTitle}</h1>
-
 	<!-- Stats bar -->
 	<div class="flex flex-wrap gap-4 mb-8 text-sm">
 		<span class="bg-muted rounded-lg px-3 py-1.5 font-medium">{d.installerCount} Installers</span>
-		{#if isCity && d.postalCode}
-			<span class="bg-muted rounded-lg px-3 py-1.5 font-medium">PIN: {d.postalCode}</span>
-		{/if}
 		{#if isSize}
 			<span class="bg-muted rounded-lg px-3 py-1.5 font-medium">{d.sizeKw}kW System</span>
 		{/if}
