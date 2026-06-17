@@ -1,11 +1,16 @@
-import posthog from 'posthog-js';
+import type { PostHog } from 'posthog-js';
 import { PUBLIC_POSTHOG_KEY } from '$env/static/public';
 
+// posthog-js (~195KB) is dynamically imported so it splits into its own chunk
+// and never lands in the layout's hydration bundle — keeping the main thread
+// free during initial load. It is fetched lazily when initPosthog() runs.
+let posthog: PostHog | null = null;
 let initialized = false;
 
-export function initPosthog() {
+export async function initPosthog() {
 	if (initialized || typeof window === 'undefined') return;
 
+	posthog = (await import('posthog-js')).default;
 	posthog.init(PUBLIC_POSTHOG_KEY, {
 		api_host: 'https://us.i.posthog.com',
 		capture_pageview: false, // manual — handled via afterNavigate
@@ -24,11 +29,11 @@ export function initPosthog() {
 }
 
 export function capturePageview(url: string) {
-	if (!initialized || typeof window === 'undefined') return;
+	if (!initialized || !posthog || typeof window === 'undefined') return;
 	posthog.capture('$pageview', { $current_url: url });
 }
 
 export function capture(event: string, properties?: Record<string, unknown>) {
-	if (!initialized || typeof window === 'undefined') return;
+	if (!initialized || !posthog || typeof window === 'undefined') return;
 	posthog.capture(event, properties);
 }

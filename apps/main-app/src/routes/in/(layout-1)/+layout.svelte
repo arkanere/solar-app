@@ -160,9 +160,8 @@
   }
 
   function loadAnalytics() {
-    // Load PostHog
-    initPosthog();
-    capturePageview(window.location.href);
+    // Load PostHog (dynamically imported chunk) then record the first pageview
+    initPosthog().then(() => capturePageview(window.location.href));
 
     // Load Hotjar
     if (typeof window !== "undefined" && !window.hj) {
