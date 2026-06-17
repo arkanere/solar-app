@@ -9,11 +9,11 @@
 		if (filters.search) params.set('search', filters.search);
 		if (filters.emailStatus !== 'all') params.set('email_status', filters.emailStatus);
 		const query = params.toString();
-		window.location.href = '/in/business-onboarding/find-businesses/in' + (query ? '?' + query : '');
+		window.location.href = '/in/business-onboarding/master-data' + (query ? '?' + query : '');
 	}
 
 	function clearFilters() {
-		window.location.href = '/in/business-onboarding/find-businesses/in';
+		window.location.href = '/in/business-onboarding/master-data';
 	}
 
 	function goToPage(p) {
@@ -22,7 +22,7 @@
 		if (filters.search) params.set('search', filters.search);
 		if (filters.emailStatus !== 'all') params.set('email_status', filters.emailStatus);
 		params.set('page', p);
-		window.location.href = '/in/business-onboarding/find-businesses/in?' + params.toString();
+		window.location.href = '/in/business-onboarding/master-data?' + params.toString();
 	}
 
 	function formatDate(dateString) {
@@ -34,13 +34,13 @@
 </script>
 
 <svelte:head>
-	<title>India Businesses - Solar Vipani Admin</title>
+	<title>Master Data - Solar Vipani Admin</title>
 </svelte:head>
 
 <div class="page">
 	<header>
-		<h1>India - Master Business List</h1>
-		<a href="/in/business-onboarding/find-businesses" class="back-link">Back</a>
+		<h1>Master Data</h1>
+		<a href="/in/business-onboarding" class="back-link">Back to Business Onboarding</a>
 	</header>
 
 	{#if error}
@@ -74,7 +74,7 @@
 		<div class="filters">
 			<label>
 				Search
-				<input type="text" bind:value={filters.search} placeholder="Name or email..." on:keydown={(e) => e.key === 'Enter' && applyFilters()} />
+				<input type="text" bind:value={filters.search} placeholder="Name, email, or contact..." on:keydown={(e) => e.key === 'Enter' && applyFilters()} />
 			</label>
 			<label>
 				State

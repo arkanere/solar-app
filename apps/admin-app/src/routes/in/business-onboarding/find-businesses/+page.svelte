@@ -9,7 +9,7 @@
 	</header>
 
 	<div class="cards">
-		<a href="/in/business-onboarding/find-businesses/in" class="card">
+		<a href="/in/business-onboarding/master-data" class="card">
 			<div class="card-icon">IN</div>
 			<h3>India Businesses</h3>
 			<p>View master list of Indian solar businesses</p>

@@ -9,6 +9,12 @@
 	</header>
 
 	<div class="cards">
+		<a href="/in/business-onboarding/master-data" class="card">
+			<div class="card-icon">MD</div>
+			<h3>Master Data</h3>
+			<p>View and search the master list of Indian businesses</p>
+		</a>
+
 		<a href="/in/business-onboarding/find-businesses" class="card">
 			<div class="card-icon">FB</div>
 			<h3>Find Businesses</h3>

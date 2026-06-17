@@ -9,7 +9,7 @@ export async function load() {
 
 	try {
 		const now = new Date();
-		const baseWhere = "isvisible = true AND category = 2";
+		const baseWhere = "isvisible = true AND status = true AND category = 2";
 
 		const fifteenDaysAgo = new Date(now);
 		fifteenDaysAgo.setDate(now.getDate() - 15);

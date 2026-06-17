@@ -9,7 +9,10 @@ export async function load() {
 
 	try {
 		const now = new Date();
-		const baseWhere = "isvisible = true AND status = true AND (category != 2 OR category IS NULL)";
+		const baseWhere = `isvisible = true AND status = true AND (category != 2 OR category IS NULL)
+			AND NOT EXISTS (
+				SELECT 1 FROM leaddata c WHERE c.original_id = leaddata.id AND c.category = 2
+			)`;
 
 		const fifteenDaysAgo = new Date(now);
 		fifteenDaysAgo.setDate(now.getDate() - 15);
@@ -39,7 +42,6 @@ export async function load() {
 		const last30Count = parseInt(last30Result.rows[0].count);
 		const last15Count = parseInt(last15Result.rows[0].count);
 
-		// Fetch daily lead counts for the last 6 months (to compute rolling averages over last 3 months)
 		const sixMonthsAgo = new Date(now);
 		sixMonthsAgo.setDate(now.getDate() - 180);
 
@@ -57,7 +59,6 @@ export async function load() {
 			dailyCounts.set(row.day.toISOString().split('T')[0], parseInt(row.count));
 		}
 
-		// Compute rolling averages at weekly intervals over the last 3 months
 		const trendData = [];
 		for (let weeksAgo = 12; weeksAgo >= 0; weeksAgo--) {
 			const refDate = new Date(now);
@@ -92,9 +93,9 @@ export async function load() {
 			}
 		};
 	} catch (error) {
-		console.error('Analytics query error:', error);
+		console.error('Leads not claimed analytics query error:', error);
 		return {
-			error: 'Failed to load analytics data',
+			error: 'Failed to load leads not claimed analytics data',
 			analytics: {
 				avgDaily90: '0',
 				avgDaily30: '0',
