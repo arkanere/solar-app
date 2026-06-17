@@ -18,12 +18,6 @@ const STATIC_PAGES: SitemapEntry[] = [
 	{ loc: `${BASE_URL}/in/data-deletion`, lastmod: '', changefreq: 'monthly', priority: '0.8' },
 	{ loc: `${BASE_URL}/in/business-listing`, lastmod: '', changefreq: 'monthly', priority: '0.8' },
 	{ loc: `${BASE_URL}/in/business-form`, lastmod: '', changefreq: 'monthly', priority: '0.8' },
-	{
-		loc: `${BASE_URL}/in/solar-panel-installer-directory`,
-		lastmod: '',
-		changefreq: 'monthly',
-		priority: '1.0'
-	},
 	{ loc: `${BASE_URL}/in/blogs`, lastmod: '', changefreq: 'monthly', priority: '0.8' },
 	{
 		loc: `${BASE_URL}/in/recent-solar-installation-projects`,
@@ -42,7 +36,6 @@ export async function generateSitemapEntries(pool: Pool): Promise<SitemapEntry[]
 	const entries: SitemapEntry[] = STATIC_PAGES.map((p) => ({ ...p, lastmod: p.lastmod || today }));
 
 	const [
-		citiesResult,
 		businessesResult,
 		blogsResult,
 		seoPagesResult,
@@ -55,9 +48,6 @@ export async function generateSitemapEntries(pool: Pool): Promise<SitemapEntry[]
 		geoCitiesResult,
 		authorsResult
 	] = await Promise.all([
-		pool.query(`SELECT DISTINCT l.city FROM locations l
-			INNER JOIN businesses_1 b ON LOWER(b.district) = LOWER(l.district) AND b.isvisible = true
-			ORDER BY l.city ASC`),
 		pool.query('SELECT slug FROM businesses_1 WHERE isvisible = true ORDER BY slug ASC'),
 		pool.query(
 			"SELECT slug, updated_at FROM in_blogs WHERE status = 'published' ORDER BY updated_at DESC"
@@ -92,16 +82,6 @@ export async function generateSitemapEntries(pool: Pool): Promise<SitemapEntry[]
 		),
 		pool.query(`SELECT slug FROM authors ORDER BY slug`)
 	]);
-
-	// Existing city pages — priority 0.7
-	for (const row of citiesResult.rows) {
-		entries.push({
-			loc: `${BASE_URL}/in/solar-panel-installer-directory/${toSlug(row.city)}`,
-			lastmod: today,
-			changefreq: 'weekly',
-			priority: '0.7'
-		});
-	}
 
 	// Existing business pages — priority 0.8
 	for (const row of businessesResult.rows) {
