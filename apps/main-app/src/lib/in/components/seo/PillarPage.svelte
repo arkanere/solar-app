@@ -118,7 +118,7 @@
 			href="/in/get-quotes/"
 			class="inline-block bg-primary text-primary-foreground font-semibold px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
 		>
-			Get Free Solar Quotes
+			Get a Free Solar Quotation Online
 		</a>
 	</div>
 </div>
