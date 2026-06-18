@@ -113,7 +113,7 @@
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] w-full mb-4">
 				{#each projects as project (project.id)}
 					<a
-						href="/in/solar-panel-installer/{project.business_slug}/project/{project.project_slug}"
+						href="/in/project/{project.project_slug}"
 						class="group block overflow-hidden transition-all duration-[var(--transition-default)] hover:-translate-y-[var(--hover-lift-sm)]"
 					>
 						<Card class="h-full flex flex-col hover:shadow-[var(--shadow-card-hover)]">
