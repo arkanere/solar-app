@@ -2,7 +2,7 @@ import { json, type RequestHandler } from '@sveltejs/kit';
 import { POSTGRES_URL } from '$env/static/private';
 import { createPool } from '@vercel/postgres';
 import type { VercelPool } from '@vercel/postgres';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import type { BusinessLoginRequest } from '$lib/types/api';
 
 interface BusinessRow {
