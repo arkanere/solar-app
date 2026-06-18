@@ -1,7 +1,7 @@
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json, type RequestHandler } from '@sveltejs/kit';
-import bcrypt from 'bcrypt'; // For hashing passwords
+import bcrypt from 'bcryptjs'; // For hashing passwords
 
 export const POST: RequestHandler = async (event) => {
 	const pool = createPool({ connectionString: POSTGRES_URL });
