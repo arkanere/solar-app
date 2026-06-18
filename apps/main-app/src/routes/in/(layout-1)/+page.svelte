@@ -10,8 +10,6 @@
   let { data } = $props();
 
   // Initialize component state
-  let ChatbotPopup = $state(null);
-  let shouldLoadChatbot = $state(false);
   let videoLoaded = $state(false);
   let videoRef = $state(null);
 
@@ -45,50 +43,6 @@
       } else {
         setTimeout(startVideoLoad, 2000);
       }
-    }
-
-    // Show chatbot popup when user reaches bottom of About section
-    let chatbotTimer = null;
-
-    const aboutSection = document.querySelector("#about-section");
-    if (aboutSection) {
-      // Create a sentinel element at the bottom of the about section
-      const bottomSentinel = document.createElement('div');
-      bottomSentinel.style.position = 'absolute';
-      bottomSentinel.style.bottom = '0';
-      bottomSentinel.style.height = '1px';
-      bottomSentinel.style.width = '100%';
-      bottomSentinel.style.pointerEvents = 'none';
-      aboutSection.style.position = 'relative';
-      aboutSection.appendChild(bottomSentinel);
-
-      // Observer for the bottom sentinel
-      const chatbotObserver = new IntersectionObserver(
-        async (entries) => {
-          if (entries[0].isIntersecting) {
-            // Bottom of About section is visible - wait 1 second then show chatbot
-            if (!chatbotTimer) {
-              chatbotTimer = setTimeout(async () => {
-                if (!ChatbotPopup) {
-                  const module = await import("$lib/in/components/ChatbotPopup.svelte");
-                  ChatbotPopup = module.default;
-                }
-                shouldLoadChatbot = true;
-              }, 1000);
-            }
-          } else {
-            // User scrolled back up - hide chatbot and clear timer
-            if (chatbotTimer) {
-              clearTimeout(chatbotTimer);
-              chatbotTimer = null;
-            }
-            shouldLoadChatbot = false;
-          }
-        },
-        { rootMargin: "0px", threshold: 0 },
-      );
-
-      chatbotObserver.observe(bottomSentinel);
     }
   });
 </script>
@@ -652,9 +606,4 @@
     </div>
   </div>
 </main>
-
-<!-- Chatbot Popup (Lazy Loaded) -->
-{#if shouldLoadChatbot && ChatbotPopup}
-  <ChatbotPopup />
-{/if}
 

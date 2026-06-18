@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from "svelte";
   import { toggleTheme, initializeTheme, isDarkMode } from "$lib/themeStore.svelte";
   import { writable } from "svelte/store";
   import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
@@ -11,11 +12,69 @@
   let { children } = $props();
 
 
-  // Create a shared store for chat messages
+  // Create a shared store for chat messages (persists across SPA navigations)
   const chatMessages = writable([]);
 
   // Only load component client-side to avoid SSR issues
   let showChat = $state(false);
+
+  // Lazy-loaded chatbot popup, available on every page in this layout. Shown once
+  // the user scrolls past SCROLL_TRIGGER of the page (a region, not the absolute
+  // bottom — most users stop before 100%), and hidden when they scroll back above
+  // it. Toggling unmounts the popup so scrolling down again re-opens it after a
+  // manual close. Using scroll depth (not a fixed sentinel) adapts to any page
+  // length, and a fast scroll-to-bottom still lands inside the region.
+  const SCROLL_TRIGGER = 0.75;
+  let ChatbotPopup = $state(null);
+  let shouldLoadChatbot = $state(false);
+
+  onMount(() => {
+    let chatbotTimer = null;
+    let ticking = false;
+
+    const evaluate = () => {
+      ticking = false;
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      // Pages that barely scroll are read in full, so treat them as engaged.
+      const depth = max > 100 ? window.scrollY / max : 1;
+
+      if (depth >= SCROLL_TRIGGER) {
+        if (!chatbotTimer && !shouldLoadChatbot) {
+          chatbotTimer = setTimeout(async () => {
+            chatbotTimer = null;
+            if (!ChatbotPopup) {
+              const module = await import("$lib/in/components/ChatbotPopup.svelte");
+              ChatbotPopup = module.default;
+            }
+            shouldLoadChatbot = true;
+          }, 1000);
+        }
+      } else {
+        if (chatbotTimer) {
+          clearTimeout(chatbotTimer);
+          chatbotTimer = null;
+        }
+        shouldLoadChatbot = false;
+      }
+    };
+
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(evaluate);
+      }
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    evaluate(); // handle short, non-scrollable pages on load
+
+    return () => {
+      if (chatbotTimer) clearTimeout(chatbotTimer);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  });
 
   // Translation modal state
   let showTranslationModal = $state(false);
@@ -497,6 +556,7 @@
   </Dialog.Content>
 </Dialog.Root>
 
-<!-- {#if browser && showChat}
-  <ChatbotWidget messages={chatMessages} />
-{/if} -->
+<!-- Chatbot Popup (Lazy Loaded) -->
+{#if shouldLoadChatbot && ChatbotPopup}
+  <ChatbotPopup messages={chatMessages} />
+{/if}

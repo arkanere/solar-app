@@ -727,7 +727,7 @@
   });
 </script>
 
-<div class="flex flex-col w-full h-[700px] min-h-[600px] max-h-screen rounded-[theme(--radius-lg)] border border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+<div class="flex flex-col w-full h-full rounded-[theme(--radius-lg)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden">
   <!-- Header -->
   <div class="flex items-center justify-between p-[theme(--card-padding-y)] border-b border-[hsl(var(--border))] bg-[hsl(var(--primary))]">
     <h3 class="text-lg font-semibold text-[hsl(var(--primary-foreground))]">Calculate Price and Savings</h3>
