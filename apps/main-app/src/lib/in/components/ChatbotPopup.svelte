@@ -30,7 +30,8 @@
 	<Dialog.Root open={!isManuallyDismissed} onOpenChange={handleOpenChange}>
 		<Dialog.Overlay class="animate-fade-in" />
 		<Dialog.Content
-			class="w-[90%] max-w-4xl max-h-[85vh] animate-slide-in-from-bottom"
+			showCloseButton={false}
+			class="w-[90%] max-w-4xl h-[85vh] p-0 border-0 bg-transparent shadow-none overflow-hidden animate-slide-in-from-bottom"
 		>
 			<ChatBotBox {messages} onClose={closePopup} />
 		</Dialog.Content>
