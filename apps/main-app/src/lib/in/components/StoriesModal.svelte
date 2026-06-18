@@ -203,7 +203,7 @@
             <div>
               <h3 class="text-white text-sm font-semibold">
                 <a
-                  href="/in/solar-panel-installer/{String($storiesData[currentStoryIndex]?.business_slug || '')}"
+                  href="/in/installer/{String($storiesData[currentStoryIndex]?.business_slug || '')}"
                   class="hover:text-secondary transition-colors duration-[theme(--duration-default)]"
                   onclick={closeStory}
                 >
