@@ -5,7 +5,6 @@
 	import { Phone, MessageCircle, MapPin, Mail, Globe, ExternalLink } from '@lucide/svelte';
 	import { makeCall, openWhatsApp } from '$lib/constants/businessTracking';
 	import { formatDate } from '$lib/constants/projectFormatters';
-	import LeadFormSection from '$lib/in/components/LeadFormSection.svelte';
 	import { breadcrumbLD, localBusinessLD } from '$lib/seo';
 	import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
 
@@ -290,9 +289,6 @@
 			</Card.Content>
 		</Card.Root>
 	</section>
-
-	<!-- CTA -->
-	<LeadFormSection city={b.city} title="Get a Quote from {b.businessname}" hasBusinesses={true} />
 
 	<!-- Get Quotes CTA -->
 	<div class="text-center mb-8">

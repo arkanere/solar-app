@@ -2,7 +2,6 @@
 	import { Button } from '$lib/components/ui/button';
 	import { MapPin, Calendar, Hash } from '@lucide/svelte';
 	import { formatDate } from '$lib/constants/projectFormatters';
-	import LeadFormSection from '$lib/in/components/LeadFormSection.svelte';
 	import { breadcrumbLD } from '$lib/seo';
 	import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
 
@@ -161,9 +160,6 @@
 			</p>
 		</section>
 	{/if}
-
-	<!-- CTA -->
-	<LeadFormSection city={business.city || ''} title="Want a Similar System? Get Quotes." hasBusinesses={true} />
 
 	<!-- Get Quotes CTA -->
 	<div class="text-center mb-8">
