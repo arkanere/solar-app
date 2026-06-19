@@ -53,20 +53,21 @@
 			]
 		},
 		"residentialBill": {
-			"message": "<h4>What is your average monthly electricity consumption?</h4>",
+			"message": "<h4>What is your average monthly electricity bill?</h4><p><small>Enter the amount in rupees (₹) from your electricity bill.</small></p>",
 			"flowType": "inputs",
 			"inputs": [
 				{
-					"id": "monthlyConsumption",
+					"id": "monthlyBill",
 					"type": "number",
-					"placeholder": "Enter monthly consumption",
-					"unit": "KWhr",
+					"placeholder": "Enter monthly bill",
+					"unit": "₹/month",
 					"nextFlow": "firstRecommendation"
 				}
 			]
 		},
 		"firstRecommendation": {
 			"message": "<div class='initial-recommendation'><p>Based on your monthly consumption of <b>{monthlyConsumption} units</b>, we recommend a <b>{systemSize}kW solar system</b>.</p></div><div class='cost-section'><h5>Investment Overview</h5><table class='cost-table'><tr><td><b>System cost:</b></td><td>Rs. {systemCost}</td></tr><tr><td><b>PM Surya Ghar subsidy:</b></td><td>Rs. {subsidyAmount}</td></tr><tr><td><b>Your net investment:</b></td><td class='highlight'>Rs. {netCost}</td></tr></table></div><div class='space-requirement'><h5>Space Requirement</h5><p>This system will require approximately <b>{requiredArea} sq.ft</b> of roof space.</p></div><div class='quick-benefits'><h5>Expected Annual Benefits</h5><ul><li><b>Electricity bill savings:</b> Rs. {yearlySavings}</li><li><b>Payback period:</b> ~{paybackPeriod} years</li></ul></div><div class='next-question'><p>Now, let's determine if you need battery backup with your system...</p></div>",
+			"monthlyConsumption": "Math.round({monthlyBill} / 7)",
 			"systemSize": "Math.ceil({monthlyConsumption} / 100)",
 			"systemCost": "{systemSize} <= 1 ? {systemSize} * 74500 : {systemSize} <= 2 ? {systemSize} * 75500 : {systemSize} <= 3 ? {systemSize} * 76000 : {systemSize} <= 4 ? {systemSize} * 70500 : {systemSize} <= 5 ? {systemSize} * 70600 : {systemSize} * 62500",
 			"subsidyAmount": "{systemSize} <= 1 ? {systemSize} * 30000 : {systemSize} <= 2 ? 60000 : {systemSize} <= 2.5 ? 69000 : {systemSize} <= 3 ? 78000 : 78000",
@@ -120,6 +121,7 @@
 		},
 		"residentialResultOnGrid": {
 			"message": "<h4>Your Complete On-Grid Solar Solution</h4><div class='result-overview'><p>Here's your personalized <b>{systemSize}kW on-grid solar system</b> recommendation:</p></div><div class='system-specs'><h5>System Specifications</h5><ul><li><b>Recommended capacity:</b> {systemSize}kW</li><li><b>Required roof area:</b> {requiredArea} sq.ft (shadow-free)</li><li><b>Expected system life:</b> 25+ years</li><li><b>System type:</b> On-Grid (no battery backup)</li></ul></div><div class='cost-section'><h5>Complete Investment Details</h5><table class='cost-table'><tr><td><b>Solar system cost:</b></td><td>Rs. {systemCost}</td></tr><tr><td><b>PM Surya Ghar subsidy:</b></td><td>Rs. {subsidyAmount}</td></tr><tr><td><b>Your total investment:</b></td><td class='highlight'>Rs. {netCost}</td></tr></table></div><div class='grid-benefits'><h5>On-Grid System Advantages</h5><ul><li><b>Net Metering:</b> Sell excess power back to grid</li><li><b>Lower Investment:</b> No battery costs</li><li><b>Higher Efficiency:</b> Direct power utilization</li><li><b>Minimal Maintenance:</b> Fewer system components</li></ul></div><div class='benefits-section'><h5>Lifetime Benefits</h5><ul><li><b>Annual energy generation:</b> {energyGeneration} units (kWh)</li><li><b>Annual bill savings:</b> Rs. {yearlySavings}</li><li><b>Total 25-year savings:</b> Rs. {lifetimeSavings}</li><li><b>Carbon footprint reduction:</b> ~{carbonOffset} tons CO\u2082/year</li><li><b>Equivalent to planting:</b> ~{treesEquivalent} trees annually</li></ul></div><div class='roi-section'><h5>Return on Investment</h5><table class='roi-table'><tr><td><b>Payback period:</b></td><td>{paybackPeriod} years</td></tr><tr><td><b>Net profit over 25 years:</b></td><td>Rs. {netProfit}</td></tr><tr><td><b>Return on investment:</b></td><td>{roi}%</td></tr></table></div><div class='next-steps'><p>Ready to start saving with clean energy?</p></div>",
+			"monthlyConsumption": "Math.round({monthlyBill} / 7)",
 			"systemSize": "Math.ceil({monthlyConsumption} / 100)",
 			"systemCost": "{systemSize} <= 1 ? {systemSize} * 74500 : {systemSize} <= 2 ? {systemSize} * 75500 : {systemSize} <= 3 ? {systemSize} * 76000 : {systemSize} <= 4 ? {systemSize} * 70500 : {systemSize} <= 5 ? {systemSize} * 70600 : {systemSize} * 62500",
 			"subsidyAmount": "{systemSize} <= 1 ? {systemSize} * 30000 : {systemSize} <= 2 ? 60000 : {systemSize} <= 2.5 ? 69000 : {systemSize} <= 3 ? 78000 : 78000",
@@ -176,6 +178,7 @@
 		},
 		"residentialResultHybrid": {
 			"message": "<h4>Your Complete Hybrid Solar Solution</h4><div class='result-overview'><p>Here's your personalized <b>{systemSize}kW hybrid solar system</b> with battery backup:</p></div><div class='system-specs'><h5>System Specifications</h5><ul><li><b>Solar capacity:</b> {systemSize}kW</li><li><b>Battery backup:</b> {batteryCapacity}kWh lithium-ion</li><li><b>Required roof area:</b> {requiredArea} sq.ft (shadow-free)</li><li><b>Expected system life:</b> 25+ years (Solar), 8-10 years (Battery)</li><li><b>System type:</b> Hybrid (Solar + Battery + Grid)</li></ul></div><div class='cost-section'><h5>Complete Investment Details</h5><table class='cost-table'><tr><td><b>Solar system cost:</b></td><td>Rs. {systemCost}</td></tr><tr><td><b>Battery backup cost:</b></td><td>Rs. {batteryCost}</td></tr><tr><td><b>Total system cost:</b></td><td>Rs. {totalSystemCost}</td></tr><tr><td><b>PM Surya Ghar subsidy:</b></td><td>Rs. {subsidyAmount}</td></tr><tr><td><b>Your total investment:</b></td><td class='highlight'>Rs. {totalCost}</td></tr></table></div><div class='hybrid-benefits'><h5>Hybrid System Advantages</h5><ul><li><b>Energy Independence:</b> Power during grid outages</li><li><b>Maximum Solar Utilization:</b> Store excess energy for later use</li><li><b>Net Metering Benefits:</b> Still connected to grid for credits</li><li><b>Load Management:</b> Automatic switching between solar, battery, and grid</li><li><b>Backup Security:</b> Essential appliances powered during outages</li></ul></div><div class='battery-details'><h5>Battery Performance</h5><ul><li><b>Backup duration:</b> {backupHours} hours for essential loads</li><li><b>Daily cycles:</b> Optimized for daily charge/discharge</li><li><b>Warranty:</b> 8-10 years or 6000+ cycles</li><li><b>Efficiency:</b> 95%+ round-trip efficiency</li></ul></div><div class='benefits-section'><h5>Lifetime Benefits</h5><ul><li><b>Annual energy generation:</b> {energyGeneration} units (kWh)</li><li><b>Annual bill savings:</b> Rs. {yearlySavings}</li><li><b>Total 25-year savings:</b> Rs. {lifetimeSavings}</li><li><b>Carbon footprint reduction:</b> ~{carbonOffset} tons CO\u2082/year</li><li><b>Equivalent to planting:</b> ~{treesEquivalent} trees annually</li></ul></div><div class='roi-section'><h5>Return on Investment</h5><table class='roi-table'><tr><td><b>Payback period:</b></td><td>{paybackPeriod} years</td></tr><tr><td><b>Net profit over 25 years:</b></td><td>Rs. {netProfit}</td></tr><tr><td><b>Return on investment:</b></td><td>{roi}%</td></tr></table></div><div class='next-steps'><p>Ready to achieve energy independence with backup security?</p></div>",
+			"monthlyConsumption": "Math.round({monthlyBill} / 7)",
 			"systemSize": "Math.ceil({monthlyConsumption} / 100)",
 			"systemCost": "{systemSize} <= 1 ? {systemSize} * 74500 : {systemSize} <= 2 ? {systemSize} * 75500 : {systemSize} <= 3 ? {systemSize} * 76000 : {systemSize} <= 4 ? {systemSize} * 70500 : {systemSize} <= 5 ? {systemSize} * 70600 : {systemSize} * 62500",
 			"batteryCost": "Math.round({systemCost} * 0.35)",
@@ -204,6 +207,7 @@
 		},
 		"residentialResult": {
 			"message": "<h4>Here's your personalized <b>{systemSize}kW solar system</b> recommendation:</h4><div class='system-specs'><h5>System Specifications</h5><ul><li><b>Recommended capacity:</b> {systemSize}kW</li><li><b>Required roof area:</b> {requiredArea} sq.ft (shadow-free)</li><li><b>Expected system life:</b> 25+ years</li></ul></div><div class='cost-section'><h5>Complete Investment Details</h5><table class='cost-table'><tr><td><b>Solar system cost:</b></td><td>Rs. {systemCost}</td></tr>{batterySection}<tr><td><b>PM Surya Ghar subsidy:</b></td><td>Rs. {subsidyAmount}</td></tr><tr><td><b>Your total investment:</b></td><td class='highlight'>Rs. {totalCost}</td></tr></table></div><div class='benefits-section'><h5>Lifetime Benefits</h5><ul><li><b>Annual bill savings:</b> Rs. {yearlySavings}</li><li><b>Total 25-year savings:</b> Rs. {lifetimeSavings}</li><li><b>Equivalent to planting:</b> ~{treesEquivalent} trees annually</li></ul></div><div class='roi-section'><h5>Return on Investment</h5><table class='roi-table'><tr><td><b>Payback period:</b></td><td>{paybackPeriod} years</td></tr><tr><td><b>Net profit over 25 years:</b></td><td>Rs. {netProfit}</td></tr><tr><td><b>Return on investment:</b></td><td>{roi}%</td></tr></table></div><div class='next-steps'><p>Ready to take the next step towards energy independence?</p></div>",
+			"monthlyConsumption": "Math.round({monthlyBill} / 7)",
 			"systemSize": "Math.ceil({monthlyConsumption} / 100)",
 			"systemCost": "{systemSize} <= 1 ? {systemSize} * 74500 : {systemSize} <= 2 ? {systemSize} * 75500 : {systemSize} <= 3 ? {systemSize} * 76000 : {systemSize} <= 4 ? {systemSize} * 70500 : {systemSize} <= 5 ? {systemSize} * 70600 : {systemSize} * 62500",
 			"subsidyAmount": "{systemSize} <= 1 ? {systemSize} * 30000 : {systemSize} <= 2 ? 60000 : {systemSize} <= 2.5 ? 69000 : {systemSize} <= 3 ? 78000 : 78000",
