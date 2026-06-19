@@ -95,24 +95,29 @@
     userJourney.push(journeyEntry);
   }
 
+  // Summarize what the user did in the guided (preset-options) flow so the LLM
+  // has that context on every free-form turn. Two parts: the structured outcomes
+  // captured in leadProfile, and the path of options the user clicked through.
+  // Returns "" when there's nothing meaningful, so callers can skip sending it.
   function serializeConversationContext() {
-    let contextLines = [];
-    contextLines.push("=== Lead Profile ===");
-    Object.entries(leadProfile).forEach(([key, value]) => {
-      if (value !== null && value !== undefined) {
-        const formattedKey = key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase());
-        contextLines.push(`${formattedKey}: ${value}`);
-      }
-    });
-    contextLines.push("");
-    const currentFlow = (conversationFlows.flows as Record<string, any>)[currentFlowId];
-    if (currentFlow && currentFlowId !== "initial" && currentFlowId !== "welcome") {
-      contextLines.push(`Current Flow: ${currentFlowId}`);
-      if (currentFlow.message) {
-        contextLines.push(`Current Context: ${processMessageText(currentFlow.message)}`);
-      }
+    const sections: string[] = [];
+
+    const profileLines = Object.entries(leadProfile)
+      .filter(([, value]) => value !== null && value !== undefined && value !== "")
+      .map(([key, value]) => {
+        const label = key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase());
+        return `${label}: ${value}`;
+      });
+    if (profileLines.length) {
+      sections.push("=== Guided assessment (user-provided) ===\n" + profileLines.join("\n"));
     }
-    return contextLines.join("\n");
+
+    const path = (userJourney as any[]).filter((j) => typeof j === "string" && j.trim());
+    if (path.length) {
+      sections.push("Path through guided options: " + path.join(" → "));
+    }
+
+    return sections.join("\n\n");
   }
 
   // Form validation functions
@@ -290,12 +295,11 @@
         history: history,
       };
 
-      if (!contextSent) {
-        conversationContext = serializeConversationContext();
-        if (conversationContext.trim()) {
-          requestPayload.conversationContext = conversationContext;
-        }
-        contextSent = true;
+      // The LLM is stateless per request, so re-send the guided-flow summary
+      // every turn (not just once) — otherwise it's lost after the first answer.
+      conversationContext = serializeConversationContext();
+      if (conversationContext.trim()) {
+        requestPayload.conversationContext = conversationContext;
       }
 
       const response = await fetch("/in/api/chatbot", {
