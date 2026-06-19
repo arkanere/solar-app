@@ -61,7 +61,10 @@
 					"type": "number",
 					"placeholder": "Enter monthly bill",
 					"unit": "₹/month",
-					"nextFlow": "firstRecommendation"
+					"nextFlow": "firstRecommendation",
+					"conditionalNextFlow": [
+						{ "when": "{monthlyBill} < 700", "flow": "lowConsumptionNotViable" }
+					]
 				}
 			]
 		},
@@ -87,6 +90,23 @@
 					"id": "getQuote",
 					"label": "I don't get Power Cuts",
 					"nextFlow": "noResidentialBatteryNeeded"
+				}
+			]
+		},
+		"lowConsumptionNotViable": {
+			"message": "<h4>Solar isn't a viable investment at your usage level</h4><div class='not-viable-recommendation'><p>Your monthly bill of around <b>Rs. {monthlyBill}</b> works out to roughly <b>{monthlyConsumption} units</b> of electricity. The smallest practical rooftop system is <b>1kW</b>, which generates about <b>125 units/month</b> — far more than you actually use.</p><div class='not-viable-reason'><h5>Why it doesn't add up</h5><p>Under PM Surya Ghar net metering, surplus power is bought back at only <b>~Rs. 2.82/unit</b>, while you pay <b>Rs. 7–12/unit</b> to draw from the grid. Most of the system's output would be sold at that low rate, pushing the payback period well beyond 10 years.</p></div><p><b>Our honest advice:</b> rooftop solar starts making financial sense once your monthly bill crosses <b>Rs. 700</b>. Below that, we'd recommend waiting until your electricity consumption grows.</p></div>",
+			"monthlyConsumption": "Math.round({monthlyBill} / 7)",
+			"flowType": "options",
+			"options": [
+				{
+					"id": "showEstimateAnyway",
+					"label": "Show me the estimate anyway",
+					"nextFlow": "firstRecommendation"
+				},
+				{
+					"id": "talkToExpert",
+					"label": "Talk to a solar expert",
+					"nextFlow": "contactRequest"
 				}
 			]
 		},
