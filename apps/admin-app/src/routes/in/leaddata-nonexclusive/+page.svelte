@@ -160,7 +160,7 @@
 		}
 		const sharedDate = new Date(whatsappLead.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 		const customerComment = whatsappLead.comment ? `\n\nCustomer Comment: ${whatsappLead.comment}` : '';
-		const message = `Dear ${business.businessname}, we received a solar installation inquiry and shared it with you at ${business.login_email} from admin@solarvipani.com around ${sharedDate}. Please check.${customerComment}`;
+		const message = `Dear ${business.businessname}, we received a solar installation inquiry for pincode ${whatsappLead.pin_code} and shared it with you at ${business.login_email} from admin@solarvipani.com around ${sharedDate}. This lead is completely free to claim — there is no cost. Please check.${customerComment}`;
 		return `https://web.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
 	}
 
