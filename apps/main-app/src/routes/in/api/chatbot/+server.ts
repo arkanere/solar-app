@@ -112,7 +112,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		console.log('Pinecone client initialized successfully');
 
 		// Index name
-		const INDEX_NAME = 'solarvipani';
+		const INDEX_NAME = 'solar-vipani-knowledge';
 
 		// Step 1: Condense follow-ups into a standalone query, then embed it.
 		console.log('Condensing query from conversation history');
@@ -158,7 +158,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		if (relevantMatches.length > 0) {
 			retrievedContext = relevantMatches
 				.map((match) => {
-					const source = match.metadata?.file_name || match.metadata?.source || 'Unknown source';
+					const source = match.metadata?.title || match.metadata?.source_url || 'Unknown source';
 					return `From ${source}:\n${match.metadata?.text || ''}`;
 				})
 				.join('\n\n');
