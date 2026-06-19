@@ -267,6 +267,18 @@
       (window.umami as any).track("chatbot-freeform-message", { flow: currentFlowId });
     }
 
+    // Snapshot the prior turns BEFORE appending the current message, so the
+    // server gets real multi-turn context (and can condense a standalone query).
+    const history = (get(messages) as any[])
+      .filter(
+        (m: any) =>
+          (m.role === "user" || m.role === "assistant") &&
+          typeof m.content === "string" &&
+          m.content.trim(),
+      )
+      .slice(-8)
+      .map((m: any) => ({ role: m.role, content: m.content }));
+
     messages.update((m: any[]) => [...m, { role: "user", content: userInput }]);
     isLoading = true;
     await scrollToBottom();
@@ -275,6 +287,7 @@
       let requestPayload: Record<string, any> = {
         userMessage: userInput,
         leadProfile: leadProfile,
+        history: history,
       };
 
       if (!contextSent) {
