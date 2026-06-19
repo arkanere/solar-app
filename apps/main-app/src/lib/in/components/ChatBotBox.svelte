@@ -841,7 +841,7 @@
             {#if message.role === "assistant" && i === $messages.length - 1 && currentFlow?.flowType === "options" && currentFlow?.options?.length > 0 && !message.showGuidedOption}
               <div class="mt-[theme(--card-gap)] gap-[theme(--form-element-field-gap)] flex flex-col">
                 {#each currentFlow.options as option}
-                  <Button onclick={() => selectOption(option.id)} variant="outline" class="w-full justify-start text-left">
+                  <Button onclick={() => selectOption(option.id)} variant="outline" class="w-full justify-start text-left whitespace-normal h-auto min-h-[2.5rem] py-2 break-words">
                     {option.label}
                   </Button>
                 {/each}
