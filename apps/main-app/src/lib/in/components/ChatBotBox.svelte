@@ -315,6 +315,7 @@
       let streamingReply = "";
       let started = false;
       let pendingSuggestion = "";
+      let pendingSources: { title: string; url: string }[] = [];
 
       const appendDelta = async (text: string) => {
         if (!started) {
@@ -345,10 +346,22 @@
             await appendDelta(evt.text);
           } else if (evt.type === "suggestion") {
             pendingSuggestion = evt.text;
+          } else if (evt.type === "sources") {
+            pendingSources = Array.isArray(evt.items) ? evt.items : [];
           } else if (evt.type === "error") {
             throw new Error("Streaming error");
           }
         }
+      }
+
+      // Attach citations to the answer message (deterministic, from retrieval metadata).
+      if (pendingSources.length && started) {
+        messages.update((m: any[]) => {
+          const copy = [...m];
+          copy[copy.length - 1] = { ...copy[copy.length - 1], sources: pendingSources };
+          return copy;
+        });
+        await scrollToBottom();
       }
 
       if (pendingSuggestion) {
@@ -799,6 +812,18 @@
         <Card class="max-w-[85%] {message.role === 'user' ? 'bg-[hsl(var(--primary))]' : 'bg-[hsl(var(--card))]'} border border-[hsl(var(--border))]">
           <CardContent class="pt-[theme(--card-padding-y)] text-sm {message.role === 'user' ? 'text-[hsl(var(--primary-foreground))]' : 'text-[hsl(var(--foreground))]'}">
             <p class="whitespace-pre-wrap break-words">{@html message.content}</p>
+
+            <!-- Sources / citations -->
+            {#if message.role === "assistant" && message.sources?.length}
+              <div class="mt-[theme(--card-gap)] pt-[theme(--form-element-field-gap)] border-t border-[hsl(var(--border))] flex flex-col gap-[theme(--form-element-field-gap)]">
+                <span class="text-xs font-medium text-[hsl(var(--muted-foreground))]">Sources</span>
+                {#each message.sources as src}
+                  <a href={src.url} target="_blank" rel="noopener noreferrer" class="text-xs text-[hsl(var(--primary))] hover:underline break-words">
+                    {src.title}
+                  </a>
+                {/each}
+              </div>
+            {/if}
 
             <!-- Guided flow suggestion -->
             {#if message.showGuidedOption && message.role === "assistant"}
