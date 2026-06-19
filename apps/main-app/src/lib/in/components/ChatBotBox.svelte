@@ -285,26 +285,64 @@
         contextSent = true;
       }
 
-      const response = await fetch("/chatbot121212", {
+      const response = await fetch("/in/api/chatbot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestPayload),
       });
 
-      const { reply } = await response.json();
+      if (!response.ok || !response.body) throw new Error("Chatbot request failed");
 
-      if (reply.includes("SUGGEST_GUIDED_FLOW:")) {
-        const [mainReply, suggestion] = reply.split("SUGGEST_GUIDED_FLOW:");
-        messages.update((m: any[]) => [...m, { role: "assistant", content: mainReply.trim() }]);
+      // Read the newline-delimited JSON stream and grow the assistant message as
+      // tokens arrive (typewriter effect). The guided-flow suggestion arrives as a
+      // separate `suggestion` event after the main reply completes.
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = "";
+      let streamingReply = "";
+      let started = false;
+      let pendingSuggestion = "";
+
+      const appendDelta = async (text: string) => {
+        if (!started) {
+          started = true;
+          isLoading = false;
+          messages.update((m: any[]) => [...m, { role: "assistant", content: "" }]);
+        }
+        streamingReply += text;
+        messages.update((m: any[]) => {
+          const copy = [...m];
+          copy[copy.length - 1] = { ...copy[copy.length - 1], content: streamingReply };
+          return copy;
+        });
         await scrollToBottom();
+      };
 
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        let nl;
+        while ((nl = buf.indexOf("\n")) !== -1) {
+          const line = buf.slice(0, nl).trim();
+          buf = buf.slice(nl + 1);
+          if (!line) continue;
+          const evt = JSON.parse(line);
+          if (evt.type === "delta") {
+            await appendDelta(evt.text);
+          } else if (evt.type === "suggestion") {
+            pendingSuggestion = evt.text;
+          } else if (evt.type === "error") {
+            throw new Error("Streaming error");
+          }
+        }
+      }
+
+      if (pendingSuggestion) {
         setTimeout(async () => {
-          messages.update((m: any[]) => [...m, { role: "assistant", content: suggestion.trim(), showGuidedOption: true }]);
+          messages.update((m: any[]) => [...m, { role: "assistant", content: pendingSuggestion.trim(), showGuidedOption: true }]);
           await scrollToBottom();
         }, 1000);
-      } else {
-        messages.update((m: any[]) => [...m, { role: "assistant", content: reply }]);
-        await scrollToBottom();
       }
     } catch (err) {
       console.error("Error communicating with chatbot:", err);
@@ -353,7 +391,7 @@
         urlParam: urlParam,
       };
 
-      const response = await fetch("/api/submitLead", {
+      const response = await fetch("/in/api/submitLead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

@@ -71,7 +71,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		console.log('Pinecone client initialized successfully');
 
 		// Index name
-		const INDEX_NAME = 'solar-vipani-knowledge';
+		const INDEX_NAME = 'solarvipani';
 
 		// Step 1: Convert the user query to an embedding
 		console.log('Creating embedding for user query');
@@ -99,7 +99,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		if (queryResult.matches && queryResult.matches.length > 0) {
 			retrievedContext = queryResult.matches
 				.map((match) => {
-					const source = match.metadata?.file_name || 'Unknown source';
+					const source = match.metadata?.file_name || match.metadata?.source || 'Unknown source';
 					return `From ${source}:\n${match.metadata?.text || ''}`;
 				})
 				.join('\n\n');
@@ -123,60 +123,92 @@ Otherwise, just provide a helpful response about solar energy without suggesting
 			baseSystemPrompt += `\n\nPrevious conversation context:\n${conversationContext}\n`;
 		}
 
-		// Step 5: Generate response using LangChain
-		console.log('Generating AI response');
+		// Step 5: Generate streaming response using LangChain
+		console.log('Generating AI response (streaming)');
 
 		const model = new ChatOpenAI({
 			openAIApiKey: OPENAI_API_KEY,
-			modelName: 'gpt-3.5-turbo',
-			temperature: 0
+			modelName: 'gpt-5.4-nano',
+			temperature: 0,
+			streaming: true
 		});
 
-		const response = await model.invoke([
-			{
-				role: 'system',
-				content: baseSystemPrompt + `\nAnswer questions based on the following retrieved information. If the information doesn't contain the answer, respond with: 'This is beyond my current expertise, try talking to a human expert at admin@solarvipani.com'\n\nRetrieved information:\n${retrievedContext}`
-			},
+		const systemContent =
+			baseSystemPrompt +
+			`\nAnswer questions based on the following retrieved information. If the information doesn't contain the answer, respond with: 'This is beyond my current expertise, try talking to a human expert at admin@solarvipani.com'\n\nRetrieved information:\n${retrievedContext}`;
+
+		const llmStream = await model.stream([
+			{ role: 'system', content: systemContent },
 			{ role: 'user', content: userMessage }
 		]);
 
-		let assistantReply = response.content as string;
-
-		console.log('AI response generated successfully');
-
-		// Step 6: Validate and correct guided flow suggestion
-		console.log('Validating guided flow suggestion');
-
+		// The model is instructed to place this marker at the very end. We stream the
+		// main answer to the client and hold back anything after the marker, emitting it
+		// as a separate `suggestion` event once generation completes.
+		const MARKER = 'SUGGEST_GUIDED_FLOW:';
+		const DEFAULT_SUGGESTION =
+			'Would you like me to help you calculate the right solar system size and pricing for your specific needs? I can guide you through a quick assessment.';
 		const shouldSuggestGuidedFlow = isGuidedFlowQuery(userMessage);
-		const hasProperMarker = assistantReply.includes('SUGGEST_GUIDED_FLOW:');
 
-		if (shouldSuggestGuidedFlow && !hasProperMarker) {
-			const guidancePatterns = [
-				/Would you like me to help you calculate[^?]*\?[^?]*assessment\.?/i,
-				/Would you like me to help[^?]*calculate[^?]*\?/i,
-				/I can help you calculate[^?]*\?/i,
-				/Let me help you calculate[^?]*\?/i
-			];
+		const encoder = new TextEncoder();
+		const send = (controller: ReadableStreamDefaultController, obj: unknown) =>
+			controller.enqueue(encoder.encode(JSON.stringify(obj) + '\n'));
 
-			let correctionMade = false;
+		const stream = new ReadableStream({
+			async start(controller) {
+				let buffer = ''; // main-reply text not yet flushed to the client
+				let suggestion = ''; // text captured after the marker
+				let markerHit = false;
+				try {
+					for await (const chunk of llmStream) {
+						const token = typeof chunk.content === 'string' ? chunk.content : '';
+						if (!token) continue;
+						if (markerHit) {
+							suggestion += token;
+							continue;
+						}
+						buffer += token;
+						const idx = buffer.indexOf(MARKER);
+						if (idx !== -1) {
+							const before = buffer.slice(0, idx);
+							if (before) send(controller, { type: 'delta', text: before });
+							suggestion = buffer.slice(idx + MARKER.length);
+							markerHit = true;
+							buffer = '';
+							continue;
+						}
+						// Hold back a possible partial marker straddling the tail of the buffer.
+						const safeLen = buffer.length - (MARKER.length - 1);
+						if (safeLen > 0) {
+							send(controller, { type: 'delta', text: buffer.slice(0, safeLen) });
+							buffer = buffer.slice(safeLen);
+						}
+					}
+					// Flush any remaining main-reply text (no marker was emitted).
+					if (!markerHit && buffer) send(controller, { type: 'delta', text: buffer });
 
-			for (const pattern of guidancePatterns) {
-				if (pattern.test(assistantReply)) {
-					assistantReply = assistantReply.replace(
-						pattern,
-						'SUGGEST_GUIDED_FLOW: Would you like me to help you calculate the right solar system size and pricing for your specific needs? I can guide you through a quick assessment.'
-					);
-					correctionMade = true;
-					break;
+					// Resolve the guided-flow suggestion: prefer the model's own text, else
+					// inject the default when the query qualifies but no marker was emitted.
+					let finalSuggestion = markerHit ? suggestion.trim() : '';
+					if (!finalSuggestion && shouldSuggestGuidedFlow) finalSuggestion = DEFAULT_SUGGESTION;
+					if (finalSuggestion) send(controller, { type: 'suggestion', text: finalSuggestion });
+
+					send(controller, { type: 'done' });
+				} catch (err) {
+					console.error('Streaming error:', (err as Error).message);
+					send(controller, { type: 'error' });
+				} finally {
+					controller.close();
 				}
 			}
+		});
 
-			if (!correctionMade) {
-				assistantReply += '\n\nSUGGEST_GUIDED_FLOW: Would you like me to help you calculate the right solar system size and pricing for your specific needs? I can guide you through a quick assessment.';
+		return new Response(stream, {
+			headers: {
+				'Content-Type': 'application/x-ndjson; charset=utf-8',
+				'Cache-Control': 'no-cache, no-transform'
 			}
-		}
-
-		return json({ reply: assistantReply });
+		});
 	} catch (error) {
 		console.error('Error occurred:', (error as Error).message);
 
