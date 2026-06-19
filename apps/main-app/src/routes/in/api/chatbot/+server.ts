@@ -158,12 +158,25 @@ export const POST: RequestHandler = async ({ request }) => {
 		if (relevantMatches.length > 0) {
 			retrievedContext = relevantMatches
 				.map((match) => {
-					const source = match.metadata?.title || match.metadata?.source_url || 'Unknown source';
-					return `From ${source}:\n${match.metadata?.text || ''}`;
+					const title = match.metadata?.title || 'Solar Vipani';
+					return `From ${title}:\n${match.metadata?.text || ''}`;
 				})
 				.join('\n\n');
 		} else {
 			retrievedContext = 'No relevant information found in the knowledge base.';
+		}
+
+		// Citations are derived deterministically from retrieval metadata — never
+		// from the model (LLMs mangle URLs). Dedupe by source_url, keep first title,
+		// cap at 3 so the UI stays tidy.
+		const sources: { title: string; url: string }[] = [];
+		const seenUrls = new Set<string>();
+		for (const match of relevantMatches) {
+			const url = (match.metadata?.source_url as string) || '';
+			if (!url || seenUrls.has(url)) continue;
+			seenUrls.add(url);
+			sources.push({ title: (match.metadata?.title as string) || 'Solar Vipani', url });
+			if (sources.length >= 3) break;
 		}
 
 		// Step 4: Build system prompt with context and intent detection
@@ -258,6 +271,9 @@ ${retrievedContext}`;
 					let finalSuggestion = markerHit ? suggestion.trim() : '';
 					if (!finalSuggestion && shouldSuggestGuidedFlow) finalSuggestion = DEFAULT_SUGGESTION;
 					if (finalSuggestion) send(controller, { type: 'suggestion', text: finalSuggestion });
+
+					// Emit deterministic citations (links to the pages the answer drew from).
+					if (sources.length > 0) send(controller, { type: 'sources', items: sources });
 
 					send(controller, { type: 'done' });
 				} catch (err) {
