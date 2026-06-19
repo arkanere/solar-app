@@ -549,8 +549,9 @@
     isLoading = true;
     await simulateDelay(800 + Math.random() * 1200);
 
-    if (inputDef.nextFlow) {
-      await transitionToFlow(inputDef.nextFlow);
+    const nextFlow = resolveNextFlow(inputDef);
+    if (nextFlow) {
+      await transitionToFlow(nextFlow);
     }
 
     isLoading = false;
@@ -650,6 +651,34 @@
     }
 
     return processedText;
+  }
+
+  // Evaluate a routing condition like "{monthlyBill} < 700" against the values
+  // the user has entered so far. Returns false on any parse/eval error so a bad
+  // expression never blocks the flow.
+  function evaluateCondition(expr: string): boolean {
+    try {
+      const substituted = expr.replace(/\{([^}]+)\}/g, (_m, name) => {
+        const value = inputValues[name];
+        return value !== undefined && value !== null ? String(value) : "0";
+      });
+      return Boolean(Function('"use strict"; return (' + substituted + ")")());
+    } catch {
+      return false;
+    }
+  }
+
+  // Pick the next flow for an input/option: first matching conditional branch
+  // wins, otherwise fall back to the static nextFlow.
+  function resolveNextFlow(def: any): string | undefined {
+    if (Array.isArray(def?.conditionalNextFlow)) {
+      for (const branch of def.conditionalNextFlow) {
+        if (branch?.when && branch?.flow && evaluateCondition(branch.when)) {
+          return branch.flow;
+        }
+      }
+    }
+    return def?.nextFlow;
   }
 
   async function transitionToFlow(flowId: string) {
