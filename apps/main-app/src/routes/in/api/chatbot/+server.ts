@@ -133,7 +133,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		// relevance bar. This avoids feeding the model loosely-related context
 		// (which invites confident hallucination) on off-topic questions.
 		const TOP_K = 6;
-		const RELEVANCE_THRESHOLD = 0.75; // cosine similarity (higher = closer)
+		const RELEVANCE_THRESHOLD = 0.65; // cosine similarity (higher = closer); tuned for text-embedding-3-small
 
 		const queryResult: QueryResponse<RecordMetadata> = await index.query({
 			vector: queryEmbedding,
@@ -194,7 +194,13 @@ Otherwise, just provide a helpful response about solar energy without suggesting
 
 		const systemContent =
 			baseSystemPrompt +
-			`\nAnswer questions based on the following retrieved information. If the information doesn't contain the answer, respond with: 'This is beyond my current expertise, try talking to a human expert at admin@solarvipani.com'\n\nRetrieved information:\n${retrievedContext}`;
+			`\n\nGrounding rules (follow strictly):
+- Answer ONLY using the retrieved information below. Do not use outside knowledge, do not guess, and do not invent details, numbers, names, prices, or steps.
+- Only state figures or specifics that actually appear in the retrieved information.
+- If the retrieved information does not contain the answer, reply with EXACTLY this and nothing else: 'This is beyond my current expertise, try talking to a human expert at admin@solarvipani.com'. In that case do not ask the user clarifying questions and do not improvise a partial answer.
+
+Retrieved information:
+${retrievedContext}`;
 
 		const llmStream = await model.stream([
 			{ role: 'system', content: systemContent },
