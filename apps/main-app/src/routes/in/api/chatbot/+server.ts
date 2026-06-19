@@ -3,9 +3,42 @@ import { type Index, type QueryResponse, type RecordMetadata, Pinecone } from '@
 import { OPENAI_API_KEY, PINECONE_API_KEY } from '$env/static/private';
 import { json, type RequestHandler } from '@sveltejs/kit';
 
+interface ChatTurn {
+	role: 'user' | 'assistant';
+	content: string;
+}
+
 interface ChatRequest {
 	userMessage: string;
 	conversationContext?: string;
+	history?: ChatTurn[];
+}
+
+// Rewrite the latest user message into a standalone search query using the
+// recent conversation, so retrieval works on elliptical follow-ups ("and for a
+// shop?"). Returns the raw message unchanged when there's no history to resolve.
+async function condenseQuery(history: ChatTurn[], userMessage: string): Promise<string> {
+	if (!history.length) return userMessage;
+
+	const condenser = new ChatOpenAI({
+		openAIApiKey: OPENAI_API_KEY,
+		modelName: 'gpt-5.4-nano',
+		temperature: 0
+	});
+
+	const convo = history.map((t) => `${t.role === 'user' ? 'User' : 'Assistant'}: ${t.content}`).join('\n');
+
+	const res = await condenser.invoke([
+		{
+			role: 'system',
+			content:
+				'You rewrite the user\'s latest message into a single standalone search query for a solar energy knowledge base. Use the conversation only to resolve references (e.g. "it", "that", "for a shop"). Do not answer the question. Output ONLY the rewritten query.'
+		},
+		{ role: 'user', content: `Conversation:\n${convo}\n\nLatest message: ${userMessage}\n\nStandalone query:` }
+	]);
+
+	const text = (typeof res.content === 'string' ? res.content : '').trim();
+	return text || userMessage;
 }
 
 // Helper function to determine if guided flow should be suggested
@@ -52,14 +85,22 @@ export const POST: RequestHandler = async ({ request }) => {
 
 	try {
 		console.log('Parsing request body');
-		const { userMessage, conversationContext }: ChatRequest = await request.json();
+		const { userMessage, conversationContext, history = [] }: ChatRequest = await request.json();
 		console.log('User message received:', userMessage);
+
+		// Defensively cap and sanitize the conversation history.
+		const recentHistory: ChatTurn[] = (Array.isArray(history) ? history : [])
+			.filter(
+				(t): t is ChatTurn =>
+					(t?.role === 'user' || t?.role === 'assistant') && typeof t?.content === 'string' && t.content.trim().length > 0
+			)
+			.slice(-8);
 
 		// Initialize OpenAI Embeddings with LangChain
 		console.log('Initializing OpenAI client');
 		const embeddings = new OpenAIEmbeddings({
 			openAIApiKey: OPENAI_API_KEY,
-			modelName: 'text-embedding-ada-002'
+			modelName: 'text-embedding-3-small'
 		});
 		console.log('OpenAI client initialized successfully');
 
@@ -73,9 +114,13 @@ export const POST: RequestHandler = async ({ request }) => {
 		// Index name
 		const INDEX_NAME = 'solarvipani';
 
-		// Step 1: Convert the user query to an embedding
-		console.log('Creating embedding for user query');
-		const queryEmbedding = await embeddings.embedQuery(userMessage);
+		// Step 1: Condense follow-ups into a standalone query, then embed it.
+		console.log('Condensing query from conversation history');
+		const searchQuery = await condenseQuery(recentHistory, userMessage);
+		if (searchQuery !== userMessage) console.log('Condensed search query:', searchQuery);
+
+		console.log('Creating embedding for search query');
+		const queryEmbedding = await embeddings.embedQuery(searchQuery);
 		console.log('Embedding created successfully');
 		console.log('Embedding dimensions:', queryEmbedding.length);
 
@@ -84,20 +129,34 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		const index: Index<RecordMetadata> = pinecone.index(INDEX_NAME);
 
-		// Query directly to maintain same logging behavior
+		// Retrieve a wider candidate set, then keep only chunks that clear the
+		// relevance bar. This avoids feeding the model loosely-related context
+		// (which invites confident hallucination) on off-topic questions.
+		const TOP_K = 6;
+		const RELEVANCE_THRESHOLD = 0.75; // cosine similarity (higher = closer)
+
 		const queryResult: QueryResponse<RecordMetadata> = await index.query({
 			vector: queryEmbedding,
-			topK: 3,
+			topK: TOP_K,
 			includeMetadata: true
 		});
 		console.log('Pinecone query completed');
+
+		const relevantMatches = (queryResult.matches ?? []).filter(
+			(match) => (match.score ?? 0) >= RELEVANCE_THRESHOLD
+		);
+		console.log(
+			'Match scores:',
+			(queryResult.matches ?? []).map((m) => m.score?.toFixed(3)).join(', '),
+			`| kept ${relevantMatches.length}/${queryResult.matches?.length ?? 0} >= ${RELEVANCE_THRESHOLD}`
+		);
 
 		// Step 3: Extract and prepare context from retrieved documents
 		console.log('Preparing context from retrieved documents');
 		let retrievedContext = '';
 
-		if (queryResult.matches && queryResult.matches.length > 0) {
-			retrievedContext = queryResult.matches
+		if (relevantMatches.length > 0) {
+			retrievedContext = relevantMatches
 				.map((match) => {
 					const source = match.metadata?.file_name || match.metadata?.source || 'Unknown source';
 					return `From ${source}:\n${match.metadata?.text || ''}`;
@@ -139,6 +198,7 @@ Otherwise, just provide a helpful response about solar energy without suggesting
 
 		const llmStream = await model.stream([
 			{ role: 'system', content: systemContent },
+			...recentHistory.map((t): [string, string] => [t.role, t.content]),
 			{ role: 'user', content: userMessage }
 		]);
 
