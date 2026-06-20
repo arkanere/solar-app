@@ -28,6 +28,7 @@
 		"bits-ui": "^2.15.4",
 		"cloudinary": "^2.6.0",
 		"clsx": "^2.1.1",
+		"markdown-it": "^14.1.0",
 		"langchain": "^0.3.37",
 		"posthog-js": "^1.373.4",
 		"svelte-sonner": "^1.0.7",
