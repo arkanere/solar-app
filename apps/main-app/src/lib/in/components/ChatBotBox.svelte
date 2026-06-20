@@ -712,6 +712,25 @@
       contextSent = false;
     }
 
+    // Result flows derive every number from monthlyBill + unitRate, then cache
+    // the results in inputValues. Re-entering after the user adjusts their
+    // tariff would otherwise reuse stale figures, so drop this flow's own
+    // formula keys on entry to force a fresh recompute. User inputs
+    // (monthlyBill, userUnitRate) are not formula keys, so they survive.
+    if (flowId === "firstRecommendation") {
+      for (const [key, val] of Object.entries(flow)) {
+        if (typeof val === "string" && key !== "message" && key !== "flowType") {
+          delete inputValues[key];
+        }
+      }
+    }
+
+    // Pre-fill the tariff field with the current assumption so the user edits
+    // a sensible default instead of typing from scratch (and Submit starts enabled).
+    if (flowId === "adjustRate" && inputValues.userUnitRate === undefined) {
+      inputValues.userUnitRate = inputValues.unitRate || 7;
+    }
+
     currentFlowId = flowId;
     const processedMessage = processMessageText(flow.message);
 
