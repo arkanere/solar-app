@@ -8,7 +8,17 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { Badge } from "$lib/components/ui/badge";
-  import { X, Send } from "@lucide/svelte";
+  import { X, Send, Copy, Check } from "@lucide/svelte";
+  import MarkdownIt from "markdown-it";
+
+  // AI replies arrive as markdown; canned flow messages are raw HTML. `html: true`
+  // lets both pass through one renderer — markdown converts, inline HTML is preserved.
+  const md = new MarkdownIt({ html: true, linkify: true, breaks: true });
+
+  function renderMessage(content: string): string {
+    if (!content || typeof content !== "string") return "";
+    return md.render(content);
+  }
 
   let { messages = writable<any[]>([]), onClose = null }: { messages?: any; onClose?: any } = $props();
 
@@ -710,6 +720,49 @@
     await scrollToBottom();
   }
 
+  let copied = $state(false);
+
+  // Flatten the conversation to plain text so it can be saved by the user or
+  // pasted into Claude Code for testing. Strips HTML (messages render via @html)
+  // and appends any citations under each assistant turn.
+  function buildTranscript() {
+    const stripHtml = (s: string) =>
+      s
+        .replace(/<br\s*\/?>/gi, "\n")
+        .replace(/<li[^>]*>/gi, "\n- ")
+        .replace(/<\/(p|div|ul|ol|li|h[1-6])>/gi, "\n")
+        .replace(/<[^>]+>/g, "")
+        .replace(/&nbsp;/g, " ")
+        .replace(/[ \t]+\n/g, "\n")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+
+    return (get(messages) as any[])
+      .filter((m) => (m.role === "user" || m.role === "assistant") && typeof m.content === "string" && m.content.trim())
+      .map((m) => {
+        const who = m.role === "user" ? "User" : "Assistant";
+        let block = `${who}: ${stripHtml(m.content)}`;
+        if (m.sources?.length) {
+          block += "\n" + m.sources.map((s: any) => `  - ${s.title}: ${s.url}`).join("\n");
+        }
+        return block;
+      })
+      .join("\n\n");
+  }
+
+  async function copyConversation() {
+    try {
+      await navigator.clipboard.writeText(buildTranscript());
+      copied = true;
+      if (typeof window !== "undefined" && window.umami) {
+        window.umami.track("chatbot-conversation-copied");
+      }
+      setTimeout(() => (copied = false), 1500);
+    } catch (err) {
+      console.error("Failed to copy conversation:", err);
+    }
+  }
+
   async function resetChat() {
     if (typeof window !== "undefined" && window.umami) {
       window.umami.track("chatbot-reset");
@@ -828,11 +881,20 @@
   <!-- Header -->
   <div class="flex items-center justify-between p-[theme(--card-padding-y)] border-b border-[hsl(var(--border))] bg-[hsl(var(--primary))]">
     <h3 class="text-lg font-semibold text-[hsl(var(--primary-foreground))]">Calculate Price and Savings</h3>
-    {#if onClose}
-      <Button variant="ghost" size="sm" onclick={onClose} class="rounded-[theme(--badge-radius)] w-[2rem] h-[2rem] p-0">
-        <X class="w-[1.25rem] h-[1.25rem]" />
+    <div class="flex items-center gap-[theme(--form-element-field-gap)]">
+      <Button variant="ghost" size="sm" onclick={copyConversation} title={copied ? "Copied!" : "Copy conversation"} aria-label="Copy conversation" class="rounded-[theme(--badge-radius)] w-[2rem] h-[2rem] p-0">
+        {#if copied}
+          <Check class="w-[1.25rem] h-[1.25rem]" />
+        {:else}
+          <Copy class="w-[1.25rem] h-[1.25rem]" />
+        {/if}
       </Button>
-    {/if}
+      {#if onClose}
+        <Button variant="ghost" size="sm" onclick={onClose} aria-label="Close" class="rounded-[theme(--badge-radius)] w-[2rem] h-[2rem] p-0">
+          <X class="w-[1.25rem] h-[1.25rem]" />
+        </Button>
+      {/if}
+    </div>
   </div>
 
   <!-- Chat History -->
@@ -844,7 +906,7 @@
         {/if}
         <Card class="max-w-[85%] {message.role === 'user' ? 'bg-[hsl(var(--primary))]' : 'bg-[hsl(var(--card))]'} border border-[hsl(var(--border))]">
           <CardContent class="pt-[theme(--card-padding-y)] text-sm {message.role === 'user' ? 'text-[hsl(var(--primary-foreground))]' : 'text-[hsl(var(--foreground))]'}">
-            <p class="whitespace-pre-wrap break-words">{@html message.content}</p>
+            <div class="break-words [&_ul]:list-disc [&_ul]:pl-[1.25rem] [&_ol]:list-decimal [&_ol]:pl-[1.25rem] [&_li]:my-[0.125rem] [&_h4]:font-semibold [&_p]:my-[0.25rem] [&_a]:underline [&_a]:text-[hsl(var(--primary))] [&_strong]:font-semibold">{@html renderMessage(message.content)}</div>
 
             <!-- Sources / citations -->
             {#if message.role === "assistant" && message.sources?.length}
