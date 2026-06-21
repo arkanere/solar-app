@@ -60,9 +60,21 @@
 							<td>{business.tag}</td>
 							<td>{business.notes}</td>
 							<td>
-								<button class="edit-button" on:click={() => editBusiness(business.id)}>
-									Edit
-								</button>
+								<div class="action-buttons">
+									<button class="edit-button" on:click={() => editBusiness(business.id)}>
+										Edit
+									</button>
+									{#if business.magic_link_token && business.slug}
+										<a
+											href="https://business.solarvipani.com/us/{business.slug}/signin-link/{business.magic_link_token}"
+											target="_blank"
+											rel="noopener noreferrer"
+											class="access-button"
+										>
+											Access Account
+										</a>
+									{/if}
+								</div>
 							</td>
 						</tr>
 					{/each}
@@ -223,6 +235,33 @@
 
 	.edit-button:hover {
 		background-color: darken(var(--accent-color), 10%);
+	}
+
+	/* Action column layout */
+	.action-buttons {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		align-items: stretch;
+	}
+
+	/* Access account button styling */
+	.access-button {
+		display: inline-block;
+		background-color: #28a745;
+		color: white;
+		padding: 0.5rem 1rem;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		text-align: center;
+		text-decoration: none;
+		font-size: 0.9rem;
+		white-space: nowrap;
+	}
+
+	.access-button:hover {
+		background-color: #218838;
 	}
 
 	/* Error message styling */

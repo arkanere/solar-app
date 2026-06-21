@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { toast } from 'svelte-sonner';
-	import { Card } from '$lib/components/ui/card';
+	import * as Card from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
-	import { Dialog } from '$lib/components/ui/dialog';
-	import { Select } from '$lib/components/ui/select';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import * as Select from '$lib/components/ui/select';
 	import { Label } from '$lib/components/ui/label';
 	import { Phone, AlertCircle, ExternalLink } from '@lucide/svelte';
 	import LeadProgressBar from './LeadProgressBar.svelte';

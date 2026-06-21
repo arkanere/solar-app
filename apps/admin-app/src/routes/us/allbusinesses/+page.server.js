@@ -10,7 +10,7 @@ export async function load() {
 
 	try {
 		const result = await pool.query(`SELECT id, businessname, phonenumber,
-      state, county, tag, notes, isvisible FROM us_businesses ORDER BY id DESC`);
+      state, county, tag, notes, isvisible, slug, magic_link_token FROM us_businesses ORDER BY id DESC`);
 
 		if (result.rows.length > 0) {
 			return { businesses: result.rows };
