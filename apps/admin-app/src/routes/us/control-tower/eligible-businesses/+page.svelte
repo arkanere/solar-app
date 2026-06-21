@@ -171,7 +171,7 @@
 							<strong>Business ID:</strong> {business.id}
 						</div>
 						<div class="detail-row">
-							<strong>District:</strong> {business.district || 'Not specified'}
+							<strong>County:</strong> {business.county || 'Not specified'}
 						</div>
 						<div class="detail-row">
 							<strong>State:</strong> {business.state || 'Not specified'}

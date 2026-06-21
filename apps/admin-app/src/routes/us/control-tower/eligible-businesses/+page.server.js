@@ -10,55 +10,53 @@ export async function load() {
 	try {
 		// Get businesses where (non-exclusive available + claimed leads) > 0
 		const businessesQuery = await pool.query(`
-			SELECT DISTINCT 
+			SELECT DISTINCT
 				b.*,
-				-- Non-exclusive available: category=1 leads in same district, not already claimed by this business, and claim_count <= 4
-				COUNT(DISTINCT CASE 
-					WHEN l.isvisible = true AND l.category = 1 AND l.district = b.district
+				-- Non-exclusive available: category=1 leads in same county, not already claimed by this business, and claim_count <= 4
+				COUNT(DISTINCT CASE
+					WHEN l.isvisible = true AND l.category = 1 AND l.county = b.county
 					AND COALESCE(l.claim_count, 0) <= 4
 					AND l.id NOT IN (
-						SELECT DISTINCT original_id 
-						FROM leaddata l2 
+						SELECT DISTINCT original_id
+						FROM us_leaddata l2
 						WHERE l2.category = 2 AND l2.business_id = b.id AND l2.original_id IS NOT NULL
 					)
 					THEN l.id END
 				) as non_exclusive_available_count,
 				-- Non-exclusive claimed: category=2 leads claimed by this business
-				COUNT(DISTINCT CASE 
-					WHEN l.isvisible = true AND l.category = 2 AND l.business_id = b.id 
+				COUNT(DISTINCT CASE
+					WHEN l.isvisible = true AND l.category = 2 AND l.business_id = b.id
 					THEN l.id END
 				) as claimed_leads_count,
 				COUNT(DISTINCT lcr.id) as total_claim_requests,
 				COUNT(DISTINCT CASE WHEN lcr.isallotted = true THEN lcr.id END) as allotted_claims,
 				COUNT(DISTINCT CASE WHEN lcr.isresolved = true THEN lcr.id END) as resolved_claims,
-				ARRAY_AGG(DISTINCT l.district) FILTER (WHERE l.district IS NOT NULL AND l.isvisible = true) as lead_districts,
+				ARRAY_AGG(DISTINCT l.county) FILTER (WHERE l.county IS NOT NULL AND l.isvisible = true) as lead_counties,
 				MAX(CASE WHEN l.isvisible = true THEN l.created_at END) as latest_lead_date,
 				MAX(lcr.created_at) as latest_claim_date
-			FROM businesses_1 b
-			LEFT JOIN leaddata l ON (
-				(l.isvisible = true AND l.category = 1 AND l.district = b.district) OR
+			FROM us_businesses b
+			LEFT JOIN us_leaddata l ON (
+				(l.isvisible = true AND l.category = 1 AND l.county = b.county) OR
 				(l.isvisible = true AND l.category = 2 AND l.business_id = b.id)
 			)
-			LEFT JOIN leaddata_claimrequests lcr ON lcr.business_id = b.id
-			WHERE b.isvisible = true 
+			LEFT JOIN us_leaddata_claimrequests lcr ON lcr.business_id = b.id
+			WHERE b.isvisible = true
 			AND (b.slug IS NULL OR b.slug NOT LIKE '%-branch-%')
-			GROUP BY b.id, b.businessname, b.district, b.address, b.phonenumber, b.email,
-					 b.created_at, b.businessfilled, b.isvisible, b.slug, b.state,
-					 b.website, b.description, b.magic_link_token
+			GROUP BY b.id
 			HAVING (
 				-- Non-exclusive available + claimed leads > 0
-				COUNT(DISTINCT CASE 
-					WHEN l.isvisible = true AND l.category = 1 AND l.district = b.district
+				COUNT(DISTINCT CASE
+					WHEN l.isvisible = true AND l.category = 1 AND l.county = b.county
 					AND COALESCE(l.claim_count, 0) <= 4
 					AND l.id NOT IN (
-						SELECT DISTINCT original_id 
-						FROM leaddata l2 
+						SELECT DISTINCT original_id
+						FROM us_leaddata l2
 						WHERE l2.category = 2 AND l2.business_id = b.id AND l2.original_id IS NOT NULL
 					)
 					THEN l.id END
 				) +
-				COUNT(DISTINCT CASE 
-					WHEN l.isvisible = true AND l.category = 2 AND l.business_id = b.id 
+				COUNT(DISTINCT CASE
+					WHEN l.isvisible = true AND l.category = 2 AND l.business_id = b.id
 					THEN l.id END
 				) > 0
 			)
@@ -67,8 +65,8 @@ export async function load() {
 
 		// Get total count of all businesses (same query as business analytics)
 		const totalBusinessesQuery = await pool.query(`
-			SELECT COUNT(*) as total 
-			FROM businesses_1 
+			SELECT COUNT(*) as total
+			FROM us_businesses
 			WHERE isvisible = true AND (slug IS NULL OR slug NOT LIKE '%-branch-%')
 		`);
 

@@ -10,9 +10,9 @@ export async function POST({ request }) {
 	try {
 		const { id, lead_id, business_id, isallotted, isresolved } = await request.json();
 
-		// Step 1: Update leaddata_claimrequests
+		// Step 1: Update us_leaddata_claimrequests
 		await pool.query(
-			'UPDATE leaddata_claimrequests SET isallotted = $1, isresolved = $2 WHERE id = $3',
+			'UPDATE us_leaddata_claimrequests SET isallotted = $1, isresolved = $2 WHERE id = $3',
 			[isallotted, isresolved, id]
 		);
 
@@ -21,28 +21,28 @@ export async function POST({ request }) {
 		// Step 2: If lead is allotted, create a new lead entry
 		if (isallotted) {
 			// Fetch original lead data
-			const leadDataResult = await pool.query('SELECT * FROM leaddata WHERE id = $1', [lead_id]);
+			const leadDataResult = await pool.query('SELECT * FROM us_leaddata WHERE id = $1', [lead_id]);
 
 			if (leadDataResult.rows.length > 0) {
 				const originalLead = leadDataResult.rows[0];
 
 				// Insert new lead entry with business_id, category = 2, stage = 0, status = true
 				const newLeadResult = await pool.query(
-					`INSERT INTO leaddata 
-            (name, phone, email, pin_code, type, comment, created_at, svnotes, urlparams, isvisible, category, district, stage, status, claim_count, original_id, business_id)
-           VALUES 
-            ($1, $2, $3, $4, $5, $6, NOW(), $7, $8, true, 2, $9, 0, true, 0, $10, $11)  
+					`INSERT INTO us_leaddata
+            (name, phone, email, zipcode, type, comment, created_at, svnotes, urlparams, isvisible, category, county, stage, status, claim_count, original_id, business_id)
+           VALUES
+            ($1, $2, $3, $4, $5, $6, NOW(), $7, $8, true, 2, $9, 0, true, 0, $10, $11)
            RETURNING id`, // ✅ Get the newly inserted lead's ID
 					[
 						originalLead.name,
 						originalLead.phone,
 						originalLead.email,
-						originalLead.pin_code,
+						originalLead.zipcode,
 						originalLead.type,
 						originalLead.comment,
 						originalLead.svnotes,
 						originalLead.urlparams,
-						originalLead.district,
+						originalLead.county,
 						originalLead.id, // Set original_id to the original lead's ID
 						business_id // Set business_id from claim request
 					]
@@ -56,7 +56,7 @@ export async function POST({ request }) {
 		if (isallotted) {
 			try {
 				const bizResult = await pool.query(
-					'SELECT businessname, login_email, slug, magic_link_token FROM businesses_1 WHERE id = $1 LIMIT 1',
+					'SELECT businessname, login_email, slug, magic_link_token FROM us_businesses WHERE id = $1 LIMIT 1',
 					[business_id]
 				);
 

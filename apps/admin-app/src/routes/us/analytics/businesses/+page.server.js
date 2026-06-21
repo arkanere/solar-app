@@ -18,12 +18,12 @@ export async function load() {
 
 		// 1. Total businesses registered (only visible businesses, excluding branches)
 		const totalBusinessesResult = await pool.query(
-			'SELECT COUNT(*) as total FROM businesses_1 WHERE isvisible = true AND (slug IS NULL OR slug NOT LIKE \'%-branch-%\')'
+			'SELECT COUNT(*) as total FROM us_businesses WHERE isvisible = true AND (slug IS NULL OR slug NOT LIKE \'%-branch-%\')'
 		);
 		
 		// 2. Businesses registered last 30 days (excluding branches)
 		const last30DaysResult = await pool.query(
-			'SELECT COUNT(*) as count FROM businesses_1 WHERE isvisible = true AND (slug IS NULL OR slug NOT LIKE \'%-branch-%\') AND created_at >= $1',
+			'SELECT COUNT(*) as count FROM us_businesses WHERE isvisible = true AND (slug IS NULL OR slug NOT LIKE \'%-branch-%\') AND created_at >= $1',
 			[thirtyDaysAgo.toISOString()]
 		);
 
@@ -36,7 +36,7 @@ export async function load() {
 			weekEnd.setDate(weekStart.getDate() + 7);
 			
 			const weekResult = await pool.query(
-				'SELECT COUNT(*) as count FROM businesses_1 WHERE isvisible = true AND (slug IS NULL OR slug NOT LIKE \'%-branch-%\') AND created_at >= $1 AND created_at < $2',
+				'SELECT COUNT(*) as count FROM us_businesses WHERE isvisible = true AND (slug IS NULL OR slug NOT LIKE \'%-branch-%\') AND created_at >= $1 AND created_at < $2',
 				[weekStart.toISOString(), weekEnd.toISOString()]
 			);
 			
@@ -53,7 +53,7 @@ export async function load() {
 		const todayStart = new Date(now);
 		todayStart.setHours(0, 0, 0, 0);
 		const todayResult = await pool.query(
-			'SELECT COUNT(*) as count FROM businesses_1 WHERE isvisible = true AND (slug IS NULL OR slug NOT LIKE \'%-branch-%\') AND created_at >= $1',
+			'SELECT COUNT(*) as count FROM us_businesses WHERE isvisible = true AND (slug IS NULL OR slug NOT LIKE \'%-branch-%\') AND created_at >= $1',
 			[todayStart.toISOString()]
 		);
 
@@ -63,7 +63,7 @@ export async function load() {
 				COUNT(*) FILTER (WHERE businessfilled = false) as tier1_count,
 				COUNT(*) FILTER (WHERE businessfilled = true) as tier2_count,
 				COUNT(*) FILTER (WHERE isvisible = false) as hidden_count
-			FROM businesses_1
+			FROM us_businesses
 			WHERE (slug IS NULL OR slug NOT LIKE '%-branch-%')
 		`);
 

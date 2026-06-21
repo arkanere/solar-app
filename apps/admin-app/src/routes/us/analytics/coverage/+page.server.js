@@ -8,18 +8,18 @@ export async function load() {
 	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
-		// 1. Total number of districts from locations table
+		// 1. Total number of districts from us_locations table
 		const totalDistrictsResult = await pool.query(
-			'SELECT COUNT(DISTINCT district) as total FROM locations WHERE district IS NOT NULL AND district != \'\''
+			'SELECT COUNT(DISTINCT county) as total FROM us_locations WHERE county IS NOT NULL AND county != \'\''
 		);
 
 		// 2. Number of districts where there is at least 1 business
 		const coveredDistrictsResult = await pool.query(`
-			SELECT COUNT(DISTINCT b.district) as covered
-			FROM businesses_1 b
+			SELECT COUNT(DISTINCT b.county) as covered
+			FROM us_businesses b
 			WHERE b.isvisible = true 
-			  AND b.district IS NOT NULL 
-			  AND b.district != ''
+			  AND b.county IS NOT NULL 
+			  AND b.county != ''
 			  AND (b.slug IS NULL OR b.slug NOT LIKE '%-branch-%')
 		`);
 
@@ -28,20 +28,20 @@ export async function load() {
 			WITH state_districts AS (
 				SELECT 
 					state,
-					COUNT(DISTINCT district) as total_districts
-				FROM locations 
+					COUNT(DISTINCT county) as total_districts
+				FROM us_locations 
 				WHERE state IS NOT NULL AND state != ''
-				  AND district IS NOT NULL AND district != ''
+				  AND county IS NOT NULL AND county != ''
 				GROUP BY state
 			),
 			covered_districts AS (
 				SELECT 
 					b.state,
-					COUNT(DISTINCT b.district) as covered_districts
-				FROM businesses_1 b
+					COUNT(DISTINCT b.county) as covered_districts
+				FROM us_businesses b
 				WHERE b.isvisible = true 
 				  AND b.state IS NOT NULL AND b.state != ''
-				  AND b.district IS NOT NULL AND b.district != ''
+				  AND b.county IS NOT NULL AND b.county != ''
 				  AND (b.slug IS NULL OR b.slug NOT LIKE '%-branch-%')
 				GROUP BY b.state
 			)
@@ -62,26 +62,26 @@ export async function load() {
 		// 4. Get details of covered vs uncovered districts for a few sample states
 		const districtDetailsResult = await pool.query(`
 			WITH all_districts AS (
-				SELECT DISTINCT state, district
-				FROM locations 
+				SELECT DISTINCT state, county
+				FROM us_locations 
 				WHERE state IS NOT NULL AND state != ''
-				  AND district IS NOT NULL AND district != ''
+				  AND county IS NOT NULL AND county != ''
 			),
 			business_districts AS (
-				SELECT DISTINCT b.state, b.district
-				FROM businesses_1 b
+				SELECT DISTINCT b.state, b.county
+				FROM us_businesses b
 				WHERE b.isvisible = true 
 				  AND b.state IS NOT NULL AND b.state != ''
-				  AND b.district IS NOT NULL AND b.district != ''
+				  AND b.county IS NOT NULL AND b.county != ''
 				  AND (b.slug IS NULL OR b.slug NOT LIKE '%-branch-%')
 			)
-			SELECT 
+			SELECT
 				ad.state,
-				ad.district,
-				CASE WHEN bd.district IS NOT NULL THEN true ELSE false END as has_business
+				ad.county AS district,
+				CASE WHEN bd.county IS NOT NULL THEN true ELSE false END as has_business
 			FROM all_districts ad
-			LEFT JOIN business_districts bd ON ad.state = bd.state AND ad.district = bd.district
-			ORDER BY ad.state, ad.district
+			LEFT JOIN business_districts bd ON ad.state = bd.state AND ad.county = bd.county
+			ORDER BY ad.state, ad.county
 		`);
 
 		const totalDistricts = parseInt(totalDistrictsResult.rows[0].total);

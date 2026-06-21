@@ -8,71 +8,66 @@ export async function load() {
 	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
-		// 1. Number of districts from where we have received leads
-		// Join leaddata with pincode_mapping to get district information for leads
+		// 1. Number of counties from where we have received leads (county is stored directly on us_leaddata)
 		const districtsWithLeadsResult = await pool.query(`
-			SELECT COUNT(DISTINCT pm.district) as districts_with_leads
-			FROM leaddata l
-			JOIN pincode_mapping pm ON l.pin_code = pm.pincode
-			WHERE l.isvisible = true 
+			SELECT COUNT(DISTINCT l.county) as districts_with_leads
+			FROM us_leaddata l
+			WHERE l.isvisible = true
 			  AND (l.category != 2 OR l.category IS NULL)
-			  AND pm.district IS NOT NULL 
-			  AND pm.district != ''
+			  AND l.county IS NOT NULL
+			  AND l.county != ''
 			  AND (l.urlparams IS NULL OR l.urlparams NOT LIKE '/campaign/%')
 		`);
 
-		// 2. Of those districts with leads, number of districts where we have at least one business present
+		// 2. Of those counties with leads, number of counties where we have at least one business present
 		const districtsWithBusinessesResult = await pool.query(`
 			WITH lead_districts AS (
-				SELECT DISTINCT pm.district
-				FROM leaddata l
-				JOIN pincode_mapping pm ON l.pin_code = pm.pincode
-				WHERE l.isvisible = true 
+				SELECT DISTINCT l.county AS district
+				FROM us_leaddata l
+				WHERE l.isvisible = true
 				  AND (l.category != 2 OR l.category IS NULL)
-				  AND pm.district IS NOT NULL 
-				  AND pm.district != ''
+				  AND l.county IS NOT NULL
+				  AND l.county != ''
 				  AND (l.urlparams IS NULL OR l.urlparams NOT LIKE '/campaign/%')
 			)
 			SELECT COUNT(DISTINCT ld.district) as districts_with_businesses
 			FROM lead_districts ld
-			JOIN businesses_1 b ON LOWER(ld.district) = LOWER(b.district)
+			JOIN us_businesses b ON LOWER(ld.district) = LOWER(b.county)
 			WHERE b.isvisible = true
 			  AND (b.slug IS NULL OR b.slug NOT LIKE '%-branch-%')
 		`);
 
-		// 4. Top 20 districts by lead count
+		// 4. Top 20 counties by lead count
 		const top20DistrictsResult = await pool.query(`
-			SELECT 
-				pm.district,
+			SELECT
+				l.county AS district,
 				COUNT(*) as lead_count
-			FROM leaddata l
-			JOIN pincode_mapping pm ON l.pin_code = pm.pincode
-			WHERE l.isvisible = true 
+			FROM us_leaddata l
+			WHERE l.isvisible = true
 			  AND (l.category != 2 OR l.category IS NULL)
-			  AND pm.district IS NOT NULL 
-			  AND pm.district != ''
+			  AND l.county IS NOT NULL
+			  AND l.county != ''
 			  AND (l.urlparams IS NULL OR l.urlparams NOT LIKE '/campaign/%')
-			GROUP BY pm.district
+			GROUP BY l.county
 			ORDER BY lead_count DESC
 			LIMIT 20
 		`);
 
-		// 5. Get actual leads for each of the top 20 districts (limit to 50 per district for performance)
+		// 5. Get actual leads for each of the top 20 counties (limit to 50 per county for performance)
 		const districtLeadsData = {};
 		for (const district of top20DistrictsResult.rows) {
 			const leadsResult = await pool.query(`
-				SELECT 
-					l.id, l.name, l.phone, l.email, l.pin_code, l.created_at, l.type, l.comment, l.urlparams
-				FROM leaddata l
-				JOIN pincode_mapping pm ON l.pin_code = pm.pincode
-				WHERE l.isvisible = true 
+				SELECT
+					l.id, l.name, l.phone, l.email, l.zipcode AS pin_code, l.created_at, l.type, l.comment, l.urlparams
+				FROM us_leaddata l
+				WHERE l.isvisible = true
 				  AND (l.category != 2 OR l.category IS NULL)
-				  AND pm.district = $1
+				  AND l.county = $1
 				  AND (l.urlparams IS NULL OR l.urlparams NOT LIKE '/campaign/%')
 				ORDER BY l.created_at DESC
 				LIMIT 50
 			`, [district.district]);
-			
+
 			districtLeadsData[district.district] = leadsResult.rows;
 		}
 

@@ -17,9 +17,9 @@ export async function load({ url }) {
 		if (selectedState) {
 			// Get businesses in the selected state (visible only, excluding branches)
 			const businessesResult = await pool.query(
-				`SELECT id, businessname, district, address, phonenumber, email,
+				`SELECT id, businessname, county AS district, address, phonenumber, email,
 						created_at, businessfilled, tier3, isvisible, slug, magic_link_token
-				 FROM businesses_1
+				 FROM us_businesses
 				 WHERE state = $1 AND isvisible = true
 				 AND (slug IS NULL OR slug NOT LIKE '%-branch-%')
 				 ORDER BY created_at DESC`,
@@ -39,7 +39,7 @@ export async function load({ url }) {
 
 			// Count businesses registered in last 30 days
 			const last30DaysResult = await pool.query(
-				`SELECT COUNT(*) as count FROM businesses_1 
+				`SELECT COUNT(*) as count FROM us_businesses 
 				 WHERE state = $1 AND isvisible = true 
 				 AND (slug IS NULL OR slug NOT LIKE '%-branch-%')
 				 AND created_at >= $2`,
@@ -48,7 +48,7 @@ export async function load({ url }) {
 
 			// Count businesses registered today
 			const todayResult = await pool.query(
-				`SELECT COUNT(*) as count FROM businesses_1 
+				`SELECT COUNT(*) as count FROM us_businesses 
 				 WHERE state = $1 AND isvisible = true 
 				 AND (slug IS NULL OR slug NOT LIKE '%-branch-%')
 				 AND created_at >= $2`,
@@ -60,18 +60,18 @@ export async function load({ url }) {
 				SELECT
 					COUNT(*) FILTER (WHERE businessfilled = false) as tier1_count,
 					COUNT(*) FILTER (WHERE businessfilled = true) as tier2_count
-				FROM businesses_1
+				FROM us_businesses
 				WHERE state = $1 AND isvisible = true
 				AND (slug IS NULL OR slug NOT LIKE '%-branch-%')
 			`, [selectedState]);
 
 			// District breakdown for this state
 			const districtBreakdown = await pool.query(`
-				SELECT district, COUNT(*) as count
-				FROM businesses_1
+				SELECT county AS district, COUNT(*) as count
+				FROM us_businesses
 				WHERE state = $1 AND isvisible = true
 				AND (slug IS NULL OR slug NOT LIKE '%-branch-%')
-				GROUP BY district
+				GROUP BY county
 				ORDER BY count DESC
 			`, [selectedState]);
 

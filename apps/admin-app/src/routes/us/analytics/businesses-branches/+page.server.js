@@ -10,14 +10,14 @@ export async function load() {
 	try {
 		// 1. Total number of branches (businesses with slug containing '-branch-')
 		const totalBranchesResult = await pool.query(
-			'SELECT COUNT(*) as total FROM businesses_1 WHERE slug LIKE \'%-branch-%\''
+			'SELECT COUNT(*) as total FROM us_businesses WHERE slug LIKE \'%-branch-%\''
 		);
 
 		// 2. Total number of main businesses that have branches
 		// Extract main business slug by splitting on '-branch-' pattern
 		const businessesWithBranchesResult = await pool.query(`
 			SELECT COUNT(DISTINCT split_part(slug, '-branch-', 1)) as total
-			FROM businesses_1 
+			FROM us_businesses 
 			WHERE slug LIKE '%-branch-%'
 			  AND slug IS NOT NULL
 			  AND split_part(slug, '-branch-', 1) != ''
@@ -29,7 +29,7 @@ export async function load() {
 				SELECT 
 					split_part(slug, '-branch-', 1) as main_business_slug,
 					COUNT(*) as branch_count
-				FROM businesses_1 
+				FROM us_businesses 
 				WHERE slug LIKE '%-branch-%'
 				  AND slug IS NOT NULL
 				  AND split_part(slug, '-branch-', 1) != ''
@@ -50,7 +50,7 @@ export async function load() {
 				split_part(slug, '-branch-', 1) as main_business_slug,
 				COUNT(*) as branch_count,
 				array_agg(businessname ORDER BY businessname) as branch_names
-			FROM businesses_1 
+			FROM us_businesses 
 			WHERE slug LIKE '%-branch-%'
 			  AND slug IS NOT NULL
 			  AND split_part(slug, '-branch-', 1) != ''

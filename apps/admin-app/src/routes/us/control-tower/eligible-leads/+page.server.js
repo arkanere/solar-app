@@ -62,7 +62,7 @@ async function filterOutBranchOffices(businessDetails, pool) {
 				// Fetch main business credentials
 				try {
 					const mainBusinessQuery = await pool.query(
-						'SELECT slug, magic_link_token FROM businesses_1 WHERE slug = $1 AND isvisible = true',
+						'SELECT slug, magic_link_token FROM us_businesses WHERE slug = $1 AND isvisible = true',
 						[mainBusinessSlug]
 					);
 
@@ -103,20 +103,19 @@ export async function load() {
 		const exclusiveLeadsQuery = await pool.query(`
 			SELECT DISTINCT
 				l.*,
-				l.district as mapped_district,
+				l.zipcode AS pin_code,
+				l.county AS district,
+				l.county as mapped_district,
 				COUNT(DISTINCT b.id) as business_count,
 				STRING_AGG(DISTINCT b.businessname, ', ') as available_businesses,
 				'exclusive' as lead_type
-			FROM leaddata l
-			LEFT JOIN pincode_mapping pm ON l.pin_code = pm.pincode
-			INNER JOIN businesses_1 b ON (l.district = b.district) AND b.isvisible = true
+			FROM us_leaddata l
+			INNER JOIN us_businesses b ON (l.county = b.county) AND b.isvisible = true
 			WHERE l.isvisible = true
 			AND l.urlparams LIKE '/solar-panel-installer/%'
 			AND l.urlparams NOT LIKE '/solar-panel-installer-directory/%'
 			AND (l.category IS NULL OR l.category != 2)
-			GROUP BY l.id, l.name, l.phone, l.pin_code, l.type, l.comment, l.created_at,
-					 l.svnotes, l.sv_comment_for_businesses, l.urlparams, l.isvisible, l.email, l.category, l.district,
-					 l.stage, l.status, l.claim_count, l.original_id, l.business_id, l.email_invite_count, pm.district
+			GROUP BY l.id
 			HAVING COUNT(DISTINCT b.id) > 0
 			ORDER BY l.id DESC
 		`);
@@ -129,16 +128,16 @@ export async function load() {
 				b.businessname,
 				b.slug,
 				b.magic_link_token,
-				b.district,
+				b.county AS district,
 				b.state,
 				b.notes,
-				-- Non-exclusive available: category=1 leads in same district, not already claimed by this business, and claim_count <= 4
+				-- Non-exclusive available: category=1 leads in same county, not already claimed by this business, and claim_count <= 4
 				COUNT(DISTINCT CASE
-					WHEN l_count.isvisible = true AND l_count.category = 1 AND l_count.district = b.district
+					WHEN l_count.isvisible = true AND l_count.category = 1 AND l_count.county = b.county
 					AND COALESCE(l_count.claim_count, 0) <= 4
 					AND l_count.id NOT IN (
 						SELECT DISTINCT original_id
-						FROM leaddata l2
+						FROM us_leaddata l2
 						WHERE l2.category = 2 AND l2.business_id = b.id AND l2.original_id IS NOT NULL
 					)
 					THEN l_count.id END
@@ -148,18 +147,17 @@ export async function load() {
 					WHEN l_count.isvisible = true AND l_count.category = 2 AND l_count.business_id = b.id
 					THEN l_count.id END
 				) as claimed_leads_count
-			FROM leaddata l
-			LEFT JOIN pincode_mapping pm ON l.pin_code = pm.pincode
-			INNER JOIN businesses_1 b ON (l.district = b.district) AND b.isvisible = true
-			LEFT JOIN leaddata l_count ON (
-				(l_count.isvisible = true AND l_count.category = 1 AND l_count.district = b.district) OR
+			FROM us_leaddata l
+			INNER JOIN us_businesses b ON (l.county = b.county) AND b.isvisible = true
+			LEFT JOIN us_leaddata l_count ON (
+				(l_count.isvisible = true AND l_count.category = 1 AND l_count.county = b.county) OR
 				(l_count.isvisible = true AND l_count.category = 2 AND l_count.business_id = b.id)
 			)
 			WHERE l.isvisible = true
 			AND l.urlparams LIKE '/solar-panel-installer/%'
 			AND l.urlparams NOT LIKE '/solar-panel-installer-directory/%'
 			AND (l.category IS NULL OR l.category != 2)
-			GROUP BY l.id, b.id, b.businessname, b.slug, b.magic_link_token, b.district, b.state, b.notes
+			GROUP BY l.id, b.id, b.businessname, b.slug, b.magic_link_token, b.county, b.state, b.notes
 			ORDER BY l.id DESC, b.businessname ASC
 		`);
 
@@ -167,21 +165,20 @@ export async function load() {
 		const nonExclusiveLeadsQuery = await pool.query(`
 			SELECT DISTINCT
 				l.*,
-				l.district as mapped_district,
+				l.zipcode AS pin_code,
+				l.county AS district,
+				l.county as mapped_district,
 				COUNT(DISTINCT b.id) as business_count,
 				STRING_AGG(DISTINCT b.businessname, ', ') as available_businesses,
 				'non-exclusive' as lead_type
-			FROM leaddata l
-			LEFT JOIN pincode_mapping pm ON l.pin_code = pm.pincode
-			INNER JOIN businesses_1 b ON (l.district = b.district) AND b.isvisible = true
+			FROM us_leaddata l
+			INNER JOIN us_businesses b ON (l.county = b.county) AND b.isvisible = true
 			WHERE l.isvisible = true
 			AND (l.urlparams NOT LIKE '/solar-panel-installer/%'
 				 OR l.urlparams LIKE '/solar-panel-installer-directory/%'
 				 OR l.urlparams IS NULL)
 			AND (l.category IS NULL OR l.category != 2)
-			GROUP BY l.id, l.name, l.phone, l.pin_code, l.type, l.comment, l.created_at,
-					 l.svnotes, l.sv_comment_for_businesses, l.urlparams, l.isvisible, l.email, l.category, l.district,
-					 l.stage, l.status, l.claim_count, l.original_id, l.business_id, l.email_invite_count, pm.district
+			GROUP BY l.id
 			HAVING COUNT(DISTINCT b.id) > 0
 			ORDER BY l.id DESC
 		`);
@@ -194,16 +191,16 @@ export async function load() {
 				b.businessname,
 				b.slug,
 				b.magic_link_token,
-				b.district,
+				b.county AS district,
 				b.state,
 				b.notes,
-				-- Non-exclusive available: category=1 leads in same district, not already claimed by this business, and claim_count <= 4
+				-- Non-exclusive available: category=1 leads in same county, not already claimed by this business, and claim_count <= 4
 				COUNT(DISTINCT CASE
-					WHEN l_count.isvisible = true AND l_count.category = 1 AND l_count.district = b.district
+					WHEN l_count.isvisible = true AND l_count.category = 1 AND l_count.county = b.county
 					AND COALESCE(l_count.claim_count, 0) <= 4
 					AND l_count.id NOT IN (
 						SELECT DISTINCT original_id
-						FROM leaddata l2
+						FROM us_leaddata l2
 						WHERE l2.category = 2 AND l2.business_id = b.id AND l2.original_id IS NOT NULL
 					)
 					THEN l_count.id END
@@ -213,11 +210,10 @@ export async function load() {
 					WHEN l_count.isvisible = true AND l_count.category = 2 AND l_count.business_id = b.id
 					THEN l_count.id END
 				) as claimed_leads_count
-			FROM leaddata l
-			LEFT JOIN pincode_mapping pm ON l.pin_code = pm.pincode
-			INNER JOIN businesses_1 b ON (l.district = b.district) AND b.isvisible = true
-			LEFT JOIN leaddata l_count ON (
-				(l_count.isvisible = true AND l_count.category = 1 AND l_count.district = b.district) OR
+			FROM us_leaddata l
+			INNER JOIN us_businesses b ON (l.county = b.county) AND b.isvisible = true
+			LEFT JOIN us_leaddata l_count ON (
+				(l_count.isvisible = true AND l_count.category = 1 AND l_count.county = b.county) OR
 				(l_count.isvisible = true AND l_count.category = 2 AND l_count.business_id = b.id)
 			)
 			WHERE l.isvisible = true
@@ -225,7 +221,7 @@ export async function load() {
 				 OR l.urlparams LIKE '/solar-panel-installer-directory/%'
 				 OR l.urlparams IS NULL)
 			AND (l.category IS NULL OR l.category != 2)
-			GROUP BY l.id, b.id, b.businessname, b.slug, b.magic_link_token, b.district, b.state, b.notes
+			GROUP BY l.id, b.id, b.businessname, b.slug, b.magic_link_token, b.county, b.state, b.notes
 			ORDER BY l.id DESC, b.businessname ASC
 		`);
 
@@ -233,13 +229,14 @@ export async function load() {
 		const claimedDuplicatesQuery = await pool.query(`
 			SELECT
 				l.*,
-				pm.district as mapped_district,
+				l.zipcode AS pin_code,
+				l.county as mapped_district,
 				b.businessname as assigned_business_name,
 				b.id as assigned_business_id,
 				b.phonenumber as business_phonenumber,
 				b.slug as business_slug,
 				b.magic_link_token as business_magic_link_token,
-				b.district as business_district,
+				b.county as business_district,
 				b.state as business_state,
 				b.notes as business_notes,
 				lcr.created_at as claim_created_at,
@@ -247,27 +244,26 @@ export async function load() {
 				lcr.isresolved,
 				-- Calculate lead counts for this business
 				(SELECT COUNT(DISTINCT l_count.id)
-				 FROM leaddata l_count
+				 FROM us_leaddata l_count
 				 WHERE l_count.isvisible = true
 				 AND l_count.category = 1
-				 AND l_count.district = b.district
+				 AND l_count.county = b.county
 				 AND COALESCE(l_count.claim_count, 0) <= 4
 				 AND l_count.id NOT IN (
 					 SELECT DISTINCT original_id
-					 FROM leaddata l2
+					 FROM us_leaddata l2
 					 WHERE l2.category = 2 AND l2.business_id = b.id AND l2.original_id IS NOT NULL
 				 )
 				) as business_non_exclusive_available_count,
 				(SELECT COUNT(DISTINCT l_count.id)
-				 FROM leaddata l_count
+				 FROM us_leaddata l_count
 				 WHERE l_count.isvisible = true
 				 AND l_count.category = 2
 				 AND l_count.business_id = b.id
 				) as business_claimed_leads_count
-			FROM leaddata l
-			LEFT JOIN pincode_mapping pm ON l.pin_code = pm.pincode
-			LEFT JOIN businesses_1 b ON l.business_id = b.id
-			LEFT JOIN leaddata_claimrequests lcr ON l.id = lcr.claim_id
+			FROM us_leaddata l
+			LEFT JOIN us_businesses b ON l.business_id = b.id
+			LEFT JOIN us_leaddata_claimrequests lcr ON l.id = lcr.claim_id
 			WHERE l.isvisible = true
 			AND l.category = 2
 			AND l.business_id IS NOT NULL

@@ -10,7 +10,7 @@ export async function load() {
 	try {
 		// 1. Total leads (excluding category = 2, but including NULL category - same logic as lead-generation)
 		const totalLeadsResult = await pool.query(
-			'SELECT COUNT(*) as total FROM leaddata WHERE isvisible = true AND (category != 2 OR category IS NULL)'
+			'SELECT COUNT(*) as total FROM us_leaddata WHERE isvisible = true AND (category != 2 OR category IS NULL)'
 		);
 
 		// 2. Distribution of leads by claim count (0, 1, 2, 3, 4, 5 businesses)
@@ -22,7 +22,7 @@ export async function load() {
 				SUM(CASE WHEN claim_count = 3 THEN 1 ELSE 0 END) as leads_claimed_by_3,
 				SUM(CASE WHEN claim_count = 4 THEN 1 ELSE 0 END) as leads_claimed_by_4,
 				SUM(CASE WHEN claim_count >= 5 THEN 1 ELSE 0 END) as leads_claimed_by_5_or_more
-			FROM leaddata 
+			FROM us_leaddata 
 			WHERE isvisible = true 
 			  AND (category != 2 OR category IS NULL)
 		`);
@@ -30,9 +30,9 @@ export async function load() {
 		// Get actual leads for each claim category with claiming businesses (limited to 50 per category for performance)
 		const leadsBy0ClaimsResult = await pool.query(`
 			SELECT 
-				l.id, l.name, l.phone, l.email, l.pin_code, l.district, l.created_at, l.claim_count,
+				l.id, l.name, l.phone, l.email, l.zipcode AS pin_code, l.county AS district, l.created_at, l.claim_count,
 				ARRAY[]::TEXT[] as claiming_businesses
-			FROM leaddata l
+			FROM us_leaddata l
 			WHERE l.isvisible = true 
 			  AND (l.category != 2 OR l.category IS NULL)
 			  AND (l.claim_count = 0 OR l.claim_count IS NULL)
@@ -42,18 +42,18 @@ export async function load() {
 
 		const leadsBy1ClaimResult = await pool.query(`
 			SELECT 
-				l.id, l.name, l.phone, l.email, l.pin_code, l.district, l.created_at, l.claim_count,
+				l.id, l.name, l.phone, l.email, l.zipcode AS pin_code, l.county AS district, l.created_at, l.claim_count,
 				COALESCE(
 					ARRAY(
 						SELECT b.businessname 
-						FROM leaddata claimed 
-						JOIN businesses_1 b ON claimed.business_id = b.id 
+						FROM us_leaddata claimed 
+						JOIN us_businesses b ON claimed.business_id = b.id 
 						WHERE claimed.original_id = l.id AND claimed.category = 2
 						ORDER BY b.businessname
 					), 
 					ARRAY[]::TEXT[]
 				) as claiming_businesses
-			FROM leaddata l
+			FROM us_leaddata l
 			WHERE l.isvisible = true 
 			  AND (l.category != 2 OR l.category IS NULL)
 			  AND l.claim_count = 1
@@ -63,18 +63,18 @@ export async function load() {
 
 		const leadsBy2ClaimsResult = await pool.query(`
 			SELECT 
-				l.id, l.name, l.phone, l.email, l.pin_code, l.district, l.created_at, l.claim_count,
+				l.id, l.name, l.phone, l.email, l.zipcode AS pin_code, l.county AS district, l.created_at, l.claim_count,
 				COALESCE(
 					ARRAY(
 						SELECT b.businessname 
-						FROM leaddata claimed 
-						JOIN businesses_1 b ON claimed.business_id = b.id 
+						FROM us_leaddata claimed 
+						JOIN us_businesses b ON claimed.business_id = b.id 
 						WHERE claimed.original_id = l.id AND claimed.category = 2
 						ORDER BY b.businessname
 					), 
 					ARRAY[]::TEXT[]
 				) as claiming_businesses
-			FROM leaddata l
+			FROM us_leaddata l
 			WHERE l.isvisible = true 
 			  AND (l.category != 2 OR l.category IS NULL)
 			  AND l.claim_count = 2
@@ -84,18 +84,18 @@ export async function load() {
 
 		const leadsBy3ClaimsResult = await pool.query(`
 			SELECT 
-				l.id, l.name, l.phone, l.email, l.pin_code, l.district, l.created_at, l.claim_count,
+				l.id, l.name, l.phone, l.email, l.zipcode AS pin_code, l.county AS district, l.created_at, l.claim_count,
 				COALESCE(
 					ARRAY(
 						SELECT b.businessname 
-						FROM leaddata claimed 
-						JOIN businesses_1 b ON claimed.business_id = b.id 
+						FROM us_leaddata claimed 
+						JOIN us_businesses b ON claimed.business_id = b.id 
 						WHERE claimed.original_id = l.id AND claimed.category = 2
 						ORDER BY b.businessname
 					), 
 					ARRAY[]::TEXT[]
 				) as claiming_businesses
-			FROM leaddata l
+			FROM us_leaddata l
 			WHERE l.isvisible = true 
 			  AND (l.category != 2 OR l.category IS NULL)
 			  AND l.claim_count = 3
@@ -105,18 +105,18 @@ export async function load() {
 
 		const leadsBy4ClaimsResult = await pool.query(`
 			SELECT 
-				l.id, l.name, l.phone, l.email, l.pin_code, l.district, l.created_at, l.claim_count,
+				l.id, l.name, l.phone, l.email, l.zipcode AS pin_code, l.county AS district, l.created_at, l.claim_count,
 				COALESCE(
 					ARRAY(
 						SELECT b.businessname 
-						FROM leaddata claimed 
-						JOIN businesses_1 b ON claimed.business_id = b.id 
+						FROM us_leaddata claimed 
+						JOIN us_businesses b ON claimed.business_id = b.id 
 						WHERE claimed.original_id = l.id AND claimed.category = 2
 						ORDER BY b.businessname
 					), 
 					ARRAY[]::TEXT[]
 				) as claiming_businesses
-			FROM leaddata l
+			FROM us_leaddata l
 			WHERE l.isvisible = true 
 			  AND (l.category != 2 OR l.category IS NULL)
 			  AND l.claim_count = 4
@@ -126,18 +126,18 @@ export async function load() {
 
 		const leadsBy5OrMoreClaimsResult = await pool.query(`
 			SELECT 
-				l.id, l.name, l.phone, l.email, l.pin_code, l.district, l.created_at, l.claim_count,
+				l.id, l.name, l.phone, l.email, l.zipcode AS pin_code, l.county AS district, l.created_at, l.claim_count,
 				COALESCE(
 					ARRAY(
 						SELECT b.businessname 
-						FROM leaddata claimed 
-						JOIN businesses_1 b ON claimed.business_id = b.id 
+						FROM us_leaddata claimed 
+						JOIN us_businesses b ON claimed.business_id = b.id 
 						WHERE claimed.original_id = l.id AND claimed.category = 2
 						ORDER BY b.businessname
 					), 
 					ARRAY[]::TEXT[]
 				) as claiming_businesses
-			FROM leaddata l
+			FROM us_leaddata l
 			WHERE l.isvisible = true 
 			  AND (l.category != 2 OR l.category IS NULL)
 			  AND l.claim_count >= 5

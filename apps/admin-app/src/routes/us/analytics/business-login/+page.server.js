@@ -15,12 +15,12 @@ export async function load() {
 
 		// 1. Total businesses (excluding branches, only visible businesses)
 		const totalBusinessesResult = await pool.query(
-			'SELECT COUNT(*) as total FROM businesses_1 WHERE isvisible = true AND (slug IS NULL OR slug NOT LIKE \'%-branch-%\')'
+			'SELECT COUNT(*) as total FROM us_businesses WHERE isvisible = true AND (slug IS NULL OR slug NOT LIKE \'%-branch-%\')'
 		);
 
 		// 2. Number of businesses logged in last 15 days
 		const businessesLoggedInLast15DaysResult = await pool.query(
-			'SELECT COUNT(*) as count FROM businesses_1 WHERE isvisible = true AND (slug IS NULL OR slug NOT LIKE \'%-branch-%\') AND last_login >= $1',
+			'SELECT COUNT(*) as count FROM us_businesses WHERE isvisible = true AND (slug IS NULL OR slug NOT LIKE \'%-branch-%\') AND last_login >= $1',
 			[fifteenDaysAgo.toISOString()]
 		);
 

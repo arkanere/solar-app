@@ -28,18 +28,18 @@ export async function POST({ request }) {
 			return json({ success: false, error: 'Lead ID is required' }, { status: 400 });
 		}
 
-		// Construct the SQL query with new fields
+		// Construct the SQL query with new fields (US leaddata: zipcode/county)
 		const updateQuery = `
-            UPDATE leaddata
+            UPDATE us_leaddata
             SET name = $1,
                 phone = $2,
-                pin_code = $3,
+                zipcode = $3,
                 email = $4,
                 type = $5,
                 comment = $6,
                 svnotes = $7,
                 sv_comment_for_businesses = $8,
-                district = $9,
+                county = $9,
                 category = $10,
                 stage = $11,
                 status = $12

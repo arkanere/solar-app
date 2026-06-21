@@ -10,27 +10,27 @@ export async function load() {
 	try {
 		// 1. Total businesses (excluding branches, only visible businesses)
 		const totalBusinessesResult = await pool.query(
-			'SELECT COUNT(*) as total FROM businesses_1 WHERE isvisible = true AND (slug IS NULL OR slug NOT LIKE \'%-branch-%\')'
+			'SELECT COUNT(*) as total FROM us_businesses WHERE isvisible = true AND (slug IS NULL OR slug NOT LIKE \'%-branch-%\')'
 		);
 
 		// 2. Number of businesses who have posted at least 1 project
 		const businessesWithProjectsResult = await pool.query(`
 			SELECT COUNT(DISTINCT b.slug) as count
-			FROM businesses_1 b
-			JOIN projects p ON b.slug = p.business_slug
+			FROM us_businesses b
+			JOIN us_projects p ON b.slug = p.business_slug
 			WHERE b.isvisible = true 
 			  AND (b.slug IS NULL OR b.slug NOT LIKE '%-branch-%')
 			  AND (p.isvisible = true OR p.isvisible IS NULL)
 		`);
 
-		// 4. Project count distribution (0, 1, 2, 3, 4, 5, 5+ projects)
+		// 4. Project count distribution (0, 1, 2, 3, 4, 5, 5+ us_projects)
 		const projectDistributionResult = await pool.query(`
 			WITH business_project_counts AS (
 				SELECT 
 					b.slug,
 					COUNT(p.id) as project_count
-				FROM businesses_1 b
-				LEFT JOIN projects p ON b.slug = p.business_slug AND (p.isvisible = true OR p.isvisible IS NULL)
+				FROM us_businesses b
+				LEFT JOIN us_projects p ON b.slug = p.business_slug AND (p.isvisible = true OR p.isvisible IS NULL)
 				WHERE b.isvisible = true 
 				  AND (b.slug IS NULL OR b.slug NOT LIKE '%-branch-%')
 				GROUP BY b.slug
@@ -83,15 +83,15 @@ export async function load() {
 					SELECT 
 						b.slug,
 						b.businessname,
-						b.district,
+						b.county AS district,
 						b.state,
 						b.created_at,
 						COUNT(p.id) as project_count
-					FROM businesses_1 b
-					LEFT JOIN projects p ON b.slug = p.business_slug AND (p.isvisible = true OR p.isvisible IS NULL)
-					WHERE b.isvisible = true 
+					FROM us_businesses b
+					LEFT JOIN us_projects p ON b.slug = p.business_slug AND (p.isvisible = true OR p.isvisible IS NULL)
+					WHERE b.isvisible = true
 					  AND (b.slug IS NULL OR b.slug NOT LIKE '%-branch-%')
-					GROUP BY b.slug, b.businessname, b.district, b.state, b.created_at
+					GROUP BY b.slug, b.businessname, b.county, b.state, b.created_at
 				)
 				SELECT slug, businessname, district, state, created_at, project_count
 				FROM business_project_counts
@@ -121,9 +121,9 @@ export async function load() {
 			}
 		};
 	} catch (error) {
-		console.error('Recent projects analytics query error:', error);
+		console.error('Recent us_projects analytics query error:', error);
 		return { 
-			error: 'Failed to load recent projects analytics data',
+			error: 'Failed to load recent us_projects analytics data',
 			analytics: {
 				totalBusinesses: 0,
 				businessesWithProjects: 0,

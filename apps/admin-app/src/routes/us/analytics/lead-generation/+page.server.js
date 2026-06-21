@@ -18,12 +18,12 @@ export async function load() {
 
 		// 1. Total leads generated (excluding category = 2, but including NULL category)
 		const totalLeadsResult = await pool.query(
-			'SELECT COUNT(*) as total FROM leaddata WHERE isvisible = true AND (category != 2 OR category IS NULL)'
+			'SELECT COUNT(*) as total FROM us_leaddata WHERE isvisible = true AND (category != 2 OR category IS NULL)'
 		);
 		
 		// 2. Leads generated last 30 days (excluding category = 2, but including NULL category)
 		const last30DaysResult = await pool.query(
-			'SELECT COUNT(*) as count FROM leaddata WHERE isvisible = true AND (category != 2 OR category IS NULL) AND created_at >= $1',
+			'SELECT COUNT(*) as count FROM us_leaddata WHERE isvisible = true AND (category != 2 OR category IS NULL) AND created_at >= $1',
 			[thirtyDaysAgo.toISOString()]
 		);
 
@@ -36,7 +36,7 @@ export async function load() {
 			weekEnd.setDate(weekStart.getDate() + 7);
 			
 			const weekResult = await pool.query(
-				'SELECT COUNT(*) as count FROM leaddata WHERE isvisible = true AND (category != 2 OR category IS NULL) AND created_at >= $1 AND created_at < $2',
+				'SELECT COUNT(*) as count FROM us_leaddata WHERE isvisible = true AND (category != 2 OR category IS NULL) AND created_at >= $1 AND created_at < $2',
 				[weekStart.toISOString(), weekEnd.toISOString()]
 			);
 			
@@ -59,7 +59,7 @@ export async function load() {
 			dayEnd.setHours(23, 59, 59, 999);
 			
 			const dayResult = await pool.query(
-				'SELECT COUNT(*) as count FROM leaddata WHERE isvisible = true AND (category != 2 OR category IS NULL) AND created_at >= $1 AND created_at <= $2',
+				'SELECT COUNT(*) as count FROM us_leaddata WHERE isvisible = true AND (category != 2 OR category IS NULL) AND created_at >= $1 AND created_at <= $2',
 				[dayStart.toISOString(), dayEnd.toISOString()]
 			);
 			
@@ -74,7 +74,7 @@ export async function load() {
 		const todayStart = new Date(now);
 		todayStart.setHours(0, 0, 0, 0);
 		const todayResult = await pool.query(
-			'SELECT COUNT(*) as count FROM leaddata WHERE isvisible = true AND (category != 2 OR category IS NULL) AND created_at >= $1',
+			'SELECT COUNT(*) as count FROM us_leaddata WHERE isvisible = true AND (category != 2 OR category IS NULL) AND created_at >= $1',
 			[todayStart.toISOString()]
 		);
 
