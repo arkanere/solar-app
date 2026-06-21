@@ -1,0 +1,258 @@
+<script lang="ts">
+	import { page } from '$app/stores';
+	import { isSidebarExpanded, isMobileMenuOpen } from '$lib/in/sidebarStore.svelte';
+	import Sidebar from '$lib/us-new-rewrites/Sidebar.svelte';
+	import ShowSupport from '$lib/us-new-rewrites/ShowSupport.svelte';
+	import ShowDeleteAccount from '$lib/us-new-rewrites/ShowDeleteAccount.svelte';
+	import AddBranch from '$lib/us-new-rewrites/AddBranch.svelte';
+	import LeadFormModalBusiness from '$lib/us-new-rewrites/LeadFormModalBusiness.svelte';
+	import type { Snippet } from 'svelte';
+
+	export type LayoutProps = {
+		data: any;
+		children: Snippet;
+	};
+
+	let { data, children }: LayoutProps = $props();
+
+	let session = $derived(data.business_session);
+	let businessSlug = $derived($page.params.business_slug ?? '');
+	let businessName = $derived(session?.businessName || '');
+	let businessId = $derived(session?.businessId);
+
+	let expanded = $derived(isSidebarExpanded.isExpanded);
+
+	// Modal states (lifted from individual pages)
+	let showSupport = $state(false);
+	let showDeleteAccount = $state(false);
+	let showAddBranch = $state(false);
+	let showAddLead = $state(false);
+
+	function handleAddLead() {
+		showAddLead = true;
+	}
+
+	function handleAddBranch() {
+		showAddBranch = true;
+	}
+
+	function handleSupport() {
+		showSupport = true;
+	}
+
+	function handleDeleteAccount() {
+		showDeleteAccount = true;
+	}
+
+	function handleBranchAdded() {
+		window.location.reload();
+	}
+
+	function handleLeadAdded() {
+		showAddLead = false;
+		window.location.reload();
+	}
+
+	function toggleMobileMenu() {
+		isMobileMenuOpen.toggle();
+	}
+</script>
+
+{#if session}
+<!-- US has no sponsor ribbon; collapse the reserved space -->
+<div style="--ribbon-height: 0px;">
+	<!-- Mobile Top Bar (hidden when sidebar sheet is open) -->
+	{#if !isMobileMenuOpen.isOpen}
+		<div class="mobile-topbar bg-card border-b border-border">
+			<button
+				class="mobile-menu-toggle"
+				onclick={toggleMobileMenu}
+				aria-label="Toggle menu"
+			>
+				<span class="bg-accent"></span>
+				<span class="bg-accent"></span>
+				<span class="bg-accent"></span>
+			</button>
+			{#if businessName}
+				<span class="mobile-topbar-email text-foreground-muted">{businessName}</span>
+			{/if}
+		</div>
+	{/if}
+
+	<!-- Sidebar -->
+	<Sidebar
+		{businessSlug}
+		{businessName}
+		onAddLead={handleAddLead}
+		onAddBranch={handleAddBranch}
+		onSupport={handleSupport}
+		onDeleteAccount={handleDeleteAccount}
+	/>
+
+	<!-- Main Content Area -->
+	<div class="layout-container {expanded ? 'sidebar-expanded' : 'sidebar-collapsed'}">
+		<main class="min-h-screen bg-background text-foreground transition-colors duration-300">
+			{@render children?.()}
+		</main>
+	</div>
+
+	<!-- Modals -->
+	{#if showAddLead}
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div
+			class="modal-overlay"
+			onclick={(e) => {
+				if (e.target === e.currentTarget) {
+					showAddLead = false;
+				}
+			}}
+		>
+			<div class="modal-content bg-card text-card-foreground" role="dialog" aria-modal="true">
+				<button class="close-btn text-foreground-muted hover:text-foreground" onclick={() => (showAddLead = false)}>&times;</button>
+				<h2 class="text-accent">Add Lead</h2>
+				<LeadFormModalBusiness
+					{businessName}
+					{businessSlug}
+					onLeadAdded={handleLeadAdded}
+				/>
+			</div>
+		</div>
+	{/if}
+
+	{#if showSupport}
+		<ShowSupport bind:show={showSupport} onClose={() => (showSupport = false)} />
+	{/if}
+
+	{#if showDeleteAccount}
+		<ShowDeleteAccount bind:show={showDeleteAccount} onClose={() => (showDeleteAccount = false)} />
+	{/if}
+
+	{#if showAddBranch}
+		<AddBranch
+			bind:show={showAddBranch}
+			{businessId}
+			{businessSlug}
+			onClose={() => (showAddBranch = false)}
+			onBranchAdded={handleBranchAdded}
+		/>
+	{/if}
+</div>
+{:else}
+	<!-- Unauthenticated pages (claim, login, reset-password, signin-link): no shell -->
+	{@render children?.()}
+{/if}
+
+<style>
+	/* Mobile Top Bar */
+	.mobile-topbar {
+		display: none;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.625rem 1rem;
+		margin-top: var(--ribbon-height);
+	}
+
+	.mobile-menu-toggle {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		width: 24px;
+		height: 18px;
+		background: none;
+		border: none;
+		cursor: pointer;
+		padding: 0;
+		flex-shrink: 0;
+	}
+
+	.mobile-menu-toggle span {
+		display: block;
+		height: 2.5px;
+		width: 100%;
+		border-radius: 2px;
+	}
+
+	.mobile-topbar-email {
+		font-size: 0.75rem;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		min-width: 0;
+	}
+
+	@media (max-width: 767px) {
+		.mobile-topbar {
+			display: flex;
+		}
+	}
+
+	/* Layout Container */
+	.layout-container {
+		margin-left: 250px;
+		padding-top: var(--ribbon-height);
+		transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		min-height: 100vh;
+		overflow-x: hidden; /* Prevents horizontal scroll without breaking fixed-position modals */
+	}
+
+	.layout-container.sidebar-collapsed {
+		margin-left: 60px;
+	}
+
+	@media (max-width: 767px) {
+		.layout-container,
+		.layout-container.sidebar-collapsed {
+			margin-left: 0;
+			padding-top: 0;
+		}
+	}
+
+	/* Modal Styles */
+	.modal-overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: color-mix(in oklch, var(--color-modal-backdrop) 50%, transparent);
+		display: flex;
+		justify-content: center;
+		align-items: flex-start;
+		z-index: var(--z-modal-backdrop);
+		overflow-y: auto;
+		padding: 20px 0;
+		pointer-events: none;
+	}
+
+	.modal-content {
+		position: relative;
+		padding: 20px;
+		border-radius: var(--radius-lg);
+		max-width: 500px;
+		width: 100%;
+		margin: auto 20px;
+		max-height: calc(100vh - 40px);
+		overflow-y: auto;
+		border: 1px solid var(--color-border);
+		box-shadow: var(--shadow-lg);
+		pointer-events: auto;
+	}
+
+	.close-btn {
+		position: absolute;
+		top: 10px;
+		right: 10px;
+		background: none;
+		border: none;
+		font-size: 1.5rem;
+		cursor: pointer;
+		z-index: var(--z-modal);
+		transition: color 0.15s ease;
+	}
+
+	h2 {
+		margin-top: 0;
+		margin-bottom: 1rem;
+	}
+</style>
