@@ -20,6 +20,7 @@
 		Settings,
 		MessageCircle,
 		ScrollText,
+		Calculator,
 		Trash2,
 		LogOut,
 		X,
@@ -99,6 +100,13 @@
 			label: 'Proposals',
 			icon: FileText,
 			href: `/in/${businessSlug}/proposal`,
+			itemType: 'link'
+		},
+		{
+			type: 'standalone',
+			label: 'Quotation Maker',
+			icon: Calculator,
+			href: `/in/${businessSlug}/quotation`,
 			itemType: 'link'
 		},
 		{
