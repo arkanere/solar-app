@@ -10,4 +10,8 @@
 </script>
 
 <SponsorRibbon />
-{@render children()}
+<!-- Reserve space for the fixed ribbon once, here. No descendant should offset
+     itself by --ribbon-height again. -->
+<div style="padding-top: var(--ribbon-height)">
+	{@render children()}
+</div>
