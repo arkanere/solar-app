@@ -59,8 +59,6 @@
 </script>
 
 {#if session}
-<!-- US has no sponsor ribbon; collapse the reserved space -->
-<div style="--ribbon-height: 0px;">
 	<!-- Mobile Top Bar (hidden when sidebar sheet is open) -->
 	{#if !isMobileMenuOpen.isOpen}
 		<div class="mobile-topbar bg-card border-b border-border">
@@ -137,7 +135,6 @@
 			onBranchAdded={handleBranchAdded}
 		/>
 	{/if}
-</div>
 {:else}
 	<!-- Unauthenticated pages (claim, login, reset-password, signin-link): no shell -->
 	{@render children?.()}
@@ -150,7 +147,6 @@
 		align-items: center;
 		gap: 0.75rem;
 		padding: 0.625rem 1rem;
-		margin-top: var(--ribbon-height);
 	}
 
 	.mobile-menu-toggle {
@@ -190,7 +186,6 @@
 	/* Layout Container */
 	.layout-container {
 		margin-left: 250px;
-		padding-top: var(--ribbon-height);
 		transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 		min-height: 100vh;
 		overflow-x: hidden; /* Prevents horizontal scroll without breaking fixed-position modals */
@@ -204,7 +199,6 @@
 		.layout-container,
 		.layout-container.sidebar-collapsed {
 			margin-left: 0;
-			padding-top: 0;
 		}
 	}
 
