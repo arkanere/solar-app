@@ -5,6 +5,7 @@
 
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
+	import PublicNavbar from '$lib/in-new-rewrites/PublicNavbar.svelte';
 
 	const benefits = [
 		{
@@ -60,6 +61,8 @@
 		}
 	];
 </script>
+
+<PublicNavbar />
 
 <div class="min-h-screen bg-background text-foreground">
 	<!-- Hero -->
