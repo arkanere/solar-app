@@ -1,6 +1,7 @@
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { AUTH_ERRORS, SUCCESS_RESPONSE, ERROR_RESPONSE } from './AuthTypes';
+import { TokenSecurity } from './TokenSecurity';
 import type {
 	AuthErrorResponse,
 	TokenValidationSuccess,
@@ -15,12 +16,14 @@ export class TokenManager {
 		businessSlug: string
 	): Promise<TokenValidationSuccess | AuthErrorResponse> {
 		try {
-			// Query business with matching token and slug
+			// Tokens are stored hashed at rest; match against the hash of the
+			// incoming raw token.
+			const tokenHash = TokenSecurity.hashToken(token);
 			const result = await pool.query(
-				`SELECT id, businessname, slug, login_email, magic_link_token, isvisible
+				`SELECT id, businessname, slug, login_email, magic_link_token, isvisible, magic_link_token_expires_at
 				 FROM us_businesses
 				 WHERE slug = $1 AND magic_link_token = $2 AND magic_link_token IS NOT NULL`,
-				[businessSlug, token]
+				[businessSlug, tokenHash]
 			);
 
 			if (result.rows.length === 0) {
@@ -28,6 +31,11 @@ export class TokenManager {
 			}
 
 			const business = result.rows[0];
+
+			// Reject expired tokens (a NULL expiry is treated as expired).
+			if (TokenSecurity.isTokenExpired(business.magic_link_token_expires_at)) {
+				return ERROR_RESPONSE('Invalid or expired magic link', AUTH_ERRORS.INVALID_TOKEN);
+			}
 
 			// Check if business is visible/active
 			if (!business.isvisible) {

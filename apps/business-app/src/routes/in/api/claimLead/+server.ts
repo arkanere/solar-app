@@ -3,7 +3,7 @@ import { POSTGRES_URL } from '$env/static/private';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/in/auth/business';
 import { sendEmail } from '$lib/in/sendEmail';
-import { v4 as uuidv4 } from 'uuid';
+import { mintBusinessTokenById, mintUserToken } from '$lib/server/magicLink';
 import type { ClaimRequestPayload } from '$lib/types/lead';
 
 // Allow time for the full claim pipeline including Brevo calls — the default
@@ -374,17 +374,18 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 					businessname: string;
 					login_email: string;
 					slug: string;
-					magic_link_token: string;
 				}>(
-					'SELECT businessname, login_email, slug, magic_link_token FROM businesses_1 WHERE id = $1 LIMIT 1',
+					'SELECT businessname, login_email, slug FROM businesses_1 WHERE id = $1 LIMIT 1',
 					[allotmentBusinessId]
 				);
 				if (bizResult.rows.length === 0) {
 					console.error('❌ Allotment email skipped: business not found', allotmentBusinessId);
 					return;
 				}
-				const { businessname, login_email, slug, magic_link_token } = bizResult.rows[0];
-				const magicLink = `https://business.solarvipani.com/in/${slug}/signin-link/${magic_link_token}`;
+				const { businessname, login_email, slug } = bizResult.rows[0];
+				// Mint a fresh token (stored hashed); email the raw token.
+				const rawToken = await mintBusinessTokenById(pool, 'businesses_1', allotmentBusinessId);
+				const magicLink = `https://business.solarvipani.com/in/${slug}/signin-link/${rawToken}`;
 
 				const subject = 'New Lead Allotted - Solar Vipani';
 				const message = `
@@ -435,19 +436,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				const business = bizResult.rows[0];
 				const profileLink = `https://solarvipani.com/in/installer/${business.slug}`;
 
-				// Update-then-insert keeps this safe whether or not the customer
-				// already has an in_user row (works without a unique constraint)
-				const magicLinkToken = uuidv4();
-				const updateResult = await pool.query(
-					'UPDATE in_user SET magic_link_token = $1, name = COALESCE($2, name) WHERE email = $3',
-					[magicLinkToken, customer.name || null, customer.email]
-				);
-				if (updateResult.rowCount === 0) {
-					await pool.query(
-						'INSERT INTO in_user (email, name, magic_link_token) VALUES ($1, $2, $3)',
-						[customer.email, customer.name || null, magicLinkToken]
-					);
-				}
+				// Mint a fresh user token (stored hashed, upserts the in_user row);
+				// email the raw token.
+				const magicLinkToken = await mintUserToken(pool, customer.email, customer.name || null);
 				const customerAccountLink = `https://user.solarvipani.com/signin-link/${magicLinkToken}`;
 
 				const subject = 'A Solar Installer is Interested in Your Inquiry - Solar Vipani';

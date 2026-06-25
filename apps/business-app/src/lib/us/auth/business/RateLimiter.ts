@@ -1,72 +1,62 @@
-// Simple in-memory rate limiter for API endpoints.
+// Postgres-backed rate limiter (R2).
 //
-// SECURITY LIMITATION (L1): state lives in this process's Map. On Vercel
-// serverless each instance has its own Map, so the password-reset limit
-// (passwordResetLimiter, used by /api/resetPassword) is effectively bypassable
-// by spreading requests across instances, and resets on cold start. This is a
-// best-effort throttle only. To make it enforceable, back it with a shared
-// store (Postgres table keyed by identifier+window, or Upstash/Redis) before
-// relying on it as a real control.
+// State lives in the shared `rate_limits` table (see migration 035) so the limit
+// holds across Vercel serverless instances and cold starts — unlike the previous
+// in-memory Map, which was per-instance and effectively bypassable.
+//
+// Fail-open: if the store is unreachable we allow the request rather than block
+// logins/resets on a DB hiccup. The limiter is a throttle, not an auth boundary.
 
-interface RateLimitRecord {
-	count: number;
-	resetTime: number;
-}
+import { createPool } from '@vercel/postgres';
+import { POSTGRES_URL } from '$env/static/private';
 
 interface RateLimitResult {
 	allowed: boolean;
 	retryAfter: number;
 }
 
+const pool = createPool({ connectionString: POSTGRES_URL });
+
 export class RateLimiter {
-	private requests: Map<string, RateLimitRecord>;
+	async checkLimit(
+		identifier: string,
+		maxAttempts: number = 5,
+		windowMs: number = 15 * 60 * 1000
+	): Promise<RateLimitResult> {
+		const windowSeconds = windowMs / 1000;
+		try {
+			// Atomic upsert: start a fresh window when none exists or the previous
+			// one has elapsed, otherwise increment the count in the current window.
+			const result = await pool.query<{ count: number; reset_time: string }>(
+				`INSERT INTO rate_limits (identifier, count, reset_time)
+				 VALUES ($1, 1, now() + ($2 || ' seconds')::interval)
+				 ON CONFLICT (identifier) DO UPDATE SET
+				   count = CASE WHEN rate_limits.reset_time <= now() THEN 1 ELSE rate_limits.count + 1 END,
+				   reset_time = CASE WHEN rate_limits.reset_time <= now()
+				     THEN now() + ($2 || ' seconds')::interval ELSE rate_limits.reset_time END
+				 RETURNING count, reset_time`,
+				[identifier, windowSeconds]
+			);
 
-	constructor() {
-		this.requests = new Map<string, RateLimitRecord>();
-		// Clean up old entries every 10 minutes
-		setInterval(() => this.cleanup(), 10 * 60 * 1000);
-	}
+			const { count, reset_time } = result.rows[0];
+			const retryAfter = Math.max(0, Math.ceil((new Date(reset_time).getTime() - Date.now()) / 1000));
 
-	checkLimit(identifier: string, maxAttempts: number = 5, windowMs: number = 15 * 60 * 1000): RateLimitResult {
-		const now = Date.now();
-		const record = this.requests.get(identifier);
-
-		// No previous requests or window expired
-		if (!record || now > record.resetTime) {
-			this.requests.set(identifier, {
-				count: 1,
-				resetTime: now + windowMs
-			});
+			if (count > maxAttempts) {
+				return { allowed: false, retryAfter };
+			}
+			return { allowed: true, retryAfter: 0 };
+		} catch (error) {
+			console.error('❌ RateLimiter store error (failing open):', error);
 			return { allowed: true, retryAfter: 0 };
 		}
+	}
 
-		// Increment count
-		record.count++;
-
-		// Check if limit exceeded
-		if (record.count > maxAttempts) {
-			const retryAfter = Math.ceil((record.resetTime - now) / 1000);
-			return { allowed: false, retryAfter };
+	async reset(identifier: string): Promise<void> {
+		try {
+			await pool.query('DELETE FROM rate_limits WHERE identifier = $1', [identifier]);
+		} catch (error) {
+			console.error('❌ RateLimiter reset error:', error);
 		}
-
-		return { allowed: true, retryAfter: 0 };
-	}
-
-	reset(identifier: string): void {
-		this.requests.delete(identifier);
-	}
-
-	cleanup(): void {
-		const now = Date.now();
-		for (const [identifier, record] of this.requests.entries()) {
-			if (now > record.resetTime) {
-				this.requests.delete(identifier);
-			}
-		}
-	}
-
-	getStats(identifier: string): RateLimitRecord | null {
-		return this.requests.get(identifier) || null;
 	}
 }
 

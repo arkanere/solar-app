@@ -2,7 +2,7 @@ import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
 import { sendEmail } from '$lib/in/sendEmail';
-import { v4 as uuidv4 } from 'uuid';
+import { mintUserToken } from '$lib/server/magicLink';
 import type { RequestHandler } from './$types';
 
 const pool = createPool({ connectionString: POSTGRES_URL });
@@ -21,7 +21,7 @@ interface BusinessRow {
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
-		const { lead_id, business_id, is_first_claim } = await request.json();
+		const { lead_id, business_id } = await request.json();
 
 		if (!lead_id || !business_id) {
 			return json({ success: false, error: 'Lead ID and Business ID are required' }, { status: 400 });
@@ -55,20 +55,9 @@ export const POST: RequestHandler = async ({ request }) => {
 		const profileLink = `https://solarvipani.com/in/installer/${business.slug}`;
 		const adminEmail = 'admin@solarvipani.com';
 
-		const magicLinkToken = uuidv4();
-
-		if (is_first_claim) {
-			await pool.query(
-				'INSERT INTO in_user (email, name, magic_link_token) VALUES ($1, $2, $3)',
-				[lead.email, lead.name || null, magicLinkToken]
-			);
-		} else {
-			await pool.query(
-				'UPDATE in_user SET magic_link_token = $1 WHERE email = $2',
-				[magicLinkToken, lead.email]
-			);
-		}
-
+		// Mint a fresh user token (stored hashed, upserts the in_user row);
+		// email the raw token.
+		const magicLinkToken = await mintUserToken(pool, lead.email, lead.name || null);
 		const customerAccountLink = `https://user.solarvipani.com/signin-link/${magicLinkToken}`;
 
 		const subject = 'A Solar Installer is Interested in Your Inquiry - Solar Vipani';

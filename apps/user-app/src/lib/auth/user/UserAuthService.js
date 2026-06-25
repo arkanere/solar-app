@@ -27,8 +27,9 @@ export class UserAuthService {
 			const sessionData = SessionManager.createSession(user, AUTH_METHODS.MAGIC_LINK);
 			SessionManager.setSessionCookie(cookies, sessionData);
 
-			// Clear the magic link token so it can't be reused
-			await TokenManager.clearMagicLinkToken(user.id);
+			// Magic links are reusable until they expire: the token is intentionally
+			// NOT cleared after login, so the same link keeps working until its
+			// 15-day expiry (enforced in TokenManager.validateMagicLinkToken).
 
 			return SUCCESS_RESPONSE({
 				user,

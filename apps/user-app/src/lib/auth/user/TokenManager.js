@@ -1,5 +1,6 @@
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
+import crypto from 'crypto';
 import { AUTH_ERRORS, SUCCESS_RESPONSE, ERROR_RESPONSE } from './AuthTypes.js';
 
 const pool = createPool({ connectionString: POSTGRES_URL });
@@ -12,12 +13,14 @@ export class TokenManager {
 	 */
 	static async validateMagicLinkToken(token) {
 		try {
-			// Query user with matching token
+			// Tokens are stored hashed at rest; match against the hash of the
+			// incoming raw token.
+			const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
 			const result = await pool.query(
-				`SELECT id, email, name, magic_link_token, created_at
+				`SELECT id, email, name, magic_link_token, magic_link_token_expires_at, created_at
 				 FROM in_user
 				 WHERE magic_link_token = $1 AND magic_link_token IS NOT NULL`,
-				[token]
+				[tokenHash]
 			);
 
 			if (result.rows.length === 0) {
@@ -25,6 +28,12 @@ export class TokenManager {
 			}
 
 			const user = result.rows[0];
+
+			// Reject expired tokens (a NULL expiry is treated as expired).
+			const expiresAt = user.magic_link_token_expires_at;
+			if (!expiresAt || new Date() > new Date(expiresAt)) {
+				return ERROR_RESPONSE('Invalid or expired magic link', AUTH_ERRORS.INVALID_TOKEN);
+			}
 
 			return SUCCESS_RESPONSE({
 				user: {
@@ -111,30 +120,6 @@ export class TokenManager {
 		} catch (error) {
 			console.error('❌ Error getting user by ID:', error);
 			return ERROR_RESPONSE('Database error during user lookup', AUTH_ERRORS.DATABASE_ERROR);
-		}
-	}
-
-	/**
-	 * Clear the magic link token after successful login
-	 * @param {number} userId - User ID
-	 * @returns {Promise<Object>} Result of token clearing
-	 */
-	static async clearMagicLinkToken(userId) {
-		try {
-			await pool.query(
-				`UPDATE in_user
-				 SET magic_link_token = NULL
-				 WHERE id = $1`,
-				[userId]
-			);
-
-			return SUCCESS_RESPONSE({
-				message: 'Token cleared successfully'
-			});
-		} catch (error) {
-			console.error('❌ Error clearing magic link token:', error);
-			// Don't fail authentication if we can't clear the token
-			return ERROR_RESPONSE('Error clearing token', AUTH_ERRORS.DATABASE_ERROR);
 		}
 	}
 }

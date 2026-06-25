@@ -3,6 +3,7 @@ import { POSTGRES_URL } from '$env/static/private';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/us/auth/business';
 import { sendEmail } from '$lib/us/sendEmail';
+import { mintBusinessTokenById } from '$lib/server/magicLink';
 import type { ClaimRequestPayload } from '$lib/types/lead';
 
 interface ClaimCountRow {
@@ -191,18 +192,19 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 					businessname: string;
 					login_email: string;
 					slug: string;
-					magic_link_token: string;
 				}>(
-					'SELECT businessname, login_email, slug, magic_link_token FROM businesses_1 WHERE id = $1 LIMIT 1',
+					'SELECT businessname, login_email, slug FROM businesses_1 WHERE id = $1 LIMIT 1',
 					[emailData.business_id]
 				);
 
 				if (bizResult.rows.length === 0) {
 					console.error('❌ Allotment email skipped: business not found', emailData.business_id);
 				} else {
-					const { businessname, login_email, slug, magic_link_token } = bizResult.rows[0];
+					const { businessname, login_email, slug } = bizResult.rows[0];
 					const adminEmail = 'admin@solarvipani.com';
-					const magicLink = `https://business.solarvipani.com/us/${slug}/signin-link/${magic_link_token}`;
+					// Mint a fresh token (stored hashed); email the raw token.
+					const rawToken = await mintBusinessTokenById(pool, 'businesses_1', emailData.business_id);
+					const magicLink = `https://business.solarvipani.com/us/${slug}/signin-link/${rawToken}`;
 
 					const subject = 'New Lead Allotted - Solar Vipani';
 					const message = `

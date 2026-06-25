@@ -29,7 +29,7 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 
 	try {
 		// 1. Rate limiting - max 5 attempts per 15 minutes per IP/business combo
-		const rateLimit = passwordResetLimiter.checkLimit(rateLimitKey, 5, 15 * 60 * 1000);
+		const rateLimit = await passwordResetLimiter.checkLimit(rateLimitKey, 5, 15 * 60 * 1000);
 		if (!rateLimit.allowed) {
 			return json(
 				{
@@ -114,7 +114,7 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 		await pool.query(updateQuery, [hashedPassword, business.id]);
 
 		// 10. Reset rate limit on successful password reset
-		passwordResetLimiter.reset(rateLimitKey);
+		await passwordResetLimiter.reset(rateLimitKey);
 
 		return json({
 			success: true,

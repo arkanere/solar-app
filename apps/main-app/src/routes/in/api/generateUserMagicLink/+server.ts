@@ -2,6 +2,7 @@ import { json, type RequestHandler } from '@sveltejs/kit';
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { v4 as uuidv4 } from 'uuid';
+import crypto from 'crypto';
 import { hasInternalSecret } from '$lib/server/internalAuth';
 
 interface GenerateUserMagicLinkRequest {
@@ -10,6 +11,9 @@ interface GenerateUserMagicLinkRequest {
 }
 
 const pool = createPool({ connectionString: POSTGRES_URL });
+
+// Magic links expire 15 days after creation.
+const TOKEN_TTL_MS = 15 * 24 * 60 * 60 * 1000;
 
 export const POST: RequestHandler = async ({ request }) => {
 	if (!hasInternalSecret(request)) {
@@ -22,33 +26,27 @@ export const POST: RequestHandler = async ({ request }) => {
 			return json({ error: 'Email is required' }, { status: 400 });
 		}
 
-		// Generate magic link token (permanent until used)
+		// Generate magic link token. Store only the hash at rest; email the raw token.
 		const magicLinkToken = uuidv4();
-		console.log('Generated token:', magicLinkToken);
+		const tokenHash = crypto.createHash('sha256').update(magicLinkToken).digest('hex');
+		const expiresAt = new Date(Date.now() + TOKEN_TTL_MS);
 
 		// Check if user exists, if not create them
 		const existingUserQuery = 'SELECT id FROM in_user WHERE email = $1';
 		const existingUserResult = await pool.query(existingUserQuery, [email]);
 
-		let userId: number;
 		if (existingUserResult.rows.length > 0) {
 			// Update existing user
-			userId = existingUserResult.rows[0].id;
-			console.log('Updating existing user with ID:', userId);
-			const updateResult = await pool.query(
-				'UPDATE in_user SET magic_link_token = $1, name = COALESCE($2, name) WHERE id = $3',
-				[magicLinkToken, name || null, userId]
+			await pool.query(
+				'UPDATE in_user SET magic_link_token = $1, magic_link_token_expires_at = $2, name = COALESCE($3, name) WHERE id = $4',
+				[tokenHash, expiresAt, name || null, existingUserResult.rows[0].id]
 			);
-			console.log('Update result:', updateResult);
 		} else {
 			// Create new user
-			console.log('Creating new user');
-			const newUserResult = await pool.query(
-				'INSERT INTO in_user (email, name, magic_link_token) VALUES ($1, $2, $3) RETURNING id',
-				[email, name || null, magicLinkToken]
+			await pool.query(
+				'INSERT INTO in_user (email, name, magic_link_token, magic_link_token_expires_at) VALUES ($1, $2, $3, $4)',
+				[email, name || null, tokenHash, expiresAt]
 			);
-			userId = newUserResult.rows[0].id;
-			console.log('New user created with ID:', userId);
 		}
 
 		// Generate magic link URL
@@ -58,7 +56,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		return json({
 			success: true,
 			magicLinkUrl,
-			message: 'Magic link generated successfully (permanent until used)'
+			message: 'Magic link generated successfully (valid for 15 days)'
 		});
 
 	} catch (error) {
