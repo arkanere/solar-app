@@ -12,14 +12,15 @@ export class LoginTracker {
 		const throttleHours = options.throttleHours || AUTH_CONFIG.LAST_LOGIN_THROTTLE_HOURS;
 
 		try {
-			// Update only if last_login is null or older than throttle threshold
+			// Update only if last_login is null or older than throttle threshold.
+			// Bind the interval as a parameter via make_interval (no string interpolation).
 			const result = await pool.query(
 				`UPDATE businesses_1
 				 SET last_login = NOW()
 				 WHERE id = $1
-				   AND (last_login IS NULL OR last_login < NOW() - INTERVAL '${throttleHours} hours')
+				   AND (last_login IS NULL OR last_login < NOW() - make_interval(hours => $2))
 				 RETURNING last_login`,
-				[businessId]
+				[businessId, throttleHours]
 			);
 
 			if (result.rows.length > 0) {

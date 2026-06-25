@@ -1,5 +1,12 @@
-// Simple in-memory rate limiter for API endpoints
-// Note: For production with multiple instances, use Redis or similar
+// Simple in-memory rate limiter for API endpoints.
+//
+// SECURITY LIMITATION (L1): state lives in this process's Map. On Vercel
+// serverless each instance has its own Map, so the password-reset limit
+// (passwordResetLimiter, used by /api/resetPassword) is effectively bypassable
+// by spreading requests across instances, and resets on cold start. This is a
+// best-effort throttle only. To make it enforceable, back it with a shared
+// store (Postgres table keyed by identifier+window, or Upstash/Redis) before
+// relying on it as a real control.
 
 interface RateLimitRecord {
 	count: number;

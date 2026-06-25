@@ -22,11 +22,9 @@ export const POST: RequestHandler = async ({ request }) => {
 			return json({ success: false, error: 'Business slug and ID are required' }, { status: 400 });
 		}
 
-		// Generate a UUID and embed the business ID
-		const base_uuid = uuidv4();
-		const parts = base_uuid.split('-');
-		parts[2] = String(id); // Insert business ID in the 3rd segment
-		const magicLinkToken = parts.join('-');
+		// Random, unguessable token. Do NOT embed the business id — that made
+		// tokens partially predictable.
+		const magicLinkToken = uuidv4();
 
 		// Update the database with the new token
 		const client = await pool.connect();
