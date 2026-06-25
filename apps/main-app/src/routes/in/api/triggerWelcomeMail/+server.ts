@@ -1,5 +1,6 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { sendEmail } from '$lib/sendEmail.js'; // Brevo email utility to send emails
+import { internalSecretHeaders } from '$lib/server/internalAuth';
 
 export const POST: RequestHandler = async ({ request, fetch }) => {
 	const { login_email, slug, businessname, id } = await request.json(); // Data sent from the client-side
@@ -8,7 +9,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 		// Call /api/createMagicLinkToken to generate a magic link token
 		const magicTokenResponse = await fetch('/api/createMagicLinkToken', {
 			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
+			headers: { 'Content-Type': 'application/json', ...internalSecretHeaders() },
 			body: JSON.stringify({ slug, id })
 		});
 

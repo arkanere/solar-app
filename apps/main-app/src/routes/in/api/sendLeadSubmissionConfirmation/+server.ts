@@ -1,6 +1,7 @@
 // src/routes/api/sendLeadSubmissionConfirmation/+server.js
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { sendEmail } from '$lib/sendEmail'; // Utility for sending emails
+import { internalSecretHeaders } from '$lib/server/internalAuth';
 
 export const POST: RequestHandler = async ({ request, fetch }) => {
 	try {
@@ -19,7 +20,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 			try {
 				const magicLinkResponse = await fetch('/api/generateUserMagicLink', {
 					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
+					headers: { 'Content-Type': 'application/json', ...internalSecretHeaders() },
 					body: JSON.stringify({ email, name })
 				});
 

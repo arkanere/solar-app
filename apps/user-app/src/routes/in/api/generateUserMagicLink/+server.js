@@ -2,11 +2,15 @@ import { json } from '@sveltejs/kit';
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { v4 as uuidv4 } from 'uuid';
+import { hasInternalSecret } from '$lib/server/internalAuth.js';
 
 const pool = createPool({ connectionString: POSTGRES_URL });
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
+	if (!hasInternalSecret(request)) {
+		return json({ error: 'Unauthorized' }, { status: 401 });
+	}
 	try {
 		const { email, name } = await request.json();
 

@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { sendEmail } from '$lib/sendEmail.js';
+import { internalSecretHeaders } from '$lib/server/internalAuth.js';
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 
@@ -19,7 +20,7 @@ export async function POST({ request, fetch }) {
 			try {
 				const magicLinkResponse = await fetch('/in/api/generateUserMagicLink', {
 					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
+					headers: { 'Content-Type': 'application/json', ...internalSecretHeaders() },
 					body: JSON.stringify({ email, name })
 				});
 

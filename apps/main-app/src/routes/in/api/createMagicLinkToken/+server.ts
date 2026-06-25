@@ -2,6 +2,7 @@ import { json, type RequestHandler } from '@sveltejs/kit';
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { v4 as uuidv4 } from 'uuid';
+import { hasInternalSecret } from '$lib/server/internalAuth';
 
 interface MagicLinkRequest {
 	slug: string;
@@ -11,6 +12,9 @@ interface MagicLinkRequest {
 const pool = createPool({ connectionString: POSTGRES_URL });
 
 export const POST: RequestHandler = async ({ request }) => {
+	if (!hasInternalSecret(request)) {
+		return json({ success: false, error: 'Unauthorized' }, { status: 401 });
+	}
 	try {
 		const { slug, id }: MagicLinkRequest = await request.json();
 
