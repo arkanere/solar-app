@@ -17,7 +17,6 @@
     "clean": "npm run clean --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "dev:main": "npm run dev -w main-app",
-    "dev:admin": "npm run dev -w solarvipani-admin",
     "dev:business": "npm run dev -w solarvipani-business",
     "dev:in": "npm run dev -w in-app",
     "dev:uk": "npm run dev -w uk-app",
