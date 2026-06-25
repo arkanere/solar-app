@@ -3,6 +3,7 @@ import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import type { LayoutServerLoad } from './$types';
 import type { SessionData } from '$lib/types/auth';
+import { SessionManager } from '$lib/in/auth/business';
 
 interface BusinessRow {
 	id: number;
@@ -39,16 +40,8 @@ interface LayoutServerData {
 export const prerender = false;
 
 export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params, url }) => {
-	const business_session_raw = cookies.get('business-session');
-	let sessionData: SessionData | undefined;
-	if (business_session_raw) {
-		try {
-			sessionData = JSON.parse(business_session_raw);
-		} catch {
-			// invalid cookie
-			cookies.delete('business-session', { path: '/' });
-		}
-	}
+	const sessionData: SessionData | undefined =
+		SessionManager.getSessionFromCookie(cookies) ?? undefined;
 	const { business_slug } = params;
 
 	// Check if the URL matches claim, login, reset-password, or magic-link routes

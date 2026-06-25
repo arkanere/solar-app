@@ -1,5 +1,14 @@
 <script lang="ts">
-	// Optional: Display a loading message or handle the transition state.
+	import { page } from '$app/state';
+	let { data } = $props();
+	const slug = page.params.business_slug;
 </script>
 
-<p>Redirecting...</p>
+{#if data.error}
+	<div style="padding: 2rem; text-align: center;">
+		<p>{data.error}</p>
+		<a href="/in/{slug}/login">Request a new sign-in link</a>
+	</div>
+{:else}
+	<p>Redirecting...</p>
+{/if}
