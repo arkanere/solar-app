@@ -1,4 +1,6 @@
 import type { Cookies } from '@sveltejs/kit';
+import { createHmac, timingSafeEqual } from 'node:crypto';
+import { env } from '$env/dynamic/private';
 import {
 	AUTH_CONFIG,
 	AUTH_ERRORS,
@@ -10,6 +12,47 @@ import {
 	type AuthResponse,
 	type SessionValidationSuccess
 } from './AuthTypes';
+
+/**
+ * HMAC sign/verify for the session cookie. The cookie value is
+ * `base64url(payload).base64url(hmacSha256(payload))`. Verification recomputes
+ * the signature and compares in constant time; any tampering (or an old unsigned
+ * cookie) fails verification and is treated as logged-out.
+ */
+function getSessionSecret(): string {
+	const secret = env.SESSION_SECRET;
+	if (!secret) {
+		throw new Error('SESSION_SECRET is not configured');
+	}
+	return secret;
+}
+
+function signPayload(payloadB64: string): string {
+	return createHmac('sha256', getSessionSecret()).update(payloadB64).digest('base64url');
+}
+
+function serializeSession(sessionData: SessionData): string {
+	const payloadB64 = Buffer.from(JSON.stringify(sessionData), 'utf8').toString('base64url');
+	return `${payloadB64}.${signPayload(payloadB64)}`;
+}
+
+function deserializeSession(cookieValue: string): SessionData | null {
+	const dot = cookieValue.indexOf('.');
+	if (dot <= 0) return null; // unsigned / malformed (e.g. legacy plain-JSON cookie)
+
+	const payloadB64 = cookieValue.slice(0, dot);
+	const providedSig = cookieValue.slice(dot + 1);
+	const expectedSig = signPayload(payloadB64);
+
+	// Constant-time compare; bail if lengths differ (timingSafeEqual would throw).
+	const a = Buffer.from(providedSig);
+	const b = Buffer.from(expectedSig);
+	if (a.length !== b.length || !timingSafeEqual(a, b)) {
+		return null;
+	}
+
+	return JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8')) as SessionData;
+}
 
 export class SessionManager {
 	static createSession(business: BusinessPartial, authMethod: string): SessionData {
@@ -28,8 +71,7 @@ export class SessionManager {
 	}
 
 	static setSessionCookie(cookies: Cookies, sessionData: SessionData): void {
-		const sessionString = JSON.stringify(sessionData);
-		cookies.set(AUTH_CONFIG.COOKIE_NAME, sessionString, AUTH_CONFIG.COOKIE_OPTIONS);
+		cookies.set(AUTH_CONFIG.COOKIE_NAME, serializeSession(sessionData), AUTH_CONFIG.COOKIE_OPTIONS);
 	}
 
 	static getSessionFromCookie(cookies: Cookies): SessionData | null {
@@ -37,7 +79,8 @@ export class SessionManager {
 			const sessionString = cookies.get(AUTH_CONFIG.COOKIE_NAME);
 			if (!sessionString) return null;
 
-			const sessionData = JSON.parse(sessionString);
+			const sessionData = deserializeSession(sessionString);
+			if (!sessionData) return null;
 
 			// Check if session is expired
 			const now = new Date();

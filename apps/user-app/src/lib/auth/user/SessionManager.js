@@ -1,4 +1,45 @@
+import { createHmac, timingSafeEqual } from 'node:crypto';
+import { env } from '$env/dynamic/private';
 import { AUTH_CONFIG, AUTH_ERRORS, SUCCESS_RESPONSE, ERROR_RESPONSE } from './AuthTypes.js';
+
+/**
+ * HMAC sign/verify for the session cookie. Cookie value is
+ * `base64url(payload).base64url(hmacSha256(payload))`. Tampered or legacy
+ * unsigned cookies fail verification and are treated as logged-out.
+ */
+function getSessionSecret() {
+	const secret = env.SESSION_SECRET;
+	if (!secret) {
+		throw new Error('SESSION_SECRET is not configured');
+	}
+	return secret;
+}
+
+function signPayload(payloadB64) {
+	return createHmac('sha256', getSessionSecret()).update(payloadB64).digest('base64url');
+}
+
+function serializeSession(sessionData) {
+	const payloadB64 = Buffer.from(JSON.stringify(sessionData), 'utf8').toString('base64url');
+	return `${payloadB64}.${signPayload(payloadB64)}`;
+}
+
+function deserializeSession(cookieValue) {
+	const dot = cookieValue.indexOf('.');
+	if (dot <= 0) return null; // unsigned / malformed (e.g. legacy plain-JSON cookie)
+
+	const payloadB64 = cookieValue.slice(0, dot);
+	const providedSig = cookieValue.slice(dot + 1);
+	const expectedSig = signPayload(payloadB64);
+
+	const a = Buffer.from(providedSig);
+	const b = Buffer.from(expectedSig);
+	if (a.length !== b.length || !timingSafeEqual(a, b)) {
+		return null;
+	}
+
+	return JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf8'));
+}
 
 export class SessionManager {
 	/**
@@ -28,8 +69,7 @@ export class SessionManager {
 	 * @param {Object} sessionData - Session data to store
 	 */
 	static setSessionCookie(cookies, sessionData) {
-		const sessionString = JSON.stringify(sessionData);
-		cookies.set(AUTH_CONFIG.COOKIE_NAME, sessionString, AUTH_CONFIG.COOKIE_OPTIONS);
+		cookies.set(AUTH_CONFIG.COOKIE_NAME, serializeSession(sessionData), AUTH_CONFIG.COOKIE_OPTIONS);
 	}
 
 	/**
@@ -42,7 +82,8 @@ export class SessionManager {
 			const sessionString = cookies.get(AUTH_CONFIG.COOKIE_NAME);
 			if (!sessionString) return null;
 
-			const sessionData = JSON.parse(sessionString);
+			const sessionData = deserializeSession(sessionString);
+			if (!sessionData) return null;
 
 			// Check if session is expired
 			const now = new Date();
