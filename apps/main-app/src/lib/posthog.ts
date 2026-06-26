@@ -1,5 +1,6 @@
 import type { PostHog } from 'posthog-js';
 import { PUBLIC_POSTHOG_KEY } from '$env/static/public';
+import { hasAnalyticsConsent } from '$lib/consent';
 
 // posthog-js (~195KB) is dynamically imported so it splits into its own chunk
 // and never lands in the layout's hydration bundle — keeping the main thread
@@ -9,6 +10,9 @@ let initialized = false;
 
 export async function initPosthog() {
 	if (initialized || typeof window === 'undefined') return;
+
+	// Hard gate: never initialise PostHog without explicit analytics consent.
+	if (!hasAnalyticsConsent()) return;
 
 	posthog = (await import('posthog-js')).default;
 	posthog.init(PUBLIC_POSTHOG_KEY, {

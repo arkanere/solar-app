@@ -23,6 +23,7 @@
   let pinCode = $state('');
   let email = $state('');
   let comment = $state('');
+  let consent = $state(false);
   let isSubmitting = $state(false);
 
   let errors = $state({
@@ -50,7 +51,7 @@
   async function handleSubmit(e: SubmitEvent): Promise<void> {
     e.preventDefault();
 
-    if (!validateForm()) return;
+    if (!validateForm() || !consent) return;
 
     isSubmitting = true;
 
@@ -66,7 +67,8 @@
         pinCode,
         email,
         comment,
-        urlParam
+        urlParam,
+        marketing_consent: consent
       })
     }).catch((error) => {
       console.error('Error submitting form:', error);
@@ -172,11 +174,25 @@
             {/if}
           </div>
 
+          <!-- Consent Checkbox -->
+          <label class="flex items-start gap-2 text-sm leading-snug cursor-pointer">
+            <input
+              type="checkbox"
+              bind:checked={consent}
+              disabled={isSubmitting}
+              class="mt-0.5 h-4 w-4 flex-shrink-0"
+            />
+            <span>
+              I consent to Solar Vipani sharing my contact details with solar
+              installers in my area to follow up on my inquiry.
+            </span>
+          </label>
+
           <!-- Submit Button -->
           <Button
             type="submit"
             class="w-full mt-2 hover:-translate-y-[theme(--hover-lift-sm)] transition-all duration-[theme(--transition-default)]"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !consent}
           >
             {isSubmitting ? 'Submitting...' : submitLabel}
           </Button>
@@ -274,11 +290,25 @@
       {/if}
     </div>
 
+    <!-- Consent Checkbox -->
+    <label class="flex items-start gap-2 text-sm leading-snug cursor-pointer">
+      <input
+        type="checkbox"
+        bind:checked={consent}
+        disabled={isSubmitting}
+        class="mt-0.5 h-4 w-4 flex-shrink-0"
+      />
+      <span>
+        I consent to Solar Vipani sharing my contact details with solar
+        installers in my area to follow up on my inquiry.
+      </span>
+    </label>
+
     <!-- Submit Button -->
     <Button
       type="submit"
       class="w-full mt-2 hover:-translate-y-[theme(--hover-lift-sm)] transition-all duration-[theme(--transition-default)]"
-      disabled={isSubmitting}
+      disabled={isSubmitting || !consent}
     >
       {isSubmitting ? 'Submitting...' : submitLabel}
     </Button>

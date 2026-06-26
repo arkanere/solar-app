@@ -1,6 +1,7 @@
 export const prerender = false;
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
+import { getSignedBillUrl } from '$lib/server/billStorage.js';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ url }) {
@@ -16,7 +17,7 @@ export async function load({ url }) {
 	if (referenceUuid) {
 		try {
 			const result = await pool.query(
-				`SELECT id, name, phone, pin_code, type, comment, email, district, state, urlparams, created_at, isvisible, bill_url, bill_format
+				`SELECT id, name, phone, pin_code, type, comment, email, district, state, urlparams, created_at, isvisible, bill_cloudinary_public_id, bill_format
 				FROM LeadData
 				WHERE reference_uuid = $1
 				LIMIT 1`,
@@ -35,7 +36,7 @@ export async function load({ url }) {
 					email: lead.email,
 					district: lead.district,
 					submittedAt: lead.created_at,
-					billUrl: lead.bill_url,
+					billUrl: getSignedBillUrl(lead.bill_cloudinary_public_id, lead.bill_format),
 					billFormat: lead.bill_format
 				};
 			}

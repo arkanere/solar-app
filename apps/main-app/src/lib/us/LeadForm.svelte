@@ -7,6 +7,7 @@
 	let zipCode = '';
 	let type = '';
 	let comment = '';
+	let consent = false;
 	let urlParam = ''; // New variable to capture the path from the URL
 
 	let errors = {
@@ -63,7 +64,7 @@
 	async function handleSubmit(event) {
 		event.preventDefault();
 
-		if (validateForm()) {
+		if (validateForm() && consent) {
 			isSubmitting = true; // Lock the button before submission
 
 			try {
@@ -72,7 +73,7 @@
 					headers: {
 						'Content-Type': 'application/json'
 					},
-					body: JSON.stringify({ name, phone, zipCode, type, comment, urlParam })
+					body: JSON.stringify({ name, phone, zipCode, type, comment, urlParam, marketing_consent: consent })
 				});
 
 				const result = await response.json();
@@ -143,8 +144,17 @@
 		<textarea id="comment" bind:value={comment} placeholder="Any additional comments"></textarea>
 	</div>
 
+	<!-- Consent Checkbox -->
+	<div class="consent">
+		<label>
+			<input type="checkbox" bind:checked={consent} />
+			I consent to Solar Vipani sharing my contact details with solar installers
+			in my area to follow up on my inquiry.
+		</label>
+	</div>
+
 	<!-- Submit Button -->
-	<button type="submit" disabled={isSubmitting}>
+	<button type="submit" disabled={isSubmitting || !consent}>
 		{#if isSubmitting}Submitting...{/if}
 		{#if !isSubmitting}Submit{/if}
 	</button>
@@ -198,5 +208,21 @@
 	.error {
 		color: red;
 		font-size: 0.9rem;
+	}
+
+	.consent label {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.5em;
+		font-weight: normal;
+		font-size: 0.9rem;
+		text-align: left;
+		cursor: pointer;
+	}
+
+	.consent input {
+		width: auto;
+		margin-top: 0.2em;
+		flex-shrink: 0;
 	}
 </style>

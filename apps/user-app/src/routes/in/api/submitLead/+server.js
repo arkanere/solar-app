@@ -7,7 +7,8 @@ export async function POST({ request, fetch }) {
 	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
-		const { name, phone, pinCode, type, comment, urlParam, email } = await request.json();
+		const { name, phone, pinCode, type, comment, urlParam, email, marketing_consent } =
+			await request.json();
 
 		let district = null;
 		let state = null;
@@ -27,10 +28,10 @@ export async function POST({ request, fetch }) {
 		}
 
 		const result = await pool.query(
-			`INSERT INTO LeadData (name, phone, pin_code, type, comment, urlparams, email, district, state)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+			`INSERT INTO LeadData (name, phone, pin_code, type, comment, urlparams, email, district, state, marketing_consent)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 			RETURNING id, reference_uuid`,
-			[name, phone, pinCode, type, comment, urlParam, email || null, district, state]
+			[name, phone, pinCode, type, comment, urlParam, email || null, district, state, marketing_consent === true]
 		);
 
 		const leadId = result.rows[0].id;

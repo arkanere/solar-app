@@ -9,11 +9,11 @@ export async function POST({ request, fetch }) {
 
 	try {
 		const data = await request.json();
-		const { name, phone, zipCode, type, comment, urlParam, email } = data;
+		const { name, phone, zipCode, type, comment, urlParam, email, marketing_consent } = data;
 
 		const insertQuery = `
-            INSERT INTO us_leaddata (name, phone, zipcode, type, comment, urlparams, email)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            INSERT INTO us_leaddata (name, phone, zipcode, type, comment, urlparams, email, marketing_consent)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING id
         `;
 
@@ -24,7 +24,8 @@ export async function POST({ request, fetch }) {
 			type,
 			comment,
 			urlParam,
-			email || null
+			email || null,
+			marketing_consent === true
 		]);
 
 		const leadId = result.rows[0].id;

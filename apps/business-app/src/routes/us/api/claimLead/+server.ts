@@ -4,6 +4,7 @@ import { json, type RequestHandler } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/us/auth/business';
 import { sendEmail } from '$lib/us/sendEmail';
 import { mintBusinessTokenById } from '$lib/server/magicLink';
+import { checkLeadDataPolicy } from '$lib/compliance';
 import type { ClaimRequestPayload } from '$lib/types/lead';
 
 interface ClaimCountRow {
@@ -63,6 +64,12 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				{ success: false, error: 'Forbidden - You can only claim leads for your own business' },
 				{ status: 403 }
 			);
+		}
+
+		// Data-handling policy gate: require a valid acceptance within 90 days
+		const compliance = await checkLeadDataPolicy(pool, business_id);
+		if (!compliance.compliant) {
+			return json({ success: false, error: 'compliance_required' }, { status: 403 });
 		}
 
 		// Start a transaction

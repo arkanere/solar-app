@@ -1,6 +1,4 @@
 {
-	"framework": "sveltekit",
-	"buildCommand": "npm run build",
 	"headers": [
 		{
 			"source": "/(.*)",

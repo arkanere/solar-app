@@ -7,6 +7,8 @@
 	import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
 	import { afterNavigate } from '$app/navigation';
 	import { initPosthog, capturePageview } from '$lib/posthog';
+	import { hasAnalyticsConsent } from '$lib/consent';
+	import CookieConsent from '$lib/components/CookieConsent.svelte';
 
 	let { children } = $props();
 
@@ -25,12 +27,16 @@
 		injectSpeedInsights();
 
 		// Use requestIdleCallback for optimal performance - load analytics when browser is idle
-		// This prevents blocking the main thread and improves TBT (Total Blocking Time)
+		// This prevents blocking the main thread and improves TBT (Total Blocking Time).
+		// Gated on analytics consent — the CookieConsent banner triggers the load on Accept.
+		const maybeLoadAnalytics = () => {
+			if (hasAnalyticsConsent()) loadAllAnalytics();
+		};
 		if ('requestIdleCallback' in window) {
-			requestIdleCallback(() => loadAllAnalytics(), { timeout: 5000 });
+			requestIdleCallback(() => maybeLoadAnalytics(), { timeout: 5000 });
 		} else {
 			// Fallback for Safari and older browsers
-			setTimeout(() => loadAllAnalytics(), 5000);
+			setTimeout(() => maybeLoadAnalytics(), 5000);
 		}
 
 		trackEngagement();
@@ -192,6 +198,9 @@
 </nav>
 
 {@render children()}
+
+<!-- Analytics consent banner — gates loadAllAnalytics() on first visit -->
+<CookieConsent onAccept={loadAllAnalytics} />
 
 <!-- {#if browser && showChat}
   <ChatbotWidget messages={chatMessages} />

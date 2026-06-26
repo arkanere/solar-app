@@ -38,6 +38,7 @@
 	import * as Alert from '$lib/components/ui/alert';
 	import { cn } from '$lib/utils';
 	import { deleteLeadAPI } from '$lib/in/actions/lead-api';
+	import { PolicyAcceptanceModal } from '$lib/compliance';
 
 	let {
 		leads = $bindable([]),
@@ -57,6 +58,12 @@
 	let branchConfirmDistrict = $state('');
 	let pendingClaimLeadId: number | null = $state(null);
 	let pendingClaimBusinessId: number | null = $state(null);
+
+	// Compliance (data-handling policy) gate state
+	let showComplianceModal = $state(false);
+	let policySummary = $state('');
+	let isAcceptingPolicy = $state(false);
+	let pendingComplianceClaim: { leadId: number; businessId: number; confirmBranch: boolean } | null = null;
 
 	// Parent-level state (modals only)
 	let showProposalModal = $state(false);
@@ -131,6 +138,14 @@
 			});
 			const result = await response.json();
 
+			// Data-handling policy must be accepted before claiming — show the modal,
+			// remember the in-flight claim, and retry it after acceptance.
+			if (!result.success && result.error === 'compliance_required') {
+				pendingComplianceClaim = { leadId, businessId, confirmBranch };
+				await openComplianceModal();
+				return;
+			}
+
 			if (result.needsBranchConfirmation) {
 				pendingClaimLeadId = leadId;
 				pendingClaimBusinessId = businessId;
@@ -149,6 +164,40 @@
 			toast.error('An error occurred while claiming the lead');
 		} finally {
 			isClaiming = false;
+		}
+	}
+
+	async function openComplianceModal() {
+		try {
+			const res = await fetch('/in/api/compliance/status');
+			const data = await res.json();
+			policySummary = data?.policy?.summary ?? '';
+		} catch (error) {
+			console.error('Compliance status error:', error);
+			policySummary = '';
+		}
+		showComplianceModal = true;
+	}
+
+	async function acceptComplianceAndRetry() {
+		if (!pendingComplianceClaim || isAcceptingPolicy) return;
+		isAcceptingPolicy = true;
+		try {
+			const res = await fetch('/in/api/compliance/acceptPolicy', { method: 'POST' });
+			const data = await res.json();
+			if (!data.success) {
+				toast.error(data.error || 'Failed to record acceptance');
+				return;
+			}
+			showComplianceModal = false;
+			const claim = pendingComplianceClaim;
+			pendingComplianceClaim = null;
+			await claimLead(claim.leadId, claim.businessId, claim.confirmBranch);
+		} catch (error) {
+			console.error('Accept policy error:', error);
+			toast.error('An error occurred while accepting the policy');
+		} finally {
+			isAcceptingPolicy = false;
 		}
 	}
 
@@ -486,6 +535,14 @@
 		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>
+
+<!-- Data-Handling Policy Acceptance Modal -->
+<PolicyAcceptanceModal
+	bind:open={showComplianceModal}
+	summary={policySummary}
+	isAccepting={isAcceptingPolicy}
+	onAgree={acceptComplianceAndRetry}
+/>
 
 <!-- Proposal Modal -->
 {#if showProposalModal}

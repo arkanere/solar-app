@@ -1,16 +1,8 @@
 import { json } from '@sveltejs/kit';
 import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } from '$env/static/private';
-import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
-import { v2 as cloudinary } from 'cloudinary';
+import { POSTGRES_URL } from '$env/static/private';
 import { UserAuthService } from '$lib/auth/user/index.js';
-
-cloudinary.config({
-	cloud_name: PUBLIC_CLOUDINARY_CLOUD_NAME,
-	api_key: CLOUDINARY_API_KEY,
-	api_secret: CLOUDINARY_API_SECRET,
-	secure: true
-});
+import { uploadBill, getSignedBillUrl, deleteBill } from '$lib/server/billStorage.js';
 
 const pool = createPool({ connectionString: POSTGRES_URL });
 
@@ -26,31 +18,6 @@ const allowedFileTypes = [
 ];
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-
-async function uploadBillToCloudinary(file) {
-	const buffer = Buffer.from(await file.arrayBuffer());
-	const dataURI = `data:${file.type};base64,${buffer.toString('base64')}`;
-
-	const result = await new Promise((resolve, reject) => {
-		cloudinary.uploader.upload(
-			dataURI,
-			{
-				folder: 'electricity-bills',
-				resource_type: 'auto'
-			},
-			(error, uploadResult) => {
-				if (error) reject(error);
-				else resolve(uploadResult);
-			}
-		);
-	});
-
-	return {
-		url: result.secure_url,
-		publicId: result.public_id,
-		format: result.format
-	};
-}
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request, cookies }) {
@@ -115,27 +82,28 @@ export async function POST({ request, cookies }) {
 			return json({ success: false, error: 'Inquiry not found' }, { status: 404 });
 		}
 
-		const billData = await uploadBillToCloudinary(billFile);
+		const billData = await uploadBill(billFile);
 
 		// Remove the previously uploaded bill, if any
 		if (lead.bill_cloudinary_public_id) {
-			try {
-				await cloudinary.uploader.destroy(lead.bill_cloudinary_public_id);
-			} catch (cloudinaryError) {
-				console.error('Error deleting previous bill from Cloudinary:', cloudinaryError);
-			}
+			await deleteBill(lead.bill_cloudinary_public_id);
 		}
+
+		// bill_url stores the (non-public) authenticated delivery URL for reference;
+		// users are always served a freshly-signed, time-limited URL generated from
+		// the public id when a bill is read back.
+		const signedUrl = getSignedBillUrl(billData.publicId, billData.format);
 
 		await pool.query(
 			`UPDATE LeadData
 			SET bill_url = $1, bill_cloudinary_public_id = $2, bill_format = $3, bill_uploaded_at = NOW()
 			WHERE id = $4`,
-			[billData.url, billData.publicId, billData.format, lead.id]
+			[signedUrl, billData.publicId, billData.format, lead.id]
 		);
 
 		return json({
 			success: true,
-			billUrl: billData.url,
+			billUrl: signedUrl,
 			billFormat: billData.format
 		});
 	} catch (error) {

@@ -4,6 +4,7 @@ import { UserAuthService } from '$lib/auth/user/index.js';
 import { SessionManager } from '$lib/auth/user/SessionManager.js';
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
+import { getSignedBillUrl } from '$lib/server/billStorage.js';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ cookies }) {
@@ -20,7 +21,7 @@ export async function load({ cookies }) {
 
 	try {
 		const result = await pool.query(
-			`SELECT id, name, phone, pin_code, type, comment, email, district, created_at, bill_url, bill_format
+			`SELECT id, name, phone, pin_code, type, comment, email, district, created_at, bill_cloudinary_public_id, bill_format
 			FROM LeadData
 			WHERE email = $1 AND isvisible = true AND (category IS NULL OR category = 1)
 			ORDER BY created_at DESC`,
@@ -36,7 +37,7 @@ export async function load({ cookies }) {
 			email: lead.email,
 			district: lead.district,
 			submittedAt: lead.created_at,
-			billUrl: lead.bill_url,
+			billUrl: getSignedBillUrl(lead.bill_cloudinary_public_id, lead.bill_format),
 			billFormat: lead.bill_format
 		}));
 

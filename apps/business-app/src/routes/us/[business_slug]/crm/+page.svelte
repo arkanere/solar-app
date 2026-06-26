@@ -2,12 +2,19 @@
 	import { page } from '$app/stores';
 	import { toast } from 'svelte-sonner';
 	import CustomerInquiry from '$lib/us-new-rewrites/CustomerInquiry.svelte';
+	import { PolicyAcceptanceModal } from '$lib/compliance';
 
 	const businessSlug = $page.params.business_slug;
 	let business = $derived($page.data.business);
 	let leads = $state($page.data.leads || []);
 	let errorMessage = $derived($page.data.errorMessage);
 	let isClaiming = $state(false);
+
+	// Compliance (data-handling policy) gate state
+	let showComplianceModal = $state(false);
+	let policySummary = $state('');
+	let isAcceptingPolicy = $state(false);
+	let pendingComplianceClaim: { leadId: number; businessId: number } | null = null;
 
 	let businessInfo = $derived(
 		business
@@ -36,6 +43,12 @@
 
 			const result = await response.json();
 
+			if (!result.success && result.error === 'compliance_required') {
+				pendingComplianceClaim = { leadId, businessId };
+				await openComplianceModal();
+				return;
+			}
+
 			if (result.success) {
 				leads = leads.filter((lead: any) => lead.id !== leadId);
 				if (result.newLead) {
@@ -50,6 +63,40 @@
 			toast.error('An error occurred while claiming the lead');
 		} finally {
 			isClaiming = false;
+		}
+	}
+
+	async function openComplianceModal() {
+		try {
+			const res = await fetch('/us/api/compliance/status');
+			const data = await res.json();
+			policySummary = data?.policy?.summary ?? '';
+		} catch (error) {
+			console.error('Compliance status error:', error);
+			policySummary = '';
+		}
+		showComplianceModal = true;
+	}
+
+	async function acceptComplianceAndRetry() {
+		if (!pendingComplianceClaim || isAcceptingPolicy) return;
+		isAcceptingPolicy = true;
+		try {
+			const res = await fetch('/us/api/compliance/acceptPolicy', { method: 'POST' });
+			const data = await res.json();
+			if (!data.success) {
+				toast.error(data.error || 'Failed to record acceptance');
+				return;
+			}
+			showComplianceModal = false;
+			const claim = pendingComplianceClaim;
+			pendingComplianceClaim = null;
+			await claimLead(claim.leadId, claim.businessId);
+		} catch (error) {
+			console.error('Accept policy error:', error);
+			toast.error('An error occurred while accepting the policy');
+		} finally {
+			isAcceptingPolicy = false;
 		}
 	}
 </script>
@@ -82,3 +129,10 @@
 		/>
 	</div>
 </div>
+
+<PolicyAcceptanceModal
+	bind:open={showComplianceModal}
+	summary={policySummary}
+	isAccepting={isAcceptingPolicy}
+	onAgree={acceptComplianceAndRetry}
+/>

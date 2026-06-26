@@ -7,6 +7,8 @@
   import * as Dialog from "$lib/components/ui/dialog";
   import { afterNavigate } from "$app/navigation";
   import { initPosthog, capturePageview, capture } from "$lib/posthog";
+  import { hasAnalyticsConsent } from "$lib/consent";
+  import CookieConsent from "$lib/components/CookieConsent.svelte";
 
   // Accept children snippet from SvelteKit
   let { children } = $props();
@@ -144,9 +146,11 @@
     // Track CallSafe widget interactions
     trackCallSafeEvents();
 
-    // Defer analytics scripts to improve initial page performance
+    // Defer analytics scripts to improve initial page performance.
+    // Only fires once the visitor has accepted analytics cookies — otherwise the
+    // CookieConsent banner triggers loadAnalytics() on Accept.
     setTimeout(() => {
-      loadAnalytics();
+      if (hasAnalyticsConsent()) loadAnalytics();
     }, 3000); // Load analytics after 3 seconds
 
     trackEngagement();
@@ -560,3 +564,6 @@
 {#if shouldLoadChatbot && ChatbotPopup}
   <ChatbotPopup messages={chatMessages} />
 {/if}
+
+<!-- Analytics consent banner — gates loadAnalytics() on first visit -->
+<CookieConsent onAccept={loadAnalytics} />
