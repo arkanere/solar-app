@@ -2,7 +2,6 @@
   import { onMount } from "svelte";
   import BusinessDirectory from "$lib/in/components/BusinessDirectory.svelte";
   import RecentProjectsHome from "$lib/in/components/RecentProjectsHome.svelte";
-  import LeadForm from "$lib/in/components/LeadForm.svelte";
   import SolarComparisonTable from "$lib/in/components/SolarComparisonTable.svelte";
   import AboutSolarVipani from "$lib/in/components/AboutSolarVipani.svelte";
 
@@ -326,7 +325,7 @@
   </div>
 
   <div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
-    <!-- Lead Form Section -->
+    <!-- Get Quote CTA Section -->
     <section id="lead-form-sv" class="mb-8 mx-auto max-w-md">
       <div class="rounded-[theme(--radius-lg)] p-[theme(--card-padding-y)] shadow-[theme(--shadow-lg)] bg-gradient-to-br from-primary/10 to-primary/5">
         <div class="text-center mb-8">
@@ -335,7 +334,14 @@
             <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
           </div>
         </div>
-        <LeadForm showWrapper={false} />
+        <div class="text-center">
+          <a
+            href="/in/get-quotes/"
+            class="inline-block bg-primary text-primary-foreground font-semibold px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
+          >
+            Get a Free Solar Quotation Online
+          </a>
+        </div>
       </div>
     </section>
 
