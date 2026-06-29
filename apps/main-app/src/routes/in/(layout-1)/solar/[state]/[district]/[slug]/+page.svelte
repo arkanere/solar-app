@@ -185,7 +185,7 @@
 
 	<!-- Subsidy (city only) -->
 	{#if isCity}
-		<SubsidySection city={d.city} />
+		<SubsidySection city={d.city} pageUrl={canonicalUrl} />
 	{/if}
 
 	<!-- FAQ (city only) -->

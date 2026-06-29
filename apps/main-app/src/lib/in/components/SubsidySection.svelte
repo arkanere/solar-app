@@ -1,12 +1,32 @@
 <script lang="ts">
 	import * as Table from '$lib/components/ui/table';
 	import * as Card from '$lib/components/ui/card';
+	import { Button } from '$lib/components/ui/button';
+	import { Download } from '@lucide/svelte';
+	import { parseKw } from '$lib/in/sampleQuotation';
 
 	interface Props {
 		city: string;
+		pageUrl?: string;
 	}
 
-	const { city }: Props = $props();
+	const { city, pageUrl }: Props = $props();
+
+	let downloadingKw = $state<number | null>(null);
+
+	async function downloadSample(sizeLabel: string) {
+		const kw = parseKw(sizeLabel);
+		if (kw <= 0 || downloadingKw !== null) return;
+		downloadingKw = kw;
+		try {
+			const { generateSampleQuotationPdf } = await import('$lib/in/sampleQuotationPdf');
+			await generateSampleQuotationPdf({ kw, systemType: 'On-Grid', city, pageUrl });
+		} catch (e) {
+			console.error('Failed to generate sample quotation', e);
+		} finally {
+			downloadingKw = null;
+		}
+	}
 
 	const subsidyRows = [
 		{ size: '1 kW', grossCost: '₹65,000 – ₹80,000', centralSubsidy: '₹30,000', netCost: '₹35,000 – ₹50,000', annualSavings: '~₹7,000' },
@@ -41,6 +61,7 @@
 							<Table.Head class="text-primary-foreground uppercase font-semibold text-sm tracking-wider">Central Subsidy</Table.Head>
 							<Table.Head class="text-primary-foreground uppercase font-semibold text-sm tracking-wider">Net Cost After Subsidy</Table.Head>
 							<Table.Head class="text-primary-foreground uppercase font-semibold text-sm tracking-wider">Est. Annual Savings</Table.Head>
+							<Table.Head class="text-primary-foreground uppercase font-semibold text-sm tracking-wider">Sample Quote</Table.Head>
 						</Table.Row>
 					</Table.Header>
 					<Table.Body>
@@ -51,6 +72,18 @@
 								<Table.Cell class="font-semibold text-success">{row.centralSubsidy}</Table.Cell>
 								<Table.Cell class="font-semibold">{row.netCost}</Table.Cell>
 								<Table.Cell class="text-foreground-secondary text-sm">{row.annualSavings}</Table.Cell>
+								<Table.Cell>
+									<Button
+										variant="outline"
+										size="sm"
+										class="whitespace-nowrap"
+										disabled={downloadingKw !== null}
+										onclick={() => downloadSample(row.size)}
+									>
+										<Download size={14} />
+										{downloadingKw === parseKw(row.size) ? 'Preparing…' : 'Sample PDF'}
+									</Button>
+								</Table.Cell>
 							</Table.Row>
 						{/each}
 					</Table.Body>

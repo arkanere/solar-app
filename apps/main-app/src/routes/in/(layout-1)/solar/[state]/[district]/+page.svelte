@@ -121,7 +121,7 @@
 	{/if}
 
 	<!-- Subsidy -->
-	<SubsidySection city={data.district} />
+	<SubsidySection city={data.district} pageUrl={canonicalUrl} />
 
 	<!-- Get Quotes CTA -->
 	<div class="text-center mb-8">
@@ -162,7 +162,7 @@
 	</section>
 
 	<!-- Recommended Systems -->
-	<RecommendedSolarSystems />
+	<RecommendedSolarSystems city={data.district} pageUrl={canonicalUrl} />
 
 	<!-- FAQ -->
 	{#if faqItems.length > 0}
