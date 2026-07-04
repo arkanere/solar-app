@@ -1,0 +1,11 @@
+{
+  "name": "embed-city-pages",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@langchain/openai": "^0.5.11",
+    "@pinecone-database/pinecone": "^5.1.2",
+    "@vercel/postgres": "^0.10.0"
+  }
+}
