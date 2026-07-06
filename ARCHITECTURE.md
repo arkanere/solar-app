@@ -35,8 +35,8 @@ Three SvelteKit apps deployed independently on Vercel out of one npm-workspaces 
 | App | Role |
 |-----|------|
 | `main-app` | Public marketplace. Serves both regions as path-prefixed routes (`/in`, `/us`), each with its own components, content, and chatbot endpoint. Also hosts the privileged internal API and cron endpoints. |
-| `business-app` | Portal where installers manage listings, leads, and proposals. Region-split internally like main-app. |
-| `user-app` | Customer account portal for tracking quotes and installations. |
+| `business-app` | Portal where installers manage listings, leads, and proposals. Region-split internally like main-app. Live at [business.solarvipani.com](https://business.solarvipani.com). |
+| `user-app` | Customer account portal for tracking quotes and installations. Live at [user.solarvipani.com](https://user.solarvipani.com). |
 
 A Vercel microfrontends config (`apps/main-app/microfrontends.json`) does path-based routing so regions can be split into separate deployments behind one domain, with `solarvipani.com` as the development fallback.
 

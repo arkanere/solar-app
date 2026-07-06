@@ -33,8 +33,8 @@ SvelteKit (Svelte 5 runes) · TypeScript · PostgreSQL (Vercel Postgres) · Pine
 | App | Purpose |
 |-----|---------|
 | `main-app` | Customer-facing marketplace (India + US) — [solarvipani.com](https://solarvipani.com) |
-| `business-app` | Installer portal |
-| `user-app` | Customer account portal |
+| `business-app` | Installer portal — [business.solarvipani.com](https://business.solarvipani.com) |
+| `user-app` | Customer account portal — [user.solarvipani.com](https://user.solarvipani.com) |
 
 ## Development
 
