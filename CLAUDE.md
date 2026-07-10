@@ -12,4 +12,5 @@ I'm always open to ideas on better ways to do things. Please don't hesitate to s
 
 ## About Solar-app
 
-This is a open source project. Be cautious while commiting anything. 
+This is a open source project. Be cautious while commiting anything.
+Do not create branch until explicitly asked to do so. Commit on main branch only.
