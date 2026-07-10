@@ -74,7 +74,8 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 			const pool = createPool({ connectionString: POSTGRES_URL });
 			try {
 				const businessResult = await pool.query(
-					'SELECT id, businessname, slug, email, description, website, google_maps_link, brands FROM businesses_1 WHERE slug = $1 LIMIT 1',
+					`SELECT business_id AS id, businessname, slug, email, description, website, google_maps_link, brands
+					 FROM in_business_profiles WHERE slug = $1 LIMIT 1`,
 					[business_slug]
 				);
 

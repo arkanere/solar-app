@@ -20,9 +20,10 @@ export class TokenManager {
 			// incoming raw token.
 			const tokenHash = TokenSecurity.hashToken(token);
 			const result = await pool.query(
-				`SELECT id, businessname, slug, login_email, magic_link_token, isvisible, magic_link_token_expires_at
-				 FROM businesses_1
-				 WHERE slug = $1 AND magic_link_token = $2 AND magic_link_token IS NOT NULL`,
+				`SELECT a.business_id AS id, p.businessname, p.slug, a.login_email, a.magic_link_token, a.isvisible, a.magic_link_token_expires_at
+				 FROM in_business_accounts a
+				 JOIN in_business_profiles p ON p.business_id = a.business_id
+				 WHERE p.slug = $1 AND a.magic_link_token = $2 AND a.magic_link_token IS NOT NULL`,
 				[businessSlug, tokenHash]
 			);
 
@@ -64,10 +65,11 @@ export class TokenManager {
 			client = await pool.connect();
 
 			const result = await client.query(
-				`SELECT id, businessname, slug, login_email, isvisible
-				 FROM businesses_1 b
-				 WHERE b.login_email = $1 AND b.isvisible = true
-				   AND NOT EXISTS (SELECT 1 FROM branches br WHERE br.branch_id = b.id AND br.isactive = true)
+				`SELECT a.business_id AS id, p.businessname, p.slug, a.login_email, a.isvisible
+				 FROM in_business_accounts a
+				 JOIN in_business_profiles p ON p.business_id = a.business_id
+				 WHERE a.login_email = $1 AND a.isvisible = true
+				   AND NOT EXISTS (SELECT 1 FROM branches br WHERE br.branch_id = a.business_id AND br.isactive = true)
 				 LIMIT 1`,
 				[email]
 			);
@@ -100,9 +102,10 @@ export class TokenManager {
 	): Promise<BusinessLookupSuccess | AuthErrorResponse> {
 		try {
 			const result = await pool.query(
-				`SELECT id, businessname, slug, login_email, isvisible
-				 FROM businesses_1
-				 WHERE slug = $1 AND isvisible = true`,
+				`SELECT a.business_id AS id, p.businessname, p.slug, a.login_email, a.isvisible
+				 FROM in_business_accounts a
+				 JOIN in_business_profiles p ON p.business_id = a.business_id
+				 WHERE p.slug = $1 AND a.isvisible = true`,
 				[businessSlug]
 			);
 

@@ -10,15 +10,14 @@
 export type BusinessRegion = 'in' | 'us';
 
 /**
- * Complete business profile from database
- * Used when fetching full business details
+ * Complete business profile from the in_business_profiles table.
+ * Pure listing/profile data — credentials and auth state live on the
+ * account side (businesses_1) and must never appear on this type.
  */
 export interface BusinessProfile {
-	id: number;
+	id: number; // The business id (businesses_1.id / us_businesses.id); queries select business_id AS id
 	businessname: string;
 	slug: string;
-	login_email: string;
-	login_password?: string; // Optional as it shouldn't be sent to frontend
 	email?: string; // Public email for contact
 	phonenumber?: string;
 	whatsapp?: string;
@@ -52,7 +51,6 @@ export interface BusinessProfile {
 	// Timestamps (optional as they may not always be queried)
 	created_at?: Date | string;
 	updated_at?: Date | string;
-	last_login?: Date | string;
 }
 
 /**

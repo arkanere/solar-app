@@ -49,9 +49,13 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
-		// First, get the main business using the slug
+		// First, get the main business profile using the slug
 		const mainBusinessQuery = `
-      SELECT * FROM businesses_1
+      SELECT business_id AS id, slug, businessname, email, phonenumber, whatsapp,
+        description, website, instagram_id, google_maps_link, address, pluscode,
+        services, brands, gstn, state, district, city, pincode, rscore, tag,
+        businessfilled, isvisible
+      FROM in_business_profiles
       WHERE slug = $1
     `;
 

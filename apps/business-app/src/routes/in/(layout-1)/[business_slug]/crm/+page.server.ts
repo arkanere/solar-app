@@ -47,7 +47,8 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 	try {
 		// Query business details
 		const businessResult = await pool.query(
-			'SELECT id, businessname, description, phonenumber, email, address, website, district, state FROM businesses_1 WHERE slug = $1 LIMIT 1',
+			`SELECT business_id AS id, businessname, description, phonenumber, email, address, website, district, state
+			 FROM in_business_profiles WHERE slug = $1 LIMIT 1`,
 			[business_slug]
 		);
 
@@ -60,9 +61,9 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 
 		// ✅ Get all branch business IDs and slugs for this main business
 		const branchesResult = await pool.query(
-			`SELECT b.id, b.slug, b.district, b.state
+			`SELECT b.business_id AS id, b.slug, b.district, b.state
 			FROM branches br
-			JOIN businesses_1 b ON br.branch_id = b.id
+			JOIN in_business_profiles b ON br.branch_id = b.business_id
 			WHERE br.main_id = $1 AND br.isactive = true`,
 			[businessId]
 		);

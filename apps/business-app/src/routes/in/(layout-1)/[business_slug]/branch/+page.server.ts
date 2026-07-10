@@ -33,9 +33,13 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
-		// First, get the main business using the slug
+		// First, get the main business profile using the slug
 		const mainBusinessQuery = `
-      SELECT * FROM businesses_1
+      SELECT business_id AS id, slug, businessname, email, phonenumber, whatsapp,
+        description, website, instagram_id, google_maps_link, address, pluscode,
+        services, brands, gstn, state, district, city, pincode, rscore, tag,
+        businessfilled, isvisible
+      FROM in_business_profiles
       WHERE slug = $1
     `;
 
@@ -53,9 +57,12 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 
 		// Get all branch offices linked to this main business
 		const branchesQuery = `
-      SELECT b.*
+      SELECT b.business_id AS id, b.slug, b.businessname, b.email, b.phonenumber,
+        b.whatsapp, b.description, b.website, b.instagram_id, b.google_maps_link,
+        b.address, b.pluscode, b.services, b.brands, b.gstn, b.state, b.district,
+        b.city, b.pincode, b.rscore, b.tag, b.businessfilled, b.isvisible
       FROM branches br
-      JOIN businesses_1 b ON br.branch_id = b.id
+      JOIN in_business_profiles b ON br.branch_id = b.business_id
       WHERE br.main_id = $1 AND br.isactive = true
     `;
 

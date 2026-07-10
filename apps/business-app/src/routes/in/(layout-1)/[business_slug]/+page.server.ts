@@ -48,10 +48,17 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 	const { business_slug } = params;
 
 	try {
-		// Query business details - select all fields to support edit profile modal
-		const businessResult = await pool.query('SELECT * FROM businesses_1 WHERE slug = $1 LIMIT 1', [
-			business_slug
-		]);
+		// Query the profile from in_business_profiles (never businesses_1 — credentials
+		// live there and must not reach page data). business_id AS id keeps the
+		// businesses_1 id that branch/lead/referrer queries expect.
+		const businessResult = await pool.query(
+			`SELECT business_id AS id, slug, businessname, email, phonenumber, whatsapp,
+				description, website, instagram_id, google_maps_link, address, pluscode,
+				services, brands, gstn, state, district, city, pincode, rscore, tag,
+				businessfilled, isvisible
+			FROM in_business_profiles WHERE slug = $1 LIMIT 1`,
+			[business_slug]
+		);
 
 		if (businessResult.rows.length === 0) {
 			return { errorMessage: 'Business not found' };
@@ -62,9 +69,9 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 
 		// ✅ Get all branch business IDs and slugs for this main business
 		const branchesResult = await pool.query(
-			`SELECT b.id, b.slug, b.district, b.state
+			`SELECT b.business_id AS id, b.slug, b.district, b.state
 			FROM branches br
-			JOIN businesses_1 b ON br.branch_id = b.id
+			JOIN in_business_profiles b ON br.branch_id = b.business_id
 			WHERE br.main_id = $1 AND br.isactive = true`,
 			[businessId]
 		);

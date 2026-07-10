@@ -57,7 +57,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		} else {
 			// Check if the business_slug belongs to a branch of the logged-in business
 			const mainBusinessQuery = await pool.query(
-				'SELECT id FROM businesses_1 WHERE slug = $1',
+				`SELECT business_id AS id FROM in_business_profiles WHERE slug = $1`,
 				[sessionResult.session.businessSlug]
 			);
 
@@ -74,7 +74,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			const branchCheckQuery = await pool.query(
 				`SELECT br.branch_id
 				 FROM branches br
-				 JOIN businesses_1 b ON br.branch_id = b.id
+				 JOIN in_business_profiles b ON br.branch_id = b.business_id
 				 WHERE br.main_id = $1 AND b.slug = $2 AND br.isactive = true`,
 				[mainBusinessId, business_slug]
 			);
@@ -87,15 +87,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			}
 		}
 
-		// Update query for the businesses_1 table
-		const updateQuery = `
-      UPDATE businesses_1
-      SET businessname = $1, address = $2, phonenumber = $3, whatsapp = $4, email = $5, website = $6, description = $7, instagram_id = $8, google_maps_link = $9, services = $10, brands = $11
-      WHERE slug = $12
-      RETURNING id
-    `;
-
-		const result = await pool.query(updateQuery, [
+		const values = [
 			businessname,
 			address,
 			phonenumber,
@@ -108,7 +100,25 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			services,
 			brands,
 			business_slug
-		]);
+		];
+
+		// in_business_profiles is the source of truth for profile data
+		const result = await pool.query(
+			`UPDATE in_business_profiles
+       SET businessname = $1, address = $2, phonenumber = $3, whatsapp = $4, email = $5, website = $6, description = $7, instagram_id = $8, google_maps_link = $9, services = $10, brands = $11, updated_at = NOW()
+       WHERE slug = $12
+       RETURNING business_id AS id`,
+			values
+		);
+
+		// TODO(remove after main-app/admin-app migrate to in_business_profiles):
+		// dual-write so the marketplace and admin views stay fresh
+		await pool.query(
+			`UPDATE businesses_1
+       SET businessname = $1, address = $2, phonenumber = $3, whatsapp = $4, email = $5, website = $6, description = $7, instagram_id = $8, google_maps_link = $9, services = $10, brands = $11
+       WHERE slug = $12`,
+			values
+		);
 
 		if (result.rows.length > 0) {
 			return json({

@@ -72,9 +72,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		// 2.2 Next, check if any existing branches are in the same city
 		const checkBranchesQuery = `
-      SELECT b.id
-      FROM businesses_1 b
-      JOIN branches br ON b.id = br.branch_id
+      SELECT b.business_id AS id
+      FROM in_business_profiles b
+      JOIN branches br ON b.business_id = br.branch_id
       WHERE br.main_id = $1
       AND LOWER(b.city) = LOWER($2)
       AND b.isvisible = TRUE

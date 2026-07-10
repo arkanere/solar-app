@@ -120,7 +120,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				[sessionResult.session.businessSlug]
 			),
 			pool.query(
-				`SELECT description, brands, google_maps_link FROM businesses_1 WHERE id = $1`,
+				`SELECT description, brands, google_maps_link FROM in_business_profiles WHERE business_id = $1`,
 				[business_id]
 			)
 		]);
@@ -213,10 +213,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 				// Check if main or any branch already serves the lead's district
 				const presenceResult = await client.query<{ id: number }>(
-					`SELECT b.id FROM businesses_1 b
+					`SELECT b.business_id AS id FROM in_business_profiles b
 					 WHERE b.district = $1
-					 AND (b.id = $2 OR EXISTS (
-					     SELECT 1 FROM branches WHERE main_id = $2 AND branch_id = b.id AND isactive = true
+					 AND (b.business_id = $2 OR EXISTS (
+					     SELECT 1 FROM branches WHERE main_id = $2 AND branch_id = b.business_id AND isactive = true
 					 ))
 					 LIMIT 1`,
 					[leadDistrict, mainBusinessId]
@@ -433,7 +433,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 					email: string | null;
 					slug: string;
 				}>(
-					'SELECT businessname, phonenumber, email, slug FROM businesses_1 WHERE id = $1',
+					`SELECT businessname, phonenumber, email, slug FROM in_business_profiles WHERE business_id = $1`,
 					[customerBusinessId]
 				);
 				if (bizResult.rows.length === 0) {

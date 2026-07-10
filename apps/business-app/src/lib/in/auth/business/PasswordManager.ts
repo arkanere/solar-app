@@ -24,7 +24,10 @@ export class PasswordManager {
 			try {
 				client = await pool.connect();
 				const result = await client.query<{ login_password: string | null }>(
-					'SELECT login_password FROM businesses_1 WHERE login_email = $1 AND slug = $2',
+					`SELECT a.login_password
+					 FROM in_business_accounts a
+					 JOIN in_business_profiles p ON p.business_id = a.business_id
+					 WHERE a.login_email = $1 AND p.slug = $2`,
 					[email, business.slug]
 				);
 

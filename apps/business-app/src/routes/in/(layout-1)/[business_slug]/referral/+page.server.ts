@@ -44,7 +44,7 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 
 		// First get the business information from slug
 		const businessResult = await pool.query(
-			'SELECT id, businessname, slug FROM businesses_1 WHERE slug = $1',
+			`SELECT business_id AS id, businessname, slug FROM in_business_profiles WHERE slug = $1`,
 			[businessSlug]
 		);
 
@@ -88,7 +88,7 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 			// Still try to get business info
 			try {
 				const businessResult = await pool.query(
-					'SELECT id, businessname, slug FROM businesses_1 WHERE slug = $1',
+					`SELECT business_id AS id, businessname, slug FROM in_business_profiles WHERE slug = $1`,
 					[businessSlug]
 				);
 

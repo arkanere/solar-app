@@ -42,7 +42,7 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 
 	try {
 		const businessResult = await pool.query<{ id: number }>(
-			`SELECT id FROM businesses_1 WHERE slug = $1`,
+			`SELECT business_id AS id FROM in_business_profiles WHERE slug = $1`,
 			[businessSlug]
 		);
 

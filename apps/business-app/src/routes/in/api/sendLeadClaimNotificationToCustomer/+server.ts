@@ -43,7 +43,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		}
 
 		const businessResult = await pool.query<BusinessRow>(
-			'SELECT businessname, phonenumber, email, slug FROM businesses_1 WHERE id = $1',
+			`SELECT businessname, phonenumber, email, slug FROM in_business_profiles WHERE business_id = $1`,
 			[business_id]
 		);
 

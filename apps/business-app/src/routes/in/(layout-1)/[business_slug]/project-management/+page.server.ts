@@ -36,7 +36,7 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 	try {
 		// First get the business information from slug
 		const businessResult = await pool.query(
-			'SELECT id, businessname FROM businesses_1 WHERE slug = $1',
+			`SELECT business_id AS id, businessname FROM in_business_profiles WHERE slug = $1`,
 			[businessSlug]
 		);
 
