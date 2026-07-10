@@ -87,7 +87,7 @@
 			<h1 class="text-3xl font-bold mb-2">Branch Offices</h1>
 			<p class="text-muted-foreground">Manage your business branches across different locations</p>
 		</div>
-		<Button onclick={() => (showAddBranch = true)} class="whitespace-nowrap md:w-full">
+		<Button onclick={() => (showAddBranch = true)} class="whitespace-nowrap w-full md:w-auto">
 			Add Branch
 		</Button>
 	</header>

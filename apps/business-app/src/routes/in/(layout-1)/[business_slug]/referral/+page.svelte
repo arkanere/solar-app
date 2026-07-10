@@ -76,7 +76,7 @@
 			<h1 class="text-3xl font-bold mb-2">Referrers</h1>
 			<p class="text-muted-foreground">Manage your business referrers and partners</p>
 		</div>
-		<Button onclick={() => (showAddReferrer = true)} class="whitespace-nowrap md:w-full">
+		<Button onclick={() => (showAddReferrer = true)} class="whitespace-nowrap w-full md:w-auto">
 			Add Referrer
 		</Button>
 	</header>

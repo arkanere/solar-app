@@ -77,7 +77,7 @@
 			<h1 class="text-3xl font-bold mb-2">Your Projects</h1>
 			<p class="text-muted-foreground">Showcase your solar panel installation projects</p>
 		</div>
-		<Button onclick={() => (showAddProject = true)} class="whitespace-nowrap md:w-full">
+		<Button onclick={() => (showAddProject = true)} class="whitespace-nowrap w-full md:w-auto">
 			Post Recent Project
 		</Button>
 	</header>
