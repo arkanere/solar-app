@@ -7,7 +7,6 @@
 
 	// Access page data
 	const businessSlug = $page.params.business_slug;
-	let mainBusiness = $derived($page.data.mainBusiness);
 	let projects = $derived($page.data.projects || []);
 	let errorMessage = $derived($page.data.errorMessage);
 
@@ -71,7 +70,7 @@
 	}
 </script>
 
-<div class="min-h-screen p-8 md:p-4 transition-colors duration-300 bg-background text-foreground">
+<div>
 	<header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
 		<div>
 			<h1 class="text-3xl font-bold mb-2">Your Projects</h1>

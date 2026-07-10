@@ -11,7 +11,7 @@
 		businessInfo?: Record<string, any>;
 		businessSlug?: string;
 		onClose?: () => void;
-		onUpdated?: () => void;
+		onUpdated?: (profile?: unknown) => void;
 	};
 
 	let {

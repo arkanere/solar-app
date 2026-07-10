@@ -7,14 +7,14 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 
 	// Access page data
-	let businessSlug = $derived($page.params.business_slug);
+	let businessSlug = $derived($page.params.business_slug ?? '');
 	let mainBusiness = $derived($page.data.mainBusiness);
 	let branches = $derived($page.data.branches || []);
 	let errorMessage = $derived($page.data.errorMessage);
 
 	// State for edit modal (specific to this page)
 	let showEditProfile = $state(false);
-	let selectedBranch = $state(null);
+	let selectedBranch: any = $state(null);
 
 	// State for add branch modal
 	let showAddBranch = $state(false);
@@ -55,12 +55,12 @@
 	};
 
 	// Handle branch updated event
-	function handleBranchUpdated(event: any) {
+	function handleBranchUpdated() {
 		window.location.reload();
 	}
 
 	// Handle branch added event
-	function handleBranchAdded(event: any) {
+	function handleBranchAdded() {
 		showAddBranch = false;
 		window.location.reload();
 	}
@@ -81,7 +81,7 @@
 	}
 </script>
 
-<div class="min-h-screen p-8 md:p-4 transition-colors duration-300 bg-background text-foreground">
+<div>
 	<header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
 		<div>
 			<h1 class="text-3xl font-bold mb-2">Branch Offices</h1>
@@ -111,18 +111,23 @@
 							<h2 class="text-xl font-semibold flex-1">{mainBusiness.businessname}</h2>
 							<Badge class="bg-success text-success-foreground">Main Office</Badge>
 						</div>
-						<div class="flex-1 space-y-2 text-sm">
-							<p><strong>Address:</strong> {formatAddress(mainBusiness)}</p>
+						<div class="flex-1 space-y-3 text-sm">
+							<div>
+								<p class="text-muted-foreground">Address</p>
+								<p class="font-medium">{formatAddress(mainBusiness)}</p>
+							</div>
 							{#if mainBusiness.phonenumber}
-								<p><strong>Phone:</strong> {mainBusiness.phonenumber}</p>
+								<div>
+									<p class="text-muted-foreground">Phone</p>
+									<p class="font-medium">{mainBusiness.phonenumber}</p>
+								</div>
 							{/if}
 							{#if mainBusiness.email}
-								<p><strong>Email:</strong> {mainBusiness.email}</p>
+								<div>
+									<p class="text-muted-foreground">Email</p>
+									<p class="font-medium break-all">{mainBusiness.email}</p>
+								</div>
 							{/if}
-							<p>
-								<strong>Location:</strong>
-								{mainBusiness.city}, {mainBusiness.district}, {mainBusiness.state}
-							</p>
 						</div>
 						<div class="flex gap-3 flex-wrap md:flex-col">
 							<Button
@@ -135,7 +140,7 @@
 							</Button>
 							<Button
 								variant="outline"
-								class="flex-1 min-w-[120px] bg-success hover:bg-success/90 text-success-foreground border-success"
+								class="flex-1 min-w-[120px]"
 								onclick={() => openEditProfile(mainBusiness)}
 							>
 								Edit Details
@@ -151,18 +156,26 @@
 							class="bg-card rounded-lg p-6 border border-border shadow-card hover:shadow-card-hover transition-shadow duration-300 flex flex-col gap-4"
 						>
 							<div class="flex justify-between items-start gap-4 mb-2">
-								<h2 class="text-xl font-semibold flex-1">{branch.businessname}</h2>
+								<h2 class="text-xl font-semibold flex-1">{branch.city || branch.businessname}</h2>
 								<Badge class="bg-accent text-accent-foreground">Branch Office</Badge>
 							</div>
-							<div class="flex-1 space-y-2 text-sm">
-								<p><strong>Address:</strong> {formatAddress(branch)}</p>
+							<div class="flex-1 space-y-3 text-sm">
+								<div>
+									<p class="text-muted-foreground">Address</p>
+									<p class="font-medium">{formatAddress(branch)}</p>
+								</div>
 								{#if branch.phonenumber}
-									<p><strong>Phone:</strong> {branch.phonenumber}</p>
+									<div>
+										<p class="text-muted-foreground">Phone</p>
+										<p class="font-medium">{branch.phonenumber}</p>
+									</div>
 								{/if}
 								{#if branch.email}
-									<p><strong>Email:</strong> {branch.email}</p>
+									<div>
+										<p class="text-muted-foreground">Email</p>
+										<p class="font-medium break-all">{branch.email}</p>
+									</div>
 								{/if}
-								<p><strong>Location:</strong> {branch.city}, {branch.district}, {branch.state}</p>
 							</div>
 							<div class="flex gap-3 flex-wrap md:flex-col">
 								<Button
@@ -175,7 +188,7 @@
 								</Button>
 								<Button
 									variant="outline"
-									class="flex-1 min-w-[120px] bg-success hover:bg-success/90 text-success-foreground border-success"
+									class="flex-1 min-w-[120px]"
 									onclick={() => openEditProfile(branch)}
 								>
 									Edit Details
@@ -234,7 +247,7 @@
 		<Dialog.Header>
 			<Dialog.Title>Delete Branch</Dialog.Title>
 			<Dialog.Description>
-				Are you sure you want to delete <strong>{branchToDelete?.businessname}</strong> ({branchToDelete?.city})? This action cannot be undone.
+				Are you sure you want to delete the <strong>{branchToDelete?.city}</strong> branch? This action cannot be undone.
 			</Dialog.Description>
 		</Dialog.Header>
 		<Dialog.Footer class="gap-2">

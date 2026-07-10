@@ -35,26 +35,22 @@
 <div class="w-full space-y-3 py-2">
 	<Progress
 		value={progressPercentage}
-		class={isActive ? 'bg-green-100' : 'bg-red-100'}
-	>
-		<div
-			slot="indicator"
-			class="h-full transition-all {isActive ? 'bg-green-600' : 'bg-red-600'}"
-			style="transform: translateX(-{100 - progressPercentage}%)"
-		></div>
-	</Progress>
+		class={isActive
+			? 'bg-success-muted [&>[data-slot=progress-indicator]]:bg-success'
+			: 'bg-destructive-muted [&>[data-slot=progress-indicator]]:bg-destructive'}
+	/>
 
 	<div class="flex justify-between items-start">
 		{#each stages as stage, index}
 			{@const state = getStageState(index)}
 			{@const stateColors = {
-				completed: isActive ? 'bg-green-600 border-green-600 text-white' : 'bg-red-600 border-red-600 text-white',
-				current: isActive ? 'bg-green-600 border-green-600 text-white' : 'bg-red-600 border-red-600 text-white',
+				completed: isActive ? 'bg-success border-success text-success-foreground' : 'bg-destructive border-destructive text-destructive-foreground',
+				current: isActive ? 'bg-success border-success text-success-foreground' : 'bg-destructive border-destructive text-destructive-foreground',
 				future: 'bg-secondary border-border text-muted-foreground'
 			}}
 			{@const labelColors = {
-				completed: isActive ? 'text-green-700' : 'text-red-700',
-				current: isActive ? 'text-green-700 font-semibold' : 'text-red-700 font-semibold',
+				completed: isActive ? 'text-success' : 'text-destructive',
+				current: isActive ? 'text-success font-semibold' : 'text-destructive font-semibold',
 				future: 'text-muted-foreground'
 			}}
 

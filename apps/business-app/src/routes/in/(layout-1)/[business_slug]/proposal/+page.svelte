@@ -12,10 +12,10 @@
 
 	// Modal state
 	let showProposalModal = $state(false);
-	let selectedProposal = $state(null);
+	let selectedProposal: any = $state(null);
 
 	// Open modal to update proposal
-	function openUpdateProposal(proposal) {
+	function openUpdateProposal(proposal: any) {
 		selectedProposal = proposal;
 		showProposalModal = true;
 	}
@@ -28,39 +28,8 @@
 		window.location.reload();
 	}
 
-	// Format date for display
-	function formatDate(dateString) {
-		const date = new Date(dateString);
-		return date.toLocaleDateString('en-IN', {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric'
-		});
-	}
-
-	// Format time ago
-	function getTimeAgo(dateString) {
-		const now = new Date();
-		const date = new Date(dateString);
-		const diffInMs = now - date;
-		const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-
-		if (diffInDays === 0) {
-			return 'Today';
-		} else if (diffInDays === 1) {
-			return '1 day ago';
-		} else if (diffInDays < 7) {
-			return `${diffInDays} days ago`;
-		} else if (diffInDays < 30) {
-			const weeks = Math.floor(diffInDays / 7);
-			return `${weeks} week${weeks === 1 ? '' : 's'} ago`;
-		} else {
-			return formatDate(dateString);
-		}
-	}
-
 	// Function to delete proposal
-	async function deleteProposal(proposalId, customerName) {
+	async function deleteProposal(proposalId: number, customerName: string) {
 		if (!confirm(`Are you sure you want to delete proposal for "${customerName}"? This action cannot be undone.`)) {
 			return;
 		}
@@ -90,7 +59,7 @@
 	}
 </script>
 
-<div class="min-h-screen p-8 md:p-4 transition-colors duration-300 bg-background text-foreground">
+<div>
 	<header class="mb-8 flex flex-col justify-center items-center text-center">
 		<div>
 			<h1 class="text-3xl font-bold mb-2">Proposals</h1>

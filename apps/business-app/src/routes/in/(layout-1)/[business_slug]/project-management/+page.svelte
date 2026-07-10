@@ -3,13 +3,13 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from '$lib/components/ui/table';
+	import type { BadgeVariant } from '$lib/components/ui/badge';
 
 	let businessSlug = $derived($page.params.business_slug);
 	let projects = $derived($page.data.projects || []);
-	let business = $derived($page.data.business);
 
 	// Stage names mapping
-	const stageNames = {
+	const stageNames: Record<number, string> = {
 		1: 'Lead',
 		2: 'Qualified',
 		3: 'Proposal Sent',
@@ -19,7 +19,7 @@
 	};
 
 	// Stage variant mapping for badges
-	const stageVariants = {
+	const stageVariants: Record<number, string> = {
 		1: 'secondary',    // Lead - Gray
 		2: 'default',      // Qualified - Info (accent)
 		3: 'warning',      // Proposal - Warning
@@ -29,7 +29,7 @@
 	};
 
 	// Function to format date
-	function formatDate(dateString) {
+	function formatDate(dateString: string) {
 		const date = new Date(dateString);
 		return date.toLocaleDateString('en-IN', {
 			year: 'numeric',
@@ -39,10 +39,10 @@
 	}
 
 	// Function to calculate days ago
-	function getDaysAgo(dateString) {
+	function getDaysAgo(dateString: string) {
 		const now = new Date();
 		const date = new Date(dateString);
-		const diffInMs = now - date;
+		const diffInMs = now.getTime() - date.getTime();
 		const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 
 		if (diffInDays === 0) {
@@ -55,8 +55,9 @@
 	}
 
 	// Function to get stage variant
-	function getStageVariant(stage) {
-		return stageVariants[stage] || 'secondary';
+	function getStageVariant(stage: number): BadgeVariant {
+		// 'warning'/'success' are not defined on Badge and render as base style
+		return (stageVariants[stage] || 'secondary') as BadgeVariant;
 	}
 </script>
 
@@ -64,7 +65,7 @@
 	<title>Project Management - {businessSlug} | Solar Vipani Business Dashboard</title>
 </svelte:head>
 
-<div class="min-h-screen p-8 md:p-4 transition-colors duration-300 bg-background text-foreground">
+<div>
 	<header class="mb-8 flex flex-col justify-center items-center text-center">
 		<div>
 			<h1 class="text-3xl font-bold mb-2">Project Management</h1>
@@ -92,7 +93,7 @@
 						<CardTitle class="text-sm font-medium text-muted-foreground">Active Projects</CardTitle>
 					</CardHeader>
 					<CardContent>
-						<div class="text-2xl font-bold">{projects.filter(p => p.stage >= 1 && p.stage <= 4).length}</div>
+						<div class="text-2xl font-bold">{projects.filter((p: any) => p.stage >= 1 && p.stage <= 4).length}</div>
 					</CardContent>
 				</Card>
 				<Card class="flex-1">
@@ -100,7 +101,7 @@
 						<CardTitle class="text-sm font-medium text-muted-foreground">Won</CardTitle>
 					</CardHeader>
 					<CardContent>
-						<div class="text-2xl font-bold text-success">{projects.filter(p => p.stage === 5).length}</div>
+						<div class="text-2xl font-bold text-success">{projects.filter((p: any) => p.stage === 5).length}</div>
 					</CardContent>
 				</Card>
 			</div>

@@ -284,11 +284,11 @@
   --accent-foreground: 0 0% 100%;   /* White text on accent */
   --accent-muted: 214 95% 93%;      /* #DBEAFE - Light accent bg */
 
-  /* Secondary - Solar Amber (sun, warmth, energy) */
-  --secondary: 38 92% 50%;          /* #F59E0B - Secondary accent */
-  --secondary-hover: 32 95% 44%;    /* #D97706 - Secondary hover */
-  --secondary-foreground: 0 0% 100%;/* White text on secondary */
-  --secondary-muted: 48 96% 89%;    /* #FEF3C7 - Light secondary bg */
+  /* Secondary - Neutral gray (secondary actions, badges; use --warning for amber) */
+  --secondary: 0 0% 96%;            /* #F5F5F5 - Neutral surface */
+  --secondary-hover: 0 0% 92%;      /* #EBEBEB - Hover state */
+  --secondary-foreground: 0 0% 9%;  /* Dark text on secondary */
+  --secondary-muted: 0 0% 94%;      /* #F0F0F0 - Subtle secondary bg */
 
   /* Semantic - Success (green) */
   --success: 142 71% 45%;           /* #22C55E */
@@ -381,11 +381,11 @@
   --accent-foreground: 0 0% 100%;
   --accent-muted: 221 47% 25%;      /* #1E3A5F - Dark accent bg */
 
-  /* Secondary - Solar Amber (brighter in dark mode) */
-  --secondary: 38 92% 55%;          /* #FBBF24 - Brighter amber */
-  --secondary-hover: 38 92% 50%;
-  --secondary-foreground: 0 0% 100%;
-  --secondary-muted: 38 50% 20%;    /* #4D3B1A - Dark secondary bg */
+  /* Secondary - Neutral gray (secondary actions, badges; use --warning for amber) */
+  --secondary: 0 0% 16%;            /* #292929 - Neutral surface */
+  --secondary-hover: 0 0% 22%;
+  --secondary-foreground: 0 0% 98%;
+  --secondary-muted: 0 0% 14%;      /* Subtle secondary bg */
 
   /* Semantic colors - Adjusted for dark */
   --success: 142 71% 45%;

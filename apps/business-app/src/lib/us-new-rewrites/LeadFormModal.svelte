@@ -120,7 +120,7 @@
 	}
 </script>
 
-<form on:submit|preventDefault={handleSubmit} class="flex flex-col max-w-md mx-auto pt-4 space-y-4">
+<form onsubmit={handleSubmit} class="flex flex-col max-w-md mx-auto pt-4 space-y-4">
 	<h2 class="text-2xl font-bold mb-4">Request a Free Quote from {businessName}</h2>
 
 	<div class="space-y-2">
@@ -133,7 +133,7 @@
 
 	<div class="space-y-2">
 		<Label for="phone">Phone Number</Label>
-		<Input id="phone" type="text" bind:value={phone} on:blur={validatePhoneNumber} />
+		<Input id="phone" type="text" bind:value={phone} onblur={validatePhoneNumber} />
 		{#if errors.phone}
 			<p class="text-sm text-destructive">{errors.phone}</p>
 		{/if}
@@ -141,7 +141,7 @@
 
 	<div class="space-y-2">
 		<Label for="pinCode">Zip Code</Label>
-		<Input id="pinCode" type="text" bind:value={pinCode} on:blur={validatePinCode} />
+		<Input id="pinCode" type="text" bind:value={pinCode} onblur={validatePinCode} />
 		{#if errors.pinCode}
 			<p class="text-sm text-destructive">{errors.pinCode}</p>
 		{/if}
@@ -149,7 +149,7 @@
 
 	<div class="space-y-2">
 		<Label for="email">Email</Label>
-		<Input id="email" type="email" bind:value={email} on:blur={validateEmail} />
+		<Input id="email" type="email" bind:value={email} onblur={validateEmail} />
 		{#if errors.email}
 			<p class="text-sm text-destructive">{errors.email}</p>
 		{/if}

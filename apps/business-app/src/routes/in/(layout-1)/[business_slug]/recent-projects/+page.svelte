@@ -6,13 +6,12 @@
 	import { toast } from 'svelte-sonner';
 
 	// Access page data
-	let businessSlug = $derived($page.params.business_slug);
-	let mainBusiness = $derived($page.data.mainBusiness);
+	let businessSlug = $derived($page.params.business_slug ?? '');
 	let projects = $derived($page.data.projects || []);
 	let errorMessage = $derived($page.data.errorMessage);
 
 	// Format date for display
-	function formatDate(dateString) {
+	function formatDate(dateString: string) {
 		const date = new Date(dateString);
 		return date.toLocaleDateString('en-IN', {
 			year: 'numeric',
@@ -28,13 +27,13 @@
 	let showPostRecentProject = $state(false);
 
 	// Handle project posted
-	function handleProjectPosted(event) {
+	function handleProjectPosted() {
 		showPostRecentProject = false;
 		window.location.reload();
 	}
 
 	// Handle project deletion
-	async function handleDeleteProject(project) {
+	async function handleDeleteProject(project: any) {
 		if (deletingProjectId !== null) return;
 
 		const confirmed = confirm(
@@ -71,7 +70,7 @@
 	}
 </script>
 
-<div class="min-h-screen p-8 md:p-4 transition-colors duration-300 bg-background text-foreground">
+<div>
 	<header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
 		<div>
 			<h1 class="text-3xl font-bold mb-2">Project Portfolio</h1>

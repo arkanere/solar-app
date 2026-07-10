@@ -130,7 +130,7 @@
 		{/if}
 
 		{#if successMessage}
-			<Alert.Root class="border-green-200 bg-green-50 text-green-800">
+			<Alert.Root class="border-success/30 bg-success-muted text-success">
 				<CheckCircle2 class="h-4 w-4" />
 				<Alert.Description>{successMessage}</Alert.Description>
 			</Alert.Root>

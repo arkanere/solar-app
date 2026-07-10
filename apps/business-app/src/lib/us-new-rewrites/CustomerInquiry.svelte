@@ -1,3 +1,32 @@
+<script module lang="ts">
+	import type { LeadCategory } from '$lib/constants/lead';
+
+	export type Lead = {
+		id: number;
+		name: string;
+		phone: string;
+		email?: string | null;
+		pin_code?: string;
+		type?: string | null;
+		comment?: string | null;
+		created_at: string;
+		sv_comment_for_businesses?: string | null;
+		category: LeadCategory | null;
+		stage: number;
+		status: boolean;
+		claim_count: number;
+		county?: string | null;
+	};
+
+	export type CustomerInquiryProps = {
+		leads?: Lead[];
+		businessInfo?: Record<string, any>;
+		errorMessage?: string | null;
+		isClaiming?: boolean;
+		onclaimLead?: (event: CustomEvent<{ leadId: number; businessId: number }>) => void;
+	};
+</script>
+
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import { toast } from 'svelte-sonner';
@@ -6,18 +35,10 @@
 	import LeadStageFilter from './LeadStageFilter.svelte';
 	import { STAGES_MAP, NON_EXCLUSIVE_CLAIMED_STAGES_MAP } from '$lib/constants/lead';
 	import { Button } from '$lib/components/ui/button';
-	import { Badge } from '$lib/components/ui/badge';
+	import { Badge, type BadgeVariant } from '$lib/components/ui/badge';
 	import * as Card from '$lib/components/ui/card';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Select from '$lib/components/ui/select';
-
-	export type CustomerInquiryProps = {
-		leads?: any[];
-		businessInfo?: Record<string, any>;
-		errorMessage?: string | null;
-		isClaiming?: boolean;
-		onclaimLead?: (event: CustomEvent<{ leadId: number; businessId: number }>) => void;
-	};
 
 	let {
 		leads = [],
@@ -32,11 +53,11 @@
 	let selectedCategory = $state('all');
 	let selectedStage = $state('all');
 	let selectedStatus = $state('all');
-	let filteredLeads = $state([]);
+	let filteredLeads: Lead[] = $state([]);
 
 	// Delete confirmation state
 	let showDeleteConfirm = $state(false);
-	let leadToDelete = $state(null);
+	let leadToDelete: Lead | null = $state(null);
 	let isDeleting = $state(false);
 
 	// Dummy test lead for new users
@@ -51,14 +72,14 @@
 			'I want to install a 6kW solar system at my home. Please call me to discuss pricing and incentives!'
 	};
 
-	function makeCall(phoneNumber: string, leadName: string, leadId: number) {
+	function makeCall(phoneNumber: string, _leadName: string, leadId: number) {
 		if (typeof window !== 'undefined' && window.umami) {
 			window.umami.track(`us-crm-call-now-button-${leadId}`);
 		}
 		window.location.href = `tel:${phoneNumber}`;
 	}
 
-	async function updateLead(lead: any) {
+	async function updateLead(lead: Lead) {
 		try {
 			const response = await fetch('/us/api/updateLeadByBusiness', {
 				method: 'POST',
@@ -89,7 +110,7 @@
 		dispatch('claimLead', { leadId, businessId });
 	}
 
-	function getRelativeTime(dateString: string) {
+	function getRelativeTime(dateString: string): { text: string; variant: BadgeVariant } {
 		const now = new Date();
 		const date = new Date(dateString);
 		const diffInMs = now.getTime() - date.getTime();
@@ -114,7 +135,7 @@
 		}
 	}
 
-	function getCategoryBadge(category: number | null) {
+	function getCategoryBadge(category: number | null): { label: string; variant: BadgeVariant } {
 		if (category === 1) {
 			return { label: 'Non-Exclusive-Available-to-Claim', variant: 'secondary' };
 		} else if (category === 2) {
@@ -191,7 +212,7 @@
 		filterLeads();
 	});
 
-	async function deleteLead(lead: any) {
+	async function deleteLead(lead: Lead) {
 		if (isDeleting) return;
 		isDeleting = true;
 
@@ -220,7 +241,7 @@
 		}
 	}
 
-	function showDeleteConfirmation(lead: any) {
+	function showDeleteConfirmation(lead: Lead) {
 		leadToDelete = lead;
 		showDeleteConfirm = true;
 	}
@@ -280,42 +301,51 @@
 							<!-- Lead Details -->
 							<div class="space-y-2 text-sm">
 								<div class="flex items-center gap-2">
-									<Clock class="w-4 h-4" />
-									<strong>Received:</strong>
+									<Clock class="w-4 h-4 text-muted-foreground" />
+									<span class="font-semibold text-muted-foreground">Received:</span>
 									<Badge variant={getRelativeTime(lead.created_at).variant}>
 										{getRelativeTime(lead.created_at).text}
 									</Badge>
 								</div>
 
 								<div class="flex items-center gap-2 flex-wrap">
-									<strong>Phone:</strong>
-									<span>{lead.phone}</span>
+									<span class="font-semibold text-muted-foreground">Phone:</span>
+									<span class="font-medium">{lead.phone}</span>
 									<Button
 										variant="default"
 										size="sm"
-										class="gap-2 bg-gradient-to-br from-orange-500 to-red-500 hover:from-red-500 hover:to-orange-500"
+										class="gap-2"
 										onclick={() => makeCall(lead.phone, lead.name, lead.id)}
 									>
 										<Phone class="w-4 h-4" />
-										CALL NOW
+										Call Now
 									</Button>
 								</div>
 
 								{#if lead.email}
-									<p><strong>Email:</strong> {lead.email}</p>
+									<p>
+										<span class="font-semibold text-muted-foreground">Email:</span>
+										<span class="font-medium">{lead.email}</span>
+									</p>
 								{/if}
-								<p><strong>Zip Code:</strong> {lead.pin_code}</p>
-								<p><strong>Type:</strong> {lead.type}</p>
-								<p><strong>Customer Comment:</strong> {lead.comment}</p>
+								<p>
+									<span class="font-semibold text-muted-foreground">Zip Code:</span>
+									<span class="font-medium">{lead.pin_code}</span>
+								</p>
+								<p>
+									<span class="font-semibold text-muted-foreground">Type:</span>
+									<span class="font-medium">{lead.type}</span>
+								</p>
+								<p class="italic leading-relaxed">"{lead.comment}"</p>
 
 								{#if lead.sv_comment_for_businesses}
 									<div
-										class="mt-3 p-3 bg-blue-50 dark:bg-blue-950/20 border-l-4 border-blue-500 rounded italic"
+										class="mt-3 p-3 bg-accent-muted border-l-4 border-accent rounded italic"
 									>
-										<strong class="text-blue-600 dark:text-blue-400"
+										<strong class="text-accent"
 											>Solarvipani.com Comment:</strong
 										>
-										<span class="text-blue-700 dark:text-blue-300">
+										<span class="text-accent">
 											{lead.sv_comment_for_businesses}
 										</span>
 									</div>
@@ -329,24 +359,29 @@
 										<strong class="text-sm">Stage:</strong>
 										<Select.Root
 											type="single"
-											bind:value={lead.stage}
-											onSelectedChange={() => updateLead(lead)}
+											value={String(lead.stage)}
+											onValueChange={(value) => {
+												lead.stage = Number(value);
+												updateLead(lead);
+											}}
 										>
 											<Select.Trigger class="w-[200px]">
 												{#if lead.category === 2}
-													{NON_EXCLUSIVE_CLAIMED_STAGES_MAP[lead.stage] || 'Select...'}
+													{(NON_EXCLUSIVE_CLAIMED_STAGES_MAP as Record<number, string>)[
+														lead.stage
+													] || 'Select...'}
 												{:else}
-													{STAGES_MAP[lead.stage] || 'Select...'}
+													{(STAGES_MAP as Record<number, string>)[lead.stage] || 'Select...'}
 												{/if}
 											</Select.Trigger>
 											<Select.Content>
 												{#if lead.category === 2}
 													{#each Object.entries(NON_EXCLUSIVE_CLAIMED_STAGES_MAP).filter(([k]) => k !== 'all') as [value, label]}
-														<Select.Item value={Number(value)}>{label}</Select.Item>
+														<Select.Item {value}>{label}</Select.Item>
 													{/each}
 												{:else}
 													{#each Object.entries(STAGES_MAP).filter(([k]) => k !== 'all') as [value, label]}
-														<Select.Item value={Number(value)}>{label}</Select.Item>
+														<Select.Item {value}>{label}</Select.Item>
 													{/each}
 												{/if}
 											</Select.Content>
@@ -357,15 +392,18 @@
 										<strong class="text-sm">Status:</strong>
 										<Select.Root
 											type="single"
-											bind:value={lead.status}
-											onSelectedChange={() => updateLead(lead)}
+											value={String(lead.status)}
+											onValueChange={(value) => {
+												lead.status = value === 'true';
+												updateLead(lead);
+											}}
 										>
 											<Select.Trigger class="w-[120px]">
 												{lead.status ? 'Active' : 'Inactive'}
 											</Select.Trigger>
 											<Select.Content>
-												<Select.Item value={true}>Active</Select.Item>
-												<Select.Item value={false}>Inactive</Select.Item>
+												<Select.Item value="true">Active</Select.Item>
+												<Select.Item value="false">Inactive</Select.Item>
 											</Select.Content>
 										</Select.Root>
 									</div>
@@ -373,16 +411,16 @@
 
 								<LeadProgressBar
 									currentStage={lead.stage}
-									leadCategory={lead.category}
+									leadCategory={lead.category ?? 3}
 									isActive={lead.status}
 								/>
 
 								{@const nextAction = getNextAction(lead.stage, lead.category, lead.status)}
 								{#if nextAction}
 									<div
-										class="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 border-l-4 rounded"
+										class="p-4 bg-accent-muted border border-accent/30 border-l-4 rounded"
 									>
-										<strong class="text-blue-600 dark:text-blue-400">Next Action:</strong>
+										<strong class="text-accent">Next Action:</strong>
 										<span class="italic text-foreground ml-2">{nextAction}</span>
 									</div>
 								{/if}
@@ -391,7 +429,7 @@
 							<!-- Action Buttons -->
 							<div class="flex justify-end">
 								{#if lead.category === 1 && lead.claim_count > 4}
-									<p class="text-green-600 font-bold">
+									<p class="text-success font-bold">
 										Not Available. Claimed by Other Business
 									</p>
 								{:else if lead.category === 1}
@@ -404,13 +442,13 @@
 									{/if}
 									<Button
 										variant="default"
-										class="bg-green-600 hover:bg-green-700"
+										class="bg-success text-success-foreground hover:bg-success/90"
 										onclick={() => claimLead(lead.id, businessInfo.id)}
 										disabled={isClaiming}
 									>
 										{isClaiming ? 'Claiming...' : 'Claim Now (Free)'}
 									</Button>
-								{:else if lead.category !== 1 && !lead.status}
+								{:else if !lead.status}
 									<Button variant="destructive" onclick={() => showDeleteConfirmation(lead)}>
 										Delete Lead
 									</Button>
@@ -425,29 +463,38 @@
 					<Card.Header>
 						<div class="flex items-center justify-between gap-2 flex-wrap">
 							<Card.Title class="text-xl">{dummyLead.name}</Card.Title>
-							<Badge variant="secondary" class="bg-orange-200 text-orange-900">Test Lead</Badge>
+							<Badge variant="outline" class="bg-warning-muted text-warning">Test Lead</Badge>
 						</div>
 					</Card.Header>
 					<Card.Content class="space-y-2 text-sm">
 						<div class="flex items-center gap-2">
-							<Clock class="w-4 h-4" />
-							<strong>Received:</strong>
+							<Clock class="w-4 h-4 text-muted-foreground" />
+							<span class="font-semibold text-muted-foreground">Received:</span>
 							<Badge variant={getRelativeTime(dummyLead.received_at).variant}>
 								{getRelativeTime(dummyLead.received_at).text}
 							</Badge>
 						</div>
 						<div class="flex items-center gap-2 flex-wrap">
-							<strong>Phone:</strong>
-							<span>{dummyLead.phone}</span>
+							<span class="font-semibold text-muted-foreground">Phone:</span>
+							<span class="font-medium">{dummyLead.phone}</span>
 							<Button variant="default" size="sm" class="gap-2" disabled>
 								<Phone class="w-4 h-4" />
-								CALL NOW
+								Call Now
 							</Button>
 						</div>
-						<p><strong>Email:</strong> {dummyLead.email}</p>
-						<p><strong>Zip Code:</strong> {dummyLead.pin_code}</p>
-						<p><strong>Type:</strong> {dummyLead.type}</p>
-						<p><strong>Customer Comment:</strong> {dummyLead.comment}</p>
+						<p>
+							<span class="font-semibold text-muted-foreground">Email:</span>
+							<span class="font-medium">{dummyLead.email}</span>
+						</p>
+						<p>
+							<span class="font-semibold text-muted-foreground">Zip Code:</span>
+							<span class="font-medium">{dummyLead.pin_code}</span>
+						</p>
+						<p>
+							<span class="font-semibold text-muted-foreground">Type:</span>
+							<span class="font-medium">{dummyLead.type}</span>
+						</p>
+						<p class="italic leading-relaxed">"{dummyLead.comment}"</p>
 					</Card.Content>
 				</Card.Root>
 			{/if}

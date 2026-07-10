@@ -24,23 +24,19 @@
 			: {}
 	);
 
-	function handleClaimSuccess({ leadId, result }: { leadId: number; result: any }) {
-		leads = leads.filter((lead) => lead.id !== leadId);
+	function handleClaimSuccess({ leadId }: { leadId: number; result: any }) {
+		leads = leads.filter((lead: any) => lead.id !== leadId);
 		toast.success('Lead claimed! Opening CRM...');
 		goto(`/in/${businessSlug}/crm`);
 	}
 </script>
 
-<div class="min-h-screen py-8 md:py-4 transition-colors duration-300 bg-background text-foreground">
-	<div class="w-full max-w-[1200px] px-4 md:px-3 max-[480px]:px-2 mx-auto">
-		<CustomerInquiry
-			bind:leads
-			{businessInfo}
-			{businessSlug}
-			{errorMessage}
-			mode="dashboard"
-			claimBlocked={claimGate?.isBlocked ?? false}
-			onClaimSuccess={handleClaimSuccess}
-		/>
-	</div>
-</div>
+<CustomerInquiry
+	bind:leads
+	{businessInfo}
+	{businessSlug}
+	{errorMessage}
+	mode="dashboard"
+	claimBlocked={claimGate?.isBlocked ?? false}
+	onClaimSuccess={handleClaimSuccess}
+/>

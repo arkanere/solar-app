@@ -30,7 +30,7 @@ export const LEAD_CATEGORIES_WITH_ALL = {
 export const EXCLUSIVE_STAGES = [
 	'New Inquiry',
 	'Contacted',
-	'Proposal/Quotation Sent',
+	'Proposal Sent',
 	'Won'
 ] as const;
 
@@ -38,7 +38,7 @@ export const EXCLUSIVE_STAGES = [
 export const NON_EXCLUSIVE_CLAIMED_STAGES = [
 	'Claimed',
 	'Contacted',
-	'Proposal/Quotation Sent',
+	'Proposal Sent',
 	'Won'
 ] as const;
 
@@ -47,7 +47,7 @@ export const NON_EXCLUSIVE_CLAIMED_DISPLAY_STAGES = [
 	'Qualified by Solar Vipani',
 	'Claimed',
 	'Contacted',
-	'Proposal/Quotation Sent',
+	'Proposal Sent',
 	'Won'
 ] as const;
 
@@ -56,7 +56,7 @@ export const STAGES_MAP = {
 	all: 'All Stages',
 	0: 'New Inquiry',
 	1: 'Contacted',
-	2: 'Proposal/Quotation Sent',
+	2: 'Proposal Sent',
 	3: 'Won'
 } as const;
 
@@ -65,7 +65,7 @@ export const NON_EXCLUSIVE_CLAIMED_STAGES_MAP = {
 	all: 'All Stages',
 	0: 'Claimed',
 	1: 'Contacted',
-	2: 'Proposal/Quotation Sent',
+	2: 'Proposal Sent',
 	3: 'Won'
 } as const;
 

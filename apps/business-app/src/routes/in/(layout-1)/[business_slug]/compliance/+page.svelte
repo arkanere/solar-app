@@ -57,12 +57,12 @@
 
 	const stateBadgeClasses: Record<string, string> = {
 		compliant: 'bg-success text-success-foreground',
-		expiring: 'bg-amber-500 text-white',
+		expiring: 'bg-warning text-warning-foreground',
 		expired: 'bg-destructive text-destructive-foreground'
 	};
 </script>
 
-<div class="min-h-screen p-8 md:p-4 transition-colors duration-300 bg-background text-foreground">
+<div>
 	<header class="mb-8">
 		<h1 class="text-3xl font-bold mb-2">Compliance</h1>
 		<p class="text-muted-foreground">

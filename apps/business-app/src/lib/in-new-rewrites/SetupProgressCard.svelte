@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
-	import { isDarkMode } from '$lib/stores/theme.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
+	import { Progress } from '$lib/components/ui/progress';
 	import { cn } from '$lib/utils';
-	import { Target, AlertCircle } from '@lucide/svelte';
+	import { Target, AlertCircle, ChevronDown } from '@lucide/svelte';
 
 	type Task = {
 		id: string;
@@ -32,8 +32,6 @@
 		claimedLeadsCount = 0,
 		onOpenEditProfile = () => {}
 	}: SetupProgressCardProps = $props();
-
-	let darkMode = $derived($isDarkMode);
 
 	let isExpanded = $state(false);
 
@@ -103,7 +101,6 @@
 
 	let completedCount = $derived(tasks.filter((t) => t.completed).length);
 	let totalCount = $derived(tasks.length);
-	let progressPercent = $derived(Math.round((completedCount / totalCount) * 100));
 
 	let visibleTasks = $derived(
 		tasks
@@ -124,43 +121,43 @@
 </script>
 
 {#if completedCount < totalCount}
-<Card.Root class="mb-8 overflow-hidden transition-shadow hover:shadow-md">
-	<Card.Header class="p-0 border-b">
+<Card.Root class="mb-4 overflow-hidden py-0 gap-0 transition-shadow hover:shadow-md">
+	<Card.Header class="p-0">
 		<Button
 			variant="ghost"
-			class="flex justify-between items-center p-6 rounded-none w-full text-left h-auto hover:bg-transparent"
+			class="flex justify-between items-center gap-4 p-5 rounded-none w-full text-left h-auto hover:bg-transparent"
 			onclick={toggleExpanded}
 			aria-expanded={isExpanded}
 		>
-			<div class="flex items-center gap-4 flex-1">
-				<Target class="shrink-0 text-accent" size={28} strokeWidth={2} />
-				<div>
-					<Card.Title class="text-xl font-bold text-accent max-sm:text-lg"
+			<div class="flex items-center gap-4 flex-1 min-w-0">
+				<Target class="shrink-0 text-accent" size={24} strokeWidth={2} />
+				<div class="flex-1 min-w-0">
+					<Card.Title class="text-lg font-bold text-accent max-sm:text-base"
 						>Setup Your Business Account</Card.Title
 					>
-					{#if !isExpanded}
-						<Card.Description class="mt-1"
-							>{totalCount - completedCount} task{totalCount - completedCount !== 1 ? 's' : ''} remaining</Card.Description
-						>
-					{/if}
+					<div class="flex items-center gap-3 mt-1.5">
+						<Progress
+							value={(completedCount / totalCount) * 100}
+							class="h-1.5 w-32 max-sm:w-20 [&>[data-slot=progress-indicator]]:bg-success"
+						/>
+						<span class="text-sm text-muted-foreground whitespace-nowrap">
+							{completedCount} of {totalCount} completed
+						</span>
+					</div>
 				</div>
 			</div>
-			<span
-				class="w-8 h-8 flex items-center justify-center rounded bg-muted text-foreground text-xl font-bold shrink-0 transition-colors hover:bg-muted/80"
-			>
-				{isExpanded ? '─' : '+'}
-			</span>
+			<ChevronDown
+				size={18}
+				class={cn(
+					'shrink-0 text-muted-foreground transition-transform duration-200',
+					isExpanded && 'rotate-180'
+				)}
+			/>
 		</Button>
 	</Card.Header>
 
 	{#if isExpanded}
-		<Card.Content>
-			<div class="mb-6">
-				<p class="m-0 text-sm font-semibold text-foreground">
-					{totalCount - completedCount} task{totalCount - completedCount !== 1 ? 's' : ''} remaining
-				</p>
-			</div>
-
+		<Card.Content class="border-t px-5 pt-4 pb-5">
 			<ul class="list-none p-0 m-0">
 				{#each visibleTasks as task}
 					<li

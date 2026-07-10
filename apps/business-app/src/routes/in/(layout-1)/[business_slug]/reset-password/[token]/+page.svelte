@@ -20,7 +20,7 @@
 	// Check if password meets all requirements
 	let isPasswordValid = $derived(passwordIndicator?.allRequirementsMet ?? false);
 
-	async function handleSubmit(event) {
+	async function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
 
 		// Clear any existing error messages

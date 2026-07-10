@@ -27,11 +27,11 @@
 		county: '',
 		city: '',
 		projectDate: '',
-		projectImage: null
+		projectImage: null as File | null
 	});
 
 	// Image preview
-	let imagePreview = $state(null);
+	let imagePreview: string | null = $state(null);
 
 	// Submission state
 	let isSubmitting = $state(false);
@@ -318,7 +318,7 @@
 			}
 		} catch (error) {
 			console.error('Error posting project:', error);
-			errorMessage = error.message || 'An error occurred while posting the project';
+			errorMessage = error instanceof Error ? error.message : 'An error occurred while posting the project';
 			toast.error(errorMessage);
 			isSubmitting = false;
 		}
@@ -382,7 +382,7 @@
 					id="pincode"
 					bind:value={formData.pincode}
 					pattern="[0-9]+"
-					maxlength="6"
+					maxlength={6}
 					disabled={isSubmitting}
 					placeholder="Enter zipcode"
 				/>

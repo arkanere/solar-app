@@ -238,7 +238,8 @@
 		const result = await deleteLeadAPI(leadToDelete.id);
 
 		if (result.success) {
-			leads = leads.filter((l) => l.id !== leadToDelete.id);
+			const deletedId = leadToDelete.id;
+			leads = leads.filter((l) => l.id !== deletedId);
 			showDeleteConfirm = false;
 			leadToDelete = null;
 		} else {

@@ -11,7 +11,7 @@
 		show?: boolean;
 		businessSlug?: string;
 		onClose?: () => void;
-		onPosted?: () => void;
+		onPosted?: (project?: unknown) => void;
 	};
 
 	let {
@@ -28,11 +28,11 @@
 		district: '',
 		city: '',
 		projectDate: '',
-		projectImage: null
+		projectImage: null as File | null
 	});
 
 	// Image preview
-	let imagePreview = $state(null);
+	let imagePreview: string | null = $state(null);
 
 	// Submission state
 	let isSubmitting = $state(false);
@@ -52,7 +52,7 @@
 	];
 
 	// Function to use suggested name
-	function useSuggestedName(name) {
+	function useSuggestedName(name: string) {
 		formData.projectTitle = name;
 	}
 
@@ -101,7 +101,7 @@
 	}
 
 	// Format date as YYYY-MM-DD for the date input
-	function formatDate(date) {
+	function formatDate(date: Date) {
 		return date.toISOString().split('T')[0];
 	}
 
@@ -131,7 +131,7 @@
 	];
 
 	// Function to fetch district by pincode
-	async function fetchDistrictByPincode(pincodeValue) {
+	async function fetchDistrictByPincode(pincodeValue: string) {
 		if (!pincodeValue || pincodeValue.length !== 6) {
 			formData.district = '';
 			lastFetchedPincode = '';
@@ -165,7 +165,7 @@
 	}
 
 	// Function to fetch cities by district
-	async function fetchCitiesByDistrict(districtValue) {
+	async function fetchCitiesByDistrict(districtValue: string) {
 		if (!districtValue) {
 			cities = [];
 			formData.city = '';
@@ -332,7 +332,7 @@
 			}
 		} catch (error) {
 			console.error('Error posting project:', error);
-			errorMessage = error.message || 'An error occurred while posting the project';
+			errorMessage = error instanceof Error ? error.message : 'An error occurred while posting the project';
 			toast.error(errorMessage);
 			isSubmitting = false;
 		}
@@ -397,7 +397,7 @@
 					id="pincode"
 					bind:value={formData.pincode}
 					inputmode="numeric"
-					maxlength="6"
+					maxlength={6}
 					disabled={isSubmitting}
 					placeholder="Enter 6-digit pincode"
 				/>

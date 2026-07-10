@@ -240,7 +240,7 @@
 	}
 </script>
 
-<div class="min-h-screen p-4 md:p-8 bg-background text-foreground">
+<div>
 	<header class="mb-8 text-center">
 		<h1 class="text-3xl font-bold mb-2">Quotation Maker</h1>
 		<p class="text-muted-foreground">Build an itemized solar quotation and download it as a PDF</p>

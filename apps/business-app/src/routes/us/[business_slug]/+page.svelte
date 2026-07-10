@@ -100,17 +100,15 @@
 	}
 </script>
 
-<div class="min-h-screen py-8 md:py-4 transition-colors duration-300 bg-background text-foreground">
-	<div class="w-full max-w-[1200px] px-4 md:px-3 max-[480px]:px-2 mx-auto">
-		<CustomerInquiryDashboardHome
-			bind:leads
-			{businessInfo}
-			{businessSlug}
-			{errorMessage}
-			{isClaiming}
-			onClaimLead={claimLead}
-		/>
-	</div>
+<div>
+	<CustomerInquiryDashboardHome
+		bind:leads
+		{businessInfo}
+		{businessSlug}
+		{errorMessage}
+		{isClaiming}
+		onClaimLead={claimLead}
+	/>
 </div>
 
 <PolicyAcceptanceModal

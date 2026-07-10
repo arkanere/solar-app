@@ -21,7 +21,8 @@
 		onBranchAdded: (branch: any) => void;
 	} = $props();
 
-	let state: string = $state('');
+	// Named selectedState (not `state`) so svelte2tsx doesn't mistake $state for a store subscription
+	let selectedState: string = $state('');
 	let county: string = $state('');
 	let city: string = $state('');
 	let counties: string[] = $state([]);
@@ -32,8 +33,8 @@
 
 	// Fetch counties when state changes
 	$effect(() => {
-		if (state) {
-			updateCounties(state);
+		if (selectedState) {
+			updateCounties(selectedState);
 		}
 	});
 
@@ -44,12 +45,12 @@
 		}
 	});
 
-	async function updateCounties(selectedState: string) {
+	async function updateCounties(stateName: string) {
 		try {
 			const res = await fetch('/us/api/getCounties', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ state: selectedState })
+				body: JSON.stringify({ state: stateName })
 			});
 			const data = await res.json();
 			counties = data.counties || [];
@@ -81,7 +82,7 @@
 		errorMessage = '';
 		successMessage = '';
 
-		if (!state || !county || !city) {
+		if (!selectedState || !county || !city) {
 			errorMessage = 'Please select state, county and city';
 			return;
 		}
@@ -92,14 +93,14 @@
 			const response = await fetch('/us/api/addBranch', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ businessId, state, county, city })
+				body: JSON.stringify({ businessId, state: selectedState, county, city })
 			});
 
 			const result = await response.json();
 
 			if (result.success) {
 				successMessage = 'Branch added successfully! Redirecting...';
-				state = '';
+				selectedState = '';
 				county = '';
 				city = '';
 				onBranchAdded(result.branch);
@@ -144,10 +145,10 @@
 				<div class="space-y-2">
 					<Label for="state">State</Label>
 					<!-- @ts-expect-error bits-ui children prop -->
-					<Select.Root type="single" bind:value={state}>
+					<Select.Root type="single" bind:value={selectedState}>
 						<!-- @ts-ignore -->
 						<Select.Trigger id="state" class="w-full">
-							{state || 'Select a state'}
+							{selectedState || 'Select a state'}
 						</Select.Trigger>
 						<!-- @ts-ignore -->
 						<Select.Content>
@@ -163,7 +164,11 @@
 				<div class="space-y-2">
 					<Label for="county">County</Label>
 					<!-- @ts-expect-error bits-ui children prop -->
-					<Select.Root type="single" bind:value={county} disabled={!state || counties.length === 0}>
+					<Select.Root
+						type="single"
+						bind:value={county}
+						disabled={!selectedState || counties.length === 0}
+					>
 						<!-- @ts-expect-error bits-ui children prop -->
 						<Select.Trigger id="county" class="w-full">
 							{county || 'Select a county'}

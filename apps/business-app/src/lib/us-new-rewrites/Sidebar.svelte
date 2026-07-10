@@ -46,7 +46,35 @@
 	let mobileOpen = $derived(isMobileMenuOpen.isOpen);
 	let sections = $derived(expandedSections.sections);
 
-	let navSections = $derived([
+	type NavIcon = typeof Users;
+	type NavAction = 'addLead' | 'addBranch' | 'support' | 'deleteAccount';
+
+	type NavItem = {
+		label: string;
+		icon: NavIcon;
+		type: 'link' | 'modal';
+		href?: string;
+		action?: NavAction;
+	};
+
+	type NavSection =
+		| {
+				type: 'standalone';
+				label: string;
+				icon: NavIcon;
+				itemType: 'link' | 'modal';
+				href?: string;
+				action?: NavAction;
+		  }
+		| {
+				type: 'collapsible';
+				id: string;
+				title: string;
+				icon: NavIcon;
+				items: NavItem[];
+		  };
+
+	let navSections: NavSection[] = $derived([
 		{
 			type: 'standalone',
 			label: 'Dashboard',
@@ -86,9 +114,9 @@
 		}
 	]);
 
-	function handleItemClick(item) {
+	function handleItemClick(item: { action?: NavAction }) {
 		const callbacks = { addLead: onAddLead, addBranch: onAddBranch, support: onSupport, deleteAccount: onDeleteAccount };
-		callbacks[item.action]?.();
+		if (item.action) callbacks[item.action]?.();
 		if (window.innerWidth < 768) isMobileMenuOpen.set(false);
 	}
 
@@ -100,12 +128,12 @@
 		isSidebarExpanded.toggle();
 	}
 
-	function isActive(href) {
+	function isActive(href?: string) {
 		if (!href) return false;
 		return currentPath === href || currentPath.startsWith(href + '/');
 	}
 
-	function toggleSection(sectionId) {
+	function toggleSection(sectionId: string) {
 		expandedSections.toggle(sectionId);
 	}
 

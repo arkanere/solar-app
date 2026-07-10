@@ -23,7 +23,7 @@
 	let business = $derived(data.business);
 
 	// Destructure page params
-	let businessSlug = $derived($page.params.business_slug);
+	let businessSlug = $derived($page.params.business_slug ?? '');
 
 	// Sidebar state
 	let expanded = $derived(isSidebarExpanded.isExpanded);
@@ -93,15 +93,15 @@
 	}
 
 	// Handle events from modals
-	function handleBranchAdded(event) {
+	function handleBranchAdded() {
 		window.location.reload();
 	}
 
-	function handleProjectPosted(event) {
+	function handleProjectPosted() {
 		window.location.reload();
 	}
 
-	function handleLeadAdded(event) {
+	function handleLeadAdded() {
 		showAddLead = false;
 		window.location.reload();
 	}
@@ -146,25 +146,27 @@
 <!-- Main Content Area -->
 <div class="layout-container {expanded ? 'sidebar-expanded' : 'sidebar-collapsed'}">
 	<main class="min-h-screen bg-background text-foreground transition-colors duration-300">
-		{#if business && setupProgress}
-			<div class="w-full max-w-[1200px] px-4 md:px-3 max-[480px]:px-2 mx-auto pt-4">
-				<SetupProgressCard
-					{business}
-					{businessSlug}
-					projectsCount={setupProgress.projectsCount}
-					claimedLeadsCount={setupProgress.claimedLeadsCount}
-					onOpenEditProfile={openEditProfile}
-				/>
-				{#if claimGate}
-					<ClaimGateCard
-						{claimGate}
+		<div class="w-full max-w-[1200px] mx-auto px-4 py-6 md:px-6 md:py-8 max-[480px]:px-3">
+			{#if business && setupProgress}
+				<div class="mb-6">
+					<SetupProgressCard
+						{business}
 						{businessSlug}
+						projectsCount={setupProgress.projectsCount}
+						claimedLeadsCount={setupProgress.claimedLeadsCount}
 						onOpenEditProfile={openEditProfile}
 					/>
-				{/if}
-			</div>
-		{/if}
-		{@render children?.()}
+					{#if claimGate}
+						<ClaimGateCard
+							{claimGate}
+							{businessSlug}
+							onOpenEditProfile={openEditProfile}
+						/>
+					{/if}
+				</div>
+			{/if}
+			{@render children?.()}
+		</div>
 	</main>
 </div>
 

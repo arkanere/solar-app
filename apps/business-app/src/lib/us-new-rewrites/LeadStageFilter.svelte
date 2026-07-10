@@ -10,10 +10,14 @@
 	} from '$lib/constants/lead';
 
 	export type LeadStageFilterProps = {
-		selectedCategory?: string | number;
-		selectedStage?: string | number;
+		selectedCategory?: string;
+		selectedStage?: string;
 		selectedStatus?: string;
-		onFilterChange?: () => void;
+		onFilterChange?: (filters: {
+			selectedCategory: string;
+			selectedStage: string;
+			selectedStatus: string;
+		}) => void;
 	};
 
 	let {
@@ -63,7 +67,8 @@
 					onValueChange={handleCategoryChange}
 				>
 					<Select.Trigger id="category-filter" class="w-full">
-						{LEAD_CATEGORIES_WITH_ALL[selectedCategory] || 'Select category'}
+						{(LEAD_CATEGORIES_WITH_ALL as Record<string, string>)[selectedCategory] ||
+							'Select category'}
 					</Select.Trigger>
 					<Select.Content>
 						{#each Object.entries(LEAD_CATEGORIES_WITH_ALL) as [value, label]}
@@ -78,7 +83,7 @@
 				<Label for="stage-filter">Stage</Label>
 				<Select.Root type="single" bind:value={selectedStage} onValueChange={handleStageChange}>
 					<Select.Trigger id="stage-filter" class="w-full">
-						{currentStages[selectedStage] || 'Select stage'}
+						{(currentStages as Record<string, string>)[selectedStage] || 'Select stage'}
 					</Select.Trigger>
 					<Select.Content>
 						{#each Object.entries(currentStages) as [value, label]}
@@ -93,7 +98,7 @@
 				<Label for="status-filter">Status</Label>
 				<Select.Root type="single" bind:value={selectedStatus} onValueChange={handleStatusChange}>
 					<Select.Trigger id="status-filter" class="w-full">
-						{STATUS_OPTIONS[selectedStatus] || 'Select status'}
+						{(STATUS_OPTIONS as Record<string, string>)[selectedStatus] || 'Select status'}
 					</Select.Trigger>
 					<Select.Content>
 						{#each Object.entries(STATUS_OPTIONS) as [value, label]}

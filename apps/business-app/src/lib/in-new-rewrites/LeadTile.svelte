@@ -426,9 +426,10 @@
 					Cancel
 				</Button>
 				<Button
+					variant="destructive"
 					onclick={confirmDeactivate}
 					disabled={isDeactivating}
-					class="max-sm:w-full !bg-red-600 !hover:bg-red-700 !text-white"
+					class="max-sm:w-full"
 				>
 					{isDeactivating ? 'Deactivating...' : 'Yes, Mark Inactive'}
 				</Button>

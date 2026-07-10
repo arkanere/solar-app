@@ -20,12 +20,12 @@
 	}
 
 	// Function to get referrer link
-	function getReferrerLink(referrerSlug) {
+	function getReferrerLink(referrerSlug: string) {
 		return `https://solarvipani.com/in/solar-panel-installer/${businessSlug}/referrer/${referrerSlug}`;
 	}
 
 	// Function to copy link to clipboard
-	function copyReferrerLink(referrerSlug) {
+	function copyReferrerLink(referrerSlug: string) {
 		const link = getReferrerLink(referrerSlug);
 		navigator.clipboard.writeText(link).then(() => {
 			toast.success('Link copied to clipboard!');
@@ -36,7 +36,7 @@
 	}
 
 	// Function to delete referrer
-	async function deleteReferrer(referrerId, referrerName) {
+	async function deleteReferrer(referrerId: number, referrerName: string) {
 		if (!confirm(`Are you sure you want to delete referrer "${referrerName}"? This action cannot be undone.`)) {
 			return;
 		}
@@ -70,7 +70,7 @@
 	<title>Referrers - {businessSlug} | Solar Vipani Business Dashboard</title>
 </svelte:head>
 
-<div class="min-h-screen p-8 md:p-4 transition-colors duration-300 bg-background text-foreground">
+<div>
 	<header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
 		<div>
 			<h1 class="text-3xl font-bold mb-2">Referrers</h1>

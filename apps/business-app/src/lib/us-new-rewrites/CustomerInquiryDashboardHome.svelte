@@ -9,14 +9,16 @@
 	import { Phone, AlertCircle, ExternalLink } from '@lucide/svelte';
 	import LeadProgressBar from './LeadProgressBar.svelte';
 	import { STAGES_MAP, NON_EXCLUSIVE_CLAIMED_STAGES_MAP } from '$lib/constants/lead';
+	import { type BadgeVariant } from '$lib/components/ui/badge';
+	import type { Lead } from './CustomerInquiry.svelte';
 
 	export type CustomerInquiryDashboardHomeProps = {
-		leads?: any[];
+		leads?: Lead[];
 		businessInfo?: Record<string, any>;
 		businessSlug?: string;
 		errorMessage?: string | null;
 		isClaiming?: boolean;
-		onClaimLead?: (lead: any) => void;
+		onClaimLead?: (lead: { leadId: number; businessId: number }) => void;
 	};
 
 	let {
@@ -29,10 +31,10 @@
 	}: CustomerInquiryDashboardHomeProps = $props();
 
 	let showDeleteConfirm = $state(false);
-	let leadToDelete = $state(null);
+	let leadToDelete: Lead | null = $state(null);
 	let isDeleting = $state(false);
 
-	function makeCall(phoneNumber: string, leadName: string, leadId: number) {
+	function makeCall(phoneNumber: string, _leadName: string, leadId: number) {
 		if (typeof window !== 'undefined' && window.umami) {
 			window.umami.track(`us-dashboard-home-call-now-button-${leadId}`);
 		}
@@ -52,7 +54,7 @@
 
 	let limitedLeads = $derived(leads.slice(0, 5));
 
-	async function updateLead(lead: any) {
+	async function updateLead(lead: Lead) {
 		try {
 			const response = await fetch('/us/api/updateLeadByBusiness', {
 				method: 'POST',
@@ -84,7 +86,7 @@
 		onClaimLead?.({ leadId, businessId });
 	}
 
-	function getRelativeTime(dateString: string) {
+	function getRelativeTime(dateString: string): { text: string; variant: BadgeVariant } {
 		const now = new Date();
 		const date = new Date(dateString);
 		const diffInMs = now.getTime() - date.getTime();
@@ -109,7 +111,7 @@
 		}
 	}
 
-	function getNextAction(stage: number, category: number, status: boolean): string | null {
+	function getNextAction(stage: number, category: number | null, status: boolean): string | null {
 		if (!status || stage === 3) return null;
 
 		if (category === 2) {
@@ -141,19 +143,19 @@
 		return null;
 	}
 
-	function getCategoryVariant(category: number) {
+	function getCategoryVariant(category: number | null): BadgeVariant {
 		if (category === 1) return 'secondary';
 		if (category === 2) return 'default';
 		return 'default';
 	}
 
-	function getCategoryLabel(category: number) {
+	function getCategoryLabel(category: number | null) {
 		if (category === 1) return 'Non-Exclusive-Available-to-Claim';
 		if (category === 2) return 'Non-Exclusive-Claimed';
 		return 'Exclusive';
 	}
 
-	async function deleteLead(lead: any) {
+	async function deleteLead(lead: Lead) {
 		if (isDeleting) return;
 		isDeleting = true;
 
@@ -183,7 +185,7 @@
 		}
 	}
 
-	function showDeleteConfirmation(lead: any) {
+	function showDeleteConfirmation(lead: Lead) {
 		leadToDelete = lead;
 		showDeleteConfirm = true;
 	}
@@ -226,7 +228,7 @@
 							<!-- Lead Details -->
 							<div class="space-y-2 text-sm">
 								<div class="flex items-center gap-2">
-									<span class="font-medium">Received:</span>
+									<span class="font-semibold text-muted-foreground">Received:</span>
 									<Badge variant={getRelativeTime(lead.created_at).variant}>
 										{getRelativeTime(lead.created_at).text}
 									</Badge>
@@ -234,49 +236,46 @@
 
 								<div class="flex flex-wrap items-center gap-3">
 									<div class="flex items-center gap-2">
-										<span class="font-medium">Phone:</span>
-										<span>{lead.phone}</span>
+										<span class="font-semibold text-muted-foreground">Phone:</span>
+										<span class="font-medium">{lead.phone}</span>
 									</div>
 									<Button
 										size="sm"
 										onclick={() => makeCall(lead.phone, lead.name, lead.id)}
-										class="gap-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-red-500 hover:to-orange-500"
+										class="gap-2"
 									>
 										<Phone class="h-4 w-4" />
-										CALL NOW
+										Call Now
 									</Button>
 								</div>
 
 								{#if lead.email}
 									<div>
-										<span class="font-medium">Email:</span>
-										<span class="ml-2">{lead.email}</span>
+										<span class="font-semibold text-muted-foreground">Email:</span>
+										<span class="ml-2 font-medium">{lead.email}</span>
 									</div>
 								{/if}
 
 								<div>
-									<span class="font-medium">Zip Code:</span>
-									<span class="ml-2">{lead.pin_code}</span>
+									<span class="font-semibold text-muted-foreground">Zip Code:</span>
+									<span class="ml-2 font-medium">{lead.pin_code}</span>
 								</div>
 
 								<div>
-									<span class="font-medium">Type:</span>
-									<span class="ml-2">{lead.type}</span>
+									<span class="font-semibold text-muted-foreground">Type:</span>
+									<span class="ml-2 font-medium">{lead.type}</span>
 								</div>
 
-								<div>
-									<span class="font-medium">Customer Comment:</span>
-									<span class="ml-2">{lead.comment}</span>
-								</div>
+								<p class="italic leading-relaxed">"{lead.comment}"</p>
 
 								{#if lead.sv_comment_for_businesses}
 									<div
-										class="rounded-md border-l-4 border-blue-500 bg-blue-50 p-3 dark:bg-blue-950/30"
+										class="rounded-md border-l-4 border-accent bg-accent-muted p-3"
 									>
-										<span class="font-medium text-blue-700 dark:text-blue-400"
+										<span class="font-medium text-accent"
 											>Solarvipani.com Comment:</span
 										>
-										<span class="ml-2 italic text-blue-900 dark:text-blue-200"
+										<span class="ml-2 italic text-foreground"
 											>{lead.sv_comment_for_businesses}</span
 										>
 									</div>
@@ -288,24 +287,33 @@
 								<div class="flex flex-wrap gap-4 border-t pt-4">
 									<div class="flex flex-col gap-2">
 										<Label for="stage-{lead.id}">Stage</Label>
-										<Select.Root type="single" bind:value={lead.stage}>
+										<Select.Root
+											type="single"
+											value={String(lead.stage)}
+											onValueChange={(value) => {
+												lead.stage = Number(value);
+												updateLead(lead);
+											}}
+										>
 											<Select.Trigger id="stage-{lead.id}" class="w-[200px]">
 												{#if lead.category === 2}
-													{NON_EXCLUSIVE_CLAIMED_STAGES_MAP[lead.stage] || 'Select stage...'}
+													{(NON_EXCLUSIVE_CLAIMED_STAGES_MAP as Record<number, string>)[
+														lead.stage
+													] || 'Select stage...'}
 												{:else}
-													{STAGES_MAP[lead.stage] || 'Select stage...'}
+													{(STAGES_MAP as Record<number, string>)[lead.stage] || 'Select stage...'}
 												{/if}
 											</Select.Trigger>
 											<Select.Content>
 												{#if lead.category === 2}
 													{#each Object.entries(NON_EXCLUSIVE_CLAIMED_STAGES_MAP).filter(([key]) => key !== 'all') as [value, label]}
-														<Select.Item value={Number(value)} onchange={() => updateLead(lead)}>
+														<Select.Item {value}>
 															{label}
 														</Select.Item>
 													{/each}
 												{:else}
 													{#each Object.entries(STAGES_MAP).filter(([key]) => key !== 'all') as [value, label]}
-														<Select.Item value={Number(value)} onchange={() => updateLead(lead)}>
+														<Select.Item {value}>
 															{label}
 														</Select.Item>
 													{/each}
@@ -316,15 +324,20 @@
 
 									<div class="flex flex-col gap-2">
 										<Label for="status-{lead.id}">Status</Label>
-										<Select.Root type="single" bind:value={lead.status}>
+										<Select.Root
+											type="single"
+											value={String(lead.status)}
+											onValueChange={(value) => {
+												lead.status = value === 'true';
+												updateLead(lead);
+											}}
+										>
 											<Select.Trigger id="status-{lead.id}" class="w-[150px]">
 												{lead.status ? 'Active' : 'Inactive'}
 											</Select.Trigger>
 											<Select.Content>
-												<Select.Item value={true} onchange={() => updateLead(lead)}>Active</Select.Item>
-												<Select.Item value={false} onchange={() => updateLead(lead)}
-													>Inactive</Select.Item
-												>
+												<Select.Item value="true">Active</Select.Item>
+												<Select.Item value="false">Inactive</Select.Item>
 											</Select.Content>
 										</Select.Root>
 									</div>
@@ -332,7 +345,7 @@
 
 								<LeadProgressBar
 									currentStage={lead.stage}
-									leadCategory={lead.category}
+									leadCategory={lead.category ?? 3}
 									isActive={lead.status}
 								/>
 
@@ -340,10 +353,10 @@
 								{@const nextAction = getNextAction(lead.stage, lead.category, lead.status)}
 								{#if nextAction}
 									<div
-										class="rounded-md border-l-4 border-blue-500 bg-blue-50 p-4 dark:bg-blue-950/30"
+										class="rounded-md border-l-4 border-accent bg-accent-muted p-4"
 									>
-										<span class="font-semibold text-blue-700 dark:text-blue-400">Next Action:</span>
-										<span class="ml-2 italic text-blue-900 dark:text-blue-200">{nextAction}</span>
+										<span class="font-semibold text-accent">Next Action:</span>
+										<span class="ml-2 italic text-foreground">{nextAction}</span>
 									</div>
 								{/if}
 							{/if}
@@ -351,7 +364,7 @@
 							<!-- Action Buttons -->
 							<div class="flex justify-end border-t pt-4">
 								{#if lead.category === 1 && lead.claim_count > 4}
-									<p class="font-semibold text-green-600">
+									<p class="font-semibold text-success">
 										Not Available. Claimed by Other Business
 									</p>
 								{:else if lead.category === 1}
@@ -365,11 +378,11 @@
 									<Button
 										onclick={() => claimLead(lead.id, businessInfo.id)}
 										disabled={isClaiming}
-										class="bg-green-600 hover:bg-green-700"
+										class="bg-success text-success-foreground hover:bg-success/90"
 									>
 										{isClaiming ? 'Claiming...' : 'Claim Now (Free)'}
 									</Button>
-								{:else if lead.category !== 1 && !lead.status}
+								{:else if !lead.status}
 									<Button variant="destructive" onclick={() => showDeleteConfirmation(lead)}>
 										Delete Lead
 									</Button>
@@ -380,13 +393,13 @@
 				{/each}
 
 				{#if leads.length > 5}
-					<Card.Root class="border-blue-500/30 bg-blue-50/50 dark:bg-blue-950/20">
+					<Card.Root class="border-accent/30 bg-accent-muted/50">
 						<Card.Content class="flex flex-col items-center gap-2 py-4">
-							<p class="font-medium text-blue-700 dark:text-blue-400">
+							<p class="font-medium text-accent">
 								Showing 5 of {leads.length} leads.
 								<a
 									href="/us/{businessSlug}/crm"
-									class="underline hover:text-blue-900 dark:hover:text-blue-200"
+									class="underline hover:text-accent"
 								>
 									View all leads in CRM
 								</a>
@@ -406,7 +419,7 @@
 					<Card.Content class="space-y-4">
 						<div class="space-y-2 text-sm">
 							<div class="flex items-center gap-2">
-								<span class="font-medium">Received:</span>
+								<span class="font-semibold text-muted-foreground">Received:</span>
 								<Badge variant={getRelativeTime(dummyLead.created_at).variant}>
 									{getRelativeTime(dummyLead.created_at).text}
 								</Badge>
@@ -414,34 +427,31 @@
 
 							<div class="flex flex-wrap items-center gap-3">
 								<div class="flex items-center gap-2">
-									<span class="font-medium">Phone:</span>
-									<span>{dummyLead.phone}</span>
+									<span class="font-semibold text-muted-foreground">Phone:</span>
+									<span class="font-medium">{dummyLead.phone}</span>
 								</div>
-								<Button size="sm" disabled class="gap-2 bg-gray-400">
+								<Button size="sm" disabled class="gap-2">
 									<Phone class="h-4 w-4" />
-									CALL NOW
+									Call Now
 								</Button>
 							</div>
 
 							<div>
-								<span class="font-medium">Email:</span>
-								<span class="ml-2">{dummyLead.email}</span>
+								<span class="font-semibold text-muted-foreground">Email:</span>
+								<span class="ml-2 font-medium">{dummyLead.email}</span>
 							</div>
 
 							<div>
-								<span class="font-medium">Zip Code:</span>
-								<span class="ml-2">{dummyLead.pin_code}</span>
+								<span class="font-semibold text-muted-foreground">Zip Code:</span>
+								<span class="ml-2 font-medium">{dummyLead.pin_code}</span>
 							</div>
 
 							<div>
-								<span class="font-medium">Type:</span>
-								<span class="ml-2">{dummyLead.type}</span>
+								<span class="font-semibold text-muted-foreground">Type:</span>
+								<span class="ml-2 font-medium">{dummyLead.type}</span>
 							</div>
 
-							<div>
-								<span class="font-medium">Customer Comment:</span>
-								<span class="ml-2">{dummyLead.comment}</span>
-							</div>
+							<p class="italic leading-relaxed">"{dummyLead.comment}"</p>
 						</div>
 					</Card.Content>
 				</Card.Root>
@@ -450,11 +460,9 @@
 
 		<!-- Open CRM Button -->
 		<div class="flex justify-center border-t pt-6">
-			<Button asChild size="lg" class="gap-2">
-				<a href="/us/{businessSlug}/crm">
-					Open CRM
-					<ExternalLink class="h-4 w-4" />
-				</a>
+			<Button href="/us/{businessSlug}/crm" size="lg" class="gap-2">
+				Open CRM
+				<ExternalLink class="h-4 w-4" />
 			</Button>
 		</div>
 	{/if}

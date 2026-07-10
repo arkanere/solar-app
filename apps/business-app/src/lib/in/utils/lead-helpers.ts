@@ -6,14 +6,14 @@
 export const STAGES = {
 	0: 'New Inquiry',
 	1: 'Contacted',
-	2: 'Proposal/Quotation Sent',
+	2: 'Proposal Sent',
 	3: 'Won'
 } as const;
 
 export const NON_EXCLUSIVE_CLAIMED_STAGES = {
 	0: 'Claimed',
 	1: 'Contacted',
-	2: 'Proposal/Quotation Sent',
+	2: 'Proposal Sent',
 	3: 'Won'
 } as const;
 

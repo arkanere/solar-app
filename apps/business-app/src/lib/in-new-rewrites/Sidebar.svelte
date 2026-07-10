@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { isDarkMode } from '$lib/stores/theme.svelte';
 	import { isSidebarExpanded, isMobileMenuOpen, expandedSections } from '$lib/in/sidebarStore.svelte';
 	import { onMount } from 'svelte';
 	import { afterNavigate } from '$app/navigation';
@@ -52,13 +51,40 @@
 		onDeleteAccount = () => {}
 	}: SidebarProps = $props();
 
-	let darkMode = $derived($isDarkMode);
 	let currentPath = $derived($page.url.pathname);
 	let expanded = $derived(isSidebarExpanded.isExpanded);
 	let mobileOpen = $derived(isMobileMenuOpen.isOpen);
 	let sections = $derived(expandedSections.sections);
 
-	let navSections = $derived([
+	type NavIcon = typeof Users;
+	type NavAction = 'addLead' | 'addBranch' | 'postProject' | 'policy' | 'support' | 'deleteAccount';
+
+	type NavItem = {
+		label: string;
+		icon: NavIcon;
+		type: 'link' | 'modal';
+		href?: string;
+		action?: NavAction;
+	};
+
+	type NavSection =
+		| {
+				type: 'standalone';
+				label: string;
+				icon: NavIcon;
+				itemType: 'link' | 'modal';
+				href?: string;
+				action?: NavAction;
+		  }
+		| {
+				type: 'collapsible';
+				id: string;
+				title: string;
+				icon: NavIcon;
+				items: NavItem[];
+		  };
+
+	let navSections: NavSection[] = $derived([
 		{
 			type: 'standalone',
 			label: 'Dashboard',
@@ -92,7 +118,7 @@
 			title: 'Projects',
 			icon: FolderKanban,
 			items: [
-				{ label: 'Manage Recent Projects', icon: FileText, href: `/in/${businessSlug}/recent-projects`, type: 'link' },
+				{ label: 'Recent Projects', icon: FileText, href: `/in/${businessSlug}/recent-projects`, type: 'link' },
 				{ label: 'Project Management', icon: FolderKanban, href: `/in/${businessSlug}/project-management`, type: 'link' }
 			]
 		},
@@ -130,9 +156,9 @@
 		}
 	]);
 
-	function handleItemClick(item) {
+	function handleItemClick(item: { action?: NavAction }) {
 		const callbacks = { addLead: onAddLead, addBranch: onAddBranch, postProject: onPostProject, policy: onPolicy, support: onSupport, deleteAccount: onDeleteAccount };
-		callbacks[item.action]?.();
+		if (item.action) callbacks[item.action]?.();
 		if (window.innerWidth < 768) isMobileMenuOpen.set(false);
 	}
 
@@ -144,16 +170,12 @@
 		isSidebarExpanded.toggle();
 	}
 
-	function closeMobileMenu() {
-		isMobileMenuOpen.set(false);
-	}
-
-	function isActive(href) {
+	function isActive(href?: string) {
 		if (!href) return false;
 		return currentPath === href || currentPath.startsWith(href + '/');
 	}
 
-	function toggleSection(sectionId) {
+	function toggleSection(sectionId: string) {
 		expandedSections.toggle(sectionId);
 	}
 

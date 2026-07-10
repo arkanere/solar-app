@@ -4,7 +4,6 @@
 	import CustomerInquiry from '$lib/us-new-rewrites/CustomerInquiry.svelte';
 	import { PolicyAcceptanceModal } from '$lib/compliance';
 
-	const businessSlug = $page.params.business_slug;
 	let business = $derived($page.data.business);
 	let leads = $state($page.data.leads || []);
 	let errorMessage = $derived($page.data.errorMessage);
@@ -109,25 +108,23 @@
 	/>
 </svelte:head>
 
-<div class="min-h-screen py-8 md:py-4 transition-colors duration-300 bg-background text-foreground">
-	<div class="w-full max-w-[1200px] px-4 md:px-3 mx-auto">
-		<header class="text-center mb-8">
-			<h1 class="text-2xl md:text-3xl font-semibold mb-2 text-accent">
-				Customer Relationship Management
-			</h1>
-			<p class="text-base text-foreground-secondary">
-				Manage your customer inquiries and leads for {business?.businessname || 'your business'}
-			</p>
-		</header>
+<div>
+	<header class="text-center mb-8">
+		<h1 class="text-2xl md:text-3xl font-semibold mb-2 text-accent">
+			Customer Relationship Management
+		</h1>
+		<p class="text-base text-foreground-secondary">
+			Manage your customer inquiries and leads for {business?.businessname || 'your business'}
+		</p>
+	</header>
 
-		<CustomerInquiry
-			{leads}
-			{businessInfo}
-			{errorMessage}
-			{isClaiming}
-			onclaimLead={(event) => claimLead(event.detail.leadId, event.detail.businessId)}
-		/>
-	</div>
+	<CustomerInquiry
+		{leads}
+		{businessInfo}
+		{errorMessage}
+		{isClaiming}
+		onclaimLead={(event) => claimLead(event.detail.leadId, event.detail.businessId)}
+	/>
 </div>
 
 <PolicyAcceptanceModal
