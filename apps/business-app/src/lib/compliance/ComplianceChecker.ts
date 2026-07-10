@@ -1,6 +1,13 @@
 // Legal compliance module — server-side check logic (PII compliance plan, item 8).
 
-import { ACCEPTANCE_VALIDITY_DAYS, type ActivePolicy, type AcceptanceStatus } from './types';
+import {
+	ACCEPTANCE_VALIDITY_DAYS,
+	EXPIRY_WARNING_DAYS,
+	type ActivePolicy,
+	type AcceptanceStatus,
+	type AcceptanceRecord,
+	type ComplianceState
+} from './types';
 
 // Minimal shape of the pg/@vercel/postgres pool or client we rely on.
 export interface Queryable {
@@ -83,4 +90,52 @@ export async function recordLeadDataAcceptance(
 	);
 
 	return policy;
+}
+
+/**
+ * All lead-data-handling acceptances by this business, newest first, joined
+ * with the policy version each acceptance covered.
+ */
+export async function getAcceptanceHistory(
+	pool: Queryable,
+	businessId: number
+): Promise<AcceptanceRecord[]> {
+	const result = await pool.query<{
+		id: number;
+		version: string;
+		summary: string;
+		accepted_at: string;
+	}>(
+		`SELECT a.id, p.version, p.summary, a.accepted_at
+		   FROM legal_acceptances a
+		   JOIN legal_policies p ON p.id = a.policy_id
+		  WHERE a.business_id = $1 AND p.type = $2
+		  ORDER BY a.accepted_at DESC
+		  LIMIT 50`,
+		[businessId, POLICY_TYPE]
+	);
+
+	return result.rows.map((row) => ({
+		id: row.id,
+		policyVersion: row.version,
+		policySummary: row.summary,
+		acceptedAt: new Date(row.accepted_at)
+	}));
+}
+
+/**
+ * Overall standing from the latest acceptance date: expired when missing or
+ * past ACCEPTANCE_VALIDITY_DAYS, expiring within the last EXPIRY_WARNING_DAYS
+ * of validity, compliant otherwise.
+ */
+export function deriveComplianceState(acceptedAt: Date | null): ComplianceState {
+	if (!acceptedAt) return 'expired';
+
+	const dayMs = 24 * 60 * 60 * 1000;
+	const expiresAt = acceptedAt.getTime() + ACCEPTANCE_VALIDITY_DAYS * dayMs;
+	const now = Date.now();
+
+	if (now >= expiresAt) return 'expired';
+	if (now >= expiresAt - EXPIRY_WARNING_DAYS * dayMs) return 'expiring';
+	return 'compliant';
 }

@@ -6,11 +6,13 @@
 		open = $bindable(false),
 		summary = '',
 		isAccepting = false,
+		agreeLabel = 'I Agree — Claim this Lead',
 		onAgree = () => {}
 	}: {
 		open?: boolean;
 		summary?: string;
 		isAccepting?: boolean;
+		agreeLabel?: string;
 		onAgree?: () => void;
 	} = $props();
 </script>
@@ -29,7 +31,7 @@
 
 		<Dialog.Footer>
 			<Button class="w-full" onclick={onAgree} disabled={isAccepting}>
-				{isAccepting ? 'Saving…' : 'I Agree — Claim this Lead'}
+				{isAccepting ? 'Saving…' : agreeLabel}
 			</Button>
 		</Dialog.Footer>
 	</Dialog.Content>

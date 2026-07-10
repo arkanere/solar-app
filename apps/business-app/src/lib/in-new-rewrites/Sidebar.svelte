@@ -21,6 +21,7 @@
 		MessageCircle,
 		ScrollText,
 		Calculator,
+		ShieldCheck,
 		Trash2,
 		LogOut,
 		X,
@@ -107,6 +108,13 @@
 			label: 'Quotation Maker',
 			icon: Calculator,
 			href: `/in/${businessSlug}/quotation`,
+			itemType: 'link'
+		},
+		{
+			type: 'standalone',
+			label: 'Compliance',
+			icon: ShieldCheck,
+			href: `/in/${businessSlug}/compliance`,
 			itemType: 'link'
 		},
 		{

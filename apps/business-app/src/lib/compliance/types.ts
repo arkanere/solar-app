@@ -19,3 +19,17 @@ export interface AcceptanceStatus {
 
 /** Acceptances are considered valid for this many days before re-acceptance. */
 export const ACCEPTANCE_VALIDITY_DAYS = 90;
+
+/** Within this many days of expiry, the compliance page shows an "expiring" warning. */
+export const EXPIRY_WARNING_DAYS = 14;
+
+/** Overall compliance standing shown on the compliance page. */
+export type ComplianceState = 'compliant' | 'expiring' | 'expired';
+
+/** A single historical acceptance, joined with the policy version it covered. */
+export interface AcceptanceRecord {
+	id: number;
+	policyVersion: string;
+	policySummary: string;
+	acceptedAt: Date;
+}
