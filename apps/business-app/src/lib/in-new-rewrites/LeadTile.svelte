@@ -140,7 +140,7 @@
 
 <Card.Root
 	class={cn(
-		'mb-8 p-0 break-words transition-all duration-200 overflow-hidden list-none hover:shadow-md',
+		'p-0 break-words transition-all duration-200 overflow-hidden list-none hover:shadow-md',
 		isDemo && 'border-2 border-dashed opacity-70'
 	)}
 >
@@ -211,7 +211,7 @@
 						<p class="text-xs text-muted-foreground mb-2">Be the first one to claim this inquiry</p>
 					{/if}
 						<Button
-							class="w-full bg-success text-success-foreground hover:bg-success/90"
+							class="w-full"
 							onclick={handleClaim}
 							disabled={isClaiming || isDemo}
 						>
@@ -253,7 +253,7 @@
 							{#if nextStageLabel}
 								<Button
 									variant={lead.stage === 2 ? 'default' : 'secondary'}
-									class="flex-1 {lead.stage === 2 ? 'bg-success text-success-foreground hover:bg-success/90' : ''}"
+									class="flex-1"
 									onclick={advanceStage}
 									disabled={isAdvancing || isDemo}
 								>
@@ -266,8 +266,8 @@
 								</Button>
 							{/if}
 							<Button
-								variant="outline"
-								class="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+								variant="ghost"
+								class="text-destructive hover:bg-destructive/10 hover:text-destructive"
 								onclick={() => (showDeactivateConfirm = true)}
 								disabled={isDemo}
 								title="Mark as inactive"

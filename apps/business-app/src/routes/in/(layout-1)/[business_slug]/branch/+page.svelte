@@ -5,6 +5,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
 	import * as Dialog from '$lib/components/ui/dialog';
+	import { Trash2 } from '@lucide/svelte';
 
 	// Access page data
 	let businessSlug = $derived($page.params.business_slug ?? '');
@@ -82,10 +83,10 @@
 </script>
 
 <div>
-	<header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+	<header class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
 		<div>
-			<h1 class="text-3xl font-bold mb-2">Branch Offices</h1>
-			<p class="text-muted-foreground">Manage your business branches across different locations</p>
+			<h1 class="text-2xl font-semibold text-foreground">Branch Offices</h1>
+			<p class="mt-1 text-sm text-muted-foreground">Manage your business branches across different locations</p>
 		</div>
 		<Button onclick={() => (showAddBranch = true)} class="whitespace-nowrap w-full md:w-auto">
 			Add Branch
@@ -101,15 +102,15 @@
 				{errorMessage}
 			</div>
 		{:else}
-			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
 				<!-- Main Branch Tile -->
 				{#if mainBusiness}
 					<div
-						class="bg-card rounded-lg p-6 border-2 border-success shadow-card hover:shadow-card-hover transition-shadow duration-300 flex flex-col gap-4"
+						class="bg-card rounded-lg p-6 border border-border shadow-card hover:shadow-card-hover transition-shadow duration-300 flex flex-col gap-4"
 					>
 						<div class="flex justify-between items-start gap-4 mb-2">
-							<h2 class="text-xl font-semibold flex-1">{mainBusiness.businessname}</h2>
-							<Badge class="bg-success text-success-foreground">Main Office</Badge>
+							<h2 class="text-base font-semibold flex-1">{mainBusiness.businessname}</h2>
+							<Badge variant="outline" class="bg-success-muted text-success border-transparent">Main Office</Badge>
 						</div>
 						<div class="flex-1 space-y-3 text-sm">
 							<div>
@@ -129,18 +130,18 @@
 								</div>
 							{/if}
 						</div>
-						<div class="flex gap-3 flex-wrap md:flex-col">
+						<div class="mt-auto flex gap-2 pt-2">
 							<Button
 								href="https://solarvipani.com/in/solar-panel-installer/{mainBusiness.slug}"
 								target="_blank"
 								variant="default"
-								class="flex-1 min-w-[120px]"
+								class="flex-1"
 							>
 								Profile Page
 							</Button>
 							<Button
 								variant="outline"
-								class="flex-1 min-w-[120px]"
+								class="flex-1"
 								onclick={() => openEditProfile(mainBusiness)}
 							>
 								Edit Details
@@ -156,8 +157,8 @@
 							class="bg-card rounded-lg p-6 border border-border shadow-card hover:shadow-card-hover transition-shadow duration-300 flex flex-col gap-4"
 						>
 							<div class="flex justify-between items-start gap-4 mb-2">
-								<h2 class="text-xl font-semibold flex-1">{branch.city || branch.businessname}</h2>
-								<Badge class="bg-accent text-accent-foreground">Branch Office</Badge>
+								<h2 class="text-base font-semibold flex-1">{branch.city || branch.businessname}</h2>
+								<Badge variant="outline" class="bg-accent-muted text-accent border-transparent">Branch Office</Badge>
 							</div>
 							<div class="flex-1 space-y-3 text-sm">
 								<div>
@@ -177,31 +178,34 @@
 									</div>
 								{/if}
 							</div>
-							<div class="flex gap-3 flex-wrap md:flex-col">
+							<div class="mt-auto flex gap-2 pt-2">
 								<Button
 									href="https://solarvipani.com/in/solar-panel-installer/{branch.slug}"
 									target="_blank"
 									variant="default"
-									class="flex-1 min-w-[120px]"
+									class="flex-1"
 								>
 									Profile Page
 								</Button>
 								<Button
 									variant="outline"
-									class="flex-1 min-w-[120px]"
+									class="flex-1"
 									onclick={() => openEditProfile(branch)}
 								>
 									Edit Details
 								</Button>
 								<Button
-									variant="outline"
-									class="flex-1 min-w-[120px] text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+									variant="ghost"
+									size="icon"
+									class="text-destructive hover:bg-destructive/10 hover:text-destructive"
+									aria-label="Delete branch"
+									title="Delete branch"
 									onclick={() => {
 										branchToDelete = branch;
 										showDeleteConfirm = true;
 									}}
 								>
-									Delete
+									<Trash2 size={16} />
 								</Button>
 							</div>
 						</div>

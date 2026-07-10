@@ -41,7 +41,7 @@
 
 <Card.Root class="mb-6 max-[480px]:p-4">
 	<Card.Header class="max-md:flex-col max-md:items-stretch max-md:gap-4 flex-row items-center">
-		<Card.Title class="flex-1 text-base text-accent">Filter</Card.Title>
+		<Card.Title class="flex-1 text-base text-foreground">Filter</Card.Title>
 		<Button
 			variant="ghost"
 			size="sm"

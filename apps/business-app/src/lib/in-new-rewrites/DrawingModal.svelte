@@ -293,13 +293,13 @@
 <Dialog.Root open={show} onOpenChange={handleOpenChange}>
 	<Dialog.Content class="sm:max-w-[1000px] max-h-[95vh] overflow-y-auto">
 		<Dialog.Header>
-			<Dialog.Title class="text-accent">Create Solar System Drawing</Dialog.Title>
+			<Dialog.Title>Create Solar System Drawing</Dialog.Title>
 		</Dialog.Header>
 
 		{#if !drawingGenerated}
 			<div class="space-y-6">
 				<div>
-					<h3 class="text-lg font-semibold text-accent mb-2">Drawing Parameters</h3>
+					<h3 class="text-lg font-semibold text-foreground mb-2">Drawing Parameters</h3>
 					<p class="text-muted-foreground text-sm">
 						Provide basic information to generate the layout diagram
 					</p>
@@ -349,7 +349,7 @@
 			</div>
 		{:else}
 			<div class="space-y-6">
-				<h3 class="text-lg font-semibold text-accent">Preview</h3>
+				<h3 class="text-lg font-semibold text-foreground">Preview</h3>
 
 				<div
 					class="border-2 border-border rounded-lg p-4 bg-card flex justify-center items-center overflow-hidden [&_svg]:w-full [&_svg]:h-auto [&_svg]:max-w-full"

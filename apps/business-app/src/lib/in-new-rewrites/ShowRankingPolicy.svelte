@@ -13,12 +13,12 @@
 <Dialog.Root bind:open={show} onOpenChange={() => !show && onClose()}>
 	<Dialog.Content class="max-w-[600px] max-h-[80vh] overflow-y-auto">
 		<Dialog.Header class="text-center sm:text-center">
-			<Dialog.Title class="text-accent">Policy</Dialog.Title>
+			<Dialog.Title>Policy</Dialog.Title>
 		</Dialog.Header>
 
 		<div class="space-y-6 text-foreground">
 			<section class="space-y-3">
-				<h3 class="text-lg font-semibold text-accent">Non-Exclusive Lead Allotment</h3>
+				<h3 class="text-lg font-semibold text-foreground">Non-Exclusive Lead Allotment</h3>
 				<Dialog.Description class="leading-relaxed">
 					Our lead distribution system works on a <strong>non-exclusive basis</strong> to ensure
 					fair opportunity for all qualified businesses:
@@ -43,7 +43,7 @@
 			</section>
 
 			<section class="space-y-3">
-				<h3 class="text-lg font-semibold text-accent">Business Ranking Factors</h3>
+				<h3 class="text-lg font-semibold text-foreground">Business Ranking Factors</h3>
 				<Dialog.Description class="leading-relaxed">
 					Your business ranking on Solar Vipani is determined by several factors:
 				</Dialog.Description>

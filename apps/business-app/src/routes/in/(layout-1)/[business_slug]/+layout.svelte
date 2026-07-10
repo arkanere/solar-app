@@ -146,7 +146,7 @@
 <!-- Main Content Area -->
 <div class="layout-container {expanded ? 'sidebar-expanded' : 'sidebar-collapsed'}">
 	<main class="min-h-screen bg-background text-foreground transition-colors duration-300">
-		<div class="w-full max-w-[1200px] mx-auto px-4 py-6 md:px-6 md:py-8 max-[480px]:px-3">
+		<div class="w-full max-w-5xl mx-auto px-4 py-6 md:px-6 md:py-8 max-[480px]:px-3">
 			{#if business && setupProgress}
 				<div class="mb-6">
 					<SetupProgressCard
@@ -184,7 +184,7 @@
 	>
 		<div class="modal-content bg-card text-card-foreground" role="dialog" aria-modal="true">
 			<button class="close-btn text-foreground-muted hover:text-foreground" onclick={() => (showAddLead = false)}>&times;</button>
-			<h2 class="text-accent">Add Lead</h2>
+			<h2 class="text-lg font-semibold text-foreground">Add Lead</h2>
 			<LeadFormModalBusiness
 				businessName={business?.businessname || ''}
 				{businessSlug}

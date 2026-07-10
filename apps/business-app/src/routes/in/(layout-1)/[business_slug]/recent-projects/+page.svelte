@@ -71,10 +71,10 @@
 </script>
 
 <div>
-	<header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+	<header class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
 		<div>
-			<h1 class="text-3xl font-bold mb-2">Project Portfolio</h1>
-			<p class="text-muted-foreground">Manage your completed solar installation projects</p>
+			<h1 class="text-2xl font-semibold text-foreground">Project Portfolio</h1>
+			<p class="mt-1 text-sm text-muted-foreground">Manage your completed solar installation projects</p>
 		</div>
 		<Button onclick={() => (showPostRecentProject = true)} class="whitespace-nowrap w-full md:w-auto">
 			Post Recent Project

@@ -66,10 +66,10 @@
 </svelte:head>
 
 <div>
-	<header class="mb-8 flex flex-col justify-center items-center text-center">
+	<header class="mb-6">
 		<div>
-			<h1 class="text-3xl font-bold mb-2">Project Management</h1>
-			<p class="text-muted-foreground">Track and manage your solar installation projects</p>
+			<h1 class="text-2xl font-semibold text-foreground">Project Management</h1>
+			<p class="mt-1 text-sm text-muted-foreground">Track and manage your solar installation projects</p>
 		</div>
 	</header>
 

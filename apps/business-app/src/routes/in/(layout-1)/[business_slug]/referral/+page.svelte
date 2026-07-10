@@ -71,10 +71,10 @@
 </svelte:head>
 
 <div>
-	<header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+	<header class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
 		<div>
-			<h1 class="text-3xl font-bold mb-2">Referrers</h1>
-			<p class="text-muted-foreground">Manage your business referrers and partners</p>
+			<h1 class="text-2xl font-semibold text-foreground">Referrers</h1>
+			<p class="mt-1 text-sm text-muted-foreground">Manage your business referrers and partners</p>
 		</div>
 		<Button onclick={() => (showAddReferrer = true)} class="whitespace-nowrap w-full md:w-auto">
 			Add Referrer

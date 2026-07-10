@@ -241,15 +241,15 @@
 </script>
 
 <div>
-	<header class="mb-8 text-center">
-		<h1 class="text-3xl font-bold mb-2">Quotation Maker</h1>
-		<p class="text-muted-foreground">Build an itemized solar quotation and download it as a PDF</p>
+	<header class="mb-6">
+		<h1 class="text-2xl font-semibold text-foreground">Quotation Maker</h1>
+		<p class="mt-1 text-sm text-muted-foreground">Build an itemized solar quotation and download it as a PDF</p>
 	</header>
 
-	<div class="mx-auto max-w-4xl flex flex-col gap-6">
+	<div class="max-w-4xl flex flex-col gap-6">
 		<!-- Customer + System -->
 		<section class="bg-card border border-border rounded-lg p-6">
-			<h2 class="text-lg font-semibold mb-4 text-accent">Customer & System</h2>
+			<h2 class="text-lg font-semibold mb-4 text-foreground">Customer & System</h2>
 			<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 				<div class="flex flex-col">
 					<Label for="custName" class="mb-2">Customer Name <span class="text-destructive">*</span></Label>
@@ -300,7 +300,7 @@
 		<!-- Line items -->
 		<section class="bg-card border border-border rounded-lg p-6">
 			<div class="flex items-center justify-between mb-4">
-				<h2 class="text-lg font-semibold text-accent">Bill of Materials</h2>
+				<h2 class="text-lg font-semibold text-foreground">Bill of Materials</h2>
 				<Button variant="outline" size="sm" onclick={addItem}>
 					<Plus size={16} /> Add Item
 				</Button>
@@ -339,7 +339,7 @@
 
 		<!-- Pricing + Terms -->
 		<section class="bg-card border border-border rounded-lg p-6">
-			<h2 class="text-lg font-semibold mb-4 text-accent">Pricing</h2>
+			<h2 class="text-lg font-semibold mb-4 text-foreground">Pricing</h2>
 			<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
 				<div class="flex flex-col gap-4">
 					<div class="flex flex-col">
@@ -359,7 +359,7 @@
 					<div class="flex justify-between"><span>GST ({gstRate}%)</span><span class="tabular-nums">{formatINR(totals.gst)}</span></div>
 					<div class="flex justify-between"><span>Gross Total</span><span class="tabular-nums">{formatINR(totals.gross)}</span></div>
 					{#if totals.subsidy > 0}
-						<div class="flex justify-between text-accent"><span>Less: Subsidy</span><span class="tabular-nums">- {formatINR(totals.subsidy)}</span></div>
+						<div class="flex justify-between text-success"><span>Less: Subsidy</span><span class="tabular-nums">- {formatINR(totals.subsidy)}</span></div>
 					{/if}
 					<div class="flex justify-between font-bold text-base border-t border-border pt-2 mt-1">
 						<span>Net Payable</span><span class="tabular-nums">{formatINR(totals.netPayable)}</span>

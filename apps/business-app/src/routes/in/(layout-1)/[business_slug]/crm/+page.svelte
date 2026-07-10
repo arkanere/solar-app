@@ -42,11 +42,11 @@
 </svelte:head>
 
 <div>
-	<header class="text-center mb-8">
-			<h1 class="text-2xl md:text-3xl font-semibold mb-2 text-accent">
+	<header class="mb-6">
+			<h1 class="text-2xl font-semibold text-foreground">
 				Customer Relationship Management
 			</h1>
-			<p class="text-base text-foreground-secondary">
+			<p class="mt-1 text-sm text-muted-foreground">
 				Manage your customer inquiries and leads for {business?.businessname || 'your business'}
 			</p>
 		</header>

@@ -342,7 +342,7 @@
 <Dialog.Root open={show} onOpenChange={handleOpenChange}>
 	<Dialog.Content class="max-w-[500px] max-h-[90vh] overflow-y-auto overflow-x-hidden">
 		<Dialog.Header>
-			<Dialog.Title class="text-accent">Post Recent Project</Dialog.Title>
+			<Dialog.Title>Post Recent Project</Dialog.Title>
 		</Dialog.Header>
 
 		<form

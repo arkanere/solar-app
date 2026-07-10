@@ -132,7 +132,7 @@
 			<div class="flex items-center gap-4 flex-1 min-w-0">
 				<Target class="shrink-0 text-accent" size={24} strokeWidth={2} />
 				<div class="flex-1 min-w-0">
-					<Card.Title class="text-lg font-bold text-accent max-sm:text-base"
+					<Card.Title class="text-lg font-semibold text-foreground max-sm:text-base"
 						>Setup Your Business Account</Card.Title
 					>
 					<div class="flex items-center gap-3 mt-1.5">

@@ -98,7 +98,7 @@
 >
 	<div class="mb-8 text-center max-w-xl">
 		<h1 class="text-3xl md:text-2xl font-semibold mb-6">Claim Your Business</h1>
-		<h2 class="text-xl font-medium mb-4 text-accent">Benefits:</h2>
+		<h2 class="text-xl font-medium mb-4 text-foreground">Benefits:</h2>
 		<div class="space-y-2 text-foreground-secondary">
 			<p>Listing is FREE</p>
 			<p>Add phone number on the profile page so that customer can call directly</p>

@@ -232,10 +232,8 @@
 			/>
 
 			<Dialog.Footer class="mt-5">
-				<Button type="submit" class="bg-success text-success-foreground hover:bg-success/90"
-					>Update</Button
-				>
 				<Button variant="outline" onclick={close}>Cancel</Button>
+				<Button type="submit">Update</Button>
 			</Dialog.Footer>
 		</form>
 	</Dialog.Content>

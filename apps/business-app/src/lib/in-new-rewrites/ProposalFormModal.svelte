@@ -326,7 +326,7 @@
 <Dialog.Root open={show} onOpenChange={handleOpenChange}>
 	<Dialog.Content class="max-w-[800px] max-h-[90vh] flex flex-col overflow-hidden">
 		<Dialog.Header class="shrink-0">
-			<Dialog.Title class="text-accent"
+			<Dialog.Title
 				>{proposal ? 'Update Proposal' : 'Create Proposal'}</Dialog.Title
 			>
 		</Dialog.Header>
@@ -340,7 +340,7 @@
 		>
 			<!-- Customer Information Section -->
 			<section class="mb-6 pb-6 border-b border-border">
-				<h3 class="text-lg font-semibold mb-4 text-accent">Customer Information</h3>
+				<h3 class="text-lg font-semibold mb-4 text-foreground">Customer Information</h3>
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div class="flex flex-col sm:col-span-2">
 						<Label for="customerName" class="mb-2"
@@ -389,7 +389,7 @@
 
 			<!-- System Specifications Section -->
 			<section class="mb-6 pb-6 border-b border-border">
-				<h3 class="text-lg font-semibold mb-4 text-accent">System Specifications</h3>
+				<h3 class="text-lg font-semibold mb-4 text-foreground">System Specifications</h3>
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div class="flex flex-col sm:col-span-2">
 						<Label for="systemCapacity" class="mb-2"
@@ -438,7 +438,7 @@
 
 			<!-- Additional Notes Section -->
 			<section class="mb-6">
-				<h3 class="text-lg font-semibold mb-4 text-accent">Additional Notes</h3>
+				<h3 class="text-lg font-semibold mb-4 text-foreground">Additional Notes</h3>
 				<div class="flex flex-col">
 					<Label for="additionalNotes" class="mb-2">Notes</Label>
 					<Textarea

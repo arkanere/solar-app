@@ -63,9 +63,9 @@
 </script>
 
 <div>
-	<header class="mb-8">
-		<h1 class="text-3xl font-bold mb-2">Compliance</h1>
-		<p class="text-muted-foreground">
+	<header class="mb-6">
+		<h1 class="text-2xl font-semibold text-foreground">Compliance</h1>
+		<p class="mt-1 text-sm text-muted-foreground">
 			Your data-handling agreements for customer leads, kept on record under India's DPDP Act 2023
 		</p>
 	</header>

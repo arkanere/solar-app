@@ -263,7 +263,7 @@
 
 <!-- LEAD DATA SECTION -->
 <section id="lead-data" class={isDashboard ? 'space-y-4' : ''}>
-	<h2 class="text-2xl font-semibold text-accent {isDashboard ? '' : 'text-left mb-4'}">Customer Inquiry</h2>
+	<h2 class="text-2xl font-semibold text-foreground {isDashboard ? '' : 'text-left mb-4'}">Customer Inquiry</h2>
 
 	{#if errorMessage}
 		{#if isDashboard}
@@ -276,7 +276,7 @@
 		{/if}
 	{:else if isDashboard}
 		<!-- Dashboard mode: available leads to claim, limited to 5 -->
-		<div class="w-full max-w-[540px] mx-auto space-y-6">
+		<div class="w-full max-w-xl space-y-4">
 			{#if leads.length > 0}
 				{#each dashboardLeads as lead}
 					<LeadTile
@@ -293,7 +293,7 @@
 				{#if leads.length > 5}
 					<Card.Root class="border-accent/20 bg-accent-muted">
 						<Card.Content class="pt-6 text-center">
-							<p class="text-sm text-accent">
+							<p class="text-sm text-foreground-secondary">
 								<strong>Showing 5 of {leads.length} leads.</strong>
 								<a
 									href="/in/{businessSlug}/crm"
@@ -330,7 +330,7 @@
 	{:else}
 		<!-- Full CRM mode: tabs + filters -->
 		<!-- Tab toggle -->
-		<div class="flex gap-1 p-1 bg-muted rounded-lg mb-6 max-w-[540px] mx-auto">
+		<div class="flex gap-1 p-1 bg-muted rounded-lg mb-6 max-w-xl">
 			<button
 				class={cn(
 					'flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors',
@@ -381,7 +381,7 @@
 
 		<!-- Available Leads tab -->
 		{#if activeTab === 'available'}
-			<ul class="list-none p-0 w-full max-w-[540px] mx-auto">
+			<ul class="list-none p-0 w-full max-w-xl space-y-4">
 				{#if availableLeads.length > 0}
 					{#each availableLeads as lead}
 						<LeadTile
@@ -437,7 +437,7 @@
 				/>
 
 				{#if filteredMyLeads.length === 0}
-					<Card.Root class="border-2 border-dashed my-4">
+					<Card.Root class="border-2 border-dashed my-4 max-w-xl">
 						<Card.Content class="text-center p-8">
 							<p class="font-semibold text-lg text-muted-foreground mb-2">
 								No leads match the selected filters.
@@ -449,7 +449,7 @@
 					</Card.Root>
 				{/if}
 
-				<ul class="list-none p-0 w-full max-w-[540px] mx-auto">
+				<ul class="list-none p-0 w-full max-w-xl space-y-4">
 					{#each filteredMyLeads as lead}
 						<LeadTile
 							{lead}
@@ -463,7 +463,7 @@
 					{/each}
 				</ul>
 			{:else}
-				<Card.Root class="border-2 border-dashed my-4 max-w-[540px] mx-auto">
+				<Card.Root class="border-2 border-dashed my-4 max-w-xl">
 					<Card.Content class="text-center p-8">
 						<p class="font-semibold text-lg text-muted-foreground mb-2">No claimed leads yet.</p>
 						<p class="text-sm text-muted-foreground italic">
