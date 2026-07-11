@@ -54,7 +54,7 @@ export async function load({ cookies }) {
 					l_original.pin_code as lead_pin_code,
 					l_original.type as lead_type,
 					l_original.created_at as lead_created_at,
-					b.id as business_id,
+					b.business_id,
 					b.businessname,
 					b.slug as business_slug,
 					b.district as business_district,
@@ -72,7 +72,7 @@ export async function load({ cookies }) {
 					AND l_claimed.isvisible = true
 					AND l_claimed.business_id IS NOT NULL
 				)
-				LEFT JOIN businesses_1 b ON l_claimed.business_id = b.id
+				LEFT JOIN in_business_profiles b ON l_claimed.business_id = b.business_id
 				LEFT JOIN leaddata_claimrequests lcr ON l_claimed.id = lcr.claim_id
 				WHERE l_original.email = $1
 				AND l_original.isvisible = true

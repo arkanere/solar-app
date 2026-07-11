@@ -41,7 +41,7 @@ export async function POST({ request, fetch }) {
 				if (slugMatch) {
 					const result = await pool.query(
 						`SELECT businessname, address, phonenumber
-						 FROM businesses_1
+						 FROM in_business_profiles
 						 WHERE slug = $1 AND isvisible = true
 						 LIMIT 1`,
 						[slugMatch[1]]
@@ -51,7 +51,7 @@ export async function POST({ request, fetch }) {
 			} else if (district) {
 				const result = await pool.query(
 					`SELECT businessname, address, phonenumber
-					 FROM businesses_1
+					 FROM in_business_profiles
 					 WHERE LOWER(district) = LOWER($1) AND isvisible = true
 					 ORDER BY rscore DESC NULLS LAST
 					 LIMIT 5`,

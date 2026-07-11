@@ -59,7 +59,7 @@ export async function load({ url }) {
 				const district = districtResult.rows[0].district;
 				const bizResult = await pool.query(
 					`SELECT businessname, address, phonenumber
-					 FROM businesses_1
+					 FROM in_business_profiles
 					 WHERE LOWER(district) = LOWER($1) AND isvisible = true
 					 ORDER BY rscore DESC NULLS LAST
 					 LIMIT 5`,
