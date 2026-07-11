@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { pool } from '$lib/server/db';
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import { resolveGeoSlug } from '$lib/server/slug-resolver';
 
 export const config = {
@@ -39,8 +39,8 @@ export const load: PageServerLoad = async ({ params }) => {
 			pool.query(
 				`SELECT businessname, description, phonenumber, slug, address, pluscode, state, city, tag, rscore, businessfilled, services
 				 FROM in_business_profiles
-				 WHERE LOWER(district) = LOWER($1) AND isvisible = true`,
-				[district]
+				 WHERE LOWER(district) = LOWER($1) AND LOWER(city) = LOWER($2) AND isvisible = true`,
+				[district, city]
 			),
 			pool.query(
 				`SELECT p.id, p.business_slug, p.project_slug, p.title, p.pincode, p.project_date, p.created_at,
@@ -56,6 +56,11 @@ export const load: PageServerLoad = async ({ params }) => {
 				[district]
 			)
 		]);
+
+		// City has no installers of its own: the district page is the canonical listing.
+		if (businessesResult.rows.length === 0) {
+			redirect(301, `/in/solar/${stateSlug}/${districtSlug}`);
+		}
 
 		// Attach recent projects per business
 		const businessSlugs = businessesResult.rows.map((b: { slug: string }) => b.slug);
@@ -86,9 +91,6 @@ export const load: PageServerLoad = async ({ params }) => {
 				recent_projects: businessProjectsMap.get(b.slug as string) || []
 			}))
 			.sort((a: Record<string, unknown>, b: Record<string, unknown>) => {
-				const aCityMatch = (a.city as string)?.toLowerCase() === city.toLowerCase() ? 0 : 1;
-				const bCityMatch = (b.city as string)?.toLowerCase() === city.toLowerCase() ? 0 : 1;
-				if (aCityMatch !== bCityMatch) return aCityMatch - bCityMatch;
 				const aProjects = (a.recent_projects as unknown[]).length;
 				const bProjects = (b.recent_projects as unknown[]).length;
 				if (aProjects !== bProjects) return bProjects - aProjects;
@@ -108,10 +110,6 @@ export const load: PageServerLoad = async ({ params }) => {
 			name: r.city,
 			slug: r.city.toLowerCase().replace(/\s+/g, '-')
 		}));
-
-		if (businesses.length === 0) {
-			error(404, `No solar installers found in ${city}, ${district}`);
-		}
 
 		return {
 			pageType: 'city' as const,

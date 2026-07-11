@@ -77,7 +77,7 @@ export async function generateSitemapEntries(pool: Pool): Promise<SitemapEntry[]
 		),
 		pool.query(
 			`SELECT DISTINCT l.state, l.district, l.city FROM locations l
-			 INNER JOIN in_business_profiles b ON LOWER(b.district) = LOWER(l.district) AND b.isvisible = true
+			 INNER JOIN in_business_profiles b ON LOWER(b.city) = LOWER(l.city) AND LOWER(b.district) = LOWER(l.district) AND b.isvisible = true
 			 ORDER BY l.state, l.district, l.city ASC`
 		),
 		pool.query(`SELECT slug FROM authors ORDER BY slug`)

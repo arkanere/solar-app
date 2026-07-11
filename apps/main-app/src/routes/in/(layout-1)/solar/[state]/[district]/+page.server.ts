@@ -42,7 +42,11 @@ export const load: PageServerLoad = async ({ params }) => {
 				[district]
 			),
 			pool.query(
-				`SELECT DISTINCT city FROM locations WHERE LOWER(district) = LOWER($1) AND LOWER(state) = LOWER($2) ORDER BY city ASC`,
+				`SELECT DISTINCT l.city FROM locations l
+				 INNER JOIN in_business_profiles b
+				   ON LOWER(b.city) = LOWER(l.city) AND LOWER(b.district) = LOWER(l.district) AND b.isvisible = true
+				 WHERE LOWER(l.district) = LOWER($1) AND LOWER(l.state) = LOWER($2)
+				 ORDER BY l.city ASC`,
 				[district, state]
 			),
 			pool.query(
