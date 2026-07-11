@@ -12,11 +12,11 @@ export const load: PageServerLoad = async () => {
 		),
 		pool.query(
 			`SELECT LOWER(state) as state, LOWER(district) as district, COUNT(*) as cnt
-			 FROM businesses_1 WHERE isvisible = true
+			 FROM in_business_profiles WHERE isvisible = true
 			 GROUP BY LOWER(state), LOWER(district)`
 		),
 		pool.query(
-			`SELECT COUNT(*) as total_installers FROM businesses_1 WHERE isvisible = true`
+			`SELECT COUNT(*) as total_installers FROM in_business_profiles WHERE isvisible = true`
 		),
 		pool.query(
 			`SELECT state_name, central_subsidy_rate, state_topup_rate

@@ -37,13 +37,21 @@ export const POST: RequestHandler = async ({ request }) => {
 		const client = await pool.connect();
 		try {
 			const result = await client.query(
-				'UPDATE businesses_1 SET magic_link_token = $1, magic_link_token_expires_at = $2 WHERE id = $3',
+				'UPDATE in_business_accounts SET magic_link_token = $1, magic_link_token_expires_at = $2 WHERE business_id = $3',
 				[tokenHash, expiresAt, id]
 			);
 
 			if (result.rowCount === 0) {
 				return json({ success: false, error: 'Business not found' }, { status: 404 });
 			}
+
+			// TODO(remove after admin-app migrates): dual-write businesses_1 so the
+			// legacy table stays fresh for admin-app; its sync trigger re-upserts
+			// the same values into in_business_accounts (idempotent).
+			await client.query(
+				'UPDATE businesses_1 SET magic_link_token = $1, magic_link_token_expires_at = $2 WHERE id = $3',
+				[tokenHash, expiresAt, id]
+			);
 
 			// Return the raw token (not the stored hash) so the caller can email it.
 			return json({ success: true, magic_link_token: magicLinkToken });

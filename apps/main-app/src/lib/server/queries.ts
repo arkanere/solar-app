@@ -11,9 +11,9 @@ export type TopDistrict = {
 export async function getTopDistricts(limit = 5): Promise<TopDistrict[]> {
 	const result = await pool.query(
 		`SELECT l.district, l.state,
-		        COUNT(DISTINCT b.id) as installer_count
+		        COUNT(DISTINCT b.business_id) as installer_count
 		 FROM locations l
-		 JOIN businesses_1 b ON LOWER(b.district) = LOWER(l.district) AND b.isvisible = true
+		 JOIN in_business_profiles b ON LOWER(b.district) = LOWER(l.district) AND b.isvisible = true
 		 GROUP BY l.district, l.state
 		 ORDER BY installer_count DESC
 		 LIMIT $1`,

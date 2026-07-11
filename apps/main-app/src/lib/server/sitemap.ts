@@ -48,7 +48,7 @@ export async function generateSitemapEntries(pool: Pool): Promise<SitemapEntry[]
 		geoCitiesResult,
 		authorsResult
 	] = await Promise.all([
-		pool.query('SELECT slug FROM businesses_1 WHERE isvisible = true ORDER BY slug ASC'),
+		pool.query('SELECT slug FROM in_business_profiles WHERE isvisible = true ORDER BY slug ASC'),
 		pool.query(
 			"SELECT slug, updated_at FROM in_blogs WHERE status = 'published' ORDER BY updated_at DESC"
 		),
@@ -67,17 +67,17 @@ export async function generateSitemapEntries(pool: Pool): Promise<SitemapEntry[]
 		),
 		pool.query(
 			`SELECT DISTINCT l.state FROM locations l
-			 INNER JOIN businesses_1 b ON LOWER(b.state) = LOWER(l.state) AND b.isvisible = true
+			 INNER JOIN in_business_profiles b ON LOWER(b.state) = LOWER(l.state) AND b.isvisible = true
 			 ORDER BY l.state ASC`
 		),
 		pool.query(
 			`SELECT DISTINCT l.state, l.district FROM locations l
-			 INNER JOIN businesses_1 b ON LOWER(b.district) = LOWER(l.district) AND b.isvisible = true
+			 INNER JOIN in_business_profiles b ON LOWER(b.district) = LOWER(l.district) AND b.isvisible = true
 			 ORDER BY l.state, l.district ASC`
 		),
 		pool.query(
 			`SELECT DISTINCT l.state, l.district, l.city FROM locations l
-			 INNER JOIN businesses_1 b ON LOWER(b.district) = LOWER(l.district) AND b.isvisible = true
+			 INNER JOIN in_business_profiles b ON LOWER(b.district) = LOWER(l.district) AND b.isvisible = true
 			 ORDER BY l.state, l.district, l.city ASC`
 		),
 		pool.query(`SELECT slug FROM authors ORDER BY slug`)

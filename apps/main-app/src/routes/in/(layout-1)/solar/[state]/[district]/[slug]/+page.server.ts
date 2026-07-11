@@ -38,7 +38,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		const [businessesResult, projectsResult, pincodeResult] = await Promise.all([
 			pool.query(
 				`SELECT businessname, description, phonenumber, slug, address, pluscode, state, city, tag, rscore, businessfilled, services
-				 FROM businesses_1
+				 FROM in_business_profiles
 				 WHERE LOWER(district) = LOWER($1) AND isvisible = true`,
 				[district]
 			),
@@ -97,7 +97,7 @@ export const load: PageServerLoad = async ({ params }) => {
 
 		// Fetch sibling cities
 		const siblingCitiesResult = await pool.query(
-			`SELECT DISTINCT city FROM businesses_1
+			`SELECT DISTINCT city FROM in_business_profiles
 			 WHERE LOWER(district) = LOWER($1) AND isvisible = true
 			   AND LOWER(REPLACE(city, ' ', '-')) != $2
 			 ORDER BY city ASC LIMIT 5`,
@@ -136,7 +136,7 @@ export const load: PageServerLoad = async ({ params }) => {
 
 		const businessesResult = await pool.query(
 			`SELECT businessname, description, phonenumber, slug, address, pluscode, state, city, tag, rscore, businessfilled, services
-			 FROM businesses_1
+			 FROM in_business_profiles
 			 WHERE LOWER(district) = LOWER($1) AND isvisible = true
 			   AND (LOWER(services) LIKE $2 OR LOWER(description) LIKE $2)`,
 			[district, `%${brandName.toLowerCase()}%`]
@@ -165,7 +165,7 @@ export const load: PageServerLoad = async ({ params }) => {
 
 		const businessesResult = await pool.query(
 			`SELECT businessname, description, phonenumber, slug, address, pluscode, state, city, tag, rscore, businessfilled, services
-			 FROM businesses_1
+			 FROM in_business_profiles
 			 WHERE LOWER(district) = LOWER($1) AND isvisible = true`,
 			[district]
 		);

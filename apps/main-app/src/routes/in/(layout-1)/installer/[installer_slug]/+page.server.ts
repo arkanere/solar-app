@@ -13,7 +13,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		`SELECT businessname, description, phonenumber, email, website,
 		        slug, address, district, state, city, tag, rscore,
 		        businessfilled, services, brands, instagram_id, google_maps_link
-		 FROM businesses_1
+		 FROM in_business_profiles
 		 WHERE slug = $1 AND isvisible = true`,
 		[slug]
 	);

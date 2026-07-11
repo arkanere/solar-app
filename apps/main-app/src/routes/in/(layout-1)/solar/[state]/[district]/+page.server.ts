@@ -28,7 +28,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		await Promise.all([
 			pool.query(
 				`SELECT businessname, description, phonenumber, slug, address, pluscode, state, city, tag, rscore, businessfilled, services
-				 FROM businesses_1
+				 FROM in_business_profiles
 				 WHERE LOWER(district) = LOWER($1) AND isvisible = true`,
 				[district]
 			),
@@ -56,7 +56,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			),
 			pool.query(
 				`SELECT DISTINCT l.district,
-				        (SELECT COUNT(*) FROM businesses_1 b WHERE LOWER(b.district) = LOWER(l.district) AND b.isvisible = true) as installer_count
+				        (SELECT COUNT(*) FROM in_business_profiles b WHERE LOWER(b.district) = LOWER(l.district) AND b.isvisible = true) as installer_count
 				 FROM locations l
 				 WHERE LOWER(l.state) = LOWER($1) AND LOWER(l.district) != LOWER($2)
 				 ORDER BY l.district ASC`,

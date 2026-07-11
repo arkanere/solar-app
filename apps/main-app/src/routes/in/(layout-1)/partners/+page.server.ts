@@ -8,15 +8,15 @@ export const config = {
 export const load: PageServerLoad = async () => {
 	const [installerResult, projectResult, cityResult, leadResult, recentBusinesses] =
 		await Promise.all([
-			pool.query(`SELECT COUNT(*) as count FROM businesses_1 WHERE isvisible = true`),
+			pool.query(`SELECT COUNT(*) as count FROM in_business_profiles WHERE isvisible = true`),
 			pool.query(`SELECT COUNT(*) as count FROM projects WHERE isvisible = true`),
 			pool.query(`SELECT COUNT(DISTINCT city) as count FROM locations`),
 			pool.query(`SELECT COUNT(*) as count FROM LeadData`),
 			pool.query(
-				`SELECT id, businessname, phonenumber, city, state, slug
-			 FROM businesses_1
+				`SELECT business_id AS id, businessname, phonenumber, city, state, slug
+			 FROM in_business_profiles
 			 WHERE isvisible = true AND businessfilled = true
-			 ORDER BY id DESC LIMIT 9`
+			 ORDER BY business_id DESC LIMIT 9`
 			)
 		]);
 

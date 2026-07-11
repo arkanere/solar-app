@@ -11,17 +11,17 @@ export const load: PageServerLoad = async () => {
 	try {
 		const latestBusinessesResult = await pool.query(
 			`SELECT
-        id,
+        business_id AS id,
         businessname,
         phonenumber,
         city,
         state,
         district,
         slug
-      FROM businesses_1
+      FROM in_business_profiles
       WHERE isvisible = true
       AND businessfilled = true
-      ORDER BY id DESC
+      ORDER BY business_id DESC
       LIMIT 10;`
 		);
 

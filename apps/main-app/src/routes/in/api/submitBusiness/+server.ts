@@ -55,8 +55,8 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 		}
 
 		// Check for duplicate GSTN
-		const duplicateCheck = await pool.query<{ id: number }>(
-			'SELECT id FROM businesses_1 WHERE gstn = $1',
+		const duplicateCheck = await pool.query<{ business_id: number }>(
+			'SELECT business_id FROM in_business_profiles WHERE gstn = $1',
 			[gstn]
 		);
 
@@ -77,6 +77,11 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 		const slug = null;
 		const notes = null;
 
+		// TODO(remove after admin-app migrates; needs id-minting moved to
+		// in_business_profiles): businesses_1 still mints the business id and keeps
+		// the legacy table fresh for admin-app. The explicit upserts below are the
+		// forward-facing writes; the sync triggers on businesses_1 upsert the same
+		// values, so both paths are idempotent.
 		const insertQuery = `
             INSERT INTO businesses_1 (
                 rscore, isvisible, pluscode, phonenumber, whatsapp, email, login_email, website, gstn, state, district, tag, slug, notes, city, businessname, address)
@@ -105,6 +110,52 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 		]);
 
 		const businessId = result.rows[0].id;
+
+		// Forward-facing writes: the new tables are the source of truth for the
+		// /in side. ON CONFLICT keeps them idempotent against the businesses_1
+		// sync triggers, which upsert the same rows.
+		await pool.query(
+			`INSERT INTO in_business_profiles (
+                business_id, rscore, isvisible, pluscode, phonenumber, whatsapp, email, website, gstn, state, district, tag, slug, notes, city, businessname, address)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+            ON CONFLICT (business_id) DO UPDATE SET
+                rscore = EXCLUDED.rscore, isvisible = EXCLUDED.isvisible,
+                pluscode = EXCLUDED.pluscode, phonenumber = EXCLUDED.phonenumber,
+                whatsapp = EXCLUDED.whatsapp, email = EXCLUDED.email,
+                website = EXCLUDED.website, gstn = EXCLUDED.gstn,
+                state = EXCLUDED.state, district = EXCLUDED.district,
+                tag = EXCLUDED.tag, slug = EXCLUDED.slug, notes = EXCLUDED.notes,
+                city = EXCLUDED.city, businessname = EXCLUDED.businessname,
+                address = EXCLUDED.address, updated_at = NOW()`,
+			[
+				businessId,
+				rscore,
+				isvisible,
+				plusCode || null,
+				phoneNumber,
+				whatsappNumber || null,
+				email || null,
+				website || null,
+				gstn || null,
+				state,
+				district,
+				tag,
+				slug,
+				notes,
+				city,
+				businessName,
+				address
+			]
+		);
+
+		await pool.query(
+			`INSERT INTO in_business_accounts (business_id, login_email, isvisible)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (business_id) DO UPDATE SET
+                login_email = EXCLUDED.login_email, isvisible = EXCLUDED.isvisible,
+                updated_at = NOW()`,
+			[businessId, login_email || null, isvisible]
+		);
 
 		// Send confirmation email via the new endpoint
 		await fetch('/api/sendBusinessSubmissionConfirmation', {

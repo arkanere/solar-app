@@ -27,7 +27,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			b.state as business_state,
 			b.phonenumber
 		 FROM projects p
-		 INNER JOIN businesses_1 b ON p.business_slug = b.slug
+		 INNER JOIN in_business_profiles b ON p.business_slug = b.slug
 		 WHERE p.project_slug = $1
 		   AND p.isvisible = true
 		   AND b.isvisible = true`,

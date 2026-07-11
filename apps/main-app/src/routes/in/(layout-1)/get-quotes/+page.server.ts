@@ -7,7 +7,7 @@ export const config = {
 
 export const load: PageServerLoad = async () => {
 	const [installerResult, projectResult] = await Promise.all([
-		pool.query(`SELECT COUNT(*) as count FROM businesses_1 WHERE isvisible = true`),
+		pool.query(`SELECT COUNT(*) as count FROM in_business_profiles WHERE isvisible = true`),
 		pool.query(`SELECT COUNT(*) as count FROM projects WHERE isvisible = true`)
 	]);
 

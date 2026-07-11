@@ -26,7 +26,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	const [districtsResult, statsResult, subsidyResult, latestProjectResult] = await Promise.all([
 		pool.query(
 			`SELECT DISTINCT l.district,
-			        (SELECT COUNT(*) FROM businesses_1 b WHERE LOWER(b.district) = LOWER(l.district) AND b.isvisible = true) as installer_count
+			        (SELECT COUNT(*) FROM in_business_profiles b WHERE LOWER(b.district) = LOWER(l.district) AND b.isvisible = true) as installer_count
 			 FROM locations l
 			 WHERE LOWER(l.state) = LOWER($1)
 			 ORDER BY l.district ASC`,
@@ -34,7 +34,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		),
 		pool.query(
 			`SELECT COUNT(*) as installer_count, MAX(created_at) as latest_installer_added
-			 FROM businesses_1
+			 FROM in_business_profiles
 			 WHERE LOWER(state) = LOWER($1) AND isvisible = true`,
 			[state]
 		),
@@ -46,7 +46,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		pool.query(
 			`SELECT MAX(p.project_date) as latest_project_date
 			 FROM projects p
-			 JOIN businesses_1 b ON p.business_slug = b.slug
+			 JOIN in_business_profiles b ON p.business_slug = b.slug
 			 WHERE LOWER(b.state) = LOWER($1) AND p.isvisible = true`,
 			[state]
 		)

@@ -32,7 +32,7 @@ export const load: PageServerLoad = async ({ url }) => {
 			try {
 				const businessResult = await pool.query(
 					`SELECT COUNT(*) as business_count
-					FROM businesses_1
+					FROM in_business_profiles
 					WHERE district = $1 AND isvisible = true
 					LIMIT 1`,
 					[lead.district]

@@ -18,7 +18,7 @@ export const load: PageServerLoad = async () => {
 			 ORDER BY slug ASC`,
 			['solar-pumps', 'cluster', 'published']
 		),
-		pool.query(`SELECT COUNT(*) as total FROM businesses_1 WHERE isvisible = true`)
+		pool.query(`SELECT COUNT(*) as total FROM in_business_profiles WHERE isvisible = true`)
 	]);
 
 	const pillarData = pillarResult.rows[0] ?? {
