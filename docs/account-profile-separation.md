@@ -1,6 +1,6 @@
 # Account / Profile Separation — Status & Next Steps
 
-_Last updated: 2026-07-10_
+_Last updated: 2026-07-11_
 
 ## Why
 
@@ -19,9 +19,9 @@ working with zero changes:
 
 | Table | Holds | Who uses it |
 |---|---|---|
-| `in_business_profiles` | Listing data only (name, slug, contact, description, services, brands, location, rscore, …) | business-app `/in` reads + writes |
-| `in_business_accounts` | Credentials only (login_email, login_password, magic-link token, reset token, isvisible, last_login) | business-app `/in` auth **reads** |
-| `businesses_1` | Everything (legacy, unchanged schema) | main-app marketplace, admin-app, all auth **writes** |
+| `in_business_profiles` | Listing data only (name, slug, contact, description, services, brands, location, rscore, …) | business-app + main-app `/in` reads + writes |
+| `in_business_accounts` | Credentials only (login_email, login_password, magic-link token, reset token, isvisible, last_login) | business-app + main-app `/in` auth reads; main-app auth writes (with dual-write) |
+| `businesses_1` | Everything (legacy, unchanged schema) | admin-app; business-app auth writes; main-app dual-writes (id-minting on signup) |
 
 Both new tables are keyed by `business_id` (= `businesses_1.id`). Tables are
 region-specific by design (`in_*` prefix); `/us` gets its own tables when it
@@ -53,13 +53,32 @@ not unique — 124 rows share the slug `incorrect`, 34 are NULL, ~25 real
 businesses are duplicated. The new table therefore has a plain (non-unique)
 slug index. Worth a cleanup at some point.
 
+## Done since (2026-07-11): main-app migrated (step 1)
+
+All main-app `/in` reads now hit the new tables: marketplace/profile loaders
+and the sitemap read `in_business_profiles` (explicit columns,
+`business_id AS id`). Writes follow the dual-write pattern:
+`createMagicLinkToken` updates `in_business_accounts` first, then a
+TODO-tagged write keeps `businesses_1` fresh for admin-app (its triggers
+re-upsert the same values — idempotent). `submitBusiness` still inserts
+`businesses_1` first (it mints the business id) and then explicitly upserts
+both new tables.
+
+Main-app's legacy business-auth and business-data endpoints were deleted —
+business-app owns these flows now (own `resetPassword`, login via
+TokenManager/PasswordManager, dashboard reads): `businessLogin`,
+`resetPassword`, `triggerPasswordReset`, `getBranchesByBusiness`,
+`getProjectsByBusiness`, plus dead helpers `getBusinessesByCity`,
+`getCitiesFromSameDistrict`, `getRecentProjectsByCity`, `submitPartner`.
+
+Migration `041-in-business-profiles-created-at.sql` backfills
+`in_business_profiles.created_at` from `businesses_1` (039 didn't copy it,
+and `/in/solar/[state]` shows MAX(created_at) as "latest installer added").
+
 ## Next steps (high level, in order)
 
-1. **Migrate main-app** marketplace/profile reads from `businesses_1` to
-   `in_business_profiles`, and its remaining legacy auth endpoints
-   (`businessLogin`, `resetPassword`, `submitBusiness`, …) to
-   `in_business_accounts`. Signup (`submitBusiness`) must then insert into
-   the new tables explicitly (today the trigger does it).
+1. ~~**Migrate main-app**~~ Done — see above. Grep tag for the dual-writes:
+   `TODO(remove after admin-app migrates)`.
 2. **Migrate admin-app** (separate repo, `solar-app-internal`): the
    business edit page and the magic-link / password-reset endpoints move to
    the new tables. Until then the triggers bridge it.

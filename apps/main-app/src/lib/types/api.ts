@@ -10,11 +10,6 @@ export interface LeadData {
 	district?: string;
 }
 
-export interface BusinessLoginRequest {
-	email: string;
-	password: string;
-}
-
 export interface APIResponse<T> {
 	success: boolean;
 	data?: T;
