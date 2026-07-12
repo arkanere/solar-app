@@ -1,13 +1,21 @@
 <script lang="ts">
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
-	import { Button } from '$lib/components/ui/button';
-	import { SOCIAL_LINKS, scrollToElement } from '$lib/constants/social';
+	import { SOCIAL_LINKS } from '$lib/constants/social';
+	import { Users, TrendingUp } from '@lucide/svelte';
+
+	interface Props {
+		installerCount: number;
+		leadsGenerated: number;
+	}
+
+	let { installerCount, leadsGenerated }: Props = $props();
+
+	const stats = $derived([
+		{ label: 'Verified Installers on the Platform', value: installerCount, icon: Users },
+		{ label: 'Leads Generated Across India', value: leadsGenerated, icon: TrendingUp }
+	]);
 
 	let hoveredLink: string | null = $state(null);
-
-	function handleScroll() {
-		scrollToElement('lead-form-sv');
-	}
 
 	function handleSocialHover(url: string) {
 		hoveredLink = url;
@@ -40,30 +48,29 @@
 
 			<div class="flex-1 w-full gap-[theme(--form-element-field-gap)] flex flex-col">
 				<p class="text-lg">
-					We are your premier marketplace aggregator dedicated to connecting residential and business
-					customers with
-					<a
-						href="/in/blogs/hiring-verified-solar-installer-in-india-is-essential"
-						class="font-semibold text-primary underline hover:opacity-80 transition-opacity"
-					>
-						Best Local Solar Panel Installation
-					</a>
-					companies, ensuring that you make smart decisions backed by credible information and have a
-					hassle-free experience.
+					Going solar is a decision you live with for 25 years, and it involves investing a
+					significant amount of money. Solar Vipani helps homeowners and businesses make that
+					decision wisely — we connect you with the best local solar panel installation
+					companies and back every choice with credible, up-to-date information.
 				</p>
 				<p class="text-lg">
-					Our platform is designed for smart homeowners and businesses ready to go solar but unsure where to
-					start.
-					<Button
-						variant="ghost"
-						class="p-0 h-auto font-semibold text-primary underline"
-						onclick={handleScroll}
-					>
-						Get 2-3 free quotes from verified installers in your area
-					</Button>
-					and compare prices to find the best solution for your needs.
+					We believe in complete transparency: our platform is open source, and our guides are
+					written to educate you before you spend a single rupee. Compare multiple options —
+					get 2-3 free quotes from verified installers in your area — and choose the solution
+					that is right for your home or business.
 				</p>
 			</div>
+		</div>
+
+		<!-- Trust Stats -->
+		<div class="grid grid-cols-2 gap-4">
+			{#each stats as stat (stat.label)}
+				<div class="flex flex-col items-center gap-2 rounded-lg bg-muted p-4 text-center">
+					<stat.icon class="h-6 w-6 text-primary" />
+					<span class="text-2xl font-bold text-foreground md:text-3xl">{stat.value.toLocaleString('en-IN')}+</span>
+					<span class="text-sm text-muted-foreground">{stat.label}</span>
+				</div>
+			{/each}
 		</div>
 
 		<!-- Social Media Links -->

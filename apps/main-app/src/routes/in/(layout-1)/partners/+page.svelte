@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { breadcrumbLD, faqLD, organizationLD } from '$lib/seo';
 	import NetworkStats from '$lib/in/components/seo/NetworkStats.svelte';
-import AboutSolarVipani from '$lib/in/components/AboutSolarVipani.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
 	import {
@@ -459,7 +458,5 @@ import AboutSolarVipani from '$lib/in/components/AboutSolarVipani.svelte';
 			</div>
 		</Card>
 
-		<!-- About Solar Vipani -->
-		<AboutSolarVipani />
 	</div>
 </main>

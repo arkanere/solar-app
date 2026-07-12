@@ -9,9 +9,10 @@
   import { initPosthog, capturePageview, capture } from "$lib/posthog";
   import { hasAnalyticsConsent } from "$lib/consent";
   import CookieConsent from "$lib/components/CookieConsent.svelte";
+  import AboutSolarVipani from "$lib/in/components/AboutSolarVipani.svelte";
 
   // Accept children snippet from SvelteKit
-  let { children } = $props();
+  let { children, data } = $props();
 
 
   // Create a shared store for chat messages (persists across SPA navigations)
@@ -445,6 +446,14 @@
 
 {@render children?.()}
 
+<!-- About Solar Vipani (shown on every page in this layout) -->
+<div class="mx-auto max-w-[1140px] px-[theme(--container-padding)]">
+  <AboutSolarVipani
+    installerCount={data.aboutStats.installerCount}
+    leadsGenerated={data.aboutStats.leadsGenerated}
+  />
+</div>
+
 <!-- Footer -->
 <footer class="border-t border-border bg-background text-foreground mt-8">
   <div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
@@ -501,7 +510,7 @@
       <div>
         <h4 class="text-sm font-semibold text-primary mb-3">Solar Vipani</h4>
         <p class="text-sm text-foreground dark:text-foreground-secondary leading-relaxed">
-          India's #1 platform connecting homeowners with verified solar installers.
+          The open-source platform helping homeowners and businesses go solar with confidence.
         </p>
       </div>
     </div>

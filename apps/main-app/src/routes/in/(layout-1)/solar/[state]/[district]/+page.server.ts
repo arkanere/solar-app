@@ -24,7 +24,7 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	const { state, district } = locationResult.rows[0];
 
-	const [businessesResult, projectsResult, citiesResult, subsidyResult, pincodeResult, nearbyResult] =
+	const [businessesResult, projectsResult, citiesResult, subsidyResult, pincodeResult, leadResult] =
 		await Promise.all([
 			pool.query(
 				`SELECT businessname, description, phonenumber, slug, address, pluscode, state, city, tag, rscore, businessfilled, services
@@ -42,9 +42,12 @@ export const load: PageServerLoad = async ({ params }) => {
 				[district]
 			),
 			pool.query(
-				`SELECT DISTINCT l.city FROM locations l
-				 INNER JOIN in_business_profiles b
-				   ON LOWER(b.city) = LOWER(l.city) AND LOWER(b.district) = LOWER(l.district) AND b.isvisible = true
+				`SELECT DISTINCT l.city,
+				        EXISTS (
+				          SELECT 1 FROM in_business_profiles b
+				          WHERE LOWER(b.city) = LOWER(l.city) AND LOWER(b.district) = LOWER(l.district) AND b.isvisible = true
+				        ) as has_business
+				 FROM locations l
 				 WHERE LOWER(l.district) = LOWER($1) AND LOWER(l.state) = LOWER($2)
 				 ORDER BY l.city ASC`,
 				[district, state]
@@ -59,12 +62,8 @@ export const load: PageServerLoad = async ({ params }) => {
 				[district]
 			),
 			pool.query(
-				`SELECT DISTINCT l.district,
-				        (SELECT COUNT(*) FROM in_business_profiles b WHERE LOWER(b.district) = LOWER(l.district) AND b.isvisible = true) as installer_count
-				 FROM locations l
-				 WHERE LOWER(l.state) = LOWER($1) AND LOWER(l.district) != LOWER($2)
-				 ORDER BY l.district ASC`,
-				[state, district]
+				`SELECT COUNT(*) as count FROM LeadData WHERE LOWER(district) = LOWER($1)`,
+				[district]
 			)
 		]);
 
@@ -103,14 +102,10 @@ export const load: PageServerLoad = async ({ params }) => {
 			return ((b.rscore as number) || 0) - ((a.rscore as number) || 0);
 		});
 
-	const cities = citiesResult.rows.map((r: { city: string }) => r.city);
-	const nearbyDistricts = nearbyResult.rows
-		.filter((r: { installer_count: string }) => parseInt(r.installer_count) > 0)
-		.map((r: { district: string; installer_count: string }) => ({
-			name: r.district,
-			slug: r.district.toLowerCase().replace(/\s+/g, '-'),
-			installerCount: parseInt(r.installer_count)
-		}));
+	const cities = citiesResult.rows.map((r: { city: string; has_business: boolean }) => ({
+		name: r.city,
+		hasBusiness: r.has_business
+	}));
 
 	if (businesses.length === 0) {
 		error(404, `No solar installers found in ${district}, ${state}`);
@@ -126,7 +121,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		cities,
 		subsidy: subsidyResult.rows[0] || null,
 		postalCode: pincodeResult.rows[0]?.pincode || null,
-		nearbyDistricts,
+		districtLeadCount: parseInt(leadResult.rows[0].count, 10),
 		installerCount: businesses.length,
 		lastUpdated: new Date().toISOString()
 	};

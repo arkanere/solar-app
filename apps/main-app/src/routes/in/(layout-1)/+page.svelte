@@ -3,7 +3,6 @@
   import BusinessDirectory from "$lib/in/components/BusinessDirectory.svelte";
   import RecentProjectsHome from "$lib/in/components/RecentProjectsHome.svelte";
   import SolarComparisonTable from "$lib/in/components/SolarComparisonTable.svelte";
-  import AboutSolarVipani from "$lib/in/components/AboutSolarVipani.svelte";
 
   // Receive data from server
   let { data } = $props();
@@ -606,10 +605,6 @@
       </div>
     </section>
 
-    <!-- About Section -->
-    <div id="about-section">
-      <AboutSolarVipani />
-    </div>
   </div>
 </main>
 

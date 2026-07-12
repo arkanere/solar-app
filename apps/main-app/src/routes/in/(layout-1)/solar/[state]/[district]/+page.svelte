@@ -53,6 +53,10 @@
 	function toSlug(str: string): string {
 		return str.toLowerCase().replace(/\s+/g, '-');
 	}
+
+	const citiesServed = $derived(
+		data.cities.filter((c: { hasBusiness: boolean }) => c.hasBusiness).length
+	);
 </script>
 
 <svelte:head>
@@ -103,8 +107,16 @@
 	<!-- Snapshot bar -->
 	<div class="flex flex-wrap gap-4 mb-8 text-sm">
 		<span class="bg-muted rounded-lg px-3 py-1.5 font-medium">{data.installerCount} Installers</span>
-		<span class="bg-muted rounded-lg px-3 py-1.5 font-medium">{data.cities.length} Cities</span>
+		<span class="bg-muted rounded-lg px-3 py-1.5 font-medium">{citiesServed} Cities</span>
 	</div>
+
+	<!-- Local social proof -->
+	{#if data.districtLeadCount >= 3}
+		<p class="bg-primary/5 border border-primary/20 rounded-lg px-4 py-3 mb-8 text-center font-medium">
+			<span class="text-primary font-bold">{data.districtLeadCount.toLocaleString('en-IN')}</span>
+			customers from {data.district} have started their solar journey with Solar Vipani.
+		</p>
+	{/if}
 
 	<!-- Lead Form CTA -->
 	<LeadFormSection city={data.district} hasBusinesses={true} />
@@ -188,32 +200,19 @@
 				Cities in {data.district}
 			</h2>
 			<div class="flex flex-wrap gap-2">
-				{#each data.cities as city}
-					<a
-						href="/in/solar/{data.stateSlug}/{data.districtSlug}/{toSlug(city)}"
-						class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors"
-					>
-						{city}
-					</a>
-				{/each}
-			</div>
-		</section>
-	{/if}
-
-	<!-- Nearby districts -->
-	{#if data.nearbyDistricts.length > 0}
-		<section class="mb-8">
-			<h2 class="text-2xl font-semibold text-primary mb-4">
-				Nearby Districts
-			</h2>
-			<div class="flex flex-wrap gap-2">
-				{#each data.nearbyDistricts as nd}
-					<a
-						href="/in/solar/{data.stateSlug}/{nd.slug}"
-						class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors"
-					>
-						{nd.name} ({nd.installerCount})
-					</a>
+				{#each data.cities as city (city.name)}
+					{#if city.hasBusiness}
+						<a
+							href="/in/solar/{data.stateSlug}/{data.districtSlug}/{toSlug(city.name)}"
+							class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors"
+						>
+							{city.name}
+						</a>
+					{:else}
+						<span class="bg-muted text-sm text-muted-foreground rounded-lg px-3 py-1.5">
+							{city.name}
+						</span>
+					{/if}
 				{/each}
 			</div>
 		</section>
