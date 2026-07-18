@@ -1,6 +1,7 @@
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
+import { syncLeadToUnified } from '$lib/server/unifiedSync.js';
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request, fetch }) {
@@ -36,6 +37,8 @@ export async function POST({ request, fetch }) {
 
 		const leadId = result.rows[0].id;
 		const referenceUuid = result.rows[0].reference_uuid;
+
+		await syncLeadToUnified(pool, 'in', leadId);
 
 		await fetch('/in/api/sendLeadSubmissionConfirmation', {
 			method: 'POST',
