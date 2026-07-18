@@ -7,7 +7,11 @@
 > call); the sync triggers now exist only for the external admin-app.
 > See "Implementation status" and "Next steps" at the end of this document.
 > Blogs feature removed entirely 2026-07-19 (see item 3); run `048-drop-blogs.sql` manually.
-> Next up: Phase 2.4 — gated on the external admin-app migrating.
+> **admin-app migrated 2026-07-19** (solar-app-internal repo, 3 commits on main): IN business
+> reads/writes on the profile/account split tables, every legacy-table write followed by an
+> explicit `sv_sync_*` call, blog management deleted. automation-scripts verified to write no
+> legacy lead/business tables. **Phase 2.4 (drop the 040/043/045/046 triggers) is now
+> unblocked** — every writer in every app projects its own writes into the unified tables.
 
 ## Context
 
@@ -216,4 +220,6 @@ Merge `lib/in/components/` + `lib/us/` pairs into `apps/main-app/src/lib/compone
    - Not switched (out of lead-flow scope): user-app's `in_user`/`in_user_feedback` tables (user accounts are not part of the unified schema) and `pincode_mapping` lookups (IN-only by design).
 3. ~~**Blogs unification**~~ — **OBSOLETE: blogs feature REMOVED entirely (2026-07-19, user decision)** instead of unified. Deleted: `routes/in/(layout-1)/blogs/` (dynamic, `in_blogs`-backed) and `routes/us/(layout-1)/blogs/` (9 static folders); blog sections/links on IN+US home pages, both footer navs, IN services mega-menu, seo-index (sections renumbered), US `AboutSolarVipani` inline link; sitemap blog entries (static `/blogs` + per-country `in_blogs`/`us_blogs` query); unused `articleLD` in `seo.ts`; `dynamicBlogs` feature flag. `hooks.server.ts` 301s `/{in|us}/blogs(/*)` → country home (`legacyUsRedirect` renamed `legacyRedirect`). `048-drop-blogs.sql` drops `in_blogs`/`us_blogs` — **NOT YET APPLIED** (destructive; take the pg_dump archive in the migration header first if the articles might be wanted). `in_blog_posts` kept (separate empty table, `/in/authors` reads it). Verified in dev: all four blog URL shapes 301 to country home in one hop, homes 200, both sitemaps blog-free; svelte-check unchanged (17 pre-existing), build passes.
 4. **Retire old tables** — only after all apps (incl. the external admin-app) migrate: drop triggers, keep old tables as archive or drop.
+
+   **Gate cleared (2026-07-19):** admin-app (solar-app-internal) now calls `sv_sync_lead/business/account` after every legacy write (lead edits/claim copies/pincode backfills/invite counts, business profile edits, magic-link mints, password resets — both countries), and automation-scripts write no legacy lead/business tables. Remaining 2.4 work when ready: write migration 049 dropping the 040/043/045/046 triggers (keep the `sv_sync_*` functions — every app calls them); afterwards optionally remove the `TODO(remove after legacy businesses_1 is dropped)` dual-writes and legacy-first writes app by app, re-copy `leads` pipeline columns is NOT needed (business-app already treats unified as read source and all pipeline writes sync). Old tables then freeze and can be archived/dropped in a final migration.
 5. **Adding a new country** = insert into `countries`, load `geo_locations` rows, add a `CountryConfig` in `lib/countries/`, done — routes, sitemaps, APIs, and redirects all derive from it. (No new country planned at the moment — this is the recipe for whenever one is.)
