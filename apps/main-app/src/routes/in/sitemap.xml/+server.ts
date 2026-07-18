@@ -2,6 +2,7 @@ import type { RequestHandler } from '@sveltejs/kit';
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { generateSitemapEntries } from '$lib/server/sitemap';
+import { getCountry } from '$lib/countries';
 
 function escapeXml(unsafe: string): string {
 	return unsafe
@@ -18,7 +19,7 @@ function urlEntry(loc: string, lastmod: string, changefreq: string, priority: st
 
 export const GET: RequestHandler = async () => {
 	const pool = createPool({ connectionString: POSTGRES_URL });
-	const entries = await generateSitemapEntries(pool);
+	const entries = await generateSitemapEntries(pool, getCountry('in'));
 
 	const parts: string[] = [
 		'<?xml version="1.0" encoding="UTF-8"?>',

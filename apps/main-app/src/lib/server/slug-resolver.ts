@@ -1,4 +1,6 @@
 import type { Pool } from '@vercel/postgres';
+import type { CountryConfig } from '$lib/countries';
+import { resolveCity } from './geo';
 
 interface ResolveResult {
 	type: string;
@@ -40,6 +42,45 @@ export async function resolveBrandSlug(
 	if (result.rows.length > 0) {
 		return { type: 'brand', data: result.rows[0] };
 	}
+	return null;
+}
+
+// Country-aware leaf resolver for /{country}/solar/{state}/{level2}/{slug}.
+// The slug is normally a city; the brand and system-size fallbacks are
+// IN-only SEO content families and are gated on the country's feature flag
+// so e.g. a US city slug can never resolve to a brand page.
+export async function resolveLeafSlug(
+	pool: Pool,
+	country: CountryConfig,
+	slug: string,
+	level1Slug: string,
+	level2Slug: string
+): Promise<ResolveResult | null> {
+	const city = await resolveCity(country.code, level1Slug, level2Slug, slug);
+	if (city) {
+		return {
+			type: 'city',
+			data: { city: city.city, district: city.level2, state: city.level1, geo: city }
+		};
+	}
+
+	if (!country.features.seoContentFamilies) {
+		return null;
+	}
+
+	const brandResult = await pool.query(
+		'SELECT slug, name, product_category FROM solar_brands WHERE slug = $1 AND status != $2 LIMIT 1',
+		[slug, 'draft']
+	);
+	if (brandResult.rows.length > 0) {
+		return { type: 'brand', data: brandResult.rows[0] };
+	}
+
+	const sizeMatch = slug.match(/^(\d+)kw-solar-system$/);
+	if (sizeMatch) {
+		return { type: 'size', data: { sizeKw: parseInt(sizeMatch[1], 10), slug } };
+	}
+
 	return null;
 }
 
