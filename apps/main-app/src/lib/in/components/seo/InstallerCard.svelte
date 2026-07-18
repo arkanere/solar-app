@@ -8,7 +8,7 @@
 	import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	let { businesses }: { businesses: any[] } = $props();
+	let { businesses, countryCode = 'in' }: { businesses: any[]; countryCode?: string } = $props();
 
 	function getProjectImageUrl(cloudinaryId: string): string {
 		return `https://res.cloudinary.com/${PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_fill,w_64,h_64,q_auto,f_auto/${cloudinaryId}`;
@@ -22,7 +22,7 @@
 				<Card.Header class="flex flex-col sm:flex-row sm:items-start sm:justify-between border-b gap-2 pb-4">
 					<h3 class="text-xl font-semibold">
 						<a
-							href={`/in/installer/${business.slug}/`}
+							href={`/${countryCode}/installer/${business.slug}/`}
 							onclick={() => capture('installer_card_clicked', { business_slug: business.slug, city: business.city })}
 							class="text-primary hover:opacity-80 underline-offset-2 hover:underline transition-all"
 						>
@@ -62,7 +62,7 @@
 							<div class="flex gap-2">
 								{#each business.recent_projects.slice(0, 3) as project}
 									<a
-										href="/in/project/{project.project_slug}/"
+										href="/{countryCode}/project/{project.project_slug}/"
 										class="group block"
 										aria-label="View {project.title}"
 									>
