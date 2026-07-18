@@ -23,7 +23,6 @@ export const IN: CountryConfig = {
 		subsidy: true,
 		financing: true,
 		tools: true,
-		dynamicBlogs: true,
 		authors: true,
 		projects: true,
 		chatbot: true,

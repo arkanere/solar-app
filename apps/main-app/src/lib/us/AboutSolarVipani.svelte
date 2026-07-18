@@ -54,9 +54,7 @@
 		<div class="about-text">
 			<p>
 				We are your premier marketplace aggregator dedicated to connecting residential and business
-				customers with <a href="/us/blogs/hiring-verified-solar-installer-in-usa-is-essential"
-					><strong>Best Local Solar Panel Installation</strong></a
-				> companies, ensuring that you make smart decisions backed by credible information and have a
+				customers with <strong>Best Local Solar Panel Installation</strong> companies, ensuring that you make smart decisions backed by credible information and have a
 				hassle-free experience.
 			</p>
 			<p>

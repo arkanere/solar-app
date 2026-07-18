@@ -300,68 +300,6 @@
 			<BusinessDirectory />
 		</section>
 
-		<!-- Blogs Section -->
-		<section class="blogs-section">
-			<div class="section-header">
-				<h2>Latest Solar Insights</h2>
-				<div class="section-divider">
-					<span class="divider-accent"></span>
-				</div>
-				<p class="section-subtitle">Stay informed with expert advice and industry updates</p>
-			</div>
-
-			<div class="blogs-grid">
-				<div class="blog-card">
-					<div class="blog-content">
-						<h3>
-							<a href="/us/blogs/federal-solar-tax-credit-guide"
-								>Understanding the Federal Solar Tax Credit: A Complete Guide</a
-							>
-						</h3>
-						<p>
-							Learn how to maximize your solar savings with the 30% federal tax credit, including
-							eligibility requirements and application process.
-						</p>
-						<a href="/us/blogs/federal-solar-tax-credit-guide" class="read-more">Read More →</a>
-					</div>
-				</div>
-
-				<div class="blog-card">
-					<div class="blog-content">
-						<h3>
-							<a href="/us/blogs/net-metering-explained"
-								>Net Metering in the USA: How to Sell Solar Power Back to the Grid</a
-							>
-						</h3>
-						<p>
-							Discover how net metering works in different states and how you can earn credits for
-							excess solar energy your system produces.
-						</p>
-						<a href="/us/blogs/net-metering-explained" class="read-more">Read More →</a>
-					</div>
-				</div>
-
-				<div class="blog-card">
-					<div class="blog-content">
-						<h3>
-							<a href="/us/blogs/solar-panel-cost-usa"
-								>Solar Panel Installation Costs in the USA: 2025 Complete Guide</a
-							>
-						</h3>
-						<p>
-							Explore the latest solar panel pricing, installation costs, and financing options
-							available across different US states.
-						</p>
-						<a href="/us/blogs/solar-panel-cost-usa" class="read-more">Read More →</a>
-					</div>
-				</div>
-			</div>
-
-			<div class="blogs-cta">
-				<a href="/us/blogs" class="view-all-blogs">View All Blogs</a>
-			</div>
-		</section>
-
 		<!-- About Section (Lazy Loaded) -->
 		<div id="about-section">
 			{#if shouldLoadAbout && AboutSolarVipani}
@@ -724,138 +662,6 @@
 		background: var(--accent-color);
 	}
 
-	/* Blogs Section */
-	.blogs-section {
-		background-color: var(--light-card-bg);
-	}
-
-	.dark .blogs-section {
-		background-color: var(--dark-card-bg);
-	}
-
-	.blogs-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-		gap: var(--grid-gap);
-		margin-bottom: 2rem;
-	}
-
-	.blog-card {
-		padding: 2rem;
-		border-radius: var(--border-radius-md);
-		background-color: var(--light-bg-color);
-		border: 1px solid #e2e8f0;
-		transition:
-			transform var(--transition-medium),
-			box-shadow var(--transition-medium),
-			border-color var(--transition-medium);
-		height: 100%;
-		display: flex;
-		flex-direction: column;
-	}
-
-	.blog-card:hover {
-		transform: translateY(-5px);
-		box-shadow: var(--shadow-lg);
-		border-color: var(--primary-color);
-	}
-
-	.dark .blog-card {
-		background-color: rgba(255, 255, 255, 0.03);
-		border-color: #4a5568;
-	}
-
-	.dark .blog-card:hover {
-		border-color: var(--primary-light);
-	}
-
-	.blog-content {
-		display: flex;
-		flex-direction: column;
-		height: 100%;
-	}
-
-	.blog-card h3 {
-		font-size: 1.3rem;
-		font-weight: 600;
-		margin-bottom: 1rem;
-		line-height: 1.3;
-	}
-
-	.blog-card h3 a {
-		color: var(--primary-color);
-		text-decoration: none;
-		transition: color var(--transition-fast);
-	}
-
-	.blog-card h3 a:hover {
-		color: var(--primary-hover);
-	}
-
-	.dark .blog-card h3 a {
-		color: var(--primary-light);
-	}
-
-	.dark .blog-card h3 a:hover {
-		color: #90caf9;
-	}
-
-	.blog-card p {
-		color: var(--text-medium);
-		font-size: 1rem;
-		line-height: 1.6;
-		margin-bottom: 1.5rem;
-		flex-grow: 1;
-	}
-
-	.dark .blog-card p {
-		color: #a0aec0;
-	}
-
-	.read-more {
-		color: var(--primary-color);
-		font-weight: 600;
-		text-decoration: none;
-		font-size: 0.95rem;
-		transition: color var(--transition-fast);
-		margin-top: auto;
-	}
-
-	.read-more:hover {
-		color: var(--primary-hover);
-	}
-
-	.dark .read-more {
-		color: var(--primary-light);
-	}
-
-	.dark .read-more:hover {
-		color: #90caf9;
-	}
-
-	.blogs-cta {
-		text-align: center;
-		margin-top: 2rem;
-	}
-
-	.view-all-blogs {
-		display: inline-block;
-		padding: 1rem 2rem;
-		background-color: var(--primary-color);
-		color: white;
-		text-decoration: none;
-		border-radius: var(--border-radius-md);
-		font-weight: 600;
-		transition:
-			background-color var(--transition-medium),
-			transform var(--transition-fast);
-	}
-
-	.view-all-blogs:hover {
-		background-color: var(--primary-hover);
-		transform: translateY(-2px);
-	}
-
 	/* Responsive Styling */
 	@media (max-width: 992px) {
 		.hero-content h1 {
@@ -872,10 +678,6 @@
 
 		.benefits-grid {
 			grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-		}
-
-		.blogs-grid {
-			grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 		}
 	}
 
@@ -925,13 +727,6 @@
 			padding: 1.5rem 1rem;
 		}
 
-		.blogs-grid {
-			grid-template-columns: 1fr;
-		}
-
-		.blog-card {
-			padding: 1.5rem;
-		}
 	}
 
 	@media (max-width: 576px) {

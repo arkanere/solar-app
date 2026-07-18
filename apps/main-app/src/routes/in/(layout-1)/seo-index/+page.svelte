@@ -205,14 +205,7 @@
 			]
 		},
 		{
-			name: '4. Blog',
-			routes: [
-				{ label: 'Blog Index', href: '/in/blogs' },
-				{ label: 'Blog Post — PM Surya Ghar Yojana', href: '/in/blogs/pm-surya-ghar-yojana' }
-			]
-		},
-		{
-			name: '5. Tools',
+			name: '4. Tools',
 			routes: [
 				{ label: 'Solar Calculator', href: '/in/tools/solar-calculator' },
 				{ label: 'EMI Calculator', href: '/in/tools/emi-calculator' },
@@ -220,7 +213,7 @@
 			]
 		},
 		{
-			name: '6. B2B / Partners',
+			name: '5. B2B / Partners',
 			routes: [
 				{ label: 'Partner Landing', href: '/in/partners' },
 				{ label: 'Partner Join', href: '/in/partners/join' },

@@ -34,7 +34,6 @@ function staticPages(country: CountryConfig): SitemapEntry[] {
 	pages.push(
 		{ loc: `${BASE_URL}/${c}/business-listing`, lastmod: '', changefreq: 'monthly', priority: '0.8' },
 		{ loc: `${BASE_URL}/${c}/business-form`, lastmod: '', changefreq: 'monthly', priority: '0.8' },
-		{ loc: `${BASE_URL}/${c}/blogs`, lastmod: '', changefreq: 'monthly', priority: '0.8' },
 		{
 			loc: `${BASE_URL}/${c}/recent-solar-installation-projects`,
 			lastmod: '',
@@ -57,12 +56,10 @@ export async function generateSitemapEntries(
 	}));
 
 	const { features } = country;
-	const blogsTable = code === 'in' ? 'in_blogs' : 'us_blogs'; // blog unification is deferred
 	const emptyResult = Promise.resolve({ rows: [] as Record<string, string>[] });
 
 	const [
 		businessesResult,
-		blogsResult,
 		seoPagesResult,
 		brandsResult,
 		subsidiesResult,
@@ -76,9 +73,6 @@ export async function generateSitemapEntries(
 		pool.query(
 			`SELECT slug FROM businesses WHERE country_code = $1 AND isvisible = true ORDER BY slug ASC`,
 			[code]
-		),
-		pool.query(
-			`SELECT slug, updated_at FROM ${blogsTable} WHERE status = 'published' ORDER BY updated_at DESC`
 		),
 		features.seoContentFamilies
 			? pool.query(
@@ -146,19 +140,6 @@ export async function generateSitemapEntries(
 				lastmod: today,
 				changefreq: 'monthly',
 				priority: '0.8'
-			});
-		}
-	}
-
-	// Blog pages — priority 0.6
-	for (const row of blogsResult.rows) {
-		if (row.slug) {
-			const lastmod = row.updated_at ? row.updated_at.toISOString().split('T')[0] : today;
-			entries.push({
-				loc: `${BASE_URL}/${code}/blogs/${row.slug}`,
-				lastmod,
-				changefreq: 'monthly',
-				priority: '0.6'
 			});
 		}
 	}

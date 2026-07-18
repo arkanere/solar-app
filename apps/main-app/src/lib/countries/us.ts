@@ -23,7 +23,6 @@ export const US: CountryConfig = {
 		subsidy: false,
 		financing: false,
 		tools: false,
-		dynamicBlogs: false,
 		authors: false,
 		projects: false,
 		chatbot: false,

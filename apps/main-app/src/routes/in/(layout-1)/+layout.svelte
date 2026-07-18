@@ -491,7 +491,6 @@
         <h4 class="text-sm font-semibold text-primary mb-3">Company</h4>
         <ul class="space-y-2 list-none p-0 m-0">
           <li><a href="/in/about-us" class="text-sm text-foreground no-underline hover:text-primary transition-colors">About Us</a></li>
-          <li><a href="/in/blogs" class="text-sm text-foreground no-underline hover:text-primary transition-colors">Blog</a></li>
           <li><a href="/in/partners" class="text-sm text-foreground no-underline hover:text-primary transition-colors">Partner with Us</a></li>
         </ul>
       </div>

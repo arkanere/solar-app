@@ -36,7 +36,6 @@ export interface CountryConfig {
 		subsidy: boolean;
 		financing: boolean;
 		tools: boolean;
-		dynamicBlogs: boolean;
 		authors: boolean;
 		projects: boolean;
 		chatbot: boolean;

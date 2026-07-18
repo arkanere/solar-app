@@ -1,10 +1,10 @@
 import type { Handle } from '@sveltejs/kit';
 import { building } from '$app/environment';
 
-// Legacy-US URL rewrites that need no DB lookup. Suffix-parsing redirects
+// Legacy URL rewrites that need no DB lookup. Suffix-parsing redirects
 // that DO need geo data live as +server.ts shims under routes/us/ (county,
 // solar-panel-installer-directory/[city]).
-function legacyUsRedirect(pathname: string): string | null {
+function legacyRedirect(pathname: string): string | null {
 	const clean = pathname.replace(/\/+$/, '');
 
 	if (clean === '/us/state') return '/us/solar';
@@ -16,6 +16,10 @@ function legacyUsRedirect(pathname: string): string | null {
 
 	const installerMatch = clean.match(/^\/us\/solar-panel-installer\/([^/]+)$/);
 	if (installerMatch) return `/us/installer/${installerMatch[1]}`;
+
+	// Blogs feature removed 2026-07: send indexed blog URLs to the country home.
+	const blogsMatch = clean.match(/^\/(in|us)\/blogs(\/.*)?$/);
+	if (blogsMatch) return `/${blogsMatch[1]}`;
 
 	return null;
 }
@@ -29,7 +33,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		});
 	}
 
-	const redirectTarget = legacyUsRedirect(event.url.pathname);
+	const redirectTarget = legacyRedirect(event.url.pathname);
 	if (redirectTarget) {
 		// url.search is not readable while prerendering (crawler follows links
 		// from the prerendered /us home into these legacy paths).
