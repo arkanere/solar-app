@@ -2,6 +2,7 @@ import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/in/auth/business';
+import { syncBusinessToUnified, syncAccountToUnified } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
@@ -56,6 +57,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			`UPDATE businesses_1 SET isvisible = false WHERE id = $1`,
 			[branchId]
 		);
+
+		await syncBusinessToUnified(pool, 'in', branchId);
+		await syncAccountToUnified(pool, 'in', branchId);
 
 		return json({ success: true, message: 'Branch deleted successfully' });
 	} catch (error) {

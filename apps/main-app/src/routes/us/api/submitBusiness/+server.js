@@ -2,6 +2,7 @@
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
+import { syncBusinessToUnified, syncAccountToUnified } from '$lib/server/unifiedSync';
 
 export async function POST({ request, fetch }) {
 	// ✅ Added fetch from event
@@ -62,6 +63,11 @@ export async function POST({ request, fetch }) {
 		]);
 
 		const businessId = result.rows[0].id;
+
+		// Idempotent with the us_businesses sync triggers (043/046); keeps the
+		// unified tables fresh once those triggers drop (phase 2.4).
+		await syncBusinessToUnified(pool, 'us', businessId);
+		await syncAccountToUnified(pool, 'us', businessId);
 
 		// Send confirmation email via the US-specific endpoint
 		await fetch('/us/api/sendBusinessSubmissionConfirmation', {

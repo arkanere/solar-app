@@ -1,6 +1,5 @@
 <script>
   import { onMount } from "svelte";
-  import BusinessDirectory from "$lib/in/components/BusinessDirectory.svelte";
   import RecentProjectsHome from "$lib/in/components/RecentProjectsHome.svelte";
   import SolarComparisonTable from "$lib/in/components/SolarComparisonTable.svelte";
 
@@ -431,20 +430,6 @@
     <!-- Recent Projects Section -->
     <RecentProjectsHome projects={recentProjects} />
 
-    <!-- Business Directory Section -->
-    <section class="mb-8 rounded-[theme(--radius-lg)] p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] bg-[hsl(var(--accent)/0.1)]">
-      <div class="text-center mb-8">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">Solar Panel Installer Directory</h2>
-        <div class="flex justify-center items-center my-4">
-          <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
-        </div>
-        <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
-          Find verified solar installers in your area
-        </p>
-      </div>
-      <BusinessDirectory />
-    </section>
-
     <!-- Benefits Section -->
     <section class="mb-8 rounded-[theme(--radius-lg)] bg-accent-muted p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">
       <div class="text-center mb-8">
@@ -524,84 +509,6 @@
             <p class="mt-3 text-foreground dark:text-foreground-secondary leading-relaxed">{faq.a}</p>
           </details>
         {/each}
-      </div>
-    </section>
-
-    <!-- Blogs Section -->
-    <section class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">
-      <div class="text-center mb-8">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">Latest Solar Insights</h2>
-        <div class="flex justify-center items-center my-4">
-          <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
-        </div>
-        <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
-          Stay informed with expert advice and industry updates
-        </p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-[theme(--card-gap)] mb-8">
-        <div class="border border-border flex flex-col hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] bg-background p-8 transition-all duration-[theme(--transition-default)]">
-          <h3 class="text-lg font-semibold mb-3">
-            <a
-              href="/in/blogs/hiring-verified-solar-installer-in-india-is-essential"
-              class="text-primary hover:text-primary-hover dark:hover:text-primary transition-colors"
-            >Why Hiring a Verified Solar Installer in India Is Essential</a
-            >
-          </h3>
-          <p class="text-foreground dark:text-foreground-secondary mb-4 flex-grow">
-            Learn about the importance of professional workmanship, safety
-            compliance, maximizing system efficiency, and ensuring long-term
-            support.
-          </p>
-          <a
-            href="/in/blogs/hiring-verified-solar-installer-in-india-is-essential"
-            class="text-primary font-semibold text-sm hover:text-primary-hover dark:hover:text-primary transition-colors"
-          >Read More →</a
-          >
-        </div>
-
-        <div class="border border-border flex flex-col hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] bg-background p-8 transition-all duration-[theme(--transition-default)]">
-          <h3 class="text-lg font-semibold mb-3">
-            <a
-              href="/in/blogs/pm-surya-ghar-yojana"
-              class="text-primary hover:text-primary-hover dark:hover:text-primary transition-colors"
-            >PM Surya Ghar Yojana: Your Guide to Check Eligibility</a
-            >
-          </h3>
-          <p class="text-foreground dark:text-foreground-secondary mb-4 flex-grow">
-            Understand the eligibility criteria and steps to benefit from the
-            government scheme providing subsidies for solar rooftop
-            installations.
-          </p>
-          <a
-            href="/in/blogs/pm-surya-ghar-yojana"
-            class="text-primary font-semibold text-sm hover:text-primary-hover dark:hover:text-primary transition-colors"
-          >Read More →</a
-          >
-        </div>
-
-        <div class="border border-border flex flex-col hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] bg-background p-8 transition-all duration-[theme(--transition-default)]">
-          <h3 class="text-lg font-semibold mb-3">
-            <a
-              href="/in/blogs/cost-of-solar-on-grid-system"
-              class="text-primary hover:text-primary-hover dark:hover:text-primary transition-colors"
-            >What is the Approximate Cost of a Solar On Grid System?</a
-            >
-          </h3>
-          <p class="text-foreground dark:text-foreground-secondary mb-4 flex-grow">
-            Learn about the costs associated with installing a solar on-grid
-            system, including equipment, labor, and other components.
-          </p>
-          <a
-            href="/in/blogs/cost-of-solar-on-grid-system"
-            class="text-primary font-semibold text-sm hover:text-primary-hover dark:hover:text-primary transition-colors"
-          >Read More →</a
-          >
-        </div>
-      </div>
-
-      <div class="text-center">
-        <a href="/in/blogs" class="inline-block text-primary-foreground font-semibold bg-primary hover:bg-primary-hover hover:-translate-y-[theme(--hover-lift-sm)] px-[theme(--button-padding-x-default)] py-[theme(--button-padding-y-default)] rounded-[theme(--radius-lg)] transition-all duration-[theme(--transition-default)]">View All Blogs</a>
       </div>
     </section>
 

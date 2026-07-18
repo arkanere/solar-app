@@ -5,6 +5,7 @@ import { json } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/in/auth/business';
 import type { RequestHandler } from './$types';
 import type { LeadUpdatePayload, LeadData } from '$lib/types/lead';
+import { syncLeadToUnified } from '$lib/server/unifiedSync';
 
 /**
  * Updates lead fields (stage, status, business_notes) for a business's lead
@@ -106,6 +107,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		const updatedLead = result.rows[0];
+		await syncLeadToUnified(pool, 'in', id);
 
 		// ✅ If lead is marked as "Won" (stage 3), automatically create a project in project management
 		if (stage === 3) {

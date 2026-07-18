@@ -15,8 +15,8 @@ export async function ownsBusinessSlug(
 	const branchCheck = await pool.query(
 		`SELECT 1
 		 FROM branches br
-		 JOIN in_business_profiles main ON br.main_id = main.business_id
-		 JOIN in_business_profiles branch ON br.branch_id = branch.business_id
+		 JOIN businesses main ON main.country_code = 'in' AND br.main_id = main.source_id
+		 JOIN businesses branch ON branch.country_code = 'in' AND br.branch_id = branch.source_id
 		 WHERE main.slug = $1 AND branch.slug = $2 AND br.isactive = true`,
 		[sessionBusinessSlug, targetSlug]
 	);

@@ -8,15 +8,29 @@
   import * as Alert from '$lib/components/ui/alert';
   import { validatePhone, validateEmail, validatePinCode } from '$lib/constants/formValidation';
   import { capture } from '$lib/posthog';
+  import type { CountryConfig } from '$lib/countries';
 
   interface Props {
     heading?: string;
     description?: string;
     showWrapper?: boolean;
     submitLabel?: string;
+    country?: CountryConfig | null;
   }
 
-  let { heading = 'Share Your Details', description = '', showWrapper = true, submitLabel = 'Get Free Quotes' } = $props();
+  let { heading = 'Share Your Details', showWrapper = true, submitLabel = 'Get Free Quotes', country = null }: Props = $props();
+
+  // Without a country config the form keeps its original India behavior.
+  const isIndia = $derived(!country || country.code === 'in');
+  const postalLabel = $derived(country ? country.postalCode.label : 'Pin Code');
+  const postalPlaceholder = $derived(
+    country ? `${country.postalCode.maxLength}-digit ${country.postalCode.label.toLowerCase()}` : '6-digit pin code'
+  );
+
+  function validatePostalCode(value: string): boolean {
+    if (!country) return validatePinCode(value);
+    return new RegExp(country.postalCode.pattern).test(value);
+  }
 
   let name = $state('');
   let phone = $state('');
@@ -40,7 +54,9 @@
     errors = {
       name: !name.trim() ? 'Name is required' : '',
       phone: !validatePhone(phone) ? 'Valid phone number required (10-16 digits)' : '',
-      pinCode: !validatePinCode(pinCode) ? 'Valid 6-digit pin code required' : '',
+      pinCode: !validatePostalCode(pinCode)
+        ? `Valid ${country ? country.postalCode.maxLength : 6}-digit ${postalLabel.toLowerCase()} required`
+        : '',
       email: !validateEmail(email) ? 'Valid email required' : '',
       comment: !comment.trim() ? 'Comments required' : ''
     };
@@ -57,7 +73,13 @@
 
     capture('quote_submitted', { source_url: urlParam });
 
-    fetch('https://user.solarvipani.com/in/api/submitLead', {
+    // India keeps its original user-app lead flow; other countries submit to
+    // the unified same-site endpoint.
+    const submitUrl = isIndia
+      ? 'https://user.solarvipani.com/in/api/submitLead'
+      : `/${country!.code}/api/submitLead`;
+
+    fetch(submitUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       keepalive: true,
@@ -74,7 +96,9 @@
       console.error('Error submitting form:', error);
     });
 
-    window.location.href = `https://user.solarvipani.com/in/thank-you?pincode=${encodeURIComponent(pinCode)}`;
+    window.location.href = isIndia
+      ? `https://user.solarvipani.com/in/thank-you?pincode=${encodeURIComponent(pinCode)}`
+      : `/${country!.code}/thank-you`;
   }
 </script>
 
@@ -124,12 +148,12 @@
 
           <!-- Pin Code Field -->
           <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
-            <Label for="pinCode">Pin Code</Label>
+            <Label for="pinCode">{postalLabel}</Label>
             <Input
               id="pinCode"
               bind:value={pinCode}
               type="text"
-              placeholder="6-digit pin code"
+              placeholder={postalPlaceholder}
               disabled={isSubmitting}
               inputmode="numeric"
             />
@@ -240,12 +264,12 @@
 
     <!-- Pin Code Field -->
     <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
-      <Label for="pinCode">Pin Code</Label>
+      <Label for="pinCode">{postalLabel}</Label>
       <Input
         id="pinCode"
         bind:value={pinCode}
         type="text"
-        placeholder="6-digit pin code"
+        placeholder={postalPlaceholder}
         disabled={isSubmitting}
         inputmode="numeric"
       />

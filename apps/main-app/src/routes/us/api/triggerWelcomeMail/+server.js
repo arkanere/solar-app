@@ -62,7 +62,7 @@ export async function POST({ request, fetch }) {
                     </ul>
 
                     <p>
-                        <a href="https://solarvipani.com/solar-panel-installer/${slug}" 
+                        <a href="https://solarvipani.com/us/installer/${slug}"
                         style="background-color: #2a9d8f; color: #ffffff !important; text-decoration: none !important; 
                                 font-weight: bold; font-size: 1.2em; padding: 12px 20px; border-radius: 5px; 
                                 display: inline-block; text-align: center;">

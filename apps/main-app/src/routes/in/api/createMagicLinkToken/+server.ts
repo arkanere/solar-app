@@ -4,6 +4,7 @@ import { POSTGRES_URL } from '$env/static/private';
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
 import { hasInternalSecret } from '$lib/server/internalAuth';
+import { syncAccountToUnified } from '$lib/server/unifiedSync';
 
 interface MagicLinkRequest {
 	slug: string;
@@ -52,6 +53,10 @@ export const POST: RequestHandler = async ({ request }) => {
 				'UPDATE businesses_1 SET magic_link_token = $1, magic_link_token_expires_at = $2 WHERE id = $3',
 				[tokenHash, expiresAt, id]
 			);
+
+			// Idempotent with the businesses_1 sync trigger (046); keeps the
+			// unified business_accounts fresh once triggers drop (phase 2.4).
+			await syncAccountToUnified(client, 'in', id);
 
 			// Return the raw token (not the stored hash) so the caller can email it.
 			return json({ success: true, magic_link_token: magicLinkToken });

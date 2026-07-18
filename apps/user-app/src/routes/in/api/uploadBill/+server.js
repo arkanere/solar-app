@@ -3,6 +3,7 @@ import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { UserAuthService } from '$lib/auth/user/index.js';
 import { uploadBill, getSignedBillUrl, deleteBill } from '$lib/server/billStorage.js';
+import { syncLeadToUnified } from '$lib/server/unifiedSync.js';
 
 const pool = createPool({ connectionString: POSTGRES_URL });
 
@@ -53,8 +54,8 @@ export async function POST({ request, cookies }) {
 
 		if (ref) {
 			const result = await pool.query(
-				`SELECT id, bill_cloudinary_public_id FROM LeadData
-				WHERE reference_uuid = $1 AND isvisible = true
+				`SELECT source_id AS id, bill_cloudinary_public_id FROM leads
+				WHERE country_code = 'in' AND reference_uuid = $1 AND isvisible = true
 				LIMIT 1`,
 				[ref]
 			);
@@ -68,8 +69,8 @@ export async function POST({ request, cookies }) {
 			}
 
 			const result = await pool.query(
-				`SELECT id, bill_cloudinary_public_id FROM LeadData
-				WHERE id = $1 AND email = $2 AND isvisible = true
+				`SELECT source_id AS id, bill_cloudinary_public_id FROM leads
+				WHERE country_code = 'in' AND source_id = $1 AND email = $2 AND isvisible = true
 				LIMIT 1`,
 				[leadId, sessionResult.user.email]
 			);
@@ -100,6 +101,7 @@ export async function POST({ request, cookies }) {
 			WHERE id = $4`,
 			[signedUrl, billData.publicId, billData.format, lead.id]
 		);
+		await syncLeadToUnified(pool, 'in', lead.id);
 
 		return json({
 			success: true,

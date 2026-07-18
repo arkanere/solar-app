@@ -2,6 +2,7 @@ import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/us/auth/business';
+import { syncLeadToUnified } from '$lib/server/unifiedSync';
 import { sendEmail } from '$lib/us/sendEmail';
 import { mintBusinessTokenById } from '$lib/server/magicLink';
 import { checkLeadDataPolicy } from '$lib/compliance';
@@ -156,16 +157,17 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				const originalLead = leadDataResult.rows[0];
 
 				// Create new lead entry for the allocated business
-				await client.query(
+				const newLeadResult = await client.query<{ id: number }>(
 					`INSERT INTO us_leaddata
-                     (name, phone, email, pin_code, type, comment, created_at, svnotes, sv_comment_for_businesses, urlparams, isvisible, category, county, stage, status, claim_count, original_id, business_id)
+                     (name, phone, email, zipcode, type, comment, created_at, svnotes, sv_comment_for_businesses, urlparams, isvisible, category, county, stage, status, claim_count, original_id, business_id)
                     VALUES
-                     ($1, $2, $3, $4, $5, $6, NOW(), $7, $8, $9, true, 2, $10, 0, true, 0, $11, $12)`,
+                     ($1, $2, $3, $4, $5, $6, NOW(), $7, $8, $9, true, 2, $10, 0, true, 0, $11, $12)
+                    RETURNING id`,
 					[
 						originalLead.name,
 						originalLead.phone,
 						originalLead.email,
-						originalLead.pin_code,
+						originalLead.zipcode,
 						originalLead.type,
 						originalLead.comment,
 						originalLead.svnotes,
@@ -176,7 +178,12 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 						business_id // Set business_id from claim request
 					]
 				);
+				if (newLeadResult.rows[0]) {
+					await syncLeadToUnified(client, 'us', newLeadResult.rows[0].id);
+				}
 			}
+
+			await syncLeadToUnified(client, 'us', lead_id);
 
 			// Prepare email data but don't send yet (move outside transaction)
 			emailData = { business_id, isallotted: true };

@@ -103,7 +103,7 @@
 				{#each projects as project (project.id)}
 					<div class="project-card">
 						<a
-							href="/solar-panel-installer/{project.business_slug}/project/{project.project_slug}"
+							href="/us/installer/{project.business_slug}"
 							class="project-link"
 						>
 							<div class="project-image">
@@ -144,9 +144,7 @@
 					<!-- Previous button -->
 					{#if currentPage > 1}
 						<a
-							href={currentPage === 2
-								? '/recent-solar-installation-projects'
-								: `/recent-solar-installation-projects/${currentPage - 1}`}
+							href="/us/recent-solar-installation-projects/{currentPage - 1}"
 							class="pagination-button prev"
 						>
 							← Previous
@@ -161,9 +159,7 @@
 							<span class="pagination-button active">{link}</span>
 						{:else}
 							<a
-								href={link === 1
-									? '/recent-solar-installation-projects'
-									: `/recent-solar-installation-projects/${link}`}
+								href="/us/recent-solar-installation-projects/{link}"
 								class="pagination-button"
 							>
 								{link}
@@ -174,7 +170,7 @@
 					<!-- Next button -->
 					{#if currentPage < totalPages}
 						<a
-							href="/recent-solar-installation-projects/{currentPage + 1}"
+							href="/us/recent-solar-installation-projects/{currentPage + 1}"
 							class="pagination-button next"
 						>
 							Next →

@@ -35,12 +35,12 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 	try {
 		// First, get the main business profile using the slug
 		const mainBusinessQuery = `
-      SELECT business_id AS id, slug, businessname, email, phonenumber, whatsapp,
+      SELECT source_id AS id, slug, businessname, email, phonenumber, whatsapp,
         description, website, instagram_id, google_maps_link, address, pluscode,
-        services, brands, gstn, state, district, city, pincode, rscore, tag,
-        businessfilled, isvisible
-      FROM in_business_profiles
-      WHERE slug = $1
+        services, brands, tax_id AS gstn, level1 AS state, level2 AS district,
+        city, postal_code AS pincode, rscore, tag, businessfilled, isvisible
+      FROM businesses
+      WHERE country_code = 'in' AND slug = $1
     `;
 
 		const mainBusinessResult = await pool.query(mainBusinessQuery, [businessSlug]);
@@ -57,12 +57,13 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 
 		// Get all branch offices linked to this main business
 		const branchesQuery = `
-      SELECT b.business_id AS id, b.slug, b.businessname, b.email, b.phonenumber,
+      SELECT b.source_id AS id, b.slug, b.businessname, b.email, b.phonenumber,
         b.whatsapp, b.description, b.website, b.instagram_id, b.google_maps_link,
-        b.address, b.pluscode, b.services, b.brands, b.gstn, b.state, b.district,
-        b.city, b.pincode, b.rscore, b.tag, b.businessfilled, b.isvisible
+        b.address, b.pluscode, b.services, b.brands, b.tax_id AS gstn,
+        b.level1 AS state, b.level2 AS district, b.city, b.postal_code AS pincode,
+        b.rscore, b.tag, b.businessfilled, b.isvisible
       FROM branches br
-      JOIN in_business_profiles b ON br.branch_id = b.business_id
+      JOIN businesses b ON b.country_code = 'in' AND br.branch_id = b.source_id
       WHERE br.main_id = $1 AND br.isactive = true
     `;
 

@@ -1,7 +1,18 @@
 <script lang="ts">
 	import LeadForm from './LeadForm.svelte';
+	import type { CountryConfig } from '$lib/countries';
 
-	let { city = '', title = '', hasBusinesses = true } = $props();
+	let {
+		city = '',
+		title = '',
+		hasBusinesses = true,
+		country = null
+	}: {
+		city?: string;
+		title?: string;
+		hasBusinesses?: boolean;
+		country?: CountryConfig | null;
+	} = $props();
 
 	const defaultTitle = $derived(
 		hasBusinesses
@@ -23,6 +34,6 @@
 				<p class="text-muted-foreground max-w-lg mx-auto">We're building our installer network in {city}. Share your details and we'll connect you with verified installers as soon as they're available.</p>
 			{/if}
 		</div>
-		<LeadForm showWrapper={false} {submitLabel} />
+		<LeadForm showWrapper={false} {submitLabel} {country} />
 	</div>
 </section>

@@ -2,6 +2,7 @@ import type { PageServerLoad } from './$types';
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { error } from '@sveltejs/kit';
+import { US_BUSINESS_COLUMNS } from '$lib/server/unifiedRead';
 
 export const prerender = false;
 
@@ -49,10 +50,11 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
-		// First, get the main business using the slug
+		// First, get the main business using the slug (unified table: profile
+		// columns only, so credentials can never reach page data)
 		const mainBusinessQuery = `
-      SELECT * FROM us_businesses
-      WHERE slug = $1
+      SELECT ${US_BUSINESS_COLUMNS} FROM businesses
+      WHERE country_code = 'us' AND slug = $1
     `;
 
 		const mainBusinessResult = await pool.query(mainBusinessQuery, [businessSlug]);

@@ -51,12 +51,12 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 	try {
 		// First, get the main business profile using the slug
 		const mainBusinessQuery = `
-      SELECT business_id AS id, slug, businessname, email, phonenumber, whatsapp,
+      SELECT source_id AS id, slug, businessname, email, phonenumber, whatsapp,
         description, website, instagram_id, google_maps_link, address, pluscode,
-        services, brands, gstn, state, district, city, pincode, rscore, tag,
-        businessfilled, isvisible
-      FROM in_business_profiles
-      WHERE slug = $1
+        services, brands, tax_id AS gstn, level1 AS state, level2 AS district,
+        city, postal_code AS pincode, rscore, tag, businessfilled, isvisible
+      FROM businesses
+      WHERE country_code = 'in' AND slug = $1
     `;
 
 		const mainBusinessResult = await pool.query(mainBusinessQuery, [businessSlug]);

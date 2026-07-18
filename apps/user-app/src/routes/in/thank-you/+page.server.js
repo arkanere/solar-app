@@ -17,9 +17,9 @@ export async function load({ url }) {
 	if (referenceUuid) {
 		try {
 			const result = await pool.query(
-				`SELECT id, name, phone, pin_code, type, comment, email, district, state, urlparams, created_at, isvisible, bill_cloudinary_public_id, bill_format
-				FROM LeadData
-				WHERE reference_uuid = $1
+				`SELECT source_id AS id, name, phone, postal_code AS pin_code, type, comment, email, level2 AS district, level1 AS state, urlparams, created_at, isvisible, bill_cloudinary_public_id, bill_format
+				FROM leads
+				WHERE country_code = 'in' AND reference_uuid = $1
 				LIMIT 1`,
 				[referenceUuid]
 			);
@@ -59,8 +59,8 @@ export async function load({ url }) {
 				const district = districtResult.rows[0].district;
 				const bizResult = await pool.query(
 					`SELECT businessname, address, phonenumber
-					 FROM in_business_profiles
-					 WHERE LOWER(district) = LOWER($1) AND isvisible = true
+					 FROM businesses
+					 WHERE country_code = 'in' AND LOWER(level2) = LOWER($1) AND isvisible = true
 					 ORDER BY rscore DESC NULLS LAST
 					 LIMIT 5`,
 					[district]

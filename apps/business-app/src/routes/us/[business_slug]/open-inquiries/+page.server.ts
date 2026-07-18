@@ -34,7 +34,7 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 	try {
 		// First get the business information from slug
 		const businessResult = await pool.query(
-			'SELECT id, businessname FROM us_businesses WHERE slug = $1',
+			`SELECT source_id AS id, businessname FROM businesses WHERE country_code = 'us' AND slug = $1`,
 			[businessSlug]
 		);
 
@@ -49,17 +49,17 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 		// Only show leads that are at least 10 days old and within the last 90 days
 		const leadsResult = await pool.query(`
 			SELECT DISTINCT
-				l.id,
+				l.source_id AS id,
 				l.name,
-				l.county,
-				l.pin_code,
+				l.level2 AS county,
+				l.postal_code AS pin_code,
 				l.created_at,
 				l.claim_count,
 				l.sv_comment_for_businesses,
-				COALESCE(loc.state, 'Unknown') as state
-			FROM us_leaddata l
-			LEFT JOIN us_locations loc ON l.county = loc.county
-			WHERE l.category = 1
+				COALESCE(loc.level1, 'Unknown') as state
+			FROM leads l
+			LEFT JOIN geo_locations loc ON loc.country_code = 'us' AND loc.level2 = l.level2
+			WHERE l.country_code = 'us' AND l.category = 1
 			AND l.claim_count <= 4
 			AND l.isvisible = true
 			AND l.created_at <= NOW() - INTERVAL '10 days'

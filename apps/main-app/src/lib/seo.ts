@@ -87,33 +87,6 @@ export function productLD(product: {
 	};
 }
 
-export function articleLD(article: {
-	title: string;
-	slug: string;
-	description: string;
-	datePublished: string;
-	dateModified: string;
-	author: string;
-	image?: string;
-}): object {
-	return {
-		'@context': 'https://schema.org',
-		'@type': 'Article',
-		headline: article.title,
-		url: `${BASE_URL}/in/blog/${article.slug}`,
-		description: article.description,
-		datePublished: article.datePublished,
-		dateModified: article.dateModified,
-		author: { '@type': 'Person', name: article.author },
-		publisher: {
-			'@type': 'Organization',
-			name: 'Solar Vipani',
-			logo: { '@type': 'ImageObject', url: `${BASE_URL}/logo.png` }
-		},
-		...(article.image ? { image: article.image } : {})
-	};
-}
-
 export function personLD(author: {
 	name: string;
 	slug: string;

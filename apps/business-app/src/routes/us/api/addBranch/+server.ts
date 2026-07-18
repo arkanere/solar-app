@@ -4,6 +4,7 @@ import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
 import { randomBytes } from 'crypto';
 import { BusinessAuthService } from '$lib/us/auth/business';
+import { syncBusinessToUnified, syncAccountToUnified } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
 import type { AddBranchRequest } from '$lib/types/business';
 
@@ -142,6 +143,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			branchId, // Branch business ID
 			true // Set as active by default
 		]);
+
+		await syncBusinessToUnified(pool, 'us', branchId);
+		await syncAccountToUnified(pool, 'us', branchId);
 
 		return json({
 			success: true,

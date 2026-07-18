@@ -1,6 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
+import { US_LEAD_COLUMNS } from '$lib/server/unifiedRead';
 
 export const prerender = false;
 
@@ -45,7 +46,8 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 	try {
 		// Query business details
 		const businessResult = await pool.query(
-			'SELECT id, businessname, description, phonenumber, email, address, website, county FROM us_businesses WHERE slug = $1 LIMIT 1',
+			`SELECT source_id AS id, businessname, description, phonenumber, email, address, website, level2 AS county
+			 FROM businesses WHERE country_code = 'us' AND slug = $1 LIMIT 1`,
 			[business_slug]
 		);
 
@@ -58,9 +60,9 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 
 		// ✅ Get all branch business IDs and slugs for this main business
 		const branchesResult = await pool.query(
-			`SELECT b.id, b.slug, b.county
+			`SELECT b.source_id AS id, b.slug, b.level2 AS county
 			FROM us_branches br
-			JOIN us_businesses b ON br.branch_id = b.id
+			JOIN businesses b ON b.country_code = 'us' AND br.branch_id = b.source_id
 			WHERE br.main_id = $1 AND br.isactive = true`,
 			[businessId]
 		);
@@ -75,8 +77,8 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 		let exclusiveLeadResult = { rows: [] as Lead[] };
 		if (allSlugs.length > 0) {
 			exclusiveLeadResult = await pool.query(
-				`SELECT * FROM us_leaddata
-				WHERE isvisible = true
+				`SELECT ${US_LEAD_COLUMNS} FROM leads
+				WHERE country_code = 'us' AND isvisible = true
 				AND (${allSlugs.map((_, index) => `urlparams LIKE $${index + 1}`).join(' OR ')})
 				ORDER BY id DESC`,
 				allSlugs.map((slug) => `/solar-panel-installer/${slug}%`)
@@ -94,8 +96,8 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 
 		// ✅ Fetch non-exclusive claimed leads for main business and all branches
 		const nonExclusiveClaimedResult = await pool.query(
-			`SELECT * FROM us_leaddata
-			WHERE category = 2
+			`SELECT ${US_LEAD_COLUMNS} FROM leads
+			WHERE country_code = 'us' AND category = 2
 			AND business_id = ANY($1)
 			AND isvisible = true
 			ORDER BY id DESC`,
@@ -112,10 +114,10 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 		let nonExclusiveLeadResult = { rows: [] as Lead[] };
 		if (uniqueCounties.length > 0) {
 			nonExclusiveLeadResult = await pool.query(
-				`SELECT *, COALESCE(claim_count, 0) as claim_count
-				FROM us_leaddata
-				WHERE category = 1
-				AND county = ANY($1)
+				`SELECT ${US_LEAD_COLUMNS}, COALESCE(claim_count, 0) as claim_count
+				FROM leads
+				WHERE country_code = 'us' AND category = 1
+				AND level2 = ANY($1)
 				AND isvisible = true
 				AND NOT (COALESCE(claim_count, 0) > 4 AND created_at < NOW() - INTERVAL '60 days')
 				ORDER BY id DESC`,

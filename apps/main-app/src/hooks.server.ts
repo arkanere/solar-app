@@ -1,12 +1,46 @@
 import type { Handle } from '@sveltejs/kit';
+import { building } from '$app/environment';
 
-// All SEO redirects are in vercel.json (edge, zero serverless cost). Only cross-domain redirects remain here.
+// Legacy URL rewrites that need no DB lookup. Suffix-parsing redirects
+// that DO need geo data live as +server.ts shims under routes/us/ (county,
+// solar-panel-installer-directory/[city]).
+function legacyRedirect(pathname: string): string | null {
+	const clean = pathname.replace(/\/+$/, '');
+
+	if (clean === '/us/state') return '/us/solar';
+
+	const stateMatch = clean.match(/^\/us\/state\/solar-panel-installers-in-([a-z0-9-]+)$/);
+	if (stateMatch) return `/us/solar/${stateMatch[1]}`;
+
+	if (clean === '/us/solar-panel-installer-directory') return '/us/solar';
+
+	const installerMatch = clean.match(/^\/us\/solar-panel-installer\/([^/]+)$/);
+	if (installerMatch) return `/us/installer/${installerMatch[1]}`;
+
+	// Blogs feature removed 2026-07: send indexed blog URLs to the country home.
+	const blogsMatch = clean.match(/^\/(in|us)\/blogs(\/.*)?$/);
+	if (blogsMatch) return `/${blogsMatch[1]}`;
+
+	return null;
+}
+
 export const handle: Handle = async ({ event, resolve }) => {
 	if (event.url.pathname.startsWith('/business/')) {
 		const businessPath = event.url.pathname.replace('/business/', '');
 		return new Response(null, {
 			status: 301,
 			headers: { location: `https://business.solarvipani.com/${businessPath}` }
+		});
+	}
+
+	const redirectTarget = legacyRedirect(event.url.pathname);
+	if (redirectTarget) {
+		// url.search is not readable while prerendering (crawler follows links
+		// from the prerendered /us home into these legacy paths).
+		const search = building ? '' : event.url.search;
+		return new Response(null, {
+			status: 301,
+			headers: { location: redirectTarget + search }
 		});
 	}
 
