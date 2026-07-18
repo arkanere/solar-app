@@ -1,9 +1,12 @@
 import bcrypt from 'bcrypt';
 import type { Business, AuthResponse } from '$lib/types/auth';
 import { AUTH_ERRORS, SUCCESS_RESPONSE, ERROR_RESPONSE } from '$lib/types/auth';
+import type { AuthCountry } from './countryTables';
 
 export class PasswordManager {
-	static async validatePassword(
+	constructor(private readonly country: AuthCountry) {}
+
+	async validatePassword(
 		email: string,
 		password: string,
 		business: Business
@@ -24,8 +27,11 @@ export class PasswordManager {
 			try {
 				client = await pool.connect();
 				const result = await client.query<{ login_password: string | null }>(
-					'SELECT login_password FROM us_businesses WHERE login_email = $1 AND slug = $2',
-					[email, business.slug]
+					`SELECT a.login_password
+					 FROM business_accounts a
+					 JOIN businesses p ON p.country_code = a.country_code AND p.source_id = a.source_id
+					 WHERE a.country_code = $1 AND a.login_email = $2 AND p.slug = $3`,
+					[this.country, email, business.slug]
 				);
 
 				if (result.rows.length === 0 || !result.rows[0].login_password) {
@@ -52,7 +58,7 @@ export class PasswordManager {
 		}
 	}
 
-	static async hashPassword(password: string): Promise<string> {
+	async hashPassword(password: string): Promise<string> {
 		try {
 			const saltRounds = 12;
 			return await bcrypt.hash(password, saltRounds);

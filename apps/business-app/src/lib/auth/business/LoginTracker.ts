@@ -1,11 +1,15 @@
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { AUTH_CONFIG, type LoginTrackerResult } from './AuthTypes';
+import { LEGACY_BUSINESS_TABLE, type AuthCountry } from './countryTables';
+import { syncAccountToUnified } from '$lib/server/unifiedSync';
 
 const pool = createPool({ connectionString: POSTGRES_URL });
 
 export class LoginTracker {
-	static async updateLastLogin(
+	constructor(private readonly country: AuthCountry) {}
+
+	async updateLastLogin(
 		businessId: number,
 		options: { throttleHours?: number } = {}
 	): Promise<LoginTrackerResult> {
@@ -13,9 +17,11 @@ export class LoginTracker {
 
 		try {
 			// Update only if last_login is null or older than throttle threshold.
+			// Writes still target the legacy table (phase-2 transition); the
+			// explicit sync projects the row into business_accounts.
 			// Bind the interval as a parameter via make_interval (no string interpolation).
 			const result = await pool.query(
-				`UPDATE us_businesses
+				`UPDATE ${LEGACY_BUSINESS_TABLE[this.country]}
 				 SET last_login = NOW()
 				 WHERE id = $1
 				   AND (last_login IS NULL OR last_login < NOW() - make_interval(hours => $2))
@@ -24,7 +30,7 @@ export class LoginTracker {
 			);
 
 			if (result.rows.length > 0) {
-				console.log(`✅ Updated last_login for business ID: ${businessId}`);
+				await syncAccountToUnified(pool, this.country, businessId);
 				return {
 					updated: true,
 					lastLogin: result.rows[0].last_login
@@ -32,8 +38,8 @@ export class LoginTracker {
 			} else {
 				// Get current last_login for reference
 				const currentResult = await pool.query(
-					'SELECT last_login FROM us_businesses WHERE id = $1',
-					[businessId]
+					`SELECT last_login FROM business_accounts WHERE country_code = $1 AND source_id = $2`,
+					[this.country, businessId]
 				);
 
 				return {
@@ -52,11 +58,12 @@ export class LoginTracker {
 		}
 	}
 
-	static async getLastLogin(businessId: number): Promise<Date | null> {
+	async getLastLogin(businessId: number): Promise<Date | null> {
 		try {
-			const result = await pool.query('SELECT last_login FROM us_businesses WHERE id = $1', [
-				businessId
-			]);
+			const result = await pool.query(
+				`SELECT last_login FROM business_accounts WHERE country_code = $1 AND source_id = $2`,
+				[this.country, businessId]
+			);
 			return result.rows[0]?.last_login || null;
 		} catch (error) {
 			console.error('❌ Error getting last_login:', error);

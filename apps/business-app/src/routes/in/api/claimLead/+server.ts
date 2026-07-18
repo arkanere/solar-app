@@ -6,6 +6,11 @@ import { sendEmail } from '$lib/in/sendEmail';
 import { mintBusinessTokenById, mintUserToken } from '$lib/server/magicLink';
 import { checkLeadDataPolicy } from '$lib/compliance';
 import type { ClaimRequestPayload } from '$lib/types/lead';
+import {
+	syncLeadToUnified,
+	syncBusinessToUnified,
+	syncAccountToUnified
+} from '$lib/server/unifiedSync';
 
 // Allow time for the full claim pipeline including Brevo calls — the default
 // limit kills the function mid-run and silently drops the notification emails
@@ -359,6 +364,15 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			// Prepare email data but don't send yet (move outside transaction)
 			allotmentBusinessId = mainBusinessId;
 			customerBusinessId = effectiveBusinessId;
+
+			// Project the rows written above into the unified tables (covers the
+			// auto-created branch, the claim-count bump and the claimed copy).
+			await syncBusinessToUnified(client, 'in', effectiveBusinessId);
+			await syncAccountToUnified(client, 'in', effectiveBusinessId);
+			await syncLeadToUnified(client, 'in', lead_id);
+			if (newLead) {
+				await syncLeadToUnified(client, 'in', newLead.id);
+			}
 
 			await client.query('COMMIT');
 		} catch (error) {

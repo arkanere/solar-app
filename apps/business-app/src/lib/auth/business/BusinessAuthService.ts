@@ -16,6 +16,7 @@ import { LoginTracker } from './LoginTracker';
 import { SessionManager } from './SessionManager';
 import { TokenManager } from './TokenManager';
 import { PasswordManager } from './PasswordManager';
+import type { AuthCountry } from './countryTables';
 
 interface RefreshOptions {
 	updateLastLogin?: boolean;
@@ -23,6 +24,16 @@ interface RefreshOptions {
 }
 
 export class BusinessAuthService {
+	private readonly tokens: TokenManager;
+	private readonly passwords: PasswordManager;
+	private readonly logins: LoginTracker;
+
+	constructor(country: AuthCountry) {
+		this.tokens = new TokenManager(country);
+		this.passwords = new PasswordManager(country);
+		this.logins = new LoginTracker(country);
+	}
+
 	async authenticateWithMagicLink(
 		token: string,
 		businessSlug: string,
@@ -30,7 +41,7 @@ export class BusinessAuthService {
 	): Promise<AuthResponse<MagicLinkAuthSuccess>> {
 		try {
 			// Validate token and get business
-			const tokenResult = await TokenManager.validateMagicLinkToken(token, businessSlug);
+			const tokenResult = await this.tokens.validateMagicLinkToken(token, businessSlug);
 			if (!tokenResult.success) {
 				return tokenResult;
 			}
@@ -38,7 +49,7 @@ export class BusinessAuthService {
 			const { business } = tokenResult;
 
 			// Update last login
-			const loginResult = await LoginTracker.updateLastLogin(business.id);
+			const loginResult = await this.logins.updateLastLogin(business.id);
 
 			// Create session
 			const sessionData = SessionManager.createSession(business, AUTH_METHODS.MAGIC_LINK);
@@ -57,7 +68,7 @@ export class BusinessAuthService {
 	}
 
 	async getBusinessByEmail(email: string): Promise<BusinessLookupSuccess | AuthErrorResponse> {
-		return await TokenManager.getBusinessByEmail(email);
+		return await this.tokens.getBusinessByEmail(email);
 	}
 
 	async authenticateWithPassword(
@@ -68,7 +79,7 @@ export class BusinessAuthService {
 	): Promise<AuthResponse<PasswordAuthSuccess>> {
 		try {
 			// Get business by slug
-			const businessResult = await TokenManager.getBusinessBySlug(businessSlug);
+			const businessResult = await this.tokens.getBusinessBySlug(businessSlug);
 			if (!businessResult.success) {
 				return businessResult;
 			}
@@ -76,13 +87,13 @@ export class BusinessAuthService {
 			const { business } = businessResult;
 
 			// Validate password
-			const passwordResult = await PasswordManager.validatePassword(email, password, business);
+			const passwordResult = await this.passwords.validatePassword(email, password, business);
 			if (!passwordResult.success) {
 				return passwordResult;
 			}
 
 			// Update last login
-			const loginResult = await LoginTracker.updateLastLogin(business.id);
+			const loginResult = await this.logins.updateLastLogin(business.id);
 
 			// Create session
 			const sessionData = SessionManager.createSession(business, AUTH_METHODS.PASSWORD);
@@ -122,7 +133,7 @@ export class BusinessAuthService {
 			const hoursSinceActivity = (now.getTime() - lastActivity.getTime()) / (1000 * 60 * 60);
 
 			if (hoursSinceActivity >= (options.activityThresholdHours || 24)) {
-				await LoginTracker.updateLastLogin(business.id);
+				await this.logins.updateLastLogin(business.id);
 			}
 		}
 
@@ -152,7 +163,7 @@ export class BusinessAuthService {
 		businessId: number,
 		options: { throttleHours?: number } = {}
 	): Promise<AuthResponse<LoginTrackerResult>> {
-		const result = await LoginTracker.updateLastLogin(businessId, options);
+		const result = await this.logins.updateLastLogin(businessId, options);
 		return SUCCESS_RESPONSE({ ...result });
 	}
 }

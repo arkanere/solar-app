@@ -2,6 +2,7 @@ import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/in/auth/business';
+import { syncBusinessToUnified } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
 
 interface UpdateBusinessDetailsRequest {
@@ -121,6 +122,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		);
 
 		if (result.rows.length > 0) {
+			await syncBusinessToUnified(pool, 'in', result.rows[0].id as number);
 			return json({
 				success: true,
 				id: result.rows[0].id as number

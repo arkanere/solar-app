@@ -1,7 +1,11 @@
 # SolarVipani Overhaul: Country-Scalable Architecture (Phase 1 — main-app)
 
-> **STATUS (2026-07-18): Phase 1 IMPLEMENTED** on branch `refactor/country-scalable-architecture`.
+> **STATUS (2026-07-19): Phase 1 IMPLEMENTED + Phase 2.1 (business-app) COMPLETE** on branch
+> `refactor/country-scalable-architecture`. Migrations 042–047 are applied to the live DB.
+> business-app reads AND writes flow through the unified tables (writes via legacy-table +
+> `sv_sync_*` dual-write; sync triggers stay until user-app/admin-app migrate).
 > See "Implementation status" and "Next steps" at the end of this document.
+> Next up: Phase 2.2 — user-app lead submission → unified endpoint/table.
 
 ## Context
 
@@ -189,6 +193,17 @@ Merge `lib/in/components/` + `lib/us/` pairs into `apps/main-app/src/lib/compone
 
 ## Phase 2 (separate efforts, in rough order)
 1. **business-app** → read/write unified `businesses` + `leads` (+ move auth off `businesses_1`/`us_businesses` into a unified accounts table). At cutover: re-copy lead pipeline columns (business-app edits old rows today; `leads` pipeline state becomes authoritative only then), then drop the 043/045 sync triggers.
+
+   **Progress (2026-07-18):**
+   - `046-business-accounts.sql` written — unified `business_accounts` keyed by `(country_code, source_id)`, backfill from `businesses_1`/`us_businesses`, old→new sync triggers (same pattern as 040/043/045; auth column types verified against live DB). **NOT YET APPLIED** — run manually: `psql "$POSTGRES_URL_NON_POOLING" -f apps/main-app/src/lib/server/migrations/046-business-accounts.sql`, then check `SELECT country_code, count(*) FROM business_accounts GROUP BY country_code` (expect 6,688 in / count(us_businesses) us).
+   - business-app auth READS switched to `business_accounts` JOIN `businesses` (TokenManager, PasswordManager, LoginTracker read-side, both countries; `source_id AS id` preserves old-id semantics for branches/CRM). Auth WRITES (last_login, token minting, password reset) still hit the old tables and flow through the 046 triggers — same read-switch-first strategy as 040. **Do not deploy business-app before 046 is applied.**
+   - `046-business-accounts.sql` **APPLIED** 2026-07-18: 6,688 in / 12 us, zero field mismatches, triggers verified live (rolled-back test).
+   - (a)+(b) **DONE**: all business-app read paths (page/layout loads, `ownsBusinessSlug`, lead-claim notification) now read `businesses` / `leads` / `business_accounts` with legacy column aliases (`src/lib/server/unifiedRead.ts`; `source_id AS id` preserves old-id semantics). Write endpoints (`api/*`, `magicLink.ts`) untouched — still old tables, synced by triggers. Verified: full old↔new parity on both lead and business tables (one drifted `leads` row found and resynced via trigger touch; cause was a write in the 044→045 apply window), every converted query executed verbatim against live DB, old-vs-new counts identical on populated filters, svelte-check unchanged (84 pre-existing). Bonus fixes: US open-inquiries lead query selected nonexistent `l.pin_code` (was failing at runtime; now `postal_code AS pin_code`); US branch/project pages no longer `SELECT *` credential columns into page data.
+   - (c) **DONE** (2026-07-19) as app-level dual-write, not trigger-drop: a full authoritative cutover would break unmigrated writers (user-app lead inserts, main-app IN token/signup APIs, admin-app), so instead `047-unified-sync-functions.sql` (**APPLIED**) extracts the 043/045/046 trigger bodies into callable `sv_sync_lead/business/account(country, source_id)` functions (triggers are now thin wrappers over them), and every business-app write endpoint calls the matching function after its legacy-table write (`src/lib/server/unifiedSync.ts`). Idempotent with the triggers today; keeps business-app correct by itself once the triggers drop (phase 2.4, after user-app/admin-app migrate). Wired: updateLeadByBusiness, claimLead, deleteLeadByBusiness, fixClaimedLead, deleteAccount, deleteBranch, addBranch, updateBusinessDetails, submitLead(us), magicLink minting, LoginTracker.updateLastLogin — both countries.
+   - (d) **DONE** (2026-07-19): auth modules deduplicated into shared `src/lib/auth/business/` (TokenManager/PasswordManager/LoginTracker/BusinessAuthService parameterized by country; SessionManager/TokenSecurity/RateLimiter/AuthTypes shared verbatim; legacy table names in `countryTables.ts`). `$lib/in|us/auth/business` are now thin country-binding shims exporting the same names, so no route imports changed. ~660 duplicated lines removed.
+   - **Pre-existing bugs found & fixed during (c)**: US deleteAccount soft-deleted from `businesses_1`/`branches` (IN tables!) with a US id — could hide an unrelated Indian business; now targets `us_businesses`/`us_branches`. US submitLead and US claimLead's claimed-copy INSERT used nonexistent `pin_code` (real column `zipcode`) and submitLead RETURNED nonexistent `reference_uuid` — both endpoints 500'd on every call; fixed (submitLead now returns `reference_uuid: null`).
+   - **Known-dead code, deliberately untouched**: both business-app resetPassword endpoints query nonexistent `reset_token_hash`/`reset_token_used` columns and fail before writing (the working reset flow lives in main-app against raw `reset_token`). Decide later: delete them or rebuild against `business_accounts`.
+   - Remaining for business-app: nothing until phase 2.4 (drop 040/043/045/046 triggers + remove `unifiedSync` calls + retire legacy writes) — gated on user-app (lead inserts) and admin-app migrating.
 2. **user-app** → submit leads via unified endpoint/table; then the IN lead flow no longer depends on `leaddata`.
 3. **Blogs unification** — `blogs(country_code, ...)` table; migrate the 9 static US blog folders + `us_blogs`/`in_blogs`.
 4. **Retire old tables** — only after all apps (incl. the external admin-app) migrate: drop triggers, keep old tables as archive or drop.

@@ -36,7 +36,7 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 	try {
 		// First get the business information from slug
 		const businessResult = await pool.query(
-			`SELECT business_id AS id, businessname FROM in_business_profiles WHERE slug = $1`,
+			`SELECT source_id AS id, businessname FROM businesses WHERE country_code = 'in' AND slug = $1`,
 			[businessSlug]
 		);
 
@@ -59,10 +59,10 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 				l.name as customer_name,
 				l.email,
 				l.phone,
-				l.district,
-				l.pin_code
+				l.level2 as district,
+				l.postal_code as pin_code
 			FROM project_management pm
-			INNER JOIN leaddata l ON pm.lead_id = l.id
+			INNER JOIN leads l ON l.country_code = 'in' AND pm.lead_id = l.source_id
 			WHERE l.business_id = $1
 			ORDER BY pm.last_updated DESC
 		`,

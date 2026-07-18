@@ -1,6 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
+import { IN_BUSINESS_COLUMNS, IN_LEAD_COLUMNS } from '$lib/server/unifiedRead';
 
 export const prerender = false;
 
@@ -48,15 +49,12 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 	const { business_slug } = params;
 
 	try {
-		// Query the profile from in_business_profiles (never businesses_1 — credentials
-		// live there and must not reach page data). business_id AS id keeps the
-		// businesses_1 id that branch/lead/referrer queries expect.
+		// Query the profile from the unified businesses table (never the account
+		// tables — credentials must not reach page data). source_id AS id keeps
+		// the businesses_1 id that branch/lead/referrer queries expect.
 		const businessResult = await pool.query(
-			`SELECT business_id AS id, slug, businessname, email, phonenumber, whatsapp,
-				description, website, instagram_id, google_maps_link, address, pluscode,
-				services, brands, gstn, state, district, city, pincode, rscore, tag,
-				businessfilled, isvisible
-			FROM in_business_profiles WHERE slug = $1 LIMIT 1`,
+			`SELECT ${IN_BUSINESS_COLUMNS}
+			FROM businesses WHERE country_code = 'in' AND slug = $1 LIMIT 1`,
 			[business_slug]
 		);
 
@@ -69,9 +67,9 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 
 		// ✅ Get all branch business IDs and slugs for this main business
 		const branchesResult = await pool.query(
-			`SELECT b.business_id AS id, b.slug, b.district, b.state
+			`SELECT b.source_id AS id, b.slug, b.level2 AS district, b.level1 AS state
 			FROM branches br
-			JOIN in_business_profiles b ON br.branch_id = b.business_id
+			JOIN businesses b ON b.country_code = 'in' AND br.branch_id = b.source_id
 			WHERE br.main_id = $1 AND br.isactive = true`,
 			[businessId]
 		);
@@ -90,8 +88,8 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 				return [`urlparams LIKE $${i + 1}`, `urlparams LIKE $${i + 2}`];
 			});
 			exclusiveLeadResult = await pool.query(
-				`SELECT * FROM leaddata
-				WHERE isvisible = true
+				`SELECT ${IN_LEAD_COLUMNS} FROM leads
+				WHERE country_code = 'in' AND isvisible = true
 				AND (${conditions.join(' OR ')})
 				ORDER BY id DESC`,
 				allSlugs.flatMap((slug) => [`/solar-panel-installer/${slug}%`, `%/installer/${slug}%`])
@@ -109,8 +107,8 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 
 		// ✅ Fetch non-exclusive claimed leads for main business and all branches
 		const nonExclusiveClaimedResult = await pool.query(
-			`SELECT * FROM leaddata
-			WHERE category = 2
+			`SELECT ${IN_LEAD_COLUMNS} FROM leads
+			WHERE country_code = 'in' AND category = 2
 			AND business_id = ANY($1)
 			AND isvisible = true
 			ORDER BY id DESC`,
@@ -127,10 +125,10 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 		let nonExclusiveLeadResult = { rows: [] as Lead[] };
 		if (uniqueStates.length > 0) {
 			nonExclusiveLeadResult = await pool.query(
-				`SELECT *, COALESCE(claim_count, 0) as claim_count
-				FROM leaddata
-				WHERE category = 1
-				AND state = ANY($1)
+				`SELECT ${IN_LEAD_COLUMNS}, COALESCE(claim_count, 0) as claim_count
+				FROM leads
+				WHERE country_code = 'in' AND category = 1
+				AND level1 = ANY($1)
 				AND isvisible = true
 				AND created_at >= NOW() - INTERVAL '15 days'
 				AND NOT (COALESCE(claim_count, 0) > 4)

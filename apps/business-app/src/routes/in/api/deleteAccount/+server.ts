@@ -2,6 +2,7 @@ import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/in/auth/business';
+import { syncBusinessToUnified, syncAccountToUnified } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ cookies }) => {
@@ -32,12 +33,18 @@ export const POST: RequestHandler = async ({ cookies }) => {
 
 		await pool.query(`UPDATE branches SET isactive = false WHERE main_id = $1`, [businessId]);
 
-		await pool.query(
+		const hiddenBranches = await pool.query<{ id: number }>(
 			`UPDATE businesses_1
 			 SET isvisible = false
-			 WHERE id IN (SELECT branch_id FROM branches WHERE main_id = $1)`,
+			 WHERE id IN (SELECT branch_id FROM branches WHERE main_id = $1)
+			 RETURNING id`,
 			[businessId]
 		);
+
+		for (const row of [{ id: businessId }, ...hiddenBranches.rows]) {
+			await syncBusinessToUnified(pool, 'in', row.id);
+			await syncAccountToUnified(pool, 'in', row.id);
+		}
 
 		// End the session
 		authService.logout(cookies);

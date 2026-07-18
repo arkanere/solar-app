@@ -2,6 +2,7 @@
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
+import { syncLeadToUnified } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
 
 interface SubmitLeadRequest {
@@ -50,9 +51,9 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 		}
 
 		const insertQuery = `
-            INSERT INTO us_leaddata (name, phone, pin_code, type, comment, urlparams, email, county)
+            INSERT INTO us_leaddata (name, phone, zipcode, type, comment, urlparams, email, county)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-            RETURNING id, reference_uuid
+            RETURNING id
         `;
 
 		const result = await pool.query<LeadInsertResult>(insertQuery, [
@@ -67,7 +68,11 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 		]);
 
 		const leadId = result.rows[0].id;
-		const referenceUuid = result.rows[0].reference_uuid;
+		// us_leaddata has no reference_uuid column (the old RETURNING made this
+		// endpoint fail outright); the unified leads table owns that concept.
+		const referenceUuid = null;
+
+		await syncLeadToUnified(pool, 'us', leadId);
 
 		// Use `fetch` from event
 		await fetch('/us/api/sendLeadSubmissionConfirmation', {

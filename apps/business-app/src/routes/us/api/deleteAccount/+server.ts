@@ -2,6 +2,7 @@ import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/us/auth/business';
+import { syncBusinessToUnified, syncAccountToUnified } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ cookies }) => {
@@ -24,20 +25,26 @@ export const POST: RequestHandler = async ({ cookies }) => {
 		// Soft-delete the account: hide the business, disable re-login by clearing
 		// credentials, and deactivate/hide any branches it owns.
 		await pool.query(
-			`UPDATE businesses_1
+			`UPDATE us_businesses
 			 SET isvisible = false, login_password = NULL, magic_link_token = NULL
 			 WHERE id = $1`,
 			[businessId]
 		);
 
-		await pool.query(`UPDATE branches SET isactive = false WHERE main_id = $1`, [businessId]);
+		await pool.query(`UPDATE us_branches SET isactive = false WHERE main_id = $1`, [businessId]);
 
-		await pool.query(
-			`UPDATE businesses_1
+		const hiddenBranches = await pool.query<{ id: number }>(
+			`UPDATE us_businesses
 			 SET isvisible = false
-			 WHERE id IN (SELECT branch_id FROM branches WHERE main_id = $1)`,
+			 WHERE id IN (SELECT branch_id FROM us_branches WHERE main_id = $1)
+			 RETURNING id`,
 			[businessId]
 		);
+
+		for (const row of [{ id: businessId }, ...hiddenBranches.rows]) {
+			await syncBusinessToUnified(pool, 'us', row.id);
+			await syncAccountToUnified(pool, 'us', row.id);
+		}
 
 		// End the session
 		authService.logout(cookies);

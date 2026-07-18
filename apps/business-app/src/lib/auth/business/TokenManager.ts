@@ -2,6 +2,7 @@ import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { AUTH_ERRORS, SUCCESS_RESPONSE, ERROR_RESPONSE } from './AuthTypes';
 import { TokenSecurity } from './TokenSecurity';
+import { BRANCHES_TABLE, type AuthCountry } from './countryTables';
 import type {
 	AuthErrorResponse,
 	TokenValidationSuccess,
@@ -11,7 +12,9 @@ import type {
 const pool = createPool({ connectionString: POSTGRES_URL });
 
 export class TokenManager {
-	static async validateMagicLinkToken(
+	constructor(private readonly country: AuthCountry) {}
+
+	async validateMagicLinkToken(
 		token: string,
 		businessSlug: string
 	): Promise<TokenValidationSuccess | AuthErrorResponse> {
@@ -20,10 +23,11 @@ export class TokenManager {
 			// incoming raw token.
 			const tokenHash = TokenSecurity.hashToken(token);
 			const result = await pool.query(
-				`SELECT id, businessname, slug, login_email, magic_link_token, isvisible, magic_link_token_expires_at
-				 FROM us_businesses
-				 WHERE slug = $1 AND magic_link_token = $2 AND magic_link_token IS NOT NULL`,
-				[businessSlug, tokenHash]
+				`SELECT a.source_id AS id, p.businessname, p.slug, a.login_email, a.magic_link_token, a.isvisible, a.magic_link_token_expires_at
+				 FROM business_accounts a
+				 JOIN businesses p ON p.country_code = a.country_code AND p.source_id = a.source_id
+				 WHERE a.country_code = $1 AND p.slug = $2 AND a.magic_link_token = $3 AND a.magic_link_token IS NOT NULL`,
+				[this.country, businessSlug, tokenHash]
 			);
 
 			if (result.rows.length === 0) {
@@ -56,20 +60,19 @@ export class TokenManager {
 		}
 	}
 
-	static async getBusinessByEmail(
-		email: string
-	): Promise<BusinessLookupSuccess | AuthErrorResponse> {
+	async getBusinessByEmail(email: string): Promise<BusinessLookupSuccess | AuthErrorResponse> {
 		let client;
 		try {
 			client = await pool.connect();
 
 			const result = await client.query(
-				`SELECT id, businessname, slug, login_email, isvisible
-				 FROM us_businesses b
-				 WHERE b.login_email = $1 AND b.isvisible = true
-				   AND NOT EXISTS (SELECT 1 FROM us_branches br WHERE br.branch_id = b.id AND br.isactive = true)
+				`SELECT a.source_id AS id, p.businessname, p.slug, a.login_email, a.isvisible
+				 FROM business_accounts a
+				 JOIN businesses p ON p.country_code = a.country_code AND p.source_id = a.source_id
+				 WHERE a.country_code = $1 AND a.login_email = $2 AND a.isvisible = true
+				   AND NOT EXISTS (SELECT 1 FROM ${BRANCHES_TABLE[this.country]} br WHERE br.branch_id = a.source_id AND br.isactive = true)
 				 LIMIT 1`,
-				[email]
+				[this.country, email]
 			);
 
 			if (result.rows.length === 0) {
@@ -95,15 +98,14 @@ export class TokenManager {
 		}
 	}
 
-	static async getBusinessBySlug(
-		businessSlug: string
-	): Promise<BusinessLookupSuccess | AuthErrorResponse> {
+	async getBusinessBySlug(businessSlug: string): Promise<BusinessLookupSuccess | AuthErrorResponse> {
 		try {
 			const result = await pool.query(
-				`SELECT id, businessname, slug, login_email, isvisible
-				 FROM us_businesses
-				 WHERE slug = $1 AND isvisible = true`,
-				[businessSlug]
+				`SELECT a.source_id AS id, p.businessname, p.slug, a.login_email, a.isvisible
+				 FROM business_accounts a
+				 JOIN businesses p ON p.country_code = a.country_code AND p.source_id = a.source_id
+				 WHERE a.country_code = $1 AND p.slug = $2 AND a.isvisible = true`,
+				[this.country, businessSlug]
 			);
 
 			if (result.rows.length === 0) {

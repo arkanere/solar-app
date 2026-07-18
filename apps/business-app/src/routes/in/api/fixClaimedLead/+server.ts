@@ -2,6 +2,7 @@ import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/in/auth/business';
+import { syncLeadToUnified } from '$lib/server/unifiedSync';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
 	const pool = createPool({ connectionString: POSTGRES_URL });
@@ -35,6 +36,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		if (result.rows.length === 0) {
 			return json({ success: false, error: 'No allocated lead found to fix' }, { status: 404 });
+		}
+
+		for (const row of result.rows) {
+			await syncLeadToUnified(pool, 'in', row.id);
 		}
 
 		return json({

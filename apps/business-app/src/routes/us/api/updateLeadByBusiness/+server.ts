@@ -3,6 +3,7 @@ import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/us/auth/business';
+import { syncLeadToUnified } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
 import type { LeadUpdatePayload, LeadData } from '$lib/types/lead';
 
@@ -73,6 +74,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				{ status: 404 }
 			);
 		}
+
+		await syncLeadToUnified(pool, 'us', id);
 
 		return json({ success: true, lead: result.rows[0] });
 	} catch (error) {

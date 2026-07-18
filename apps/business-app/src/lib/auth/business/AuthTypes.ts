@@ -1,5 +1,5 @@
 /**
- * Authentication constants and type definitions for USA region
+ * Authentication constants and type definitions (shared across countries)
  * Re-exports from centralized auth types
  */
 
