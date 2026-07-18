@@ -30,7 +30,7 @@
 		<h2>Choose Your Region</h2>
 		<div class="region-grid">
 			{#each regions as region}
-				<button class="region-card" on:click={() => goto(region.path)}>
+				<button class="region-card" onclick={() => goto(region.path)}>
 					<span class="flag">{region.flag}</span>
 					<span class="region-name">{region.name}</span>
 				</button>

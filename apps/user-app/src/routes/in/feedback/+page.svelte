@@ -1,18 +1,15 @@
 <script>
 	import { enhance } from '$app/forms';
 
-	/** @type {import('./$types').PageData} */
-	export let data;
+	/** @type {{ data: import('./$types').PageData, form: import('./$types').ActionData }} */
+	let { data, form } = $props();
 
-	/** @type {import('./$types').ActionData} */
-	export let form;
-
-	let gotCallback = data.feedback ? (data.feedback.gotCallback ? 'yes' : 'no') : '';
-	let gotQuotation = data.feedback ? (data.feedback.gotQuotation ? 'yes' : 'no') : '';
-	let rating = data.feedback?.recommendationRating || 0;
-	let hoverRating = 0;
-	let suggestions = data.feedback?.suggestions || '';
-	let submitting = false;
+	let gotCallback = $state(data.feedback ? (data.feedback.gotCallback ? 'yes' : 'no') : '');
+	let gotQuotation = $state(data.feedback ? (data.feedback.gotQuotation ? 'yes' : 'no') : '');
+	let rating = $state(data.feedback?.recommendationRating || 0);
+	let hoverRating = $state(0);
+	let suggestions = $state(data.feedback?.suggestions || '');
+	let submitting = $state(false);
 
 	const ratingLabels = {
 		1: 'Not at all',
@@ -114,7 +111,7 @@
 							class="star-group"
 							role="radiogroup"
 							aria-label="Recommendation rating from 1 to 5 stars"
-							on:mouseleave={() => (hoverRating = 0)}
+							onmouseleave={() => (hoverRating = 0)}
 						>
 							{#each [1, 2, 3, 4, 5] as star}
 								<button
@@ -123,8 +120,8 @@
 									class:filled={star <= (hoverRating || rating)}
 									aria-label="{star} star{star > 1 ? 's' : ''} — {ratingLabels[star]}"
 									aria-pressed={rating === star}
-									on:click={() => (rating = star)}
-									on:mouseenter={() => (hoverRating = star)}
+									onclick={() => (rating = star)}
+									onmouseenter={() => (hoverRating = star)}
 								>
 									★
 								</button>

@@ -3,10 +3,12 @@
 	 * Electricity bill upload, reusable on the thank-you page (pass `leadRef`)
 	 * and the logged-in dashboard (pass `leadId`).
 	 */
-	export let leadRef = '';
-	export let leadId = null;
-	export let billUrl = null;
-	export let billFormat = null;
+	let {
+		leadRef = '',
+		leadId = null,
+		billUrl = $bindable(null),
+		billFormat = $bindable(null)
+	} = $props();
 
 	const allowedFileTypes = [
 		'image/jpeg',
@@ -20,15 +22,17 @@
 	];
 	const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
-	let fileInput;
-	let selectedFile = null;
-	let imagePreview = null;
-	let isUploading = false;
-	let errorMessage = '';
-	let successMessage = '';
+	let fileInput = $state();
+	let selectedFile = $state(null);
+	let imagePreview = $state(null);
+	let isUploading = $state(false);
+	let errorMessage = $state('');
+	let successMessage = $state('');
 
-	$: hasBill = !!billUrl;
-	$: billIsPdf = billFormat === 'pdf' || (billUrl && billUrl.toLowerCase().endsWith('.pdf'));
+	const hasBill = $derived(!!billUrl);
+	const billIsPdf = $derived(
+		billFormat === 'pdf' || (billUrl && billUrl.toLowerCase().endsWith('.pdf'))
+	);
 
 	function handleFileChange(event) {
 		errorMessage = '';
@@ -138,7 +142,7 @@
 			bind:this={fileInput}
 			type="file"
 			accept=".jpg,.jpeg,.png,.webp,.gif,.bmp,.tiff,.pdf,image/*,application/pdf"
-			on:change={handleFileChange}
+			onchange={handleFileChange}
 			disabled={isUploading}
 		/>
 		<small class="hint">Accepted formats: JPG, PNG, WebP, GIF, BMP, TIFF, PDF (Max: 10MB)</small>
@@ -152,7 +156,7 @@
 		{/if}
 
 		{#if selectedFile}
-			<button type="button" class="upload-btn" on:click={uploadBill} disabled={isUploading}>
+			<button type="button" class="upload-btn" onclick={uploadBill} disabled={isUploading}>
 				{isUploading ? 'Uploading...' : hasBill ? 'Replace Bill' : 'Upload Bill'}
 			</button>
 		{/if}
