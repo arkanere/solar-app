@@ -3,6 +3,7 @@ import type { VercelPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import type { BusinessData } from '$lib/types/api';
+import { syncBusinessToUnified, syncAccountToUnified } from '$lib/server/unifiedSync';
 
 export const POST: RequestHandler = async ({ request, fetch }) => {
 	// ✅ Added fetch from event
@@ -156,6 +157,11 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
                 updated_at = NOW()`,
 			[businessId, login_email || null, isvisible]
 		);
+
+		// Idempotent with the businesses_1/in_business_profiles sync triggers;
+		// keeps the unified tables fresh once those triggers drop (phase 2.4).
+		await syncBusinessToUnified(pool, 'in', businessId);
+		await syncAccountToUnified(pool, 'in', businessId);
 
 		// Send confirmation email via the new endpoint
 		await fetch('/api/sendBusinessSubmissionConfirmation', {

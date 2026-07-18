@@ -2,6 +2,7 @@ import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
 import bcrypt from 'bcryptjs'; // For hashing passwords
+import { syncAccountToUnified } from '$lib/server/unifiedSync';
 
 export async function POST({ request }) {
 	const pool = createPool({ connectionString: POSTGRES_URL });
@@ -33,9 +34,15 @@ export async function POST({ request }) {
 		const updateQuery = `
       UPDATE us_businesses
       SET login_password = $1, reset_token = NULL, reset_token_expires = NULL
-      WHERE slug = $2;
+      WHERE slug = $2 RETURNING id;
     `;
-		await pool.query(updateQuery, [hashedPassword, business_slug]);
+		const updateResult = await pool.query(updateQuery, [hashedPassword, business_slug]);
+
+		// Idempotent with the us_businesses sync trigger (046); keeps the
+		// unified business_accounts fresh once triggers drop (phase 2.4).
+		if (updateResult.rows[0]) {
+			await syncAccountToUnified(pool, 'us', updateResult.rows[0].id);
+		}
 
 		return json({ success: true });
 	} catch (error) {

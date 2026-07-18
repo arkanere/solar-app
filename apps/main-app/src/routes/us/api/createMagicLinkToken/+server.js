@@ -4,6 +4,7 @@ import { POSTGRES_URL } from '$env/static/private';
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
 import { hasInternalSecret } from '$lib/server/internalAuth';
+import { syncAccountToUnified } from '$lib/server/unifiedSync';
 
 const pool = createPool({ connectionString: POSTGRES_URL });
 
@@ -39,6 +40,10 @@ export async function POST({ request }) {
 			if (result.rowCount === 0) {
 				return json({ success: false, error: 'Business not found' }, { status: 404 });
 			}
+
+			// Idempotent with the us_businesses sync trigger (046); keeps the
+			// unified business_accounts fresh once triggers drop (phase 2.4).
+			await syncAccountToUnified(client, 'us', id);
 
 			// Return the raw token (not the stored hash) so the caller can email it.
 			return json({ success: true, magic_link_token: magicLinkToken });

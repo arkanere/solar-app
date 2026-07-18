@@ -8,6 +8,7 @@
 // and the triggers are dropped.
 
 import { pool } from './db';
+import { syncLeadToUnified } from './unifiedSync';
 import type { CountryCode } from '$lib/countries';
 
 export interface LeadPayload {
@@ -99,7 +100,10 @@ export async function insertLead(
 			sourceId = oldResult.rows[0].id;
 		}
 
-		// Row mirrored by migration 045's sync trigger within this transaction.
+		// Idempotent with migration 045's sync trigger; keeps this write
+		// self-sufficient once the triggers drop (phase 2.4).
+		await syncLeadToUnified(client, country, sourceId);
+
 		const newResult = await client.query(
 			`SELECT id FROM leads WHERE country_code = $1 AND source_id = $2`,
 			[country, sourceId]

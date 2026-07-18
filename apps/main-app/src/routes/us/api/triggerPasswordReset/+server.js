@@ -5,6 +5,7 @@ import { POSTGRES_URL } from '$env/static/private';
 import crypto from 'crypto';
 import { json } from '@sveltejs/kit';
 import { sendEmail } from '$lib/us/sendEmail.js'; // Import Brevo email utility
+import { syncAccountToUnified } from '$lib/server/unifiedSync';
 
 export async function POST({ request }) {
 	const pool = createPool({ connectionString: POSTGRES_URL });
@@ -22,7 +23,7 @@ export async function POST({ request }) {
 		const updateQuery = `
       UPDATE us_businesses
       SET reset_token = $1, reset_token_expires = $2
-      WHERE login_email = $3 AND slug = $4 RETURNING slug;
+      WHERE login_email = $3 AND slug = $4 RETURNING id, slug;
     `;
 		const result = await pool.query(updateQuery, [token, expires, login_email, slug]);
 
@@ -33,7 +34,11 @@ export async function POST({ request }) {
 			);
 		}
 
-		const { slug: business_slug } = result.rows[0];
+		const { id: business_id, slug: business_slug } = result.rows[0];
+
+		// Idempotent with the us_businesses sync trigger (046); keeps the
+		// unified business_accounts fresh once triggers drop (phase 2.4).
+		await syncAccountToUnified(pool, 'us', business_id);
 
 		// Construct the reset link
 		const resetLink = `https://solarvipani.com/us/business/${business_slug}/reset-password/${token}`;
