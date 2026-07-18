@@ -134,9 +134,9 @@
 		content="Check PM Surya Ghar Yojana central solar subsidy for your system size. See subsidy amounts, eligibility, and net cost after subsidy. Free subsidy calculator."
 	/>
 	<link rel="canonical" href="{BASE_URL}/in/tools/subsidy-checker/" />
-	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
-	{@html `<script type="application/ld+json">${JSON.stringify(webApp)}</script>`}
-	{@html `<script type="application/ld+json">${JSON.stringify(faqLdJson)}</script>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}<\u002Fscript>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(webApp)}<\u002Fscript>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(faqLdJson)}<\u002Fscript>`}
 </svelte:head>
 
 <div class="max-w-4xl mx-auto px-4 py-8">

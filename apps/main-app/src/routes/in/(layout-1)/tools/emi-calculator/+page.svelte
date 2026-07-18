@@ -72,8 +72,8 @@
 		content="Calculate monthly EMI for solar panel loans. Compare interest rates across SBI, HDFC, and other banks. Free solar loan calculator for India."
 	/>
 	<link rel="canonical" href="{BASE_URL}/in/tools/emi-calculator/" />
-	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
-	{@html `<script type="application/ld+json">${JSON.stringify(webApp)}</script>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}<\u002Fscript>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(webApp)}<\u002Fscript>`}
 </svelte:head>
 
 <div class="max-w-4xl mx-auto px-4 py-8">

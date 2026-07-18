@@ -98,12 +98,12 @@
 	<meta name="geo.region" content="IN" />
 	<meta name="geo.placename" content="{locationName}, {d.state}" />
 
-	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}<\u002Fscript>`}
 	{#each businessLDs as ld}
-		{@html `<script type="application/ld+json">${JSON.stringify(ld)}</script>`}
+		{@html `<script type="application/ld+json">${JSON.stringify(ld)}<\u002Fscript>`}
 	{/each}
 	{#if faqSchema}
-		{@html `<script type="application/ld+json">${JSON.stringify(faqSchema)}</script>`}
+		{@html `<script type="application/ld+json">${JSON.stringify(faqSchema)}<\u002Fscript>`}
 	{/if}
 </svelte:head>
 

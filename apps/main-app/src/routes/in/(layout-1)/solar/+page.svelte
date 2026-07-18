@@ -21,7 +21,7 @@
 	<title>Solar Panel Installers in India — Browse by State | Solar Vipani</title>
 	<meta name="description" content="Find {data.totalInstallers} verified solar panel installers across {data.stateCount} states in India. Browse by state and district to compare quotes and get the best solar deals." />
 	<link rel="canonical" href="https://solarvipani.com/in/solar" />
-	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}<\u002Fscript>`}
 </svelte:head>
 
 <div class="max-w-6xl mx-auto px-4 py-8">

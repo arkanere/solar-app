@@ -19,9 +19,9 @@
 	<title>{data.clusterData.meta_title}</title>
 	<meta name="description" content={data.clusterData.meta_description} />
 	<link rel="canonical" href="https://solarvipani.com/in/rooftop-solar/{data.clusterData.slug}" />
-	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}<\u002Fscript>`}
 	{#if faqSchema}
-		{@html `<script type="application/ld+json">${JSON.stringify(faqSchema)}</script>`}
+		{@html `<script type="application/ld+json">${JSON.stringify(faqSchema)}<\u002Fscript>`}
 	{/if}
 </svelte:head>
 

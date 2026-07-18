@@ -27,8 +27,8 @@
 	<title>Solar Panel Installers in {data.state} — Districts & Cities | Solar Vipani</title>
 	<meta name="description" content="Find {data.installerCount} verified solar installers across {data.districtCount} districts in {data.state}. Browse by district to compare quotes and get the best solar deals." />
 	<link rel="canonical" href="https://solarvipani.com/in/solar/{data.stateSlug}" />
-	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
-	{@html `<script type="application/ld+json">${JSON.stringify(faqSchema)}</script>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}<\u002Fscript>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(faqSchema)}<\u002Fscript>`}
 </svelte:head>
 
 <div class="max-w-6xl mx-auto px-4 py-8">

@@ -52,7 +52,7 @@
 	{@html `
       <script type="application/ld+json">
         ${jsonLdString}
-      </script>
+      <\u002Fscript>
     `}
 </svelte:head>
 

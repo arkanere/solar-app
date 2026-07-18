@@ -13,7 +13,7 @@
 	<title>Thank You | Partner Sign-Up | Solar Vipani</title>
 	<meta name="description" content="Thank you for signing up as a Solar Vipani partner. Our team will review your application and contact you within 48 hours." />
 	<meta name="robots" content="noindex" />
-	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}<\u002Fscript>`}
 </svelte:head>
 
 <div class="mx-auto flex max-w-xl flex-col items-center px-4 py-16 text-center">

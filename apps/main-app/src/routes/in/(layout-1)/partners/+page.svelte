@@ -154,10 +154,10 @@
 	<meta name="twitter:site" content="@solarvipani" />
 
 	<!-- Structured Data -->
-	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
-	{@html `<script type="application/ld+json">${JSON.stringify(orgSchema)}</script>`}
-	{@html `<script type="application/ld+json">${JSON.stringify(serviceSchema)}</script>`}
-	{@html `<script type="application/ld+json">${JSON.stringify(faqSchema)}</script>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}<\u002Fscript>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(orgSchema)}<\u002Fscript>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(serviceSchema)}<\u002Fscript>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(faqSchema)}<\u002Fscript>`}
 
 	<!-- Facebook Pixel - Deferred -->
 	<script>
