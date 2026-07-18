@@ -40,8 +40,8 @@
 	<title>{data.author.name} - Author | Solar Vipani</title>
 	<meta name="description" content="{data.author.name}{data.author.credentials ? `, ${data.author.credentials}` : ''} — Solar energy expert and author at Solar Vipani." />
 	<link rel="canonical" href="https://solarvipani.com/in/authors/{data.author.slug}/" />
-	{@html `<script type="application/ld+json">${jsonLdPerson}</script>`}
-	{@html `<script type="application/ld+json">${jsonLdBreadcrumb}</script>`}
+	{@html `<script type="application/ld+json">${jsonLdPerson}<\u002Fscript>`}
+	{@html `<script type="application/ld+json">${jsonLdBreadcrumb}<\u002Fscript>`}
 </svelte:head>
 
 <div class="max-w-4xl mx-auto px-4 py-8">

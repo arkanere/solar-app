@@ -40,8 +40,8 @@
 	<title>Get a Free Solar Quotation Online | Solar Vipani</title>
 	<meta name="description" content="Get a free solar quotation online from verified solar panel installers in India. Compare 2-3 competitive quotations on price, services & reviews. {data.installerCount}+ installers, {data.projectCount}+ completed projects." />
 	<link rel="canonical" href="https://solarvipani.com/in/get-quotes/" />
-	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
-	{@html `<script type="application/ld+json">${JSON.stringify(faqLD)}</script>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}<\u002Fscript>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(faqLD)}<\u002Fscript>`}
 </svelte:head>
 
 <div class="max-w-4xl mx-auto px-4 py-8">

@@ -62,9 +62,9 @@
 	<title>{pageTitle}</title>
 	<meta name="description" content={pageDescription} />
 	<link rel="canonical" href="https://solarvipani.com/in/solar-subsidy/{canonicalSlug}" />
-	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}<\u002Fscript>`}
 	{#if faqSchema}
-		{@html `<script type="application/ld+json">${JSON.stringify(faqSchema)}</script>`}
+		{@html `<script type="application/ld+json">${JSON.stringify(faqSchema)}<\u002Fscript>`}
 	{/if}
 </svelte:head>
 

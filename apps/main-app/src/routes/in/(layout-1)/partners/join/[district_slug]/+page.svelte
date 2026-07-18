@@ -63,7 +63,7 @@
 			: ''} Get verified leads and grow your business."
 	/>
 	<link rel="canonical" href="https://solarvipani.com/in/partners/join/{data.districtSlug}/" />
-	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}<\u002Fscript>`}
 </svelte:head>
 
 <div class="mx-auto max-w-4xl px-4 py-8">

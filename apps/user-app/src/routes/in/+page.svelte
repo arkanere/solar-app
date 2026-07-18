@@ -1,8 +1,8 @@
 <script>
 	import BillUpload from '$lib/components/BillUpload.svelte';
 
-	/** @type {import('./$types').PageData} */
-	export let data;
+	/** @type {{ data: import('./$types').PageData }} */
+	let { data } = $props();
 
 	function formatDate(dateString) {
 		if (!dateString) return '';
@@ -36,7 +36,7 @@
 		return grouped;
 	}
 
-	$: claimsGroupedByLead = groupClaimsByLead(data.claimedBusinesses || []);
+	const claimsGroupedByLead = $derived(groupClaimsByLead(data.claimedBusinesses || []));
 </script>
 
 <svelte:head>

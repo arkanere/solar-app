@@ -62,8 +62,8 @@
 	<title>{pageTitle} | Solar Vipani</title>
 	<meta name="description" content={metaDescription} />
 	<link rel="canonical" href="https://solarvipani.com/in/project/{project.slug}/" />
-	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
-	{@html `<script type="application/ld+json">${JSON.stringify(articleSchema)}</script>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}<\u002Fscript>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(articleSchema)}<\u002Fscript>`}
 	{#if project.cloudinary_public_id}
 		<meta property="og:image" content="https://res.cloudinary.com/{PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/{project.cloudinary_public_id}" />
 	{/if}

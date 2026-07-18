@@ -1,22 +1,9 @@
 import type { Session } from '@auth/sveltekit';
 
+// Svelte 5 runes ($state, $derived, $effect, $props, $bindable, $inspect, $host) are
+// declared globally by the `svelte` package — no hand-rolled ambient shims needed here.
+
 declare global {
-	function $state<T>(initial: T): T;
-	function $state<T>(initial?: undefined): T | undefined;
-
-	function $effect(fn: () => void | (() => void)): void;
-	function $effect.pre(fn: () => void | (() => void)): void;
-
-	function $derived<T>(fn: () => T): T;
-	function $derived.by<T>(fn: () => T): T;
-
-	function $props(): any;
-	function $bindable<T>(initial?: T): T;
-
-	function $inspect<T>(value: T): T;
-
-	function $host(): HTMLElement;
-
 	namespace App {
 		interface Locals {
 			session: Session | null;

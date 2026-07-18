@@ -131,9 +131,9 @@
 		content="Free solar calculator for India. Enter your electricity bill to get system size, cost estimate, subsidy, payback period, and 25-year savings. Based on real installer data."
 	/>
 	<link rel="canonical" href="{BASE_URL}/in/tools/solar-calculator/" />
-	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
-	{@html `<script type="application/ld+json">${JSON.stringify(webApp)}</script>`}
-	{@html `<script type="application/ld+json">${JSON.stringify(faqSchema)}</script>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}<\u002Fscript>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(webApp)}<\u002Fscript>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(faqSchema)}<\u002Fscript>`}
 </svelte:head>
 
 <div class="max-w-4xl mx-auto px-4 py-8">

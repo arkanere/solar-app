@@ -82,8 +82,8 @@
 	<title>{pageTitle} | Solar Vipani</title>
 	<meta name="description" content={metaDescription} />
 	<link rel="canonical" href="https://solarvipani.com/in/installer/{b.slug}/" />
-	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
-	{@html `<script type="application/ld+json">${JSON.stringify(localBusiness)}</script>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}<\u002Fscript>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(localBusiness)}<\u002Fscript>`}
 </svelte:head>
 
 <div class="max-w-4xl mx-auto px-4 py-8">

@@ -24,8 +24,8 @@
 	<title>{data.product.name} — {data.brand.name} | Solar Vipani</title>
 	<meta name="description" content="{data.product.name} by {data.brand.name}. View specifications, price range and datasheet." />
 	<link rel="canonical" href="https://solarvipani.com/in/solar-panels/{data.brand.slug}/{data.product.model_slug}" />
-	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
-	{@html `<script type="application/ld+json">${JSON.stringify(productSchema)}</script>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}<\u002Fscript>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(productSchema)}<\u002Fscript>`}
 </svelte:head>
 
 <ProductSpecPage

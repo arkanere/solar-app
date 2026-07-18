@@ -1,13 +1,13 @@
 <script>
 	import BillUpload from '$lib/components/BillUpload.svelte';
 
-	/** @type {import('./$types').PageData} */
-	export let data;
+	/** @type {{ data: import('./$types').PageData }} */
+	let { data } = $props();
 
-	$: customerDetails = data?.customerDetails || null;
-	$: error = data?.error || null;
-	$: installers = data?.installers || [];
-	$: referenceUuid = data?.referenceUuid || '';
+	const customerDetails = $derived(data?.customerDetails || null);
+	const error = $derived(data?.error || null);
+	const installers = $derived(data?.installers || []);
+	const referenceUuid = $derived(data?.referenceUuid || '');
 
 	function formatDate(dateString) {
 		if (!dateString) return '';

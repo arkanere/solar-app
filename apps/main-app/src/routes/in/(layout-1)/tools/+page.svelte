@@ -23,7 +23,7 @@
 		content="Free solar tools: calculate system size & cost, estimate EMI for solar loans, and check government subsidies. Make informed solar decisions."
 	/>
 	<link rel="canonical" href="https://solarvipani.com/in/tools/" />
-	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script>`}
+	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}<\u002Fscript>`}
 </svelte:head>
 
 <div class="max-w-4xl mx-auto px-4 py-8">
