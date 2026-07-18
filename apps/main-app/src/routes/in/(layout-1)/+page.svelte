@@ -1,6 +1,5 @@
 <script>
   import { onMount } from "svelte";
-  import BusinessDirectory from "$lib/in/components/BusinessDirectory.svelte";
   import RecentProjectsHome from "$lib/in/components/RecentProjectsHome.svelte";
   import SolarComparisonTable from "$lib/in/components/SolarComparisonTable.svelte";
 
@@ -430,20 +429,6 @@
 
     <!-- Recent Projects Section -->
     <RecentProjectsHome projects={recentProjects} />
-
-    <!-- Business Directory Section -->
-    <section class="mb-8 rounded-[theme(--radius-lg)] p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] bg-[hsl(var(--accent)/0.1)]">
-      <div class="text-center mb-8">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">Solar Panel Installer Directory</h2>
-        <div class="flex justify-center items-center my-4">
-          <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
-        </div>
-        <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
-          Find verified solar installers in your area
-        </p>
-      </div>
-      <BusinessDirectory />
-    </section>
 
     <!-- Benefits Section -->
     <section class="mb-8 rounded-[theme(--radius-lg)] bg-accent-muted p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">

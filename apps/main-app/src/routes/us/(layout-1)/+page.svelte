@@ -1,7 +1,5 @@
 <script>
 	import { onMount } from 'svelte';
-	import BusinessDirectory from '$lib/us/BusinessDirectory.svelte';
-
 	import LeadFormBusiness from '$lib/us/LeadFormBusiness.svelte';
 	import { isDarkMode } from '$lib/us/themeStore'; // Import from store if globally managed
 
@@ -288,18 +286,6 @@
 				<LeadFormBusiness />
 			</div>
 		</section>
-		<!-- Business Directory Section -->
-		<section class="directory-section">
-			<div class="section-header">
-				<h2>Solar Panel Installer Directory</h2>
-				<div class="section-divider">
-					<span class="divider-accent"></span>
-				</div>
-				<p class="section-subtitle">Find verified solar installers in your area</p>
-			</div>
-			<BusinessDirectory />
-		</section>
-
 		<!-- About Section (Lazy Loaded) -->
 		<div id="about-section">
 			{#if shouldLoadAbout && AboutSolarVipani}
@@ -624,15 +610,6 @@
 
 	.dark .benefit-card p {
 		color: #cbd5e0;
-	}
-
-	/* Directory Section */
-	.directory-section {
-		background-color: #f8f9fa;
-	}
-
-	.dark .directory-section {
-		background-color: rgba(0, 86, 179, 0.05);
 	}
 
 	/* Lead Form Section */
