@@ -1,7 +1,7 @@
 <script lang="ts">
 	import GeoDirectory from '$lib/in/components/seo/GeoDirectory.svelte';
 	import { breadcrumbLD, faqLD } from '$lib/seo';
-	import { generateStateFAQ } from '$lib/in/faqData';
+	import { faqFor } from '$lib/countries/faq';
 
 	let { data } = $props();
 
@@ -9,9 +9,8 @@
 	const cc = $derived(country.code);
 	const level2Label = $derived(country.levels.level2);
 
-	// FAQ copy is India-specific (subsidy, ₹) — gated to IN until localized.
 	const faqItems = $derived(
-		country.features.seoContentFamilies ? generateStateFAQ(data.level1, data.level2Count) : []
+		faqFor(cc)?.generateStateFAQ(data.level1, data.level2Count) ?? []
 	);
 
 	const breadcrumb = $derived(breadcrumbLD([

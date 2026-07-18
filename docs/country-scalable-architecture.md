@@ -179,12 +179,13 @@ Merge `lib/in/components/` + `lib/us/` pairs into `apps/main-app/src/lib/compone
 3. Redeploy once more (or wait ~24h) so stale ISR caches of deleted US routes expire.
 4. Submit a real lead on an IN district page and a US page; confirm rows land in both old table and `leads`, and business-app sees them.
 
-## Phase 1 cleanup (main-app, low risk)
-- Update `/us` home + US layout links to the new `/us/solar/...` and `/us/installer/...` URLs (currently they work via 301s).
-- Delete dead code: `resolveGeoSlug` in `slug-resolver.ts`, `lib/us/config.js`, `lib/us/stateAbbreviations.js` (once no US page imports it), unused `lib/us/*` duplicates as US pages migrate.
-- Fix `app.d.ts`: make `PageData.user`/`session` optional — removes the 43 pre-existing type errors.
-- Localize FAQ copy for US (currently `faqData` is IN-gated, so US geo pages ship without FAQ sections/JSON-LD).
-- Consider a generic `[country]` home page so a 3rd country gets a landing page for free.
+## Phase 1 cleanup (main-app, low risk) — DONE except where noted
+- ~~Update `/us` home + US layout links~~ — done: nav Directory → `/us/solar`, home `BusinessDirectory` navigates to `/us/solar/{state}/{county}`, business-listing installer cards → `/us/installer/{slug}`, welcome-email link → `/us/installer/{slug}`, recent-projects page links fixed (they were missing the `/us` prefix entirely; project detail links now point at the installer page since US project pages no longer exist).
+- ~~Delete dead code~~ — done: `resolveGeoSlug`, `lib/us/config.js`, `lib/us/stateAbbreviations.js` removed.
+- ~~Fix `app.d.ts`~~ — done: `PageData.user`/`session` optional; svelte-check 60 → 17 errors (all 17 pre-existing, unrelated files).
+- ~~Localize FAQ copy for US~~ — done: `lib/us/faqData.ts` (US copy is incentive-neutral — no hardcoded tax-credit claims) + per-country dispatcher `lib/countries/faq.ts`; geo pages no longer gate FAQ on `seoContentFamilies`. A 3rd country without FAQ copy simply renders no FAQ section.
+- Consider a generic `[country]` home page so a 3rd country gets a landing page for free. (Still open.)
+- New observation: the `/us` home county dropdown lists every county from old `us_locations`, but county pages 404 when no visible installer exists there (only 12 US businesses) — most dropdown selections land on a 404. Pre-existing behavior; decide whether to filter the dropdown to counties with installers or render installer-less county pages.
 
 ## Phase 2 (separate efforts, in rough order)
 1. **business-app** → read/write unified `businesses` + `leads` (+ move auth off `businesses_1`/`us_businesses` into a unified accounts table). At cutover: re-copy lead pipeline columns (business-app edits old rows today; `leads` pipeline state becomes authoritative only then), then drop the 043/045 sync triggers.

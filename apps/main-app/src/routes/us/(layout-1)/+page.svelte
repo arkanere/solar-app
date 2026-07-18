@@ -140,7 +140,7 @@
 			"description": "Find verified solar panel installers across the United States",
 			"potentialAction": {
 				"@type": "SearchAction",
-				"target": "https://solarvipani.com/solar-panel-installer-directory?search={search_term_string}",
+				"target": "https://solarvipani.com/us/solar?search={search_term_string}",
 				"query-input": "required name=search_term_string"
 			}
 		}

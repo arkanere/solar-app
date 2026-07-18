@@ -83,37 +83,3 @@ export async function resolveLeafSlug(
 
 	return null;
 }
-
-export async function resolveGeoSlug(
-	pool: Pool,
-	slug: string,
-	state: string,
-	district: string
-): Promise<ResolveResult | null> {
-	const cityResult = await pool.query(
-		`SELECT l.city, l.district, l.state FROM locations l
-		 WHERE LOWER(REPLACE(l.city, ' ', '-')) = LOWER($1)
-		   AND LOWER(REPLACE(l.district, ' ', '-')) = LOWER($2)
-		   AND LOWER(REPLACE(l.state, ' ', '-')) = LOWER($3)
-		 LIMIT 1`,
-		[slug, district, state]
-	);
-	if (cityResult.rows.length > 0) {
-		return { type: 'city', data: cityResult.rows[0] };
-	}
-
-	const brandResult = await pool.query(
-		'SELECT slug, name, product_category FROM solar_brands WHERE slug = $1 AND status != $2 LIMIT 1',
-		[slug, 'draft']
-	);
-	if (brandResult.rows.length > 0) {
-		return { type: 'brand', data: brandResult.rows[0] };
-	}
-
-	const sizeMatch = slug.match(/^(\d+)kw-solar-system$/);
-	if (sizeMatch) {
-		return { type: 'size', data: { sizeKw: parseInt(sizeMatch[1], 10), slug } };
-	}
-
-	return null;
-}

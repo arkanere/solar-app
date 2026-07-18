@@ -6,7 +6,7 @@
 	import LeadFormSection from '$lib/in/components/LeadFormSection.svelte';
 	import QuoteModal from '$lib/in/components/QuoteModal.svelte';
 	import { breadcrumbLD, localBusinessLD, faqLD } from '$lib/seo';
-	import { generateFAQ } from '$lib/in/faqData';
+	import { faqFor } from '$lib/countries/faq';
 
 	// Union return type from load — access page-type-specific fields via d
 	let { data } = $props();
@@ -33,10 +33,7 @@
 		: `Get ${d.sizeKw}kW solar system installed in ${d.level2}, ${d.level1}. Compare ${d.installerCount} verified installers.`
 	);
 
-	// FAQ copy is India-specific (subsidy, ₹) — gated to IN until localized.
-	const faqItems = $derived(
-		isCity && country.features.seoContentFamilies ? generateFAQ(d.city) : []
-	);
+	const faqItems = $derived(isCity ? (faqFor(cc)?.generateFAQ(d.city) ?? []) : []);
 
 	const breadcrumb = $derived(breadcrumbLD([
 		{ name: 'Home', url: `https://solarvipani.com/${cc}` },

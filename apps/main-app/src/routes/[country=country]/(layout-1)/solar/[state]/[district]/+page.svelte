@@ -7,7 +7,7 @@
 	import LeadFormSection from '$lib/in/components/LeadFormSection.svelte';
 	import QuoteModal from '$lib/in/components/QuoteModal.svelte';
 	import { breadcrumbLD, localBusinessLD, faqLD } from '$lib/seo';
-	import { generateDistrictFAQ } from '$lib/in/faqData';
+	import { faqFor } from '$lib/countries/faq';
 
 	let { data } = $props();
 
@@ -18,11 +18,8 @@
 
 	let isModalOpen = $state(false);
 
-	// FAQ copy is India-specific (subsidy, ₹) — gated to IN until localized.
 	const faqItems = $derived(
-		country.features.seoContentFamilies
-			? generateDistrictFAQ(data.level2, data.level1, data.installerCount)
-			: []
+		faqFor(cc)?.generateDistrictFAQ(data.level2, data.level1, data.installerCount) ?? []
 	);
 
 	const breadcrumb = $derived(breadcrumbLD([

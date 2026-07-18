@@ -14,9 +14,10 @@ declare global {
 			} | null;
 		}
 
+		// Optional: no root layout load provides these, so most pages have neither.
 		interface PageData {
-			session: Session | null;
-			user: App.Locals['user'];
+			session?: Session | null;
+			user?: App.Locals['user'];
 		}
 
 		interface Error {

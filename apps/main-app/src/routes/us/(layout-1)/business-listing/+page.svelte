@@ -430,7 +430,7 @@
 				{#if data && data.businesses && data.businesses.length > 0}
 					{#each data.businesses as business}
 						<a
-							href={`/us/solar-panel-installer/${business.slug}`}
+							href={`/us/installer/${business.slug}`}
 							target="_blank"
 							rel="noopener noreferrer"
 							class="installer-card-link"

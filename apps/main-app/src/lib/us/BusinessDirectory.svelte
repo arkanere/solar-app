@@ -3,7 +3,7 @@
 <script>
 	import { isDarkMode } from '$lib/us/themeStore'; // Import the dark mode store
 	import { goto } from '$app/navigation';
-	import { formatCountyStateUrl } from '$lib/us/stateAbbreviations';
+	import { toSlug } from '$lib/countries/urls';
 	import { onMount } from 'svelte';
 
 	// Reactive store for theme mode
@@ -131,9 +131,7 @@
 	// Handle county selection and navigate to the county page to view cities
 	function handleCountySelection() {
 		if (state && county) {
-			// Format county and state for URL (e.g., "butler-al")
-			const countyStateSlug = formatCountyStateUrl(county, state);
-			goto(`/us/county/${countyStateSlug}`, {
+			goto(`/us/solar/${toSlug(state)}/${toSlug(county)}`, {
 				force: true
 			});
 		}
