@@ -1,11 +1,13 @@
 # SolarVipani Overhaul: Country-Scalable Architecture (Phase 1 — main-app)
 
-> **STATUS (2026-07-19): Phase 1 IMPLEMENTED + Phase 2.1 (business-app) COMPLETE** on branch
-> `refactor/country-scalable-architecture`. Migrations 042–047 are applied to the live DB.
-> business-app reads AND writes flow through the unified tables (writes via legacy-table +
-> `sv_sync_*` dual-write; sync triggers stay until user-app/admin-app migrate).
+> **STATUS (2026-07-19): Phase 1 IMPLEMENTED + Phase 2.1 (business-app) + Phase 2.2
+> (user-app + main-app writers) COMPLETE** on branch `refactor/country-scalable-architecture`.
+> Migrations 042–047 are applied to the live DB. business-app, user-app, and main-app all
+> read the unified tables and dual-write them (legacy-table write + explicit `sv_sync_*`
+> call); the sync triggers now exist only for the external admin-app.
 > See "Implementation status" and "Next steps" at the end of this document.
-> Next up: Phase 2.2 — user-app lead submission → unified endpoint/table.
+> Blogs feature removed entirely 2026-07-19 (see item 3); run `048-drop-blogs.sql` manually.
+> Next up: Phase 2.4 — gated on the external admin-app migrating.
 
 ## Context
 
@@ -203,8 +205,15 @@ Merge `lib/in/components/` + `lib/us/` pairs into `apps/main-app/src/lib/compone
    - (d) **DONE** (2026-07-19): auth modules deduplicated into shared `src/lib/auth/business/` (TokenManager/PasswordManager/LoginTracker/BusinessAuthService parameterized by country; SessionManager/TokenSecurity/RateLimiter/AuthTypes shared verbatim; legacy table names in `countryTables.ts`). `$lib/in|us/auth/business` are now thin country-binding shims exporting the same names, so no route imports changed. ~660 duplicated lines removed.
    - **Pre-existing bugs found & fixed during (c)**: US deleteAccount soft-deleted from `businesses_1`/`branches` (IN tables!) with a US id — could hide an unrelated Indian business; now targets `us_businesses`/`us_branches`. US submitLead and US claimLead's claimed-copy INSERT used nonexistent `pin_code` (real column `zipcode`) and submitLead RETURNED nonexistent `reference_uuid` — both endpoints 500'd on every call; fixed (submitLead now returns `reference_uuid: null`).
    - **Known-dead code, deliberately untouched**: both business-app resetPassword endpoints query nonexistent `reset_token_hash`/`reset_token_used` columns and fail before writing (the working reset flow lives in main-app against raw `reset_token`). Decide later: delete them or rebuild against `business_accounts`.
-   - Remaining for business-app: nothing until phase 2.4 (drop 040/043/045/046 triggers + remove `unifiedSync` calls + retire legacy writes) — gated on user-app (lead inserts) and admin-app migrating.
+   - Remaining for business-app: nothing until phase 2.4 (drop 040/043/045/046 triggers + remove `unifiedSync` calls + retire legacy writes) — gated on ~~user-app (lead inserts) and~~ admin-app migrating (user-app done 2026-07-19, see item 2).
 2. **user-app** → submit leads via unified endpoint/table; then the IN lead flow no longer depends on `leaddata`.
-3. **Blogs unification** — `blogs(country_code, ...)` table; migrate the 9 static US blog folders + `us_blogs`/`in_blogs`.
+
+   **DONE (2026-07-19)** — same read-switch + app-level dual-write pattern as business-app 2.1:
+   - Reads switched to unified tables with legacy column aliases (`source_id AS id`, `postal_code AS pin_code`, `level2 AS district`, `level1 AS state`): dashboard lead list + claimed-businesses join (`/in/+page.server.js`; `leaddata_claimrequests` stays legacy, joined via `l_claimed.source_id = lcr.claim_id`), thank-you page lead-by-`reference_uuid` + installers-by-district, uploadBill lead lookups (by ref and by id+email), sendLeadSubmissionConfirmation installer lookups (by slug and district) — all now `leads`/`businesses` with `country_code = 'in'`.
+   - Writes stay legacy-first (`INSERT/UPDATE leaddata`) + explicit `sv_sync_lead('in', id)` via new `user-app/src/lib/server/unifiedSync.js`: submitLead insert, uploadBill bill-column update. Idempotent with the 045 trigger today; user-app stays correct once triggers drop.
+   - **main-app's own legacy writers wired the same way** (new `main-app/src/lib/server/unifiedSync.ts`): `lib/server/leads.ts` insertLead (in-tx, both countries), legacy `in|us/api/submitLead`, `in|us/api/submitBusiness` (+`sv_sync_account`), `in|us/api/createMagicLinkToken`, `us/api/triggerPasswordReset`, `us/api/resetPassword` (the last two gained `RETURNING id` to feed the sync call). **The only writer still depending on the sync triggers is the external admin-app.**
+   - Verified against live DB: every converted read query diffed old-vs-new with real params — 0 row differences (dashboard leads, claimed-businesses join, thank-you by ref, installers by district/slug); rolled-back e2e test of submitLead insert + uploadBill update + `sv_sync_lead` (unified row present with bill columns); all five `sv_sync_*` call shapes execute cleanly. user-app: svelte-check 0 errors, build passes. main-app: svelte-check 17 errors (identical count with changes stashed — all pre-existing), build passes.
+   - Not switched (out of lead-flow scope): user-app's `in_user`/`in_user_feedback` tables (user accounts are not part of the unified schema) and `pincode_mapping` lookups (IN-only by design).
+3. ~~**Blogs unification**~~ — **OBSOLETE: blogs feature REMOVED entirely (2026-07-19, user decision)** instead of unified. Deleted: `routes/in/(layout-1)/blogs/` (dynamic, `in_blogs`-backed) and `routes/us/(layout-1)/blogs/` (9 static folders); blog sections/links on IN+US home pages, both footer navs, IN services mega-menu, seo-index (sections renumbered), US `AboutSolarVipani` inline link; sitemap blog entries (static `/blogs` + per-country `in_blogs`/`us_blogs` query); unused `articleLD` in `seo.ts`; `dynamicBlogs` feature flag. `hooks.server.ts` 301s `/{in|us}/blogs(/*)` → country home (`legacyUsRedirect` renamed `legacyRedirect`). `048-drop-blogs.sql` drops `in_blogs`/`us_blogs` — **NOT YET APPLIED** (destructive; take the pg_dump archive in the migration header first if the articles might be wanted). `in_blog_posts` kept (separate empty table, `/in/authors` reads it). Verified in dev: all four blog URL shapes 301 to country home in one hop, homes 200, both sitemaps blog-free; svelte-check unchanged (17 pre-existing), build passes.
 4. **Retire old tables** — only after all apps (incl. the external admin-app) migrate: drop triggers, keep old tables as archive or drop.
 5. **Adding a new country** = insert into `countries`, load `geo_locations` rows, add a `CountryConfig` in `lib/countries/`, done — routes, sitemaps, APIs, and redirects all derive from it.

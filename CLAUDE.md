@@ -10,6 +10,15 @@ Flag uncertainty explicitly. If you are not confident about an approach or techn
 
 I'm always open to ideas on better ways to do things. Please don't hesitate to suggest a better way, or one that has long lasting impact over a tactical change. (as a few examples)"
 
+## Git workflow
+
+Always use a branch and a pull request. Never commit directly to `main`.
+
+- Start any change on a new branch off `main` (e.g. `feat/…`, `fix/…`, `refactor/…`, `chore/…`).
+- "Commit and push" means: commit on the branch, push it, and open a PR against `main`. Opening the PR is part of the workflow, not a separate request.
+- Group work into logical, coherent commits where practical, keeping each commit buildable (e.g. keep `package.json` and `package-lock.json` changes together).
+- Only commit or push when I ask.
+
 ## About Solar-app
 
 This is a open source project.
