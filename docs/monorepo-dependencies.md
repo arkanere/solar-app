@@ -1,7 +1,7 @@
 # Monorepo dependency conventions
 
 This repo is an **npm workspaces** monorepo (`apps/*`). Each app under `apps/` is an
-independently deployed SvelteKit app (its own Vercel deployment / microfrontend).
+independently deployed SvelteKit app (its own Vercel deployment).
 
 ## The rule
 

@@ -1,10 +1,9 @@
 import adapter from '@sveltejs/adapter-vercel';
-import { withMicrofrontends } from '@vercel/microfrontends/experimental/sveltekit';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 
 /** @type {import('@sveltejs/kit').Config} */
-const config = withMicrofrontends({
+const config = {
 	preprocess: vitePreprocess(),
 	compilerOptions: {
 		runes: true
@@ -17,6 +16,6 @@ const config = withMicrofrontends({
 			entries: ['*'] // Prerender all discoverable pages
 		}
 	}
-});
+};
 
 export default config;

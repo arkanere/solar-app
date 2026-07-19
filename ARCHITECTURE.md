@@ -38,8 +38,6 @@ Three SvelteKit apps deployed independently on Vercel out of one npm-workspaces 
 | `business-app` | Portal where installers manage listings, leads, and proposals. Region-split internally like main-app. Live at [business.solarvipani.com](https://business.solarvipani.com). |
 | `user-app` | Customer account portal for tracking quotes and installations. Live at [user.solarvipani.com](https://user.solarvipani.com). |
 
-A Vercel microfrontends config (`apps/main-app/microfrontends.json`) does path-based routing so regions can be split into separate deployments behind one domain, with `solarvipani.com` as the development fallback.
-
 Security headers (HSTS, `X-Frame-Options: DENY`, nosniff, referrer policy) are applied platform-wide via `vercel.json` rather than in app code.
 
 ## Data layer
