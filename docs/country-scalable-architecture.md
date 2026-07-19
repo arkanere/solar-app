@@ -223,7 +223,9 @@ Merge `lib/in/components/` + `lib/us/` pairs into `apps/main-app/src/lib/compone
 
    **Gate cleared (2026-07-19):** admin-app (solar-app-internal) now calls `sv_sync_lead/business/account` after every legacy write (lead edits/claim copies/pincode backfills/invite counts, business profile edits, magic-link mints, password resets — both countries), and automation-scripts write no legacy lead/business tables.
 
-   **Runbook (2026-07-19; 049 + drift check WRITTEN, NOT applied):**
+   **EXECUTED 2026-07-19:** branch merged to main and deployed (all four apps confirmed Ready on Vercel); blogs archived to `~/solar-blogs-archive-2026-07-19.sql` then **048 APPLIED** (`in_blogs`/`us_blogs` dropped); **049 APPLIED** — only `businesses_1_profile_sync`/`businesses_1_account_sync` (039/040) remain, all six unified-sync triggers gone. Post-drop verification against the live DB through the real code paths (dev servers, same code as deployed): IN lead via user-app submitLead → row in `leaddata` AND `leads` (app-side sync only, no trigger); US lead via main-app submitLead → same; magic-link mint via main-app → token identical across `businesses_1`/`in_business_accounts`/`business_accounts`; test rows soft-hidden + resynced; final drift check all 0 across all seven scopes. Remaining: item 6 below (051 to drop 039/040 triggers after a quiet period, then freeze/archive legacy tables).
+
+   **Runbook (as planned):**
    1. **Merge PR #2 and deploy** main-app + business-app + user-app (admin-app is already deployed from solar-app-internal main). Until then production has no `sv_sync_*` calls and depends entirely on the triggers — do NOT run 048/049 before this.
    2. Post-deploy spot checks (prod sitemaps, legacy-URL 301s, one lead per country) per "Immediate (deploy window)" above.
    3. Apply `048-drop-blogs.sql` (destructive; archive command in header). Not before the deploy — old prod code still reads `in_blogs`/`us_blogs` in blog routes and sitemaps.
