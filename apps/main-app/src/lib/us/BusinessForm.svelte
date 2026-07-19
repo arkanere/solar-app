@@ -88,14 +88,13 @@
 	async function updateCounties(selectedState) {
 		isCountyLoading = true; // Set loading state
 		try {
-			// Send POST request to fetch counties for the selected state
-			const res = await fetch('/us/api/getCounties', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ state: selectedState })
-			});
+			// Unified endpoint: GET with query params, returns { name, slug } objects
+			const res = await fetch(
+				`/us/api/getLevel2s?state=${encodeURIComponent(selectedState)}`
+			);
 			const data = await res.json();
-			counties = data.counties || data.districts || []; // Backend returns both keys for compatibility
+			// The form submits plain names to submitBusiness, so keep names only.
+			counties = (data.level2s || []).map((l) => l.name);
 			county = ''; // Reset county when state changes
 		} catch (error) {
 			console.error('Error fetching counties:', error);
@@ -114,14 +113,12 @@
 	async function updateCitiesForCounty(selectedCounty) {
 		isCityLoading = true; // Set loading state
 		try {
-			// Send POST request to fetch cities for the selected county
-			const res = await fetch('/us/api/getCities', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ county: selectedCounty })
-			});
+			// Unified endpoint needs the state as well as the county
+			const res = await fetch(
+				`/us/api/getCities?state=${encodeURIComponent(state)}&level2=${encodeURIComponent(selectedCounty)}`
+			);
 			const data = await res.json();
-			cities = data.cities || [];
+			cities = (data.cities || []).map((c) => c.name);
 			city = ''; // Reset city when county changes
 		} catch (error) {
 			console.error('Error fetching cities:', error);

@@ -18,12 +18,7 @@
     "test": "npm run test --workspaces --if-present",
     "dev:main": "npm run dev -w main-app",
     "dev:business": "npm run dev -w solarvipani-business",
-    "dev:in": "npm run dev -w in-app",
-    "dev:uk": "npm run dev -w uk-app",
-    "dev:us": "npm run dev -w us-app",
-    "dev:au": "npm run dev -w au-app",
-    "dev:user": "npm run dev -w user-app",
-    "dev:uk-next": "npm run dev -w uk-app-nextjs"
+    "dev:user": "npm run dev -w user-app"
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",

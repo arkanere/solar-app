@@ -16,8 +16,12 @@ export interface LevelLabels {
 export interface CountryConfig {
 	code: CountryCode;
 	name: string;
+	brandName: string; // name used in outbound copy, e.g. 'Solar Vipani USA'
 	locale: string; // e.g. 'en-IN'
 	currency: string; // ISO 4217, e.g. 'INR'
+	taxId: {
+		label: string; // 'GSTN' | 'EIN'
+	};
 	levels: {
 		level1: LevelLabels; // State/States everywhere so far
 		level2: LevelLabels; // District/Districts (IN), County/Counties (US)
@@ -40,6 +44,7 @@ export interface CountryConfig {
 		projects: boolean;
 		chatbot: boolean;
 		pincodeLookup: boolean; // postal-code -> level2 API (pincode_mapping is IN-only)
+		userAccounts: boolean; // customer dashboard + magic link (in_user is IN-only)
 	};
 	installerNoun: string; // noun used in SEO copy, e.g. 'solar installer'
 }

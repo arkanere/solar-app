@@ -4,11 +4,10 @@ import { env } from '$env/dynamic/private';
 /**
  * Shared-secret guard for privileged server-to-server endpoints.
  *
- * Token-minting endpoints (createMagicLinkToken, generateUserMagicLink) must not
- * be callable by anonymous clients — doing so lets an attacker obtain a working
- * sign-in link. They are only invoked internally (e.g. triggerWelcomeMail,
- * sendLeadSubmissionConfirmation) via `event.fetch`, which forwards the
- * `x-internal-secret` header set below.
+ * Token-minting endpoints (generateUserMagicLink) must not be callable by
+ * anonymous clients — doing so lets an attacker obtain a working sign-in link.
+ * They are only invoked internally (e.g. sendLeadSubmissionConfirmation) via
+ * `event.fetch`, which forwards the `x-internal-secret` header set below.
  */
 
 export const INTERNAL_SECRET_HEADER = 'x-internal-secret';

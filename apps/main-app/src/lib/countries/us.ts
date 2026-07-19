@@ -3,8 +3,12 @@ import type { CountryConfig } from './types';
 export const US: CountryConfig = {
 	code: 'us',
 	name: 'United States',
+	brandName: 'Solar Vipani USA',
 	locale: 'en-US',
 	currency: 'USD',
+	taxId: {
+		label: 'EIN'
+	},
 	levels: {
 		level1: { singular: 'State', plural: 'States' },
 		level2: { singular: 'County', plural: 'Counties' }
@@ -26,7 +30,8 @@ export const US: CountryConfig = {
 		authors: false,
 		projects: false,
 		chatbot: false,
-		pincodeLookup: false
+		pincodeLookup: false,
+		userAccounts: false
 	},
 	installerNoun: 'solar panel installer'
 };

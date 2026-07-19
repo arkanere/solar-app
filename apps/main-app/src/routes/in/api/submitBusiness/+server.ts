@@ -163,8 +163,8 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 		await syncBusinessToUnified(pool, 'in', businessId);
 		await syncAccountToUnified(pool, 'in', businessId);
 
-		// Send confirmation email via the new endpoint
-		await fetch('/api/sendBusinessSubmissionConfirmation', {
+		// Send confirmation email via the unified endpoint
+		await fetch('/in/api/sendBusinessSubmissionConfirmation', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({

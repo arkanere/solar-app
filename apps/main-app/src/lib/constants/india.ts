@@ -38,9 +38,11 @@ export const INDIAN_STATES = [
   "West Bengal",
 ];
 
-// API endpoints for location data
+// API endpoints for location data.
+// districts/cities are the unified [country]/api routes; they are GET with
+// query params and return { name, slug } objects.
 export const LOCATION_ENDPOINTS = {
-  districts: "/in/api/getDistricts",
+  districts: "/in/api/getLevel2s",
   cities: "/in/api/getCities",
   submitBusiness: "/in/api/submitBusiness",
 };

@@ -37,13 +37,13 @@
   async function updateDistricts(state: string): Promise<void> {
     isDistrictLoading = true;
     try {
-      const res = await fetch(LOCATION_ENDPOINTS.districts, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ state }),
-      });
-      const data: { districts: string[] } = await res.json();
-      districts = data.districts || [];
+      const res = await fetch(
+        `${LOCATION_ENDPOINTS.districts}?state=${encodeURIComponent(state)}`,
+      );
+      const data: { level2s: { name: string; slug: string }[] } =
+        await res.json();
+      // The form submits plain names to submitBusiness, so keep names only.
+      districts = (data.level2s || []).map((l) => l.name);
       district = "";
     } catch (error) {
       console.error("Error fetching districts:", error);
@@ -55,13 +55,12 @@
   async function updateCities(selectedDistrict: string): Promise<void> {
     isCityLoading = true;
     try {
-      const res = await fetch(LOCATION_ENDPOINTS.cities, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ district: selectedDistrict }),
-      });
-      const data: { cities: string[] } = await res.json();
-      cities = data.cities || [];
+      const res = await fetch(
+        `${LOCATION_ENDPOINTS.cities}?state=${encodeURIComponent(selectedState)}&level2=${encodeURIComponent(selectedDistrict)}`,
+      );
+      const data: { cities: { name: string; slug: string }[] } =
+        await res.json();
+      cities = (data.cities || []).map((c) => c.name);
       city = "";
     } catch (error) {
       console.error("Error fetching cities:", error);
