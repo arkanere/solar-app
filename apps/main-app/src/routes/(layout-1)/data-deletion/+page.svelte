@@ -18,7 +18,7 @@
     error = "";
 
     try {
-      const response = await fetch("/in/api/submitDataDeletion", {
+      const response = await fetch("/api/submitDataDeletion", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -21,7 +21,7 @@
     error = "";
 
     try {
-      const response = await fetch("/in/api/submitDataAccess", {
+      const response = await fetch("/api/submitDataAccess", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
