@@ -2,6 +2,19 @@
 
 Notable changes to Solar Vipani. The platform has been live and continuously deployed since September 2024; this changelog starts with the first tagged release, which snapshots the production system at that point. Format follows [Keep a Changelog](https://keepachangelog.com/), versions follow [SemVer](https://semver.org/).
 
+## [2.0.0] — 2026-07-19
+
+Simplified the architecture and pruned features that carried no competitive advantage.
+
+### Changed
+- One country-scalable core replaces the per-country forks: unified `leads`/`businesses`/`business_accounts` tables with a `country_code` column, a single `/[country]` route tree, and a per-country config layer. All four apps (marketplace, installer portal, customer portal, admin) read and write the same data layer; the transitional sync triggers are gone.
+- US URLs moved to the unified `/us/solar/{state}/{county}/{city}` and `/us/installer/{slug}` scheme; every legacy US URL 301s in one hop. India URLs unchanged.
+- Adding a new country is now configuration, not a fork.
+
+### Removed
+- Blogs (public pages, admin blog management, and the underlying tables — content archived)
+- Home-page installer directory dropdowns
+
 ## [1.0.0] — 2026-07-06
 
 First tagged release. Solar Vipani in production: marketplace, installer portal, and customer portal for India and the US.
@@ -27,4 +40,5 @@ First tagged release. Solar Vipani in production: marketplace, installer portal,
 - PII compliance: consent capture, DSAR routes (data access / deletion), private bill storage, automated 6-month retention purge for unclaimed leads
 - Platform-wide security headers (HSTS, frame denial, nosniff)
 
+[2.0.0]: https://github.com/arkanere/solar-app/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/arkanere/solar-app/releases/tag/v1.0.0
