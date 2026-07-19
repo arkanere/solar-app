@@ -2,7 +2,7 @@ import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { AUTH_CONFIG, type LoginTrackerResult } from './AuthTypes';
 import { LEGACY_BUSINESS_TABLE, type AuthCountry } from './countryTables';
-import { syncAccountToUnified } from '$lib/server/unifiedSync';
+import { syncAccountToUnified, syncInSplitTables } from '$lib/server/unifiedSync';
 
 const pool = createPool({ connectionString: POSTGRES_URL });
 
@@ -30,6 +30,9 @@ export class LoginTracker {
 			);
 
 			if (result.rows.length > 0) {
+				if (this.country === 'in') {
+					await syncInSplitTables(pool, businessId);
+				}
 				await syncAccountToUnified(pool, this.country, businessId);
 				return {
 					updated: true,

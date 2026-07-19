@@ -4,7 +4,7 @@ import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
 import { randomBytes } from 'crypto';
 import { BusinessAuthService } from '$lib/in/auth/business';
-import { syncBusinessToUnified, syncAccountToUnified } from '$lib/server/unifiedSync';
+import { syncBusinessToUnified, syncAccountToUnified, syncInSplitTables } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
 import type { AddBranchRequest } from '$lib/types/business';
 
@@ -144,6 +144,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			true // Set as active by default
 		]);
 
+		await syncInSplitTables(pool, branchId);
 		await syncBusinessToUnified(pool, 'in', branchId);
 		await syncAccountToUnified(pool, 'in', branchId);
 

@@ -7,7 +7,11 @@
 > call); the sync triggers now exist only for the external admin-app.
 > See "Implementation status" and "Next steps" at the end of this document.
 > Blogs feature removed entirely 2026-07-19 (see item 3); run `048-drop-blogs.sql` manually.
-> Next up: Phase 2.4 — gated on the external admin-app migrating.
+> **admin-app migrated 2026-07-19** (solar-app-internal repo, 3 commits on main): IN business
+> reads/writes on the profile/account split tables, every legacy-table write followed by an
+> explicit `sv_sync_*` call, blog management deleted. automation-scripts verified to write no
+> legacy lead/business tables. **Phase 2.4 (drop the 040/043/045/046 triggers) is now
+> unblocked** — every writer in every app projects its own writes into the unified tables.
 
 ## Context
 
@@ -216,4 +220,14 @@ Merge `lib/in/components/` + `lib/us/` pairs into `apps/main-app/src/lib/compone
    - Not switched (out of lead-flow scope): user-app's `in_user`/`in_user_feedback` tables (user accounts are not part of the unified schema) and `pincode_mapping` lookups (IN-only by design).
 3. ~~**Blogs unification**~~ — **OBSOLETE: blogs feature REMOVED entirely (2026-07-19, user decision)** instead of unified. Deleted: `routes/in/(layout-1)/blogs/` (dynamic, `in_blogs`-backed) and `routes/us/(layout-1)/blogs/` (9 static folders); blog sections/links on IN+US home pages, both footer navs, IN services mega-menu, seo-index (sections renumbered), US `AboutSolarVipani` inline link; sitemap blog entries (static `/blogs` + per-country `in_blogs`/`us_blogs` query); unused `articleLD` in `seo.ts`; `dynamicBlogs` feature flag. `hooks.server.ts` 301s `/{in|us}/blogs(/*)` → country home (`legacyUsRedirect` renamed `legacyRedirect`). `048-drop-blogs.sql` drops `in_blogs`/`us_blogs` — **NOT YET APPLIED** (destructive; take the pg_dump archive in the migration header first if the articles might be wanted). `in_blog_posts` kept (separate empty table, `/in/authors` reads it). Verified in dev: all four blog URL shapes 301 to country home in one hop, homes 200, both sitemaps blog-free; svelte-check unchanged (17 pre-existing), build passes.
 4. **Retire old tables** — only after all apps (incl. the external admin-app) migrate: drop triggers, keep old tables as archive or drop.
+
+   **Gate cleared (2026-07-19):** admin-app (solar-app-internal) now calls `sv_sync_lead/business/account` after every legacy write (lead edits/claim copies/pincode backfills/invite counts, business profile edits, magic-link mints, password resets — both countries), and automation-scripts write no legacy lead/business tables.
+
+   **Runbook (2026-07-19; 049 + drift check WRITTEN, NOT applied):**
+   1. **Merge PR #2 and deploy** main-app + business-app + user-app (admin-app is already deployed from solar-app-internal main). Until then production has no `sv_sync_*` calls and depends entirely on the triggers — do NOT run 048/049 before this.
+   2. Post-deploy spot checks (prod sitemaps, legacy-URL 301s, one lead per country) per "Immediate (deploy window)" above.
+   3. Apply `048-drop-blogs.sql` (destructive; archive command in header). Not before the deploy — old prod code still reads `in_blogs`/`us_blogs` in blog routes and sitemaps.
+   4. Run `check-unified-drift.sql` (expect all 0 — verified 2026-07-19), apply `049-drop-unified-sync-triggers.sql` (drops the six 043/045/046 triggers; keeps every `sv_sync_*` function), exercise one lead write + one business edit per country, re-run the drift check.
+   5. **039/040 triggers (`businesses_1 → in_business_profiles`/`in_business_accounts`): code side DONE (2026-07-19), drop deferred.** `050-split-sync-functions.sql` (**APPLIED** — non-destructive rewrap, same move as 047) extracts the 039/040 trigger bodies into `sv_sync_in_business_profile/account(id)` + combined `sv_sync_in_split(id)`; triggers are now thin wrappers. business-app calls `syncInSplitTables` after every `businesses_1` write before its unified syncs (addBranch, deleteBranch, deleteAccount, claimLead auto-branch, LoginTracker `'in'`, magic-link mint; updateBusinessDetails already writes `in_business_profiles` first; resetPassword is the known-dead endpoint, untouched). main-app and admin-app already write the split tables first-class. After the deploy in step 1 and a clean drift check, the 039/040 triggers (`businesses_1_profile_sync`, `businesses_1_account_sync`) can drop in a follow-up migration (051) — write it then.
+   6. After a quiet period with zero drift: freeze legacy tables (`leaddata`/`us_leaddata`/`us_businesses`/`businesses_1`), remove the legacy dual-writes app by app, archive or drop.
 5. **Adding a new country** = insert into `countries`, load `geo_locations` rows, add a `CountryConfig` in `lib/countries/`, done — routes, sitemaps, APIs, and redirects all derive from it. (No new country planned at the moment — this is the recipe for whenever one is.)

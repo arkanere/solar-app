@@ -2,7 +2,7 @@ import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/in/auth/business';
-import { syncBusinessToUnified, syncAccountToUnified } from '$lib/server/unifiedSync';
+import { syncBusinessToUnified, syncAccountToUnified, syncInSplitTables } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ cookies }) => {
@@ -42,6 +42,7 @@ export const POST: RequestHandler = async ({ cookies }) => {
 		);
 
 		for (const row of [{ id: businessId }, ...hiddenBranches.rows]) {
+			await syncInSplitTables(pool, row.id);
 			await syncBusinessToUnified(pool, 'in', row.id);
 			await syncAccountToUnified(pool, 'in', row.id);
 		}

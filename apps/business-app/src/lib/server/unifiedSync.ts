@@ -35,3 +35,11 @@ export async function syncAccountToUnified(
 ): Promise<void> {
 	await db.query('SELECT sv_sync_account($1, $2)', [country, sourceId]);
 }
+
+// businesses_1 -> in_business_profiles/in_business_accounts (migration 050).
+// IN-only: call after a businesses_1 write, BEFORE syncBusinessToUnified —
+// sv_sync_business('in') sources from in_business_profiles. Idempotent with
+// the 039/040 triggers; keeps the split tables fresh once those drop.
+export async function syncInSplitTables(db: Queryable, sourceId: number): Promise<void> {
+	await db.query('SELECT sv_sync_in_split($1)', [sourceId]);
+}

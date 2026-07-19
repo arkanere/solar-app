@@ -9,7 +9,8 @@ import type { ClaimRequestPayload } from '$lib/types/lead';
 import {
 	syncLeadToUnified,
 	syncBusinessToUnified,
-	syncAccountToUnified
+	syncAccountToUnified,
+	syncInSplitTables
 } from '$lib/server/unifiedSync';
 
 // Allow time for the full claim pipeline including Brevo calls — the default
@@ -367,6 +368,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 			// Project the rows written above into the unified tables (covers the
 			// auto-created branch, the claim-count bump and the claimed copy).
+			await syncInSplitTables(client, effectiveBusinessId);
 			await syncBusinessToUnified(client, 'in', effectiveBusinessId);
 			await syncAccountToUnified(client, 'in', effectiveBusinessId);
 			await syncLeadToUnified(client, 'in', lead_id);

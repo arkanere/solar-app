@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import type { VercelPool } from '@vercel/postgres';
-import { syncAccountToUnified } from '$lib/server/unifiedSync';
+import { syncAccountToUnified, syncInSplitTables } from '$lib/server/unifiedSync';
 
 // Magic-link tokens are stored hashed at rest and expire after 15 days.
 // Emitters mint a fresh token, persist its hash, and email/return the raw token.
@@ -28,6 +28,9 @@ export async function mintBusinessTokenById(
 		[hash, expiresAt, businessId]
 	);
 	if (result.rowCount === 0) return null;
+	if (table !== 'us_businesses') {
+		await syncInSplitTables(pool, businessId);
+	}
 	await syncAccountToUnified(pool, table === 'us_businesses' ? 'us' : 'in', businessId);
 	return raw;
 }
