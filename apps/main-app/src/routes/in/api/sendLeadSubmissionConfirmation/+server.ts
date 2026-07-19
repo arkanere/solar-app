@@ -18,7 +18,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 		let magicLinkUrl = '';
 		if (!isExclusiveLead) {
 			try {
-				const magicLinkResponse = await fetch('/api/generateUserMagicLink', {
+				const magicLinkResponse = await fetch('/in/api/generateUserMagicLink', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json', ...internalSecretHeaders() },
 					body: JSON.stringify({ email, name })
