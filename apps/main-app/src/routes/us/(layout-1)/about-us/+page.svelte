@@ -1,5 +1,4 @@
 <script>
-	import QueryForm from '$lib/us/QueryForm.svelte';
 	import { isDarkMode } from '$lib/us/themeStore'; // Import from store if globally managed
 
 	// Initialize dark mode state
