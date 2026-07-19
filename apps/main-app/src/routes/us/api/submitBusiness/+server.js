@@ -69,7 +69,7 @@ export async function POST({ request, fetch }) {
 		await syncBusinessToUnified(pool, 'us', businessId);
 		await syncAccountToUnified(pool, 'us', businessId);
 
-		// Send confirmation email via the US-specific endpoint
+		// Send confirmation email via the unified endpoint
 		await fetch('/us/api/sendBusinessSubmissionConfirmation', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },

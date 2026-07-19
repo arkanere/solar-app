@@ -25,12 +25,7 @@ export const POST: RequestHandler = async ({ request, params, fetch }) => {
 			marketingConsent: marketing_consent === true
 		});
 
-		// Confirmation mail flows are still per-country endpoints.
-		const confirmationUrl =
-			country.code === 'in'
-				? '/in/api/sendLeadSubmissionConfirmation'
-				: '/us/api/sendLeadSubmissionConfirmation';
-		await fetch(confirmationUrl, {
+		await fetch(`/${country.code}/api/sendLeadSubmissionConfirmation`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
