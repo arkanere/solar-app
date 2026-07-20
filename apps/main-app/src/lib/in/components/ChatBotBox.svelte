@@ -1,18 +1,16 @@
 <script lang="ts">
   import { tick } from "svelte";
   import { writable, get } from "svelte/store";
-  import conversationFlows from "$lib/in/conversationFlows.json";
-  import { page } from "$app/stores";
-  import { Card, CardContent } from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
+  import { Textarea } from "$lib/components/ui/textarea";
   import { Badge } from "$lib/components/ui/badge";
-  import { X, Send, Copy, Check } from "@lucide/svelte";
+  import { X, Send, Copy, Check, Square, Mic } from "@lucide/svelte";
   import MarkdownIt from "markdown-it";
+  import MessageBubble from "$lib/in/components/chat/MessageBubble.svelte";
+  import { AudioRecorder } from "$lib/in/components/chat/audioRecorder.svelte";
 
-  // AI replies arrive as markdown; canned flow messages are raw HTML. `html: true`
-  // lets both pass through one renderer — markdown converts, inline HTML is preserved.
+  // AI replies arrive as markdown; the canned welcome message is raw HTML.
+  // `html: true` lets both pass through one renderer.
   const md = new MarkdownIt({ html: true, linkify: true, breaks: true });
 
   function renderMessage(content: string): string {
@@ -25,34 +23,36 @@
   // Chat state
   let userInput = $state("");
   let isLoading = $state(false);
-  let currentFlowId = $state("initial");
 
-  // Helper to get current flow with proper typing
-  let currentFlow = $derived((conversationFlows.flows as Record<string, any>)[currentFlowId]);
-  let inputValues: Record<string, any> = $state({});
+  // In-flight request control. `isStreaming` stays true from the first delta until
+  // the stream ends, so the Send button can become Stop for the whole generation.
+  let isStreaming = $state(false);
+  let abortController: AbortController | null = null;
 
-  // Form state
-  let formValues: Record<string, any> = $state({});
-  let formErrors: Record<string, string> = $state({});
-  let isFormValid = $state(false);
-  let isSubmittingForm = $state(false);
-  let hasAttemptedSubmit = $state(false);
+  // Voice input: /in/api/transcribe is proxied to the FastAPI backend in dev
+  // (see vite.config.js), which serves Whisper speech-to-text.
+  const VOICE_ENABLED = true;
+  const recorder = new AudioRecorder();
+  let isTranscribing = $state(false);
 
-  // URL parameter and journey tracking
-  let urlParam = $state("");
-  let userJourney: (string | any)[] = $state([]);
+  const WELCOME_MESSAGE =
+    "<p>Hi! I'm the Solar Vipani assistant. Ask me anything about going solar — costs, subsidies, system sizing, or brands.</p>";
 
-  // Conversation context
-  let conversationContext = $state("");
-  let contextSent = $state(false);
+  // Opening questions offered before the user's first message, so the empty state
+  // suggests what the assistant is good at. These send as ordinary messages.
+  const STARTER_PROMPTS = [
+    "How much can I save with solar?",
+    "What government subsidies am I eligible for?",
+    "What size system does my home need?",
+    "How much maintenance do solar panels need?",
+  ];
 
   // Scroll and animation state
   let chatHistoryContainer: HTMLDivElement | undefined;
   let isUserScrolledUp = $state(false);
   let lastScrollHeight = $state(0);
 
-  // Lead Profile Data
-  let leadProfile: Record<string, any> = {
+  const EMPTY_LEAD_PROFILE = {
     name: null,
     phone: null,
     email: null,
@@ -69,16 +69,30 @@
     netInvestment: null,
   };
 
-  // Reactive effect for URL parameter
-  $effect(() => {
-    urlParam = $page.url.pathname;
-  });
+  // Lead profile: accumulated purely from what the agent collects mid-conversation
+  // (see applyContextUpdates), persisted to localStorage, and re-sent every turn.
+  let leadProfile: Record<string, any> = { ...EMPTY_LEAD_PROFILE };
 
-  function stopBackgroundAnimation() {}
+  // The backend agent's collect_customer_info tool sends back CustomerContext
+  // updates (camelCase). Fold the ones leadProfile can hold into it so the
+  // profile stays in sync with what the AI collected mid-conversation.
+  const CONTEXT_TO_PROFILE: Record<string, string> = {
+    name: "name",
+    propertyType: "propertyType",
+    monthlyElectricityBill: "monthlyBill",
+    electricityConsumption: "monthlyConsumption",
+  };
+
+  function applyContextUpdates(updates: any) {
+    if (!updates || typeof updates !== "object") return;
+    for (const [key, value] of Object.entries(updates)) {
+      const field = CONTEXT_TO_PROFILE[key];
+      if (field && value != null && value !== "") updateLeadProfile(field, value);
+    }
+  }
 
   function updateLeadProfile(field: string, value: any) {
     leadProfile[field] = value;
-    console.log(`Lead Profile Updated: ${field} = ${value}`);
     saveLeadProfile();
   }
 
@@ -95,128 +109,6 @@
         leadProfile = JSON.parse(savedProfile);
       }
     }
-  }
-
-  function addToUserJourney(type: string, value: any) {
-    if (type === "formSubmission" || (type === "input" && ["customerName", "customerPhone", "customerPinCode", "customerEmail", "customerComment"].includes(value))) {
-      return;
-    }
-    const journeyEntry = type === "input" ? `${value}` : value;
-    userJourney.push(journeyEntry);
-  }
-
-  // Summarize what the user did in the guided (preset-options) flow so the LLM
-  // has that context on every free-form turn. Two parts: the structured outcomes
-  // captured in leadProfile, and the path of options the user clicked through.
-  // Returns "" when there's nothing meaningful, so callers can skip sending it.
-  function serializeConversationContext() {
-    const sections: string[] = [];
-
-    const profileLines = Object.entries(leadProfile)
-      .filter(([, value]) => value !== null && value !== undefined && value !== "")
-      .map(([key, value]) => {
-        const label = key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase());
-        return `${label}: ${value}`;
-      });
-    if (profileLines.length) {
-      sections.push("=== Guided assessment (user-provided) ===\n" + profileLines.join("\n"));
-    }
-
-    const path = (userJourney as any[]).filter((j) => typeof j === "string" && j.trim());
-    if (path.length) {
-      sections.push("Path through guided options: " + path.join(" → "));
-    }
-
-    return sections.join("\n\n");
-  }
-
-  // Form validation functions
-  function validatePhoneNumber(phone: any) {
-    if (!phone || !/^\+?\d{10,16}$/.test(phone)) {
-      return "Phone number must be between 10 and 16 digits, optionally starting with +";
-    }
-    return "";
-  }
-
-  function validateEmail(email: any) {
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return "Invalid email address";
-    }
-    return "";
-  }
-
-  function validatePinCode(pinCode: any) {
-    if (!pinCode || !/^\d{6}$/.test(pinCode)) {
-      return "Pin code must be exactly 6 digits";
-    }
-    return "";
-  }
-
-  function validateRequired(value: any, fieldName: string) {
-    if (!value || value.trim() === "") {
-      return `${fieldName} is required`;
-    }
-    return "";
-  }
-
-  function validateForm(showAllErrors = true) {
-    const currentFlow = (conversationFlows.flows as Record<string, any>)[currentFlowId];
-    if (!currentFlow || !currentFlow.inputs) {
-      return false;
-    }
-
-    let isValid = true;
-    const errors: Record<string, string> = {};
-
-    currentFlow.inputs.forEach((input: any) => {
-      const value = formValues[input.id] || "";
-      let error = "";
-
-      if (input.required && (showAllErrors || hasAttemptedSubmit)) {
-        error = validateRequired(value, input.label);
-      }
-
-      if (!error && value) {
-        switch (input.id) {
-          case "customerPhone":
-            error = validatePhoneNumber(value);
-            break;
-          case "customerEmail":
-            error = validateEmail(value);
-            break;
-          case "customerPinCode":
-            error = validatePinCode(value);
-            break;
-        }
-      }
-
-      let allErrors = "";
-      if (input.required) {
-        allErrors = validateRequired(value, input.label);
-      }
-      if (!allErrors && value) {
-        switch (input.id) {
-          case "customerPhone":
-            allErrors = validatePhoneNumber(value);
-            break;
-          case "customerEmail":
-            allErrors = validateEmail(value);
-            break;
-          case "customerPinCode":
-            allErrors = validatePinCode(value);
-            break;
-        }
-      }
-
-      errors[input.id] = error;
-      if (allErrors) {
-        isValid = false;
-      }
-    });
-
-    formErrors = errors;
-    isFormValid = isValid;
-    return isValid;
   }
 
   // Scroll functions
@@ -240,113 +132,194 @@
     lastScrollHeight = chatHistoryContainer.scrollHeight;
   }
 
-  function simulateDelay(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+  // Starter chips are an empty-state affordance — retire them once the user has
+  // actually asked something.
+  let hasUserMessage = $derived($messages.some((m: any) => m.role === "user"));
+
+  // Grow the composer with its content, up to the max-height set in the markup
+  // (past which it scrolls). Reset to `auto` first so it can shrink again.
+  // Must start as null, not undefined: Textarea's `ref` prop declares a `null`
+  // fallback, and binding an undefined value to it throws.
+  let inputEl: HTMLTextAreaElement | null = $state(null);
+  $effect(() => {
+    userInput; // re-run whenever the text changes
+    if (!inputEl) return;
+    inputEl.style.height = "auto";
+    inputEl.style.height = `${inputEl.scrollHeight}px`;
+  });
+
+  // Enter sends, Shift+Enter inserts a newline.
+  function handleInputKeydown(e: KeyboardEvent) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
   }
 
-  // User interaction handlers
-  async function startGuidedFlow() {
-    stopBackgroundAnimation();
-    if (typeof window !== "undefined" && window.umami) {
-      window.umami.track("chatbot-guided-flow-started");
+  /** Send whatever is currently typed. */
+  async function sendMessage() {
+    const text = userInput.trim();
+    if (!text) return;
+    userInput = "";
+    await runChat(text, { appendUser: true });
+  }
+
+  /** Send a starter chip or a suggested follow-up as if the user had typed it. */
+  async function sendPrompt(text: string) {
+    if (isLoading || isStreaming) return;
+    await runChat(text, { appendUser: true });
+  }
+
+  /** Abort the in-flight generation, keeping whatever text already streamed in. */
+  function stopGeneration() {
+    abortController?.abort();
+    abortController = null;
+  }
+
+  /**
+   * Record a question, transcribe it, and send it as a normal turn.
+   *
+   * NOTE: /in/api/transcribe does not exist yet — this path is gated behind
+   * VOICE_ENABLED and is unreachable until that endpoint ships.
+   */
+  async function toggleRecording() {
+    if (recorder.isRecording) {
+      const blob = await recorder.stop();
+      if (!blob) return;
+
+      isTranscribing = true;
+      try {
+        const form = new FormData();
+        form.append("audio", blob, "recording.webm");
+        const res = await fetch("/in/api/transcribe", { method: "POST", body: form });
+        if (!res.ok) throw new Error("Transcription failed");
+        const { text } = await res.json();
+        if (text?.trim()) await runChat(text.trim(), { appendUser: true });
+      } catch (err) {
+        console.error("Voice transcription failed:", err);
+        recorder.error = "Could not transcribe that. Please try typing instead.";
+      } finally {
+        isTranscribing = false;
+      }
+      return;
     }
 
-    messages.update((m: any[]) => [...m, { role: "user", content: "Yes, start assessment" }]);
-    await scrollToBottom();
-
-    isLoading = true;
-    await simulateDelay(800 + Math.random() * 1200);
-
-    await transitionToFlow("guidedAssessmentStart");
-
-    isLoading = false;
-    await scrollToBottom();
+    await recorder.start();
   }
 
-  function dismissGuidedSuggestion(messageIndex: number) {
-    stopBackgroundAnimation();
-    messages.update((m: any[]) => {
-      const updated = [...m];
-      if (updated[messageIndex]) {
-        updated[messageIndex] = { ...updated[messageIndex], showGuidedOption: false };
-      }
-      return updated;
-    });
+  /** Drop the failed turn and resend the message that produced it. */
+  async function retryMessage(index: number) {
+    const failed = (get(messages) as any[])[index];
+    const text = failed?.userMessage;
+    if (!text) return;
+    messages.update((m: any[]) => m.filter((_, i) => i !== index));
+    await runChat(text, { appendUser: false });
   }
 
-  async function sendMessage() {
-    if (!userInput.trim()) return;
-    stopBackgroundAnimation();
+  /** Replace the last assistant turn with a fresh answer to the same question. */
+  async function regenerateLast() {
+    if (isLoading || isStreaming) return;
+    const list = get(messages) as any[];
+    const lastAssistant = list.length - 1;
+    if (lastAssistant < 0 || list[lastAssistant].role !== "assistant") return;
+
+    // The user turn immediately before it is the question being re-answered.
+    let userIdx = lastAssistant - 1;
+    while (userIdx >= 0 && list[userIdx].role !== "user") userIdx--;
+    const text = userIdx >= 0 ? list[userIdx].content : "";
+    if (!text) return;
+
+    messages.update((m: any[]) => m.slice(0, lastAssistant));
+    await runChat(text, { appendUser: false });
+  }
+
+  /**
+   * Drive one turn against the streaming endpoint.
+   *
+   * `appendUser` is false when the user's message is already in the transcript
+   * (retry and regenerate) — in that case it must also be dropped from the history
+   * snapshot, since it is sent separately as `userMessage`.
+   */
+  async function runChat(text: string, { appendUser = true }: { appendUser?: boolean } = {}) {
+    if (!text.trim()) return;
 
     if (typeof window !== "undefined" && window.umami) {
-      (window.umami as any).track("chatbot-freeform-message", { flow: currentFlowId });
+      (window.umami as any).track("chatbot-message");
     }
 
     // Snapshot the prior turns BEFORE appending the current message, so the
     // server gets real multi-turn context (and can condense a standalone query).
-    const history = (get(messages) as any[])
-      .filter(
-        (m: any) =>
-          (m.role === "user" || m.role === "assistant") &&
-          typeof m.content === "string" &&
-          m.content.trim(),
-      )
-      .slice(-8)
-      .map((m: any) => ({ role: m.role, content: m.content }));
+    const priorTurns = (get(messages) as any[]).filter(
+      (m: any) =>
+        (m.role === "user" || m.role === "assistant") &&
+        typeof m.content === "string" &&
+        m.content.trim() &&
+        !m.error,
+    );
+    if (!appendUser && priorTurns.at(-1)?.role === "user") priorTurns.pop();
+    const history = priorTurns.slice(-8).map((m: any) => ({ role: m.role, content: m.content }));
 
-    messages.update((m: any[]) => [...m, { role: "user", content: userInput }]);
+    if (appendUser) {
+      messages.update((m: any[]) => [...m, { role: "user", content: text, timestamp: Date.now() }]);
+    }
     isLoading = true;
+    abortController = new AbortController();
     await scrollToBottom();
 
     try {
-      let requestPayload: Record<string, any> = {
-        userMessage: userInput,
+      // The server folds leadProfile into the system prompt itself, so the whole
+      // profile goes up every turn — the LLM is stateless per request.
+      const requestPayload: Record<string, any> = {
+        userMessage: text,
         leadProfile: leadProfile,
         history: history,
       };
-
-      // The LLM is stateless per request, so re-send the guided-flow summary
-      // every turn (not just once) — otherwise it's lost after the first answer.
-      conversationContext = serializeConversationContext();
-      if (conversationContext.trim()) {
-        requestPayload.conversationContext = conversationContext;
-      }
 
       const response = await fetch("/in/api/chatbot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestPayload),
+        signal: abortController.signal,
       });
 
       if (!response.ok || !response.body) throw new Error("Chatbot request failed");
 
       // Read the newline-delimited JSON stream and grow the assistant message as
-      // tokens arrive (typewriter effect). The guided-flow suggestion arrives as a
-      // separate `suggestion` event after the main reply completes.
+      // tokens arrive (typewriter effect).
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buf = "";
       let streamingReply = "";
       let started = false;
-      let pendingSuggestion = "";
       let pendingSources: { title: string; url: string }[] = [];
 
-      const appendDelta = async (text: string) => {
+      // Merge fields into the assistant message currently being streamed.
+      const patchCurrent = (patch: Record<string, any>) => {
+        if (!started) return;
+        messages.update((m: any[]) => {
+          const copy = [...m];
+          copy[copy.length - 1] = { ...copy[copy.length - 1], ...patch };
+          return copy;
+        });
+      };
+
+      const appendDelta = async (chunk: string) => {
         if (!started) {
           started = true;
           isLoading = false;
-          messages.update((m: any[]) => [...m, { role: "assistant", content: "" }]);
+          isStreaming = true;
+          messages.update((m: any[]) => [...m, { role: "assistant", content: "", timestamp: Date.now() }]);
         }
-        streamingReply += text;
-        messages.update((m: any[]) => {
-          const copy = [...m];
-          copy[copy.length - 1] = { ...copy[copy.length - 1], content: streamingReply };
-          return copy;
-        });
+        streamingReply += chunk;
+        patchCurrent({ content: streamingReply });
         await scrollToBottom();
       };
 
-      while (true) {
+      // Events that arrive before the first delta have no message to attach to yet,
+      // so hold them and flush once the reply exists.
+      let pendingPatch: Record<string, any> = {};
+
+      streamLoop: while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         buf += decoder.decode(value, { stream: true });
@@ -355,388 +328,83 @@
           const line = buf.slice(0, nl).trim();
           buf = buf.slice(nl + 1);
           if (!line) continue;
-          const evt = JSON.parse(line);
+
+          // A malformed line must not kill an otherwise healthy stream.
+          let evt: any;
+          try {
+            evt = JSON.parse(line);
+          } catch {
+            console.warn("Skipping unparseable stream line:", line);
+            continue;
+          }
+
           if (evt.type === "delta") {
             await appendDelta(evt.text);
-          } else if (evt.type === "suggestion") {
-            pendingSuggestion = evt.text;
           } else if (evt.type === "sources") {
             pendingSources = Array.isArray(evt.items) ? evt.items : [];
+          } else if (evt.type === "tool") {
+            pendingPatch.toolExecuted = evt.name;
+            pendingPatch.toolResult = evt.result;
+          } else if (evt.type === "intent") {
+            pendingPatch.intent = { intent: evt.label, journeyStage: evt.stage, confidence: evt.confidence };
+          } else if (evt.type === "usage") {
+            pendingPatch.usage = { input: evt.input, output: evt.output, total: evt.total, costINR: evt.costINR };
+          } else if (evt.type === "questions") {
+            pendingPatch.recommendedQuestions = Array.isArray(evt.items) ? evt.items : [];
+          } else if (evt.type === "context") {
+            applyContextUpdates(evt.updates);
           } else if (evt.type === "error") {
             throw new Error("Streaming error");
+          } else if (evt.type === "done") {
+            break streamLoop;
           }
+          // Unknown event types are ignored on purpose, so the server can start
+          // emitting something new without breaking older clients.
         }
       }
 
       // Attach citations to the answer message (deterministic, from retrieval metadata).
-      if (pendingSources.length && started) {
-        messages.update((m: any[]) => {
-          const copy = [...m];
-          copy[copy.length - 1] = { ...copy[copy.length - 1], sources: pendingSources };
-          return copy;
-        });
+      if (pendingSources.length) pendingPatch.sources = pendingSources;
+      if (Object.keys(pendingPatch).length) {
+        patchCurrent(pendingPatch);
         await scrollToBottom();
-      }
-
-      if (pendingSuggestion) {
-        setTimeout(async () => {
-          messages.update((m: any[]) => [...m, { role: "assistant", content: pendingSuggestion.trim(), showGuidedOption: true }]);
-          await scrollToBottom();
-        }, 1000);
       }
     } catch (err) {
-      console.error("Error communicating with chatbot:", err);
-      messages.update((m: any[]) => [...m, { role: "assistant", content: "Something went wrong. Please try again later." }]);
-      await scrollToBottom();
-    } finally {
-      userInput = "";
-      isLoading = false;
-    }
-  }
-
-  async function submitForm() {
-    stopBackgroundAnimation();
-    hasAttemptedSubmit = true;
-
-    if (!validateForm()) {
-      if (typeof window !== "undefined" && window.umami) {
-        (window.umami as any).track("chatbot-form-validation-failed", { flow: currentFlowId });
-      }
-      return;
-    }
-
-    const currentFlow = (conversationFlows.flows as Record<string, any>)[currentFlowId];
-    if (!currentFlow) return;
-
-    isSubmittingForm = true;
-
-    if (typeof window !== "undefined" && window.umami) {
-      (window.umami as any).track("chatbot-form-submitted", { flow: currentFlowId });
-    }
-
-    try {
-      if (formValues.customerName) updateLeadProfile("name", formValues.customerName);
-      if (formValues.customerPhone) updateLeadProfile("phone", formValues.customerPhone);
-      if (formValues.customerEmail) updateLeadProfile("email", formValues.customerEmail);
-      if (formValues.customerPinCode) updateLeadProfile("pincode", formValues.customerPinCode);
-
-      const userJourneyString = userJourney.join(", ");
-      const formData = {
-        name: formValues.customerName || "",
-        phone: formValues.customerPhone || "",
-        pinCode: formValues.customerPinCode || "",
-        email: formValues.customerEmail || "",
-        comment: formValues.customerComment || "",
-        type: userJourneyString,
-        urlParam: urlParam,
-      };
-
-      const response = await fetch("/in/api/submitLead", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        const formSummary = Object.entries(formValues)
-          .filter(([_key, value]) => value && value.trim())
-          .map(([key, value]: [string, any]) => {
-            const input = currentFlow.inputs.find((inp: any) => inp.id === key);
-            return `${input?.label || key}: ${value}`;
-          })
-          .join("\n");
-
-        messages.update((m: any[]) => [...m, { role: "user", content: `Form submitted:\n${formSummary}` }]);
-        await scrollToBottom();
-
-        Object.keys(formValues).forEach((key: string) => {
-          inputValues[key] = formValues[key];
+      // An abort is a deliberate user action, not a failure — keep the partial reply.
+      if ((err as any)?.name === "AbortError") {
+        messages.update((m: any[]) => {
+          const copy = [...m];
+          const last = copy.at(-1);
+          if (last?.role === "assistant") copy[copy.length - 1] = { ...last, stopped: true };
+          return copy;
         });
-
-        isLoading = true;
-        await simulateDelay(800 + Math.random() * 1200);
-
-        formValues = {};
-        formErrors = {};
-        hasAttemptedSubmit = false;
-
-        if (currentFlow.nextFlow) {
-          await transitionToFlow(currentFlow.nextFlow);
-        }
-
-        isLoading = false;
-        await scrollToBottom();
       } else {
-        messages.update((m: any[]) => [...m, { role: "assistant", content: "Sorry, there was an error submitting your form. Please try again or contact us directly." }]);
-        await scrollToBottom();
+        console.error("Error communicating with chatbot:", err);
+        messages.update((m: any[]) => [
+          ...m,
+          {
+            role: "assistant",
+            content: "Something went wrong. Please try again.",
+            error: true,
+            userMessage: text,
+            timestamp: Date.now(),
+          },
+        ]);
       }
-    } catch (error) {
-      messages.update((m: any[]) => [...m, { role: "assistant", content: "Sorry, there was a network error. Please check your connection and try again." }]);
       await scrollToBottom();
     } finally {
-      isSubmittingForm = false;
+      isLoading = false;
+      isStreaming = false;
+      abortController = null;
+      saveState();
     }
-  }
-
-  async function selectOption(optionId: string) {
-    stopBackgroundAnimation();
-
-    if (typeof window !== "undefined" && window.umami) {
-      (window.umami as any).track("chatbot-option-selected", { flow: currentFlowId, option: optionId });
-    }
-
-    addToUserJourney("option", optionId);
-
-    if (currentFlowId === "guidedAssessmentStart") {
-      if (["residential", "business", "agriculture"].includes(optionId)) {
-        updateLeadProfile("propertyType", optionId);
-      }
-    }
-
-    if (currentFlowId === "residentialType") {
-      updateLeadProfile("propertySubtype", optionId);
-    }
-
-    const currentFlow = (conversationFlows.flows as Record<string, any>)[currentFlowId];
-    if (!currentFlow || !currentFlow.options) return;
-
-    const selectedOption = currentFlow.options.find((opt: any) => opt.id === optionId);
-    if (!selectedOption) return;
-
-    messages.update((m: any[]) => [...m, { role: "user", content: selectedOption.label }]);
-    await scrollToBottom();
-
-    inputValues[currentFlowId] = optionId;
-
-    isLoading = true;
-    await simulateDelay(800 + Math.random() * 1200);
-
-    if (selectedOption.nextFlow) {
-      await transitionToFlow(selectedOption.nextFlow);
-    }
-
-    isLoading = false;
-    await scrollToBottom();
-  }
-
-  async function submitInput(inputId: string, value: string) {
-    stopBackgroundAnimation();
-
-    if (typeof window !== "undefined" && window.umami) {
-      (window.umami as any).track("chatbot-input-submitted", { flow: currentFlowId, inputId: inputId });
-    }
-
-    addToUserJourney("input", `${inputId} = ${value}`);
-
-    if (inputId === "monthlyConsumption") {
-      updateLeadProfile("monthlyConsumption", Number(value));
-    } else if (inputId === "monthlyBill") {
-      updateLeadProfile("monthlyBill", Number(value));
-    } else if (inputId === "powerCuts") {
-      updateLeadProfile("powerCutHours", Number(value));
-    }
-
-    const currentFlow = (conversationFlows.flows as Record<string, any>)[currentFlowId];
-    if (!currentFlow || !currentFlow.inputs) return;
-
-    const inputDef = currentFlow.inputs.find((inp: any) => inp.id === inputId);
-    if (!inputDef) return;
-
-    let userMessage = inputDef.label ? `${inputDef.label}: ${value}` : `${value}`;
-    if (inputDef.unit) userMessage += ` ${inputDef.unit}`;
-
-    messages.update((m: any[]) => [...m, { role: "user", content: userMessage }]);
-    await scrollToBottom();
-
-    if (inputDef.type === "number") {
-      inputValues[inputId] = Number(value);
-    } else {
-      inputValues[inputId] = value;
-    }
-
-    isLoading = true;
-    await simulateDelay(800 + Math.random() * 1200);
-
-    const nextFlow = resolveNextFlow(inputDef);
-    if (nextFlow) {
-      await transitionToFlow(nextFlow);
-    }
-
-    isLoading = false;
-    await scrollToBottom();
   }
 
   function saveState() {
     if (typeof window !== "undefined") {
       localStorage.setItem("chatMessages", JSON.stringify(get(messages)));
-      localStorage.setItem("currentFlowId", currentFlowId);
-      localStorage.setItem("inputValues", JSON.stringify(inputValues));
-      localStorage.setItem("conversationContext", conversationContext);
-      localStorage.setItem("contextSent", JSON.stringify(contextSent));
       localStorage.setItem("leadProfile", JSON.stringify(leadProfile));
     }
-  }
-
-  function processMessageText(text: string) {
-    if (!text || typeof text !== "string") {
-      return text;
-    }
-
-    const currentFlow = (conversationFlows.flows as Record<string, any>)[currentFlowId];
-    if (!currentFlow) {
-      return text;
-    }
-
-    const regex = /\{([^}]+)\}/g;
-    let match;
-    let processedText = text;
-    const variables = [];
-    while ((match = regex.exec(text)) !== null) {
-      variables.push(match[1]);
-    }
-
-    for (const variableName of variables) {
-      let variableValue;
-
-      if (inputValues[variableName] !== undefined) {
-        variableValue = inputValues[variableName];
-      } else if (currentFlow[variableName]) {
-        const formula = currentFlow[variableName];
-        let processedFormula = formula;
-        const nestedVars = [];
-        let nestedMatch;
-        const nestedRegex = /\{([^}]+)\}/g;
-
-        while ((nestedMatch = nestedRegex.exec(formula)) !== null) {
-          nestedVars.push(nestedMatch[1]);
-        }
-
-        for (const nestedVar of nestedVars) {
-          let nestedValue;
-
-          if (inputValues[nestedVar] !== undefined) {
-            nestedValue = inputValues[nestedVar];
-          } else if (currentFlow[nestedVar]) {
-            const tempText = `{${nestedVar}}`;
-            processMessageText(tempText);
-
-            if (inputValues[nestedVar] !== undefined) {
-              nestedValue = inputValues[nestedVar];
-            } else {
-              nestedValue = 0;
-              inputValues[nestedVar] = 0;
-            }
-          } else {
-            nestedValue = 0;
-          }
-
-          processedFormula = processedFormula.replace(`{${nestedVar}}`, nestedValue);
-        }
-
-        try {
-          variableValue = Function('"use strict"; return (' + processedFormula + ")")();
-          inputValues[variableName] = variableValue;
-
-          if (variableName === "systemSize") {
-            updateLeadProfile("recommendedSystemSize", variableValue);
-          } else if (variableName === "systemCost") {
-            updateLeadProfile("systemCost", variableValue);
-          } else if (variableName === "subsidyAmount") {
-            updateLeadProfile("subsidyAmount", variableValue);
-          } else if (variableName === "netCost" || variableName === "totalCost") {
-            updateLeadProfile("netInvestment", variableValue);
-          }
-        } catch (e) {
-          variableValue = 0;
-          inputValues[variableName] = 0;
-        }
-      } else {
-        variableValue = 0;
-      }
-
-      const formattedValue = typeof variableValue === "number" ? (Number.isInteger(variableValue) ? variableValue : parseFloat(variableValue.toFixed(2))) : variableValue;
-      processedText = processedText.replace(`{${variableName}}`, formattedValue);
-    }
-
-    return processedText;
-  }
-
-  // Evaluate a routing condition like "{monthlyBill} < 700" against the values
-  // the user has entered so far. Returns false on any parse/eval error so a bad
-  // expression never blocks the flow.
-  function evaluateCondition(expr: string): boolean {
-    try {
-      const substituted = expr.replace(/\{([^}]+)\}/g, (_m, name) => {
-        const value = inputValues[name];
-        return value !== undefined && value !== null ? String(value) : "0";
-      });
-      return Boolean(Function('"use strict"; return (' + substituted + ")")());
-    } catch {
-      return false;
-    }
-  }
-
-  // Pick the next flow for an input/option: first matching conditional branch
-  // wins, otherwise fall back to the static nextFlow.
-  function resolveNextFlow(def: any): string | undefined {
-    if (Array.isArray(def?.conditionalNextFlow)) {
-      for (const branch of def.conditionalNextFlow) {
-        if (branch?.when && branch?.flow && evaluateCondition(branch.when)) {
-          return branch.flow;
-        }
-      }
-    }
-    return def?.nextFlow;
-  }
-
-  async function transitionToFlow(flowId: string) {
-    const flow = (conversationFlows.flows as Record<string, any>)[flowId];
-    if (!flow) {
-      console.error(`❌ Flow '${flowId}' not found!`);
-      return;
-    }
-
-    if (flowId !== "initial" && flowId !== "welcome") {
-      addToUserJourney("flow", flowId);
-    }
-
-    if (flowId === "residentialResultOnGrid" || flowId === "noResidentialBatteryNeeded") {
-      updateLeadProfile("systemType", "on-grid");
-    } else if (flowId === "residentialResultHybrid") {
-      updateLeadProfile("systemType", "hybrid");
-    }
-
-    if (flowId === "welcome" || flowId === "initial" || (conversationFlows.flows as Record<string, any>)[flowId]?.flowType === "freeform") {
-      contextSent = false;
-    }
-
-    // Result flows derive every number from monthlyBill + unitRate, then cache
-    // the results in inputValues. Re-entering after the user adjusts their
-    // tariff would otherwise reuse stale figures, so drop this flow's own
-    // formula keys on entry to force a fresh recompute. User inputs
-    // (monthlyBill, userUnitRate) are not formula keys, so they survive.
-    if (flowId === "firstRecommendation") {
-      for (const [key, val] of Object.entries(flow)) {
-        if (typeof val === "string" && key !== "message" && key !== "flowType") {
-          delete inputValues[key];
-        }
-      }
-    }
-
-    // Pre-fill the tariff field with the current assumption so the user edits
-    // a sensible default instead of typing from scratch (and Submit starts enabled).
-    if (flowId === "adjustRate" && inputValues.userUnitRate === undefined) {
-      inputValues.userUnitRate = inputValues.unitRate || 7;
-    }
-
-    currentFlowId = flowId;
-    const processedMessage = processMessageText(flow.message);
-
-    messages.update((m: any[]) => [...m, { role: "assistant", content: processedMessage }]);
-    saveState();
-    await scrollToBottom();
   }
 
   let copied = $state(false);
@@ -782,48 +450,30 @@
     }
   }
 
+  function greet() {
+    messages.set([{ role: "assistant", content: WELCOME_MESSAGE, timestamp: Date.now() }]);
+  }
+
   async function resetChat() {
     if (typeof window !== "undefined" && window.umami) {
       window.umami.track("chatbot-reset");
     }
 
-    messages.set([]);
-    currentFlowId = "initial";
-    inputValues = {};
-    formValues = {};
-    formErrors = {};
-    hasAttemptedSubmit = false;
-    userJourney = [];
-    conversationContext = "";
-    contextSent = false;
+    // Tear down anything still in flight so a late stream chunk can't write into
+    // the fresh conversation.
+    stopGeneration();
+    recorder.cancel();
+    isLoading = false;
+    isStreaming = false;
 
-    leadProfile = {
-      name: null,
-      phone: null,
-      email: null,
-      pincode: null,
-      propertyType: null,
-      propertySubtype: null,
-      monthlyConsumption: null,
-      monthlyBill: null,
-      powerCutHours: null,
-      recommendedSystemSize: null,
-      systemType: null,
-      systemCost: null,
-      subsidyAmount: null,
-      netInvestment: null,
-    };
+    leadProfile = { ...EMPTY_LEAD_PROFILE };
 
     if (typeof window !== "undefined") {
       localStorage.removeItem("chatMessages");
-      localStorage.removeItem("currentFlowId");
-      localStorage.removeItem("inputValues");
-      localStorage.removeItem("conversationContext");
-      localStorage.removeItem("contextSent");
       localStorage.removeItem("leadProfile");
     }
 
-    await transitionToFlow("initial");
+    greet();
     isUserScrolledUp = false;
     await scrollToBottom();
   }
@@ -833,38 +483,14 @@
       loadLeadProfile();
 
       const savedMessages = localStorage.getItem("chatMessages");
-      const savedFlowId = localStorage.getItem("currentFlowId");
-      const savedInputs = localStorage.getItem("inputValues");
-      const savedContext = localStorage.getItem("conversationContext");
-      const savedContextSent = localStorage.getItem("contextSent");
-
-      if (savedMessages && savedFlowId) {
-        messages.set(JSON.parse(savedMessages));
-        currentFlowId = savedFlowId;
-
-        if (savedContext) {
-          conversationContext = savedContext;
+      if (savedMessages) {
+        const parsed = JSON.parse(savedMessages);
+        if (Array.isArray(parsed) && parsed.length) {
+          messages.set(parsed);
+          return;
         }
-        if (savedContextSent) {
-          contextSent = JSON.parse(savedContextSent);
-        }
-
-        if (savedInputs) {
-          const parsedInputs = JSON.parse(savedInputs);
-          Object.keys(parsedInputs).forEach((key) => {
-            const value = parsedInputs[key];
-            if (typeof value === "string" && !isNaN(Number(value))) {
-              inputValues[key] = Number(value);
-            } else {
-              inputValues[key] = value;
-            }
-          });
-        } else {
-          inputValues = {};
-        }
-      } else {
-        transitionToFlow("initial");
       }
+      greet();
     }
   }
 
@@ -880,18 +506,6 @@
   $effect(() => {
     if (chatHistoryContainer && chatHistoryContainer.scrollHeight > lastScrollHeight && !isUserScrolledUp) {
       scrollToBottom();
-    }
-  });
-
-  $effect(() => {
-    if ((conversationFlows.flows as Record<string, any>)[currentFlowId]?.flowType === "form" && formValues) {
-      validateForm(false);
-    }
-  });
-
-  $effect(() => {
-    if (hasAttemptedSubmit && (conversationFlows.flows as Record<string, any>)[currentFlowId]?.flowType === "form") {
-      validateForm(true);
     }
   });
 </script>
@@ -917,125 +531,32 @@
   </div>
 
   <!-- Chat History -->
-  <div class="flex-1 overflow-y-auto p-[theme(--card-padding-y)] gap-[theme(--card-gap)] flex flex-col bg-[hsl(var(--background))]" bind:this={chatHistoryContainer} onscroll={handleScroll}>
+  <div
+    class="flex-1 overflow-y-auto p-[theme(--card-padding-y)] gap-[theme(--card-gap)] flex flex-col bg-[hsl(var(--background))]"
+    bind:this={chatHistoryContainer}
+    onscroll={handleScroll}
+    role="log"
+    aria-live="polite"
+    aria-atomic="false"
+    aria-busy={isLoading || isStreaming}
+    aria-label="Conversation"
+  >
     {#each $messages as message, i}
-      <div class="flex gap-[theme(--form-element-field-gap)] {message.role === 'user' ? 'justify-end' : 'justify-start'}">
-        {#if message.role === "assistant"}
-          <img src="https://api.dicebear.com/9.x/bottts/svg?seed=SolarBot" alt="Bot" class="w-[2rem] h-[2rem] rounded-[theme(--badge-radius)] flex-shrink-0 mt-[theme(--form-element-field-gap)]" />
-        {/if}
-        <Card class="max-w-[85%] {message.role === 'user' ? 'bg-[hsl(var(--primary))]' : 'bg-[hsl(var(--card))]'} border border-[hsl(var(--border))]">
-          <CardContent class="pt-[theme(--card-padding-y)] text-sm {message.role === 'user' ? 'text-[hsl(var(--primary-foreground))]' : 'text-[hsl(var(--foreground))]'}">
-            <div class="break-words [&_ul]:list-disc [&_ul]:pl-[1.25rem] [&_ol]:list-decimal [&_ol]:pl-[1.25rem] [&_li]:my-[0.125rem] [&_h4]:font-semibold [&_p]:my-[0.25rem] [&_a]:underline [&_a]:text-[hsl(var(--primary))] [&_strong]:font-semibold">{@html renderMessage(message.content)}</div>
-
-            <!-- Sources / citations -->
-            {#if message.role === "assistant" && message.sources?.length}
-              <div class="mt-[theme(--card-gap)] pt-[theme(--form-element-field-gap)] border-t border-[hsl(var(--border))] flex flex-col gap-[theme(--form-element-field-gap)]">
-                <span class="text-xs font-medium text-[hsl(var(--muted-foreground))]">Sources</span>
-                {#each message.sources as src}
-                  <a href={src.url} target="_blank" rel="noopener noreferrer" class="text-xs text-[hsl(var(--primary))] hover:underline break-words">
-                    {src.title}
-                  </a>
-                {/each}
-              </div>
-            {/if}
-
-            <!-- Guided flow suggestion -->
-            {#if message.showGuidedOption && message.role === "assistant"}
-              <div class="mt-[theme(--card-gap)] gap-[theme(--form-element-field-gap)] flex flex-col">
-                <Button onclick={startGuidedFlow} class="w-full" variant="default">Yes, start assessment</Button>
-                <Button onclick={() => dismissGuidedSuggestion(i)} variant="outline" class="w-full">No, continue chatting</Button>
-              </div>
-            {/if}
-
-            <!-- Options display -->
-            {#if message.role === "assistant" && i === $messages.length - 1 && currentFlow?.flowType === "options" && currentFlow?.options?.length > 0 && !message.showGuidedOption}
-              <div class="mt-[theme(--card-gap)] gap-[theme(--form-element-field-gap)] flex flex-col">
-                {#each currentFlow.options as option}
-                  <Button onclick={() => selectOption(option.id)} variant="outline" class="w-full justify-start text-left whitespace-normal h-auto min-h-[2.5rem] py-2 break-words">
-                    {option.label}
-                  </Button>
-                {/each}
-              </div>
-            {/if}
-
-            <!-- Input fields -->
-            {#if message.role === "assistant" && i === $messages.length - 1 && (conversationFlows.flows as Record<string, any>)[currentFlowId]?.flowType === "inputs" && (conversationFlows.flows as Record<string, any>)[currentFlowId]?.inputs?.length > 0 && !message.showGuidedOption}
-              <div class="mt-[theme(--card-gap)] gap-[theme(--form-element-field-gap)] flex flex-col">
-                {#each (conversationFlows.flows as Record<string, any>)[currentFlowId].inputs as input}
-                  <div class="gap-[theme(--form-element-field-gap)] flex flex-col">
-                    {#if input.label}
-                      <Label class="text-[hsl(var(--foreground))]">{input.label}</Label>
-                    {/if}
-                    <div class="flex gap-[theme(--form-element-field-gap)] items-center">
-                      {#if input.type === "number"}
-                        <Input type="number" bind:value={inputValues[input.id]} placeholder={input.placeholder || ""} class="flex-1" />
-                      {:else if input.type === "email"}
-                        <Input type="email" bind:value={inputValues[input.id]} placeholder={input.placeholder || ""} class="flex-1" />
-                      {:else if input.type === "tel"}
-                        <Input type="tel" bind:value={inputValues[input.id]} placeholder={input.placeholder || ""} class="flex-1" />
-                      {:else}
-                        <Input type="text" bind:value={inputValues[input.id]} placeholder={input.placeholder || ""} class="flex-1" />
-                      {/if}
-                      {#if input.unit}
-                        <span class="text-sm text-[hsl(var(--muted-foreground))]">{input.unit}</span>
-                      {/if}
-                    </div>
-                    <Button onclick={() => submitInput(input.id, inputValues[input.id])} disabled={!inputValues[input.id]} class="w-full" variant="default">
-                      Submit
-                    </Button>
-                  </div>
-                {/each}
-              </div>
-            {/if}
-
-            <!-- Form display -->
-            {#if message.role === "assistant" && i === $messages.length - 1 && (conversationFlows.flows as Record<string, any>)[currentFlowId]?.flowType === "form" && (conversationFlows.flows as Record<string, any>)[currentFlowId]?.inputs?.length > 0 && !message.showGuidedOption}
-              <div class="mt-[theme(--card-gap)] p-[theme(--card-padding-y)] rounded-[theme(--radius-lg)] gap-[theme(--form-element-field-gap)] flex flex-col bg-[hsl(var(--background-secondary))]">
-                {#each (conversationFlows.flows as Record<string, any>)[currentFlowId].inputs as input}
-                  <div class="gap-[theme(--form-element-field-gap)] flex flex-col">
-                    <Label class="text-[hsl(var(--foreground))]">
-                      {input.label}{input.required ? " *" : ""}
-                    </Label>
-
-                    {#if input.type === "text"}
-                      <Input id={input.id} type="text" bind:value={formValues[input.id]} placeholder={input.placeholder || ""} class={formErrors[input.id] ? "border-[hsl(var(--destructive))]" : ""} />
-                    {:else if input.type === "tel"}
-                      <Input id={input.id} type="tel" bind:value={formValues[input.id]} placeholder={input.placeholder || ""} class={formErrors[input.id] ? "border-[hsl(var(--destructive))]" : ""} />
-                    {:else if input.type === "email"}
-                      <Input id={input.id} type="email" bind:value={formValues[input.id]} placeholder={input.placeholder || ""} class={formErrors[input.id] ? "border-[hsl(var(--destructive))]" : ""} />
-                    {:else if input.type === "number"}
-                      <Input id={input.id} type="number" bind:value={formValues[input.id]} placeholder={input.placeholder || ""} class={formErrors[input.id] ? "border-[hsl(var(--destructive))]" : ""} />
-                    {:else}
-                      <Input id={input.id} type="text" bind:value={formValues[input.id]} placeholder={input.placeholder || ""} class={formErrors[input.id] ? "border-[hsl(var(--destructive))]" : ""} />
-                    {/if}
-
-                    {#if formErrors[input.id]}
-                      <span class="text-xs text-[hsl(var(--destructive))]">{formErrors[input.id]}</span>
-                    {/if}
-                  </div>
-                {/each}
-
-                <Button onclick={submitForm} disabled={!isFormValid || isLoading || isSubmittingForm} class="w-full" variant="default">
-                  {#if isSubmittingForm}
-                    Submitting...
-                  {:else if isLoading}
-                    Processing...
-                  {:else}
-                    Submit Consultation Request
-                  {/if}
-                </Button>
-              </div>
-            {/if}
-          </CardContent>
-        </Card>
-      </div>
+      <MessageBubble
+        {message}
+        {renderMessage}
+        canRegenerate={i === $messages.length - 1 && !isLoading && !isStreaming}
+        onRegenerate={regenerateLast}
+        onRetry={() => retryMessage(i)}
+        onFollowUp={sendPrompt}
+      />
     {/each}
 
     {#if isLoading}
-      <div class="flex gap-[theme(--form-element-field-gap)] items-center">
-        <Badge variant="outline" class="animate-pulse bg-[hsl(var(--background-secondary))]">●</Badge>
-        <Badge variant="outline" class="animate-pulse bg-[hsl(var(--muted))]" style="animation-delay: 200ms">●</Badge>
-        <Badge variant="outline" class="animate-pulse bg-[hsl(var(--muted))]" style="animation-delay: 400ms">●</Badge>
+      <div class="flex gap-[theme(--form-element-field-gap)] items-center" aria-label="Assistant is typing">
+        <Badge variant="outline" class="animate-pulse bg-[hsl(var(--background-secondary))]" aria-hidden="true">●</Badge>
+        <Badge variant="outline" class="animate-pulse bg-[hsl(var(--muted))]" style="animation-delay: 200ms" aria-hidden="true">●</Badge>
+        <Badge variant="outline" class="animate-pulse bg-[hsl(var(--muted))]" style="animation-delay: 400ms" aria-hidden="true">●</Badge>
       </div>
     {/if}
 
@@ -1043,14 +564,58 @@
   </div>
 
   <!-- Chat Input -->
-  {#if currentFlow?.flowType === "freeform"}
-    <div class="flex gap-[theme(--form-element-field-gap)] p-[theme(--card-padding-y)] border-t border-[hsl(var(--border))] bg-[hsl(var(--card))]">
-      <Input bind:value={userInput} placeholder="Ask a question about solar installation..." onkeypress={(e) => e.key === "Enter" && sendMessage()} />
-      <Button onclick={sendMessage} disabled={isLoading || !userInput.trim()} variant="default" size="sm">
-        <Send class="w-[1rem] h-[1rem]" />
-      </Button>
+  <div class="flex flex-col gap-[theme(--form-element-field-gap)] p-[theme(--card-padding-y)] border-t border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+    <!-- Starter questions, until the user asks something of their own -->
+    {#if !hasUserMessage && !isLoading && !isStreaming}
+      <div class="flex flex-wrap gap-[theme(--form-element-field-gap)]">
+        {#each STARTER_PROMPTS as prompt}
+          <Button onclick={() => sendPrompt(prompt)} variant="outline" size="sm" class="whitespace-normal h-auto text-left py-[0.375rem]">
+            {prompt}
+          </Button>
+        {/each}
+      </div>
+    {/if}
+
+    {#if recorder.error}
+      <p class="text-xs text-[hsl(var(--destructive))]" role="alert">{recorder.error}</p>
+    {/if}
+
+    <div class="flex gap-[theme(--form-element-field-gap)] items-end">
+      <Textarea
+        bind:value={userInput}
+        bind:ref={inputEl}
+        rows={1}
+        placeholder="Ask a question about solar installation..."
+        aria-label="Message"
+        disabled={isLoading || isStreaming}
+        onkeydown={handleInputKeydown}
+        class="flex-1 resize-none max-h-[7.5rem] min-h-[2.5rem]"
+      />
+
+      {#if VOICE_ENABLED && recorder.isSupported}
+        <Button
+          onclick={toggleRecording}
+          disabled={isLoading || isStreaming || isTranscribing}
+          variant={recorder.isRecording ? "destructive" : "outline"}
+          size="sm"
+          aria-label={recorder.isRecording ? "Stop recording" : "Record a question"}
+          title={recorder.isRecording ? "Stop recording" : "Record a question"}
+        >
+          <Mic class="w-[1rem] h-[1rem] {recorder.isRecording ? 'animate-pulse' : ''}" />
+        </Button>
+      {/if}
+
+      {#if isLoading || isStreaming}
+        <Button onclick={stopGeneration} variant="outline" size="sm" aria-label="Stop generating" title="Stop generating">
+          <Square class="w-[1rem] h-[1rem]" />
+        </Button>
+      {:else}
+        <Button onclick={sendMessage} disabled={!userInput.trim()} variant="default" size="sm" aria-label="Send message">
+          <Send class="w-[1rem] h-[1rem]" />
+        </Button>
+      {/if}
     </div>
-  {/if}
+  </div>
 
   <!-- Reset Button -->
   <div class="p-[theme(--form-element-field-gap)] border-t border-[hsl(var(--border))] text-center bg-[hsl(var(--card))]">
