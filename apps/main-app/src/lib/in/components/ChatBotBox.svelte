@@ -56,12 +56,17 @@
     name: null,
     phone: null,
     email: null,
+    location: null,
     pincode: null,
     propertyType: null,
     propertySubtype: null,
+    roofType: null,
     monthlyConsumption: null,
     monthlyBill: null,
     powerCutHours: null,
+    budgetRange: null,
+    timeline: null,
+    hasDocuments: null,
     recommendedSystemSize: null,
     systemType: null,
     systemCost: null,
@@ -76,17 +81,25 @@
   // The backend agent's collect_customer_info tool sends back CustomerContext
   // updates (camelCase). Fold the ones leadProfile can hold into it so the
   // profile stays in sync with what the AI collected mid-conversation.
+  // Every CustomerContext field the profile can hold is listed here — anything
+  // missing is silently dropped and the agent re-asks for it every turn.
   const CONTEXT_TO_PROFILE: Record<string, string> = {
     name: "name",
+    location: "location",
     propertyType: "propertyType",
+    roofType: "roofType",
     monthlyElectricityBill: "monthlyBill",
     electricityConsumption: "monthlyConsumption",
+    budgetRange: "budgetRange",
+    timeline: "timeline",
+    hasDocuments: "hasDocuments",
   };
 
   function applyContextUpdates(updates: any) {
     if (!updates || typeof updates !== "object") return;
     for (const [key, value] of Object.entries(updates)) {
       const field = CONTEXT_TO_PROFILE[key];
+      // `false` is a meaningful value for hasDocuments, so only null/"" are skipped.
       if (field && value != null && value !== "") updateLeadProfile(field, value);
     }
   }
@@ -569,7 +582,9 @@
     {#if !hasUserMessage && !isLoading && !isStreaming}
       <div class="flex flex-wrap gap-[theme(--form-element-field-gap)]">
         {#each STARTER_PROMPTS as prompt}
-          <Button onclick={() => sendPrompt(prompt)} variant="outline" size="sm" class="whitespace-normal h-auto text-left py-[0.375rem]">
+          <!-- shrink + max-w-full undo the Button base's `shrink-0`, which would
+               otherwise size each chip to max-content and overflow the panel. -->
+          <Button onclick={() => sendPrompt(prompt)} variant="outline" size="sm" class="whitespace-normal h-auto min-w-0 max-w-full shrink text-left py-[0.375rem]">
             {prompt}
           </Button>
         {/each}

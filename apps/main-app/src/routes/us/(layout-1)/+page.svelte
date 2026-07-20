@@ -5,9 +5,7 @@
 
 	// Initialize dark mode state
 	let darkMode = $derived($isDarkMode);
-	let ChatBotBox = $state();
 	let AboutSolarVipani = $state();
-	let shouldLoadChatBot = $state(false);
 	let shouldLoadAbout = $state(false);
 
 	// Lazy load non-critical components after initial page load
@@ -29,13 +27,6 @@
 		if (aboutSection) {
 			aboutObserver.observe(aboutSection);
 		}
-
-		// Delay chatbot loading to improve initial page performance
-		setTimeout(async () => {
-			const module = await import('$lib/us/ChatBotBox.svelte');
-			ChatBotBox = module.default;
-			shouldLoadChatBot = true;
-		}, 2000); // Load after 2 seconds to allow critical content to load first
 	});
 </script>
 
@@ -263,15 +254,6 @@
 				</div>
 			</div>
 		</section>
-
-		<!-- ChatBot Section (Lazy Loaded) -->
-		<!--
-		<div id="chatbotbox">
-			{#if shouldLoadChatBot && ChatBotBox}
-				<svelte:component this={ChatBotBox} />
-			{/if}
-		</div>
-		-->
 
 		<!-- Lead Form Section -->
 		<section id="lead-form-sv" class="lead-form-section">

@@ -3,7 +3,6 @@
 	import { browser } from '$app/environment';
 	import { writable } from 'svelte/store';
 	import { onMount } from 'svelte';
-	// import ChatbotWidget from '$lib/us/ChatbotWidget.svelte';
 	import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
 	import { afterNavigate } from '$app/navigation';
 	import { initPosthog, capturePageview } from '$lib/posthog';
@@ -202,9 +201,6 @@
 <!-- Analytics consent banner — gates loadAllAnalytics() on first visit -->
 <CookieConsent onAccept={loadAllAnalytics} />
 
-<!-- {#if browser && showChat}
-  <ChatbotWidget messages={chatMessages} />
-{/if} -->
 
 <style>
 	:global(body) {
