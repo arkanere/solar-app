@@ -6,6 +6,7 @@
   import SubsidyDisplay from "./SubsidyDisplay.svelte";
   import CadDrawingDisplay from "./CadDrawingDisplay.svelte";
   import KnowledgeBaseDisplay from "./KnowledgeBaseDisplay.svelte";
+  import LeadFormCard from "./LeadFormCard.svelte";
   import GenericToolDisplay from "./GenericToolDisplay.svelte";
 
   let { toolExecuted, toolResult }: { toolExecuted: string; toolResult: any } = $props();
@@ -22,8 +23,8 @@
     <RoiDisplay data={toolResult} />
   {:else if toolExecuted === "book_site_visit"}
     <BookingDisplay data={toolResult} type="site_visit" />
-  {:else if toolExecuted === "capture_lead"}
-    <BookingDisplay data={toolResult} type="lead" />
+  {:else if toolExecuted === "offer_lead_form"}
+    <LeadFormCard data={toolResult} />
   {:else if toolExecuted === "calculate_system_size"}
     <SystemSizeDisplay data={toolResult} />
   {:else if toolExecuted === "check_subsidies"}

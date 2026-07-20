@@ -13,7 +13,6 @@
     renderMessage,
     onRegenerate = null,
     onRetry = null,
-    onFollowUp = null,
     canRegenerate = false,
     children,
   }: {
@@ -21,13 +20,11 @@
     renderMessage: any;
     onRegenerate?: any;
     onRetry?: any;
-    onFollowUp?: any;
     canRegenerate?: boolean;
     children?: any;
   } = $props();
 
   let isAssistant = $derived(message.role === "assistant");
-  let followUps = $derived(Array.isArray(message.recommendedQuestions) ? message.recommendedQuestions : []);
   let timeLabel = $derived(formatTime(message.timestamp));
 
   let copied = $state(false);
@@ -89,22 +86,14 @@
           </div>
         {/if}
 
-        <!-- Follow-up questions. The reference app rendered these as a dead bulleted
-             list; making them clickable is the whole point of suggesting them. -->
-        {#if isAssistant && followUps.length && onFollowUp}
-          <div class="mt-[theme(--card-gap)] flex flex-col gap-[theme(--form-element-field-gap)]">
-            <span class="text-xs font-medium text-[hsl(var(--muted-foreground))]">You might also ask</span>
-            <div class="flex flex-wrap gap-[theme(--form-element-field-gap)]">
-              {#each followUps as question}
-                <!-- shrink + max-w-full undo the Button base's `shrink-0`, which would
-                     otherwise size each chip to max-content and overflow the bubble. -->
-                <Button onclick={() => onFollowUp?.(question)} variant="outline" size="sm" class="whitespace-normal h-auto min-w-0 max-w-full shrink text-left py-[0.375rem]">
-                  {question}
-                </Button>
-              {/each}
-            </div>
-          </div>
-        {/if}
+        <!-- There is deliberately no "You might also ask" row here. It used to be fed
+             from the `questions` stream event, but those are slot-filling prompts the
+             *assistant* asks the customer ("May I have your name?"), so they rendered
+             as questions the customer might ask us — directly under the assistant
+             asking them. Clicking one echoed the question back as a user turn. The
+             backend has no source of genuine follow-ups, so the row is gone rather
+             than mislabelled; reinstate it only against a field that actually holds
+             suggestions for the customer. -->
 
         {#if isAssistant && message.intent}
           <IntentBadge intent={message.intent} />

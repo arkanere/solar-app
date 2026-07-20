@@ -210,7 +210,7 @@
     await runChat(text, { appendUser: true });
   }
 
-  /** Send a starter chip or a suggested follow-up as if the user had typed it. */
+  /** Send a starter chip as if the user had typed it. */
   async function sendPrompt(text: string) {
     if (isLoading || isStreaming) return;
     await runChat(text, { appendUser: true });
@@ -393,7 +393,11 @@
           } else if (evt.type === "usage") {
             pendingPatch.usage = { input: evt.input, output: evt.output, total: evt.total, costINR: evt.costINR };
           } else if (evt.type === "questions") {
-            pendingPatch.recommendedQuestions = Array.isArray(evt.items) ? evt.items : [];
+            // Deliberately dropped. These are slot-filling prompts for the
+            // *assistant* to ask the customer; the model already works them into
+            // its reply from the system prompt. Rendering them as "You might also
+            // ask" chips offered the customer "May I have your name?" as something
+            // to ask us, directly below the assistant asking it.
           } else if (evt.type === "context") {
             applyContextUpdates(evt.updates);
           } else if (evt.type === "error") {
@@ -606,7 +610,6 @@
         canRegenerate={i === $messages.length - 1 && !isLoading && !isStreaming}
         onRegenerate={regenerateLast}
         onRetry={() => retryMessage(i)}
-        onFollowUp={sendPrompt}
       />
     {/each}
 

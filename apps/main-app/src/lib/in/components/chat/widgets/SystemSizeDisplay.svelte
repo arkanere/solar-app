@@ -17,6 +17,10 @@
     <StatRow label="Panel type" value={data.panel_wattage} />
     <StatRow label="Required roof area" value={`${data.required_roof_area_sqft} sq ft`} />
     <StatRow label="Est. generation" value={`${data.estimated_monthly_generation} kWh/month`} />
-    <StatRow label="Coverage" value={data.estimated_coverage} accent />
+    <StatRow label="Coverage" value={`${data.estimated_coverage_percent}% of your usage`} accent />
   </div>
+
+  {#if data.coverage_basis}
+    <p class="text-xs text-[hsl(var(--muted-foreground))]">{data.coverage_basis}</p>
+  {/if}
 </WidgetShell>
