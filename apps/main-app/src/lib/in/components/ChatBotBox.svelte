@@ -4,10 +4,11 @@
   import { Button } from "$lib/components/ui/button";
   import { Textarea } from "$lib/components/ui/textarea";
   import { Badge } from "$lib/components/ui/badge";
-  import { X, Send, Copy, Check, Square, Mic } from "@lucide/svelte";
+  import { X, Send, Copy, Check, Square, Mic, Volume2, VolumeX } from "@lucide/svelte";
   import MarkdownIt from "markdown-it";
   import MessageBubble from "$lib/in/components/chat/MessageBubble.svelte";
   import { AudioRecorder } from "$lib/in/components/chat/audioRecorder.svelte";
+  import { SpeechPlayer } from "$lib/in/components/chat/speechPlayer.svelte";
 
   // AI replies arrive as markdown; the canned welcome message is raw HTML.
   // `html: true` lets both pass through one renderer.
@@ -29,11 +30,16 @@
   let isStreaming = $state(false);
   let abortController: AbortController | null = null;
 
-  // Voice input: /in/api/transcribe is proxied to the FastAPI backend in dev
-  // (see vite.config.js), which serves Whisper speech-to-text.
+  // Voice: /in/api/transcribe (Whisper speech-to-text) and /in/api/speak (tts-1
+  // text-to-speech) are proxied to the FastAPI backend in dev — see vite.config.js.
   const VOICE_ENABLED = true;
   const recorder = new AudioRecorder();
   let isTranscribing = $state(false);
+  // Voice output is a mode, not a per-message action: while it's on, every reply
+  // is spoken as it completes. Off by default so the widget never talks first,
+  // and remembered so the choice survives a reload.
+  const speech = new SpeechPlayer();
+  let voiceOutputEnabled = $state(false);
 
   const WELCOME_MESSAGE =
     "<p>Hi! I'm the Solar Vipani assistant. Ask me anything about going solar — costs, subsidies, system sizing, or brands.</p>";
@@ -72,6 +78,9 @@
     systemCost: null,
     subsidyAmount: null,
     netInvestment: null,
+    // The conversation's slot-filling objective, set by the server and echoed
+    // back each turn so the set of details it asks for stays stable.
+    activeObjective: null,
   };
 
   // Lead profile: accumulated purely from what the agent collects mid-conversation
@@ -93,14 +102,38 @@
     budgetRange: "budgetRange",
     timeline: "timeline",
     hasDocuments: "hasDocuments",
+    activeObjective: "activeObjective",
   };
 
   function applyContextUpdates(updates: any) {
     if (!updates || typeof updates !== "object") return;
     for (const [key, value] of Object.entries(updates)) {
       const field = CONTEXT_TO_PROFILE[key];
+      if (!field) {
+        // A key the server collects but the map doesn't know: the agent will
+        // keep re-asking for it. Surface it in dev so it can't rot unnoticed.
+        if (import.meta.env.DEV)
+          console.warn(`[ChatBotBox] unmapped context key "${key}" — add it to CONTEXT_TO_PROFILE`);
+        continue;
+      }
       // `false` is a meaningful value for hasDocuments, so only null/"" are skipped.
-      if (field && value != null && value !== "") updateLeadProfile(field, value);
+      if (value != null && value !== "") updateLeadProfile(field, value);
+    }
+  }
+
+  /** Flip voice output. Turning it off must silence anything already playing. */
+  function toggleVoiceOutput() {
+    voiceOutputEnabled = !voiceOutputEnabled;
+    speech.error = null;
+    if (!voiceOutputEnabled) speech.stop();
+    if (typeof window !== "undefined") {
+      localStorage.setItem("chatVoiceOutput", voiceOutputEnabled ? "1" : "0");
+    }
+  }
+
+  function loadVoicePreference() {
+    if (typeof window !== "undefined") {
+      voiceOutputEnabled = localStorage.getItem("chatVoiceOutput") === "1";
     }
   }
 
@@ -189,12 +222,7 @@
     abortController = null;
   }
 
-  /**
-   * Record a question, transcribe it, and send it as a normal turn.
-   *
-   * NOTE: /in/api/transcribe does not exist yet — this path is gated behind
-   * VOICE_ENABLED and is unreachable until that endpoint ships.
-   */
+  /** Record a question, transcribe it, and send it as a normal turn. */
   async function toggleRecording() {
     if (recorder.isRecording) {
       const blob = await recorder.stop();
@@ -217,6 +245,8 @@
       return;
     }
 
+    // Don't let the bot talk into the open mic.
+    speech.stop();
     await recorder.start();
   }
 
@@ -410,7 +440,20 @@
       isStreaming = false;
       abortController = null;
       saveState();
+      speakLatestReply();
     }
+  }
+
+  /**
+   * Read the reply that just landed, if voice output is on. Skips failed turns
+   * and ones the user stopped — in both cases they've already seen why, and
+   * hearing a half-finished answer read back isn't useful.
+   */
+  function speakLatestReply() {
+    if (!voiceOutputEnabled || !speech.isSupported) return;
+    const last = (get(messages) as any[]).at(-1);
+    if (last?.role !== "assistant" || last.error || last.stopped) return;
+    if (last.content?.trim()) speech.speak(last.content);
   }
 
   function saveState() {
@@ -476,6 +519,7 @@
     // the fresh conversation.
     stopGeneration();
     recorder.cancel();
+    speech.stop();
     isLoading = false;
     isStreaming = false;
 
@@ -494,6 +538,7 @@
   function initializeChat() {
     if (typeof window !== "undefined") {
       loadLeadProfile();
+      loadVoicePreference();
 
       const savedMessages = localStorage.getItem("chatMessages");
       if (savedMessages) {
@@ -591,6 +636,10 @@
       </div>
     {/if}
 
+    {#if speech.error}
+      <p class="text-xs text-[hsl(var(--destructive))]" role="alert">{speech.error}</p>
+    {/if}
+
     {#if recorder.error}
       <p class="text-xs text-[hsl(var(--destructive))]" role="alert">{recorder.error}</p>
     {/if}
@@ -617,6 +666,26 @@
           title={recorder.isRecording ? "Stop recording" : "Record a question"}
         >
           <Mic class="w-[1rem] h-[1rem] {recorder.isRecording ? 'animate-pulse' : ''}" />
+        </Button>
+      {/if}
+
+      <!-- Voice output mode. Sits beside the mic so input and output voice read
+           as a pair; `aria-pressed` is what tells a screen reader this is a
+           mode that stays on, not a one-shot play button. -->
+      {#if VOICE_ENABLED && speech.isSupported}
+        <Button
+          onclick={toggleVoiceOutput}
+          variant={voiceOutputEnabled ? "default" : "outline"}
+          size="sm"
+          aria-pressed={voiceOutputEnabled}
+          aria-label={voiceOutputEnabled ? "Turn off spoken replies" : "Turn on spoken replies"}
+          title={voiceOutputEnabled ? "Spoken replies on" : "Spoken replies off"}
+        >
+          {#if voiceOutputEnabled}
+            <Volume2 class="w-[1rem] h-[1rem] {speech.isSpeaking || speech.isLoading ? 'animate-pulse' : ''}" />
+          {:else}
+            <VolumeX class="w-[1rem] h-[1rem]" />
+          {/if}
         </Button>
       {/if}
 
