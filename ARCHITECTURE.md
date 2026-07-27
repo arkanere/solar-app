@@ -42,7 +42,8 @@ Security headers (HSTS, `X-Frame-Options: DENY`, nosniff, referrer policy) are a
 
 ## Data layer
 
-- **Vercel Postgres** accessed through a shared connection pool (`src/lib/server/db.ts`); queries are plain parameterized SQL in `queries.ts` — no ORM. The domain is small enough that an ORM would add more ceremony than safety.
+- **Vercel Postgres** accessed through a shared connection pool (`src/lib/server/db.ts`). Queries are plain parameterized SQL, being migrated incrementally to **Drizzle** (`packages/db`, see below). Both styles share one pool, so a converted and an unconverted query can run in the same transaction.
+- **Drizzle** is types + query builder only. The schema in `packages/db/src/schema/` is *generated* by introspecting the live database (`npm run pull -w @solar/db`) — it is never the source of truth and is never used to `push` or `generate` migrations. Schema changes still go through the numbered SQL files below. One shared package rather than per-app copies, because all three apps read the same database and duplicated table definitions would drift.
 - **Versioned SQL migrations** (`src/lib/server/migrations/`) carry not just schema but *content*: the programmatic SEO pages (rooftop solar guides, panel comparisons, city clusters) ship as numbered, reviewable SQL files. This keeps thousands of content rows in git history instead of an opaque CMS.
 - Key tables: `locations` and `businesses_1` / `us_businesses` (installer listings per region), `leaddata` (quote requests, with lifecycle category: unclaimed vs claimed), and `embeddings.in_embedding_index` (the RAG bookkeeping table, below).
 

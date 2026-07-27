@@ -26,7 +26,7 @@ This is an operated production system, not a demo. Some of the more interesting 
 
 ## Stack
 
-SvelteKit (Svelte 5 runes) · TypeScript · PostgreSQL (Vercel Postgres) · Pinecone + LangChain + OpenAI · Cloudinary · SendGrid · PostHog · Vercel
+SvelteKit (Svelte 5 runes) · TypeScript · PostgreSQL (Vercel Postgres) + Drizzle · Pinecone + LangChain + OpenAI · Cloudinary · SendGrid · PostHog · Vercel
 
 ## Apps
 

@@ -7,9 +7,12 @@
 // When business-app migrates to leads, this switches to a direct insert
 // and the triggers are dropped.
 
-import { pool } from './db';
+import { db, pool } from './db';
 import { syncLeadToUnified } from './unifiedSync';
 import type { CountryCode } from '$lib/countries';
+import { createDb } from '@solar/db';
+import { leaddata, usLeaddata, leads, pincodeMapping } from '@solar/db/schema';
+import { and, eq } from 'drizzle-orm';
 
 export interface LeadPayload {
 	name: string;
@@ -41,13 +44,14 @@ export async function insertLead(
 	let level2: string | null = null;
 	if (country === 'in' && postalCode) {
 		try {
-			const result = await pool.query(
-				'SELECT district, state FROM pincode_mapping WHERE pincode = $1 LIMIT 1',
-				[postalCode]
-			);
-			if (result.rows.length > 0) {
-				level2 = result.rows[0].district;
-				level1 = result.rows[0].state;
+			const [match] = await db
+				.select({ district: pincodeMapping.district, state: pincodeMapping.state })
+				.from(pincodeMapping)
+				.where(eq(pincodeMapping.pincode, postalCode))
+				.limit(1);
+			if (match) {
+				level2 = match.district;
+				level1 = match.state;
 			}
 		} catch (lookupError) {
 			console.log('District lookup failed for pincode:', postalCode, lookupError);
@@ -55,6 +59,9 @@ export async function insertLead(
 	}
 
 	const client = await pool.connect();
+	// Drizzle bound to the checked-out client, so these statements run inside
+	// the BEGIN/COMMIT below alongside the raw sv_sync_lead() call.
+	const tx = createDb(client);
 	try {
 		await client.query('BEGIN');
 
@@ -62,57 +69,53 @@ export async function insertLead(
 		let referenceUuid: string | null = null;
 
 		if (country === 'in') {
-			const oldResult = await client.query(
-				`INSERT INTO leaddata (name, phone, pin_code, type, comment, urlparams, email, district, state, marketing_consent)
-				 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-				 RETURNING id, reference_uuid`,
-				[
+			const [inserted] = await tx
+				.insert(leaddata)
+				.values({
 					name,
 					phone,
-					postalCode,
-					type ?? null,
-					comment ?? null,
-					urlParams ?? null,
-					email || null,
-					level2,
-					level1,
-					marketingConsent === true
-				]
-			);
-			sourceId = oldResult.rows[0].id;
-			referenceUuid = oldResult.rows[0].reference_uuid;
+					pinCode: postalCode,
+					type: type ?? null,
+					comment: comment ?? null,
+					urlparams: urlParams ?? null,
+					email: email || null,
+					district: level2,
+					state: level1,
+					marketingConsent: marketingConsent === true
+				})
+				.returning({ id: leaddata.id, referenceUuid: leaddata.referenceUuid });
+			sourceId = inserted.id;
+			referenceUuid = inserted.referenceUuid;
 		} else {
-			const oldResult = await client.query(
-				`INSERT INTO us_leaddata (name, phone, zipcode, type, comment, urlparams, email, marketing_consent)
-				 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-				 RETURNING id`,
-				[
+			const [inserted] = await tx
+				.insert(usLeaddata)
+				.values({
 					name,
 					phone,
-					postalCode,
-					type ?? null,
-					comment ?? null,
-					urlParams ?? null,
-					email || null,
-					marketingConsent === true
-				]
-			);
-			sourceId = oldResult.rows[0].id;
+					zipcode: postalCode,
+					type: type ?? null,
+					comment: comment ?? null,
+					urlparams: urlParams ?? null,
+					email: email || null,
+					marketingConsent: marketingConsent === true
+				})
+				.returning({ id: usLeaddata.id });
+			sourceId = inserted.id;
 		}
 
 		// Idempotent with migration 045's sync trigger; keeps this write
 		// self-sufficient once the triggers drop (phase 2.4).
 		await syncLeadToUnified(client, country, sourceId);
 
-		const newResult = await client.query(
-			`SELECT id FROM leads WHERE country_code = $1 AND source_id = $2`,
-			[country, sourceId]
-		);
+		const [unified] = await tx
+			.select({ id: leads.id })
+			.from(leads)
+			.where(and(eq(leads.countryCode, country), eq(leads.sourceId, sourceId)));
 
 		await client.query('COMMIT');
 
 		return {
-			id: newResult.rows[0]?.id ?? sourceId,
+			id: unified?.id ?? sourceId,
 			sourceId,
 			referenceUuid,
 			level1,

@@ -2,6 +2,14 @@
 
 Notable changes to Solar Vipani. The platform has been live and continuously deployed since September 2024; this changelog starts with the first tagged release, which snapshots the production system at that point. Format follows [Keep a Changelog](https://keepachangelog.com/), versions follow [SemVer](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- `@solar/db` (`packages/db`): shared Drizzle schema and client for the one database all three apps read. The schema is *generated* by introspecting the live database (`npm run pull -w @solar/db`); the numbered SQL migrations remain the source of truth, and `drizzle-kit generate`/`push` are never run. Workspaces now cover `packages/*` as well as `apps/*`.
+
+### Changed
+- Queries are migrating to Drizzle incrementally. Drizzle wraps each app's existing `@vercel/postgres` pool, so converted and unconverted queries share one pool and can run in the same transaction — there is no cutover. Converted so far: main-app's `getTopDistricts` and `insertLead`.
+
 ## [2.0.0] — 2026-07-19
 
 Simplified the architecture and pruned features that carried no competitive advantage.

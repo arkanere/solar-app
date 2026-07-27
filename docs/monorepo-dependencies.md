@@ -1,7 +1,8 @@
 # Monorepo dependency conventions
 
-This repo is an **npm workspaces** monorepo (`apps/*`). Each app under `apps/` is an
-independently deployed SvelteKit app (its own Vercel deployment).
+This repo is an **npm workspaces** monorepo (`apps/*`, `packages/*`). Each app under `apps/`
+is an independently deployed SvelteKit app (its own Vercel deployment). `packages/` holds
+internal libraries shared by those apps — currently `@solar/db` (Drizzle schema + client).
 
 ## The rule
 
@@ -19,6 +20,12 @@ and know exactly what it needs, with no reliance on hoisting from a sibling.
 - Repo-wide **dev-time** tooling where version skew is harmless:
   `eslint`, `@eslint/js`, `eslint-plugin-svelte`, `globals`, `prettier`,
   `prettier-plugin-svelte`
+- `drizzle-kit` + `drizzle-orm`. **This pair is a deliberate exception.** The `drizzle-kit`
+  CLI resolves `drizzle-orm` from its own location, so under npm's flat hoisting it only
+  works if both sit at the root. Declaring `drizzle-orm` here also dedupes it to a single
+  copy shared with `@solar/db` and the apps. The cost is that an app could phantom-import
+  `drizzle-orm` without declaring it — so any app using Drizzle must still list it (main-app
+  does). pnpm would remove the need for this exception entirely.
 - Shared config: `tsconfig.base.json` (each app's `tsconfig.json` extends it)
 
 ### What lives in each app (`apps/<app>/package.json`)

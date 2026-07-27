@@ -15,6 +15,11 @@ const backendProxy = (name) => ({
 
 export default defineConfig({
 	plugins: [sveltekit()],
+	// @solar/db ships TypeScript source (workspace package), so it must be
+	// bundled rather than externalized into the SSR/serverless output.
+	ssr: {
+		noExternal: ['@solar/db']
+	},
 	server: {
 		proxy: {
 			'/in/api/chatbot': backendProxy('chatbot'),

@@ -84,6 +84,13 @@ htmlcov/
 *.h5
 *.parquet
 
+# Packages
+packages/*/node_modules
+# drizzle-kit pull also emits a snapshot SQL file + meta/ next to the schema.
+# The numbered SQL migrations are the source of truth, so those are noise.
+packages/db/src/schema/*.sql
+packages/db/src/schema/meta
+
 # Apps
 apps/*/node_modules
 apps/*/.svelte-kit

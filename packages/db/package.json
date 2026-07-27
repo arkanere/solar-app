@@ -1,0 +1,22 @@
+{
+	"name": "@solar/db",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts",
+		"./schema": "./src/schema/index.ts"
+	},
+	"scripts": {
+		"pull": "drizzle-kit pull && node scripts/postpull.mjs",
+		"check": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@vercel/postgres": "^0.10.0",
+		"drizzle-orm": "^0.45.2"
+	},
+	"devDependencies": {
+		"drizzle-kit": "^0.31.10",
+		"typescript": "^5.0.0"
+	}
+}
