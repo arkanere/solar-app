@@ -15,10 +15,11 @@ const backendProxy = (name) => ({
 
 export default defineConfig({
 	plugins: [sveltekit()],
-	// @solar/db ships TypeScript source (workspace package), so it must be
-	// bundled rather than externalized into the SSR/serverless output.
+	// @solar/db and @solar/validation ship TypeScript source (workspace
+	// packages), so they must be bundled rather than externalized into the
+	// SSR/serverless output.
 	ssr: {
-		noExternal: ['@solar/db']
+		noExternal: ['@solar/db', '@solar/validation']
 	},
 	server: {
 		proxy: {

@@ -1,10 +1,11 @@
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
+import { parseBody, saveProposalSchema } from '@solar/validation';
 import { BusinessAuthService } from '$lib/in/auth/business';
 import { ownsBusinessSlug } from '$lib/in/ownsBusinessSlug';
 import type { RequestHandler } from './$types';
-import type { ProposalPayload, Proposal } from '$lib/types/lead';
+import type { Proposal } from '$lib/types/lead';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
 	const pool = createPool({ connectionString: POSTGRES_URL });
@@ -18,7 +19,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			return json({ success: false, error: 'Unauthorized - Please login' }, { status: 401 });
 		}
 
-		const proposalData = (await request.json()) as ProposalPayload;
+		const parsed = await parseBody(request, saveProposalSchema);
+		if (!parsed.ok) {
+			return json({ success: false, error: parsed.error, fields: parsed.fields }, { status: 400 });
+		}
 		const {
 			id,
 			lead_id,
@@ -32,27 +36,16 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			number_of_panels,
 			inverter_brand_model,
 			notes
-		} = proposalData;
-
-		if (!customer_name || !system_capacity_kw) {
-			return json(
-				{ success: false, error: 'Customer name and system capacity are required' },
-				{ status: 400 }
-			);
-		}
-
-		if (!business_slug) {
-			return json(
-				{ success: false, error: 'Business slug is required' },
-				{ status: 400 }
-			);
-		}
+		} = parsed.data;
 
 		// Derive authorization from the session: the target business_slug must be
 		// the logged-in business or one of its active branches.
 		if (!(await ownsBusinessSlug(pool, sessionResult.session.businessSlug, business_slug))) {
 			return json(
-				{ success: false, error: 'Forbidden - You can only manage proposals for your own business' },
+				{
+					success: false,
+					error: 'Forbidden - You can only manage proposals for your own business'
+				},
 				{ status: 403 }
 			);
 		}
@@ -80,14 +73,14 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 			const values = [
 				customer_name,
-				phone_number ?? null,
-				address ?? null,
-				email ?? null,
-				parseFloat(system_capacity_kw.toString()),
-				panels_brand_model ?? null,
-				number_of_panels ? parseInt(number_of_panels.toString()) : null,
-				inverter_brand_model ?? null,
-				notes ?? null,
+				phone_number,
+				address,
+				email,
+				system_capacity_kw,
+				panels_brand_model,
+				number_of_panels,
+				inverter_brand_model,
+				notes,
 				id,
 				business_slug
 			];
@@ -95,10 +88,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			result = await pool.query<Proposal>(updateQuery, values);
 
 			if (result.rows.length === 0) {
-				return json(
-					{ success: false, error: 'Proposal not found' },
-					{ status: 404 }
-				);
+				return json({ success: false, error: 'Proposal not found' }, { status: 404 });
 			}
 		}
 		// Create new proposal
@@ -124,16 +114,16 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 			const values = [
 				business_slug,
-				lead_id ?? null,
+				lead_id,
 				customer_name,
-				phone_number ?? null,
-				address ?? null,
-				email ?? null,
-				parseFloat(system_capacity_kw.toString()),
-				panels_brand_model ?? null,
-				number_of_panels ? parseInt(number_of_panels.toString()) : null,
-				inverter_brand_model ?? null,
-				notes ?? null
+				phone_number,
+				address,
+				email,
+				system_capacity_kw,
+				panels_brand_model,
+				number_of_panels,
+				inverter_brand_model,
+				notes
 			];
 
 			result = await pool.query<Proposal>(insertQuery, values);
@@ -142,9 +132,6 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		return json({ success: true, proposal: result.rows[0] });
 	} catch (error) {
 		console.error('❌ Error saving proposal:', error);
-		return json(
-			{ success: false, error: 'Failed to save proposal' },
-			{ status: 500 }
-		);
+		return json({ success: false, error: 'Failed to save proposal' }, { status: 500 });
 	}
 };

@@ -1,4 +1,5 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
+import { inspectBody, leadSchema } from '@solar/validation';
 import { getCountry, isCountry } from '$lib/countries';
 import { insertLead } from '$lib/server/leads';
 
@@ -10,6 +11,14 @@ export const POST: RequestHandler = async ({ request, params, fetch }) => {
 
 	try {
 		const data = await request.json();
+
+		// Log-only for now. The forms feeding this endpoint validate with three
+		// different phone rules, so the real distribution of what arrives here
+		// isn't known — rejecting on a guess would silently drop leads. Watch
+		// `[validation] submitLead` in the logs, then swap this for parseBody
+		// once the failures are understood.
+		inspectBody('submitLead', leadSchema(country.code), data);
+
 		// Forms send pinCode (IN legacy name) or zipCode (US legacy name).
 		const postalCode = data.pinCode ?? data.zipCode ?? data.postalCode ?? '';
 		const { name, phone, type, comment, urlParam, email, marketing_consent } = data;

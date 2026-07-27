@@ -1,17 +1,9 @@
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
+import { addReferrerSchema, parseBody } from '@solar/validation';
 import { BusinessAuthService } from '$lib/in/auth/business';
 import type { RequestHandler } from './$types';
-
-interface AddReferrerRequest {
-	businessId: number;
-	name: string;
-	slug: string;
-	phone: string;
-	email?: string;
-	notes?: string;
-}
 
 interface ReferrerIdResult {
 	id: number;
@@ -41,8 +33,11 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			return json({ success: false, error: 'Unauthorized - Please login' }, { status: 401 });
 		}
 
-		const data = (await request.json()) as AddReferrerRequest;
-		const { businessId, name, slug, email, phone, notes } = data;
+		const parsed = await parseBody(request, addReferrerSchema);
+		if (!parsed.ok) {
+			return json({ success: false, error: parsed.error, fields: parsed.fields }, { status: 400 });
+		}
+		const { businessId, name, slug, email, phone, notes } = parsed.data;
 
 		// Verify the logged-in business is adding referrer for themselves
 		if (sessionResult.session.businessId !== businessId) {
@@ -52,43 +47,15 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			);
 		}
 
-		// Validate required fields
-		if (!name || !slug || !phone) {
-			return json({ success: false, error: 'Name, slug, and phone are required' }, { status: 400 });
-		}
-
-		// Validate slug format (lowercase alphanumeric and hyphens only)
-		const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-		if (!slugRegex.test(slug)) {
-			return json(
-				{
-					success: false,
-					error: 'Slug must be lowercase alphanumeric characters and hyphens only'
-				},
-				{ status: 400 }
-			);
-		}
-
-		// Validate phone number format (10 digits)
-		const phoneRegex = /^[6-9]\d{9}$/;
-		if (!phoneRegex.test(phone)) {
-			return json({ success: false, error: 'Invalid phone number format' }, { status: 400 });
-		}
-
-		// Validate email format if provided
-		if (email) {
-			const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-			if (!emailRegex.test(email)) {
-				return json({ success: false, error: 'Invalid email format' }, { status: 400 });
-			}
-		}
-
 		// Check if referrer with same phone already exists for this business
 		const checkPhoneQuery = `
 			SELECT id FROM in_referrers
 			WHERE business_id = $1 AND phone = $2
 		`;
-		const checkPhoneResult = await pool.query<ReferrerIdResult>(checkPhoneQuery, [businessId, phone]);
+		const checkPhoneResult = await pool.query<ReferrerIdResult>(checkPhoneQuery, [
+			businessId,
+			phone
+		]);
 
 		if (checkPhoneResult.rows.length > 0) {
 			return json(
@@ -133,8 +100,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			name,
 			slug,
 			phone,
-			email || null,
-			notes || null
+			email,
+			notes
 		]);
 
 		const newReferrer = insertResult.rows[0];
@@ -148,7 +115,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		console.error('Error adding referrer:', error);
 
 		// Handle specific database errors
-		if (error instanceof Error && error.message.includes('relation "in_referrers" does not exist')) {
+		if (
+			error instanceof Error &&
+			error.message.includes('relation "in_referrers" does not exist')
+		) {
 			return json(
 				{ success: false, error: 'Referrers table not found. Please contact administrator.' },
 				{ status: 500 }
