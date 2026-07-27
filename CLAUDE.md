@@ -12,6 +12,11 @@ I'm always open to ideas on better ways to do things. Please don't hesitate to s
 
 
 
+## Git
+
+Commit straight to `main` and push. Don't create a branch and don't open a pull request
+unless I ask for one — solo maintainer, no review step to wait on.
+
 ## About Solar-app
 
 This is a open source project.
