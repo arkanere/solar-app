@@ -1,22 +1,10 @@
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
+import { parseBody, usUpdateBusinessDetailsSchema } from '@solar/validation';
 import { BusinessAuthService } from '$lib/us/auth/business';
 import { syncBusinessToUnified } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
-
-interface UpdateBusinessDetailsRequest {
-	businessname: string;
-	address: string;
-	phonenumber: string;
-	whatsapp: string;
-	email: string;
-	website: string;
-	description: string;
-	instagram_id: string;
-	google_maps_link: string;
-	business_slug: string;
-}
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
 	const pool = createPool({ connectionString: POSTGRES_URL });
@@ -27,13 +15,13 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		const sessionResult = authService.validateSession(cookies);
 
 		if (!sessionResult.success) {
-			return json(
-				{ success: false, error: 'Unauthorized - Please login' },
-				{ status: 401 }
-			);
+			return json({ success: false, error: 'Unauthorized - Please login' }, { status: 401 });
 		}
 
-		const data = (await request.json()) as UpdateBusinessDetailsRequest;
+		const parsed = await parseBody(request, usUpdateBusinessDetailsSchema);
+		if (!parsed.ok) {
+			return json({ success: false, error: parsed.error, fields: parsed.fields }, { status: 400 });
+		}
 		const {
 			businessname,
 			address,
@@ -44,8 +32,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			description,
 			instagram_id,
 			google_maps_link,
-			business_slug // Assuming you're passing business_slug to identify the business to update
-		} = data;
+			business_slug // identifies the business to update
+		} = parsed.data;
 
 		// Verify the logged-in business owns the resource
 		if (sessionResult.session.businessSlug !== business_slug) {
@@ -83,16 +71,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				id: result.rows[0].id as number
 			});
 		} else {
-			return json(
-				{ success: false, error: 'Business not found' },
-				{ status: 404 }
-			);
+			return json({ success: false, error: 'Business not found' }, { status: 404 });
 		}
 	} catch (error) {
 		console.error('❌ Error updating business data:', error);
-		return json(
-			{ success: false, error: 'Failed to update business' },
-			{ status: 500 }
-		);
+		return json({ success: false, error: 'Failed to update business' }, { status: 500 });
 	}
 };

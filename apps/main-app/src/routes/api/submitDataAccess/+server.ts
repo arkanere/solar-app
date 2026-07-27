@@ -1,13 +1,8 @@
 import { createPool, type VercelPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json, type RequestHandler } from '@sveltejs/kit';
+import { dataRequestSchema, parseBody } from '@solar/validation';
 import { sendEmail } from '$lib/sendEmail';
-
-interface DataAccessRequest {
-	email: string;
-	phone?: string;
-	reason?: string;
-}
 
 interface AccessResult {
 	id: number;
@@ -17,12 +12,11 @@ export const POST: RequestHandler = async ({ request }) => {
 	const pool: VercelPool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
-		const data = (await request.json()) as DataAccessRequest;
-		const { email, phone, reason } = data;
-
-		if (!email) {
-			return json({ success: false, error: 'Email is required' }, { status: 400 });
+		const parsed = await parseBody(request, dataRequestSchema);
+		if (!parsed.ok) {
+			return json({ success: false, error: parsed.error, fields: parsed.fields }, { status: 400 });
 		}
+		const { email, phone, reason } = parsed.data;
 
 		const insertQuery = `
             INSERT INTO data_access_requests (email, phone, reason, created_at, status)
@@ -30,11 +24,7 @@ export const POST: RequestHandler = async ({ request }) => {
             RETURNING id
         `;
 
-		const result = await pool.query<AccessResult>(insertQuery, [
-			email,
-			phone || null,
-			reason || null
-		]);
+		const result = await pool.query<AccessResult>(insertQuery, [email, phone, reason]);
 
 		// Acknowledge the request — fulfillment itself is manual (team emails a CSV
 		// within 30 days). Email failure must not fail the request submission.
@@ -69,9 +59,6 @@ export const POST: RequestHandler = async ({ request }) => {
 			);
 		}
 
-		return json(
-			{ success: false, error: 'Failed to submit data access request' },
-			{ status: 500 }
-		);
+		return json({ success: false, error: 'Failed to submit data access request' }, { status: 500 });
 	}
 };

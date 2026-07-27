@@ -9,6 +9,7 @@ import { z } from 'zod';
 import {
 	blankToNull,
 	decimal,
+	email,
 	id,
 	inMobile,
 	inPincode,
@@ -133,7 +134,77 @@ export const updateBusinessDetailsSchema = z.object({
 	business_slug: requiredText('Business slug')
 });
 
+/**
+ * business-app /us/api/updateBusinessDetails
+ *
+ * The same form minus services/brands, which the US table doesn't carry.
+ */
+export const usUpdateBusinessDetailsSchema = updateBusinessDetailsSchema.omit({
+	services: true,
+	brands: true
+});
+
+/* -------------------------------------------------------------------------
+ * main-app /in/api/submitBusiness
+ *
+ * Replaces nine near-identical `if (!x || x.trim() === '')` blocks. Presence
+ * only, matching what the handler checked — the GSTN and phone *formats* are
+ * enforced client-side by BusinessForm.svelte and are not reproduced here, so
+ * this cannot start rejecting submissions the endpoint used to accept.
+ * ---------------------------------------------------------------------- */
+
+export const submitBusinessSchema = z.object({
+	businessName: requiredText('Business name'),
+	address: requiredText('Address', 1000),
+	plusCode: optionalText(120),
+	phoneNumber: requiredText('Phone number', 40),
+	whatsappNumber: optionalText(40),
+	email: requiredText('Business email', 320),
+	login_email: requiredText('Login email', 320),
+	website: optionalText(500),
+	gstn: requiredText('GSTN', 20),
+	state: requiredText('State', 120),
+	district: requiredText('District', 120),
+	city: requiredText('City', 120)
+});
+
+/* -------------------------------------------------------------------------
+ * main-app /api/submitDataAccess and /api/submitDataDeletion
+ *
+ * Identical shapes, so one schema. Both endpoints previously checked only
+ * `!email`; the format rule is a deliberate tightening. Email is the sole
+ * identifier on a compliance request, and submitDataAccess mails a copy of
+ * the user's data to whatever arrives here — a malformed address means the
+ * request can never be fulfilled. Both public forms are `type="email"` and
+ * `required`, so browsers already enforce this client-side.
+ * ---------------------------------------------------------------------- */
+
+export const dataRequestSchema = z.object({
+	email,
+	phone: optionalText(40),
+	reason: optionalText()
+});
+
+/* -------------------------------------------------------------------------
+ * business-app /in/api/resetPassword and /us/api/resetPassword
+ *
+ * Presence and type only. Password *strength* stays with
+ * TokenSecurity.validatePasswordStrength, which owns that policy and returns
+ * its own field-level errors; this schema exists so that check can no longer
+ * be handed `undefined`.
+ * ---------------------------------------------------------------------- */
+
+export const resetPasswordSchema = z.object({
+	business_slug: slug,
+	token: requiredText('Reset token', 512),
+	newPassword: z.string({ error: 'New password is required' }).min(1, 'New password is required')
+});
+
 export type LeadInput = z.output<ReturnType<typeof leadSchema>>;
 export type AddReferrerInput = z.output<typeof addReferrerSchema>;
 export type SaveProposalInput = z.output<typeof saveProposalSchema>;
 export type UpdateBusinessDetailsInput = z.output<typeof updateBusinessDetailsSchema>;
+export type UsUpdateBusinessDetailsInput = z.output<typeof usUpdateBusinessDetailsSchema>;
+export type SubmitBusinessInput = z.output<typeof submitBusinessSchema>;
+export type DataRequestInput = z.output<typeof dataRequestSchema>;
+export type ResetPasswordInput = z.output<typeof resetPasswordSchema>;

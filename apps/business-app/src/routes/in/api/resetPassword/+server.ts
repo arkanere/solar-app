@@ -5,12 +5,7 @@ import type { RequestHandler } from './$types';
 import bcrypt from 'bcrypt';
 import { TokenSecurity } from '$lib/auth/business';
 import { passwordResetLimiter } from '$lib/auth/business';
-
-interface ResetPasswordRequest {
-	business_slug: string;
-	token: string;
-	newPassword: string;
-}
+import { parseBody, resetPasswordSchema } from '@solar/validation';
 
 interface BusinessResetRow {
 	reset_token_hash: string | null;
@@ -21,13 +16,25 @@ interface BusinessResetRow {
 
 export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 	const pool = createPool({ connectionString: POSTGRES_URL });
-	const { business_slug, token, newPassword }: ResetPasswordRequest = await request.json();
-
-	// Get client IP for rate limiting
-	const clientIp = getClientAddress();
-	const rateLimitKey = `reset:${clientIp}:${business_slug}`;
+	// Generic error message to prevent account enumeration
+	const genericError = 'Invalid or expired password reset link';
 
 	try {
+		// Parsing lives inside the try: this handler used to read the body
+		// above it, so a malformed payload became an unhandled rejection.
+		// The failure is reported generically for the same reason the checks
+		// below are — a field-level message would confirm which slugs are
+		// well-formed.
+		const parsed = await parseBody(request, resetPasswordSchema);
+		if (!parsed.ok) {
+			return json({ success: false, error: genericError }, { status: 400 });
+		}
+		const { business_slug, token, newPassword } = parsed.data;
+
+		// Get client IP for rate limiting
+		const clientIp = getClientAddress();
+		const rateLimitKey = `reset:${clientIp}:${business_slug}`;
+
 		// 1. Rate limiting - max 5 attempts per 15 minutes per IP/business combo
 		const rateLimit = await passwordResetLimiter.checkLimit(rateLimitKey, 5, 15 * 60 * 1000);
 		if (!rateLimit.allowed) {
@@ -69,9 +76,6 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
       WHERE slug = $1;
     `;
 		const result = await pool.query<BusinessResetRow>(query, [business_slug]);
-
-		// Generic error message to prevent account enumeration
-		const genericError = 'Invalid or expired password reset link';
 
 		if (result.rows.length === 0) {
 			// Business doesn't exist, but don't reveal that

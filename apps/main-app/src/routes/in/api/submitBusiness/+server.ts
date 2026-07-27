@@ -2,7 +2,7 @@ import { createPool } from '@vercel/postgres';
 import type { VercelPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json, type RequestHandler } from '@sveltejs/kit';
-import type { BusinessData } from '$lib/types/api';
+import { parseBody, submitBusinessSchema } from '@solar/validation';
 import { syncBusinessToUnified, syncAccountToUnified } from '$lib/server/unifiedSync';
 
 export const POST: RequestHandler = async ({ request, fetch }) => {
@@ -10,7 +10,10 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 	const pool: VercelPool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
-		const data: BusinessData = await request.json();
+		const parsed = await parseBody(request, submitBusinessSchema);
+		if (!parsed.ok) {
+			return json({ success: false, error: parsed.error, fields: parsed.fields }, { status: 400 });
+		}
 		const {
 			businessName,
 			address,
@@ -24,36 +27,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 			state,
 			district,
 			city
-		} = data;
-
-		// Server-side validation for required fields
-		if (!businessName || businessName.trim() === '') {
-			return json({ success: false, error: 'Business name is required' }, { status: 400 });
-		}
-		if (!address || address.trim() === '') {
-			return json({ success: false, error: 'Address is required' }, { status: 400 });
-		}
-		if (!phoneNumber || phoneNumber.trim() === '') {
-			return json({ success: false, error: 'Phone number is required' }, { status: 400 });
-		}
-		if (!email || email.trim() === '') {
-			return json({ success: false, error: 'Business email is required' }, { status: 400 });
-		}
-		if (!login_email || login_email.trim() === '') {
-			return json({ success: false, error: 'Login email is required' }, { status: 400 });
-		}
-		if (!gstn || gstn.trim() === '') {
-			return json({ success: false, error: 'GSTN is required' }, { status: 400 });
-		}
-		if (!state || state.trim() === '') {
-			return json({ success: false, error: 'State is required' }, { status: 400 });
-		}
-		if (!district || district.trim() === '') {
-			return json({ success: false, error: 'District is required' }, { status: 400 });
-		}
-		if (!city || city.trim() === '') {
-			return json({ success: false, error: 'City is required' }, { status: 400 });
-		}
+		} = parsed.data;
 
 		// Check for duplicate GSTN
 		const duplicateCheck = await pool.query<{ business_id: number }>(
@@ -65,7 +39,8 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 			return json(
 				{
 					success: false,
-					error: 'A business with this GSTN already exists. Please check your GSTN or contact support if you believe this is an error.'
+					error:
+						'A business with this GSTN already exists. Please check your GSTN or contact support if you believe this is an error.'
 				},
 				{ status: 400 }
 			);
