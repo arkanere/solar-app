@@ -171,8 +171,8 @@
 	function loadCallSafe() {
 		if (typeof window !== 'undefined' && !document.querySelector('script[src*="callsafe.online"]')) {
 			const script = document.createElement('script');
-			script.src = 'https://callsafe.online/embed.js';
-			script.setAttribute('data-handle', '25831dee9a0b76f8');
+			script.src = 'https://www.callsafe.online/embed.js';
+			script.setAttribute('data-handle', 'eb37507909fa43ff');
 			script.setAttribute('data-source-id', 'solar-vipani');
 			document.head.appendChild(script);
 		}

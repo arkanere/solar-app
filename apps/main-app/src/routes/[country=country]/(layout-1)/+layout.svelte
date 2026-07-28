@@ -309,8 +309,8 @@
     if (typeof window !== "undefined") {
       window.addEventListener("load", function () {
         const callsafeScript = document.createElement("script");
-        callsafeScript.src = "https://callsafe.online/embed.js";
-        callsafeScript.setAttribute("data-handle", "25831dee9a0b76f8");
+        callsafeScript.src = "https://www.callsafe.online/embed.js";
+        callsafeScript.setAttribute("data-handle", "eb37507909fa43ff");
         callsafeScript.setAttribute("data-source-id", "solar-vipani");
         document.head.appendChild(callsafeScript);
       });
