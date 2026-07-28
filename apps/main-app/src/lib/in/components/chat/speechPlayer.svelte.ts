@@ -1,9 +1,11 @@
-// Text-to-speech playback for assistant replies, backed by /in/api/speak
-// (proxied to the FastAPI `tts-1` route — see vite.config.js).
+// Text-to-speech playback for assistant replies, backed by the FastAPI
+// `tts-1` route at /api/speak (see $lib/api and vite.config.js).
 //
 // The mirror image of AudioRecorder: that class produces a Blob and lets the
 // caller decide where to send it; this one takes text and owns playback only.
 // Whether replies get spoken at all is the caller's decision, not this class's.
+
+import { apiUrl } from "$lib/api";
 
 /** Voices the backend accepts — mirrors VoiceOption in app/schemas/speech.py. */
 export type VoiceOption = "alloy" | "echo" | "fable" | "onyx" | "nova" | "shimmer";
@@ -60,7 +62,7 @@ export class SpeechPlayer {
     this.error = null;
 
     try {
-      const res = await fetch("/in/api/speak", {
+      const res = await fetch(apiUrl("/api/speak"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: spoken, voice: this.voice }),

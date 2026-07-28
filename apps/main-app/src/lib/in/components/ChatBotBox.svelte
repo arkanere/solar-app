@@ -6,6 +6,7 @@
   import { Badge } from "$lib/components/ui/badge";
   import { X, Send, Copy, Check, Square, Mic, Volume2, VolumeX } from "@lucide/svelte";
   import MarkdownIt from "markdown-it";
+  import { apiUrl } from "$lib/api";
   import MessageBubble from "$lib/in/components/chat/MessageBubble.svelte";
   import { AudioRecorder } from "$lib/in/components/chat/audioRecorder.svelte";
   import { SpeechPlayer } from "$lib/in/components/chat/speechPlayer.svelte";
@@ -232,7 +233,7 @@
       try {
         const form = new FormData();
         form.append("audio", blob, "recording.webm");
-        const res = await fetch("/in/api/transcribe", { method: "POST", body: form });
+        const res = await fetch(apiUrl("/api/transcribe"), { method: "POST", body: form });
         if (!res.ok) throw new Error("Transcription failed");
         const { text } = await res.json();
         if (text?.trim()) await runChat(text.trim(), { appendUser: true });
@@ -318,7 +319,7 @@
         history: history,
       };
 
-      const response = await fetch("/in/api/chatbot", {
+      const response = await fetch(apiUrl("/api/chatbot"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestPayload),

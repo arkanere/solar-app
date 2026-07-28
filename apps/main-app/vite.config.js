@@ -3,15 +3,16 @@ import { defineConfig } from 'vite';
 
 // Local dev: the AI chatbot + speech endpoints are served by the FastAPI
 // backend (solar-agent-backend, `uv run uvicorn app.main:app --reload`).
-// The proxy rewrites /in/api/<name> -> http://localhost:8000/api/<name> so no
-// frontend fetch call needs to change. Endpoints NOT listed here (submitLead,
-// submitBusiness, ...) keep hitting the SvelteKit routes.
+// In production these are absolute URLs built from PUBLIC_API_BASE_URL (see
+// $lib/api); locally that base is empty, so the paths stay relative and this
+// proxy forwards them to localhost:8000 — same-origin, so no CORS is involved.
+// Endpoints NOT listed here (submitLead, submitBusiness, ...) keep hitting the
+// SvelteKit routes.
 const FASTAPI_BACKEND = 'http://localhost:8000';
-const backendProxy = (name) => ({
+const backendProxy = {
 	target: FASTAPI_BACKEND,
-	changeOrigin: true,
-	rewrite: () => `/api/${name}`
-});
+	changeOrigin: true
+};
 
 export default defineConfig({
 	plugins: [sveltekit()],
@@ -23,10 +24,10 @@ export default defineConfig({
 	},
 	server: {
 		proxy: {
-			'/in/api/chatbot': backendProxy('chatbot'),
-			'/in/api/transcribe': backendProxy('transcribe'),
-			'/in/api/speak': backendProxy('speak'),
-			'/in/api/generate-cad': backendProxy('generate-cad')
+			'/api/chatbot': backendProxy,
+			'/api/transcribe': backendProxy,
+			'/api/speak': backendProxy,
+			'/api/generate-cad': backendProxy
 		}
 	}
 });
