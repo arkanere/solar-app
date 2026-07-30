@@ -10,6 +10,7 @@
   import { hasAnalyticsConsent } from "$lib/consent";
   import CookieConsent from "$lib/components/CookieConsent.svelte";
   import AboutSolarVipani from "$lib/in/components/AboutSolarVipani.svelte";
+  import ChatLauncher from "$lib/in/components/ChatLauncher.svelte";
 
   // Accept children snippet from SvelteKit
   let { children, data } = $props();
@@ -24,15 +25,39 @@
   // Only load component client-side to avoid SSR issues
   let showChat = $state(false);
 
-  // Lazy-loaded chatbot popup, available on every page in this layout. Shown once
-  // the user scrolls past SCROLL_TRIGGER of the page (a region, not the absolute
-  // bottom — most users stop before 100%), and hidden when they scroll back above
-  // it. Toggling unmounts the popup so scrolling down again re-opens it after a
-  // manual close. Using scroll depth (not a fixed sentinel) adapts to any page
-  // length, and a fast scroll-to-bottom still lands inside the region.
+  // The chat is reachable two ways. ChatLauncher renders from first paint, so
+  // visitors who never scroll still discover it. Separately, scrolling past
+  // SCROLL_TRIGGER auto-opens it (a region, not the absolute bottom — most users
+  // stop before 100%); scroll depth adapts to any page length, and a fast
+  // scroll-to-bottom still lands inside the region.
+  //
+  // `chatOpen` is the single source of truth for both triggers. `openedByUser`
+  // keeps a launcher-opened chat from being closed by scrolling back up, and
+  // `autoOpenFired` stops the scroll trigger from re-opening a chat the user
+  // dismissed while still inside the region.
   const SCROLL_TRIGGER = 0.75;
   let ChatbotPopup = $state(null);
-  let shouldLoadChatbot = $state(false);
+  let chatOpen = $state(false);
+  let openedByUser = $state(false);
+  let autoOpenFired = $state(false);
+
+  async function loadChatbot() {
+    if (!ChatbotPopup) {
+      const module = await import("$lib/in/components/ChatbotPopup.svelte");
+      ChatbotPopup = module.default;
+    }
+  }
+
+  async function openChat() {
+    await loadChatbot();
+    openedByUser = true;
+    chatOpen = true;
+  }
+
+  function closeChat() {
+    chatOpen = false;
+    openedByUser = false;
+  }
 
   onMount(() => {
     if (!features.chatbot) return;
@@ -47,14 +72,12 @@
       const depth = max > 100 ? window.scrollY / max : 1;
 
       if (depth >= SCROLL_TRIGGER) {
-        if (!chatbotTimer && !shouldLoadChatbot) {
+        if (!chatbotTimer && !autoOpenFired && !chatOpen) {
           chatbotTimer = setTimeout(async () => {
             chatbotTimer = null;
-            if (!ChatbotPopup) {
-              const module = await import("$lib/in/components/ChatbotPopup.svelte");
-              ChatbotPopup = module.default;
-            }
-            shouldLoadChatbot = true;
+            await loadChatbot();
+            autoOpenFired = true;
+            chatOpen = true;
           }, 1000);
         }
       } else {
@@ -62,7 +85,8 @@
           clearTimeout(chatbotTimer);
           chatbotTimer = null;
         }
-        shouldLoadChatbot = false;
+        autoOpenFired = false;
+        if (!openedByUser) chatOpen = false;
       }
     };
 
@@ -594,9 +618,12 @@
   </Dialog.Content>
 </Dialog.Root>
 
-<!-- Chatbot Popup (Lazy Loaded) -->
-{#if shouldLoadChatbot && ChatbotPopup}
-  <ChatbotPopup messages={chatMessages} />
+<!-- Chatbot: always-visible launcher, popup lazy-loaded on first open -->
+{#if features.chatbot && !chatOpen}
+  <ChatLauncher onopen={openChat} onpreload={loadChatbot} />
+{/if}
+{#if chatOpen && ChatbotPopup}
+  <ChatbotPopup messages={chatMessages} onClose={closeChat} />
 {/if}
 
 <!-- Analytics consent banner — gates loadAnalytics() on first visit -->

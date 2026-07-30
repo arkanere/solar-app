@@ -599,7 +599,7 @@
 <div class="flex flex-col w-full h-full rounded-[theme(--radius-lg)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden">
   <!-- Header -->
   <div class="flex items-center justify-between p-[theme(--card-padding-y)] border-b border-[hsl(var(--border))] bg-[hsl(var(--primary))]">
-    <h3 class="text-lg font-semibold text-[hsl(var(--primary-foreground))]">Calculate Price and Savings</h3>
+    <h3 class="text-lg font-semibold text-[hsl(var(--primary-foreground))]">Solar Assistant</h3>
     <div class="flex items-center gap-[theme(--form-element-field-gap)]">
       <Button variant="ghost" size="sm" onclick={copyConversation} title={copied ? "Copied!" : "Copy conversation"} aria-label="Copy conversation" class="rounded-[theme(--badge-radius)] w-[2rem] h-[2rem] p-0">
         {#if copied}
