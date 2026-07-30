@@ -26,8 +26,7 @@ export default defineConfig({
 		proxy: {
 			'/api/chatbot': backendProxy,
 			'/api/transcribe': backendProxy,
-			'/api/speak': backendProxy,
-			'/api/generate-cad': backendProxy
+			'/api/speak': backendProxy
 		}
 	}
 });
