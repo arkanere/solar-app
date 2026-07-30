@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as Dialog from '$lib/components/ui/dialog';
-	import ChatBotBox from '$lib/in/components/ChatBotBox.svelte';
+	import ChatBotBox from './ChatBotBox.svelte';
 	import type { Writable } from 'svelte/store';
 
 	// Open state lives in the layout, which is the only place that knows about

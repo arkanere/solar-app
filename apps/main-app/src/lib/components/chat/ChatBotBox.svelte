@@ -7,9 +7,9 @@
   import { X, Send, Copy, Check, Square, Mic, Volume2, VolumeX } from "@lucide/svelte";
   import MarkdownIt from "markdown-it";
   import { apiUrl } from "$lib/api";
-  import MessageBubble from "$lib/in/components/chat/MessageBubble.svelte";
-  import { AudioRecorder } from "$lib/in/components/chat/audioRecorder.svelte";
-  import { SpeechPlayer } from "$lib/in/components/chat/speechPlayer.svelte";
+  import MessageBubble from "./MessageBubble.svelte";
+  import { AudioRecorder } from "./audioRecorder.svelte";
+  import { SpeechPlayer } from "./speechPlayer.svelte";
 
   // AI replies arrive as markdown; the canned welcome message is raw HTML.
   // `html: true` lets both pass through one renderer.

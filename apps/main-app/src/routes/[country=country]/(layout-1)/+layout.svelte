@@ -10,7 +10,7 @@
   import { hasAnalyticsConsent } from "$lib/consent";
   import CookieConsent from "$lib/components/CookieConsent.svelte";
   import AboutSolarVipani from "$lib/in/components/AboutSolarVipani.svelte";
-  import ChatLauncher from "$lib/in/components/ChatLauncher.svelte";
+  import ChatLauncher from "$lib/components/chat/ChatLauncher.svelte";
 
   // Accept children snippet from SvelteKit
   let { children, data } = $props();
@@ -43,7 +43,7 @@
 
   async function loadChatbot() {
     if (!ChatbotPopup) {
-      const module = await import("$lib/in/components/ChatbotPopup.svelte");
+      const module = await import("$lib/components/chat/ChatbotPopup.svelte");
       ChatbotPopup = module.default;
     }
   }
