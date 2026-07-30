@@ -4,8 +4,6 @@
   import { Badge } from "$lib/components/ui/badge";
   import { Copy, Check, RefreshCw, RotateCcw } from "@lucide/svelte";
   import ToolResultDisplay from "./widgets/ToolResultDisplay.svelte";
-  import IntentBadge from "./IntentBadge.svelte";
-  import TokenUsage from "./TokenUsage.svelte";
   import { formatTime } from "./format";
 
   let {
@@ -95,13 +93,11 @@
              than mislabelled; reinstate it only against a field that actually holds
              suggestions for the customer. -->
 
-        {#if isAssistant && message.intent}
-          <IntentBadge intent={message.intent} />
-        {/if}
-
-        {#if isAssistant && message.usage}
-          <TokenUsage usage={message.usage} />
-        {/if}
+        <!-- The intent classification (journey stage / intent / confidence) and the
+             token+cost row used to render here. Both are internal telemetry: the
+             first is lead-scoring signal, the second exposes per-message LLM spend
+             to the customer. `message.intent` and `message.usage` still arrive and
+             are kept on the message, they're just not drawn in the customer UI. -->
 
         <!-- Flow-driven controls (options / inputs / lead form) stay owned by the
              parent so their two-way bindings don't have to cross this boundary. -->
