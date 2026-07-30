@@ -21,15 +21,18 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	const [level2sResult, statsResult, subsidyResult, latestProjectResult] = await Promise.all([
 		pool.query(
+			// level1 is part of the match because level2 names repeat across level1s
+			// (e.g. "Washington County" in many US states).
 			`SELECT g.level2, g.level2_slug,
 			        (SELECT COUNT(*) FROM businesses b
 			         WHERE b.country_code = g.country_code
+			           AND LOWER(b.level1) = LOWER($3)
 			           AND LOWER(b.level2) = LOWER(g.level2) AND b.isvisible = true) as installer_count
 			 FROM geo_locations g
 			 WHERE g.country_code = $1 AND g.level1_slug = $2
 			 GROUP BY g.country_code, g.level2, g.level2_slug
 			 ORDER BY g.level2 ASC`,
-			[country.code, level1Slug]
+			[country.code, level1Slug, level1]
 		),
 		pool.query(
 			`SELECT COUNT(*) as installer_count, MAX(created_at) as latest_installer_added
@@ -75,6 +78,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		level2s,
 		installerCount,
 		level2Count: level2s.length,
+		totalLevel2Count: level2sResult.rows.length,
 		subsidy: subsidyResult.rows[0] || null,
 		lastUpdated
 	};

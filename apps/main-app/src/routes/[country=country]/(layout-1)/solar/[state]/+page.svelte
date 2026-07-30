@@ -21,6 +21,10 @@
 
 	const faqSchema = $derived(faqLD(faqItems));
 
+	const level2Coverage = $derived(
+		data.totalLevel2Count ? Math.round((data.level2Count / data.totalLevel2Count) * 100) : 0
+	);
+
 	const directoryItems = $derived(
 		data.level2s.map((d: { name: string; slug: string; installerCount: number }) => ({
 			...d,
@@ -55,9 +59,22 @@
 	</h1>
 
 	<!-- Stats bar -->
-	<div class="flex flex-wrap gap-4 mb-8 text-sm">
+	<div class="flex flex-wrap gap-4 mb-4 text-sm">
 		<span class="bg-muted rounded-lg px-3 py-1.5 font-medium">{data.installerCount} Installers</span>
-		<span class="bg-muted rounded-lg px-3 py-1.5 font-medium">{data.level2Count} {level2Label.plural}</span>
+		<span class="bg-muted rounded-lg px-3 py-1.5 font-medium">
+			{data.level2Count} of {data.totalLevel2Count} {level2Label.plural}
+		</span>
+	</div>
+
+	<!-- State coverage -->
+	<div class="bg-accent/10 rounded-lg p-4 mb-8">
+		<p class="text-sm">
+			<strong class="text-primary">Coverage in {data.level1}:</strong>
+			{data.installerCount} verified installers across {data.level2Count} of the state's
+			{data.totalLevel2Count}
+			{level2Label.plural.toLowerCase()} ({level2Coverage}%).
+			<a href="/{cc}/solar/" class="text-primary hover:underline ml-1">See nationwide coverage →</a>
+		</p>
 	</div>
 
 	<!-- Subsidy summary -->

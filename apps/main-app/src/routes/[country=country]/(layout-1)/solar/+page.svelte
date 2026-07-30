@@ -21,6 +21,11 @@
 			href: `/${cc}/solar/${s.slug}`
 		}))
 	);
+
+	const level2Label = $derived(country.levels.level2);
+	const level1Coverage = $derived(
+		data.totalLevel1Count ? Math.round((data.level1Count / data.totalLevel1Count) * 100) : 0
+	);
 </script>
 
 <svelte:head>
@@ -48,13 +53,28 @@
 	</p>
 
 	<!-- Stats bar -->
-	<div class="flex flex-wrap gap-4 mb-8 text-sm">
+	<div class="flex flex-wrap gap-4 mb-4 text-sm">
 		<span class="bg-muted rounded-lg px-3 py-1.5 font-medium">{data.totalInstallers} Installers</span>
-		<span class="bg-muted rounded-lg px-3 py-1.5 font-medium">{data.level1Count} {level1Label.plural}</span>
+		<span class="bg-muted rounded-lg px-3 py-1.5 font-medium">
+			{data.level1Count} of {data.totalLevel1Count} {level1Label.plural}
+		</span>
+		<span class="bg-muted rounded-lg px-3 py-1.5 font-medium">
+			{data.coveredLevel2Count} {level2Label.plural}
+		</span>
+	</div>
+
+	<!-- National coverage -->
+	<div class="bg-accent/10 rounded-lg p-4 mb-8">
+		<p class="text-sm">
+			<strong class="text-primary">Nationwide coverage:</strong>
+			verified installers in {data.level1Count} of {data.totalLevel1Count}
+			{level1Label.plural.toLowerCase()} ({level1Coverage}%), across {data.coveredLevel2Count}
+			{level2Label.plural.toLowerCase()}.
+		</p>
 	</div>
 
 	<!-- Level1 directory -->
-	<GeoDirectory items={directoryItems} title="Browse by {level1Label.singular}" />
+	<GeoDirectory items={directoryItems} title="Browse by {level1Label.singular}" coverageLabel={level2Label.plural.toLowerCase()} />
 
 	<!-- Solar Guides -->
 	{#if country.features.seoContentFamilies}
