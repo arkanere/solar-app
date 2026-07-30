@@ -1,17 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { leaddata, projectManagement, callsafeusers, callsafehandles, inProposals, businesses1, inReferrers, solarBrands, solarProducts, stateSubsidies, discoms, legalAcceptances, legalPolicies, inUser, inUserFeedback, authors, inBlogPosts, countries, businesses, geoLocations, businessAccounts, leads } from "./schema";
-
-export const projectManagementRelations = relations(projectManagement, ({one}) => ({
-	leaddatum: one(leaddata, {
-		fields: [projectManagement.leadId],
-		references: [leaddata.id]
-	}),
-}));
-
-export const leaddataRelations = relations(leaddata, ({many}) => ({
-	projectManagements: many(projectManagement),
-	inProposals: many(inProposals),
-}));
+import { callsafeusers, callsafehandles, businesses1, inReferrers, leaddata, inProposals, projectManagement, solarBrands, solarProducts, authors, inBlogPosts, stateSubsidies, discoms, inUser, inUserFeedback, legalAcceptances, legalPolicies, countries, geoLocations, businessAccounts, businesses, leads } from "./schema";
 
 export const callsafehandlesRelations = relations(callsafehandles, ({one}) => ({
 	callsafeuser: one(callsafeusers, {
@@ -22,13 +10,6 @@ export const callsafehandlesRelations = relations(callsafehandles, ({one}) => ({
 
 export const callsafeusersRelations = relations(callsafeusers, ({many}) => ({
 	callsafehandles: many(callsafehandles),
-}));
-
-export const inProposalsRelations = relations(inProposals, ({one}) => ({
-	leaddatum: one(leaddata, {
-		fields: [inProposals.leadId],
-		references: [leaddata.id]
-	}),
 }));
 
 export const inReferrersRelations = relations(inReferrers, ({one}) => ({
@@ -43,6 +24,25 @@ export const businesses1Relations = relations(businesses1, ({many}) => ({
 	legalAcceptances: many(legalAcceptances),
 }));
 
+export const inProposalsRelations = relations(inProposals, ({one}) => ({
+	leaddatum: one(leaddata, {
+		fields: [inProposals.leadId],
+		references: [leaddata.id]
+	}),
+}));
+
+export const leaddataRelations = relations(leaddata, ({many}) => ({
+	inProposals: many(inProposals),
+	projectManagements: many(projectManagement),
+}));
+
+export const projectManagementRelations = relations(projectManagement, ({one}) => ({
+	leaddatum: one(leaddata, {
+		fields: [projectManagement.leadId],
+		references: [leaddata.id]
+	}),
+}));
+
 export const solarProductsRelations = relations(solarProducts, ({one}) => ({
 	solarBrand: one(solarBrands, {
 		fields: [solarProducts.brandSlug],
@@ -54,6 +54,17 @@ export const solarBrandsRelations = relations(solarBrands, ({many}) => ({
 	solarProducts: many(solarProducts),
 }));
 
+export const inBlogPostsRelations = relations(inBlogPosts, ({one}) => ({
+	author: one(authors, {
+		fields: [inBlogPosts.authorSlug],
+		references: [authors.slug]
+	}),
+}));
+
+export const authorsRelations = relations(authors, ({many}) => ({
+	inBlogPosts: many(inBlogPosts),
+}));
+
 export const discomsRelations = relations(discoms, ({one}) => ({
 	stateSubsidy: one(stateSubsidies, {
 		fields: [discoms.stateSlug],
@@ -63,6 +74,17 @@ export const discomsRelations = relations(discoms, ({one}) => ({
 
 export const stateSubsidiesRelations = relations(stateSubsidies, ({many}) => ({
 	discoms: many(discoms),
+}));
+
+export const inUserFeedbackRelations = relations(inUserFeedback, ({one}) => ({
+	inUser: one(inUser, {
+		fields: [inUserFeedback.userId],
+		references: [inUser.id]
+	}),
+}));
+
+export const inUserRelations = relations(inUser, ({many}) => ({
+	inUserFeedbacks: many(inUserFeedback),
 }));
 
 export const legalAcceptancesRelations = relations(legalAcceptances, ({one}) => ({
@@ -80,42 +102,6 @@ export const legalPoliciesRelations = relations(legalPolicies, ({many}) => ({
 	legalAcceptances: many(legalAcceptances),
 }));
 
-export const inUserFeedbackRelations = relations(inUserFeedback, ({one}) => ({
-	inUser: one(inUser, {
-		fields: [inUserFeedback.userId],
-		references: [inUser.id]
-	}),
-}));
-
-export const inUserRelations = relations(inUser, ({many}) => ({
-	inUserFeedbacks: many(inUserFeedback),
-}));
-
-export const inBlogPostsRelations = relations(inBlogPosts, ({one}) => ({
-	author: one(authors, {
-		fields: [inBlogPosts.authorSlug],
-		references: [authors.slug]
-	}),
-}));
-
-export const authorsRelations = relations(authors, ({many}) => ({
-	inBlogPosts: many(inBlogPosts),
-}));
-
-export const businessesRelations = relations(businesses, ({one}) => ({
-	country: one(countries, {
-		fields: [businesses.countryCode],
-		references: [countries.code]
-	}),
-}));
-
-export const countriesRelations = relations(countries, ({many}) => ({
-	businesses: many(businesses),
-	geoLocations: many(geoLocations),
-	businessAccounts: many(businessAccounts),
-	leads: many(leads),
-}));
-
 export const geoLocationsRelations = relations(geoLocations, ({one}) => ({
 	country: one(countries, {
 		fields: [geoLocations.countryCode],
@@ -123,9 +109,23 @@ export const geoLocationsRelations = relations(geoLocations, ({one}) => ({
 	}),
 }));
 
+export const countriesRelations = relations(countries, ({many}) => ({
+	geoLocations: many(geoLocations),
+	businessAccounts: many(businessAccounts),
+	businesses: many(businesses),
+	leads: many(leads),
+}));
+
 export const businessAccountsRelations = relations(businessAccounts, ({one}) => ({
 	country: one(countries, {
 		fields: [businessAccounts.countryCode],
+		references: [countries.code]
+	}),
+}));
+
+export const businessesRelations = relations(businesses, ({one}) => ({
+	country: one(countries, {
+		fields: [businesses.countryCode],
 		references: [countries.code]
 	}),
 }));

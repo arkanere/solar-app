@@ -42,6 +42,23 @@
   const speech = new SpeechPlayer();
   let voiceOutputEnabled = $state(false);
 
+  // Groups this conversation's rows in the backend's chatbotmessagesstore table.
+  // It has to live on the client because that is the only thing that knows where
+  // one conversation ends: the backend is stateless per request, so a server-side
+  // id would split every turn into its own "conversation" (which is exactly what
+  // the old preset-flow chatbot did). Kept in localStorage next to chatMessages
+  // so a reload continues the same conversation, and reset in resetChat().
+  let sessionId = "";
+
+  function loadSessionId() {
+    if (typeof window === "undefined") return;
+    sessionId = localStorage.getItem("chatSessionId") ?? "";
+    if (!sessionId) {
+      sessionId = crypto.randomUUID();
+      localStorage.setItem("chatSessionId", sessionId);
+    }
+  }
+
   const WELCOME_MESSAGE =
     "<p>Hi! I'm the Solar Vipani assistant. Ask me anything about going solar — costs, subsidies, system sizing, or brands.</p>";
 
@@ -317,6 +334,7 @@
         userMessage: text,
         leadProfile: leadProfile,
         history: history,
+        sessionId: sessionId,
       };
 
       const response = await fetch(apiUrl("/api/chatbot"), {
@@ -533,6 +551,10 @@
     if (typeof window !== "undefined") {
       localStorage.removeItem("chatMessages");
       localStorage.removeItem("leadProfile");
+      // Dropping the id is what makes "Reset Chat" start a new conversation in
+      // chatbotmessagesstore rather than appending to the one being abandoned.
+      localStorage.removeItem("chatSessionId");
+      loadSessionId();
     }
 
     greet();
@@ -544,6 +566,7 @@
     if (typeof window !== "undefined") {
       loadLeadProfile();
       loadVoicePreference();
+      loadSessionId();
 
       const savedMessages = localStorage.getItem("chatMessages");
       if (savedMessages) {
