@@ -1,8 +1,8 @@
 # Migration plan: dissolve `routes/in/`
 
-> **STATUS: in progress. Stages 1–5, 7–10 and 11a done (2026-07-31).** Destination A is
-> complete; destination B is in progress (projects, partners). Next: **S11b** (`[country]`:
-> business-listing, business-form, get-quotes). S11 runs in four sub-stages — see §10.
+> **STATUS: in progress. Stages 1–5, 7–10, 11a and 11b done (2026-07-31).** Destination A
+> is complete; destination B is in progress. Next: **S11c** (`[country]`: thank-you,
+> thank-you-business, unsubscribe, district shim). S11 runs in four sub-stages — see §10.
 > S6 no longer exists as a separate stage — see its note.
 >
 > ⚠️ **A user decision changed S11's US fallback from 404 to 301** — read the S11 note.
@@ -808,6 +808,32 @@ in exactly 1 hop. Href diff vs the pre-move baseline is **empty on 3 of the 4 pa
 1 normalization hop to **0** — the same incidental win S10 got from `geoUrl`.
 `npm run check` 17/14, build passes, 3 prerendered US pages. `/in/` grep 48 → **37**.
 
+**S11b done 2026-07-31.** `business-listing`, `business-form`, `get-quotes` moved. `/us`
+keeps its own literal `business-listing` and `business-form`, which still win over
+`[country]` (verified 0 hops, 200); `/us/get-quotes` 301s via the S11a rule.
+
+Inbound links needed **no work at all** — every `get-quotes` reference in the tree was
+already on `countryUrl()` or `/{cc}/` from S2, so they followed automatically. The only
+remaining literals are on the IN home (S11d). This is the §5c payoff again.
+
+**Fixed a pre-existing bug found while moving:** `/in/business-listing` advertised
+`https://solarvipani.com/business-listing` as its canonical, `og:url` **and** JSON-LD
+breadcrumb item — a country-less URL that is not a route and 404s. Same class as the
+canonical bug S10 found on the projects listing. **Check the remaining S11 pages for the
+same pattern**; it is invisible to the `/in/` leakage grep because the bad URL has no
+`/in/` in it.
+
+⚠️ **svelte2tsx trap, hit here — will recur.** Writing the breadcrumb as
+``{@html `<script type="application/ld+json">${...}</script>`}`` — the pattern every
+other page in this repo uses — made `npm run check` report a phantom `Expected token }`
+**200 lines further down the file**, taking it to 18/14. The Svelte compiler itself
+accepts the file (`compile()` succeeds) and the page renders correctly; svelte2tsx is the
+only thing that mis-parses it. **This is also the cause of the two pre-existing
+"Unterminated template" baseline errors**, so the baseline of 17 is partly this bug.
+Workaround: assemble the whole `<script>` string in the JS block and emit
+`{@html breadcrumbScript}`. Back to 17/14. Note the error location is nowhere near the
+real cause — do not go hunting at the reported line.
+
 **Correction to §7.2's route-manifest check:** `npx svelte-kit sync` does **not** prune
 stale directories, so a before/after `find` over `.svelte-kit/types` silently compares
 leftovers and reports no change no matter what moved. `rm -rf .svelte-kit/types` before
@@ -920,9 +946,9 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | `project/[project_id]` | B | 10 | ✅ | n/a | ✅ |
 | `recent-solar-installation-projects/` + `[page_slug]` | B | 10 | ✅ | n/a | ✅ |
 | `partners/` + `join/` + `join/[district_slug]` + `join/thank-you` | B | 11a | ✅ | ✅ 301 `/us`→business-listing | ✅ |
-| `business-listing/` | B | 11 | ☐ | n/a | ☐ |
-| `business-form/` | B | 11 | ☐ | n/a | ☐ |
-| `get-quotes/` | B | 11 | ☐ | n/a | ☐ |
+| `business-listing/` | B | 11b | ✅ | n/a (`/us` literal wins) | ✅ |
+| `business-form/` | B | 11b | ✅ | n/a (`/us` literal wins) | ✅ |
+| `get-quotes/` | B | 11b | ✅ | ✅ 301 `/us`→`/us` | ✅ |
 | `thank-you/` | B | 11 | ☐ | n/a | ☐ |
 | `thank-you-business/` | B | 11 | ☐ | n/a | ☐ |
 | `unsubscribe/` (`+page.svelte` + `+server.js`) | B | 11 | ☐ | n/a | ☐ |
@@ -963,6 +989,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | 9 — authors + seo-index | 2026-07-31 | `a233a62` |
 | 10 — projects -> [country] | 2026-07-31 | `79cd2d9` |
 | 11a — partners -> [country] | 2026-07-31 | `4b24a26` |
+| 11b — listing/form/get-quotes | 2026-07-31 | `039ae86` |
 
 ## 9. Hazards
 
@@ -986,16 +1013,16 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 
 ## 10. Resume here (cold start)
 
-**Done: stages 1–5, 7–10, and 11a.** Every stage is one commit plus a SHA-recording commit,
+**Done: stages 1–5, 7–10, 11a and 11b.** Every stage is one commit plus a SHA-recording commit,
 listed in the §8 stage log. Destination A is complete — all 7 content pillars, tools,
 authors, seo-index and the legal pages answer country-less, each with a one-hop 301 from
-`/in/**` and `/us/**`. Destination B is in progress: projects (S10) and partners (S11a)
-have moved.
+`/in/**` and `/us/**`. Destination B is in progress: projects (S10), partners (S11a) and
+business-listing/business-form/get-quotes (S11b) have moved.
 
 **S11 is being run in four sub-stages** (it is by far the largest move stage):
 - **11a — partners.** ✅ Done, `4b24a26`.
-- **11b — business-listing, business-form, get-quotes.** Next.
-- **11c — thank-you, thank-you-business, unsubscribe, district shim.**
+- **11b — business-listing, business-form, get-quotes.** ✅ Done, `039ae86`.
+- **11c — thank-you, thank-you-business, unsubscribe, district shim.** Next.
 - **11d — the IN home** (`in/(layout-1)/+page.*`). Last, and the riskiest: it makes the
   IN home the default for any future country, and moving it under the `[country]` layout
   is what flips `/in`'s `aboutStats` from legacy 3199 to unified **3196** — §8 already
