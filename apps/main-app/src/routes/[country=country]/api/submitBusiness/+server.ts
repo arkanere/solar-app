@@ -4,8 +4,14 @@ import { POSTGRES_URL } from '$env/static/private';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { parseBody, submitBusinessSchema } from '@solar/validation';
 import { syncBusinessToUnified, syncAccountToUnified } from '$lib/server/unifiedSync';
+import { isCountry } from '$lib/countries';
 
-export const POST: RequestHandler = async ({ request, fetch }) => {
+export const POST: RequestHandler = async ({ request, fetch, params }) => {
+	// No layout runs for a +server.ts, so the country is validated here.
+	if (!params.country || !isCountry(params.country)) {
+		return json({ error: 'Unknown country' }, { status: 404 });
+	}
+
 	// ✅ Added fetch from event
 	const pool: VercelPool = createPool({ connectionString: POSTGRES_URL });
 
@@ -135,11 +141,19 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 
 		// Idempotent with the businesses_1/in_business_profiles sync triggers;
 		// keeps the unified tables fresh once those triggers drop (phase 2.4).
+		//
+		// 'in' is hardcoded on purpose and must NOT become params.country: every
+		// INSERT above targets the IN-only legacy tables (businesses_1,
+		// in_business_profiles, in_business_accounts), so the synced row is an IN
+		// row whatever prefix the request arrived on. /us has its own literal
+		// routes/us/api/submitBusiness, which wins over this route, so in practice
+		// only /in reaches here. De-countrying these writes belongs to the write
+		// cutover, not this migration (plan §3.5).
 		await syncBusinessToUnified(pool, 'in', businessId);
 		await syncAccountToUnified(pool, 'in', businessId);
 
 		// Send confirmation email via the unified endpoint
-		await fetch('/in/api/sendBusinessSubmissionConfirmation', {
+		await fetch(`/${params.country}/api/sendBusinessSubmissionConfirmation`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({

@@ -41,8 +41,16 @@ export const INDIAN_STATES = [
 // API endpoints for location data.
 // districts/cities are the unified [country]/api routes; they are GET with
 // query params and return { name, slug } objects.
-export const LOCATION_ENDPOINTS = {
-  districts: "/in/api/getLevel2s",
-  cities: "/in/api/getCities",
-  submitBusiness: "/in/api/submitBusiness",
-};
+//
+// A function rather than a const object because all three now live under
+// [country]/api (stage 12) and the caller knows its own country. The only
+// consumer is BusinessForm.svelte, which takes a `country` prop.
+import type { CountryCode } from "$lib/countries";
+
+export function locationEndpoints(country: CountryCode) {
+  return {
+    districts: `/${country}/api/getLevel2s`,
+    cities: `/${country}/api/getCities`,
+    submitBusiness: `/${country}/api/submitBusiness`,
+  };
+}

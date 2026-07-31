@@ -8,6 +8,14 @@
   import { validateLeadForm, type LeadFormErrors } from "$lib/constants/formValidation";
   import WidgetShell from "./WidgetShell.svelte";
   import StatRow from "./StatRow.svelte";
+  import { page } from "$app/stores";
+
+  // submitLead lives under [country]/api (stage 12). Unlike BusinessForm this
+  // reads the country off the page rather than taking a prop: the chatbot is
+  // mounted only by the [country] layout, three components up, so data.country
+  // is always present and threading a prop through ChatbotPopup and
+  // ToolResultDisplay would buy nothing.
+  const cc = $derived($page.data.country?.code ?? "in");
 
   // `data` is the offer_lead_form tool result: title, description and a prefill
   // map built from whatever the conversation already established. The agent
@@ -48,7 +56,7 @@
     isSubmitting = true;
     submitError = "";
     try {
-      const res = await fetch("/in/api/submitLead", {
+      const res = await fetch(`/${cc}/api/submitLead`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -6,6 +6,7 @@ import { POSTGRES_URL } from '$env/static/private';
 import { CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } from '$env/static/private';
 import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
 import { v2 as cloudinary } from 'cloudinary';
+import { getCountry, isCountry } from '$lib/countries';
 
 // Configure Cloudinary with credentials
 cloudinary.config({
@@ -110,7 +111,17 @@ async function deleteFromCloudinary(publicId: string) {
 	}
 }
 
-export const PUT: RequestHandler = async ({ request }) => {
+export const PUT: RequestHandler = async ({ request, params }) => {
+	// No layout runs for a +server.ts, so both guards live here. The features
+	// check mirrors how S10 gated the project *pages*: the `projects` table is
+	// IN-only and has no country_code column, so a US caller must not touch it.
+	if (!params.country || !isCountry(params.country)) {
+		return json({ error: 'Unknown country' }, { status: 404 });
+	}
+	if (!getCountry(params.country).features.projects) {
+		return json({ error: 'Not found' }, { status: 404 });
+	}
+
 	console.log('Received project update request');
 
 	try {
@@ -342,7 +353,17 @@ export const PUT: RequestHandler = async ({ request }) => {
 	}
 }
 
-export const DELETE: RequestHandler = async ({ request }) => {
+export const DELETE: RequestHandler = async ({ request, params }) => {
+	// No layout runs for a +server.ts, so both guards live here. The features
+	// check mirrors how S10 gated the project *pages*: the `projects` table is
+	// IN-only and has no country_code column, so a US caller must not touch it.
+	if (!params.country || !isCountry(params.country)) {
+		return json({ error: 'Unknown country' }, { status: 404 });
+	}
+	if (!getCountry(params.country).features.projects) {
+		return json({ error: 'Not found' }, { status: 404 });
+	}
+
 	console.log('Received project delete request');
 
 	try {

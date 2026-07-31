@@ -7,16 +7,17 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import * as Select from "$lib/components/ui/select";
-  import { INDIAN_STATES, LOCATION_ENDPOINTS } from "$lib/constants/india";
+  import { INDIAN_STATES, locationEndpoints } from "$lib/constants/india";
   import { validatePhoneNumber, validateGSTN } from "$lib/constants/formValidation";
   import { countryUrl } from "$lib/countries/urls";
   import type { CountryCode } from "$lib/countries";
 
   // Explicit country prop rather than page.data.country, per the S2 convention:
-  // every call site is a [country] route and passes its own code. Only the
-  // post-submit redirect uses it; LOCATION_ENDPOINTS is still /in/api/* and
-  // belongs to stage 12.
+  // every call site is a [country] route and passes its own code. Drives both
+  // the post-submit redirect and the three API endpoints.
   let { country }: { country: CountryCode } = $props();
+
+  const endpoints = $derived(locationEndpoints(country));
 
   let businessName = $state("");
   let address = $state("");
@@ -46,7 +47,7 @@
     isDistrictLoading = true;
     try {
       const res = await fetch(
-        `${LOCATION_ENDPOINTS.districts}?state=${encodeURIComponent(state)}`,
+        `${endpoints.districts}?state=${encodeURIComponent(state)}`,
       );
       const data: { level2s: { name: string; slug: string }[] } =
         await res.json();
@@ -64,7 +65,7 @@
     isCityLoading = true;
     try {
       const res = await fetch(
-        `${LOCATION_ENDPOINTS.cities}?state=${encodeURIComponent(selectedState)}&level2=${encodeURIComponent(selectedDistrict)}`,
+        `${endpoints.cities}?state=${encodeURIComponent(selectedState)}&level2=${encodeURIComponent(selectedDistrict)}`,
       );
       const data: { cities: { name: string; slug: string }[] } =
         await res.json();
@@ -121,7 +122,7 @@
     if (phoneValid && whatsappValid && gstnValid) {
       isSubmitting = true;
       try {
-        const response = await fetch(LOCATION_ENDPOINTS.submitBusiness, {
+        const response = await fetch(endpoints.submitBusiness, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
