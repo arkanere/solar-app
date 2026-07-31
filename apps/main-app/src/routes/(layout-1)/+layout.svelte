@@ -1,12 +1,12 @@
 <script>
-  import { toggleTheme, initializeTheme, isDarkMode } from "$lib/themeStore.svelte";
+  import { initializeTheme } from "$lib/themeStore.svelte";
   import { writable } from "svelte/store";
   import { storiesModalOpen } from "$lib/storiesStore.js";
   import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
   import { page } from "$app/stores";
   import StoriesModal from "$lib/in/components/StoriesModal.svelte";
-  import { Button } from "$lib/components/ui/button";
-  import * as Dialog from "$lib/components/ui/dialog";
+  import SiteHeader from "$lib/components/chrome/SiteHeader.svelte";
+  import SiteFooter from "$lib/components/chrome/SiteFooter.svelte";
 
   // Accept children snippet from SvelteKit
   let { children } = $props();
@@ -17,22 +17,6 @@
 
   // Only load component client-side to avoid SSR issues
   let showChat = $state(false);
-
-  // Translation modal state
-  let showTranslationModal = $state(false);
-  let selectedLanguage = $state("");
-  let showTranslateDropdown = $state(false);
-
-  // Indian languages for translation
-  const indianLanguages = [
-    { code: "hi", name: "हिन्दी (Hindi)", flag: "🇮🇳" },
-    { code: "ta", name: "தமிழ் (Tamil)", flag: "🇮🇳" },
-    { code: "te", name: "తెలుగు (Telugu)", flag: "🇮🇳" },
-    { code: "bn", name: "বাংলা (Bengali)", flag: "🇮🇳" },
-    { code: "mr", name: "मराठी (Marathi)", flag: "🇮🇳" },
-    { code: "gu", name: "ગુજરાતી (Gujarati)", flag: "🇮🇳" },
-    { code: "more", name: "More Languages", flag: "🌍" },
-  ];
 
   // Reactive variables for store subscriptions
   let storiesOpen = $derived($storiesModalOpen);
@@ -97,17 +81,6 @@
   // Function to open stories modal
   function openStoriesModal() {
     storiesModalOpen.set(true);
-  }
-
-  // Handle language selection
-  function selectLanguage(language) {
-    selectedLanguage = language.name;
-    showTranslationModal = true;
-  }
-
-  // Close translation modal
-  function closeTranslationModal() {
-    showTranslationModal = false;
   }
 
   function trackEngagement() {
@@ -229,105 +202,15 @@
   <!-- Heavy analytics scripts moved to loadAnalytics() function for deferred loading -->
 </svelte:head>
 
-<nav class="flex flex-wrap items-center w-full justify-between border-b border-border bg-background text-foreground p-[theme(--container-padding)] gap-8 transition-colors duration-[theme(--transition-default)]">
-  <!-- Spacer for left alignment -->
-  <div></div>
-
-  <!-- Right side buttons group -->
-  <div class="flex items-center gap-3">
-    <!-- Translate Dropdown -->
-    <div class="relative">
-      <button
-        onclick={() => showTranslateDropdown = !showTranslateDropdown}
-        class="border border-border cursor-pointer whitespace-nowrap text-foreground hover:bg-muted px-[theme(--button-padding-x-sm)] py-[theme(--button-padding-y-sm)] text-sm rounded-[theme(--radius-md)] transition-all duration-[theme(--transition-default)]"
-      >
-        🌐 Translate
-      </button>
-
-      {#if showTranslateDropdown}
-        <div
-          role="menu"
-          tabindex="-1"
-          class="absolute right-0 mt-2 w-56 rounded-md border border-border bg-popover text-popover-foreground shadow-md z-50"
-          onmouseleave={() => showTranslateDropdown = false}
-        >
-          <div class="p-1">
-            {#each indianLanguages as language}
-              <button
-                role="menuitem"
-                onclick={() => {
-                  selectLanguage(language);
-                  showTranslateDropdown = false;
-                }}
-                class="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground transition-colors"
-              >
-                <span class="mr-2">{language.flag}</span>
-                <span>{language.name}</span>
-              </button>
-            {/each}
-          </div>
-        </div>
-      {/if}
-    </div>
-
-    <Button variant="outline" onclick={toggleTheme}>
-      {$isDarkMode ? "☀️ Light mode" : "🌙 Dark mode"}
-    </Button>
-  </div>
-</nav>
+<SiteHeader />
 
 {@render children?.()}
+
+<SiteFooter />
 
 <!-- Stories Modal -->
 <StoriesModal />
 
-<!-- Translation Instructions Modal -->
-<Dialog.Root bind:open={showTranslationModal}>
-  <Dialog.Content class="max-w-[500px]">
-    <Dialog.Header>
-      <Dialog.Title>🌐 How to translate to {selectedLanguage}</Dialog.Title>
-    </Dialog.Header>
-
-    <div class="space-y-[theme(--card-gap)]">
-      <div>
-        <h4 class="text-base font-semibold text-primary mb-3">📱 On Mobile:</h4>
-        <div class="space-y-4">
-          {#each ["Tap the three dots menu (⋮) in your browser", "Look for \"Translate\" option", "Select your language"] as step, i}
-            <div class="flex items-start gap-4">
-              <div class="flex items-center justify-center w-[theme(--step-indicator-size)] h-[theme(--step-indicator-size)] rounded-full bg-primary text-primary-foreground text-xs font-bold flex-shrink-0">
-                {i + 1}
-              </div>
-              <strong class="block pt-[0.125rem]">{step}</strong>
-            </div>
-          {/each}
-        </div>
-      </div>
-
-      <div>
-        <h4 class="text-base font-semibold text-primary mb-3">💻 On Desktop:</h4>
-        <div class="space-y-4">
-          {#each ["Right-click anywhere on this page", "Look for \"Translate\" option", "Click to translate"] as step, i}
-            <div class="flex items-start gap-4">
-              <div class="flex items-center justify-center w-[theme(--step-indicator-size)] h-[theme(--step-indicator-size)] rounded-full bg-primary text-primary-foreground text-xs font-bold flex-shrink-0">
-                {i + 1}
-              </div>
-              <strong class="block pt-[0.125rem]">{step}</strong>
-            </div>
-          {/each}
-        </div>
-      </div>
-
-      <div class="border-t border-border pt-4">
-        <h4 class="text-base font-semibold mb-2">💡 Alternative methods:</h4>
-        <div class="space-y-1 text-sm text-foreground-secondary">
-          <p><strong>Chrome users:</strong> Look for the translate icon 🌐 in your address bar</p>
-          <p><strong>Safari (iPhone/iPad):</strong> Tap the "aA" button in address bar</p>
-          <p><strong>Other browsers:</strong> Check browser settings for translation options</p>
-        </div>
-      </div>
-    </div>
-  </Dialog.Content>
-</Dialog.Root>
 
 <!-- {#if browser && showChat}
   <ChatbotWidget messages={chatMessages} />

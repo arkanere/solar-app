@@ -1,6 +1,7 @@
 # Migration plan: dissolve `routes/in/`
 
-> **STATUS: planned, not started (2026-07-31).** No stage has been implemented.
+> **STATUS: in progress. Stage 1 of 16 done (2026-07-31).** Next: **S2**
+> (de-hardcode `$lib/in/components/seo/*` URLs).
 >
 > This document is written to be executed across many cold-start sessions. The
 > per-route checklist in §8 and the stage log beneath it are the **only** memory
@@ -176,6 +177,24 @@ them at `/in/...` in S1 and flip in S7. **Prefer the latter**: it keeps S1 a pur
 
 Breaks: the whole site's chrome, on every page. Diff rendered HTML of one page per tree
 (`/in`, `/us`, `/`) before and after — should be identical.
+
+**Done 2026-07-31.** As built:
+- `SiteHeader` owns the nav *and* the translation modal (it owns the modal's state);
+  the modal was deleted from all three layouts. `SiteFooter` owns the 5-column footer
+  plus the copyright bar. `AboutSolarVipani` stayed in the layouts — it needs
+  `data.aboutStats`, which the country-less tree has no loader for.
+- Both components take `country?: CountryConfig`. Absent ⇒ brand href `/`, Solar Guide
+  and Tools shown, **Find Solar / Get Quotes / Partner / List Your Business hidden**.
+- `routes/in/(layout-1)/+layout.svelte` has no `data.country`, so it passes
+  `getCountry("in")` directly. That is what keeps its HTML identical.
+- Content links go through a single `contentPrefix` derived in each component —
+  `/${cc}` with a country, `/in` without. **S7 flips both to `''`.** Grep
+  `contentPrefix` to find them.
+- Verified: `/us` byte-identical; `/in` and `/in/rooftop-solar` differ only in
+  trailing whitespace and Svelte hydration-marker comments. `/` intentionally gained
+  the footer + brand/Solar Guide/Tools links (all `/in/...` for now) — this is the
+  §5a change destination A needs. Build passes; all four prerendered `/us` pages
+  still emit; route-dir count unchanged at 419.
 
 ### S2 — De-hardcode `$lib/in/components/seo/*`
 *Why early: fixes the live `/us/solar/**` bug and unblocks S7.*
@@ -402,18 +421,24 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | `api/updateRecentProject` | B | 12 | ☐ | n/a | ☐ |
 | `sitemap.xml/` | C | 13 | ☐ | n/a | ☐ |
 
-**Baselines to capture before S4** (fill in, then commit):
-- `/in/sitemap.xml` `<loc>` count: ______
-- `SELECT count(*) FROM in_business_profiles WHERE isvisible` = ______ vs
-  `SELECT count(*) FROM businesses WHERE country_code='in' AND isvisible` = ______
-- `find .svelte-kit/types/src/routes -type d | wc -l` = ______
-- `/in/` grep count after S2 = ______
+**Baselines captured 2026-07-31, before S1** (dev server runs on port **7123**, not 5173):
+- `/in/sitemap.xml` `<loc>` count: **1346**
+- `aboutStats` legacy (`/in`, counts `in_business_profiles`/`LeadData`):
+  installerCount **634**, leadsGenerated **3199**
+- `aboutStats` unified (`/in/solar`, counts `businesses`/`leads`):
+  installerCount **634**, leadsGenerated **3196**
+  → after S11 moves the IN home, `/in` shows **3196**. Not a bug.
+- `find .svelte-kit/types/src/routes -type d | wc -l` = **419**
+- `/in/` grep count: **975** total / **329** excluding `src/lib/server/migrations/`
+  (the migrations figure never shrinks — those `.sql` files are historical)
+- `npm run check` baseline: **17 errors, 14 warnings in 11 files**, all pre-existing.
+  A stage is clean when it does not move these numbers.
 
 **Stage log** (append: stage, date, commit SHA — the revert target for a later session):
 
 | Stage | Date | SHA |
 |---|---|---|
-| | | |
+| 1 — shared chrome | 2026-07-31 | `S1_SHA` |
 
 ## 9. Hazards
 
