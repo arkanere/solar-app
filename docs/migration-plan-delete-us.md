@@ -1,8 +1,8 @@
 # Migration plan: delete `routes/us/`
 
-> **STATUS: IN PROGRESS. S1, S3–S9 applied 2026-07-31, S10 on 2026-08-01. S2 deleted —
-> its premise did not hold. Next stage: S11. Only 2 files remain under `routes/us/`,
-> both layouts, and S11 deletes them.**
+> **STATUS: IN PROGRESS. S1, S3–S9 applied 2026-07-31, S10–S11 on 2026-08-01. S2 deleted —
+> its premise did not hold. Next stage: S12. `routes/us/` NO LONGER EXISTS — the plan's
+> primary goal is met. S12 and S13 are comments and docs only, no behaviour change.**
 >
 > ⚠️ **S2 no longer exists.** §5a assumed a per-country contact split. There is
 > exactly **one** support number (`+918983066701`) and **one** support email
@@ -941,6 +941,37 @@ in one hop (`/us/state`, `/us/state/solar-panel-installers-in-*`,
 `/us/solar-panel-installer-directory`, `/us/solar-panel-installer/*`, `/us/county/*`,
 `/us/blogs`, `/us/partners`, `/us/get-quotes`, plus every `MOVED_TO_ROOT` family).
 
+**Done 2026-08-01 (`<S11-SHA>`).** A no-op in the strongest sense, and for a reason the
+stage text did not anticipate:
+
+⚠️ **`routes/us/(layout-1)/+layout.svelte` had been dead code since S9.** A Svelte layout
+with no `+page` under it is never instantiated, and S9 deleted the last page in that tree.
+So every `/us` URL was *already* being served by `[country]/(layout-1)/`, and the delete
+could not change anything. Measured before touching it: `/us` and `/us/solar` emitted the
+same Umami / `fbevents.js` / CallSafe scripts and the same `AboutSolarVipani` stats block —
+i.e. `/us` was already using the `[country]` layout, not its own.
+
+**The analytics question §S1 and §S11 flagged is empty, and here is the evidence** (do not
+re-derive it): every id in the `/us` layout is also in the `[country]` layout — Umami
+`d592f22f-…`, GA `G-BXXPPJ3LK8`, Hotjar `5045118`, Twitter `uwt.js` **with the same
+`twq('config','opkvk')` call**, `fbevents.js`, CallSafe `eb37507909fa43ff`, PostHog. Both
+layouts gate the deferred set on `hasAnalyticsConsent()` and both render
+`<CookieConsent onAccept={…} />`. **The Facebook Pixel init id `1226087962095221` is in
+neither layout** — S1's "check the init id, it differs in placement" pointed at nothing.
+It is a per-page `fbq('init', …)` in seven `[country]` pages (business-listing,
+business-form, thank-you, thank-you-business, partners ×3), all of which survive. Nothing
+was dropped and nothing needed porting.
+
+**`$lib/us/` and the `us-states.ts` comment were already done in S1**, so the only work
+here was `git rm -r src/routes/us`.
+
+Verified across **15 URLs** (the list above plus `/us/thank-you-business`,
+`/us/unsubscribe`, `/in/business-listing`, `/sitemap.xml`, `/content-sitemap.xml`):
+**every href set byte-identical, every visible-text diff empty (0 of 15), all three
+sitemaps byte-identical, all 9 redirect families identical hop-for-hop.**
+`npm run check` 13/1, build passes, 0 prerendered, 86 ISR configs.
+Route manifest **82 → 80** (`us/` and `us/(layout-1)/`).
+
 ### S12 — `hooks.server.ts` comments + the partners/get-quotes decision
 Per §5c. No behaviour change: the two rules stay. Fix the comment that promises S15c
 would delete them, and record that a US partners funnel and a US get-quotes funnel are
@@ -1009,8 +1040,8 @@ Legend: **A** = already covered by `[country]`, **B** = merge, **C** = relocate,
 | `(layout-1)/business-listing/+page.js` | D | 8 | n/a | n/a | ✅ | ✅ |
 | `(layout-1)/+page.svelte` (home) | B | 9 | ✅ S9 | ✅ | ✅ | ✅ |
 | `(layout-1)/+page.js` | D | 9 | n/a | n/a | ✅ | ✅ |
-| `(layout-1)/+layout.svelte` | B | 1, 11 | n/a | ✅ S1 | ☐ | ☐ |
-| `(layout-1)/+layout.server.ts` | D | 11 | n/a | n/a | ☐ | ☐ |
+| `(layout-1)/+layout.svelte` | B | 1, 11 | n/a | ✅ S1 | ✅ | ✅ |
+| `(layout-1)/+layout.server.ts` | D | 11 | n/a | n/a | ✅ | ✅ |
 | `$lib/us/themeStore.js` | D | **1** | n/a | n/a | ✅ | ✅ | ← pulled forward from S11; see the S1 note
 
 **Stage log** (append: stage, date, commit SHA — the revert target for a later session):
@@ -1027,7 +1058,7 @@ Legend: **A** = already covered by `[country]`, **B** = merge, **C** = relocate,
 | 8 — business-listing | 2026-07-31 | `dd4867a` |
 | 9 — the home | 2026-07-31 | `38f7d97` |
 | 10 — prerender → ISR | 2026-08-01 | `029e803` |
-| 11 — delete `routes/us/` + `$lib/us/` | | |
+| 11 — delete `routes/us/` + `$lib/us/` | 2026-08-01 | `<S11-SHA>` |
 | 12 — hooks comments + decision record | | |
 | 13 — docs | | |
 
@@ -1060,19 +1091,16 @@ Legend: **A** = already covered by `[country]`, **B** = merge, **C** = relocate,
 
 ## 10. Resume here (cold start)
 
-**Next stage: S11 — delete `routes/us/` and confirm the no-op.** S1, S3–S10 are applied
-and pushed; S2 is deleted. The remaining work is S11–S13, and **all of it is mechanical.**
-Every merge is done and the caching is settled.
+**Next stage: S12 — `hooks.server.ts` comments + the partners/get-quotes decision record.**
+S1, S3–S11 are applied and pushed; S2 is deleted. **`routes/us/` no longer exists**, which
+was this plan's stated goal. S12 and S13 change **no behaviour at all** — they are a
+comment fix, a decision record, and two doc updates.
 
-**⚠️ S11's real content is the two decisions its text names, not the deletion.**
-`find src/routes/us -type f` already shows only the two layout files, so the `git rm` is
-trivial. What needs judgement: (a) the US analytics loaders in
-`routes/us/(layout-1)/+layout.svelte` — the S1 note found the `[country]` layout already
-loads the same Umami, GA, Hotjar, Twitter and CallSafe ids, so **check only the Facebook
-Pixel init id, which differs in placement**, and confirm with the user rather than dropping
-a live campaign pixel silently; and (b) `initializeTheme`, which the `[country]` layout
-already calls via `$lib/themeStore.svelte`. S11 then verifies as a **strict no-op** across
-the full URL list in its text.
+**⚠️ S12 must not "tidy" the two redirect rules it documents.** `/us/partners` and
+`/us/get-quotes` stay. §5c is the reasoning and it has not changed: making them real US
+pages is a US partner-acquisition funnel and a US consumer lead funnel — new product
+surface, not a migration. S12 fixes the comment that promises stage 15c would delete them
+(it shipped without doing so), records the decision, and adds the third-country warning.
 
 **⚠️ Worth showing the user before S10:** `/us` and `/us/business-listing` are now
 genuinely different pages from `/in`'s, served by the same components. Nothing downstream
