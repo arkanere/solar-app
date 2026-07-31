@@ -1,6 +1,6 @@
 <script>
 	import { onMount } from 'svelte';
-	import LeadFormBusiness from '$lib/us/LeadFormBusiness.svelte';
+	import LeadFormBusiness from '$lib/components/LeadFormBusiness.svelte';
 	import { isDarkMode } from '$lib/us/themeStore'; // Import from store if globally managed
 
 	// Initialize dark mode state
