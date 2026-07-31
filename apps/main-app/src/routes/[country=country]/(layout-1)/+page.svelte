@@ -1,11 +1,34 @@
 <script>
   import { onMount } from "svelte";
-  import { contentUrl } from "$lib/countries/urls";
+  import { contentUrl, countryUrl } from "$lib/countries/urls";
   import RecentProjectsHome from "$lib/in/components/RecentProjectsHome.svelte";
   import SolarComparisonTable from "$lib/in/components/SolarComparisonTable.svelte";
 
   // Receive data from server
   let { data } = $props();
+
+  const cc = $derived(data.country.code);
+  const homeUrl = $derived(countryUrl(cc, ""));
+  const quotesUrl = $derived(countryUrl(cc, "/get-quotes/"));
+
+  // Assembled here rather than inline in the markup: svelte2tsx mis-parses
+  // `{@html `<script ...`}` and reports a phantom error far from the real line.
+  // (The two such blocks already in this file are why `npm run check` reports
+  // "Unterminated template" here in the baseline.)
+  const breadcrumbScript = $derived(
+    `<script type="application/ld+json">${JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: `https://solarvipani.com${homeUrl}`,
+        },
+      ],
+    })}<\/script>`,
+  );
 
   // Initialize component state
   let videoLoaded = $state(false);
@@ -77,7 +100,7 @@
   <meta property="og:image" content="https://solarvipani.com/logo512.png" />
   <meta property="og:image:width" content="512" />
   <meta property="og:image:height" content="512" />
-  <meta property="og:url" content="https://solarvipani.com/in" />
+  <meta property="og:url" content="https://solarvipani.com{homeUrl}" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Solar Vipani" />
   <meta property="og:locale" content="en_IN" />
@@ -95,7 +118,7 @@
   <meta name="twitter:image" content="https://solarvipani.com/logo512.png" />
 
   <!-- Canonical URL -->
-  <link rel="canonical" href="https://solarvipani.com/in" />
+  <link rel="canonical" href="https://solarvipani.com{homeUrl}" />
 
   <!-- Preload critical hero image for faster LCP -->
   <link
@@ -141,20 +164,7 @@
       "dateModified": dateModified
     })}<\/script>`}
 
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Home",
-          "item": "https://solarvipani.com/in"
-        }
-      ]
-    }
-  </script>
+  {@html breadcrumbScript}
 
   <script type="application/ld+json">
     {
@@ -335,7 +345,7 @@
         </div>
         <div class="text-center">
           <a
-            href="/in/get-quotes/"
+            href={quotesUrl}
             class="inline-block bg-primary text-primary-foreground font-semibold px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
           >
             Get a Free Solar Quotation Online
@@ -420,7 +430,7 @@
       </div>
       <div class="text-center mt-8">
         <a
-          href="/in/get-quotes/"
+          href={quotesUrl}
           class="inline-block bg-primary text-primary-foreground font-semibold px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
         >
           Get a Free Solar Quotation Online
