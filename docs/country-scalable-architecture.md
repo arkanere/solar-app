@@ -16,10 +16,27 @@
 > **UPDATE 2026-07-31 — `routes/in/` dissolved; Step 6 complete.** The line-103 decision to
 > keep IN content under `routes/in/` is **reversed** (see the callout at that line), and
 > Step 6's component unification is **done**. Both were carried out as
-> `docs/migration-plan-in-country.md`, stages 1–15, all applied. Route surface is now
-> `routes/(layout-1)/` + `routes/[country=country]/` + `routes/us/`. **Nothing about the
+> `docs/migration-plan-in-country.md`, stages 1–15, all applied. **Nothing about the
 > data layer changed** — the final write cutover described under "Remaining steps" is
 > untouched and still the only outstanding slice.
+>
+> **UPDATE 2026-08-01 — `routes/us/` dissolved too; the route surface is now final.**
+> `docs/migration-plan-delete-us.md` (stages 1, 3–13; stage 2 deleted as its premise did
+> not hold) merged every `/us` page into `routes/[country=country]/` and deleted the tree.
+> Route surface is now exactly **`routes/(layout-1)/` + `routes/[country=country]/`** —
+> two trees, no per-country literals anywhere. `$lib/us/` is gone as well. The two legacy
+> US geo shims (`county/[county_slug]`, `solar-panel-installer-directory/[city]`) live
+> under `[country]` and are gated to US; the rest of the legacy US 301s are string rewrites
+> in `hooks.server.ts`. Every `/us` URL kept working and **no URL moved** — unlike the `/in`
+> migration, this one added no redirects. Nothing about the data layer changed here either:
+> per-country reads and writes still dispatch to the legacy tables
+> (`us_businesses` vs `in_business_profiles`/`businesses_1`/`in_business_accounts`), which
+> is exactly what the write cutover below still owns.
+>
+> ⚠️ **`hooks.server.ts` is now the only thing protecting IN-only data.** With no literal
+> per-country tree left to shadow `[country]`, its `/us/partners` and `/us/get-quotes`
+> rules are the sole reason those IN-table-backed loaders are unreachable from `/us`.
+> **Grep it before adding a third country to `COUNTRIES`.**
 
 ## Context
 
@@ -45,7 +62,7 @@ Goal: one country-scalable application — unified tables with a `country_code` 
 - `apps/main-app/src/lib/seo.ts` — `breadcrumbLD`, `faqLD`, `localBusinessLD` (extend for country)
 - `apps/main-app/src/lib/us/stateAbbreviations.js` — `stateToAbbr`/reverse (move to `lib/countries/us-states.ts`, needed for redirects)
 - `apps/main-app/src/routes/in/(layout-1)/solar/[state]/[district]/+page.server.ts` — template for unified geo pages
-- `apps/main-app/src/routes/us/(layout-1)/county/[county_slug]/+page.server.js` — US slug-suffix parsing (`orange-ca`) the redirects must replicate
+- ~~`apps/main-app/src/routes/us/(layout-1)/county/[county_slug]/+page.server.js`~~ — US slug-suffix parsing (`orange-ca`) the redirects must replicate. **Moved 2026-07-31** to `routes/[country=country]/county/[county_slug]/+server.ts`, gated to US.
 - `apps/main-app/src/hooks.server.ts` — redirect home (currently only `/business/` cross-domain redirect; vercel.json has NO redirects block despite the comment)
 
 ## Step 1 — DB migrations (new files, 042+; old tables never altered)
@@ -129,10 +146,15 @@ routes/[country=country]/sitemap.xml/+server.ts
 >   the nearest real US page instead of 404ing, which is a user decision recorded in the
 >   migration plan's S11 note.
 >
-> **Actual final state: `routes/(layout-1)/` (country-less content) + `routes/[country=country]/`
-> (shared marketplace core) + `routes/us/` (a shrinking set of US-specific literals and
-> redirect shims).** Per §3.3 of the migration plan, `routes/us/` is deliberately **not**
-> deleted — merging the remaining `/in`↔`/us` page twins was out of scope.
+> **Final state: `routes/(layout-1)/` (country-less content) + `routes/[country=country]/`
+> (shared marketplace core). Nothing else.**
+>
+> ~~Per §3.3 of the migration plan, `routes/us/` is deliberately **not** deleted — merging
+> the remaining `/in`↔`/us` page twins was out of scope.~~ **Superseded 2026-08-01.** That
+> exclusion was reversed on the user's instruction and carried out as
+> `docs/migration-plan-delete-us.md`: the nine page twins were merged into `[country]`
+> (gated per country, with the copy reconciled section by section) and `routes/us/` was
+> deleted. The legacy US 301 shims that lived there now sit under `[country]`, gated to US.
 
 Carry over ISR configs (`isr.expiration`) onto new pages.
 
@@ -233,7 +255,7 @@ Merge `lib/in/components/` + `lib/us/` pairs into `apps/main-app/src/lib/compone
 - `src/lib/server/` — new `geo.ts`, `businesses.ts`, `leads.ts` (insertLead writes old table, reads trigger-synced row in same tx); `sitemap.ts` generalized to `generateSitemapEntries(pool, country)`; `slug-resolver.ts` gained country-aware `resolveLeafSlug` (brand/size fallbacks feature-gated).
 - `src/routes/[country=country]/` — layout (feature-gated nav/footer/chatbot), solar hub, `[state]`, `[state]/[district]`, `[state]/[district]/[slug]` (city/brand/size leaf), `installer/[installer_slug]`, `api/{submitLead,getLevel2s,getCities}`, `sitemap.xml`.
 - Components parameterized in place (not yet physically merged): `LeadForm`/`LeadFormSection` (optional `country` prop — IN behavior unchanged, other countries use same-site submit + thank-you), `InstallerCard` (`countryCode` prop).
-- **Cutover done in this branch**: deleted `routes/in/(layout-1)/{solar,installer}` and all old US geo/directory/installer pages. `hooks.server.ts` string-rewrites 4 legacy US URL families; DB-backed 301 shims at `routes/us/county/[county_slug]` and `routes/us/solar-panel-installer-directory/[city]`. Root sitemap index generated from `COUNTRIES`; `/us/sitemap.xml` swapped to the unified generator.
+- **Cutover done in this branch**: deleted `routes/in/(layout-1)/{solar,installer}` and all old US geo/directory/installer pages. `hooks.server.ts` string-rewrites 4 legacy US URL families; DB-backed 301 shims at `routes/us/county/[county_slug]` and `routes/us/solar-panel-installer-directory/[city]` (**both relocated 2026-07-31 to `routes/[country=country]/`, gated to US, URLs unchanged**). Root sitemap index generated from `COUNTRIES`; `/us/sitemap.xml` swapped to the unified generator.
 
 ## Verified
 

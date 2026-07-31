@@ -1,8 +1,23 @@
 # Migration plan: delete `routes/us/`
 
-> **STATUS: IN PROGRESS. S1, S3–S9 applied 2026-07-31, S10–S11 on 2026-08-01. S2 deleted —
-> its premise did not hold. Next stage: S12. `routes/us/` NO LONGER EXISTS — the plan's
-> primary goal is met. S12 and S13 are comments and docs only, no behaviour change.**
+> # **STATUS: COMPLETE 2026-08-01.**
+>
+> **All stages applied: S1, S3–S13. S2 was deleted — its premise did not hold.**
+> `routes/us/` and `$lib/us/` no longer exist. The route surface is now exactly
+> `routes/(layout-1)/` + `routes/[country=country]/`. **No `/us` URL moved and no redirect
+> was added** — every `/us` page is served by the shared country tree at the same address.
+>
+> **What this plan did not do, on purpose:** no data migration and no table switch. Reads
+> and writes still dispatch per country to the legacy tables (§3.4). `/us/partners` and
+> `/us/get-quotes` still 301 rather than becoming real US pages (§5c, S12) — those are new
+> product surface. `us_leaddata` still has no reader, so `/us/thank-you` shows no lead
+> detail (§4.6, S6).
+>
+> ⚠️ **The one thing to carry forward: `hooks.server.ts` is now the sole chokepoint
+> protecting IN-only data.** There is no literal per-country tree left to shadow
+> `[country]`, so its `/us/partners` and `/us/get-quotes` rules are the only reason those
+> IN-table-backed loaders are unreachable from `/us`. **Grep it before adding a third
+> country to `COUNTRIES`** — a rule hardcoded to `/us/` will not fire for a new prefix.
 >
 > ⚠️ **S2 no longer exists.** §5a assumed a per-country contact split. There is
 > exactly **one** support number (`+918983066701`) and **one** support email
@@ -977,12 +992,37 @@ Per §5c. No behaviour change: the two rules stay. Fix the comment that promises
 would delete them, and record that a US partners funnel and a US get-quotes funnel are
 **new product work, deliberately not in this plan**. Add the third-country warning.
 
+**Done 2026-08-01 (`002ca6f`).** Comments only — **zero** code change, verified by the
+diff touching one file and no runtime behaviour. Three comments rewritten:
+1. The `/us/partners` + `/us/get-quotes` block: the false S15c promise is replaced with the
+   decision record (both are new product surface; `/us` captures consumer leads through
+   `LeadFormBusiness` on the home instead, per S9) plus the third-country warning, stated
+   with the reason it is sharper now — **there is no literal `/us` tree left to shadow
+   `[country]`**, so a new prefix reaches every loader in that tree immediately.
+2. The header comment said the geo shims "live as `+server.ts` shims under `routes/us/`".
+   They moved to `routes/[country=country]/` in S4 and are gated to US.
+3. Added the note that those shims redirect from their **route handlers, after routing**,
+   so they do not carry the query string — the trap that cost a verification round in S10.
+
 ### S13 — Update the docs
 Mark this plan complete. In `docs/country-scalable-architecture.md`, update the Step 4
 end-state note — it currently says the final state is
 "`routes/[country]/` + `routes/in/` + `routes/us/` (redirect shims + static US blogs)",
 already amended once for `routes/in/`; amend it again for `routes/us/`. Record that the
 legacy US 301 shims now live under `[country]`.
+
+**Done 2026-08-01 (`<S13-SHA>`).** In `docs/country-scalable-architecture.md`:
+- The top-of-file status callout gained a second UPDATE recording that `routes/us/`
+  dissolved and that the route surface is now **final** at two trees, with the explicit
+  note that **no URL moved and no redirect was added** (the structural difference from the
+  `/in` migration) and that the data layer is again untouched.
+- The Step 4 end-state note is rewritten: its "`routes/us/` is deliberately **not**
+  deleted" clause is struck through and marked superseded, rather than erased, so the
+  reversal stays legible.
+- The two stale `routes/us/…` paths for the geo shims are annotated with their new
+  `[country]` homes.
+- The third-country warning is repeated there, since that file is where someone would look
+  before adding one.
 
 ## 7. Verification (no tests exist)
 
@@ -1059,8 +1099,8 @@ Legend: **A** = already covered by `[country]`, **B** = merge, **C** = relocate,
 | 9 — the home | 2026-07-31 | `38f7d97` |
 | 10 — prerender → ISR | 2026-08-01 | `029e803` |
 | 11 — delete `routes/us/` + `$lib/us/` | 2026-08-01 | `44a9307` |
-| 12 — hooks comments + decision record | | |
-| 13 — docs | | |
+| 12 — hooks comments + decision record | 2026-08-01 | `002ca6f` |
+| 13 — docs | 2026-08-01 | `<S13-SHA>` |
 
 ## 9. Hazards
 
@@ -1089,104 +1129,42 @@ Legend: **A** = already covered by `[country]`, **B** = merge, **C** = relocate,
 10. **The prerender count is a decreasing assertion**, not the constant `3` every note in
     the previous plan uses. §4.5.
 
-## 10. Resume here (cold start)
+## 10. Outcome (this plan is closed)
 
-**Next stage: S12 — `hooks.server.ts` comments + the partners/get-quotes decision record.**
-S1, S3–S11 are applied and pushed; S2 is deleted. **`routes/us/` no longer exists**, which
-was this plan's stated goal. S12 and S13 change **no behaviour at all** — they are a
-comment fix, a decision record, and two doc updates.
+**All 12 executed stages landed on `main` on 2026-07-31 and 2026-08-01, each as its own
+commit with its own revert.** See the stage log in §8 for the SHAs.
 
-**⚠️ S12 must not "tidy" the two redirect rules it documents.** `/us/partners` and
-`/us/get-quotes` stay. §5c is the reasoning and it has not changed: making them real US
-pages is a US partner-acquisition funnel and a US consumer lead funnel — new product
-surface, not a migration. S12 fixes the comment that promises stage 15c would delete them
-(it shipped without doing so), records the decision, and adds the third-country warning.
+**Delivered:** `routes/us/` (18 files, ~3,800 lines) and `$lib/us/` deleted. The nine
+`/in`↔`/us` page twins merged into `routes/[country=country]/`, gated per country, with the
+marketing copy reconciled section by section. Two legacy geo shims relocated under
+`[country]` and gated to US. Prerendering retired entirely in favour of ISR.
 
-**⚠️ Worth showing the user before S10:** `/us` and `/us/business-listing` are now
-genuinely different pages from `/in`'s, served by the same components. Nothing downstream
-depends on reviewing them, but S8+S9 are where the product judgement lived.
+**No `/us` URL moved and no 301 was added** — the whole point of the shape of this plan,
+and the reason its SEO risk was content-shaped rather than routing-shaped. Exactly one URL
+changed status: `/us/recent-solar-installation-projects/[page_slug]` went from a 200
+rendering its own error to a clean 404 (§4.4, S4).
 
-**Patterns S8 and S9 established, reuse them:**
-- Fork whole copy arrays in the page's own `<script module>` keyed by country code; hoist
-  the shared entries to consts. Do not reach for `$lib/countries/copy-*.ts` for a
-  single-consumer page.
-- Gate sections to **preserve each country's live page**, in both directions — a section
-  the `/us` page had commented out is IN-only, and a section only `/us` had is US-only.
-- Derive head identity from `data.country.brandName`; keep divergent descriptions and
-  canonical-ish URLs as explicit per-country literals copied verbatim, not as string
-  surgery over a shared template.
-- Selecting a column no component renders is what breaks payload identity. Drop it.
-- Prefer a **feature flag** when one genuinely governs the section (`features.subsidy`
-  covered both of the home's rupee-copy blocks exactly); fall back to a `cc ===` check
-  only for routing facts, and say so in a comment.
-- Watch for rendered whitespace: a `<title>` that wraps across two source lines carries
-  that newline into the HTML, so it cannot become a JS string without reflowing.
-- A loader querying an IN-only table must be short-circuited for other countries, not
-  merely have its output ignored by the page.
-- **Verify build-shaped config in the build output, not the source.** ISR is only really
-  applied if `.vercel/output/functions/<route>.prerender-config.json` exists; a `config`
-  export in the wrong file type is silently ignored.
+**Bugs found and fixed en route** (none were in scope; all were found by looking at
+rendered pages, which is the argument for §7.5):
+- `/in/business-listing`'s 10 installer cards linked to a routeless
+  `/solar-panel-installer/{slug}` and all 404'd (S8).
+- `AboutSolarVipani` labelled its counter "Leads Generated Across India" while showing a
+  **US** count on `/us/solar/**` and `/us/installer/**` (S5).
+- `/us/business-listing` rendered `AboutSolarVipani` twice (S8); the `/us` home's hero
+  `alt` read "Solar Panel Installation in India" (S9).
+- The shared `submitBusinessSchema` required `gstn` and `district`, which would have
+  rejected **every** US signup once US traffic reached it (S7).
 
-**⚠️ `/in` has changed in three disclosed ways; none are visible-text regressions.** S9
-minified the Service JSON-LD block on `/in` by moving it into `{@html JSON.stringify(…)}`
-(semantically identical; the `/in` visible-text diff is empty). S8 repointed
-`/in/business-listing`'s 10 installer cards from the routeless `/solar-panel-installer/…`
-(404) to `/in/installer/…` (200) — a bug fix, not a copy change. And S5 changed
-`AboutSolarVipani`'s counter label from "Leads Generated Across India" to "Leads
-Generated" — because the same component renders on `/us` with a **US** count, so the
-Indian wording was a live factual error there. `/in` now reads `3,198+ Leads Generated`.
-It is a 13-character change in one component and trivially revertible; the user has been
-told and has not objected.
+**Deliberately not done** — each settled, not overlooked: no data migration or table switch
+(§3.4); `/us/partners` and `/us/get-quotes` still 301 (§5c, S12); `us_leaddata` still has no
+reader so `/us/thank-you` shows no lead detail (§4.6, S6); the FAQPage JSON-LD on
+`/in/business-listing` still does not match its visible FAQ, which predates this work (S8).
 
-**What is left under `routes/us/` (2 files, both layouts):**
+**Three `/in`-visible changes shipped, all disclosed and approved:** the
+`AboutSolarVipani` label above; the 10 repaired installer links; and the Service JSON-LD on
+`/in` is now minified, having moved into a `{@html JSON.stringify(…)}` block to carry
+country values (semantically identical — the `/in` visible-text diff was empty at every
+stage).
 
-```
-(layout-1)/+layout.svelte                                             S11 (shared chrome since S1)
-(layout-1)/+layout.server.ts                                          S11
-```
-
-Every page under `routes/us/` is gone. `routes/us/api/`, `routes/us/sitemap.xml/`,
-`business-listing/` and the home no longer exist. **S11 is now close to a pure no-op** —
-its precondition ("`find src/routes/us -type f` must show only the two layout files") is
-already satisfied. `$lib/us/` no longer
-exists — it went in S1, not S11.
-
-**Standing constraints established during S1–S7, do not rediscover:**
-- **Dev writes to the live Neon DB.** Read-only verification by default; if a write is
-  unavoidable, write the `DELETE` before issuing the `POST`, and re-check every table for
-  residue afterwards.
-- **The confirmation endpoint emails `admin@solarvipani.com` for real** and ignores
-  `sendEmail`'s return value. Blank `BREVO_API_KEY` on the dev command line and prove
-  suppression by the **absence** of its "Email sent successfully" log line.
-- **Contact details are deliberately shared.** An Indian number on a US page is intended
-  (S2's deletion). Do not "fix" it.
-- **`npm run check` holds at 13 errors / 1 warning.** Two of the 13 are the svelte2tsx
-  `{@html \`<script>…\`}` false positive; assemble such strings in the JS block.
-- **The prerendered count is 0** and `prerender.entries` is gone from `svelte.config.js`.
-  The build's success signal is no longer a page count (§4.5); assert that the build passes
-  with zero prerendered entries and 86 `.prerender-config.json` (ISR) files.
-- **`hooks.server.ts` no longer imports `building`.** Do not reintroduce the guard.
-- **The route-manifest baseline is 82 directories**, not the 92 measured before S1.
-- **`/in` must stay byte-identical** at every stage — href set *and* text — with the one
-  deliberate exception above.
-
-**The ordering constraint that mattered most is satisfied and spent:** S5 gated
-thank-you, thank-you-business and business-listing's metadata before any deletion, S8
-finished business-listing's copy, and S9 gated + merged + deleted the home in one commit —
-verified by §7.5's text-grep of a really-served `/us`, which found **zero** India markers.
-Hazard 1 is closed for every page this plan touches.
-
-**How to work a stage** (adapted from the `/in` plan's hard-won version):
-1. **Read the `/us` page first, then its `[country]` counterpart.** The `/in` plan's rule
-   was "grep for the family name before moving"; here the equivalent is "diff the two
-   pages before deleting either." The delete is the last step, not the first.
-2. **Grep three ways** before touching a family: `grep -rn "<name>" src/lib src/routes`,
-   `grep -rn 'BASE_URL}/us' src/lib src/routes`, and
-   ``grep -rn "'/us/\|\"/us/\|\`/us/" src/lib src/routes``. The quote-anchored pattern
-   alone misses `` `${BASE_URL}/us/…` `` — that cost a stage in the previous plan.
-3. **Grep inside the directory being deleted too**, `+page.server.ts` included. Loaders
-   build hrefs.
-4. **Verify by loading pages, not by reasoning.** Status matrix, hop counts, href diff
-   **and text diff** (§7.5). `npm run check` holds at 13/1; the prerendered count follows
-   the schedule in §7.1.
-5. Tick §8, append the SHA, commit the doc.
+⚠️ **Carry forward: `hooks.server.ts` is the sole chokepoint protecting IN-only data.**
+See the status header. Grep it before adding a third country.
