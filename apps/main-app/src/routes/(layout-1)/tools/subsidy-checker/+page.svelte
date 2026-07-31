@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { contentUrl, countryUrl } from '$lib/countries/urls';
+	import { contentUrl, countryUrl, geoUrl } from '$lib/countries/urls';
 	import { Label } from '$lib/components/ui/label';
 	import { Slider } from '$lib/components/ui/slider';
 	import * as Select from '$lib/components/ui/select';
@@ -15,15 +15,15 @@
 
 	const breadcrumb = breadcrumbLD([
 		{ name: 'Home', url: `${BASE_URL}/in/` },
-		{ name: 'Tools', url: `${BASE_URL}/in/tools/` },
-		{ name: 'Subsidy Checker', url: `${BASE_URL}/in/tools/subsidy-checker/` }
+		{ name: 'Tools', url: `${BASE_URL}/tools/` },
+		{ name: 'Subsidy Checker', url: `${BASE_URL}/tools/subsidy-checker/` }
 	]);
 
 	const webApp = webAppLD({
 		name: 'Solar Subsidy Checker',
 		description:
 			'Check PM Surya Ghar Yojana central solar subsidy for your system size. See subsidy amounts, eligibility, and savings.',
-		url: `${BASE_URL}/in/tools/subsidy-checker/`
+		url: `${BASE_URL}/tools/subsidy-checker/`
 	});
 
 	const faqs = [
@@ -134,7 +134,7 @@
 		name="description"
 		content="Check PM Surya Ghar Yojana central solar subsidy for your system size. See subsidy amounts, eligibility, and net cost after subsidy. Free subsidy calculator."
 	/>
-	<link rel="canonical" href="{BASE_URL}/in/tools/subsidy-checker/" />
+	<link rel="canonical" href="{BASE_URL}/tools/subsidy-checker/" />
 	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}<\u002Fscript>`}
 	{@html `<script type="application/ld+json">${JSON.stringify(webApp)}<\u002Fscript>`}
 	{@html `<script type="application/ld+json">${JSON.stringify(faqLdJson)}<\u002Fscript>`}
@@ -347,7 +347,7 @@
 						<strong class="text-foreground">{selectedDistrictData.district}</strong> can install this system.
 					</p>
 					<a
-						href="/in/solar/{selectedDistrictData.stateSlug}/{selectedDistrictData.slug}/"
+						href={geoUrl("in", selectedDistrictData.stateSlug, selectedDistrictData.slug)}
 						class="inline-flex items-center gap-2 bg-primary text-primary-foreground font-semibold px-6 py-2.5 rounded-lg hover:opacity-90 transition-opacity text-sm"
 					>
 						Get Quotes with Subsidy Applied <ArrowRight class="w-4 h-4" />
@@ -358,7 +358,7 @@
 						<strong class="text-foreground">{data.totalInstallers}+ verified installers</strong>.
 					</p>
 					<a
-						href="/in/get-quotes/"
+						href={countryUrl("in", "/get-quotes/")}
 						class="inline-flex items-center gap-2 bg-primary text-primary-foreground font-semibold px-6 py-2.5 rounded-lg hover:opacity-90 transition-opacity text-sm"
 					>
 						Get Quotes with Subsidy Applied <ArrowRight class="w-4 h-4" />
@@ -368,11 +368,11 @@
 
 			<!-- Related tools -->
 			<div class="mt-4 flex flex-wrap gap-3 text-sm">
-				<a href="/in/tools/solar-calculator/" class="text-primary hover:underline">
+				<a href={contentUrl("/tools/solar-calculator/")} class="text-primary hover:underline">
 					Calculate system size & cost
 				</a>
 				<span class="text-muted-foreground">|</span>
-				<a href="/in/tools/emi-calculator/" class="text-primary hover:underline">
+				<a href={contentUrl("/tools/emi-calculator/")} class="text-primary hover:underline">
 					Calculate EMI
 				</a>
 			</div>
@@ -385,7 +385,7 @@
 			How to Apply for Solar Subsidy
 		</a>
 		<span class="text-muted-foreground">|</span>
-		<a href="/in/solar/" class="text-primary hover:underline">Browse Installers</a>
+		<a href={geoUrl("in")} class="text-primary hover:underline">Browse Installers</a>
 	</div>
 
 	<FAQ items={faqs} />

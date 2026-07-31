@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { contentUrl, countryUrl } from '$lib/countries/urls';
+	import { contentUrl, countryUrl, geoUrl } from '$lib/countries/urls';
 	import { Label } from '$lib/components/ui/label';
 	import { Slider } from '$lib/components/ui/slider';
 	import * as Select from '$lib/components/ui/select';
@@ -15,15 +15,15 @@
 
 	const breadcrumb = breadcrumbLD([
 		{ name: 'Home', url: `${BASE_URL}/in/` },
-		{ name: 'Tools', url: `${BASE_URL}/in/tools/` },
-		{ name: 'Solar Calculator', url: `${BASE_URL}/in/tools/solar-calculator/` }
+		{ name: 'Tools', url: `${BASE_URL}/tools/` },
+		{ name: 'Solar Calculator', url: `${BASE_URL}/tools/solar-calculator/` }
 	]);
 
 	const webApp = webAppLD({
 		name: 'Solar Calculator',
 		description:
 			'Calculate your ideal solar system size, cost, savings, and payback period based on your electricity bill and location in India.',
-		url: `${BASE_URL}/in/tools/solar-calculator/`
+		url: `${BASE_URL}/tools/solar-calculator/`
 	});
 
 	const faqs = [
@@ -131,7 +131,7 @@
 		name="description"
 		content="Free solar calculator for India. Enter your electricity bill to get system size, cost estimate, subsidy, payback period, and 25-year savings. Based on real installer data."
 	/>
-	<link rel="canonical" href="{BASE_URL}/in/tools/solar-calculator/" />
+	<link rel="canonical" href="{BASE_URL}/tools/solar-calculator/" />
 	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}<\u002Fscript>`}
 	{@html `<script type="application/ld+json">${JSON.stringify(webApp)}<\u002Fscript>`}
 	{@html `<script type="application/ld+json">${JSON.stringify(faqSchema)}<\u002Fscript>`}
@@ -318,7 +318,7 @@
 						<strong class="text-foreground">{selectedDistrictData.district}</strong> can install this system.
 					</p>
 					<a
-						href="/in/solar/{selectedDistrictData.stateSlug}/{selectedDistrictData.slug}/"
+						href={geoUrl("in", selectedDistrictData.stateSlug, selectedDistrictData.slug)}
 						class="inline-flex items-center gap-2 bg-primary text-primary-foreground font-semibold px-6 py-2.5 rounded-lg hover:opacity-90 transition-opacity text-sm"
 					>
 						Get Exact Quotes <ArrowRight class="w-4 h-4" />
@@ -328,7 +328,7 @@
 						Get exact quotes from <strong class="text-foreground">{data.totalInstallers}+ verified installers</strong> across India.
 					</p>
 					<a
-						href="/in/get-quotes/"
+						href={countryUrl("in", "/get-quotes/")}
 						class="inline-flex items-center gap-2 bg-primary text-primary-foreground font-semibold px-6 py-2.5 rounded-lg hover:opacity-90 transition-opacity text-sm"
 					>
 						Get Free Quotes <ArrowRight class="w-4 h-4" />
@@ -338,11 +338,11 @@
 
 			<!-- Related tools -->
 			<div class="mt-4 flex flex-wrap gap-3 text-sm">
-				<a href="/in/tools/emi-calculator/" class="text-primary hover:underline">
+				<a href={contentUrl("/tools/emi-calculator/")} class="text-primary hover:underline">
 					Calculate EMI for this system
 				</a>
 				<span class="text-muted-foreground">|</span>
-				<a href="/in/tools/subsidy-checker/" class="text-primary hover:underline">
+				<a href={contentUrl("/tools/subsidy-checker/")} class="text-primary hover:underline">
 					Check detailed subsidy
 				</a>
 			</div>
@@ -353,7 +353,7 @@
 	<div class="flex flex-wrap gap-3 text-sm mb-8">
 		<a href={contentUrl("/rooftop-solar/cost/")} class="text-primary hover:underline">Solar Panel Cost Guide</a>
 		<span class="text-muted-foreground">|</span>
-		<a href="/in/solar/" class="text-primary hover:underline">Browse Installers by State</a>
+		<a href={geoUrl("in")} class="text-primary hover:underline">Browse Installers by State</a>
 	</div>
 
 	<FAQ items={faqs} />

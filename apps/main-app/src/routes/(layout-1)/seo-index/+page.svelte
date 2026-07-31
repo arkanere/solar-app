@@ -207,9 +207,9 @@
 		{
 			name: '4. Tools',
 			routes: [
-				{ label: 'Solar Calculator', href: '/in/tools/solar-calculator' },
-				{ label: 'EMI Calculator', href: '/in/tools/emi-calculator' },
-				{ label: 'Subsidy Checker', href: '/in/tools/subsidy-checker' }
+				{ label: 'Solar Calculator', href: '/tools/solar-calculator' },
+				{ label: 'EMI Calculator', href: '/tools/emi-calculator' },
+				{ label: 'Subsidy Checker', href: '/tools/subsidy-checker' }
 			]
 		},
 		{

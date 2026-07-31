@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { breadcrumbLD } from '$lib/seo';
+	import { countryUrl } from '$lib/countries/urls';
 	import { Calculator, Banknote, BadgeIndianRupee } from '@lucide/svelte';
 
 	let { data } = $props();
 
 	const breadcrumb = breadcrumbLD([
 		{ name: 'Home', url: 'https://solarvipani.com/in/' },
-		{ name: 'Tools', url: 'https://solarvipani.com/in/tools/' }
+		{ name: 'Tools', url: 'https://solarvipani.com/tools/' }
 	]);
 
 	const iconMap: Record<string, typeof Calculator> = {
@@ -22,14 +23,14 @@
 		name="description"
 		content="Free solar tools: calculate system size & cost, estimate EMI for solar loans, and check government subsidies. Make informed solar decisions."
 	/>
-	<link rel="canonical" href="https://solarvipani.com/in/tools/" />
+	<link rel="canonical" href="https://solarvipani.com/tools/" />
 	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}<\u002Fscript>`}
 </svelte:head>
 
 <div class="max-w-4xl mx-auto px-4 py-8">
 	<nav class="text-sm text-muted-foreground mb-6" aria-label="Breadcrumb">
 		<ol class="flex flex-wrap gap-1">
-			<li><a href="/in/" class="hover:text-primary">Home</a> /</li>
+			<li><a href={countryUrl("in", "/")} class="hover:text-primary">Home</a> /</li>
 			<li class="text-foreground font-medium">Tools</li>
 		</ol>
 	</nav>
@@ -62,7 +63,7 @@
 
 	<div class="text-center mt-10">
 		<a
-			href="/in/get-quotes/"
+			href={countryUrl("in", "/get-quotes/")}
 			class="inline-block bg-primary text-primary-foreground font-semibold px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
 		>
 			Get Free Solar Quotes

@@ -35,5 +35,8 @@ export const MOVED_TO_ROOT = [
 
 	// stage 7c — completes the 7 content pillars
 	'solar-financing',
-	'solar-subsidy'
+	'solar-subsidy',
+
+	// stage 8 — tools
+	'tools'
 ];

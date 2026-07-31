@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { contentUrl, countryUrl } from '$lib/countries/urls';
+	import { contentUrl, countryUrl, geoUrl } from '$lib/countries/urls';
 	import { Label } from '$lib/components/ui/label';
 	import { Slider } from '$lib/components/ui/slider';
 	import * as Select from '$lib/components/ui/select';
@@ -13,15 +13,15 @@
 
 	const breadcrumb = breadcrumbLD([
 		{ name: 'Home', url: `${BASE_URL}/in/` },
-		{ name: 'Tools', url: `${BASE_URL}/in/tools/` },
-		{ name: 'EMI Calculator', url: `${BASE_URL}/in/tools/emi-calculator/` }
+		{ name: 'Tools', url: `${BASE_URL}/tools/` },
+		{ name: 'EMI Calculator', url: `${BASE_URL}/tools/emi-calculator/` }
 	]);
 
 	const webApp = webAppLD({
 		name: 'Solar EMI Calculator',
 		description:
 			'Calculate monthly EMI for solar panel loans. Compare rates across banks and find the best financing for your solar installation in India.',
-		url: `${BASE_URL}/in/tools/emi-calculator/`
+		url: `${BASE_URL}/tools/emi-calculator/`
 	});
 
 	// Form state
@@ -72,7 +72,7 @@
 		name="description"
 		content="Calculate monthly EMI for solar panel loans. Compare interest rates across SBI, HDFC, and other banks. Free solar loan calculator for India."
 	/>
-	<link rel="canonical" href="{BASE_URL}/in/tools/emi-calculator/" />
+	<link rel="canonical" href="{BASE_URL}/tools/emi-calculator/" />
 	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}<\u002Fscript>`}
 	{@html `<script type="application/ld+json">${JSON.stringify(webApp)}<\u002Fscript>`}
 </svelte:head>
@@ -259,7 +259,7 @@
 				help with financing options.
 			</p>
 			<a
-				href="/in/get-quotes/"
+				href={countryUrl("in", "/get-quotes/")}
 				class="inline-flex items-center gap-2 bg-primary text-primary-foreground font-semibold px-6 py-2.5 rounded-lg hover:opacity-90 transition-opacity text-sm"
 			>
 				Apply for Solar Financing <ArrowRight class="w-4 h-4" />
@@ -269,10 +269,10 @@
 
 	<!-- Authority links -->
 	<div class="flex flex-wrap gap-3 text-sm mb-8">
-		<a href="/in/tools/solar-calculator/" class="text-primary hover:underline">Solar Calculator</a>
+		<a href={contentUrl("/tools/solar-calculator/")} class="text-primary hover:underline">Solar Calculator</a>
 		<span class="text-muted-foreground">|</span>
 		<a href={contentUrl("/solar-financing/")} class="text-primary hover:underline">Solar Financing Guide</a>
 		<span class="text-muted-foreground">|</span>
-		<a href="/in/solar/" class="text-primary hover:underline">Browse Installers</a>
+		<a href={geoUrl("in")} class="text-primary hover:underline">Browse Installers</a>
 	</div>
 </div>

@@ -1,8 +1,8 @@
 # Migration plan: dissolve `routes/in/`
 
-> **STATUS: in progress. Stages 1–5 and 7 done (2026-07-31).** All 7 content
-> pillars are country-less. Next: **S8** (tools). S6 no longer exists as a
-> separate stage — see its note.
+> **STATUS: in progress. Stages 1–5, 7 and 8 done (2026-07-31).** All 7 content
+> pillars and tools are country-less. Next: **S9** (authors + seo-index). S6 no
+> longer exists as a separate stage — see its note.
 >
 > ⚠️ **S6 has been restructured — read the S4 and S6 notes before continuing.**
 > Redirects are no longer one late stage; each move stage lands its own.
@@ -621,6 +621,32 @@ Queries hit **legacy `locations`** (not `geo_locations`) plus `in_business_profi
 Append `'tools'` to `MOVED_TO_ROOT` (§5c) in this same commit — that lands the 301s and
 retargets the header/footer Solar Calculator, EMI Calculator and Subsidy Checker links.
 
+**Done 2026-07-31.** 8 files `git mv`d, `'tools'` appended. The 7c lesson paid off
+immediately — the moved directory held **21 self-references**, far more than the 3 the stage
+text predicted. They split three ways:
+- `/in/tools/...` cross-tool links -> `contentUrl()`; the loader's 3 hardcoded hrefs ->
+  literal country-less, per the §5c rule for already-moved families.
+- `/in/get-quotes/` -> `countryUrl('in', ...)` and `/in/solar/...` -> `geoUrl('in', ...)`.
+  These are destination-B and already-migrated geo routes: they must stay per-country, and
+  a country-less page has no `data.country`, so `'in'` is passed explicitly — the same
+  convention S2 set and which these files' JSON-LD breadcrumbs already used. `geoUrl` also
+  drops the trailing slash, so `/in/solar` is now 0 hops instead of 1.
+- Canonicals and `breadcrumbLD` -> country-less; the `Home` entry stays `/in/` per S2.
+
+**A third grep blind spot, after 7c's.** Twelve of those hrefs are built as
+`` `${BASE_URL}/in/tools/...` `` — the `/in/` is preceded by `}`, so the quote-anchored
+pattern in §7.7 (``'/in/`` / ``"/in/`` / `` `/in/ ``) does not match them. **For S9, also
+grep `BASE_URL}/in` .** Doing so now shows only the three tools `Home` breadcrumbs (correct)
+plus `src/lib/seo.ts:44` and `:100`, which S9 already owns.
+
+**Not fixed, deliberately:** the `Home` link `/in/` costs a normalization hop
+(`trailingSlash: 'never'`). Pre-existing — it was a literal `/in/` before the move — and it
+belongs to the trailing-slash pass recorded in the S7a note, not to an ad-hoc fix here.
+
+Verified: 4 country-less URLs 200 with country-less canonicals; `/in/*` and `/us/tools` 301
+in one hop with the query string preserved; the per-country links on a tool page resolve in
+0 hops. `npm run check` 17/14, build passes, 3 prerendered US pages. `/in/` grep 88 -> **67**.
+
 ### S9 — Country-less: authors + seo-index
 `authors/[author_slug]` (tables `authors`, `in_blog_posts`, `seo_pages`) → root.
 Blogs were removed 2026-07 (`hooks.server.ts:21` 301s `/{in,us}/blogs`) — check the author
@@ -751,7 +777,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | `solar-pumps/` + `[slug]` + `[model_slug]` | A | 7b | ✅ | ✅ | ✅ |
 | `solar-financing/` + `[slug]` | A | 7c | ✅ | ✅ | ✅ |
 | `solar-subsidy/` + `[slug]` | A | 7c | ✅ | ✅ | ✅ |
-| `tools/` + 3 calculators | A | 8 | ☐ | ☐ | ☐ |
+| `tools/` + 3 calculators | A | 8 | ✅ | ✅ | ✅ |
 | `authors/[author_slug]` | A | 9 | ☐ | ☐ | ☐ |
 | `seo-index/` | A | **4** | ✅ | ✅ | ✅ | ← moved early with S4; its ~150 hardcoded `/in/` hrefs still await S9
 | `privacy-policy/` | A | 4 | ✅ | ✅ | ✅ |
@@ -802,6 +828,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | 7a.3 — aboutStats on country-less root | 2026-07-31 | `b7b98bc` |
 | 7b — the 3 product pillars | 2026-07-31 | `b222d3d` |
 | 7c — financing + subsidy | 2026-07-31 | `2f94434` |
+| 8 — tools | 2026-07-31 | _pending_ |
 
 ## 9. Hazards
 
