@@ -1,14 +1,21 @@
 <script lang="ts">
 	import LeadFormSection from '$lib/in/components/LeadFormSection.svelte';
 	import { breadcrumbLD } from '$lib/seo';
+	import { countryUrl } from '$lib/countries/urls';
 	import { Users, FolderCheck } from '@lucide/svelte';
 
 	let { data } = $props();
 
-	const breadcrumb = breadcrumbLD([
-		{ name: 'Home', url: 'https://solarvipani.com/in/' },
-		{ name: 'Get Quotes', url: 'https://solarvipani.com/in/get-quotes/' }
-	]);
+	const cc = $derived(data.country.code);
+	const homeUrl = $derived(countryUrl(cc, '/'));
+	const quotesUrl = $derived(countryUrl(cc, '/get-quotes/'));
+
+	const breadcrumb = $derived(
+		breadcrumbLD([
+			{ name: 'Home', url: `https://solarvipani.com${homeUrl}` },
+			{ name: 'Get Quotes', url: `https://solarvipani.com${quotesUrl}` }
+		])
+	);
 
 	const faqs = [
 		{
@@ -39,7 +46,7 @@
 <svelte:head>
 	<title>Get a Free Solar Quotation Online | Solar Vipani</title>
 	<meta name="description" content="Get a free solar quotation online from verified solar panel installers in India. Compare 2-3 competitive quotations on price, services & reviews. {data.installerCount}+ installers, {data.projectCount}+ completed projects." />
-	<link rel="canonical" href="https://solarvipani.com/in/get-quotes/" />
+	<link rel="canonical" href="https://solarvipani.com{quotesUrl}" />
 	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}<\u002Fscript>`}
 	{@html `<script type="application/ld+json">${JSON.stringify(faqLD)}<\u002Fscript>`}
 </svelte:head>
@@ -48,7 +55,7 @@
 	<!-- Breadcrumb -->
 	<nav class="text-sm text-muted-foreground mb-6" aria-label="Breadcrumb">
 		<ol class="flex flex-wrap gap-1">
-			<li><a href="/in/" class="hover:text-primary">Home</a> /</li>
+			<li><a href={homeUrl} class="hover:text-primary">Home</a> /</li>
 			<li class="text-foreground font-medium">Get Quotes</li>
 		</ol>
 	</nav>

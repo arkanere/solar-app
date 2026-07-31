@@ -74,12 +74,33 @@
   import { goto } from "$app/navigation";
   import { Button } from "$lib/components/ui/button";
   import { Card } from "$lib/components/ui/card";
+  import { countryUrl } from "$lib/countries/urls";
+  import { breadcrumbLD } from "$lib/seo";
 
   // For data loading
   let { data } = $props();
 
+  const cc = $derived(data.country.code);
+  const listingUrl = $derived(countryUrl(cc, "/business-listing"));
+
+  // The <script> tag is assembled here rather than inline in the markup:
+  // svelte2tsx mis-parses `{@html `<script ...`}` and reports a phantom
+  // "Expected token }" (it is the same false positive behind the two
+  // pre-existing "Unterminated template" errors in `npm run check`).
+  const breadcrumbScript = $derived(
+    `<script type="application/ld+json">${JSON.stringify(
+      breadcrumbLD([
+        { name: "Home", url: "https://solarvipani.com" },
+        {
+          name: "Business Listing",
+          url: `https://solarvipani.com${listingUrl}`,
+        },
+      ]),
+    )}<\/script>`,
+  );
+
   // Navigation function
-  const navigateToBusinessForm = () => goto("/in/business-form");
+  const navigateToBusinessForm = () => goto(countryUrl(cc, "/business-form"));
 </script>
 
 <svelte:head>
@@ -186,33 +207,17 @@
       }
     }
   </script>
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Home",
-          "item": "https://solarvipani.com"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Business Listing",
-          "item": "https://solarvipani.com/business-listing"
-        }
-      ]
-    }
-  </script>
+  <!-- Built with breadcrumbLD() rather than inline JSON so the Business Listing
+       entry follows the country prefix. It was hardcoded to the country-less
+       /business-listing, which is not a route and 404s. -->
+  {@html breadcrumbScript}
 
   <title>List Your Solar Business | Solar Vipani</title>
   <meta
     name="description"
     content="Expand your solar business reach by listing on Solar Vipani. Connect with customers actively seeking solar installation services in your area."
   />
-  <link rel="canonical" href="https://solarvipani.com/business-listing" />
+  <link rel="canonical" href="https://solarvipani.com{listingUrl}" />
 
   <!-- Preload critical hero image for faster LCP -->
   <link
@@ -232,7 +237,7 @@
     content="Expand your solar business reach by listing on Solar Vipani. Connect with customers actively seeking solar installation services in your area."
   />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://solarvipani.com/business-listing" />
+  <meta property="og:url" content="https://solarvipani.com{listingUrl}" />
   <meta
     property="og:image"
     content="https://solarvipani.com/images/solar-business-listing-og.jpg"
