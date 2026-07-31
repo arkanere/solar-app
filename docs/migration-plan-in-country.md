@@ -689,7 +689,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | 3 — /us layout country | 2026-07-31 | `6d6e7df` |
 | 4 — legal & static -> root | 2026-07-31 | `2f9ff0d` |
 | 5 — delete /us legal dupes | 2026-07-31 | `4f446fe` |
-| 7a.1 — moved-content wiring (no-op) | 2026-07-31 | _pending_ |
+| 7a.1 — moved-content wiring (no-op) | 2026-07-31 | `23ffdb9` |
 
 ## 9. Hazards
 
