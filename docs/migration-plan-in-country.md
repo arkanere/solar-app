@@ -1,8 +1,9 @@
 # Migration plan: dissolve `routes/in/`
 
-> **STATUS: in progress. Stages 1–5, 7–10, 11a–11c done (2026-07-31).** Destination A is
-> complete; destination B is in progress. Next: **S11d** (`[country]`: the IN home) — the
-> last thing under `routes/in/(layout-1)/`. S11 runs in four sub-stages — see §10.
+> **STATUS: in progress. Stages 1–5 and 7–11 done (2026-07-31).** Destinations A and B are
+> both complete — every page route has left `routes/in/`. Next: **S12** (the 3 API routes).
+> Only `in/api/*`, `in/sitemap.xml` and the two now-childless `in/(layout-1)/+layout.*`
+> files remain under `routes/in/`.
 > S6 no longer exists as a separate stage — see its note.
 >
 > ⚠️ **A user decision changed S11's US fallback from 404 to 301** — read the S11 note.
@@ -865,6 +866,33 @@ passes, 3 prerendered US pages. Route dirs: 5 moved, count unchanged at 95. `/in
 **⚠️ S11d — the IN home — is all that is left under `routes/in/(layout-1)/`.** After it,
 `routes/in/` holds only the 3 API routes (S12) and `sitemap.xml` (S13).
 
+**S11d done 2026-07-31 — S11 is complete.** The IN home moved. Per the stage note this
+deliberately makes it the default home for **any future country**; `/us` is unaffected
+because its own literal `us/(layout-1)/+page.*` still wins and still prerenders.
+
+**`routes/in/(layout-1)/` is now down to `+layout.server.ts` and `+layout.svelte`** —
+exactly the precondition §S14 requires. What is left under `routes/in/` is the 3 API
+routes (S12) and `sitemap.xml` (S13).
+
+**`aboutStats` on `/in` changed 3199 → 3196, as predicted.** The home now renders under
+`[country]/(layout-1)/+layout.server.ts`, which counts unified `businesses`/`leads` by
+`country_code` instead of legacy `in_business_profiles`/`LeadData`. §8 captured this
+number before S1 and blessed it — **do not chase it as a bug.**
+
+Canonical, `og:url` and the `BreadcrumbList` JSON-LD now follow the country prefix, and
+the two `/in/get-quotes/` literals are `countryUrl()`-built. The breadcrumb is assembled
+in the JS block for the svelte2tsx reason in the S11b note — this file is one of the two
+that already trip that bug in the baseline.
+
+**Left alone deliberately:** `$lib/in/components/RecentProjectsHome.svelte` still writes
+`/in/project/...` literals. It is a `$lib/in` component and belongs to S15, the same call
+S10 made for it. It renders correctly today because `/in` is a country — but the home is
+now country-generic, so **this is the first place a second country would visibly break.**
+
+Verified: `/in` and `/us` both 200; **href diff empty on both homes**; the recent-projects
+section still renders. `npm run check` 17/14, build passes, 3 prerendered US pages. Route
+dir count unchanged at 95. `/in/` grep 33 → **31**.
+
 **Correction to §7.2's route-manifest check:** `npx svelte-kit sync` does **not** prune
 stale directories, so a before/after `find` over `.svelte-kit/types` silently compares
 leftovers and reports no change no matter what moved. `rm -rf .svelte-kit/types` before
@@ -956,7 +984,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 
 | Route (under `routes/in/`) | Dest | Stage | Moved | 301 | Verified |
 |---|---|---|---|---|---|
-| `(layout-1)/+page.*` (home) | B | 11 | ☐ | n/a | ☐ |
+| `(layout-1)/+page.*` (home) | B | 11d | ✅ | n/a (`/us` literal wins) | ✅ |
 | `rooftop-solar/` + `[slug]` | A | 7a | ✅ | ✅ | ✅ |
 | `rooftop-solar/roi/+server.ts` | A | 7a | ✅ | ✅ | ✅ |
 | `solar-installation/` + `[slug]` | A | 7a | ✅ | ✅ | ✅ |
@@ -1022,6 +1050,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | 11a — partners -> [country] | 2026-07-31 | `4b24a26` |
 | 11b — listing/form/get-quotes | 2026-07-31 | `039ae86` |
 | 11c — funnels + district shim | 2026-07-31 | `ec8de21` |
+| 11d — the IN home (S11 complete) | 2026-07-31 | `45ed22e` |
 
 ## 9. Hazards
 
@@ -1045,35 +1074,41 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 
 ## 10. Resume here (cold start)
 
-**Done: stages 1–5, 7–10, 11a, 11b and 11c.** Every stage is one commit plus a SHA-recording commit,
+**Done: stages 1–5 and 7–11.** Every stage is one commit plus a SHA-recording commit,
 listed in the §8 stage log. Destination A is complete — all 7 content pillars, tools,
 authors, seo-index and the legal pages answer country-less, each with a one-hop 301 from
-`/in/**` and `/us/**`. Destination B is in progress: projects (S10), partners (S11a) and
-business-listing/business-form/get-quotes (S11b) and the funnels plus district shim
-(S11c) have moved. Only the IN home is left under `routes/in/(layout-1)/`.
+`/in/**` and `/us/**`. **Destination B is also complete**: projects (S10), partners (S11a),
+business-listing/business-form/get-quotes (S11b), the funnels plus district shim (S11c)
+and the IN home (S11d) have all moved. **No page routes remain under `routes/in/`** —
+only the 3 API routes (S12), `sitemap.xml` (S13), and the two now-childless
+`in/(layout-1)/+layout.*` files that S14 deletes.
 
-**S11 is being run in four sub-stages** (it is by far the largest move stage):
+**S11 ran in four sub-stages** (it was by far the largest move stage):
 - **11a — partners.** ✅ Done, `4b24a26`.
 - **11b — business-listing, business-form, get-quotes.** ✅ Done, `039ae86`.
 - **11c — thank-you, thank-you-business, unsubscribe, district shim.** ✅ Done, `ec8de21`.
-- **11d — the IN home** (`in/(layout-1)/+page.*`). **Next**, and the riskiest: it makes the
+- **11d — the IN home** (`in/(layout-1)/+page.*`). ✅ Done, `45ed22e`. Was the riskiest: it makes the
   IN home the default for any future country, and moving it under the `[country]` layout
   is what flips `/in`'s `aboutStats` from legacy 3199 to unified **3196** — §8 already
   blesses that, do not chase it as a bug.
 
 **Read the S11 note before continuing — it records a user decision that changed the
-stage**: routes with no `/us` equivalent get a **301 to the nearest real US page**, not the
+stage, and the reasoning still governs S12–S15**: routes with no `/us` equivalent get a **301 to the nearest real US page**, not the
 404 the stage text originally assumed. `/us/partners/**` → `/us/business-listing`,
 `/us/get-quotes` → `/us`, both already in `hooks.server.ts`. Because those rules run before
 routing, the moved loaders need no feature gate — but that also means **hazard 7's safety
 net is now one file, not one check per loader**; see the note before adding a third country
 to `COUNTRIES`.
 
-The S11 items that still bite: `unsubscribe/+server.js` (own `createPool`, needs its own
-`isCountry` guard — no layout runs for a `+server.js`) and `thank-you` (posted to from
-**user-app**; its URL must not change). Then S12 (3 API routes), S13 (sitemaps), S14
-(delete `routes/in/`), S15 (component merge — including 15c, which is where the shared
-IN/US pages actually get built), S16 (doc).
+**Next: S12** (the 3 API routes), then S13 (sitemaps), S14 (delete `routes/in/`), S15
+(component merge — including **15c, which is where the shared IN/US pages you asked for
+actually get built**), S16 (doc).
+
+Two S12 items are already staged by S11: `$lib/constants/india.ts:45-47`
+(`LOCATION_ENDPOINTS`, still `/in/api/*`) is read by `BusinessForm.svelte`, which S11c
+already gave a `country: CountryCode` prop — so the endpoint fix has a country to use.
+And `submitBusiness`'s fetch of `/in/api/sendBusinessSubmissionConfirmation` still
+resolves only by `[country]` fallthrough.
 
 ### How to work a move stage (learned across 7a–10, follow this)
 
