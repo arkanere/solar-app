@@ -11,19 +11,19 @@
 
 	const breadcrumb = $derived(breadcrumbLD([
 		{ name: 'Home', url: 'https://solarvipani.com/in' },
-		{ name: 'Solar Inverters', url: 'https://solarvipani.com/in/solar-inverters' },
+		{ name: 'Solar Panels', url: 'https://solarvipani.com/solar-panels' },
 		{
 			name: isCluster ? d.clusterData.h1 : d.brand.name,
-			url: `https://solarvipani.com/in/solar-inverters/${isCluster ? d.clusterData.slug : d.brand.slug}`
+			url: `https://solarvipani.com/solar-panels/${isCluster ? d.clusterData.slug : d.brand.slug}`
 		}
 	]));
 
 	const metaTitle = $derived(
-		isCluster ? d.clusterData.meta_title : (d.brand.meta_title ?? `${d.brand.name} Solar Inverters — Prices & Specs | Solar Vipani`)
+		isCluster ? d.clusterData.meta_title : (d.brand.meta_title ?? `${d.brand.name} Solar Panels — Prices & Specs | Solar Vipani`)
 	);
 
 	const metaDescription = $derived(
-		isCluster ? d.clusterData.meta_description : (d.brand.meta_description ?? `Compare ${d.brand.name} solar inverter models, prices and specifications.`)
+		isCluster ? d.clusterData.meta_description : (d.brand.meta_description ?? `Compare ${d.brand.name} solar panel models, prices and specifications.`)
 	);
 
 	const faqItems = $derived(
@@ -38,7 +38,7 @@
 <svelte:head>
 	<title>{metaTitle}</title>
 	<meta name="description" content={metaDescription} />
-	<link rel="canonical" href="https://solarvipani.com/in/solar-inverters/{canonicalSlug}" />
+	<link rel="canonical" href="https://solarvipani.com/solar-panels/{canonicalSlug}" />
 	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}<\u002Fscript>`}
 	{#if faqSchema}
 		{@html `<script type="application/ld+json">${JSON.stringify(faqSchema)}<\u002Fscript>`}

@@ -26,5 +26,10 @@ export const MOVED_TO_ROOT = [
 
 	// stage 7a — first two content pillars
 	'rooftop-solar',
-	'solar-installation'
+	'solar-installation',
+
+	// stage 7b — the three product pillars
+	'solar-panels',
+	'solar-inverters',
+	'solar-pumps'
 ];

@@ -1,8 +1,8 @@
 # Migration plan: dissolve `routes/in/`
 
-> **STATUS: in progress. Stages 1–5 done, plus S7a (2026-07-31).** Next: **S7b**
-> (country-less: `solar-panels`, `solar-inverters`, `solar-pumps`). S6 no longer
-> exists as a separate stage — see its note.
+> **STATUS: in progress. Stages 1–5 done, plus S7a and S7b (2026-07-31).** Next:
+> **S7c** (country-less: `solar-financing`, `solar-subsidy`). S6 no longer exists
+> as a separate stage — see its note.
 >
 > ⚠️ **S6 has been restructured — read the S4 and S6 notes before continuing.**
 > Redirects are no longer one late stage; each move stage lands its own.
@@ -564,6 +564,24 @@ Fixed by adding `routes/(layout-1)/+layout.server.ts` and rendering the componen
 - S15b's requirement stands and is now load-bearing: `AboutSolarVipani` must move to
   `$lib/components/` in the **same commit** as this layout, which imports it.
 
+**7b done 2026-07-31.** 18 files `git mv`d, `export const config` intact, three families
+appended to `MOVED_TO_ROOT`. Inbound links retargeted per the 7a rule: `[country]/solar/+page.svelte`,
+three entries on the IN home, and ~55 `seo-index` hrefs for these families.
+
+- The loaders take no country; the `country="in"` props on `PillarPage`/`BrandPage`/
+  `ProductSpecPage` stay, feeding per-country `countryUrl`/`geoUrl` links (S2's split).
+- **The S2 verification gap is unchanged, not closed.** `solar_brands`/`solar_products` are
+  still empty in the dev DB, so `/solar-panels/tata-solar` and
+  `/solar-panels/tata-solar/ws-545` 404 locally — exactly as `/in/...` did before the move,
+  confirmed by curling both trees. `BrandPage`/`ProductSpecPage` remain verified only by
+  `svelte-check` and the build. **Re-check against prod after deploy**; the risk is that a
+  brand page's own internal links were never rendered under the new prefix.
+
+Verified: 7 country-less URLs 200; `/in` and `/us` originals 301 in one hop with the query
+string preserved; href diff of `/in/solar-panels` (pre) vs `/solar-panels` (post) shows only
+the prefix strip, the country-less canonical and the deliberately-hidden per-country CTAs.
+`npm run check` 17/14, build passes, 3 prerendered US pages. `/in/` grep 187 -> **127**.
+
 ### S8 — Country-less: tools
 `tools/`, `tools/{solar-calculator,emi-calculator,subsidy-checker}` → `routes/(layout-1)/`.
 Queries hit **legacy `locations`** (not `geo_locations`) plus `in_business_profiles`,
@@ -698,9 +716,9 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | `rooftop-solar/` + `[slug]` | A | 7a | ✅ | ✅ | ✅ |
 | `rooftop-solar/roi/+server.ts` | A | 7a | ✅ | ✅ | ✅ |
 | `solar-installation/` + `[slug]` | A | 7a | ✅ | ✅ | ✅ |
-| `solar-panels/` + `[slug]` + `[model_slug]` | A | 7b | ☐ | ☐ | ☐ |
-| `solar-inverters/` + `[slug]` + `[model_slug]` | A | 7b | ☐ | ☐ | ☐ |
-| `solar-pumps/` + `[slug]` + `[model_slug]` | A | 7b | ☐ | ☐ | ☐ |
+| `solar-panels/` + `[slug]` + `[model_slug]` | A | 7b | ✅ | ✅ | ✅ |
+| `solar-inverters/` + `[slug]` + `[model_slug]` | A | 7b | ✅ | ✅ | ✅ |
+| `solar-pumps/` + `[slug]` + `[model_slug]` | A | 7b | ✅ | ✅ | ✅ |
 | `solar-financing/` + `[slug]` | A | 7c | ☐ | ☐ | ☐ |
 | `solar-subsidy/` + `[slug]` | A | 7c | ☐ | ☐ | ☐ |
 | `tools/` + 3 calculators | A | 8 | ☐ | ☐ | ☐ |
@@ -752,6 +770,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | 7a.1 — moved-content wiring (no-op) | 2026-07-31 | `23ffdb9` |
 | 7a.2 — rooftop-solar + solar-installation | 2026-07-31 | `2e8b08b` |
 | 7a.3 — aboutStats on country-less root | 2026-07-31 | `b7b98bc` |
+| 7b — the 3 product pillars | 2026-07-31 | _pending_ |
 
 ## 9. Hazards
 

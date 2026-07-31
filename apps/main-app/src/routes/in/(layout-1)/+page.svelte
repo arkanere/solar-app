@@ -361,12 +361,12 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-[theme(--card-gap)]">
         {#each [
           { href: contentUrl("/rooftop-solar"), title: "Rooftop Solar", desc: "System sizing, costs, and what to expect from a rooftop installation", icon: "☀️" },
-          { href: "/in/solar-panels", title: "Solar Panels", desc: "Compare panel brands, technologies, and specifications", icon: "🔋" },
-          { href: "/in/solar-inverters", title: "Solar Inverters", desc: "On-grid, hybrid, and micro inverter options for your system", icon: "⚡" },
+          { href: contentUrl("/solar-panels"), title: "Solar Panels", desc: "Compare panel brands, technologies, and specifications", icon: "🔋" },
+          { href: contentUrl("/solar-inverters"), title: "Solar Inverters", desc: "On-grid, hybrid, and micro inverter options for your system", icon: "⚡" },
           { href: contentUrl("/solar-installation"), title: "Solar Installation", desc: "Site assessment, installation process, and timeline", icon: "🔧" },
           { href: "/in/solar-subsidy", title: "Solar Subsidy", desc: "PM Surya Ghar Yojana, state subsidies, and how to apply", icon: "🏛️" },
           { href: "/in/solar-financing", title: "Solar Financing", desc: "Solar loans, EMI options, and bank schemes", icon: "💳" },
-          { href: "/in/solar-pumps", title: "Solar Pumps", desc: "Agricultural and residential solar pump solutions", icon: "💧" }
+          { href: contentUrl("/solar-pumps"), title: "Solar Pumps", desc: "Agricultural and residential solar pump solutions", icon: "💧" }
         ] as pillar}
           <a
             href={pillar.href}

@@ -39,25 +39,25 @@
 				},
 				{
 					name: '1.2 Solar Panels',
-					pillar: { label: 'Solar Panels', href: '/in/solar-panels' },
+					pillar: { label: 'Solar Panels', href: '/solar-panels' },
 					clusters: [
-						{ label: 'Price', href: '/in/solar-panels/price' },
-						{ label: 'Types', href: '/in/solar-panels/types' },
-						{ label: 'Monocrystalline', href: '/in/solar-panels/monocrystalline' },
-						{ label: 'Polycrystalline', href: '/in/solar-panels/polycrystalline' },
-						{ label: 'Bifacial', href: '/in/solar-panels/bifacial' },
-						{ label: 'Efficiency', href: '/in/solar-panels/efficiency' },
-						{ label: 'Brands', href: '/in/solar-panels/brands' },
-						{ label: 'Mono vs Poly', href: '/in/solar-panels/monocrystalline-vs-polycrystalline' },
-						{ label: 'Buying Guide', href: '/in/solar-panels/buying-guide' },
-						{ label: 'Half-Cut', href: '/in/solar-panels/half-cut' },
-						{ label: 'Warranty', href: '/in/solar-panels/warranty' },
-						{ label: 'For Home', href: '/in/solar-panels/for-home' },
-						{ label: 'For Commercial', href: '/in/solar-panels/for-commercial' }
+						{ label: 'Price', href: '/solar-panels/price' },
+						{ label: 'Types', href: '/solar-panels/types' },
+						{ label: 'Monocrystalline', href: '/solar-panels/monocrystalline' },
+						{ label: 'Polycrystalline', href: '/solar-panels/polycrystalline' },
+						{ label: 'Bifacial', href: '/solar-panels/bifacial' },
+						{ label: 'Efficiency', href: '/solar-panels/efficiency' },
+						{ label: 'Brands', href: '/solar-panels/brands' },
+						{ label: 'Mono vs Poly', href: '/solar-panels/monocrystalline-vs-polycrystalline' },
+						{ label: 'Buying Guide', href: '/solar-panels/buying-guide' },
+						{ label: 'Half-Cut', href: '/solar-panels/half-cut' },
+						{ label: 'Warranty', href: '/solar-panels/warranty' },
+						{ label: 'For Home', href: '/solar-panels/for-home' },
+						{ label: 'For Commercial', href: '/solar-panels/for-commercial' }
 					],
 					dynamic: [
-						{ label: 'Brand — Tata Solar', href: '/in/solar-panels/tata-solar', type: 'brand' },
-						{ label: 'Product — Tata WS-545', href: '/in/solar-panels/tata-solar/ws-545', type: 'product' }
+						{ label: 'Brand — Tata Solar', href: '/solar-panels/tata-solar', type: 'brand' },
+						{ label: 'Product — Tata WS-545', href: '/solar-panels/tata-solar/ws-545', type: 'product' }
 					]
 				},
 				{
@@ -105,57 +105,57 @@
 				},
 				{
 					name: '1.5 Solar Pumps',
-					pillar: { label: 'Solar Pumps', href: '/in/solar-pumps' },
+					pillar: { label: 'Solar Pumps', href: '/solar-pumps' },
 					clusters: [
-						{ label: 'Price', href: '/in/solar-pumps/price' },
-						{ label: 'How It Works', href: '/in/solar-pumps/how-it-works' },
-						{ label: 'Submersible', href: '/in/solar-pumps/submersible' },
-						{ label: 'Surface', href: '/in/solar-pumps/surface' },
-						{ label: 'Irrigation', href: '/in/solar-pumps/irrigation' },
-						{ label: '1 HP', href: '/in/solar-pumps/1hp' },
-						{ label: '2 HP', href: '/in/solar-pumps/2hp' },
-						{ label: '3 HP', href: '/in/solar-pumps/3hp' },
-						{ label: '5 HP', href: '/in/solar-pumps/5hp' },
-						{ label: '7.5 HP', href: '/in/solar-pumps/7-5hp' },
-						{ label: '10 HP', href: '/in/solar-pumps/10hp' },
-						{ label: 'Borewell', href: '/in/solar-pumps/borewell' },
-						{ label: 'BLDC', href: '/in/solar-pumps/bldc' },
-						{ label: 'Controller', href: '/in/solar-pumps/controller' },
-						{ label: 'For Home', href: '/in/solar-pumps/for-home' },
-						{ label: 'KUSUM Yojana', href: '/in/solar-pumps/kusum-yojana' },
-						{ label: 'Types', href: '/in/solar-pumps/types' },
-						{ label: 'AC Pump', href: '/in/solar-pumps/ac-pump' },
-						{ label: 'DC Pump', href: '/in/solar-pumps/dc-pump' },
-						{ label: 'For Agriculture', href: '/in/solar-pumps/for-agriculture' },
-						{ label: 'Sizing', href: '/in/solar-pumps/sizing' },
-						{ label: 'Maintenance', href: '/in/solar-pumps/maintenance' }
+						{ label: 'Price', href: '/solar-pumps/price' },
+						{ label: 'How It Works', href: '/solar-pumps/how-it-works' },
+						{ label: 'Submersible', href: '/solar-pumps/submersible' },
+						{ label: 'Surface', href: '/solar-pumps/surface' },
+						{ label: 'Irrigation', href: '/solar-pumps/irrigation' },
+						{ label: '1 HP', href: '/solar-pumps/1hp' },
+						{ label: '2 HP', href: '/solar-pumps/2hp' },
+						{ label: '3 HP', href: '/solar-pumps/3hp' },
+						{ label: '5 HP', href: '/solar-pumps/5hp' },
+						{ label: '7.5 HP', href: '/solar-pumps/7-5hp' },
+						{ label: '10 HP', href: '/solar-pumps/10hp' },
+						{ label: 'Borewell', href: '/solar-pumps/borewell' },
+						{ label: 'BLDC', href: '/solar-pumps/bldc' },
+						{ label: 'Controller', href: '/solar-pumps/controller' },
+						{ label: 'For Home', href: '/solar-pumps/for-home' },
+						{ label: 'KUSUM Yojana', href: '/solar-pumps/kusum-yojana' },
+						{ label: 'Types', href: '/solar-pumps/types' },
+						{ label: 'AC Pump', href: '/solar-pumps/ac-pump' },
+						{ label: 'DC Pump', href: '/solar-pumps/dc-pump' },
+						{ label: 'For Agriculture', href: '/solar-pumps/for-agriculture' },
+						{ label: 'Sizing', href: '/solar-pumps/sizing' },
+						{ label: 'Maintenance', href: '/solar-pumps/maintenance' }
 					],
 					dynamic: [
-						{ label: 'Brand — Shakti', href: '/in/solar-pumps/shakti', type: 'brand' },
-						{ label: 'Product — Shakti SSP-5HP', href: '/in/solar-pumps/shakti/ssp-5hp-ac', type: 'product' }
+						{ label: 'Brand — Shakti', href: '/solar-pumps/shakti', type: 'brand' },
+						{ label: 'Product — Shakti SSP-5HP', href: '/solar-pumps/shakti/ssp-5hp-ac', type: 'product' }
 					]
 				},
 				{
 					name: '1.6 Solar Inverters',
-					pillar: { label: 'Solar Inverters', href: '/in/solar-inverters' },
+					pillar: { label: 'Solar Inverters', href: '/solar-inverters' },
 					clusters: [
-						{ label: 'Price', href: '/in/solar-inverters/price' },
-						{ label: 'Types', href: '/in/solar-inverters/types' },
-						{ label: 'On-Grid', href: '/in/solar-inverters/on-grid' },
-						{ label: 'Off-Grid', href: '/in/solar-inverters/off-grid' },
-						{ label: 'Hybrid', href: '/in/solar-inverters/hybrid' },
-						{ label: 'Micro Inverter', href: '/in/solar-inverters/micro-inverter' },
-						{ label: 'String Inverter', href: '/in/solar-inverters/string-inverter' },
-						{ label: 'Hybrid Inverter', href: '/in/solar-inverters/hybrid-inverter' },
-						{ label: 'On-Grid Inverter', href: '/in/solar-inverters/on-grid-inverter' },
-						{ label: 'Off-Grid Inverter', href: '/in/solar-inverters/off-grid-inverter' },
-						{ label: 'Sizing', href: '/in/solar-inverters/sizing' },
-						{ label: 'For Home', href: '/in/solar-inverters/for-home' },
-						{ label: 'For Commercial', href: '/in/solar-inverters/for-commercial' }
+						{ label: 'Price', href: '/solar-inverters/price' },
+						{ label: 'Types', href: '/solar-inverters/types' },
+						{ label: 'On-Grid', href: '/solar-inverters/on-grid' },
+						{ label: 'Off-Grid', href: '/solar-inverters/off-grid' },
+						{ label: 'Hybrid', href: '/solar-inverters/hybrid' },
+						{ label: 'Micro Inverter', href: '/solar-inverters/micro-inverter' },
+						{ label: 'String Inverter', href: '/solar-inverters/string-inverter' },
+						{ label: 'Hybrid Inverter', href: '/solar-inverters/hybrid-inverter' },
+						{ label: 'On-Grid Inverter', href: '/solar-inverters/on-grid-inverter' },
+						{ label: 'Off-Grid Inverter', href: '/solar-inverters/off-grid-inverter' },
+						{ label: 'Sizing', href: '/solar-inverters/sizing' },
+						{ label: 'For Home', href: '/solar-inverters/for-home' },
+						{ label: 'For Commercial', href: '/solar-inverters/for-commercial' }
 					],
 					dynamic: [
-						{ label: 'Brand — Microtek', href: '/in/solar-inverters/microtek', type: 'brand' },
-						{ label: 'Product — Growatt MIC-3000TL', href: '/in/solar-inverters/growatt/mic-3000tl', type: 'product' }
+						{ label: 'Brand — Microtek', href: '/solar-inverters/microtek', type: 'brand' },
+						{ label: 'Product — Growatt MIC-3000TL', href: '/solar-inverters/growatt/mic-3000tl', type: 'product' }
 					]
 				},
 				{

@@ -91,7 +91,7 @@
 				<a href="/{cc}/solar-financing/" class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
 					Solar Financing
 				</a>
-				<a href="/{cc}/solar-panels/" class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
+				<a href={contentUrl("/solar-panels/")} class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
 					Solar Panels
 				</a>
 			</div>
