@@ -438,7 +438,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 
 | Stage | Date | SHA |
 |---|---|---|
-| 1 — shared chrome | 2026-07-31 | `S1_SHA` |
+| 1 — shared chrome | 2026-07-31 | `af5fa11` |
 
 ## 9. Hazards
 
