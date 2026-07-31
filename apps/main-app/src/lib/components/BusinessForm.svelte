@@ -7,17 +7,28 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import * as Select from "$lib/components/ui/select";
-  import { INDIAN_STATES, locationEndpoints } from "$lib/constants/india";
+  import { locationEndpoints } from "$lib/constants/india";
   import { validatePhoneNumber, validateGSTN } from "$lib/constants/formValidation";
   import { countryUrl } from "$lib/countries/urls";
-  import type { CountryCode } from "$lib/countries";
+  import { statesFor } from "$lib/countries/states";
+  import type { CountryConfig } from "$lib/countries";
 
   // Explicit country prop rather than page.data.country, per the S2 convention:
-  // every call site is a [country] route and passes its own code. Drives both
-  // the post-submit redirect and the three API endpoints.
-  let { country }: { country: CountryCode } = $props();
+  // every call site passes its own. Widened from CountryCode to CountryConfig in
+  // stage 15c, exactly as the S2 note anticipated ("widen it in S15 if the merged
+  // components need labels") — this now drives the endpoints, the redirect, the
+  // state list, the level2 wording AND whether the tax-ID field appears.
+  let { country }: { country: CountryConfig } = $props();
 
-  const endpoints = $derived(locationEndpoints(country));
+  const endpoints = $derived(locationEndpoints(country.code));
+  const states = $derived(statesFor(country.code));
+
+  // "District" for IN, "County" for US.
+  const level2Label = $derived(country.levels.level2.singular);
+  // Both submitBusiness endpoints key the level2 value by its own noun: the IN
+  // handler reads `district`, the US one reads `county`. Sending the wrong key
+  // silently drops the value, so it is derived from the same config as the label.
+  const level2Key = $derived(level2Label.toLowerCase());
 
   let businessName = $state("");
   let address = $state("");
@@ -88,8 +99,12 @@
   }
 
   function validateGSTNField(): boolean {
+    if (!country.taxId.collectOnSignup) {
+      errors.gstn = "";
+      return true;
+    }
     if (!validateGSTN(gstn)) {
-      errors.gstn = "GST number must be 15 characters long and contain only uppercase letters and numbers";
+      errors.gstn = `${country.taxId.label} must be 15 characters long and contain only uppercase letters and numbers`;
       return false;
     }
     errors.gstn = "";
@@ -136,7 +151,7 @@
             website,
             gstn,
             state: selectedState,
-            district,
+            [level2Key]: district,
             city,
           }),
         });
@@ -144,7 +159,7 @@
         const result: { success: boolean; error?: string } = await response.json();
 
         if (result.success) {
-          goto(`${base}${countryUrl(country, "/thank-you-business")}`);
+          goto(`${base}${countryUrl(country.code, "/thank-you-business")}`);
         } else {
           alert(`Submission failed: ${result.error}`);
         }
@@ -196,14 +211,17 @@
         />
       </div>
 
-      <!-- GSTN -->
+      <!-- Tax ID — only for countries that collect it on signup (IN: GSTN).
+           The US endpoint accepts the field and stores it as `ein`, but the US
+           form has never shown it; stage 15c preserved that. -->
+      {#if country.taxId.collectOnSignup}
       <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
-        <Label for="gstn">GSTN (Required)</Label>
+        <Label for="gstn">{country.taxId.label} (Required)</Label>
         <Input
           id="gstn"
           type="text"
           bind:value={gstn}
-          placeholder="GSTN"
+          placeholder={country.taxId.label}
           required
           on:blur={validateGSTNField}
           data-error-field={errors.gstn ? true : undefined}
@@ -214,6 +232,7 @@
           </Alert.Root>
         {/if}
       </div>
+      {/if}
 
       <!-- Address -->
       <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
@@ -322,7 +341,7 @@
             {selectedState || "Select a state"}
           </Select.Trigger>
           <Select.Content>
-            {#each INDIAN_STATES as state}
+            {#each states as state}
               <Select.Item value={state}>{state}</Select.Item>
             {/each}
           </Select.Content>
@@ -331,10 +350,10 @@
 
       <!-- District Select -->
       <div class="flex flex-col gap-[theme(--form-element-field-gap)]">
-        <Label for="district">District</Label>
+        <Label for="district">{level2Label}</Label>
         <Select.Root type="single" bind:value={district} disabled={!selectedState || isDistrictLoading}>
           <Select.Trigger id="district">
-            {isDistrictLoading ? "Loading districts..." : (district || "Select a district")}
+            {isDistrictLoading ? `Loading ${level2Label.toLowerCase()}s...` : (district || `Select a ${level2Label.toLowerCase()}`)}
           </Select.Trigger>
           <Select.Content>
             {#each districts as d}

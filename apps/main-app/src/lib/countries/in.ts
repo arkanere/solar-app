@@ -7,7 +7,8 @@ export const IN: CountryConfig = {
 	locale: 'en-IN',
 	currency: 'INR',
 	taxId: {
-		label: 'GSTN'
+		label: 'GSTN',
+		collectOnSignup: true
 	},
 	levels: {
 		level1: { singular: 'State', plural: 'States' },

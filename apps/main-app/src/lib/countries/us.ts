@@ -7,7 +7,8 @@ export const US: CountryConfig = {
 	locale: 'en-US',
 	currency: 'USD',
 	taxId: {
-		label: 'EIN'
+		label: 'EIN',
+		collectOnSignup: false
 	},
 	levels: {
 		level1: { singular: 'State', plural: 'States' },

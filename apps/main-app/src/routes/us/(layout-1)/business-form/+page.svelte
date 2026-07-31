@@ -1,6 +1,10 @@
 <script>
-	import BusinessForm from '$lib/us/BusinessForm.svelte';
+	import BusinessForm from '$lib/components/BusinessForm.svelte';
 	import { isDarkMode } from '$lib/us/themeStore'; // Import dark mode state
+
+	// data.country comes from us/(layout-1)/+layout.server.ts, which stage 3 kept
+	// pure and non-async precisely so this page still prerenders.
+	let { data } = $props();
 
 	let darkMode = $derived($isDarkMode); // Watch for changes in dark mode state
 </script>
@@ -48,7 +52,7 @@
 <main class={darkMode ? 'dark' : 'light'}>
 	<!-- Business Form Component -->
 	<div class="form-container">
-		<BusinessForm />
+		<BusinessForm country={data.country} />
 	</div>
 </main>
 

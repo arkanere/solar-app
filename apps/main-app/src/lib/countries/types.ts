@@ -21,6 +21,11 @@ export interface CountryConfig {
 	currency: string; // ISO 4217, e.g. 'INR'
 	taxId: {
 		label: string; // 'GSTN' | 'EIN'
+		// Whether the business-signup form asks for it. The submitBusiness
+		// endpoints accept the field for both countries (the US one stores it as
+		// `ein`), but the US form has never shown it — stage 15c kept that
+		// behaviour rather than adding a field to a live signup form.
+		collectOnSignup: boolean;
 	};
 	levels: {
 		level1: LevelLabels; // State/States everywhere so far

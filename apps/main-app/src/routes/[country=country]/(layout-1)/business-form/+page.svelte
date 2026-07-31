@@ -49,6 +49,6 @@
 <main class="min-h-screen flex flex-col items-center justify-center px-[theme(--container-padding)] md:px-[theme(--container-padding)] py-8 transition-colors duration-[theme(--transition-default)] bg-background text-foreground">
 	<!-- Business Form Component -->
 	<Card class="w-full max-w-2xl">
-		<BusinessForm country={data.country.code} />
+		<BusinessForm country={data.country} />
 	</Card>
 </main>
