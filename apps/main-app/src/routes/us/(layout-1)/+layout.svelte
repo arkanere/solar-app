@@ -1,5 +1,5 @@
 <script>
-	import { isDarkMode, toggleTheme, initializeTheme } from '$lib/us/themeStore';
+	import { initializeTheme } from '$lib/themeStore.svelte';
 	import { browser } from '$app/environment';
 	import { writable } from 'svelte/store';
 	import { onMount } from 'svelte';
@@ -8,8 +8,11 @@
 	import { initPosthog, capturePageview } from '$lib/posthog';
 	import { hasAnalyticsConsent } from '$lib/consent';
 	import CookieConsent from '$lib/components/CookieConsent.svelte';
+	import AboutSolarVipani from '$lib/components/AboutSolarVipani.svelte';
+	import SiteHeader from '$lib/components/chrome/SiteHeader.svelte';
+	import SiteFooter from '$lib/components/chrome/SiteFooter.svelte';
 
-	let { children } = $props();
+	let { children, data } = $props();
 
 	// Create a shared store for chat messages
 	const chatMessages = writable([]);
@@ -186,126 +189,19 @@
 	<!-- This reduces initial page blocking from ~680ms to ~100-150ms -->
 </svelte:head>
 
-<nav class={$isDarkMode ? 'dark' : 'light'}>
-	<a href="/us/">Solar Vipani</a>
-	<a href="/us/business-listing">List Business</a>
-	<a href="/us/solar">Directory</a>
-	<a href="/about-us">About us</a>
-	<button onclick={toggleTheme}>
-		{$isDarkMode ? 'Light mode' : 'Dark mode'}
-	</button>
-</nav>
+<SiteHeader country={data.country} />
 
 {@render children()}
 
+<!-- About Solar Vipani (shown on every page in this layout).
+     No stats: this layout deliberately has no aboutStats loader, and the
+     component makes them optional for exactly that reason (stage 15c of
+     docs/migration-plan-in-country.md). -->
+<div class="mx-auto max-w-[1140px] px-[theme(--container-padding)]">
+	<AboutSolarVipani />
+</div>
+
+<SiteFooter country={data.country} />
+
 <!-- Analytics consent banner — gates loadAllAnalytics() on first visit -->
 <CookieConsent onAccept={loadAllAnalytics} />
-
-
-<style>
-	:global(body) {
-		font-family: 'Georgia', serif;
-		margin: 0;
-		padding: 0;
-	}
-
-	nav {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		padding: 1rem;
-		transition: background-color 0.3s ease;
-		width: 100%;
-		box-sizing: border-box;
-		gap: 2rem;
-	}
-
-	nav a {
-		text-decoration: none;
-		font-size: 1.1rem;
-		font-weight: 500;
-		transition: color 0.3s ease;
-		white-space: nowrap;
-	}
-
-	/* Light Mode */
-	.light {
-		background-color: #fafafa;
-		color: #333;
-	}
-
-	.light a {
-		color: #333;
-	}
-
-	.light a:hover {
-		color: #0077cc;
-	}
-
-	/* Dark Mode */
-	.dark {
-		background-color: #1a1a1a;
-		color: #fff;
-	}
-
-	.dark a {
-		color: #fff;
-	}
-
-	.dark a:hover {
-		color: #66b2ff;
-	}
-
-	/* Button style */
-	button {
-		background: none;
-		border: 1px solid;
-		padding: 0.5rem 1rem;
-		font-size: 0.9rem;
-		cursor: pointer;
-		transition:
-			background-color 0.3s ease,
-			color 0.3s ease;
-		white-space: nowrap;
-		margin-left: auto;
-	}
-
-	.light button {
-		border-color: #333;
-		color: #333;
-	}
-
-	.light button:hover {
-		background-color: #333;
-		color: white;
-	}
-
-	.dark button {
-		border-color: #fff;
-		color: #fff;
-	}
-
-	.dark button:hover {
-		background-color: #fff;
-		color: #333;
-	}
-
-	/* Mobile responsiveness */
-	@media (max-width: 768px) {
-		nav {
-			justify-content: center;
-			padding: 0.75rem;
-			gap: 1rem;
-		}
-
-		nav a {
-			font-size: 0.9rem;
-		}
-
-		button {
-			padding: 0.25rem 0.5rem;
-			font-size: 0.8rem;
-			margin-left: 0;
-		}
-	}
-</style>

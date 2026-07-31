@@ -1,8 +1,7 @@
-// US state name <-> abbreviation maps. TypeScript home for the data in
-// lib/us/stateAbbreviations.js; the redirect layer needs it to translate
-// legacy suffix slugs ("orange-ca") into the new /us/solar/{state}/{county}
-// scheme. The old .js module keeps its own copy until the last legacy US
-// route is deleted.
+// US state name <-> abbreviation maps. The legacy US redirect shims need them
+// to translate suffix slugs ("orange-ca") into the /us/solar/{state}/{county}
+// scheme. Sole home for this data since $lib/us/ was deleted in stage 1 of
+// docs/migration-plan-delete-us.md.
 
 export const stateToAbbr: Record<string, string> = {
 	Alabama: 'al',

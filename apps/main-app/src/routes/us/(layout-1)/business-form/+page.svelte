@@ -1,6 +1,6 @@
 <script>
 	import BusinessForm from '$lib/components/BusinessForm.svelte';
-	import { isDarkMode } from '$lib/us/themeStore'; // Import dark mode state
+	import { isDarkMode } from '$lib/themeStore.svelte'; // Import dark mode state
 
 	// data.country comes from us/(layout-1)/+layout.server.ts, which stage 3 kept
 	// pure and non-async precisely so this page still prerenders.

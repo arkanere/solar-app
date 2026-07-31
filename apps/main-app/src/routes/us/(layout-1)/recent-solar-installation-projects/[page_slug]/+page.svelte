@@ -2,7 +2,7 @@
 	/** @type {import('./$types').PageData} */
 	let { data } = $props();
 	import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
-	import { isDarkMode } from '$lib/us/themeStore';
+	import { isDarkMode } from '$lib/themeStore.svelte';
 
 	// Initialize dark mode state
 	// Use the global theme store

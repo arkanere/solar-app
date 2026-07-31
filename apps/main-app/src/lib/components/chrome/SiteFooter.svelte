@@ -54,8 +54,13 @@
         <h4 class="text-sm font-semibold text-primary mb-3">Company</h4>
         <ul class="space-y-2 list-none p-0 m-0">
           <li><a href="/about-us" class="text-sm text-foreground no-underline hover:text-primary transition-colors">About Us</a></li>
+          <!-- Installer acquisition. Each country's entry point is a different
+               page: IN pitches at /in/partners, US at /us/business-listing —
+               which is also what hooks.server.ts 301s /us/partners to. -->
           {#if cc === 'in'}
             <li><a href="/{cc}/partners" class="text-sm text-foreground no-underline hover:text-primary transition-colors">Partner with Us</a></li>
+          {:else if cc === 'us'}
+            <li><a href="/{cc}/business-listing" class="text-sm text-foreground no-underline hover:text-primary transition-colors">List Your Business</a></li>
           {/if}
         </ul>
       </div>
