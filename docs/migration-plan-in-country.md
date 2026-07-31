@@ -7,6 +7,17 @@
 > ⚠️ **S6 has been restructured — read the S4 and S6 notes before continuing.**
 > Redirects are no longer one late stage; each move stage lands its own.
 >
+> ⚠️ **S7's "flip `CONTENT_PREFIX` to `''`" instruction was wrong and has been
+> replaced — read §5c before S7a.** It was a single global constant applied to a
+> stage split across three deploys, so flipping it in 7a would have pointed every
+> `solar-panels`/`tools`/`authors` link in the site's header, footer and
+> cross-links at country-less URLs that do not exist until 7b/7c — site-wide 404s
+> on high-traffic pages for two deploys. Not flipping it was equally wrong: it
+> leaves every internal link to a just-vacated URL running through a 301, which is
+> the extra hop §7.4 exists to catch. Same root cause as the S6 defect — a list
+> that grows per stage was being treated as one atomic switch. Links are now
+> incremental too, off the **same** list that drives the redirects.
+>
 > This document is written to be executed across many cold-start sessions. The
 > per-route checklist in §8 and the stage log beneath it are the **only** memory
 > between sessions — tick them as you go and commit the update with each stage.
@@ -144,6 +155,57 @@ Country-less content has no home in it. Restructure (Stage 13): the root sitemap
 (`src/lib/server/sitemap.ts`) into the new content sitemap — they are no longer per-country.
 `generateSitemapEntries` keeps geo + installers + the per-country static pages.
 
+### 5c. One moved-family list drives both the 301s and the links
+
+A family being 301'd away from `/in` and that family's links becoming country-less are
+**the same fact**. They must never be two lists, and neither may be a global switch: the
+move stages ship incrementally, so at any moment some content families have moved and some
+have not.
+
+Single source of truth — `src/lib/countries/moved-content.ts`:
+
+```ts
+// A family appears here in the same commit that moves its routes to the
+// country-less root. Never before (301s a live page, and points links at a 404)
+// and never after (leaves the vacated URL 404ing, and links running an extra hop).
+export const MOVED_TO_ROOT = [
+  // stage 4 — legal & static
+  'privacy-policy', 'terms-of-use', 'about-us',
+  'data-access', 'write-for-us', 'seo-index', 'data-deletion'
+];
+```
+
+Two consumers, both of which must be wired up **in S7a**:
+
+1. **`src/hooks.server.ts`** — drops its local `MOVED_TO_ROOT` and imports this one.
+   `MOVED_TO_ROOT_FROM` (`['in','us']`) stays where it is; it is a different axis.
+2. **`contentUrl()` in `src/lib/countries/urls.ts`** — stops being `CONTENT_PREFIX + path`
+   and becomes family-aware:
+
+```ts
+export function contentUrl(path = '/'): string {
+  const family = path.split('/')[1];
+  return MOVED_TO_ROOT.includes(family) ? path : `/in${path}`;
+}
+```
+
+`CONTENT_PREFIX` is deleted. `SiteHeader.svelte` and `SiteFooter.svelte` delete their local
+`contentPrefix` `$derived` and call `contentUrl()` for content links — that is what makes
+the header and footer track each stage automatically. Their **country-scoped** links
+(`/{cc}/partners`, `/{cc}/get-quotes`) are unaffected and keep using `country.code`.
+
+Net effect on the remaining stages: **S7b, S7c, S8 and S9 append their family strings to
+one array** and every link, in every tree, follows in the same commit as the routes and the
+301s. There is no constant left to flip; the S1 and S2 notes' "flip three constants"
+wording is obsolete.
+
+Two properties worth preserving when touching this:
+- The list is `string[]` of **first path segments only**. `contentUrl('/tools/emi-calculator/')`
+  keys off `tools`. Do not add nested paths.
+- S4-moved families are already written as literal country-less paths at their call sites
+  (`/privacy-policy`), per the S4 note. They stay literal — they are in the array for the
+  redirect side. Do not churn them through `contentUrl()`.
+
 ## 6. Stages
 
 Each stage is one commit, one deploy, one revert. Run `npm run check && npm run build`
@@ -157,9 +219,9 @@ before every deploy. Straight to `main` per CLAUDE.md.
 | 4 | Country-less: legal & static | 1 |
 | 5 | Delete `/us` duplicate legal pages | 4 |
 | 6 | Redirect layer for all moved content URLs | 4 |
-| 7 | Country-less: 7 content pillars | 1, 2, 6 |
-| 8 | Country-less: tools | 1, 6 |
-| 9 | Country-less: authors + seo-index | 1, 6 |
+| 7 | Country-less: 7 content pillars | 1, 2 |
+| 8 | Country-less: tools | 1, 7a |
+| 9 | Country-less: authors + seo-index | 1, 7a |
 | 10 | `[country]`: projects | 1 |
 | 11 | `[country]`: partners, forms, funnels, home, district shim | 1 |
 | 12 | `[country]`: the 3 API routes | — |
@@ -195,8 +257,13 @@ Breaks: the whole site's chrome, on every page. Diff rendered HTML of one page p
 - `routes/in/(layout-1)/+layout.svelte` has no `data.country`, so it passes
   `getCountry("in")` directly. That is what keeps its HTML identical.
 - Content links go through a single `contentPrefix` derived in each component —
-  `/${cc}` with a country, `/in` without. **S7 flips both to `''`.** Grep
-  `contentPrefix` to find them.
+  `/${cc}` with a country, `/in` without. ~~**S7 flips both to `''`.**~~
+  **Obsolete — S7a deletes both `contentPrefix` derivations in favour of
+  `contentUrl()`, which is family-aware; see §5c.** Note the country-ful branch:
+  today a content link on `/us` renders `/us/rooftop-solar`, which the S4 redirect
+  rule (`MOVED_TO_ROOT_FROM` includes `'us'`) turns into a 301 once the family
+  moves. `contentUrl()` takes no country and emits the country-less path directly,
+  removing that hop for `/us` visitors too.
 - Verified: `/us` byte-identical; `/in` and `/in/rooftop-solar` differ only in
   trailing whitespace and Svelte hydration-marker comments. `/` intentionally gained
   the footer + brand/Solar Guide/Tools links (all `/in/...` for now) — this is the
@@ -221,10 +288,12 @@ Verify: `/us/solar/california/orange` HTML contains zero `/in/` hrefs.
 1. **`contentUrl()` instead of literal country-less paths.** Emitting `/rooftop-solar/`
    here would 404 until S7 — a live regression for the whole interim. Instead
    `src/lib/countries/urls.ts` gained `contentUrl(path)`, backed by a single
-   `CONTENT_PREFIX = '/in'`. **S7 flips that one constant to `''`** and every content
-   link in the app follows. Same discipline S1 used for its `contentPrefix`.
+   `CONTENT_PREFIX = '/in'`. ~~**S7 flips that one constant to `''`**~~ ~~and every
+   content link in the app follows. Same discipline S1 used for its `contentPrefix`.
    (`SiteHeader`/`SiteFooter` still have their own local `contentPrefix` — S7 flips
-   three constants, not one. Grep `CONTENT_PREFIX|contentPrefix`.)
+   three constants, not one. Grep `CONTENT_PREFIX|contentPrefix`.)~~
+   **Obsolete — a global flip cannot serve a stage split across three deploys. S7a
+   replaces all three constants with the family-aware `MOVED_TO_ROOT` list; see §5c.**
 2. **The prop is `country: CountryCode`, not `CountryConfig`.** Nothing in these
    components needs more than the code, and `country="in"` at 20-odd call sites is far
    lighter than `getCountry('in')`. Widen it in S15 if the merged components need labels.
@@ -354,9 +423,18 @@ six of those URLs now 301. They belong in the new content sitemap.
 > moves them.** The invariant is written at the call site.
 >
 > What is left of S6 is the pieces that are not per-family, to be done during S7a:
-> retarget `rooftop-solar/roi/+server.ts` at the country-less `/solar-financing/roi/`
-> so it does not become a two-hop chain, and re-run the §7.4 hop check across the
-> whole moved surface.
+> retarget `rooftop-solar/roi/+server.ts` so it does not become a two-hop chain, and
+> re-run the §7.4 hop check across the whole moved surface.
+>
+> ⚠️ **Correction:** this note used to say retarget the roi shim "at the country-less
+> `/solar-financing/roi/`". Wrong — `solar-financing` does not move until **7c**, so a
+> literal country-less target would 404 for two deploys. Use
+> `contentUrl('/solar-financing/roi/')`, which resolves to `/in/...` until 7c appends
+> the family and then follows it. See §5c and the S7 note.
+>
+> **The same per-family discipline now governs links, not just redirects** — §5c.
+> `MOVED_TO_ROOT` moved out of `hooks.server.ts` into
+> `src/lib/countries/moved-content.ts` so `contentUrl()` reads the identical list.
 
 Extend `legacyRedirect()` in `src/hooks.server.ts` (pure string rewrites, no DB, already has
 the `building` guard). One rule covers the lot:
@@ -379,12 +457,40 @@ This rule also covers the `/in/...` hrefs living in `seo_pages.content` JSONB.
 - **7b** `solar-panels`, `solar-inverters`, `solar-pumps` (+`[slug]`, +`[slug]/[model_slug]`)
 - **7c** `solar-financing`, `solar-subsidy` (+`[slug]`)
 
-Move to `routes/(layout-1)/`. Drop the `params.country` plumbing entirely — these loaders
-take no country. Tables unchanged: `seo_pages`, `solar_brands`, `solar_products`,
-`solar_financing_banks`, `state_subsidies`, `discoms`, `in_business_profiles` COUNT.
-`isClusterSlug()` from `src/lib/in/pillar-config.ts` keeps working as-is.
+Move to `routes/(layout-1)/`. The loaders already take no country — there is no
+`params.country` plumbing in these four `+page.server.ts` files to drop. Tables unchanged:
+`seo_pages`, `solar_brands`, `solar_products`, `solar_financing_banks`, `state_subsidies`,
+`discoms`, `in_business_profiles` COUNT. `isClusterSlug()` from `src/lib/in/pillar-config.ts`
+keeps working as-is.
 
-Flip the S1 nav links to country-less here.
+**Each sub-stage appends its own families to `MOVED_TO_ROOT` (§5c) in the same commit that
+moves its routes** — that single append is what lands the 301s *and* retargets the links.
+Do not touch the other sub-stages' families.
+
+**S7a additionally does the §5c wiring itself, before moving anything:** create
+`moved-content.ts` seeded with the seven S4 families, point `hooks.server.ts` at it, rewrite
+`contentUrl()` to be family-aware, delete `CONTENT_PREFIX`, and convert
+`SiteHeader`/`SiteFooter`'s `contentPrefix` to `contentUrl()`. That refactor must be a
+**no-op on its own** — with only S4 families in the array every link and every redirect is
+byte-identical to today. Verify that (§7.5 on `/`, `/in`, `/in/rooftop-solar`) before adding
+`rooftop-solar` and `solar-installation` to the array, so a chrome regression can't hide
+inside the route move.
+
+Also in S7a, the leftovers from S6:
+- Retarget `rooftop-solar/roi/+server.ts` — it currently `redirect(301, '/in/solar-financing/roi/')`.
+  `solar-financing` does not move until 7c, so this is **not** a country-less target yet.
+  Point it at `contentUrl('/solar-financing/roi/')` so it follows 7c automatically instead
+  of becoming a two-hop chain the moment 7c lands.
+- Re-run the §7.4 hop check across the whole moved surface, not just 7a's URLs.
+
+Per-page work in each sub-stage, beyond the `git mv`:
+- The `+page.svelte` files hardcode `https://solarvipani.com/in/<family>` in the canonical
+  link **and** in `breadcrumbLD`. Both must become country-less — a canonical still pointing
+  at a 301 source is the one SEO error the redirects do not cover.
+- The `{ name: 'Home' }` breadcrumb entry stays `https://solarvipani.com/in` (it means the
+  IN home, which S11 moves to `[country]`) — per the S2 note, deliberately not `contentUrl`.
+- `country="in"` props on `PillarPage`/`ClusterPage` stay as-is; S2 fixed those and they
+  feed `countryUrl`/`geoUrl`/`projectUrl` links that are still per-country.
 
 ### S8 — Country-less: tools
 `tools/`, `tools/{solar-calculator,emi-calculator,subsidy-checker}` → `routes/(layout-1)/`.
@@ -392,12 +498,21 @@ Queries hit **legacy `locations`** (not `geo_locations`) plus `in_business_profi
 `state_subsidies`, `solar_financing_banks` — keep all of it verbatim.
 `tools/+page.server.ts` returns hardcoded `/in/tools/...` hrefs; make them country-less.
 
+Append `'tools'` to `MOVED_TO_ROOT` (§5c) in this same commit — that lands the 301s and
+retargets the header/footer Solar Calculator, EMI Calculator and Subsidy Checker links.
+
 ### S9 — Country-less: authors + seo-index
 `authors/[author_slug]` (tables `authors`, `in_blog_posts`, `seo_pages`) → root.
 Blogs were removed 2026-07 (`hooks.server.ts:21` 301s `/{in,us}/blogs`) — check the author
 page isn't linking to dead `/in/blogs/...`. Also fix `src/lib/seo.ts:100`
 (`${BASE_URL}/in/authors/${slug}/`) and `:44` (`/in/installer/` — already stale, should be
 `installerUrl()`).
+
+Append `'authors'` to `MOVED_TO_ROOT` (§5c) in this same commit. `'seo-index'` is **already**
+in the array from S4 — the route moved early, so do not add it again; what is left here is
+converting its ~150 hardcoded `/in/...` hrefs, which the S2 note deferred to this stage.
+By the end of S9 the array holds every destination-A family and `contentUrl()` returns its
+argument unchanged for all of them; that is the signal it can be deleted in S15.
 
 ### S10 — `[country]`: projects
 `project/[project_id]`, `recent-solar-installation-projects/` (+`[page_slug]`) →
@@ -565,9 +680,12 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 
 ## 9. Hazards
 
-1. **SEO.** ~30 indexed content URL families change. S6 must be live before S7–S9, single
-   hop, no chains. Every URL leaving `/in/sitemap.xml` must be a 301 source or appear in
-   `/content-sitemap.xml`.
+1. **SEO.** ~30 indexed content URL families change, on pages that carry a lot of traffic.
+   The 301 for a family must go live in the **same commit** that vacates its URLs — never a
+   deploy earlier (301s a live page) or later (404s an indexed one). Single hop, no chains.
+   §5c's one shared list is the mechanism that makes redirects and links move together;
+   the §8 checklist's 301 column is the audit. Every URL leaving `/in/sitemap.xml` must be
+   a 301 source or appear in `/content-sitemap.xml`.
 2. **`export const config` (ISR) must be copied verbatim** on ~30 loaders.
 3. **`aboutStats` value change** — snapshot before S4 (§8).
 4. **`seo_pages.content` JSONB holds `/in/` hrefs** in the prod DB, invisible to grep.
@@ -582,10 +700,23 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 
 ## 10. First action for the implementation session
 
-Start **S1** (extract shared chrome). It blocks both destinations A and B, and it is a pure
-refactor — the before/after HTML diff of one page per tree (`/`, `/in`, `/us`) should be
-empty, which makes it the cheapest possible way to confirm the working setup is sound
-before any route actually moves.
+~~Start **S1** (extract shared chrome)~~ — done, along with S2–S5. Baselines are captured
+in §8; the sitemap `<loc>` count and route-directory count there are the pre-S1 originals
+and are still the comparison points.
 
-Capture the §8 baselines at the same time; several of them (the sitemap `<loc>` count, the
-route-directory count) are only meaningful if taken before anything moves.
+**Next action: S7a, in two commits.**
+
+1. **The §5c wiring, as a pure no-op.** Create `src/lib/countries/moved-content.ts` holding
+   the seven S4 families; make `hooks.server.ts` import it instead of its local
+   `MOVED_TO_ROOT`; rewrite `contentUrl()` to be family-aware; delete `CONTENT_PREFIX` and
+   both `contentPrefix` derivations in `SiteHeader`/`SiteFooter`. **No route moves, no new
+   families.** Every link and every redirect must be byte-identical afterward — verify with
+   §7.5 on `/`, `/in`, `/in/rooftop-solar` and §7.4 on the seven S4 URLs. Landing this
+   separately is the whole point: it means any regression in the next commit is the route
+   move, not the refactor.
+2. **The move.** `git mv` `rooftop-solar/**` and `solar-installation/**` (9 files) to
+   `routes/(layout-1)/`, copying `export const config` verbatim; append `'rooftop-solar'`
+   and `'solar-installation'` to `MOVED_TO_ROOT`; fix the canonical and `breadcrumbLD` URLs
+   in the four `+page.svelte` files; retarget `rooftop-solar/roi/+server.ts` per the S6 note.
+
+Then tick the four §8 rows, append the SHA to the stage log, and commit the doc update.
