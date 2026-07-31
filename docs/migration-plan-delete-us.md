@@ -683,7 +683,7 @@ installer list from the correct table; US shows the EIN/County vocabulary and US
 contact; `/in` href and text diff empty against the pre-stage capture. `/us/business-listing`
 stops prerendering — expect **1**.
 
-**Done 2026-07-31 (`<S8-SHA>`).**
+**Done 2026-07-31 (`dd4867a`).**
 
 ⚠️ **The stage text was wrong about the installer links, and it was a live `/in` bug.**
 It said "both pages already link installer cards at `/{cc}/installer/{slug}`". Only `/us`
@@ -924,7 +924,7 @@ Legend: **A** = already covered by `[country]`, **B** = merge, **C** = relocate,
 | 5 — **gate the `[country]` pages** | 2026-07-31 | `e8c8f9e` |
 | 6 — thank-you ×2 | 2026-07-31 | `dd9782b` |
 | 7 — submitBusiness | 2026-07-31 | `4fd3733` |
-| 8 — business-listing | 2026-07-31 | `<S8-SHA>` |
+| 8 — business-listing | 2026-07-31 | `dd4867a` |
 | 9 — the home | | |
 | 10 — prerender → ISR | | |
 | 11 — delete `routes/us/` + `$lib/us/` | | |
