@@ -657,6 +657,27 @@ not a behaviour change.
 the length of the IN one; the §5b decision (gate vs copy module) is made here, section by
 section.
 
+**Already done by S5, do not redo:** `og:locale`, `areaServed`, `priceCurrency`,
+`addressCountry` and `availableLanguage` are country-derived, and both JSON-LD blocks
+already live in the JS block as `organizationScript` / `serviceScript`. What is left for
+S8 is the **marketing copy** plus the loader.
+
+**The two India-specific strings S5 deliberately left:**
+- the FAQ answer `"Solar Vipani is India's leading platform connecting customers…"`
+- the Organization JSON-LD `description: "India's leading solar panel installer
+  directory…"`
+
+Both need a US counterpart from the US page's own FAQ, or a country branch.
+
+**Loader:** US reads `us_businesses` (columns `id, businessname, phonenumber, city,
+state, slug`), IN reads `in_business_profiles` (`business_id AS id, …, district, slug`).
+Dispatch per §3.4. Note the US query has no `district` and the IN one has no `county`;
+the IN loader also carries `isr.expiration: 1296000` and the US one carries **no
+`config`** — S10 owns giving the merged page one, but do not silently drop the IN value.
+
+**Both pages already link installer cards at `/{cc}/installer/{slug}`**, so that is a
+`countryUrl`/`installerUrl` conversion, not a behaviour change.
+
 Verify: `/us/business-listing` and `/in/business-listing` both 200 with a populated
 installer list from the correct table; US shows the EIN/County vocabulary and US support
 contact; `/in` href and text diff empty against the pre-stage capture. `/us/business-listing`
@@ -682,6 +703,33 @@ the S11d note flagged it as "the first place a second country would visibly brea
 section must be gated on `features.projects` (US: `false`), or fixed, before this stage.
 
 `/us` stops prerendering — expect **0**.
+
+**Section inventory, measured — the two homes barely overlap:**
+
+| `[country]` (IN), 528 ln | `/us`, 746 ln |
+|---|---|
+| hero (`h1`+`h2`) | hero (`h1`+`h2`) |
+| "Get Your Free Solar Quotation Online" CTA | — |
+| `<SolarComparisonTable>` | — |
+| "Solar Knowledge Hub" → `contentUrl` pillars | — |
+| "How Solar Vipani Works" | — |
+| `<RecentProjectsHome>` | — |
+| "Why Now is the Right Time to Install Solar **in India**" (₹78,000 / PM Surya Ghar) | — |
+| FAQ (₹ costs, PM Surya Ghar subsidy) | — |
+| — | "Why Choose Solar Panel Installation in the **USA**?" benefits |
+| — | `<LeadFormBusiness>` — **the only US consumer lead form; the user confirmed it stays** |
+| (`AboutSolarVipani` comes from the layout) | `<AboutSolarVipani>` rendered in-page |
+
+**The whole `<svelte:head>` is India-specific**, not just the body: title
+("India's #1 Solar Quotation Service"), description and keywords (PM Surya Ghar, ₹78,000),
+`geo.country`, `og:locale`, the twitter card, and **three JSON-LD blocks** including a
+FAQPage whose answers quote rupee costs and subsidy amounts. The US home has its own head
+with its own canonical. Budget for the head separately from the body — it is the larger
+half of the divergence and the SEO-visible one.
+
+Most IN-only *sections* gate cleanly on flags US already has `false`
+(`seoContentFamilies`, `projects`); the hero, the FAQ and the head do **not** and need
+the §5b copy-module treatment or a country branch.
 
 Verify: `/us` and `/in` both 200; `/in` href and text diff **empty**; `/us` contains zero
 `/in/` hrefs, zero rupee symbols, zero links to `/us/get-quotes` or `/us/partners`, and no
@@ -851,37 +899,61 @@ Legend: **A** = already covered by `[country]`, **B** = merge, **C** = relocate,
 
 ## 10. Resume here (cold start)
 
-**Next stage: S5 — gate the `[country]` pages.** S1, S3 and S4 are applied; S2 is deleted.
-Read §4.1 (the gating hazard) before starting — S5 exists entirely for it, and every stage
-from S6 on assumes it has landed.
+**Next stage: S8 — merge `business-listing`.** S1 and S3–S7 are applied and pushed; S2 is
+deleted. Session paused here 2026-07-31 by the user; the remaining work is S8–S13.
 
-**What is left under `routes/us/` (8 files):**
+**⚠️ Everything mechanical is done. What is left is different in kind.** S1–S7 were
+deletes, moves and gates, each verifiable by a status code or a byte-identical diff.
+**S8 and S9 are copy merges on live marketing pages** — 1391 US lines vs 695 IN, and 746
+vs 528 — where the judgement is *what a US visitor should read*, not whether a route
+resolves. Budget accordingly, and expect to show the user a merged page rather than a
+green check. S10–S13 are mechanical again.
+
+**⚠️ One decision is awaiting the user and is not blocking:** whether to review the S5
+gating (in particular the `/in` copy change in the next bullet) before more pages are
+rewritten, or to carry straight through S8 and S9. **Ask before starting S9** if it has
+not been answered — S8 alone is a reasonable thing to land and look at first.
+
+**⚠️ One `/in` copy change shipped and may want reverting.** S5 changed
+`AboutSolarVipani`'s counter label from "Leads Generated Across India" to "Leads
+Generated" — because the same component renders on `/us` with a **US** count, so the
+Indian wording was a live factual error there. `/in` now reads `3,198+ Leads Generated`.
+It is a 13-character change in one component and trivially revertible; the user has been
+told and has not objected.
+
+**What is left under `routes/us/` (7 files):**
 
 ```
-(layout-1)/+layout.server.ts          S11
-(layout-1)/+layout.svelte             S11  (already shared chrome since S1)
-(layout-1)/+page.svelte  +page.js     S9   (the home merge)
-(layout-1)/business-listing/+page.svelte, +page.server.js, +page.js   S8
-(layout-1)/thank-you/+page.svelte                                     S6
-(layout-1)/thank-you-business/+page.svelte                            S6
-api/submitBusiness/+server.js                                         S7
+(layout-1)/+page.svelte, +page.js                                     S9  (home merge)
+(layout-1)/business-listing/+page.svelte, +page.server.js, +page.js   S8  (next)
+(layout-1)/+layout.svelte                                             S11 (shared chrome since S1)
+(layout-1)/+layout.server.ts                                          S11
 ```
 
-**Both open questions are settled** — the user confirmed §3.4 (per-country legacy-table
-dispatch in `submitBusiness`) and S9 (the US home keeps `LeadFormBusiness`, its only
-consumer lead form). Nothing is blocked.
+`routes/us/api/` and `routes/us/sitemap.xml/` no longer exist. `$lib/us/` no longer
+exists — it went in S1, not S11.
 
-**Standing constraints established during S1–S4, do not rediscover:**
-- **Dev writes to the live DB.** Read-only verification by default.
+**Standing constraints established during S1–S7, do not rediscover:**
+- **Dev writes to the live Neon DB.** Read-only verification by default; if a write is
+  unavoidable, write the `DELETE` before issuing the `POST`, and re-check every table for
+  residue afterwards.
+- **The confirmation endpoint emails `admin@solarvipani.com` for real** and ignores
+  `sendEmail`'s return value. Blank `BREVO_API_KEY` on the dev command line and prove
+  suppression by the **absence** of its "Email sent successfully" log line.
 - **Contact details are deliberately shared.** An Indian number on a US page is intended
   (S2's deletion). Do not "fix" it.
-- **The prerendered count is now 2** (`/us`, `/us/business-listing`) → 1 after S8 → 0
-  after S9.
+- **`npm run check` holds at 13 errors / 1 warning.** Two of the 13 are the svelte2tsx
+  `{@html \`<script>…\`}` false positive; assemble such strings in the JS block.
+- **The prerendered count is 2** (`/us`, `/us/business-listing`) → **1** after S8 → **0**
+  after S9. It is a decreasing assertion, not the constant the `/in` plan used.
+- **`/in` must stay byte-identical** at every stage — href set *and* text — with the one
+  deliberate exception above.
 
-**The ordering constraint that matters most:** S5 gates the `[country]` pages *before* any
-`/us` page is deleted. Every stage from S6 on assumes it has landed. If you find yourself
-gating inside a merge stage, stop — that means S5 was incomplete, and the fix belongs in
-S5's commit, not the merge's.
+**The ordering constraint that mattered most is now satisfied:** S5 gated
+thank-you, thank-you-business and business-listing's metadata before any deletion.
+**The home is the exception and is deliberately ungated** — see the S5 note; S9 gates,
+merges and deletes in one commit, and its §7.5 text-grep of a really-served `/us` is the
+check that replaces S5's rename-and-curl.
 
 **How to work a stage** (adapted from the `/in` plan's hard-won version):
 1. **Read the `/us` page first, then its `[country]` counterpart.** The `/in` plan's rule
