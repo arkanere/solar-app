@@ -1,9 +1,9 @@
 # Migration plan: dissolve `routes/in/`
 
-> **STATUS: in progress. Stages 1–5, 7–11 and 12 done (2026-07-31).** Destinations A and B
-> are complete — every page route **and** every API route has left `routes/in/`. Next:
-> **S13** (sitemap restructure). Only `in/sitemap.xml` and the two now-childless
-> `in/(layout-1)/+layout.*` files remain under `routes/in/`.
+> **STATUS: in progress. Stages 1–5 and 7–13 done (2026-07-31).** Destinations A and B are
+> complete and the sitemaps are restructured. Next: **S14** — delete `routes/in/`, which
+> now holds only the two childless `(layout-1)/+layout.*` files. Its stated precondition is
+> already met, so S14 is a formality.
 > S6 no longer exists as a separate stage — see its note.
 >
 > ⚠️ **A user decision changed S11's US fallback from 404 to 301** — read the S11 note.
@@ -966,6 +966,49 @@ Add `routes/content-sitemap.xml/+server.ts`; move the content sections out of
 `scripts/chatbot-related/sync-embedding-index.js` (it fetches
 `https://solarvipani.com/in/sitemap.xml`) and confirm the doc count doesn't drop.
 
+**Done 2026-07-31.** `/sitemap.xml` stays an index and now lists a third child,
+`/content-sitemap.xml`, alongside `/{cc}/sitemap.xml`. `routes/in/sitemap.xml` deleted;
+`[country=country]/sitemap.xml` (previously dead code) serves `/in/sitemap.xml` off the
+shared pool. **`routes/in/` is now exactly S14's stated precondition.**
+
+Counts: `/in/sitemap.xml` 1346 → **1224**, `/us/sitemap.xml` 51 → **47**,
+`/content-sitemap.xml` → **129**.
+
+`generateContentSitemapEntries()` takes **no `CountryConfig` and reads no feature flag** —
+those flags gated these rows *per country*, but the content now exists once at the root.
+They still gate nav links and `slug-resolver`, per §2. Also gated
+`recent-solar-installation-projects` on `features.projects`: with the flag false the page
+404s (S10), so the US sitemap was advertising a dead URL.
+
+**Two pre-existing bugs fixed here — both invisible to every grep in §7:**
+
+1. ⚠️ **Every pillar landing page was listed as `.../null`.** A pillar row carries its
+   slug in `slug` and leaves `pillar_slug` **NULL**; only cluster rows populate
+   `pillar_slug`. The generator read `pillar_slug` for both, so all 7 pillars
+   (`rooftop-solar`, `solar-panels`, …) were advertised as a 404 **and no real pillar
+   landing page was listed in any sitemap**. That is 7 of the site's highest-value URLs
+   missing from search engines for as long as this code has existed.
+2. ⚠️ **The sitemap contradicted its own pages' canonicals.** `trailingSlash` is
+   `'never'`, but ~1200 geo locs plus `/{c}/` and `/{c}/solar/` were written **with** a
+   trailing slash, so every one 301'd — while the canonical tag on the target page has no
+   slash. All locs are now slash-free. **This is the sitemap half of the trailing-slash
+   pass in the deferred list; the `href` half is still outstanding.**
+
+**Verification (the §7.6 audit, done exhaustively rather than by sampling):** of the
+**116** distinct URLs that left `/in/sitemap.xml`, **115 appear in `/content-sitemap.xml`
+and 301 in exactly 1 hop to a 200** — each checked individually, **0 non-conforming**. The
+116th was the `/in/null` 404, correctly gone. All **129** content-sitemap URLs resolve in
+**0 hops**; all **47** `/us/sitemap.xml` URLs now resolve in 0 hops (39 previously took a
+redirect); 65 checked across `/in/sitemap.xml`, all 0 hops.
+
+**`sync-embedding-index.js` is unaffected** and did not need re-running against prod to
+know that: it indexes only the `city-pages` category (`/in/solar/{state}/{district}/{city}`),
+which is geo and stayed put, and its regex makes the trailing slash optional. Replaying its
+matcher over the before and after sitemaps gives **344 both times**. Re-run it after deploy
+anyway to confirm against prod data.
+
+`npm run check` 17/14, build passes, 3 prerendered US pages.
+
 ### S14 — Delete `routes/in/`
 By construction a no-op. `find src/routes/in -type f` must show only
 `(layout-1)/+layout.server.ts` and `(layout-1)/+layout.svelte` before deleting.
@@ -1052,10 +1095,12 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | `api/postRecentProject` | B | 12 | ✅ | n/a | ✅ |
 | `api/submitBusiness` | B | 12 | ✅ | n/a | ✅ |
 | `api/updateRecentProject` | B | 12 | ✅ | n/a | ✅ |
-| `sitemap.xml/` | C | 13 | ☐ | n/a | ☐ |
+| `sitemap.xml/` | C | 13 | ✅ deleted | n/a | ✅ |
 
 **Baselines captured 2026-07-31, before S1** (dev server runs on port **7123**, not 5173):
-- `/in/sitemap.xml` `<loc>` count: **1346**
+- `/in/sitemap.xml` `<loc>` count: **1346** → **1224** after S13 moved 115 content URLs
+  into `/content-sitemap.xml` and dropped 7 bogus `/in/null` entries. Do not compare a
+  post-S13 sitemap against 1346.
 - `aboutStats` legacy (`/in`, counts `in_business_profiles`/`LeadData`):
   installerCount **634**, leadsGenerated **3199**
 - `aboutStats` unified (`/in/solar`, counts `businesses`/`leads`):
@@ -1089,6 +1134,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | 11c — funnels + district shim | 2026-07-31 | `ec8de21` |
 | 11d — the IN home (S11 complete) | 2026-07-31 | `45ed22e` |
 | 12 — the 3 API routes | 2026-07-31 | `6562d77` |
+| 13 — sitemap restructure | 2026-07-31 | `fe3467b` |
 
 ## 9. Hazards
 
@@ -1112,7 +1158,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 
 ## 10. Resume here (cold start)
 
-**Done: stages 1–5, 7–11 and 12.** Every stage is one commit plus a SHA-recording commit,
+**Done: stages 1–5 and 7–13.** Every stage is one commit plus a SHA-recording commit,
 listed in the §8 stage log. Destination A is complete — all 7 content pillars, tools,
 authors, seo-index and the legal pages answer country-less, each with a one-hop 301 from
 `/in/**` and `/us/**`. **Destination B is also complete**: projects (S10), partners (S11a),
@@ -1138,18 +1184,19 @@ routing, the moved loaders need no feature gate — but that also means **hazard
 net is now one file, not one check per loader**; see the note before adding a third country
 to `COUNTRIES`.
 
-**Next: S13** (sitemaps), then S14 (delete `routes/in/`), S15 (component merge —
-including **15c, which is where the shared IN/US pages you asked for actually get built**),
-S16 (doc).
+**Next: S14** — delete `routes/in/`, then S15 (component merge — including **15c, which
+is where the shared IN/US pages you asked for actually get built**) and S16 (doc).
 
-**What is left under `routes/in/`:** `sitemap.xml/+server.ts` (S13 deletes it) and
-`(layout-1)/+layout.server.ts` + `+layout.svelte`, which have had no child routes since
-S11d. That is already the exact precondition §S14 states, so S14 is a formality once S13
-lands.
+**What is left under `routes/in/`:** only `(layout-1)/+layout.server.ts` and
+`+layout.svelte`, childless since S11d. That is verbatim the precondition §S14 states, so
+S14 is a formality. Note `+layout.server.ts` there is the legacy-table `aboutStats` query
+that `routes/(layout-1)/+layout.server.ts` was copied from — deleting it leaves the
+country-less copy as the only legacy-table reader, which **resolves** the coupling warning
+in the carried-forward list below rather than leaving it dangling.
 
-**S13 needs a fresh `/in/sitemap.xml` baseline.** The §8 figure of **1346** `<loc>`s was
-captured before S1. Every destination-A URL in it has since moved and now 301s, so diff
-against a freshly captured pre-S13 snapshot, not against 1346.
+**S15 is the last substantive stage.** Re-read the S11 note first: it records why the
+shared IN/US page is S15c's job and what the blocker is (diverged copy, and `projects`
+having no `country_code` column).
 
 ### How to work a move stage (learned across 7a–10, follow this)
 
