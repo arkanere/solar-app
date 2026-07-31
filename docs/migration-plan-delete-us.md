@@ -1011,7 +1011,7 @@ end-state note — it currently says the final state is
 already amended once for `routes/in/`; amend it again for `routes/us/`. Record that the
 legacy US 301 shims now live under `[country]`.
 
-**Done 2026-08-01 (`<S13-SHA>`).** In `docs/country-scalable-architecture.md`:
+**Done 2026-08-01 (`6b836e7`).** In `docs/country-scalable-architecture.md`:
 - The top-of-file status callout gained a second UPDATE recording that `routes/us/`
   dissolved and that the route surface is now **final** at two trees, with the explicit
   note that **no URL moved and no redirect was added** (the structural difference from the
@@ -1100,7 +1100,7 @@ Legend: **A** = already covered by `[country]`, **B** = merge, **C** = relocate,
 | 10 — prerender → ISR | 2026-08-01 | `029e803` |
 | 11 — delete `routes/us/` + `$lib/us/` | 2026-08-01 | `44a9307` |
 | 12 — hooks comments + decision record | 2026-08-01 | `002ca6f` |
-| 13 — docs | 2026-08-01 | `<S13-SHA>` |
+| 13 — docs | 2026-08-01 | `6b836e7` |
 
 ## 9. Hazards
 
