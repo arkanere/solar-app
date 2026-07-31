@@ -145,28 +145,56 @@ export const usUpdateBusinessDetailsSchema = updateBusinessDetailsSchema.omit({
 });
 
 /* -------------------------------------------------------------------------
- * main-app /in/api/submitBusiness
+ * main-app /[country]/api/submitBusiness
  *
  * Replaces nine near-identical `if (!x || x.trim() === '')` blocks. Presence
  * only, matching what the handler checked — the GSTN and phone *formats* are
  * enforced client-side by BusinessForm.svelte and are not reproduced here, so
  * this cannot start rejecting submissions the endpoint used to accept.
+ *
+ * Country-parameterized when the two submitBusiness endpoints merged (stage 7
+ * of docs/migration-plan-delete-us.md). The old US endpoint validated nothing,
+ * so the US variant adds presence checks only — the discipline this file's
+ * header states — and must not require what the US form never sends.
  * ---------------------------------------------------------------------- */
 
-export const submitBusinessSchema = z.object({
-	businessName: requiredText('Business name'),
-	address: requiredText('Address', 1000),
-	plusCode: optionalText(120),
-	phoneNumber: requiredText('Phone number', 40),
-	whatsappNumber: optionalText(40),
-	email: requiredText('Business email', 320),
-	login_email: requiredText('Login email', 320),
-	website: optionalText(500),
-	gstn: requiredText('GSTN', 20),
-	state: requiredText('State', 120),
-	district: requiredText('District', 120),
-	city: requiredText('City', 120)
-});
+export const submitBusinessSchema = (country: 'in' | 'us') =>
+	z
+		.object({
+			businessName: requiredText('Business name'),
+			address: requiredText('Address', 1000),
+			plusCode: optionalText(120),
+			phoneNumber: requiredText('Phone number', 40),
+			whatsappNumber: optionalText(40),
+			email: requiredText('Business email', 320),
+			login_email: requiredText('Login email', 320),
+			website: optionalText(500),
+			// IN collects a tax id on signup, US does not
+			// (CountryConfig.taxId.collectOnSignup), so the shared BusinessForm
+			// posts gstn: "" for US. Requiring it would reject every US signup.
+			gstn: country === 'in' ? requiredText('GSTN', 20) : optionalText(20),
+			state: requiredText('State', 120),
+			// BusinessForm keys level2 by the country's own noun, derived from
+			// CountryConfig.levels.level2.singular: district (IN) / county (US).
+			// Reading the wrong one drops the value without erroring, which is
+			// why both are declared and exactly one is required below.
+			district: z.string().optional(),
+			county: z.string().optional(),
+			city: requiredText('City', 120)
+		})
+		.check((ctx) => {
+			const key = country === 'in' ? 'district' : 'county';
+			const label = country === 'in' ? 'District' : 'County';
+			const result = requiredText(label, 120).safeParse(ctx.value[key] ?? '');
+			if (!result.success) {
+				ctx.issues.push({
+					code: 'custom',
+					input: ctx.value[key],
+					path: [key],
+					message: result.error.issues[0].message
+				});
+			}
+		});
 
 /* -------------------------------------------------------------------------
  * main-app /api/submitDataAccess and /api/submitDataDeletion
@@ -205,6 +233,6 @@ export type AddReferrerInput = z.output<typeof addReferrerSchema>;
 export type SaveProposalInput = z.output<typeof saveProposalSchema>;
 export type UpdateBusinessDetailsInput = z.output<typeof updateBusinessDetailsSchema>;
 export type UsUpdateBusinessDetailsInput = z.output<typeof usUpdateBusinessDetailsSchema>;
-export type SubmitBusinessInput = z.output<typeof submitBusinessSchema>;
+export type SubmitBusinessInput = z.output<ReturnType<typeof submitBusinessSchema>>;
 export type DataRequestInput = z.output<typeof dataRequestSchema>;
 export type ResetPasswordInput = z.output<typeof resetPasswordSchema>;
