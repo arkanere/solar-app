@@ -8,6 +8,7 @@
 	import QuoteModal from '$lib/in/components/QuoteModal.svelte';
 	import { breadcrumbLD, localBusinessLD, faqLD } from '$lib/seo';
 	import { faqFor } from '$lib/countries/faq';
+	import { contentUrl } from '$lib/countries/urls';
 
 	let { data } = $props();
 
@@ -161,7 +162,7 @@
 			</p>
 			<div class="flex flex-wrap gap-2">
 				<a
-					href="/{cc}/rooftop-solar/cost/"
+					href={contentUrl("/rooftop-solar/cost/")}
 					class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors"
 				>
 					Solar System Cost Guide
@@ -173,7 +174,7 @@
 					PM Surya Ghar Subsidy
 				</a>
 				<a
-					href="/{cc}/solar-installation/process/"
+					href={contentUrl("/solar-installation/process/")}
 					class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors"
 				>
 					Installation Process

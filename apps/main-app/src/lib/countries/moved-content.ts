@@ -22,5 +22,9 @@ export const MOVED_TO_ROOT = [
 	'data-access',
 	'write-for-us',
 	'seo-index',
-	'data-deletion'
+	'data-deletion',
+
+	// stage 7a — first two content pillars
+	'rooftop-solar',
+	'solar-installation'
 ];

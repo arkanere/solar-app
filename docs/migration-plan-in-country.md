@@ -1,8 +1,11 @@
 # Migration plan: dissolve `routes/in/`
 
-> **STATUS: in progress. Stages 1–5 of 16 done (2026-07-31).** Next: **S7a**
-> (country-less: `rooftop-solar`, `solar-installation`). S6 no longer exists as a
-> separate stage — see its note.
+> **STATUS: in progress. Stages 1–5 done, plus S7a (2026-07-31).** Next: **S7b**
+> (country-less: `solar-panels`, `solar-inverters`, `solar-pumps`). S6 no longer
+> exists as a separate stage — see its note.
+>
+> ⚠️ **One open decision is waiting — the `AboutSolarVipani`/social-links gap on
+> country-less pages. See the end of the S7 note; decide before S8.**
 >
 > ⚠️ **S6 has been restructured — read the S4 and S6 notes before continuing.**
 > Redirects are no longer one late stage; each move stage lands its own.
@@ -504,6 +507,55 @@ Per-page work in each sub-stage, beyond the `git mv`:
 - `country="in"` props on `PillarPage`/`ClusterPage` stay as-is; S2 fixed those and they
   feed `countryUrl`/`geoUrl`/`projectUrl` links that are still per-country.
 
+**Done 2026-07-31 (7a.2).** Nine files `git mv`d with `export const config` intact.
+Beyond the four `+page.svelte` canonicals and breadcrumbs, the move needed **eight inbound
+links in five other files** retargeted to `contentUrl()` — the stage text did not
+anticipate these, and left alone each would have become an internal link running through a
+301:
+- `[country]/(layout-1)/solar/+page.svelte`, `.../[district]/+page.svelte` (×2),
+  `.../[district]/[slug]/+page.svelte` — were `/{cc}/rooftop-solar/...`.
+- `in/(layout-1)/+page.svelte` (×2), `in/.../tools/solar-calculator/+page.svelte`,
+  `in/.../project/[project_id]/+page.svelte`.
+- `(layout-1)/seo-index/+page.svelte` — its ~40 `rooftop-solar`/`solar-installation`
+  hrefs only. The rest of that file still awaits S9, as planned.
+
+**Rule for 7b/7c/S8/S9, learned here:** grep the whole tree for the family name before
+moving. Retargeting inbound links is part of the move, not a later cleanup.
+
+Two findings worth carrying forward:
+1. **`[country]/solar/[state]/[district]/[slug]` had a latent `/us` bug.** Its
+   `/{cc}/rooftop-solar/{n}kw-system/` link is gated on `isSize`, **not** on
+   `features.seoContentFamilies` like the other content links — so `/us` emitted
+   `/us/rooftop-solar/5kw-system/`, a 404. `contentUrl()` fixes it incidentally. Check the
+   remaining families' call sites for the same ungated pattern.
+2. **The roi shim's trailing slash cost a hop.** `trailingSlash` is `'never'`, so
+   redirecting to `/solar-financing/roi/` triggered a second, normalizing redirect — true
+   before this stage too. Dropped the slash: `/rooftop-solar/roi` is now 1 hop, and the
+   legacy `/in/rooftop-solar/roi` is 2, matching its pre-stage baseline. **Note the wider
+   pattern:** many content links are written with trailing slashes
+   (`contentUrl('/rooftop-solar/cost/')`), each costing a normalization hop. Pre-existing
+   and site-wide, so out of scope here, but worth a dedicated pass.
+
+Verified: 5 country-less URLs 200; the 4 `/in` originals and both `/us` twins 301 in
+exactly 1 hop with the query string preserved; `/us/solar` and `/us/solar/california/orange`
+contain zero `/in/` hrefs and no dead content links; href diff of `/in/rooftop-solar`
+(pre) vs `/rooftop-solar` (post) shows only the intended prefix changes plus the
+deliberately-hidden per-country CTAs. `npm run check` 17/14, build passes, 3 prerendered
+US pages. `/in/` grep 240 -> **187**.
+
+> ⚠️ **OPEN DECISION, surfaced by this stage — affects S8/S9 and the already-shipped S4.**
+> Country-less pages do not render `AboutSolarVipani`, so they lose that whole section
+> **including the five social links** (WhatsApp, Facebook, Instagram, LinkedIn, X). Cause is
+> the S1 note: the component needs `data.aboutStats` and `routes/(layout-1)/` has no layout
+> loader. S4 already shipped this for the legal pages, where it is minor; `/rooftop-solar`
+> and `/solar-installation` are high-traffic SEO pages, where it is not, and S8/S9 will
+> extend it to tools and authors.
+>
+> Fix is a `routes/(layout-1)/+layout.server.ts` running the same `aboutStats` query the IN
+> layout uses, plus rendering the component. Nothing country-less is prerendered, so the S3
+> warning about coupling a prerendered page to the DB does not apply; the ISR configs on the
+> legal pages cache the result. **Decide before S8.**
+
 ### S8 — Country-less: tools
 `tools/`, `tools/{solar-calculator,emi-calculator,subsidy-checker}` → `routes/(layout-1)/`.
 Queries hit **legacy `locations`** (not `geo_locations`) plus `in_business_profiles`,
@@ -635,9 +687,9 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | Route (under `routes/in/`) | Dest | Stage | Moved | 301 | Verified |
 |---|---|---|---|---|---|
 | `(layout-1)/+page.*` (home) | B | 11 | ☐ | n/a | ☐ |
-| `rooftop-solar/` + `[slug]` | A | 7a | ☐ | ☐ | ☐ |
-| `rooftop-solar/roi/+server.ts` | A | 7a | ☐ | ☐ | ☐ |
-| `solar-installation/` + `[slug]` | A | 7a | ☐ | ☐ | ☐ |
+| `rooftop-solar/` + `[slug]` | A | 7a | ✅ | ✅ | ✅ |
+| `rooftop-solar/roi/+server.ts` | A | 7a | ✅ | ✅ | ✅ |
+| `solar-installation/` + `[slug]` | A | 7a | ✅ | ✅ | ✅ |
 | `solar-panels/` + `[slug]` + `[model_slug]` | A | 7b | ☐ | ☐ | ☐ |
 | `solar-inverters/` + `[slug]` + `[model_slug]` | A | 7b | ☐ | ☐ | ☐ |
 | `solar-pumps/` + `[slug]` + `[model_slug]` | A | 7b | ☐ | ☐ | ☐ |
@@ -690,6 +742,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | 4 — legal & static -> root | 2026-07-31 | `2f9ff0d` |
 | 5 — delete /us legal dupes | 2026-07-31 | `4f446fe` |
 | 7a.1 — moved-content wiring (no-op) | 2026-07-31 | `23ffdb9` |
+| 7a.2 — rooftop-solar + solar-installation | 2026-07-31 | _pending_ |
 
 ## 9. Hazards
 

@@ -351,7 +351,7 @@
 
 	<!-- Authority links -->
 	<div class="flex flex-wrap gap-3 text-sm mb-8">
-		<a href="/in/rooftop-solar/cost/" class="text-primary hover:underline">Solar Panel Cost Guide</a>
+		<a href={contentUrl("/rooftop-solar/cost/")} class="text-primary hover:underline">Solar Panel Cost Guide</a>
 		<span class="text-muted-foreground">|</span>
 		<a href="/in/solar/" class="text-primary hover:underline">Browse Installers by State</a>
 	</div>

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import GeoDirectory from '$lib/in/components/seo/GeoDirectory.svelte';
+	import { contentUrl } from '$lib/countries/urls';
 	import { breadcrumbLD } from '$lib/seo';
 
 	let { data } = $props();
@@ -81,7 +82,7 @@
 		<section class="mb-8">
 			<h2 class="text-lg font-semibold text-primary mb-3">Solar Guides</h2>
 			<div class="flex flex-wrap gap-2">
-				<a href="/{cc}/rooftop-solar/" class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
+				<a href={contentUrl("/rooftop-solar/")} class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
 					Rooftop Solar Guide
 				</a>
 				<a href="/{cc}/solar-subsidy/" class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">

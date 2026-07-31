@@ -7,6 +7,7 @@
 	import QuoteModal from '$lib/in/components/QuoteModal.svelte';
 	import { breadcrumbLD, localBusinessLD, faqLD } from '$lib/seo';
 	import { faqFor } from '$lib/countries/faq';
+	import { contentUrl } from '$lib/countries/urls';
 
 	// Union return type from load — access page-type-specific fields via d
 	let { data } = $props();
@@ -166,7 +167,7 @@
 	{#if isSize}
 		<p class="text-sm text-muted-foreground mb-8">
 			Understand what a {d.sizeKw}kW system powers →
-			<a href="/{cc}/rooftop-solar/{d.sizeKw}kw-system/" class="text-primary hover:underline font-medium">
+			<a href={contentUrl(`/rooftop-solar/${d.sizeKw}kw-system/`)} class="text-primary hover:underline font-medium">
 				Complete {d.sizeKw}kW Solar System Guide
 			</a>
 		</p>

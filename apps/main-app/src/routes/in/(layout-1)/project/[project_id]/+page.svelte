@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
+	import { contentUrl } from '$lib/countries/urls';
 	import { MapPin, Calendar, Hash } from '@lucide/svelte';
 	import { formatDate } from '$lib/constants/projectFormatters';
 	import { breadcrumbLD } from '$lib/seo';
@@ -136,7 +137,7 @@
 	{#if sizeKw}
 		<p class="text-sm text-muted-foreground mb-8">
 			Learn about {sizeKw}kW systems →
-			<a href="/in/rooftop-solar/{sizeKw}kw-system/" class="text-primary hover:underline font-medium">
+			<a href={contentUrl(`/rooftop-solar/${sizeKw}kw-system/`)} class="text-primary hover:underline font-medium">
 				Complete {sizeKw}kW Solar System Guide
 			</a>
 		</p>
