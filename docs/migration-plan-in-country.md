@@ -1,8 +1,11 @@
 # Migration plan: dissolve `routes/in/`
 
-> **STATUS: in progress. Stages 1–5 and 7–14 done (2026-07-31).** **`routes/in/` no longer
-> exists — the plan's primary goal (§1) is met.** Next: **S15** (component merge), the last
-> substantive stage, then S16 (doc). S15c is where the shared IN/US pages get built.
+> **STATUS: stages 1–5 and 7–15 done (2026-07-31). Only S16 (update the architecture doc)
+> remains.** `routes/in/` no longer exists — §1's goal is met — and `$lib/us/` is down to
+> `themeStore.js`.
+>
+> ⚠️ **`npm run check` baseline is now 13 errors / 1 warning**, not 17/14: S15a deleted the
+> dead files that carried the difference.
 > S6 no longer exists as a separate stage — see its note.
 >
 > ⚠️ **A user decision changed S11's US fallback from 404 to 301** — read the S11 note.
@@ -1058,6 +1061,71 @@ in `seo-index` that correctly address destination-B routes, `LeadFormModal`'s
 components, and the crawler fails on any 404 link. Check every emitted `href` against the
 real `/us` surface.
 
+**Done 2026-07-31.** Four commits: 15a (`3110cd4`, addendum `c9c841d`), 15b (`f656c6a`),
+15d (`3287e97`), 15c in three parts (`310db71`, `25d1d89`, `7c9c6cc`).
+
+**`$lib/us/` now contains exactly one file: `themeStore.js`** (10 refs, a store not a
+component — the stage text says leave it). `$lib/in/` is data only: `pillar-config`,
+`sampleQuotation`, `sampleQuotationPdf`.
+
+⚠️ **The `npm run check` baseline moved to 13 errors / 1 warning** (from 17/14). The files
+deleted in 15a were carrying 4 errors and 13 warnings. **Later work should hold 13/1.**
+
+**15a — 19 dead files.** The stage text's `$lib/us` list was right but incomplete; also
+dead were `cities.js`, `city_jsonLD1.js`, `index.js`, `sendPasswordResetEmail.js` and
+`Conversationflow/societyFlows.json`, plus five `$lib/in` files.
+⚠️ **Establishing that list took three tries — do not trust a single grep.** Matching on a
+component's *stem* over-counts wildly (`LeadForm` matches `LeadFormModal`,
+`LeadFormSection`, `LeadFormBusiness`; `index` and `cities` match half the tree). Matching
+only on `$lib/...` specifiers *under*-counts, because the `seo/` components import their
+siblings by **relative path** — `ContentSections`, `ClusterNav` and `DistrictCTA` all look
+dead that way and are very much alive. Enumerate both import forms. A JSON asset is
+referenced by neither and needs its own check.
+
+**15b — 28 components moved,** 33 importers rewritten. No collisions with the existing
+`chat/`, `chrome/`, `ui/`. The stage text's "same commit as their non-`[country]`
+importers" requirement is satisfied by construction when everything moves at once.
+
+**15d — moved *both* faqData files** to `$lib/countries/faq-{in,us}.ts`, not just the US
+one the stage text names. They are two implementations of one `FaqGenerators` interface
+with a single consumer (`faq.ts`); moving one would have split the abstraction across three
+directories. Note `faq-us.ts` imports the `FAQItem` type from `faq-in.ts`.
+
+**15c — the three live pairs.**
+- `LeadFormBusiness`: relocated (US-only, no `$lib/us` deps).
+- `AboutSolarVipani`: **merged with the stats made optional.** The IN version required
+  `installerCount`/`leadsGenerated`; the three `/us` pages are prerendered and S3
+  deliberately kept `aboutStats` out of the US layout so a build is never coupled to the
+  DB. Optional props plus an omitted stats block resolve that without reversing S3, and
+  mean the "Leads Generated Across India" label never appears on `/us`. One copy edit:
+  "before you spend a single rupee" → "before you spend anything", since the sentence now
+  renders on `/us`.
+- `BusinessForm`: **merged, driven by `CountryConfig`.** The prop widened from
+  `CountryCode` to `CountryConfig`, exactly as the S2 note anticipated.
+  ⚠️ **The trap that would have silently broken US signups:** the two `submitBusiness`
+  endpoints key the level2 value by their own noun — the IN handler reads `district`, the
+  US one reads `county`. The wrong key drops the value **without erroring**. It is now
+  derived from `country.levels.level2.singular`, the same field that renders the label, so
+  the two cannot drift.
+  Added `CountryConfig.taxId.collectOnSignup` (IN `true`, US `false`) beside the existing
+  `taxId.label`. **Both endpoints accept the field** — the US one stores it as `ein` — but
+  the US form has never shown it, and this preserves that rather than adding a field to a
+  live signup form. GSTN validation is skipped when the flag is false so an absent field
+  cannot block submission. Added `$lib/countries/states.ts` (`statesFor`) to keep the
+  state-list switch in the countries layer. **No validation behaviour changed for either
+  country**: the US form's inline `/^\d{10,16}$/` rules are byte-identical to the shared
+  `validatePhoneNumber` the IN version already used.
+
+**Hazard 5 did not bite.** The build passes with all **3** prerendered US pages at every
+step, including after both merges. `/us/business-form` still prerenders, which is exactly
+what S3's pure non-async layout loader exists to allow.
+
+Verified across 20 URLs spanning all three trees, all 200: `/us/business-form` renders
+"County", a populated county dropdown and **zero** tax inputs; `/in/business-form` renders
+"District" and one GSTN input; `/us/business-listing` renders the About section and social
+links with **no** stats block while `/in` and `/` keep theirs; FAQ JSON-LD still renders 4
+questions on both `/in/solar/maharashtra/pune` and `/us/solar/arizona/maricopa`.
+
 ### S16 — Update `docs/country-scalable-architecture.md`
 Record the reversal of line 103 and mark Step 6 done.
 
@@ -1137,7 +1205,9 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 - `/in/` grep count: **975** total / **329** excluding `src/lib/server/migrations/`
   (the migrations figure never shrinks — those `.sql` files are historical)
 - `npm run check` baseline: **17 errors, 14 warnings in 11 files**, all pre-existing.
-  A stage is clean when it does not move these numbers.
+  A stage is clean when it does not move these numbers. ⚠️ **Superseded by S15a — the
+  baseline is now 13 errors / 1 warning in 7 files.** S15a deleted the dead components
+  that carried the other 4 errors and 13 warnings.
 
 **Stage log** (append: stage, date, commit SHA — the revert target for a later session):
 
@@ -1163,6 +1233,10 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | 12 — the 3 API routes | 2026-07-31 | `6562d77` |
 | 13 — sitemap restructure | 2026-07-31 | `fe3467b` |
 | 14 — delete `routes/in/` | 2026-07-31 | `10577a7` |
+| 15a — delete dead components | 2026-07-31 | `3110cd4` |
+| 15b — `$lib/in/components` → `$lib/components` | 2026-07-31 | `f656c6a` |
+| 15d — faqData → `$lib/countries` | 2026-07-31 | `3287e97` |
+| 15c — merge the 3 live pairs | 2026-07-31 | `310db71`, `25d1d89`, `7c9c6cc` |
 
 ## 9. Hazards
 
@@ -1186,7 +1260,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 
 ## 10. Resume here (cold start)
 
-**Done: stages 1–5 and 7–14. `routes/in/` is gone.** Every stage is one commit plus a SHA-recording commit,
+**Done: stages 1–5 and 7–15. `routes/in/` is gone and `$lib/us/` is down to `themeStore`.** Every stage is one commit plus a SHA-recording commit,
 listed in the §8 stage log. Destination A is complete — all 7 content pillars, tools,
 authors, seo-index and the legal pages answer country-less, each with a one-hop 301 from
 `/in/**` and `/us/**`. **Destination B is also complete**: projects (S10), partners (S11a),
@@ -1212,21 +1286,18 @@ routing, the moved loaders need no feature gate — but that also means **hazard
 net is now one file, not one check per loader**; see the note before adding a third country
 to `COUNTRIES`.
 
-**Next: S15** (component merge), the last substantive stage, then S16 (doc).
+**Next and last: S16** — record in `docs/country-scalable-architecture.md` that line 103's
+decision is reversed and that Step 6 (the component merge) is done.
 
-**Read the S11 note before starting S15c** — it records why the shared IN/US page is
-S15c's job, and what the blockers are: ~2000 lines of independently-written marketing copy
-across the `/in` and `/us` twins (US `business-listing` is 1391 ln vs IN's 690), and
-`projects` having **no unified table and no `country_code` column**, so "projects
-completed" cannot be made country-aware and needs hiding behind `features.projects`.
-
-⚠️ **S15 is the stage that can fail the build.** The 3 prerendered US pages render merged
-components and the crawler fails the build on any 404 link. It is **3 pages, not the 4 the
-stage text says** — S5 deleted `/us/about-us`.
-
-**S15a's dead list is larger than written.** Add `$lib/in/components/RecentProjectsCity`
-and `BusinessTilesList` (zero importers in `routes/`, found in S10) to the `$lib/us/*`
-list already there.
+⚠️ **Correction to an earlier claim in this document and in session notes.** S15c was
+described as the stage that produces "one shared page for `/us` and `/in`". **It is not.**
+S15c merges shared *components*; **§3.3 explicitly keeps `routes/us/` and its page twins
+out of scope.** A genuinely shared `business-listing`/home/thank-you page is **not
+scheduled anywhere in this plan** and would be new work beyond it. The blockers recorded
+in the S11 note still stand for whoever takes it on: ~2000 lines of independently-written
+marketing copy (US `business-listing` is 1391 ln vs IN's 690), and `projects` having **no
+unified table and no `country_code` column**, so "projects completed" cannot be made
+country-aware and would need hiding behind `features.projects`.
 
 ### How to work a move stage (learned across 7a–10, follow this)
 
