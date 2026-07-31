@@ -1,7 +1,8 @@
 # Migration plan: delete `routes/us/`
 
-> **STATUS: IN PROGRESS. S1, S3–S9 applied 2026-07-31. S2 deleted — its premise
-> did not hold. Next stage: S10. Only 2 files remain under `routes/us/`, both layouts.**
+> **STATUS: IN PROGRESS. S1, S3–S9 applied 2026-07-31, S10 on 2026-08-01. S2 deleted —
+> its premise did not hold. Next stage: S11. Only 2 files remain under `routes/us/`,
+> both layouts, and S11 deletes them.**
 >
 > ⚠️ **S2 no longer exists.** §5a assumed a per-country contact split. There is
 > exactly **one** support number (`+918983066701`) and **one** support email
@@ -879,6 +880,44 @@ prerendered page becomes an ISR-cached function. Note the `expiration` you choos
 Verify: build passes with **0** prerendered pages; `/us` and `/us/business-listing` 200
 with the expected cache headers.
 
+**Done 2026-08-01 (`<S10-SHA>`).** Smaller than written, because S9 had already taken the
+prerendered set to 0. Four things changed:
+
+1. **`business-form` had no loader at all**, so there was nothing to "confirm" — it has
+   never carried ISR on the `[country]` side, and `/us/business-form` lost its caching in
+   S3 when its `prerender = true` went. It now has a `+page.ts` whose only purpose is
+   `config`, at the same `expiration: 1296000` as every other `[country]` page (user's
+   call, asked because it is a live signup entry point and a Vercel-cost change).
+   **Proof it took effect is the adapter output, not the source:** ISR lands as
+   `.vercel/output/functions/**/*.prerender-config.json`, and all three of
+   `[country=country]/(layout-1){,/business-form,/business-listing}` now emit
+   `{"expiration": 1296000, …}`. 86 such configs total.
+2. **The `building` guard in `hooks.server.ts` is gone**, verified by building rather than
+   by reasoning: with no prerender entries there is no crawler, so `handle` never runs at
+   build time. ⚠️ **This is a build-time simplification only** — at request time `building`
+   was always `false`, so query strings survived a legacy redirect before *and* after.
+   Do not record it as a behaviour fix. Confirmed live: `/us/partners?utm_source=test` →
+   `/us/business-listing?utm_source=test`, and the same for `/us/blogs`, `/us/get-quotes`,
+   `/us/state`.
+3. **`prerender.entries: ['*']` removed from `svelte.config.js`.** Inert since S9 — entries
+   only expand for routes that opt in, and `['*']` is the default regardless — so this is
+   noise removal, not a behaviour change.
+4. **The three stale "the /us pages are prerendered" comments** are corrected
+   (`AboutSolarVipani.svelte`, `routes/(layout-1)/+layout.server.ts`,
+   `routes/us/(layout-1)/+layout.server.ts`). The `/us` layout stays statsless until S11
+   deletes it; the comment now says that is inertia rather than a constraint.
+
+⚠️ **The county/directory shims redirect from their `+server.ts` route handlers, not from
+`hooks.server.ts`** — they were relocated into `[country]` in S4. So they do **not** carry
+the query string, and testing `?utm_source=` against `/us/county/maricopa-az` measures the
+wrong thing. Use `/us/partners` or `/us/blogs` to exercise the hooks path.
+
+Verified: `npm run check` 13/1, build passes with **0** prerendered pages, all 7 legacy
+redirect families still fire in their expected hop counts (`/us/partners`, `/us/get-quotes`,
+`/us/blogs`, `/us/state`, `/us/county/maricopa-az` in 1; the directory shim in 2 per the S4
+note), `/us`, `/in`, `/`, `/us/business-form`, `/us/business-listing`, `/us/solar` and
+`/us/sitemap.xml` all 200.
+
 ### S11 — Delete `routes/us/` and `$lib/us/`
 By construction close to a no-op. `find src/routes/us -type f` must show only
 `(layout-1)/+layout.svelte` and `(layout-1)/+layout.server.ts` before deleting.
@@ -987,7 +1026,7 @@ Legend: **A** = already covered by `[country]`, **B** = merge, **C** = relocate,
 | 7 — submitBusiness | 2026-07-31 | `4fd3733` |
 | 8 — business-listing | 2026-07-31 | `dd4867a` |
 | 9 — the home | 2026-07-31 | `38f7d97` |
-| 10 — prerender → ISR | | |
+| 10 — prerender → ISR | 2026-08-01 | `<S10-SHA>` |
 | 11 — delete `routes/us/` + `$lib/us/` | | |
 | 12 — hooks comments + decision record | | |
 | 13 — docs | | |
@@ -1021,14 +1060,19 @@ Legend: **A** = already covered by `[country]`, **B** = merge, **C** = relocate,
 
 ## 10. Resume here (cold start)
 
-**Next stage: S10 — prerender → ISR.** S1, S3–S9 are applied and pushed; S2 is deleted.
-The remaining work is S10–S13, and **all of it is mechanical.** Every merge is done.
+**Next stage: S11 — delete `routes/us/` and confirm the no-op.** S1, S3–S10 are applied
+and pushed; S2 is deleted. The remaining work is S11–S13, and **all of it is mechanical.**
+Every merge is done and the caching is settled.
 
-**⚠️ The prerendered set is already 0** — S9 deleted the last `+page.js`. S10 is therefore
-not "make it 0", it is: confirm the ISR config on the merged loaders, decide whether the
-`building` guard in `hooks.server.ts` is still needed (**verify by building, not by
-reasoning**), and fix the stale "the three /us pages are prerendered" comments. S11 then
-deletes the last two files, both layouts.
+**⚠️ S11's real content is the two decisions its text names, not the deletion.**
+`find src/routes/us -type f` already shows only the two layout files, so the `git rm` is
+trivial. What needs judgement: (a) the US analytics loaders in
+`routes/us/(layout-1)/+layout.svelte` — the S1 note found the `[country]` layout already
+loads the same Umami, GA, Hotjar, Twitter and CallSafe ids, so **check only the Facebook
+Pixel init id, which differs in placement**, and confirm with the user rather than dropping
+a live campaign pixel silently; and (b) `initializeTheme`, which the `[country]` layout
+already calls via `$lib/themeStore.svelte`. S11 then verifies as a **strict no-op** across
+the full URL list in its text.
 
 **⚠️ Worth showing the user before S10:** `/us` and `/us/business-listing` are now
 genuinely different pages from `/in`'s, served by the same components. Nothing downstream
@@ -1051,6 +1095,9 @@ depends on reviewing them, but S8+S9 are where the product judgement lived.
   that newline into the HTML, so it cannot become a JS string without reflowing.
 - A loader querying an IN-only table must be short-circuited for other countries, not
   merely have its output ignored by the page.
+- **Verify build-shaped config in the build output, not the source.** ISR is only really
+  applied if `.vercel/output/functions/<route>.prerender-config.json` exists; a `config`
+  export in the wrong file type is silently ignored.
 
 **⚠️ `/in` has changed in three disclosed ways; none are visible-text regressions.** S9
 minified the Service JSON-LD block on `/in` by moving it into `{@html JSON.stringify(…)}`
@@ -1087,8 +1134,10 @@ exists — it went in S1, not S11.
   (S2's deletion). Do not "fix" it.
 - **`npm run check` holds at 13 errors / 1 warning.** Two of the 13 are the svelte2tsx
   `{@html \`<script>…\`}` false positive; assemble such strings in the JS block.
-- **The prerendered count is 0.** The build's success signal is no longer a page count
-  (§4.5); assert that the build passes with zero prerendered entries.
+- **The prerendered count is 0** and `prerender.entries` is gone from `svelte.config.js`.
+  The build's success signal is no longer a page count (§4.5); assert that the build passes
+  with zero prerendered entries and 86 `.prerender-config.json` (ISR) files.
+- **`hooks.server.ts` no longer imports `building`.** Do not reintroduce the guard.
 - **The route-manifest baseline is 82 directories**, not the 92 measured before S1.
 - **`/in` must stay byte-identical** at every stage — href set *and* text — with the one
   deliberate exception above.

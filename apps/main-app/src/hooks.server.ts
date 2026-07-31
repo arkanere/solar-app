@@ -1,5 +1,4 @@
 import type { Handle } from '@sveltejs/kit';
-import { building } from '$app/environment';
 import { MOVED_TO_ROOT } from '$lib/countries/moved-content';
 
 // MOVED_TO_ROOT — route families that used to live under /in (and sometimes /us)
@@ -65,12 +64,17 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 	const redirectTarget = legacyRedirect(event.url.pathname);
 	if (redirectTarget) {
-		// url.search is not readable while prerendering (crawler follows links
-		// from the prerendered /us home into these legacy paths).
-		const search = building ? '' : event.url.search;
+		// This used to read `building ? '' : event.url.search`, because
+		// `url.search` is unreadable while prerendering and the crawler followed
+		// links from the prerendered /us home into these legacy paths. Stage 10
+		// of docs/migration-plan-delete-us.md dropped it: nothing in the app is
+		// prerendered any more, so there is no crawler and `handle` never runs
+		// at build time. This is a build-time simplification only — at request
+		// time `building` was always false, so query strings survived a legacy
+		// redirect before and after.
 		return new Response(null, {
 			status: 301,
-			headers: { location: redirectTarget + search }
+			headers: { location: redirectTarget + event.url.search }
 		});
 	}
 

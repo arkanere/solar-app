@@ -5,9 +5,11 @@
 
 	interface Props {
 		// Optional so this component can render on pages with no database access.
-		// The prerendered /us pages' layout deliberately returns no aboutStats
-		// (stage 3 of the /in plan: adding it would couple a build to the DB), so
-		// they render this section without the stats block.
+		// routes/us/(layout-1)/+layout.server.ts returns no aboutStats, so /us
+		// renders this section without the stats block. That started as a
+		// prerendering constraint (stage 3 of the /in plan: a DB call would have
+		// coupled the build to the database); nothing is prerendered any more,
+		// but the layout is still statsless until stage 11 deletes it.
 		installerCount?: number;
 		leadsGenerated?: number;
 	}

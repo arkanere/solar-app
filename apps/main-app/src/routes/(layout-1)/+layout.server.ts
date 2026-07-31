@@ -16,8 +16,9 @@ import { pool } from '$lib/server/db';
 // 3196 where this shows 3199 (§8 — expected, not a bug). The unified-table
 // cutover owns switching this one over; when it does, the two trees agree again.
 //
-// Nothing under routes/(layout-1)/ is prerendered, so this does not couple a
-// build to the DB (§S3); the ISR configs on the legal pages cache the result.
+// Nothing anywhere in the app is prerendered any more (stage 10 of
+// docs/migration-plan-delete-us.md), so this cannot couple a build to the DB;
+// the ISR configs on the pages under this layout cache the result.
 export const load: LayoutServerLoad = async () => {
 	const [installerResult, leadResult] = await Promise.all([
 		pool.query(`SELECT COUNT(*) as count FROM in_business_profiles WHERE isvisible = true`),

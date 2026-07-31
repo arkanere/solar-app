@@ -5,7 +5,10 @@ import type { LayoutServerLoad } from './$types';
 // `data.country`. The shared chrome and the components being merged in stage 15
 // of docs/migration-plan-in-country.md are country-aware, so supply it here.
 //
-// Deliberately pure and non-async: four pages under this layout are
-// `prerender = true`, and touching the DB here would couple their build to it.
-// `aboutStats` does not belong in this file.
+// Pure and non-async because four pages under this layout used to be
+// `prerender = true` and a DB call would have coupled their build to it. Those
+// pages are all gone (stages 3–9 of docs/migration-plan-delete-us.md) and
+// nothing is prerendered any more, so the constraint is lifted — but this file
+// itself is redundant now that [country]/(layout-1)/+layout.server.ts supplies
+// `data.country` for /us, and stage 11 deletes it rather than growing it.
 export const load: LayoutServerLoad = () => ({ country: getCountry('us') });
