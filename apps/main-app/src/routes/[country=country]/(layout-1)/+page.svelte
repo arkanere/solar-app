@@ -3,13 +3,98 @@
   import { contentUrl, countryUrl } from "$lib/countries/urls";
   import RecentProjectsHome from "$lib/components/RecentProjectsHome.svelte";
   import SolarComparisonTable from "$lib/components/SolarComparisonTable.svelte";
+  import LeadFormBusiness from "$lib/components/LeadFormBusiness.svelte";
 
   // Receive data from server
   let { data } = $props();
 
   const cc = $derived(data.country.code);
+  const features = $derived(data.country.features);
   const homeUrl = $derived(countryUrl(cc, ""));
   const quotesUrl = $derived(countryUrl(cc, "/get-quotes/"));
+
+  // Section gating (stage 9 of docs/migration-plan-delete-us.md). Prefer the
+  // feature flag wherever one actually governs the section; the quote funnel
+  // has no flag because it is a routing fact, not a product capability.
+  //
+  // hasQuoteFunnel: /us/get-quotes 301s away to /us (hooks.server.ts) — a US
+  // consumer lead funnel is new product work this migration deliberately does
+  // not do (§5c). Linking it from the home would send visitors to a redirect.
+  // The US home captures leads through LeadFormBusiness instead.
+  const hasQuoteFunnel = $derived(cc === "in");
+  // The comparison table and the "Why Now" / FAQ blocks are subsidy-and-rupee
+  // copy: PM Surya Ghar, ₹78,000, DISCOM, MNRE. features.subsidy is the flag
+  // that governs them and it is already false for US.
+  const showSubsidyCopy = $derived(features.subsidy);
+  // The US home's own sections, verbatim from routes/us/(layout-1)/+page.svelte.
+  const isUs = $derived(cc === "us");
+  const hasHeroVideo = $derived(cc === "in");
+  // The /us hero image was labelled "Solar Panel Installation in India" — one
+  // of the §4.1 symptoms this stage exists to remove.
+  const heroImageAlt = $derived(
+    isUs
+      ? "Residential Solar Panel Installation in the United States"
+      : "Residential Solar Panel Installation in India",
+  );
+
+  // Head copy. Every value below is verbatim from the page that country was
+  // served by before stage 9 merged them — the IN set from this file, the US
+  // set from routes/us/(layout-1)/+page.svelte. The <title> stays a markup
+  // branch rather than joining these: the IN one wraps across two source lines
+  // and that newline is part of the rendered output.
+  const metaDescription = $derived(
+    isUs
+      ? "Find verified solar panel installers near you in the United States. Get 30% federal tax credit plus state incentives. Compare quotes, read reviews & save up to 90% on electricity bills. Free consultation available."
+      : "Find verified solar panel installers near you in India. Get up to ₹78,000 government subsidy under PM Surya Ghar Yojana. Compare quotes, read reviews & save up to 95% on electricity bills. Free consultation available.",
+  );
+  const metaKeywords = $derived(
+    isUs
+      ? "solar panel installation USA, solar installers near me, federal tax credit, solar incentives USA, rooftop solar installation, solar panel cost, verified solar installers, solar energy America, solar panel quotes"
+      : "solar panel installation India, solar installers near me, PM Surya Ghar Yojana, solar subsidy India, rooftop solar installation, solar panel cost, verified solar installers, solar energy India, solar panel quotes",
+  );
+  const ogTitle = $derived(
+    isUs
+      ? "Solar Vipani USA | Find Verified Solar Panel Installers"
+      : "Solar Vipani | India's #1 Solar Panel Installer Directory",
+  );
+  const ogDescription = $derived(
+    isUs
+      ? "Connect with verified solar installers across the United States. Get 30% federal tax credit plus state incentives. Save up to 90% on electricity bills. Free consultation & quotes."
+      : "Connect with 500+ verified solar installers across India. Get up to ₹78,000 government subsidy. Save up to 95% on electricity bills. Free consultation & quotes.",
+  );
+  const twitterDescription = $derived(
+    isUs
+      ? "Find verified solar installers near you. Get 30% federal tax credit & save up to 90% on electricity bills."
+      : "Find verified solar installers near you. Get ₹78,000 subsidy & save 95% on electricity bills.",
+  );
+  const geoRegion = $derived(cc.toUpperCase());
+  const ogLocale = $derived(data.country.locale.replace("-", "_"));
+  // Hindi is an India-only support language; every country serves English.
+  const availableLanguage = $derived(
+    cc === "in" ? ["English", "Hindi"] : ["English"],
+  );
+  // The IN Organization/WebSite point at the country-less root; the US ones
+  // pointed at /us. Both preserved as they were (same call as stage 8's orgUrl).
+  const siteUrl = $derived(
+    isUs ? "https://solarvipani.com/us" : "https://solarvipani.com",
+  );
+  const orgDescription = $derived(
+    isUs
+      ? "America's leading platform connecting customers with verified solar panel installers"
+      : "India's leading platform connecting customers with verified solar panel installers",
+  );
+  // Not interpolated from country.name: US reads "across the United States"
+  // and IN "across India" — the article makes this copy, not a template.
+  const directoryDescription = $derived(
+    isUs
+      ? "Find verified solar panel installers across the United States"
+      : "Find verified solar panel installers across India",
+  );
+  const serviceDescription = $derived(
+    isUs
+      ? "Connect with verified solar panel installers across the United States"
+      : "Connect with verified solar panel installers across India",
+  );
 
   // Assembled here rather than inline in the markup: svelte2tsx mis-parses
   // `{@html `<script ...`}` and reports a phantom error far from the real line.
@@ -69,52 +154,41 @@
 </script>
 
 <svelte:head>
-  <title
-    >Solar Vipani | India's #1 Solar Quotation Service | Quickly Get Solar
-    Quotations from 2-3 Verified Installers</title
-  >
-  <meta
-    name="description"
-    content="Find verified solar panel installers near you in India. Get up to ₹78,000 government subsidy under PM Surya Ghar Yojana. Compare quotes, read reviews & save up to 95% on electricity bills. Free consultation available."
-  />
+  {#if isUs}
+    <title
+      >Solar Vipani USA | Find Verified Solar Panel Installers | Get 30% Federal
+      Tax Credit</title
+    >
+  {:else}
+    <title
+      >Solar Vipani | India's #1 Solar Quotation Service | Quickly Get Solar
+      Quotations from 2-3 Verified Installers</title
+    >
+  {/if}
+  <meta name="description" content={metaDescription} />
 
   <!-- Enhanced Keywords -->
-  <meta
-    name="keywords"
-    content="solar panel installation India, solar installers near me, PM Surya Ghar Yojana, solar subsidy India, rooftop solar installation, solar panel cost, verified solar installers, solar energy India, solar panel quotes"
-  />
+  <meta name="keywords" content={metaKeywords} />
 
   <!-- Geographic targeting -->
-  <meta name="geo.region" content="IN" />
-  <meta name="geo.country" content="India" />
+  <meta name="geo.region" content={geoRegion} />
+  <meta name="geo.country" content={data.country.name} />
 
   <!-- Enhanced Open Graph -->
-  <meta
-    property="og:title"
-    content="Solar Vipani | India's #1 Solar Panel Installer Directory"
-  />
-  <meta
-    property="og:description"
-    content="Connect with 500+ verified solar installers across India. Get up to ₹78,000 government subsidy. Save up to 95% on electricity bills. Free consultation & quotes."
-  />
+  <meta property="og:title" content={ogTitle} />
+  <meta property="og:description" content={ogDescription} />
   <meta property="og:image" content="https://solarvipani.com/logo512.png" />
   <meta property="og:image:width" content="512" />
   <meta property="og:image:height" content="512" />
   <meta property="og:url" content="https://solarvipani.com{homeUrl}" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Solar Vipani" />
-  <meta property="og:locale" content="en_IN" />
+  <meta property="og:locale" content={ogLocale} />
 
   <!-- Twitter Cards -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta
-    name="twitter:title"
-    content="Solar Vipani | India's #1 Solar Panel Installer Directory"
-  />
-  <meta
-    name="twitter:description"
-    content="Find verified solar installers near you. Get ₹78,000 subsidy & save 95% on electricity bills."
-  />
+  <meta name="twitter:title" content={ogTitle} />
+  <meta name="twitter:description" content={twitterDescription} />
   <meta name="twitter:image" content="https://solarvipani.com/logo512.png" />
 
   <!-- Canonical URL -->
@@ -138,10 +212,10 @@
       "name": "Solar Vipani",
       "url": "https://solarvipani.com",
       "logo": "https://solarvipani.com/logo512.png",
-      "description": "India's leading platform connecting customers with verified solar panel installers",
+      "description": orgDescription,
       "address": {
         "@type": "PostalAddress",
-        "addressCountry": "IN"
+        "addressCountry": cc.toUpperCase()
       },
       "sameAs": [
         "https://www.facebook.com/solarvipani",
@@ -150,7 +224,7 @@
       "contactPoint": {
         "@type": "ContactPoint",
         "contactType": "customer service",
-        "availableLanguage": ["English", "Hindi"]
+        "availableLanguage": availableLanguage
       },
       "dateModified": dateModified
     })}<\/script>`}
@@ -159,13 +233,25 @@
       "@context": "https://schema.org",
       "@type": "WebSite",
       "name": "Solar Vipani",
-      "url": "https://solarvipani.com",
-      "description": "Find verified solar panel installers across India",
-      "dateModified": dateModified
+      "url": siteUrl,
+      "description": directoryDescription,
+      "dateModified": dateModified,
+      // Only the US home has ever declared a sitelinks search box; keeping it
+      // rather than dropping live SEO markup on the merge.
+      ...(isUs
+        ? {
+            potentialAction: {
+              "@type": "SearchAction",
+              target: "https://solarvipani.com/us/solar?search={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          }
+        : {})
     })}<\/script>`}
 
   {@html breadcrumbScript}
 
+  {#if hasQuoteFunnel}
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -200,7 +286,9 @@
       ]
     }
   </script>
+  {/if}
 
+  {#if showSubsidyCopy}
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -249,20 +337,20 @@
       ]
     }
   </script>
+  {/if}
 
-  <script type="application/ld+json">
-    {
+  {@html `<script type="application/ld+json">${JSON.stringify({
       "@context": "https://schema.org",
       "@type": "Service",
       "name": "Solar Panel Installation Directory",
-      "description": "Connect with verified solar panel installers across India",
+      "description": serviceDescription,
       "provider": {
         "@type": "Organization",
         "name": "Solar Vipani"
       },
       "areaServed": {
         "@type": "Country",
-        "name": "India"
+        "name": data.country.name
       },
       "hasOfferCatalog": {
         "@type": "OfferCatalog",
@@ -291,8 +379,7 @@
           }
         ]
       }
-    }
-  </script>
+    })}<\/script>`}
 </svelte:head>
 
 <main class="w-full bg-background text-foreground transition-colors duration-300 overflow-x-hidden dark:bg-background dark:text-foreground">
@@ -303,38 +390,64 @@
       class="absolute top-0 left-0 w-full h-full object-cover object-center z-0 transition-opacity duration-1000"
       class:opacity-0={videoLoaded}
       src="/header/header.avif"
-      alt="Residential Solar Panel Installation in India"
+      alt={heroImageAlt}
       width="1920"
       height="600"
       fetchpriority="high"
       decoding="async"
     />
 
-    <!-- Video - src is attached after idle (see onMount), then fades in once loaded -->
-    <video
-      bind:this={videoRef}
-      class="absolute top-0 left-0 w-full h-full object-cover object-center z-0 transition-opacity duration-1000"
-      class:opacity-0={!videoLoaded}
-      autoplay
-      muted
-      loop
-      playsinline
-      preload="none"
-    ></video>
+    <!-- Video - src is attached after idle (see onMount), then fades in once
+         loaded. IN only: the /us home has never had it, and it is a ~4.5MB
+         decorative download. -->
+    {#if hasHeroVideo}
+      <video
+        bind:this={videoRef}
+        class="absolute top-0 left-0 w-full h-full object-cover object-center z-0 transition-opacity duration-1000"
+        class:opacity-0={!videoLoaded}
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="none"
+      ></video>
+    {/if}
 
     <div class="absolute top-0 left-0 w-full h-full z-10 bg-black/55"></div>
     <div class="relative z-20 max-w-3xl px-6">
-      <h1 class="text-4xl md:text-5xl font-bold mb-6 text-primary-foreground leading-tight drop-shadow-lg">
-        Get 2-3 Free Quotes from Verified Installers in Your Area
-      </h1>
-      <h2 class="text-2xl md:text-3xl font-medium mb-6 text-primary-foreground leading-snug drop-shadow-lg">
-        Save 10-20% on installation costs with competitive solar quotations online
-      </h2>
+      {#if isUs}
+        <h1 class="text-4xl md:text-5xl font-bold mb-6 text-primary-foreground leading-tight drop-shadow-lg">
+          Connect with Verified Solar Panel Installers Near You
+        </h1>
+        <h2 class="text-2xl md:text-3xl font-medium mb-6 text-primary-foreground leading-snug drop-shadow-lg">
+          Get Free Quotes from 2-3 Verified Solar Installers in Your Area
+        </h2>
+        <p class="text-lg mb-6 text-primary-foreground/90 max-w-2xl mx-auto drop-shadow-lg">
+          Compare quotes, find trusted installers, and save up to 90% on
+          electricity bills with 30% federal tax credit and state incentives.
+        </p>
+        <div class="flex justify-center flex-wrap gap-6 mt-6">
+          <span class="rounded-full border border-white/20 bg-white/15 px-4 py-2 text-sm font-medium text-primary-foreground backdrop-blur">
+            ✓ Free Consultation
+          </span>
+          <span class="rounded-full border border-white/20 bg-white/15 px-4 py-2 text-sm font-medium text-primary-foreground backdrop-blur">
+            ✓ Federal Tax Credit Support
+          </span>
+        </div>
+      {:else}
+        <h1 class="text-4xl md:text-5xl font-bold mb-6 text-primary-foreground leading-tight drop-shadow-lg">
+          Get 2-3 Free Quotes from Verified Installers in Your Area
+        </h1>
+        <h2 class="text-2xl md:text-3xl font-medium mb-6 text-primary-foreground leading-snug drop-shadow-lg">
+          Save 10-20% on installation costs with competitive solar quotations online
+        </h2>
+      {/if}
     </div>
   </div>
 
   <div class="mx-auto max-w-[1140px] p-[theme(--container-padding)]">
     <!-- Get Quote CTA Section -->
+    {#if hasQuoteFunnel}
     <section id="lead-form-sv" class="mb-8 mx-auto max-w-md">
       <div class="rounded-[theme(--radius-lg)] p-[theme(--card-padding-y)] shadow-[theme(--shadow-lg)] bg-gradient-to-br from-primary/10 to-primary/5">
         <div class="text-center mb-8">
@@ -353,11 +466,16 @@
         </div>
       </div>
     </section>
+    {/if}
 
-    <!-- Solar Comparison Section -->
-    <SolarComparisonTable />
+    <!-- Solar Comparison Section — its copy is India-framed
+         ("Simplifying Solar For Everyone All over India"). -->
+    {#if showSubsidyCopy}
+      <SolarComparisonTable />
+    {/if}
 
     <!-- Solar Knowledge Hub — authority links to all 7 pillar pages -->
+    {#if features.seoContentFamilies}
     <section class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">
       <div class="text-center mb-8">
         <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">Solar Knowledge Hub</h2>
@@ -389,8 +507,10 @@
         {/each}
       </div>
     </section>
+    {/if}
 
-    <!-- How It Works Section -->
+    <!-- How It Works Section — its CTA and HowTo schema are the quote funnel -->
+    {#if hasQuoteFunnel}
     <section class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">
       <div class="text-center mb-8">
         <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">How Solar Vipani Works</h2>
@@ -437,11 +557,16 @@
         </a>
       </div>
     </section>
+    {/if}
 
-    <!-- Recent Projects Section -->
-    <RecentProjectsHome projects={recentProjects} />
+    <!-- Recent Projects Section — the component still writes /in/project/…
+         literals (S11d note), so features.projects is load-bearing here. -->
+    {#if features.projects}
+      <RecentProjectsHome projects={recentProjects} />
+    {/if}
 
     <!-- Benefits Section -->
+    {#if showSubsidyCopy}
     <section class="mb-8 rounded-[theme(--radius-lg)] bg-accent-muted p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">
       <div class="text-center mb-8">
         <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">Why Now is the Right Time to Install Solar in India</h2>
@@ -480,8 +605,10 @@
         </div>
       </div>
     </section>
+    {/if}
 
     <!-- FAQ Section -->
+    {#if showSubsidyCopy}
     <section class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">
       <div class="text-center mb-8">
         <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">Frequently Asked Questions</h2>
@@ -522,6 +649,63 @@
         {/each}
       </div>
     </section>
+    {/if}
+
+    <!-- Benefits Section (US) — the /us home's own value propositions. -->
+    {#if isUs}
+      <section class="mb-8 rounded-[theme(--radius-lg)] bg-accent-muted p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">
+        <div class="text-center mb-8">
+          <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">
+            Why Choose Solar Panel Installation in the USA?
+          </h2>
+          <div class="flex justify-center items-center my-4">
+            <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+          </div>
+          <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
+            Discover the amazing benefits of switching to solar power with
+            federal and state incentives and verified installers
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-[theme(--card-gap)] mb-8">
+          {#each [
+            { icon: "⚡", stat: "Up to 90%", title: "Electricity Bill Reduction", desc: "Dramatically reduce your monthly electricity costs with solar power" },
+            { icon: "🌞", stat: "30%", title: "Federal Tax Credit", desc: "Get 30% federal tax credit plus additional state and local incentives" },
+            { icon: "🌱", stat: "Zero", title: "Carbon Emissions", desc: "Reduce your carbon footprint and contribute to a cleaner, greener America" }
+          ] as benefit}
+            <div class="flex flex-col items-center text-center border-t-[theme(--card-accent-border)] border-accent hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-md)] rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] transition-all duration-[theme(--transition-default)]">
+              <div class="text-5xl mb-4">{benefit.icon}</div>
+              <div class="text-3xl font-bold text-primary mb-2">{benefit.stat}</div>
+              <h3 class="text-xl font-semibold text-primary mb-3">{benefit.title}</h3>
+              <p class="text-foreground dark:text-foreground-secondary">{benefit.desc}</p>
+            </div>
+          {/each}
+        </div>
+      </section>
+
+      <!-- Lead Form Section — the only US consumer lead capture path. The user
+           confirmed it stays (plan §S9 / hazard 3): /us/get-quotes 301s away,
+           so removing this would leave /us with no consumer form at all.
+           LeadFormBusiness posts /us/api/submitLead and goto()s /us/thank-you
+           as hardcoded literals; that is correct only because this block is
+           gated to US. A third country needs the component parameterized. -->
+      <section id="lead-form-sv" class="mb-8">
+        <div class="rounded-[theme(--radius-lg)] p-[theme(--card-padding-y)] shadow-[theme(--shadow-lg)] bg-gradient-to-br from-primary/10 to-primary/5">
+          <div class="text-center mb-8">
+            <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">
+              Book A Free Consultation
+            </h2>
+            <div class="flex justify-center items-center my-4">
+              <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
+            </div>
+            <p class="text-lg text-foreground dark:text-foreground-secondary max-w-2xl mx-auto">
+              Get personalized solar recommendations from our experts
+            </p>
+          </div>
+          <LeadFormBusiness />
+        </div>
+      </section>
+    {/if}
 
   </div>
 </main>

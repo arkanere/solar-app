@@ -1,5 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { pool } from '$lib/server/db';
+import { getCountry } from '$lib/countries';
 
 export const config = {
 	isr: {
@@ -7,7 +8,16 @@ export const config = {
 	}
 };
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ params }) => {
+	// `projects` is an IN-only legacy table with no country_code column at all,
+	// so there is nothing to scope the query by. Countries without the feature
+	// skip it entirely rather than rendering Indian projects on their home
+	// (stage 9 of docs/migration-plan-delete-us.md, §4.1).
+	const dateModified = new Date().toISOString().split('T')[0];
+	if (!getCountry(params.country).features.projects) {
+		return { recentProjects: [], dateModified };
+	}
+
 	try {
 		const projectsResult = await pool.query(
 			`SELECT
