@@ -1,9 +1,8 @@
 # Migration plan: dissolve `routes/in/`
 
-> **STATUS: in progress. Stages 1–5 and 7–13 done (2026-07-31).** Destinations A and B are
-> complete and the sitemaps are restructured. Next: **S14** — delete `routes/in/`, which
-> now holds only the two childless `(layout-1)/+layout.*` files. Its stated precondition is
-> already met, so S14 is a formality.
+> **STATUS: in progress. Stages 1–5 and 7–14 done (2026-07-31).** **`routes/in/` no longer
+> exists — the plan's primary goal (§1) is met.** Next: **S15** (component merge), the last
+> substantive stage, then S16 (doc). S15c is where the shared IN/US pages get built.
 > S6 no longer exists as a separate stage — see its note.
 >
 > ⚠️ **A user decision changed S11's US fallback from 404 to 301** — read the S11 note.
@@ -1013,6 +1012,34 @@ anyway to confirm against prod data.
 By construction a no-op. `find src/routes/in -type f` must show only
 `(layout-1)/+layout.server.ts` and `(layout-1)/+layout.svelte` before deleting.
 
+**Done 2026-07-31. `routes/in/` does not exist.** That is the intended end state of §1.
+
+The precondition held exactly as written — only `(layout-1)/+layout.server.ts` and
+`+layout.svelte` remained, childless since S11d. `/in` is served entirely by
+`routes/[country=country]/`, which is why this was a no-op rather than a migration.
+
+Also rewrote the header comment on `routes/(layout-1)/+layout.server.ts`, which pointed at
+the file this stage deletes. **That file is now the only legacy-table reader of the
+`aboutStats` counts**, and the comment says so: `/` shows 3199, the country tree shows
+3196, and that split is §8's expected consequence rather than drift. This closes the
+"aboutStats coupling" item in the carried-forward list — there is no longer a second copy
+to keep in sync, only a single switch for the write cutover to make.
+
+**Verified as a strict no-op:** `/in`, `/in/solar`, `/in/partners`, `/in/business-listing`,
+`/in/thank-you`, `/us`, `/`, `/rooftop-solar`, `/tools` and `/about-us` all still 200 with
+**byte-identical href sets** to the pre-delete capture. All three sitemaps unchanged
+(1224 / 47 / 129). Redirects still fire in one hop across every family — content, tools,
+authors, legal, both `/us` twins, the S11a marketplace rules and the district shim.
+`npm run check` 17/14, build passes, 3 prerendered US pages. Route dirs 94 → **92** (the
+two deleted directories, nothing else).
+
+**`/in/` leakage is 26 and will not shrink further before S15.** All remaining hits are:
+`$lib/in/components/*` (S15), `/in/{get-quotes,installer,partners,project,solar}` literals
+in `seo-index` that correctly address destination-B routes, `LeadFormModal`'s
+`/in/api/submitLead`, and the historical migration SQL. **Do not treat 0 as the target** —
+§7.7's "should end at only migrations" is wrong now that destination B legitimately keeps
+`/in/` URLs.
+
 ### S15 — Component merge → `$lib/components/`
 - **15a** Delete dead `$lib/us/*` — `BusinessTilesList`, `RecentProjectsCity`,
   `RecommendedSolarSystems`, `SolarComparisonTable`, `SolarSizeCalculator`, `LeadForm`,
@@ -1135,6 +1162,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | 11d — the IN home (S11 complete) | 2026-07-31 | `45ed22e` |
 | 12 — the 3 API routes | 2026-07-31 | `6562d77` |
 | 13 — sitemap restructure | 2026-07-31 | `fe3467b` |
+| 14 — delete `routes/in/` | 2026-07-31 | `10577a7` |
 
 ## 9. Hazards
 
@@ -1158,7 +1186,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 
 ## 10. Resume here (cold start)
 
-**Done: stages 1–5 and 7–13.** Every stage is one commit plus a SHA-recording commit,
+**Done: stages 1–5 and 7–14. `routes/in/` is gone.** Every stage is one commit plus a SHA-recording commit,
 listed in the §8 stage log. Destination A is complete — all 7 content pillars, tools,
 authors, seo-index and the legal pages answer country-less, each with a one-hop 301 from
 `/in/**` and `/us/**`. **Destination B is also complete**: projects (S10), partners (S11a),
@@ -1184,19 +1212,21 @@ routing, the moved loaders need no feature gate — but that also means **hazard
 net is now one file, not one check per loader**; see the note before adding a third country
 to `COUNTRIES`.
 
-**Next: S14** — delete `routes/in/`, then S15 (component merge — including **15c, which
-is where the shared IN/US pages you asked for actually get built**) and S16 (doc).
+**Next: S15** (component merge), the last substantive stage, then S16 (doc).
 
-**What is left under `routes/in/`:** only `(layout-1)/+layout.server.ts` and
-`+layout.svelte`, childless since S11d. That is verbatim the precondition §S14 states, so
-S14 is a formality. Note `+layout.server.ts` there is the legacy-table `aboutStats` query
-that `routes/(layout-1)/+layout.server.ts` was copied from — deleting it leaves the
-country-less copy as the only legacy-table reader, which **resolves** the coupling warning
-in the carried-forward list below rather than leaving it dangling.
+**Read the S11 note before starting S15c** — it records why the shared IN/US page is
+S15c's job, and what the blockers are: ~2000 lines of independently-written marketing copy
+across the `/in` and `/us` twins (US `business-listing` is 1391 ln vs IN's 690), and
+`projects` having **no unified table and no `country_code` column**, so "projects
+completed" cannot be made country-aware and needs hiding behind `features.projects`.
 
-**S15 is the last substantive stage.** Re-read the S11 note first: it records why the
-shared IN/US page is S15c's job and what the blocker is (diverged copy, and `projects`
-having no `country_code` column).
+⚠️ **S15 is the stage that can fail the build.** The 3 prerendered US pages render merged
+components and the crawler fails the build on any 404 link. It is **3 pages, not the 4 the
+stage text says** — S5 deleted `/us/about-us`.
+
+**S15a's dead list is larger than written.** Add `$lib/in/components/RecentProjectsCity`
+and `BusinessTilesList` (zero importers in `routes/`, found in S10) to the `$lib/us/*`
+list already there.
 
 ### How to work a move stage (learned across 7a–10, follow this)
 
@@ -1239,8 +1269,9 @@ locally, because the dev DB has no rows in `solar_brands`, `solar_products`,
 - **S15a's dead list should also include `$lib/in/components/{RecentProjectsCity,BusinessTilesList}`**
   — zero importers in `routes/` (S10). `RecentProjectsCity` also points at
   `/in/recent-solar-installation-projects-in/{city}`, which is not a route.
-- **`aboutStats` coupling.** `routes/(layout-1)/+layout.server.ts` is a byte-identical copy
-  of the `/in` layout's legacy-table query (S7a.3). When the write cutover switches one to
-  unified tables, **switch both in the same commit** or the two trees will disagree.
+- ~~**`aboutStats` coupling.**~~ **Resolved in S14.** The `/in` layout it was a copy of is
+  deleted, so `routes/(layout-1)/+layout.server.ts` is now the *only* legacy-table reader:
+  one switch for the write cutover to make, not two to keep in sync. It shows 3199 where
+  the country tree shows 3196; that is expected (§8).
 - The §7.7 leakage counts quoted in the stage notes undercount for the reason in step 1
   above. They are a useful trend, never a completeness check.
