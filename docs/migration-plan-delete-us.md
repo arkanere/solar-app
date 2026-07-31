@@ -880,7 +880,7 @@ prerendered page becomes an ISR-cached function. Note the `expiration` you choos
 Verify: build passes with **0** prerendered pages; `/us` and `/us/business-listing` 200
 with the expected cache headers.
 
-**Done 2026-08-01 (`<S10-SHA>`).** Smaller than written, because S9 had already taken the
+**Done 2026-08-01 (`029e803`).** Smaller than written, because S9 had already taken the
 prerendered set to 0. Four things changed:
 
 1. **`business-form` had no loader at all**, so there was nothing to "confirm" — it has
@@ -1026,7 +1026,7 @@ Legend: **A** = already covered by `[country]`, **B** = merge, **C** = relocate,
 | 7 — submitBusiness | 2026-07-31 | `4fd3733` |
 | 8 — business-listing | 2026-07-31 | `dd4867a` |
 | 9 — the home | 2026-07-31 | `38f7d97` |
-| 10 — prerender → ISR | 2026-08-01 | `<S10-SHA>` |
+| 10 — prerender → ISR | 2026-08-01 | `029e803` |
 | 11 — delete `routes/us/` + `$lib/us/` | | |
 | 12 — hooks comments + decision record | | |
 | 13 — docs | | |
