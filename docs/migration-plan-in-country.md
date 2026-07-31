@@ -1,9 +1,13 @@
 # Migration plan: dissolve `routes/in/`
 
-> **STATUS: in progress. Stages 1–5 and 7–10 done (2026-07-31).** Destination A is
-> complete; destination B has started. Next: **S11** (`[country]`: partners, forms,
-> funnels, home, district shim). S6 no longer exists as a separate stage — see its
-> note.
+> **STATUS: in progress. Stages 1–5, 7–10 and 11a done (2026-07-31).** Destination A is
+> complete; destination B is in progress (projects, partners). Next: **S11b** (`[country]`:
+> business-listing, business-form, get-quotes). S11 runs in four sub-stages — see §10.
+> S6 no longer exists as a separate stage — see its note.
+>
+> ⚠️ **A user decision changed S11's US fallback from 404 to 301** — read the S11 note.
+> It also records why the "same page for `/us` and `/in`" goal is **S15c**, not S11: the
+> blocker is 2000+ lines of diverged marketing copy, not the SQL.
 >
 > ⚠️ **S6 has been restructured — read the S4 and S6 notes before continuing.**
 > Redirects are no longer one late stage; each move stage lands its own.
@@ -758,6 +762,59 @@ Notes:
 - Moving the IN home makes it the default for any future country. Intended; note it.
 - `/us` keeps its literal `business-listing`, `business-form`, `thank-you*`, `unsubscribe`.
 
+**⚠️ Decision change, taken by the user 2026-07-31 — supersedes the "gate it" reading
+of §3.5 for destination B.** The stage text assumed routes with no `/us` equivalent would
+`error(404)` for US, as S10 did for projects. The user's instruction is that `/us` should
+get a **301 to the nearest real US page**, not a 404. The routes still move as planned;
+only the US fallback changes.
+
+Landed in `hooks.server.ts` alongside the other pure string rewrites, above the
+`MOVED_TO_ROOT` block:
+- `/us/partners/**` → `/us/business-listing` (the US installer-acquisition page — same
+  purpose as IN's partners page).
+- `/us/get-quotes` → `/us` (there is no US consumer lead funnel to send them to).
+- `district/[district_slug]` **keeps a 404 gate**; the user's instruction named partners
+  and get-quotes only, and that shim is a legacy internal 301 over IN-only `locations`.
+
+**Why this removes the need for per-loader feature gates.** `hooks.server.ts` runs
+*before* routing, so a `/us` request never reaches the moved loader. With only `in` and
+`us` in `COUNTRIES`, `in` is the only country that can reach these routes at all. That is
+a real weakening of hazard 7's safety net — the gate is now one chokepoint in one file
+rather than a check per loader. **If a third country is ever added, every route moved in
+S11 becomes reachable by it with Indian data.** Grep `hooks.server.ts` for the S11 block
+before adding to `COUNTRIES`.
+
+**Was considered and rejected: switching these loaders to the unified tables** so `/us`
+could serve a real page. The data supports it — writes already dual-write via `sv_sync_*`
+(triggers plus explicit calls in both `submitBusiness` endpoints), so unified reads are
+current, and §8 already blesses the resulting `/in` lead-count change 3199 → 3196. The
+blocker is **copy, not data**: these pages carry 28 (partners), 36 (business-listing) and
+41 (IN home) India-specific strings — "India's fastest-growing solar installer network",
+`areaServed: India`, `priceCurrency: INR`, `og:locale en_IN` — and the `/us` twins are
+independently written and far larger (business-listing 690 ln IN vs **1391 ln** US).
+Reconciling them is a product/copywriting job, and it is **already scheduled as S15c**.
+Doing it here would merge pages before the routes had moved. One genuine data gap also
+remains for whoever does S15c: **`projects` has 133 rows, no unified table and no
+`country_code` column at all**, so "projects completed" cannot be made country-aware —
+hide it behind the existing `features.projects` flag.
+
+**S11a done 2026-07-31.** 6 files `git mv`d. Every `/in/` literal inside them now comes
+from `countryUrl()` / `installerUrl()` on `data.country.code`, per S2's split and S10's
+pattern (`const cc = $derived(data.country.code)`).
+
+Verified: all 4 IN URLs 200; `/us/partners`, `/us/partners/join` and `/us/get-quotes` 301
+in exactly 1 hop. Href diff vs the pre-move baseline is **empty on 3 of the 4 pages**; the
+4th shows only `installerUrl()` dropping a trailing slash, which takes those 9 links from
+1 normalization hop to **0** — the same incidental win S10 got from `geoUrl`.
+`npm run check` 17/14, build passes, 3 prerendered US pages. `/in/` grep 48 → **37**.
+
+**Correction to §7.2's route-manifest check:** `npx svelte-kit sync` does **not** prune
+stale directories, so a before/after `find` over `.svelte-kit/types` silently compares
+leftovers and reports no change no matter what moved. `rm -rf .svelte-kit/types` before
+each side. Done properly the count is **95**, not the 419 recorded in §8 — that baseline
+was measured on a polluted tree and is not a usable number. S11a moved exactly 4 dirs from
+`in/` to `[country]/`, total unchanged.
+
 ### S12 — `[country]`: the 3 API routes
 `in/api/{postRecentProject,submitBusiness,updateRecentProject}` → `[country=country]/api/`.
 Each needs its own guard (no layout to do it):
@@ -862,7 +919,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | `data-deletion/` (root copy exists) | A | 4 | ✅ | ✅ | ✅ |
 | `project/[project_id]` | B | 10 | ✅ | n/a | ✅ |
 | `recent-solar-installation-projects/` + `[page_slug]` | B | 10 | ✅ | n/a | ✅ |
-| `partners/` + `join/` + `join/[district_slug]` + `join/thank-you` | B | 11 | ☐ | n/a | ☐ |
+| `partners/` + `join/` + `join/[district_slug]` + `join/thank-you` | B | 11a | ✅ | ✅ 301 `/us`→business-listing | ✅ |
 | `business-listing/` | B | 11 | ☐ | n/a | ☐ |
 | `business-form/` | B | 11 | ☐ | n/a | ☐ |
 | `get-quotes/` | B | 11 | ☐ | n/a | ☐ |
@@ -905,6 +962,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | 8 — tools | 2026-07-31 | `ee41427` |
 | 9 — authors + seo-index | 2026-07-31 | `a233a62` |
 | 10 — projects -> [country] | 2026-07-31 | `79cd2d9` |
+| 11a — partners -> [country] | 2026-07-31 | `4b24a26` |
 
 ## 9. Hazards
 
@@ -928,18 +986,34 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 
 ## 10. Resume here (cold start)
 
-**Done: stages 1–5 and 7–10.** Working tree clean at `5ff224a`; every stage is one commit
-plus a SHA-recording commit, listed in the §8 stage log. Destination A is complete — all 7
-content pillars, tools, authors, seo-index and the legal pages answer country-less, each with
-a one-hop 301 from `/in/**` and `/us/**`. Destination B has started: projects moved.
+**Done: stages 1–5, 7–10, and 11a.** Every stage is one commit plus a SHA-recording commit,
+listed in the §8 stage log. Destination A is complete — all 7 content pillars, tools,
+authors, seo-index and the legal pages answer country-less, each with a one-hop 301 from
+`/in/**` and `/us/**`. Destination B is in progress: projects (S10) and partners (S11a)
+have moved.
 
-**Next: S11** — partners, business-listing/form, get-quotes, thank-you\*, unsubscribe, the
-district shim, and the IN home into `routes/[country=country]/(layout-1)/`. Read the S11
-notes; the ones that bite are `unsubscribe/+server.js` (own `createPool`, needs its own
-`isCountry` guard — no layout runs for a `+server.js`), `thank-you` (posted to from
-**user-app**; its URL must not change), and the IN home becoming the default for any future
-country. Then S12 (3 API routes), S13 (sitemaps), S14 (delete `routes/in/`), S15 (component
-merge), S16 (doc).
+**S11 is being run in four sub-stages** (it is by far the largest move stage):
+- **11a — partners.** ✅ Done, `4b24a26`.
+- **11b — business-listing, business-form, get-quotes.** Next.
+- **11c — thank-you, thank-you-business, unsubscribe, district shim.**
+- **11d — the IN home** (`in/(layout-1)/+page.*`). Last, and the riskiest: it makes the
+  IN home the default for any future country, and moving it under the `[country]` layout
+  is what flips `/in`'s `aboutStats` from legacy 3199 to unified **3196** — §8 already
+  blesses that, do not chase it as a bug.
+
+**Read the S11 note before continuing — it records a user decision that changed the
+stage**: routes with no `/us` equivalent get a **301 to the nearest real US page**, not the
+404 the stage text originally assumed. `/us/partners/**` → `/us/business-listing`,
+`/us/get-quotes` → `/us`, both already in `hooks.server.ts`. Because those rules run before
+routing, the moved loaders need no feature gate — but that also means **hazard 7's safety
+net is now one file, not one check per loader**; see the note before adding a third country
+to `COUNTRIES`.
+
+The S11 items that still bite: `unsubscribe/+server.js` (own `createPool`, needs its own
+`isCountry` guard — no layout runs for a `+server.js`) and `thank-you` (posted to from
+**user-app**; its URL must not change). Then S12 (3 API routes), S13 (sitemaps), S14
+(delete `routes/in/`), S15 (component merge — including 15c, which is where the shared
+IN/US pages actually get built), S16 (doc).
 
 ### How to work a move stage (learned across 7a–10, follow this)
 
