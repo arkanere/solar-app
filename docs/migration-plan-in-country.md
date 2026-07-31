@@ -493,7 +493,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 |---|---|---|
 | 1 — shared chrome | 2026-07-31 | `af5fa11` |
 | 2 — de-hardcode seo/* | 2026-07-31 | `1b80cb0` |
-| 3 — /us layout country | 2026-07-31 | `S3_SHA` |
+| 3 — /us layout country | 2026-07-31 | `6d6e7df` |
 
 ## 9. Hazards
 
