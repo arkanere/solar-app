@@ -796,7 +796,7 @@ Verify: `/us` and `/in` both 200; `/in` href and text diff **empty**; `/us` cont
 `/in/` hrefs, zero rupee symbols, zero links to `/us/get-quotes` or `/us/partners`, and no
 section headed "…in India".
 
-**Done 2026-07-31 (`<S9-SHA>`).** The prediction held: `/in` href diff **empty** and
+**Done 2026-07-31 (`38f7d97`).** The prediction held: `/in` href diff **empty** and
 visible-text diff **empty**, `/us` greps **zero** for
 `India|₹|INR|rupee|lakh|crore|GSTN|district|PIN Code|+91|Hindi|PM Surya Ghar|DISCOM|MNRE|/in/`.
 
@@ -986,7 +986,7 @@ Legend: **A** = already covered by `[country]`, **B** = merge, **C** = relocate,
 | 6 — thank-you ×2 | 2026-07-31 | `dd9782b` |
 | 7 — submitBusiness | 2026-07-31 | `4fd3733` |
 | 8 — business-listing | 2026-07-31 | `dd4867a` |
-| 9 — the home | 2026-07-31 | `<S9-SHA>` |
+| 9 — the home | 2026-07-31 | `38f7d97` |
 | 10 — prerender → ISR | | |
 | 11 — delete `routes/us/` + `$lib/us/` | | |
 | 12 — hooks comments + decision record | | |
