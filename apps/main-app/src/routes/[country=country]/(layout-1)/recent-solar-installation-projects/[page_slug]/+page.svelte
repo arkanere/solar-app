@@ -3,9 +3,13 @@
 	import { Alert, AlertDescription, AlertTitle } from '$lib/components/ui/alert';
 	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
+	import { countryUrl, projectUrl } from '$lib/countries/urls';
 
 	/** @type {import('./$types').PageData} */
 	const { data } = $props();
+
+	const cc = $derived(data.country.code);
+	const listUrl = $derived(countryUrl(cc, '/recent-solar-installation-projects'));
 
 	// Get current page from data
 	let currentPage = $derived(data.pagination?.currentPage || 1);
@@ -113,7 +117,7 @@
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] w-full mb-4">
 				{#each projects as project (project.id)}
 					<a
-						href="/in/project/{project.project_slug}"
+						href={projectUrl(cc, project.project_slug)}
 						class="group block overflow-hidden transition-all duration-[var(--transition-default)] hover:-translate-y-[var(--hover-lift-sm)]"
 					>
 						<Card class="h-full flex flex-col hover:shadow-[var(--shadow-card-hover)]">
@@ -182,7 +186,7 @@
 							class="transition-all duration-[var(--transition-default)] hover:-translate-y-[var(--hover-lift-sm)]"
 						>
 							<a
-								href={currentPage === 2 ? '/in/recent-solar-installation-projects' : `/in/recent-solar-installation-projects/${currentPage - 1}`}
+								href={currentPage === 2 ? listUrl : `${listUrl}/${currentPage - 1}`}
 							>
 								← Previous
 							</a>
@@ -204,7 +208,7 @@
 								class="transition-all duration-[var(--transition-default)] hover:-translate-y-[var(--hover-lift-sm)]"
 							>
 								<a
-									href={link === 1 ? '/in/recent-solar-installation-projects' : `/in/recent-solar-installation-projects/${link}`}
+									href={link === 1 ? listUrl : `${listUrl}/${link}`}
 								>
 									{link}
 								</a>
@@ -219,7 +223,7 @@
 							variant="default"
 							class="transition-all duration-[var(--transition-default)] hover:-translate-y-[var(--hover-lift-sm)]"
 						>
-							<a href="/in/recent-solar-installation-projects/{currentPage + 1}">
+							<a href="{listUrl}/{currentPage + 1}">
 								Next →
 							</a>
 						</Button>

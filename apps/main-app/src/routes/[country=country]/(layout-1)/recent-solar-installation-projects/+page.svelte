@@ -3,9 +3,14 @@
   import { page } from "$app/stores";
   import { Alert } from "$lib/components/ui/alert";
   import { Button } from "$lib/components/ui/button";
+  import { countryUrl, projectUrl } from "$lib/countries/urls";
 
   /** @type {import('./$types').PageData} */
   const { data } = $props();
+
+  const cc = $derived(data.country.code);
+  // The listing lives at /{cc}/recent-solar-installation-projects.
+  const listUrl = $derived(countryUrl(cc, "/recent-solar-installation-projects"));
 
   // Get current page from data (this is always page 1 for the main route)
   let currentPage = $derived(1);
@@ -98,7 +103,7 @@
   <!-- Canonical URL -->
   <link
     rel="canonical"
-    href="https://solarvipani.com/recent-solar-installation-projects"
+    href="https://solarvipani.com{listUrl}"
   />
 
   <!-- Open Graph Tags -->
@@ -113,7 +118,7 @@
   <meta property="og:type" content="website" />
   <meta
     property="og:url"
-    content="https://solarvipani.com/recent-solar-installation-projects"
+    content="https://solarvipani.com{listUrl}"
   />
   <meta
     property="og:image"
@@ -150,7 +155,7 @@
       "@type": "CollectionPage",
       "name": "Recent Solar Installation Projects",
       "description": "Gallery of recent solar panel installation projects across India by verified installers",
-      "url": "https://solarvipani.com/recent-solar-installation-projects",
+      "url": "https://solarvipani.com{listUrl}",
       "mainEntity": {
         "@type": "ItemList",
         "name": "Solar Installation Projects",
@@ -174,7 +179,7 @@
             "@type": "ListItem",
             "position": 2,
             "name": "Recent Solar Projects",
-            "item": "https://solarvipani.com/recent-solar-installation-projects"
+            "item": "https://solarvipani.com{listUrl}"
           }
         ]
       }
@@ -231,7 +236,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[theme(--card-gap)] w-full mb-8">
         {#each projects as project (project.id)}
           <a
-            href="/in/project/{project.project_slug}"
+            href={projectUrl(cc, project.project_slug)}
             class="group block bg-card hover:shadow-[theme(--shadow-card-hover)] rounded-[theme(--radius-xl)] overflow-hidden border border-border hover:border-primary/50 transition-all duration-300 hover:-translate-y-1"
             rel="noopener"
           >
@@ -297,7 +302,7 @@
         <div class="flex justify-center items-center gap-2 mt-8 flex-wrap">
           <!-- Next button (since this is page 1, only show next) -->
           {#if currentPage < totalPages}
-            <Button href="/in/recent-solar-installation-projects/2" variant="default">
+            <Button href="{listUrl}/2" variant="default">
               Next →
             </Button>
           {/if}
@@ -312,9 +317,7 @@
               </span>
             {:else}
               <Button
-                href={link === 1
-                  ? "/in/recent-solar-installation-projects"
-                  : `/in/recent-solar-installation-projects/${link}`}
+                href={link === 1 ? listUrl : `${listUrl}/${link}`}
                 variant="outline"
               >
                 {link}

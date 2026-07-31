@@ -1,5 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { pool } from '$lib/server/db';
+import { getCountry } from '$lib/countries';
 import { error } from '@sveltejs/kit';
 
 export const config = {
@@ -7,6 +8,14 @@ export const config = {
 };
 
 export const load: PageServerLoad = async ({ params }) => {
+	// Projects are IN-only today (features.projects). No layout does this gate, so
+	// each loader carries it — a moved route that is not gated silently serves
+	// India's project data under every country prefix.
+	const country = getCountry(params.country);
+	if (!country.features.projects) {
+		error(404, 'Not found');
+	}
+
 	const projectSlug = params.project_id.toLowerCase();
 
 	const result = await pool.query(

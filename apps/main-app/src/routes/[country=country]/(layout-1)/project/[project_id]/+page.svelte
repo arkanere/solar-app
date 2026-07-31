@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
-	import { contentUrl } from '$lib/countries/urls';
+	import { contentUrl, countryUrl, geoUrl, installerUrl, projectUrl } from '$lib/countries/urls';
 	import { MapPin, Calendar, Hash } from '@lucide/svelte';
 	import { formatDate } from '$lib/constants/projectFormatters';
 	import { breadcrumbLD } from '$lib/seo';
@@ -8,6 +8,7 @@
 
 	let { data } = $props();
 
+	const cc = $derived(data.country.code);
 	const project = $derived(data.project);
 	const business = $derived(data.business);
 	const stateSlug = $derived(data.stateSlug);
@@ -20,10 +21,10 @@
 
 	const breadcrumb = $derived(
 		breadcrumbLD([
-			{ name: 'Home', url: 'https://solarvipani.com/in/' },
-			{ name: 'Solar', url: 'https://solarvipani.com/in/solar/' },
-			{ name: business.businessname, url: `https://solarvipani.com/in/installer/${business.slug}/` },
-			{ name: project.title, url: `https://solarvipani.com/in/project/${project.slug}/` }
+			{ name: 'Home', url: `https://solarvipani.com${countryUrl(cc, '/')}` },
+			{ name: 'Solar', url: `https://solarvipani.com${geoUrl(cc)}` },
+			{ name: business.businessname, url: `https://solarvipani.com${installerUrl(cc, business.slug)}` },
+			{ name: project.title, url: `https://solarvipani.com${projectUrl(cc, project.slug)}` }
 		])
 	);
 
@@ -31,7 +32,7 @@
 		'@context': 'https://schema.org',
 		'@type': 'Article',
 		headline: project.title,
-		url: `https://solarvipani.com/in/project/${project.slug}/`,
+		url: `https://solarvipani.com${projectUrl(cc, project.slug)}`,
 		...(project.project_date ? { datePublished: project.project_date } : {}),
 		author: { '@type': 'Organization', name: business.businessname },
 		publisher: {
@@ -62,7 +63,7 @@
 <svelte:head>
 	<title>{pageTitle} | Solar Vipani</title>
 	<meta name="description" content={metaDescription} />
-	<link rel="canonical" href="https://solarvipani.com/in/project/{project.slug}/" />
+	<link rel="canonical" href="https://solarvipani.com{projectUrl(cc, project.slug)}" />
 	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}<\u002Fscript>`}
 	{@html `<script type="application/ld+json">${JSON.stringify(articleSchema)}<\u002Fscript>`}
 	{#if project.cloudinary_public_id}
@@ -74,9 +75,9 @@
 	<!-- Breadcrumb -->
 	<nav class="text-sm text-muted-foreground mb-6" aria-label="Breadcrumb">
 		<ol class="flex flex-wrap gap-1">
-			<li><a href="/in/" class="hover:text-primary">Home</a> /</li>
-			<li><a href="/in/solar/" class="hover:text-primary">Solar</a> /</li>
-			<li><a href="/in/installer/{business.slug}/" class="hover:text-primary">{business.businessname}</a> /</li>
+			<li><a href={countryUrl(cc, "/")} class="hover:text-primary">Home</a> /</li>
+			<li><a href={geoUrl(cc)} class="hover:text-primary">Solar</a> /</li>
+			<li><a href={installerUrl(cc, business.slug)} class="hover:text-primary">{business.businessname}</a> /</li>
 			<li class="text-foreground font-medium">{project.title}</li>
 		</ol>
 	</nav>
@@ -120,14 +121,14 @@
 	<!-- Installer Attribution -->
 	<section class="mb-8 bg-accent/10 rounded-lg p-6">
 		<p class="text-sm text-muted-foreground mb-2">Installed by</p>
-		<a href="/in/installer/{business.slug}/" class="text-xl font-semibold text-primary hover:underline">
+		<a href={installerUrl(cc, business.slug)} class="text-xl font-semibold text-primary hover:underline">
 			{business.businessname}
 		</a>
 		{#if business.city}
 			<p class="text-sm text-muted-foreground mt-1">{business.city}, {business.state}</p>
 		{/if}
 		<div class="mt-4">
-			<Button variant="outline" size="sm" onclick={() => window.location.href = `/in/installer/${business.slug}/`}>
+			<Button variant="outline" size="sm" onclick={() => window.location.href = installerUrl(cc, business.slug)}>
 				View Installer Profile
 			</Button>
 		</div>
@@ -150,11 +151,11 @@
 			<p class="text-muted-foreground">
 				This project is in
 				{#if project.city}
-					<a href="/in/solar/{stateSlug}/{districtSlug}/{project.city.toLowerCase().replace(/\s+/g, '-')}/" class="text-primary hover:underline">
+					<a href={geoUrl(cc, stateSlug, districtSlug, project.city.toLowerCase().replace(/\s+/g, "-"))} class="text-primary hover:underline">
 						{project.city}
 					</a>,
 				{/if}
-				<a href="/in/solar/{stateSlug}/{districtSlug}/" class="text-primary hover:underline">
+				<a href={geoUrl(cc, stateSlug, districtSlug)} class="text-primary hover:underline">
 					{project.district}
 				</a>.
 				View more solar installers and projects in this area.
@@ -165,7 +166,7 @@
 	<!-- Get Quotes CTA -->
 	<div class="text-center mb-8">
 		<a
-			href="/in/get-quotes/"
+			href={countryUrl(cc, "/get-quotes/")}
 			class="inline-block bg-primary text-primary-foreground font-semibold px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
 		>
 			Get Free Solar Quotes
@@ -174,7 +175,7 @@
 
 	<!-- Back link -->
 	<div class="mt-8">
-		<a href="/in/installer/{business.slug}/" class="text-primary hover:underline text-sm">
+		<a href={installerUrl(cc, business.slug)} class="text-primary hover:underline text-sm">
 			← Back to {business.businessname}
 		</a>
 	</div>

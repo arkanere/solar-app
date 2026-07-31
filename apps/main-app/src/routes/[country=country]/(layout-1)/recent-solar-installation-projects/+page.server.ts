@@ -1,5 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { pool } from '$lib/server/db';
+import { getCountry } from '$lib/countries';
 import { error } from '@sveltejs/kit';
 
 export const config = {
@@ -9,15 +10,17 @@ export const config = {
 };
 
 export const load: PageServerLoad = async ({ params }) => {
-	const pageSlug = params.page_slug;
-	const page = parseInt(pageSlug, 10);
-
-	if (isNaN(page) || page < 1) {
-		throw error(404, 'Invalid page number');
+	// Projects are IN-only today (features.projects). No layout does this gate, so
+	// each loader carries it — a moved route that is not gated silently serves
+	// India's project data under every country prefix.
+	const country = getCountry(params.country);
+	if (!country.features.projects) {
+		error(404, 'Not found');
 	}
 
+	const page = 1;
 	const limit = 9;
-	const offset = (page - 1) * limit;
+	const offset = 0;
 
 	try {
 		const projectsResult = await pool.query(
@@ -52,10 +55,6 @@ export const load: PageServerLoad = async ({ params }) => {
 		const totalProjects = parseInt(countResult.rows[0].total, 10);
 		const totalPages = Math.ceil(totalProjects / limit);
 
-		if (page > totalPages && totalPages > 0) {
-			throw error(404, 'Page not found');
-		}
-
 		return {
 			success: true,
 			projects: projectsResult.rows,
@@ -71,12 +70,11 @@ export const load: PageServerLoad = async ({ params }) => {
 				projectCount: projectsResult.rowCount
 			}
 		};
-	} catch (err) {
-		if (typeof err === 'object' && err !== null && 'status' in err) throw err;
-		console.error('Database query error:', err);
+	} catch (error) {
+		console.error('Database query error:', error);
 		return {
 			success: false,
-			error: 'Failed to fetch projects: ' + (err instanceof Error ? err.message : String(err))
+			error: 'Failed to fetch projects: ' + (error instanceof Error ? error.message : String(error))
 		};
 	}
 }

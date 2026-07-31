@@ -1,8 +1,9 @@
 # Migration plan: dissolve `routes/in/`
 
-> **STATUS: in progress. Stages 1–5 and 7–9 done (2026-07-31).** Destination A is
-> complete — every content family is country-less. Next: **S10** (`[country]`:
-> projects). S6 no longer exists as a separate stage — see its note.
+> **STATUS: in progress. Stages 1–5 and 7–10 done (2026-07-31).** Destination A is
+> complete; destination B has started. Next: **S11** (`[country]`: partners, forms,
+> funnels, home, district shim). S6 no longer exists as a separate stage — see its
+> note.
 >
 > ⚠️ **S6 has been restructured — read the S4 and S6 notes before continuing.**
 > Redirects are no longer one late stage; each move stage lands its own.
@@ -703,6 +704,45 @@ Gate on `features.projects` → `error(404)` for US.
 stub with no server file and keeps winning for `/us`. After S3 it receives `data.country` —
 confirm it doesn't crash.
 
+**Done 2026-07-31 — the first destination-B move.** 6 files to
+`routes/[country=country]/(layout-1)/`. URLs are unchanged (`/in/project/**` stays
+`/in/project/**`), so there are no 301s and no hops — verified 0 on both.
+
+**Gating, per hazard 7 (`svelte-check` cannot catch a missing gate).** All three loaders
+carry `getCountry(params.country)` + `if (!country.features.projects) error(404)`. `/us`
+returns **404, not 500**, and renders `routes/+error.svelte` ("404: Not found") — hazard 6
+checked by actually loading the page, not inferred.
+- **The gate must sit before the `try` block** in `recent-solar-installation-projects/+page.server.ts`.
+  That loader wraps its queries in `try/catch (error)`, which both shadows the imported
+  `error` helper and would swallow the 404 into a `{ success: false }` render. It is at
+  line 17, the `try` at 25. **Any future edit that moves it inside silently un-gates US.**
+
+Every `/in/` literal inside the moved files became per-country (`countryUrl`/`geoUrl`/
+`installerUrl`/`projectUrl` on `cc`), since these routes now answer under every country
+prefix. Two incidental fixes fell out:
+- The listing's canonical and `og:url` were the **country-less**
+  `https://solarvipani.com/recent-solar-installation-projects`, which is not a route and
+  never has been — a 404 advertised as canonical. Now `/{cc}/...`.
+- `geoUrl` drops trailing slashes, so the district links lose a normalization hop.
+
+**Left alone deliberately:** `$lib/in/components/{RecentProjectsHome,StoriesModal}` and
+`seo-index` still write `/in/project/...` literals. These still resolve — `/in` is a country,
+so the `[country]` route serves them — and `$lib/in` belongs to S15. `RecentProjectsCity` and
+`BusinessTilesList` have **zero importers** in `routes/`; add them to S15a's dead list (it
+currently names only `$lib/us/*`). Note `RecentProjectsCity` also links to
+`/in/recent-solar-installation-projects-in/{city}`, a route that does not exist — dead code
+pointing at a dead URL, which is why deleting beats fixing.
+
+**Known inconsistency, pre-existing and out of scope:**
+`/us/recent-solar-installation-projects` now 404s (gated) while
+`/us/recent-solar-installation-projects/2` still returns 200 — the literal `/us` stub the S3
+note flagged keeps winning over `[country]`. It receives `data.country`, ignores it, and does
+not crash, as S3 predicted. `routes/us/` is out of scope per §3.3.
+
+Verified: IN listing, page 2 and a project page 200; both `/us` equivalents 404 through the
+site error page; the `/us` stub still 200. `npm run check` 17/14, build passes, 3 prerendered
+US pages. Leakage 65 -> **48**.
+
 ### S11 — `[country]`: partners, forms, funnels, home
 `partners/`, `partners/join/`, `partners/join/[district_slug]`, `partners/join/thank-you`,
 `business-listing`, `business-form`, `get-quotes`, `thank-you`, `thank-you-business`,
@@ -820,8 +860,8 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | `write-for-us/` | A | 4 | ✅ | ✅ | ✅ |
 | `data-access/` | A | 4 | ✅ | ✅ | ✅ |
 | `data-deletion/` (root copy exists) | A | 4 | ✅ | ✅ | ✅ |
-| `project/[project_id]` | B | 10 | ☐ | n/a | ☐ |
-| `recent-solar-installation-projects/` + `[page_slug]` | B | 10 | ☐ | n/a | ☐ |
+| `project/[project_id]` | B | 10 | ✅ | n/a | ✅ |
+| `recent-solar-installation-projects/` + `[page_slug]` | B | 10 | ✅ | n/a | ✅ |
 | `partners/` + `join/` + `join/[district_slug]` + `join/thank-you` | B | 11 | ☐ | n/a | ☐ |
 | `business-listing/` | B | 11 | ☐ | n/a | ☐ |
 | `business-form/` | B | 11 | ☐ | n/a | ☐ |
@@ -864,6 +904,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | 7c — financing + subsidy | 2026-07-31 | `2f94434` |
 | 8 — tools | 2026-07-31 | `ee41427` |
 | 9 — authors + seo-index | 2026-07-31 | `a233a62` |
+| 10 — projects -> [country] | 2026-07-31 | _pending_ |
 
 ## 9. Hazards
 
