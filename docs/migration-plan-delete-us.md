@@ -1,7 +1,7 @@
 # Migration plan: delete `routes/us/`
 
-> **STATUS: IN PROGRESS. S1, S3–S7 applied 2026-07-31. S2 deleted — its premise
-> did not hold. Next stage: S8. Only 7 files remain under `routes/us/`.**
+> **STATUS: IN PROGRESS. S1, S3–S8 applied 2026-07-31. S2 deleted — its premise
+> did not hold. Next stage: S9. Only 4 files remain under `routes/us/`.**
 >
 > ⚠️ **S2 no longer exists.** §5a assumed a per-country contact split. There is
 > exactly **one** support number (`+918983066701`) and **one** support email
@@ -683,6 +683,67 @@ installer list from the correct table; US shows the EIN/County vocabulary and US
 contact; `/in` href and text diff empty against the pre-stage capture. `/us/business-listing`
 stops prerendering — expect **1**.
 
+**Done 2026-07-31 (`<S8-SHA>`).**
+
+⚠️ **The stage text was wrong about the installer links, and it was a live `/in` bug.**
+It said "both pages already link installer cards at `/{cc}/installer/{slug}`". Only `/us`
+did. The `[country]` page emitted `/solar-panel-installer/{slug}` — a **country-less URL
+with no route** — so all 10 installer cards on `/in/business-listing` were 404s (measured:
+`/solar-panel-installer/rayonix-energy-pvt-ltd-faridabad` → 404,
+`/in/installer/rayonix-…` → 200). The hooks rule only covers the `/us/`-prefixed legacy
+shape. Now `installerUrl(cc, business.slug)`: `/us` output is unchanged, `/in` gains 10
+working links. **This is the second deliberate `/in` change in this migration** (after
+S5's `AboutSolarVipani` label) and the user approved it before the merge was written.
+
+⚠️ **`/us/business-listing` was rendering `AboutSolarVipani` twice** since S1 — once from
+the page body, once from the shared layout. The in-page copy is gone with the `/us` file;
+the layout's remains. That is the entire US href delta besides the added `tel:`.
+
+As built:
+- **The US phone card now renders on `/us`.** The `/us` page had it commented out; the
+  user chose to show it rather than gate it, consistent with S2's "contact details are
+  deliberately shared". The `Need Assistance` section is therefore identical for both.
+- **Marketing copy forks as whole arrays** (`BENEFITS_BY_COUNTRY`, `FAQS_BY_COUNTRY`) in
+  the page's `<script module>`, not a `$lib/countries/copy-*.ts` module. Five of six
+  benefits and two of three FAQs are shared and are hoisted to shared consts; only one
+  page consumes them, so a `$lib` module would have been indirection for its own sake
+  (§5b prefers the smaller mechanism). Both sets are verbatim from the page each country
+  was served by.
+- **Section-level gates preserve each country's live page**, they do not unify it:
+  Social Proof (stats) and the How-It-Works video are IN-only — the `/us` page had both
+  **commented out** — and the closing "Ready to Grow Your Solar Business?" CTA card plus
+  the hero subhead/CTA are US-only. The US hero `h2` ("Get Discovered on Google &
+  ChatGPT") branches; the `h1` is shared.
+- **Head metadata** now derives from `brandName` (`Solar Vipani` / `Solar Vipani USA`) for
+  title, og:title, twitter:title, Organization `name` and Service `provider.name`. The
+  description, the Organization `description` ("India's leading…" / "America's leading…")
+  and the Organization/breadcrumb-Home URL (root for IN, `/us` for US) are explicit
+  per-country literals, each verbatim from its live page. This resolves both India-specific
+  strings the stage text flagged.
+- **The FAQPage JSON-LD in `<svelte:head>` is left alone.** It already listed the US
+  question set, so it is correct for US and unchanged for IN — but it has never matched
+  `/in`'s *visible* FAQ ("What is Solar Vipani?" is rendered and not in the schema;
+  "How do you earn money?" is in the schema and not rendered). **That mismatch predates
+  this migration**; fixing it would change `/in` head output for no US benefit.
+
+**Loader:** `QUERY_BY_COUNTRY` keyed on `params.country`, `us_businesses` vs
+`in_business_profiles`, and the IN `isr.expiration: 1296000` is kept (so `/us` gains ISR
+where it had prerendering — S10 still owns confirming the value). ⚠️ **The level2 column
+is deliberately not selected in either branch**, against the stage text's "normalize or
+alias" advice: the cards render only businessname/city/state/phone/slug, and IN's unused
+`district` was the *only* thing making the serialized payload differ across the merge.
+Dropping it beat aliasing it.
+
+Verified: `/in` href diff is **exactly** the 10 installer links `/solar-panel-installer/…`
+→ `/in/installer/…`, and its **rendered text diff is empty** — the two remaining payload
+deltas (`district` gone, `uses.params:["country"]` added) are inside the SvelteKit data
+blob, not markup. `/us` href diff is the 5 de-duplicated `AboutSolarVipani` social links
+plus the new `tel:`. `/us` greps **zero** for `India|₹|INR|rupee|lakh|crore|GSTN|district|
+PIN Code|Hindi`; the 3 `+91` hits are the shared support number (intended). `/us` head:
+`en_US`, `US`, `USD`, `United States`, `| Solar Vipani USA`. `/us/partners` still 1 hop →
+200. `/us/sitemap.xml` still **47** locs. Route manifest **83 → 82** (one directory).
+`npm run check` 13/1, build passes, prerendered **2 → 1** (`/us` only).
+
 ### S9 — the home
 746 US lines vs 528 IN. Delete `us/(layout-1)/+page.svelte` and `+page.js`.
 
@@ -843,9 +904,9 @@ Legend: **A** = already covered by `[country]`, **B** = merge, **C** = relocate,
 | `(layout-1)/thank-you/+page.svelte` | B | 6 | ✅ | ✅ | ✅ | ✅ |
 | `(layout-1)/thank-you-business/+page.svelte` | B | 6 | ✅ | ✅ | ✅ | ✅ |
 | `api/submitBusiness/+server.js` | B | 7 | n/a | ✅ | ✅ | ✅ |
-| `(layout-1)/business-listing/+page.server.js` | B | 8 | n/a | ☐ | ☐ | ☐ |
-| `(layout-1)/business-listing/+page.svelte` | B | 8 | ☐ | ☐ | ☐ | ☐ |
-| `(layout-1)/business-listing/+page.js` | D | 8 | n/a | n/a | ☐ | ☐ |
+| `(layout-1)/business-listing/+page.server.js` | B | 8 | n/a | ✅ | ✅ | ✅ |
+| `(layout-1)/business-listing/+page.svelte` | B | 8 | ✅ S5+S8 | ✅ | ✅ | ✅ |
+| `(layout-1)/business-listing/+page.js` | D | 8 | n/a | n/a | ✅ | ✅ |
 | `(layout-1)/+page.svelte` (home) | B | 9 | ☐ | ☐ | ☐ | ☐ |
 | `(layout-1)/+page.js` | D | 9 | n/a | n/a | ☐ | ☐ |
 | `(layout-1)/+layout.svelte` | B | 1, 11 | n/a | ✅ S1 | ☐ | ☐ |
@@ -863,7 +924,7 @@ Legend: **A** = already covered by `[country]`, **B** = merge, **C** = relocate,
 | 5 — **gate the `[country]` pages** | 2026-07-31 | `e8c8f9e` |
 | 6 — thank-you ×2 | 2026-07-31 | `dd9782b` |
 | 7 — submitBusiness | 2026-07-31 | `4fd3733` |
-| 8 — business-listing | | |
+| 8 — business-listing | 2026-07-31 | `<S8-SHA>` |
 | 9 — the home | | |
 | 10 — prerender → ISR | | |
 | 11 — delete `routes/us/` + `$lib/us/` | | |
@@ -899,38 +960,49 @@ Legend: **A** = already covered by `[country]`, **B** = merge, **C** = relocate,
 
 ## 10. Resume here (cold start)
 
-**Next stage: S8 — merge `business-listing`.** S1 and S3–S7 are applied and pushed; S2 is
-deleted. Session paused here 2026-07-31 by the user; the remaining work is S8–S13.
+**Next stage: S9 — merge the home.** S1, S3–S8 are applied and pushed; S2 is deleted.
+The remaining work is S9–S13.
 
-**⚠️ Everything mechanical is done. What is left is different in kind.** S1–S7 were
-deletes, moves and gates, each verifiable by a status code or a byte-identical diff.
-**S8 and S9 are copy merges on live marketing pages** — 1391 US lines vs 695 IN, and 746
-vs 528 — where the judgement is *what a US visitor should read*, not whether a route
-resolves. Budget accordingly, and expect to show the user a merged page rather than a
-green check. S10–S13 are mechanical again.
+**⚠️ S9 is the last stage that is different in kind.** S1–S7 were deletes, moves and
+gates. S8 was the first copy merge and it landed; S9 is the larger one — 746 US lines vs
+528 IN, and unlike business-listing the two homes **barely overlap** (see the section
+inventory in the S9 text) and the whole `<svelte:head>` diverges. Expect to show the user
+a merged page rather than a green check. S10–S13 are mechanical again.
 
-**⚠️ One decision is awaiting the user and is not blocking:** whether to review the S5
-gating (in particular the `/in` copy change in the next bullet) before more pages are
-rewritten, or to carry straight through S8 and S9. **Ask before starting S9** if it has
-not been answered — S8 alone is a reasonable thing to land and look at first.
+**⚠️ Ask the user before starting S9** whether to review the S5+S8 result first. S8 is a
+reasonable thing to land and look at before the home is rewritten, and S9 is the stage
+that gates *and* merges *and* deletes in one commit.
 
-**⚠️ One `/in` copy change shipped and may want reverting.** S5 changed
+**Patterns S8 established, reuse them in S9:**
+- Fork whole copy arrays in the page's own `<script module>` keyed by country code; hoist
+  the shared entries to consts. Do not reach for `$lib/countries/copy-*.ts` for a
+  single-consumer page.
+- Gate sections to **preserve each country's live page**, in both directions — a section
+  the `/us` page had commented out is IN-only, and a section only `/us` had is US-only.
+- Derive head identity from `data.country.brandName`; keep divergent descriptions and
+  canonical-ish URLs as explicit per-country literals copied verbatim, not as string
+  surgery over a shared template.
+- Selecting a column no component renders is what breaks payload identity. Drop it.
+
+**⚠️ Two `/in` changes have shipped; both were disclosed and approved.** S8 repointed
+`/in/business-listing`'s 10 installer cards from the routeless `/solar-panel-installer/…`
+(404) to `/in/installer/…` (200) — a bug fix, not a copy change. And S5 changed
 `AboutSolarVipani`'s counter label from "Leads Generated Across India" to "Leads
 Generated" — because the same component renders on `/us` with a **US** count, so the
 Indian wording was a live factual error there. `/in` now reads `3,198+ Leads Generated`.
 It is a 13-character change in one component and trivially revertible; the user has been
 told and has not objected.
 
-**What is left under `routes/us/` (7 files):**
+**What is left under `routes/us/` (4 files):**
 
 ```
-(layout-1)/+page.svelte, +page.js                                     S9  (home merge)
-(layout-1)/business-listing/+page.svelte, +page.server.js, +page.js   S8  (next)
+(layout-1)/+page.svelte, +page.js                                     S9  (next — home merge)
 (layout-1)/+layout.svelte                                             S11 (shared chrome since S1)
 (layout-1)/+layout.server.ts                                          S11
 ```
 
-`routes/us/api/` and `routes/us/sitemap.xml/` no longer exist. `$lib/us/` no longer
+`routes/us/api/`, `routes/us/sitemap.xml/` and `routes/us/(layout-1)/business-listing/`
+no longer exist. `$lib/us/` no longer
 exists — it went in S1, not S11.
 
 **Standing constraints established during S1–S7, do not rediscover:**
@@ -944,13 +1016,15 @@ exists — it went in S1, not S11.
   (S2's deletion). Do not "fix" it.
 - **`npm run check` holds at 13 errors / 1 warning.** Two of the 13 are the svelte2tsx
   `{@html \`<script>…\`}` false positive; assemble such strings in the JS block.
-- **The prerendered count is 2** (`/us`, `/us/business-listing`) → **1** after S8 → **0**
-  after S9. It is a decreasing assertion, not the constant the `/in` plan used.
+- **The prerendered count is 1** (`/us` only) → **0** after S9. It is a decreasing
+  assertion, not the constant the `/in` plan used.
+- **The route-manifest baseline is 82 directories**, not the 92 measured before S1.
 - **`/in` must stay byte-identical** at every stage — href set *and* text — with the one
   deliberate exception above.
 
 **The ordering constraint that mattered most is now satisfied:** S5 gated
-thank-you, thank-you-business and business-listing's metadata before any deletion.
+thank-you, thank-you-business and business-listing's metadata before any deletion, and S8
+finished business-listing's copy.
 **The home is the exception and is deliberately ungated** — see the S5 note; S9 gates,
 merges and deletes in one commit, and its §7.5 text-grep of a really-served `/us` is the
 check that replaces S5's rename-and-curl.

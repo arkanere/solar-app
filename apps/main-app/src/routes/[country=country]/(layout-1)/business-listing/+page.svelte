@@ -1,9 +1,30 @@
 <script module>
-  // Enhanced data objects with icons
-  const benefits = [
+  // Marketing copy forks per country (plan §5b, mechanism 2). Both sets are
+  // verbatim from the pages they came from: the IN set from the [country] page,
+  // the US set from routes/us/(layout-1)/business-listing, deleted in stage 8.
+  // Five of the six benefits share a title but two differ in wording, so this
+  // is a whole-array fork rather than a per-item gate.
+  const ICONS = {
+    discovered:
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>',
+    inquiries:
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>',
+    projects:
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21,15 16,10 5,21"></polyline></svg>',
+    presence:
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>',
+    credibility:
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>',
+    branches:
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path></svg>',
+    manage:
+      '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>',
+  };
+
+  const SHARED_BENEFITS = [
     {
       title: "Get Discovered Online",
-      icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>',
+      icon: ICONS.discovered,
       descriptions: [
         'Clients search for queries like "Solar Panel Installers Near Me", "Top Solar Panel installer in [CityName]"',
         "We rank on the first page of Google, Yahoo, CHATGPT, etc for such relevant queries",
@@ -11,7 +32,7 @@
     },
     {
       title: "Direct Customer Inquiries",
-      icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>',
+      icon: ICONS.inquiries,
       descriptions: [
         "We display your business phone number, WhatsApp, email and address.",
         "This allows customers to reach out to you directly.",
@@ -19,50 +40,91 @@
     },
     {
       title: "Post Recent Projects",
-      icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21,15 16,10 5,21"></polyline></svg>',
+      icon: ICONS.projects,
       descriptions: ["Showcase your workmanship to the potential customers."],
-    },
-    {
-      title: "Enhance Online Presence",
-      icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>',
-      descriptions: [
-        "Get dedicated page on website which has high rating for Solar Installation Domain.",
-      ],
-    },
-    {
-      title: "Strengthen Credibility",
-      icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>',
-      descriptions: [
-        "Get a Verified Business tag that boosts client confidence",
-      ],
-    },
-    {
-      title: "Manage Multiple Branch Offices",
-      icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path></svg>',
-      descriptions: [
-        "Expand your business reach by managing multiple branch locations under one main business profile.",
-      ],
     },
   ];
 
-  const faqs = [
-    {
-      question: "What is Solar Vipani?",
-      answer:
-        "Solar Vipani is India's leading platform connecting customers actively seeking solar installation with verified solar installers. We help grow your business by giving you direct access to qualified leads in your area.",
-    },
-    {
-      question: "How much does it cost to list my business?",
-      answer:
-        "Listing your business is completely free of charge. We believe in providing value first and helping solar businesses grow their online presence without any upfront costs.",
-    },
-    {
-      question:
-        "Why should I list my business if I'm already getting customers?",
-      answer:
-        "Even if you have a steady customer base, listing on Solar Vipani significantly increases your online visibility, helping you reach even more potential customers who are actively searching for solar installation services. It's an additional channel that complements your existing marketing efforts.",
-    },
-  ];
+  const CREDIBILITY_BENEFIT = {
+    title: "Strengthen Credibility",
+    icon: ICONS.credibility,
+    descriptions: ["Get a Verified Business tag that boosts client confidence"],
+  };
+
+  const BENEFITS_BY_COUNTRY = {
+    in: [
+      ...SHARED_BENEFITS,
+      {
+        title: "Enhance Online Presence",
+        icon: ICONS.presence,
+        descriptions: [
+          "Get dedicated page on website which has high rating for Solar Installation Domain.",
+        ],
+      },
+      CREDIBILITY_BENEFIT,
+      {
+        title: "Manage Multiple Branch Offices",
+        icon: ICONS.branches,
+        descriptions: [
+          "Expand your business reach by managing multiple branch locations under one main business profile.",
+        ],
+      },
+    ],
+    us: [
+      ...SHARED_BENEFITS,
+      {
+        title: "Enhance Online Presence",
+        icon: ICONS.presence,
+        descriptions: ["We provide a dedicated business profile page."],
+      },
+      CREDIBILITY_BENEFIT,
+      {
+        title: "Manage Your Information",
+        icon: ICONS.manage,
+        descriptions: [
+          "Keep your business details up-to-date to ensure customers have the latest information.",
+        ],
+      },
+    ],
+  };
+
+  const COST_FAQ = {
+    question: "How much does it cost to list my business?",
+    answer:
+      "Listing your business is completely free of charge. We believe in providing value first and helping solar businesses grow their online presence without any upfront costs.",
+  };
+
+  const EXISTING_CUSTOMERS_FAQ = {
+    question: "Why should I list my business if I'm already getting customers?",
+    answer:
+      "Even if you have a steady customer base, listing on Solar Vipani significantly increases your online visibility, helping you reach even more potential customers who are actively searching for solar installation services. It's an additional channel that complements your existing marketing efforts.",
+  };
+
+  // The IN "What is Solar Vipani?" answer is India-specific and the US page has
+  // never had that question at all, so US gets its own third entry rather than
+  // a rewritten counterpart. Note the FAQPage JSON-LD in <svelte:head> is the
+  // US set for both countries — that mismatch on /in predates this migration
+  // and is left alone here.
+  const FAQS_BY_COUNTRY = {
+    in: [
+      {
+        question: "What is Solar Vipani?",
+        answer:
+          "Solar Vipani is India's leading platform connecting customers actively seeking solar installation with verified solar installers. We help grow your business by giving you direct access to qualified leads in your area.",
+      },
+      COST_FAQ,
+      EXISTING_CUSTOMERS_FAQ,
+    ],
+    us: [
+      COST_FAQ,
+      {
+        question: "How do you earn money if the business listing is free?",
+        answer:
+          "We provide premium marketing services to select businesses where we see growth potential. These paid services include targeted campaigns on platforms like Facebook, Instagram, Google Search, and YouTube to further boost your visibility.",
+      },
+      EXISTING_CUSTOMERS_FAQ,
+    ],
+  };
 
   const stats = [
     { number: "500+", label: "Businesses Listed" },
@@ -74,7 +136,7 @@
   import { goto } from "$app/navigation";
   import { Button } from "$lib/components/ui/button";
   import { Card } from "$lib/components/ui/card";
-  import { countryUrl } from "$lib/countries/urls";
+  import { countryUrl, installerUrl } from "$lib/countries/urls";
   import { breadcrumbLD } from "$lib/seo";
 
   // For data loading
@@ -83,8 +145,18 @@
   const cc = $derived(data.country.code);
   const listingUrl = $derived(countryUrl(cc, "/business-listing"));
 
+  const benefits = $derived(BENEFITS_BY_COUNTRY[cc]);
+  const faqs = $derived(FAQS_BY_COUNTRY[cc]);
+
+  // Sections the /us page had commented out and the /in page renders. Stage 8
+  // preserves each country's live content rather than unifying it.
+  const showSocialProof = $derived(cc === "in");
+  const showVideo = $derived(cc === "in");
+  // ...and the reverse: the closing CTA card is US-only.
+  const showFinalCta = $derived(cc === "us");
+
   // Structured data and locale metadata were hardcoded to India. Everything
-  // here is derivable from CountryConfig; the marketing copy is not, and is
+  // here is derivable from CountryConfig; the marketing copy is not, and was
   // reconciled against the US page's own copy in stage 8 of
   // docs/migration-plan-delete-us.md.
   const ogLocale = $derived(data.country.locale.replace("-", "_"));
@@ -96,6 +168,27 @@
     cc === "in" ? ["English", "Hindi"] : ["English"],
   );
 
+  // Page title / description / Organization identity, each kept verbatim from
+  // the page that country was served by before the merge. `brandName` is
+  // already 'Solar Vipani' for IN and 'Solar Vipani USA' for US.
+  const brand = $derived(data.country.brandName);
+  // The IN Organization and breadcrumb Home point at the country-less root;
+  // the US ones pointed at /us. Both are preserved as they were.
+  const orgUrl = $derived(
+    cc === "us" ? "https://solarvipani.com/us" : "https://solarvipani.com",
+  );
+  const orgDescription = $derived(
+    cc === "us"
+      ? "America's leading solar panel installer directory connecting customers with verified solar installation services"
+      : "India's leading solar panel installer directory connecting customers with verified solar installation services",
+  );
+  const pageTitle = $derived(`List Your Solar Business | ${brand}`);
+  const pageDescription = $derived(
+    cc === "us"
+      ? "Expand your solar business reach by listing on Solar Vipani USA. Connect with customers actively seeking solar installation services in your area across the United States."
+      : "Expand your solar business reach by listing on Solar Vipani. Connect with customers actively seeking solar installation services in your area.",
+  );
+
   // The <script> tag is assembled here rather than inline in the markup:
   // svelte2tsx mis-parses `{@html `<script ...`}` and reports a phantom
   // "Expected token }" (it is the same false positive behind the two
@@ -103,7 +196,7 @@
   const breadcrumbScript = $derived(
     `<script type="application/ld+json">${JSON.stringify(
       breadcrumbLD([
-        { name: "Home", url: "https://solarvipani.com" },
+        { name: "Home", url: orgUrl },
         {
           name: "Business Listing",
           url: `https://solarvipani.com${listingUrl}`,
@@ -119,11 +212,10 @@
     `<script type="application/ld+json">${JSON.stringify({
       "@context": "https://schema.org",
       "@type": "Organization",
-      name: "Solar Vipani",
-      url: "https://solarvipani.com",
+      name: brand,
+      url: orgUrl,
       logo: "https://solarvipani.com/images/solar-vipani-logo.png",
-      description:
-        "India's leading solar panel installer directory connecting customers with verified solar installation services",
+      description: orgDescription,
       contactPoint: {
         "@type": "ContactPoint",
         telephone: "+91-8983066701",
@@ -147,7 +239,7 @@
       name: "Solar Business Directory Listing",
       description:
         "Free business listing service for solar panel installers and solar energy companies",
-      provider: { "@type": "Organization", name: "Solar Vipani" },
+      provider: { "@type": "Organization", name: brand },
       serviceType: "Business Directory",
       areaServed: { "@type": "Country", name: areaServed },
       offers: {
@@ -234,11 +326,8 @@
        /business-listing, which is not a route and 404s. -->
   {@html breadcrumbScript}
 
-  <title>List Your Solar Business | Solar Vipani</title>
-  <meta
-    name="description"
-    content="Expand your solar business reach by listing on Solar Vipani. Connect with customers actively seeking solar installation services in your area."
-  />
+  <title>{pageTitle}</title>
+  <meta name="description" content={pageDescription} />
   <link rel="canonical" href="https://solarvipani.com{listingUrl}" />
 
   <!-- Preload critical hero image for faster LCP -->
@@ -253,11 +342,8 @@
   <link rel="preconnect" href="https://connect.facebook.net" />
 
   <!-- Open Graph Tags -->
-  <meta property="og:title" content="List Your Solar Business | Solar Vipani" />
-  <meta
-    property="og:description"
-    content="Expand your solar business reach by listing on Solar Vipani. Connect with customers actively seeking solar installation services in your area."
-  />
+  <meta property="og:title" content={pageTitle} />
+  <meta property="og:description" content={pageDescription} />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://solarvipani.com{listingUrl}" />
   <meta
@@ -269,14 +355,8 @@
 
   <!-- Twitter Card Tags -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta
-    name="twitter:title"
-    content="List Your Solar Business | Solar Vipani"
-  />
-  <meta
-    name="twitter:description"
-    content="Expand your solar business reach by listing on Solar Vipani. Connect with customers actively seeking solar installation services in your area."
-  />
+  <meta name="twitter:title" content={pageTitle} />
+  <meta name="twitter:description" content={pageDescription} />
   <meta
     name="twitter:image"
     content="https://solarvipani.com/images/solar-business-listing-twitter.jpg"
@@ -344,8 +424,38 @@
         Grow Your Solar Business
       </h1>
       <h2 class="text-2xl md:text-3xl font-medium mb-6 text-primary-foreground leading-snug drop-shadow-lg">
-        Get discovered by customers researching online
+        {cc === "us"
+          ? "Get Discovered on Google & ChatGPT"
+          : "Get discovered by customers researching online"}
       </h2>
+      {#if cc === "us"}
+        <!-- Subhead and hero CTA carried over from the /us page, which led with
+             both; the /in hero has never had them. -->
+        <p class="text-lg mb-8 text-primary-foreground/90 drop-shadow-lg">
+          Connect directly with customers seeking solar installation services in
+          your area
+        </p>
+        <Button
+          onclick={navigateToBusinessForm}
+          class="uppercase tracking-wider gap-2 pulse"
+        >
+          <span>List My Business Now</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            ><line x1="5" y1="12" x2="19" y2="12"></line><polyline
+              points="12 5 19 12 12 19"
+            ></polyline></svg
+          >
+        </Button>
+      {/if}
     </div>
   </div>
 
@@ -401,6 +511,7 @@
     </Card>
 
     <!-- Social Proof Section -->
+    {#if showSocialProof}
     <Card class="bg-accent-muted p-[theme(--card-padding-y)] mb-8">
       <div class="text-center mb-8">
         <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-4">Join the Solar Installer Community</h2>
@@ -439,6 +550,7 @@
         </Button>
       </div>
     </Card>
+    {/if}
 
     <!-- Recently Joined Verified Installers -->
     <Card class="p-[theme(--card-padding-y)] mb-8 bg-[hsl(var(--accent)/0.1)]">
@@ -456,7 +568,7 @@
         {#if data && data.businesses && data.businesses.length > 0}
           {#each data.businesses as business}
             <a
-              href={`/solar-panel-installer/${business.slug}`}
+              href={installerUrl(cc, business.slug)}
               target="_blank"
               rel="noopener noreferrer"
               class="no-underline text-inherit block transition-transform duration-[theme(--transition-default)]"
@@ -550,6 +662,7 @@
     </Card>
 
     <!-- How It Works Video Section -->
+    {#if showVideo}
     <Card class="text-center p-[theme(--card-padding-y)] mb-8" id="product-working">
       <div class="text-center mb-8">
         <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-4">See How It Works</h2>
@@ -594,6 +707,7 @@
         </Button>
       </div>
     </Card>
+    {/if}
 
     <!-- FAQs Section -->
     <Card class="p-[theme(--card-padding-y)] mb-8">
@@ -613,6 +727,40 @@
         {/each}
       </div>
     </Card>
+
+    <!-- Call to Action Section — US only; the /in page has never had it. -->
+    {#if showFinalCta}
+      <div class="mb-8 rounded-[theme(--radius-lg)] bg-primary text-primary-foreground text-center px-8 py-12 shadow-[theme(--shadow-lg)]">
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4">
+          Ready to Grow Your Solar Business?
+        </h2>
+        <p class="text-lg mb-8 max-w-xl mx-auto text-primary-foreground/90">
+          Join thousands of solar installation companies already benefiting from
+          Solar Vipani's platform
+        </p>
+        <Button
+          onclick={navigateToBusinessForm}
+          variant="secondary"
+          class="uppercase tracking-wider gap-2 pulse"
+        >
+          <span>List My Business Now</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            ><line x1="5" y1="12" x2="19" y2="12"></line><polyline
+              points="12 5 19 12 12 19"
+            ></polyline></svg
+          >
+        </Button>
+      </div>
+    {/if}
 
     <!-- Need Assistance Section -->
     <Card class="p-[theme(--card-padding-y)] mb-8">
