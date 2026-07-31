@@ -12,6 +12,14 @@
 > explicit `sv_sync_*` call, blog management deleted. automation-scripts verified to write no
 > legacy lead/business tables. **Phase 2.4 (drop the 040/043/045/046 triggers) is now
 > unblocked** — every writer in every app projects its own writes into the unified tables.
+>
+> **UPDATE 2026-07-31 — `routes/in/` dissolved; Step 6 complete.** The line-103 decision to
+> keep IN content under `routes/in/` is **reversed** (see the callout at that line), and
+> Step 6's component unification is **done**. Both were carried out as
+> `docs/migration-plan-in-country.md`, stages 1–15, all applied. Route surface is now
+> `routes/(layout-1)/` + `routes/[country=country]/` + `routes/us/`. **Nothing about the
+> data layer changed** — the final write cutover described under "Remaining steps" is
+> untouched and still the only outstanding slice.
 
 ## Context
 
@@ -100,7 +108,31 @@ routes/[country=country]/api/
 routes/[country=country]/sitemap.xml/+server.ts
 ```
 
-**IN-only content families stay physically under `routes/in/(layout-1)/`** (rooftop-solar, solar-panels, solar-inverters, solar-pumps, solar-subsidy, solar-financing, solar-installation, tools, blogs, authors, seo-index, partners, data-access, data-deletion). Rationale: literal routes coexist cleanly with `[country]`; feature-flag-404ing dozens of content routes adds risk for no benefit. Final state: `routes/[country]/` (shared marketplace core) + `routes/in/` (IN content) + `routes/us/` (redirect shims + static US blogs).
+~~**IN-only content families stay physically under `routes/in/(layout-1)/`** (rooftop-solar, solar-panels, solar-inverters, solar-pumps, solar-subsidy, solar-financing, solar-installation, tools, blogs, authors, seo-index, partners, data-access, data-deletion). Rationale: literal routes coexist cleanly with `[country]`; feature-flag-404ing dozens of content routes adds risk for no benefit. Final state: `routes/[country]/` (shared marketplace core) + `routes/in/` (IN content) + `routes/us/` (redirect shims + static US blogs).~~
+
+> ⚠️ **REVERSED 2026-07-31 on the user's instruction. `routes/in/` no longer exists.**
+> See `docs/migration-plan-in-country.md` (stages 1–15, all applied). The goal was one
+> simple route surface rather than three. What actually happened to the families listed
+> above:
+>
+> - **Content families → the country-less root** (`routes/(layout-1)/`): the 7 SEO pillars,
+>   tools, authors, seo-index and the legal/static pages. `/in/rooftop-solar` →
+>   `/rooftop-solar`, etc. Every moved URL 301s from **both** `/in/**` and `/us/**` in
+>   exactly one hop, and the redirect list is shared with the link builder
+>   (`src/lib/countries/moved-content.ts`) so the two can never drift.
+> - **Marketplace routes → `routes/[country=country]/`**: home, projects, partners,
+>   business-listing/form, get-quotes, thank-you\*, unsubscribe, the district shim and the
+>   3 remaining API routes. **URLs unchanged** — `/in/partners` is still `/in/partners`,
+>   now served by the shared tree.
+> - **The rationale above was not wrong, it was superseded.** Feature-flag-404ing was
+>   indeed avoided: the routes with no `/us` equivalent (`partners`, `get-quotes`) 301 to
+>   the nearest real US page instead of 404ing, which is a user decision recorded in the
+>   migration plan's S11 note.
+>
+> **Actual final state: `routes/(layout-1)/` (country-less content) + `routes/[country=country]/`
+> (shared marketplace core) + `routes/us/` (a shrinking set of US-specific literals and
+> redirect shims).** Per §3.3 of the migration plan, `routes/us/` is deliberately **not**
+> deleted — merging the remaining `/in`↔`/us` page twins was out of scope.
 
 Carry over ISR configs (`isr.expiration`) onto new pages.
 
@@ -121,7 +153,35 @@ String-rewrite redirects in `hooks.server.ts` (no DB; preserve existing `/busine
 
 Root `routes/sitemap.xml/+server.ts`: generate index from `COUNTRIES` keys instead of hardcoding.
 
-## Step 6 — Component unification
+## Step 6 — Component unification — **DONE 2026-07-31**
+
+> Completed as stage 15 of `docs/migration-plan-in-country.md`. **`lib/us/` now contains
+> exactly one file, `themeStore.js`** (a store, not a component — deliberately left);
+> `lib/in/` is data only (`pillar-config`, `sampleQuotation`, `sampleQuotationPdf`).
+> The 28 component files moved in that stage (11 top-level plus the 17-file `seo/` subtree)
+> now live in `lib/components/`.
+>
+> Most of the pairs listed below never needed merging — **19 of them were dead code with
+> zero importers** and were simply deleted: BusinessTilesList, RecentProjectsCity,
+> RecommendedSolarSystems, SolarComparisonTable, SolarSizeCalculator, LeadForm(+Modal) on
+> the US side, plus `cities.js`, `city_jsonLD1.js`, `index.js` and
+> `sendPasswordResetEmail.js`. That also resolves the JSON-LD item below: `city_jsonLD1.js`
+> was deleted rather than absorbed. `BusinessDirectory` had already gone in the 2026-07-19
+> cleanup.
+>
+> Only **three** pairs were genuinely live and merged, one commit each:
+> - **`AboutSolarVipani`** — merged from the IN version with the stats props made
+>   **optional**, so it renders on the three prerendered `/us` pages without giving them a
+>   DB dependency at build time.
+> - **`BusinessForm`** — merged and driven by `CountryConfig` (state list, level2 wording,
+>   tax-ID field, endpoints, redirect). ⚠️ Note for anyone touching it: the two
+>   `submitBusiness` endpoints key the level2 value by their own noun (`district` for IN,
+>   `county` for US) and the wrong key is dropped **silently**; it is derived from
+>   `country.levels.level2.singular` so it cannot drift from the label.
+> - **`LeadFormBusiness`** — US-only, relocated rather than merged.
+>
+> `CountryConfig` gained `taxId.collectOnSignup` for the one composition difference that
+> had no existing config field.
 
 Merge `lib/in/components/` + `lib/us/` pairs into `apps/main-app/src/lib/components/`: BusinessDirectory, BusinessTilesList, LeadForm(+Modal), BusinessForm, AboutSolarVipani, RecentProjectsCity, RecommendedSolarSystems, SolarComparisonTable, SolarSizeCalculator, StoriesModal, ChatBot*. Each consumes `page.data.country` (labels, postal validation, phone prefix, currency, `geoUrl`). Diff each pair first; where structurally diverged, start from the IN version (newer, TS) and port US deltas. JSON-LD: extend `lib/seo.ts` with `addressCountry` and absorb `lib/us/city_jsonLD1.js` + inline US JSON-LD. IN-only components stay in `lib/in/components/`. Delete `lib/us/config.js` in favor of `geoUrl`.
 
@@ -241,6 +301,13 @@ Merge `lib/in/components/` + `lib/us/` pairs into `apps/main-app/src/lib/compone
 # Remaining steps (as of 2026-07-19)
 
 Everything through phase 2.4 is live: all four apps read the unified tables, the DB is trigger-free, and every write is projected by an explicit `sv_sync_*` call. One slice remains — **the final write cutover** — after which the legacy tables freeze. It is deliberately one atomic effort (write endpoints across all four apps must flip together per table family):
+
+⚠️ **One coupling the 2026-07-31 route migration added, relevant to item 1 below:**
+`apps/main-app/src/routes/(layout-1)/+layout.server.ts` counts `in_business_profiles` and
+`LeadData` for the country-less pages' About section, while the `[country]` tree counts
+unified `businesses`/`leads`. That is why `/` shows 3199 leads where `/in` shows 3196 —
+expected, not drift. **It is now the only legacy-table reader of those counts in main-app**,
+so the write cutover has one switch to make there, not two.
 
 1. **Leads**: repoint every lead write to INSERT/UPDATE unified `leads` directly, minting `source_id` from the shared `leaddata_id_seq` (`nextval`) so `(country_code, source_id)` identity, `*_claimrequests` FKs, and the `source_id AS id` read aliases keep working unchanged. Writers: user-app submitLead + uploadBill; main-app `insertLead` + legacy `in|us/api/submitLead`; business-app pipeline (updateLead/claimLead/deleteLead/fixClaimedLead, US submitLead); admin-app (updateLead, updateLeadClaim claimed copies, addPincodeMapping, invite counts, sendLeadDetails). Then drop `sv_sync_lead` calls and the function.
 2. **US businesses/accounts**: repoint `us_businesses` writes to unified `businesses` + `business_accounts` (mint `source_id` from the `us_businesses` id sequence). Writers: business-app US endpoints + shared auth (`countryTables.ts: us`), main-app `us/api/*`, admin-app US edit page + token mints/resets. Then drop `sv_sync_business/account('us')` calls.
