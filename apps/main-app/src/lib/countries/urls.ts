@@ -6,6 +6,7 @@
 //         /{country}/installer/{slug}
 
 import type { CountryCode } from './types';
+import { MOVED_TO_ROOT } from './moved-content';
 
 // Matches sv_slugify() in migration 042 and the legacy toSlug convention:
 // lower-case, whitespace -> hyphen. Existing IN URLs depend on this exact
@@ -41,13 +42,15 @@ export function projectUrl(country: CountryCode, slug: string): string {
 
 // The SEO content families — the 7 pillars, tools, authors, seo-index — are
 // moving out from under the country prefix entirely (destination A of
-// docs/migration-plan-in-country.md). They still answer on /in until stage 7
-// moves the routes; flipping CONTENT_PREFIX to '' there moves every link with
-// them. Pass a path with the leading and trailing slash the caller wants:
-// contentUrl('/rooftop-solar/') -> '/in/rooftop-solar/' today, '/rooftop-solar/'
-// after.
-const CONTENT_PREFIX = '/in';
-
+// docs/migration-plan-in-country.md). They move a few families at a time, so this
+// is per-family rather than one global prefix: a family that has moved gets a
+// country-less href, one that has not still answers on /in.
+//
+// Pass a path with the leading and trailing slash the caller wants:
+// contentUrl('/rooftop-solar/') -> '/in/rooftop-solar/' until stage 7a adds the
+// family to MOVED_TO_ROOT, '/rooftop-solar/' after. Adding the family is the only
+// edit needed — there is no prefix constant to flip.
 export function contentUrl(path = '/'): string {
-	return `${CONTENT_PREFIX}${path}`;
+	const family = path.split('/')[1];
+	return MOVED_TO_ROOT.includes(family) ? path : `/in${path}`;
 }

@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { CountryConfig } from "$lib/countries";
+  import { contentUrl } from "$lib/countries/urls";
 
   // `country` is optional — see SiteHeader. Without it only the country-less
   // columns render.
@@ -7,10 +8,6 @@
 
   const cc = $derived(country?.code);
   const features = $derived(country?.features);
-
-  // See SiteHeader: stage 7 moves the content families to the root and this
-  // becomes ''.
-  const contentPrefix = $derived(country ? `/${country.code}` : "/in");
 </script>
 
 <footer class="border-t border-border bg-background text-foreground mt-8">
@@ -22,13 +19,13 @@
           <h4 class="text-sm font-semibold text-primary mb-3">Solar Topics</h4>
           <ul class="space-y-2 list-none p-0 m-0">
             {#each [
-              { href: `${contentPrefix}/rooftop-solar`, label: "Rooftop Solar" },
-              { href: `${contentPrefix}/solar-panels`, label: "Solar Panels" },
-              { href: `${contentPrefix}/solar-inverters`, label: "Solar Inverters" },
-              { href: `${contentPrefix}/solar-installation`, label: "Solar Installation" },
-              { href: `${contentPrefix}/solar-subsidy`, label: "Solar Subsidy" },
-              { href: `${contentPrefix}/solar-financing`, label: "Solar Financing" },
-              { href: `${contentPrefix}/solar-pumps`, label: "Solar Pumps" },
+              { href: contentUrl("/rooftop-solar"), label: "Rooftop Solar" },
+              { href: contentUrl("/solar-panels"), label: "Solar Panels" },
+              { href: contentUrl("/solar-inverters"), label: "Solar Inverters" },
+              { href: contentUrl("/solar-installation"), label: "Solar Installation" },
+              { href: contentUrl("/solar-subsidy"), label: "Solar Subsidy" },
+              { href: contentUrl("/solar-financing"), label: "Solar Financing" },
+              { href: contentUrl("/solar-pumps"), label: "Solar Pumps" },
             ] as link}
               <li><a href={link.href} class="text-sm text-foreground no-underline hover:text-primary transition-colors">{link.label}</a></li>
             {/each}
@@ -68,9 +65,9 @@
         <div>
           <h4 class="text-sm font-semibold text-primary mb-3">Tools</h4>
           <ul class="space-y-2 list-none p-0 m-0">
-            <li><a href="{contentPrefix}/tools/solar-calculator" class="text-sm text-foreground no-underline hover:text-primary transition-colors">Solar Calculator</a></li>
-            <li><a href="{contentPrefix}/tools/emi-calculator" class="text-sm text-foreground no-underline hover:text-primary transition-colors">EMI Calculator</a></li>
-            <li><a href="{contentPrefix}/tools/subsidy-checker" class="text-sm text-foreground no-underline hover:text-primary transition-colors">Subsidy Checker</a></li>
+            <li><a href={contentUrl("/tools/solar-calculator")} class="text-sm text-foreground no-underline hover:text-primary transition-colors">Solar Calculator</a></li>
+            <li><a href={contentUrl("/tools/emi-calculator")} class="text-sm text-foreground no-underline hover:text-primary transition-colors">EMI Calculator</a></li>
+            <li><a href={contentUrl("/tools/subsidy-checker")} class="text-sm text-foreground no-underline hover:text-primary transition-colors">Subsidy Checker</a></li>
           </ul>
         </div>
       {/if}

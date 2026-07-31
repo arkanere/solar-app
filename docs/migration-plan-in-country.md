@@ -194,6 +194,19 @@ export function contentUrl(path = '/'): string {
 the header and footer track each stage automatically. Their **country-scoped** links
 (`/{cc}/partners`, `/{cc}/get-quotes`) are unaffected and keep using `country.code`.
 
+**Landed 2026-07-31 as S7a commit 1** (`moved-content.ts` + the four rewires), verified a
+strict no-op: identical href multisets on `/`, `/in`, `/in/rooftop-solar`, `/us`,
+`/about-us`, and identical hop counts on all seven S4 URLs, both `/us` twins, and three
+not-yet-moved families. `npm run check` 17/14, build passes, 3 prerendered US pages.
+
+One correction to the note this section replaced: it claimed dropping `contentPrefix` also
+removes a redirect hop for `/us` visitors, since `/us/rooftop-solar` would have 301'd once
+the family moved. **Wrong — `/us` never emits these links at all.** Every content link in
+both components sits behind `{#if !country || features?.seoContentFamilies}` (or
+`features?.tools`), and US has both `false`. That is also why the `contentPrefix`
+country-ful branch (`/${country.code}`) was only ever reachable as `/in`, and why replacing
+it with a country-less helper is a no-op rather than a `/us` markup change.
+
 Net effect on the remaining stages: **S7b, S7c, S8 and S9 append their family strings to
 one array** and every link, in every tree, follows in the same commit as the routes and the
 301s. There is no constant left to flip; the S1 and S2 notes' "flip three constants"
@@ -259,11 +272,10 @@ Breaks: the whole site's chrome, on every page. Diff rendered HTML of one page p
 - Content links go through a single `contentPrefix` derived in each component —
   `/${cc}` with a country, `/in` without. ~~**S7 flips both to `''`.**~~
   **Obsolete — S7a deletes both `contentPrefix` derivations in favour of
-  `contentUrl()`, which is family-aware; see §5c.** Note the country-ful branch:
-  today a content link on `/us` renders `/us/rooftop-solar`, which the S4 redirect
-  rule (`MOVED_TO_ROOT_FROM` includes `'us'`) turns into a 301 once the family
-  moves. `contentUrl()` takes no country and emits the country-less path directly,
-  removing that hop for `/us` visitors too.
+  `contentUrl()`, which is family-aware; see §5c.** The country-ful branch
+  (`/${country.code}`) was only ever reachable as `/in` — every content link in both
+  components is gated on `features?.seoContentFamilies` / `features?.tools`, both
+  `false` for US — so `/us` markup is untouched by the change.
 - Verified: `/us` byte-identical; `/in` and `/in/rooftop-solar` differ only in
   trailing whitespace and Svelte hydration-marker comments. `/` intentionally gained
   the footer + brand/Solar Guide/Tools links (all `/in/...` for now) — this is the
@@ -677,6 +689,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | 3 — /us layout country | 2026-07-31 | `6d6e7df` |
 | 4 — legal & static -> root | 2026-07-31 | `2f9ff0d` |
 | 5 — delete /us legal dupes | 2026-07-31 | `4f446fe` |
+| 7a.1 — moved-content wiring (no-op) | 2026-07-31 | _pending_ |
 
 ## 9. Hazards
 
@@ -704,16 +717,12 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 in §8; the sitemap `<loc>` count and route-directory count there are the pre-S1 originals
 and are still the comparison points.
 
-**Next action: S7a, in two commits.**
+**Next action: S7a commit 2.** Commit 1 (the §5c wiring, a verified no-op) is done — see the
+stage log.
 
-1. **The §5c wiring, as a pure no-op.** Create `src/lib/countries/moved-content.ts` holding
-   the seven S4 families; make `hooks.server.ts` import it instead of its local
-   `MOVED_TO_ROOT`; rewrite `contentUrl()` to be family-aware; delete `CONTENT_PREFIX` and
-   both `contentPrefix` derivations in `SiteHeader`/`SiteFooter`. **No route moves, no new
-   families.** Every link and every redirect must be byte-identical afterward — verify with
-   §7.5 on `/`, `/in`, `/in/rooftop-solar` and §7.4 on the seven S4 URLs. Landing this
-   separately is the whole point: it means any regression in the next commit is the route
-   move, not the refactor.
+1. ~~**The §5c wiring, as a pure no-op.**~~ **Done.** `src/lib/countries/moved-content.ts`
+   holds the seven S4 families; `hooks.server.ts` imports it; `contentUrl()` is family-aware;
+   `CONTENT_PREFIX` and both `contentPrefix` derivations are gone.
 2. **The move.** `git mv` `rooftop-solar/**` and `solar-installation/**` (9 files) to
    `routes/(layout-1)/`, copying `export const config` verbatim; append `'rooftop-solar'`
    and `'solar-installation'` to `MOVED_TO_ROOT`; fix the canonical and `breadcrumbLD` URLs

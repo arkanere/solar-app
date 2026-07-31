@@ -1,19 +1,11 @@
 import type { Handle } from '@sveltejs/kit';
 import { building } from '$app/environment';
+import { MOVED_TO_ROOT } from '$lib/countries/moved-content';
 
-// Route families that used to live under /in (and sometimes /us) and now answer
-// at the country-less root. Grows one migration stage at a time; see
-// legacyRedirect() below for why the timing matters.
-const MOVED_TO_ROOT = [
-	// stage 4 — legal & static
-	'privacy-policy',
-	'terms-of-use',
-	'about-us',
-	'data-access',
-	'write-for-us',
-	'seo-index',
-	'data-deletion'
-];
+// MOVED_TO_ROOT — route families that used to live under /in (and sometimes /us)
+// and now answer at the country-less root — is shared with contentUrl() so the
+// redirects and the links can never drift apart. It grows one migration stage at
+// a time; see legacyRedirect() below for why the timing matters.
 
 // Which country prefixes the rule above applies to.
 const MOVED_TO_ROOT_FROM = ['in', 'us'];

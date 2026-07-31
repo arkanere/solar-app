@@ -3,6 +3,7 @@
   import * as Dialog from "$lib/components/ui/dialog";
   import { capture } from "$lib/posthog";
   import type { CountryConfig } from "$lib/countries";
+  import { contentUrl } from "$lib/countries/urls";
 
   // `country` is optional: the country-less route tree renders this header with
   // no country, in which case every per-country link and CTA is hidden.
@@ -10,10 +11,6 @@
 
   const cc = $derived(country?.code);
   const features = $derived(country?.features);
-
-  // Where the SEO content families live today. They are still under a country
-  // prefix; migration stage 7 moves them to the root and this becomes ''.
-  const contentPrefix = $derived(country ? `/${country.code}` : "/in");
 
   // Translation modal state
   let showTranslationModal = $state(false);
@@ -25,17 +22,17 @@
 
   const solarGuideLinks = $derived([
     { group: "Getting Started", items: [
-      { href: `${contentPrefix}/rooftop-solar`, label: "Rooftop Solar" },
-      { href: `${contentPrefix}/solar-installation`, label: "Solar Installation" },
+      { href: contentUrl("/rooftop-solar"), label: "Rooftop Solar" },
+      { href: contentUrl("/solar-installation"), label: "Solar Installation" },
     ]},
     { group: "Products", items: [
-      { href: `${contentPrefix}/solar-panels`, label: "Solar Panels" },
-      { href: `${contentPrefix}/solar-inverters`, label: "Solar Inverters" },
-      { href: `${contentPrefix}/solar-pumps`, label: "Solar Pumps" },
+      { href: contentUrl("/solar-panels"), label: "Solar Panels" },
+      { href: contentUrl("/solar-inverters"), label: "Solar Inverters" },
+      { href: contentUrl("/solar-pumps"), label: "Solar Pumps" },
     ]},
     { group: "Money", items: [
-      { href: `${contentPrefix}/solar-subsidy`, label: "Solar Subsidy" },
-      { href: `${contentPrefix}/solar-financing`, label: "Solar Financing" },
+      { href: contentUrl("/solar-subsidy"), label: "Solar Subsidy" },
+      { href: contentUrl("/solar-financing"), label: "Solar Financing" },
     ]},
   ]);
 
