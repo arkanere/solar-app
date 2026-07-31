@@ -9,9 +9,17 @@ import { MOVED_TO_ROOT } from '$lib/countries/moved-content';
 // Which country prefixes the rule above applies to.
 const MOVED_TO_ROOT_FROM = ['in', 'us'];
 
-// Legacy URL rewrites that need no DB lookup. Suffix-parsing redirects
-// that DO need geo data live as +server.ts shims under routes/us/ (county,
-// solar-panel-installer-directory/[city]).
+// Legacy URL rewrites that need no DB lookup. Suffix-parsing redirects that DO
+// need geo data live as +server.ts shims under
+// routes/[country=country]/{county/[county_slug], solar-panel-installer-directory/[city]}.
+// They moved there from routes/us/ in stage 4 of
+// docs/migration-plan-delete-us.md and are gated to US — the suffix parsing is
+// US state-abbreviation data ("orange-ca"), so an IN request 404s rather than
+// falling through to a bare-slug lookup against Indian rows.
+//
+// ⚠️ Those shims redirect from their route handlers, *after* routing, so unlike
+// everything in this file they do not carry the query string. Do not use them to
+// test this function's behaviour.
 function legacyRedirect(pathname: string): string | null {
 	const clean = pathname.replace(/\/+$/, '');
 
@@ -30,14 +38,30 @@ function legacyRedirect(pathname: string): string | null {
 	if (blogsMatch) return `/${blogsMatch[1]}`;
 
 	// Marketplace routes that moved from /in into the shared [country] tree
-	// (stage 11) but whose loaders still read the IN-only legacy tables
-	// (in_business_profiles, locations, LeadData). Without these rules /us/partners
-	// and /us/get-quotes would start answering with Indian data at a US URL.
+	// (stage 11 of docs/migration-plan-in-country.md) but whose loaders still read
+	// the IN-only legacy tables (in_business_profiles, locations, LeadData).
+	// Without these rules /us/partners and /us/get-quotes would answer with Indian
+	// data at a US URL.
 	//
-	// This runs before routing, so it is also what keeps the [country] loaders
-	// reachable only as /in — they need no feature gate of their own. **When the
-	// shared IN/US pages land (stage 15c), delete the matching rule in the same
-	// commit that makes the page country-aware.**
+	// This runs before routing, so it is also what keeps those [country] loaders
+	// reachable only as /in — they need no feature gate of their own.
+	//
+	// ⚠️ **These two rules stay. Deliberately.** An earlier version of this comment
+	// promised that stage 15c would delete them "in the same commit that makes the
+	// page country-aware". Stage 15c shipped without doing so — it merged
+	// *components*, not these pages — and stage 12 of
+	// docs/migration-plan-delete-us.md settled the question instead: a real
+	// /us/partners is a US partner-acquisition funnel and a real /us/get-quotes is
+	// a US consumer lead funnel. Both are **new product surface, not migration
+	// work**, and neither is in scope. /us captures consumer leads through
+	// LeadFormBusiness on the home instead (stage 9).
+	//
+	// ⚠️ **Before adding a third country to COUNTRIES, grep this file.** After the
+	// /us tree was deleted (stage 11) these rules are the *only* thing protecting
+	// IN-only data across the whole marketplace tree — there is no longer a literal
+	// per-country route tree to shadow [country], so a new prefix reaches every
+	// loader here immediately. A rule matching a hardcoded '/us/' will not fire for
+	// it, and the loader will answer with Indian rows.
 	if (clean === '/us/partners' || clean.startsWith('/us/partners/')) return '/us/business-listing';
 	if (clean === '/us/get-quotes') return '/us';
 
