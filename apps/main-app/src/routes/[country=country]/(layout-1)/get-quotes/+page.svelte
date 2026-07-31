@@ -1,5 +1,5 @@
 <script lang="ts">
-	import LeadFormSection from '$lib/in/components/LeadFormSection.svelte';
+	import LeadFormSection from '$lib/components/LeadFormSection.svelte';
 	import { breadcrumbLD } from '$lib/seo';
 	import { countryUrl } from '$lib/countries/urls';
 	import { Users, FolderCheck } from '@lucide/svelte';

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import PillarPage from '$lib/in/components/seo/PillarPage.svelte';
+	import PillarPage from '$lib/components/seo/PillarPage.svelte';
 	import { breadcrumbLD, faqLD } from '$lib/seo';
 
 	let { data } = $props();

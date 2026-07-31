@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { breadcrumbLD } from '$lib/seo';
 	import { countryUrl } from '$lib/countries/urls';
-	import BusinessForm from '$lib/in/components/BusinessForm.svelte';
+	import BusinessForm from '$lib/components/BusinessForm.svelte';
 	import { Card } from '$lib/components/ui/card';
 	import { Users, MapPin, TrendingUp } from '@lucide/svelte';
 

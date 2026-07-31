@@ -4,8 +4,8 @@
 	import { Slider } from '$lib/components/ui/slider';
 	import * as Select from '$lib/components/ui/select';
 	import { breadcrumbLD, webAppLD } from '$lib/seo';
-	import Breadcrumb from '$lib/in/components/seo/Breadcrumb.svelte';
-	import FAQ from '$lib/in/components/seo/FAQ.svelte';
+	import Breadcrumb from '$lib/components/seo/Breadcrumb.svelte';
+	import FAQ from '$lib/components/seo/FAQ.svelte';
 	import { CheckCircle, XCircle, ArrowRight, Info } from '@lucide/svelte';
 	import { capture } from '$lib/posthog';
 

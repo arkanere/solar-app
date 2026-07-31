@@ -4,8 +4,8 @@
   import { storiesModalOpen } from "$lib/storiesStore.js";
   import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
   import { page } from "$app/stores";
-  import StoriesModal from "$lib/in/components/StoriesModal.svelte";
-  import AboutSolarVipani from "$lib/in/components/AboutSolarVipani.svelte";
+  import StoriesModal from "$lib/components/StoriesModal.svelte";
+  import AboutSolarVipani from "$lib/components/AboutSolarVipani.svelte";
   import SiteHeader from "$lib/components/chrome/SiteHeader.svelte";
   import SiteFooter from "$lib/components/chrome/SiteFooter.svelte";
 

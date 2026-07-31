@@ -8,7 +8,7 @@
   import { initPosthog, capturePageview } from "$lib/posthog";
   import { hasAnalyticsConsent } from "$lib/consent";
   import CookieConsent from "$lib/components/CookieConsent.svelte";
-  import AboutSolarVipani from "$lib/in/components/AboutSolarVipani.svelte";
+  import AboutSolarVipani from "$lib/components/AboutSolarVipani.svelte";
   import ChatLauncher from "$lib/components/chat/ChatLauncher.svelte";
   import SiteHeader from "$lib/components/chrome/SiteHeader.svelte";
   import SiteFooter from "$lib/components/chrome/SiteFooter.svelte";

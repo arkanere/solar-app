@@ -4,8 +4,8 @@
 	import { Slider } from '$lib/components/ui/slider';
 	import * as Select from '$lib/components/ui/select';
 	import { breadcrumbLD, faqLD, webAppLD } from '$lib/seo';
-	import FAQ from '$lib/in/components/seo/FAQ.svelte';
-	import Breadcrumb from '$lib/in/components/seo/Breadcrumb.svelte';
+	import FAQ from '$lib/components/seo/FAQ.svelte';
+	import Breadcrumb from '$lib/components/seo/Breadcrumb.svelte';
 	import { Sun, Zap, IndianRupee, Clock, ArrowRight } from '@lucide/svelte';
 	import { capture } from '$lib/posthog';
 

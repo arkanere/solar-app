@@ -1,5 +1,5 @@
 <script lang="ts">
-	import GeoDirectory from '$lib/in/components/seo/GeoDirectory.svelte';
+	import GeoDirectory from '$lib/components/seo/GeoDirectory.svelte';
 	import { contentUrl } from '$lib/countries/urls';
 	import { breadcrumbLD } from '$lib/seo';
 

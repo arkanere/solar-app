@@ -1,10 +1,10 @@
 <script lang="ts">
-	import HeroVideoBanner from '$lib/in/components/seo/HeroVideoBanner.svelte';
-	import InstallerCard from '$lib/in/components/seo/InstallerCard.svelte';
-	import ProjectGallery from '$lib/in/components/seo/ProjectGallery.svelte';
-	import SubsidySection from '$lib/in/components/SubsidySection.svelte';
-	import LeadFormSection from '$lib/in/components/LeadFormSection.svelte';
-	import QuoteModal from '$lib/in/components/QuoteModal.svelte';
+	import HeroVideoBanner from '$lib/components/seo/HeroVideoBanner.svelte';
+	import InstallerCard from '$lib/components/seo/InstallerCard.svelte';
+	import ProjectGallery from '$lib/components/seo/ProjectGallery.svelte';
+	import SubsidySection from '$lib/components/SubsidySection.svelte';
+	import LeadFormSection from '$lib/components/LeadFormSection.svelte';
+	import QuoteModal from '$lib/components/QuoteModal.svelte';
 	import { breadcrumbLD, localBusinessLD, faqLD } from '$lib/seo';
 	import { faqFor } from '$lib/countries/faq';
 	import { contentUrl } from '$lib/countries/urls';

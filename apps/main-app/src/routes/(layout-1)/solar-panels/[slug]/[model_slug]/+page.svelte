@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ProductSpecPage from '$lib/in/components/seo/ProductSpecPage.svelte';
+	import ProductSpecPage from '$lib/components/seo/ProductSpecPage.svelte';
 	import { breadcrumbLD, productLD } from '$lib/seo';
 
 	let { data } = $props();

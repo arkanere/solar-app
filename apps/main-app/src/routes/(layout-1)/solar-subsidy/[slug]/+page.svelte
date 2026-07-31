@@ -1,7 +1,7 @@
 <script lang="ts">
-	import ClusterPage from '$lib/in/components/seo/ClusterPage.svelte';
-	import StateSubsidyPage from '$lib/in/components/seo/StateSubsidyPage.svelte';
-	import DiscomPage from '$lib/in/components/seo/DiscomPage.svelte';
+	import ClusterPage from '$lib/components/seo/ClusterPage.svelte';
+	import StateSubsidyPage from '$lib/components/seo/StateSubsidyPage.svelte';
+	import DiscomPage from '$lib/components/seo/DiscomPage.svelte';
 	import { breadcrumbLD, faqLD } from '$lib/seo';
 
 	let { data } = $props();

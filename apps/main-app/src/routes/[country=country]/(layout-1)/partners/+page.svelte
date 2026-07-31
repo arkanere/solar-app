@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { breadcrumbLD, faqLD, organizationLD } from '$lib/seo';
 	import { countryUrl, installerUrl } from '$lib/countries/urls';
-	import NetworkStats from '$lib/in/components/seo/NetworkStats.svelte';
+	import NetworkStats from '$lib/components/seo/NetworkStats.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
 	import {

@@ -1,8 +1,8 @@
 <script>
   import { onMount } from "svelte";
   import { contentUrl, countryUrl } from "$lib/countries/urls";
-  import RecentProjectsHome from "$lib/in/components/RecentProjectsHome.svelte";
-  import SolarComparisonTable from "$lib/in/components/SolarComparisonTable.svelte";
+  import RecentProjectsHome from "$lib/components/RecentProjectsHome.svelte";
+  import SolarComparisonTable from "$lib/components/SolarComparisonTable.svelte";
 
   // Receive data from server
   let { data } = $props();

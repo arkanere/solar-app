@@ -4,7 +4,7 @@
 	import { Slider } from '$lib/components/ui/slider';
 	import * as Select from '$lib/components/ui/select';
 	import { breadcrumbLD, webAppLD } from '$lib/seo';
-	import Breadcrumb from '$lib/in/components/seo/Breadcrumb.svelte';
+	import Breadcrumb from '$lib/components/seo/Breadcrumb.svelte';
 	import { IndianRupee, Percent, Calendar, ArrowRight } from '@lucide/svelte';
 
 	let { data } = $props();

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { contentUrl, countryUrl } from '$lib/countries/urls';
-	import Breadcrumb from '$lib/in/components/seo/Breadcrumb.svelte';
+	import Breadcrumb from '$lib/components/seo/Breadcrumb.svelte';
 	import { personLD, breadcrumbLD } from '$lib/seo';
 
 	let { data } = $props();
