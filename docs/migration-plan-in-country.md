@@ -926,21 +926,64 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 8. **Out of scope, note only:** `routes/api/{stories,cron/*,submitDataAccess,submitDataDeletion}`
    have no country context; `features.chatbot` hides the UI but leaves endpoints open.
 
-## 10. First action for the implementation session
+## 10. Resume here (cold start)
 
-~~Start **S1** (extract shared chrome)~~ — done, along with S2–S5. Baselines are captured
-in §8; the sitemap `<loc>` count and route-directory count there are the pre-S1 originals
-and are still the comparison points.
+**Done: stages 1–5 and 7–10.** Working tree clean at `5ff224a`; every stage is one commit
+plus a SHA-recording commit, listed in the §8 stage log. Destination A is complete — all 7
+content pillars, tools, authors, seo-index and the legal pages answer country-less, each with
+a one-hop 301 from `/in/**` and `/us/**`. Destination B has started: projects moved.
 
-**Next action: S7a commit 2.** Commit 1 (the §5c wiring, a verified no-op) is done — see the
-stage log.
+**Next: S11** — partners, business-listing/form, get-quotes, thank-you\*, unsubscribe, the
+district shim, and the IN home into `routes/[country=country]/(layout-1)/`. Read the S11
+notes; the ones that bite are `unsubscribe/+server.js` (own `createPool`, needs its own
+`isCountry` guard — no layout runs for a `+server.js`), `thank-you` (posted to from
+**user-app**; its URL must not change), and the IN home becoming the default for any future
+country. Then S12 (3 API routes), S13 (sitemaps), S14 (delete `routes/in/`), S15 (component
+merge), S16 (doc).
 
-1. ~~**The §5c wiring, as a pure no-op.**~~ **Done.** `src/lib/countries/moved-content.ts`
-   holds the seven S4 families; `hooks.server.ts` imports it; `contentUrl()` is family-aware;
-   `CONTENT_PREFIX` and both `contentPrefix` derivations are gone.
-2. **The move.** `git mv` `rooftop-solar/**` and `solar-installation/**` (9 files) to
-   `routes/(layout-1)/`, copying `export const config` verbatim; append `'rooftop-solar'`
-   and `'solar-installation'` to `MOVED_TO_ROOT`; fix the canonical and `breadcrumbLD` URLs
-   in the four `+page.svelte` files; retarget `rooftop-solar/roi/+server.ts` per the S6 note.
+### How to work a move stage (learned across 7a–10, follow this)
 
-Then tick the four §8 rows, append the SHA to the stage log, and commit the doc update.
+1. **Grep for the family name three ways before moving.** The §7.7 pattern
+   (``'/in/`` / ``"/in/`` / `` `/in/ ``) is **not sufficient** — it misses
+   `` `${BASE_URL}/in/...` `` (S8) . Run all of:
+   `grep -rn "<family>" src/lib src/routes`, `grep -rn 'BASE_URL}/in' src/lib src/routes`,
+   and the §7.7 pattern.
+2. **Grep inside the moved directory too**, `+page.server.ts` included. Loaders build hrefs
+   (S7c), and a moved route self-referencing the old prefix is the easiest miss. S8's
+   directory held 21 such references against a predicted 3.
+3. **Destination A** → append the family to `MOVED_TO_ROOT` in the same commit (§5c); fix
+   canonicals and `breadcrumbLD`, leaving the `Home` entry at `/in` per S2.
+   **Destination B** → no redirect, but every `/in/` literal inside the moved files must
+   become per-country (`countryUrl`/`geoUrl`/`installerUrl`/`projectUrl` on `cc`), and the
+   loader needs an explicit feature gate — `svelte-check` will not catch a missing one.
+4. **Verify by loading pages, not by reasoning**: status matrix, `%{num_redirects}` (must be
+   1 for a moved family, 0 for an unmoved one), and a stashed-tree href diff for one page per
+   family. `npm run check` must stay at **17 errors / 14 warnings**; build must pass with
+   **3** prerendered US pages (not four — S5 deleted `/us/about-us`).
+5. Tick §8, append the SHA, commit the doc.
+
+### Carried-forward items (none are blockers; do not lose them)
+
+**Verify against prod after deploy** — all three are correct-by-reading but unrenderable
+locally, because the dev DB has no rows in `solar_brands`, `solar_products`,
+`solar_financing_banks`, `state_subsidies` or `authors`, and no US businesses:
+- `BrandPage` / `ProductSpecPage` under the three product pillars (the S2 gap, still open).
+- The `solar-financing` / `solar-subsidy` loaders' bank and state link lists (S7c).
+- `localBusinessLD`'s `/us` output (S9) — it was emitting `/in/installer/...` in US
+  structured data; the fix is verified on IN only.
+
+**Deferred work, each recorded in the stage note that found it:**
+- **Trailing-slash pass.** `trailingSlash` is `'never'`, so any href written with a trailing
+  slash costs a normalization hop — `contentUrl('/rooftop-solar/cost/')`, the `/in/` Home
+  links, and many more. Pre-existing and site-wide; worth one dedicated sweep.
+- **`seo_pages.content` JSONB** still emits ~20 `/in/...` hrefs per content page. They 301
+  correctly, so this is suboptimal rather than broken. Fixable with an `UPDATE` on the
+  table — **a data change; rewriting the historical migration `.sql` files stays forbidden.**
+- **S15a's dead list should also include `$lib/in/components/{RecentProjectsCity,BusinessTilesList}`**
+  — zero importers in `routes/` (S10). `RecentProjectsCity` also points at
+  `/in/recent-solar-installation-projects-in/{city}`, which is not a route.
+- **`aboutStats` coupling.** `routes/(layout-1)/+layout.server.ts` is a byte-identical copy
+  of the `/in` layout's legacy-table query (S7a.3). When the write cutover switches one to
+  unified tables, **switch both in the same commit** or the two trees will disagree.
+- The §7.7 leakage counts quoted in the stage notes undercount for the reason in step 1
+  above. They are a useful trend, never a completeness check.
