@@ -1,6 +1,22 @@
 # Migration plan: delete `routes/us/`
 
-> **STATUS: NOT STARTED.** Nothing in this document has been applied.
+> **STATUS: IN PROGRESS. S1, S3 and S4 applied 2026-07-31. S2 deleted — its
+> premise did not hold. Next stage: S5.**
+>
+> ⚠️ **S2 no longer exists.** §5a assumed a per-country contact split. There is
+> exactly **one** support number (`+918983066701`) and **one** support email
+> (`admin@solarvipani.com`) company-wide, and the live `/us/business-listing`
+> already showed both. The user confirmed US support routes to the same contact,
+> so `CountryConfig.support` would have held identical values for both countries —
+> the abstraction CLAUDE.md forbids. Every `tel:`/`mailto:`/`wa.me` link stays as
+> it is. **Later stages must not "fix" an Indian number on a US page — that is the
+> intended behaviour.**
+>
+> ⚠️ **Dev writes to the live Neon database** (`POSTGRES_URL` in `.env.local` points
+> at `ep-sparkling-union-a1l7shpv-pooler…neon.tech/verceldb`). A POST to any endpoint
+> in dev is a production write. One was made and reverted during S3 (a test row in
+> `unsubscribe`, id 88, deleted). **§7.9's business-signup e2e in S7 must be planned
+> with its rollback before it is run, not after.**
 >
 > Sequel to `docs/migration-plan-in-country.md` (complete, 16 stages). That plan
 > dissolved `routes/in/`; this one dissolves `routes/us/`. Read §3 (decisions taken)
@@ -371,11 +387,39 @@ and **no** link to `/us/partners` or `/us/get-quotes` (§4.3); the footer's cont
 country-less; the build still emits **3** prerendered pages. Diff the href multiset of `/us`
 before/after and confirm every removed href was a nav link you meant to remove.
 
-### S2 — `CountryConfig.support` + de-hardcode contact
-Per §5a. Pure refactor: `/in` markup must be byte-identical afterward.
+**Done 2026-07-31 (`7ff156e`).** Two deviations from the text above, both forced:
 
-Verify: `grep -rn "918983066701" src/routes/\[country=country\]` returns nothing; `/in`
-href diff empty on the four affected pages.
+1. **`$lib/us/` was deleted here, not in S11.** The stage text said to keep
+   `$lib/us/themeStore` until its last importer dies. That does not survive contact:
+   both stores use the **same `localStorage` key `'theme'`** but disagree on its values
+   (`$lib/us` treats anything `!== 'dark'` as light; `$lib/themeStore.svelte` defaults to
+   `'system'`), and the `SiteHeader` toggle drives only the shared one. Keeping both would
+   leave the six `/us` pages' `$isDarkMode` stale until reload, and mixed against the
+   `<html>` class. All six now import `$lib/themeStore.svelte` — a drop-in, same exported
+   names — and `$lib/us/` is gone. `us-states.ts`'s comment was updated with it.
+   ⚠️ **Behaviour change: `/us` visitors with no stored preference now follow their OS
+   dark-mode preference**, where the old store defaulted to light. That is what `/in` and
+   `/` already do, and consistent with §3.2.
+2. **`SiteFooter` gained a US branch.** `SiteHeader`'s US CTA points at
+   `/us/business-form`, so swapping the nav orphaned `/us/business-listing` — a 1391-line
+   landing page, and the 301 target for `/us/partners`. The Company column now links it
+   for US, mirroring IN's *Partner with Us*. **§4.3 was right that no link lands on a
+   redirect; it missed that one page lost its only link.**
+
+**Correction to §4.2 and hazard 5: the US analytics are not unique.** The `[country]`
+layout already loads the same Umami id, the same GA `G-BXXPPJ3LK8`, the same Hotjar
+`5045118`, the same Twitter `opkvk` and the same CallSafe handle `eb37507909fa43ff`.
+S11's "port the analytics or confirm they are retired" is therefore near-empty — check
+the Facebook Pixel init id, which is the only one that differs in placement.
+
+Verified: `/in`, `/in/business-listing` and `/` **byte-identical href sets**; `/us` pages
+differ only by the brand href losing its trailing slash (one hop saved), the header CTA,
+and the 5 social links `AboutSolarVipani` adds. No `Georgia` left in the `/us` markup.
+`npm run check` 13/1, build passes, 3 prerendered US pages.
+
+### ~~S2 — `CountryConfig.support` + de-hardcode contact~~ — DELETED
+**The premise did not hold.** See the status header. There is one support number and one
+support email company-wide; the user confirmed US routes to the same ones. No code change.
 
 ### S3 — Free deletes
 Delete, in one commit, with **no** replacement work:
@@ -389,6 +433,23 @@ Verify: `/us/sitemap.xml` still returns the same `<loc>` count as the S13 baseli
 `/us/business-form` renders "County", a populated county dropdown and zero tax inputs
 (the S15c assertions, now through the shared page); a POST to `/us/unsubscribe` still
 succeeds. `/us/business-form` **stops prerendering** here — expect **2**, not 3.
+
+**Done 2026-07-31 (`7644d83`).** Exactly as specified, no deviations.
+
+Verified: `/us/sitemap.xml` **byte-identical** at 47 locs; `/us/business-form` href set
+byte-identical, renders `County` ×2, zero `District`, zero `GSTN`; `/in/business-form`
+still renders `District` and `GSTN`; `/us/unsubscribe` still 405s on GET (the POST-only
+`+server.js` wins over the page — pre-existing, and true for `/in` too).
+`npm run check` 13/1, build passes, prerendered **3 → 2**.
+
+⚠️ **The county dropdown is populated client-side, so it has zero `<option>` in the SSR
+HTML** — do not read that as a regression. Verify its data source instead:
+`curl 'localhost:7123/us/api/getLevel2s?state=California'` (a **GET** with a query
+param, not a POST — the S15c-era `/us/api/getCounties` was a POST and the shape changed).
+
+⚠️ **A POST verification here wrote a row to the live DB.** See the status header. The
+row was deleted. Prefer read-only verification; where a write is unavoidable, know the
+`DELETE` before issuing the `POST`.
 
 ### S4 — The projects stub and the two geo shims
 Two unrelated things, but both are pure route surgery with no merge:
@@ -413,6 +474,24 @@ reasoning as the district shim in S11c of the previous plan.
 Verify: `/us/county/orange-ca`, a bare `/us/county/orange`, and
 `/us/solar-panel-installer-directory/anaheim-ca` each still 301 in **exactly one hop** to
 a 200; `/in/county/pune` 404s.
+
+**Done 2026-07-31 (`f065563`).** The stub rendered `Error: Failed to load projects` —
+§4.4 confirmed live before deleting.
+
+⚠️ **The verification URLs in the stage text above are bad examples, and the "exactly one
+hop" assertion is wrong for the directory shim.** Measured before touching anything:
+- `/us/solar/california/orange` **404s** — Orange County has no visible businesses. The
+  county shim redirects correctly *to a page with no data*. That is data, not routing,
+  and it is pre-existing. Verify against a county that has rows: **`maricopa-az`**.
+- The directory shim takes **2 hops, not 1**: it resolves to the *city*
+  (`/us/solar/{state}/{county}/{city}`), and the city page then folds up to its district.
+  Also pre-existing. Preserve 2; do not "fix" it to 1.
+
+Verified: `/us/county/maricopa-az` and bare `/us/county/maricopa` → **1 hop → 200**;
+`/us/solar-panel-installer-directory/phoenix-az` and bare `phoenix` → **2 hops → 200**;
+`/in/county/pune` and `/in/solar-panel-installer-directory/pune` **404** through the new
+gate; both deleted-stub URLs 404 through `routes/+error.svelte`.
+`npm run check` 13/1, build passes, 2 prerendered US pages.
 
 ### S5 — Gate the `[country]` pages
 *The keystone stage. No `/us` file is touched and no URL changes — and it is the stage
@@ -633,14 +712,14 @@ Legend: **A** = already covered by `[country]`, **B** = merge, **C** = relocate,
 
 | File (under `routes/us/`) | Disp | Stage | Gated (S5) | Merged | Deleted | Verified |
 |---|---|---|---|---|---|---|
-| `sitemap.xml/+server.ts` | A | 3 | n/a | n/a | ☐ | ☐ |
-| `(layout-1)/unsubscribe/+page.svelte` | A | 3 | n/a | n/a | ☐ | ☐ |
-| `(layout-1)/unsubscribe/+server.js` | A | 3 | n/a | n/a | ☐ | ☐ |
-| `(layout-1)/business-form/+page.svelte` | A | 3 | n/a | n/a | ☐ | ☐ |
-| `(layout-1)/business-form/+page.js` | D | 3 | n/a | n/a | ☐ | ☐ |
-| `(layout-1)/recent-solar-installation-projects/[page_slug]/` | D | 4 | n/a | n/a | ☐ | ☐ |
-| `county/[county_slug]/+server.ts` | C | 4 | n/a | n/a | ☐ | ☐ |
-| `solar-panel-installer-directory/[city]/+server.ts` | C | 4 | n/a | n/a | ☐ | ☐ |
+| `sitemap.xml/+server.ts` | A | 3 | n/a | n/a | ✅ | ✅ |
+| `(layout-1)/unsubscribe/+page.svelte` | A | 3 | n/a | n/a | ✅ | ✅ |
+| `(layout-1)/unsubscribe/+server.js` | A | 3 | n/a | n/a | ✅ | ✅ |
+| `(layout-1)/business-form/+page.svelte` | A | 3 | n/a | n/a | ✅ | ✅ |
+| `(layout-1)/business-form/+page.js` | D | 3 | n/a | n/a | ✅ | ✅ |
+| `(layout-1)/recent-solar-installation-projects/[page_slug]/` | D | 4 | n/a | n/a | ✅ | ✅ |
+| `county/[county_slug]/+server.ts` | C | 4 | n/a | n/a | ✅ moved | ✅ |
+| `solar-panel-installer-directory/[city]/+server.ts` | C | 4 | n/a | n/a | ✅ moved | ✅ |
 | `(layout-1)/thank-you/+page.svelte` | B | 6 | ☐ | ☐ | ☐ | ☐ |
 | `(layout-1)/thank-you-business/+page.svelte` | B | 6 | ☐ | ☐ | ☐ | ☐ |
 | `api/submitBusiness/+server.js` | B | 7 | n/a | ☐ | ☐ | ☐ |
@@ -649,18 +728,18 @@ Legend: **A** = already covered by `[country]`, **B** = merge, **C** = relocate,
 | `(layout-1)/business-listing/+page.js` | D | 8 | n/a | n/a | ☐ | ☐ |
 | `(layout-1)/+page.svelte` (home) | B | 9 | ☐ | ☐ | ☐ | ☐ |
 | `(layout-1)/+page.js` | D | 9 | n/a | n/a | ☐ | ☐ |
-| `(layout-1)/+layout.svelte` | B | 1, 11 | n/a | ☐ | ☐ | ☐ |
+| `(layout-1)/+layout.svelte` | B | 1, 11 | n/a | ✅ S1 | ☐ | ☐ |
 | `(layout-1)/+layout.server.ts` | D | 11 | n/a | n/a | ☐ | ☐ |
-| `$lib/us/themeStore.js` | D | 11 | n/a | n/a | ☐ | ☐ |
+| `$lib/us/themeStore.js` | D | **1** | n/a | n/a | ✅ | ✅ | ← pulled forward from S11; see the S1 note
 
 **Stage log** (append: stage, date, commit SHA — the revert target for a later session):
 
 | Stage | Date | SHA |
 |---|---|---|
-| 1 — US layout → shared chrome | | |
-| 2 — `CountryConfig.support` | | |
-| 3 — free deletes | | |
-| 4 — projects stub + geo shims | | |
+| 1 — US layout → shared chrome | 2026-07-31 | `7ff156e` |
+| ~~2 — `CountryConfig.support`~~ | — | deleted, premise did not hold |
+| 3 — free deletes | 2026-07-31 | `7644d83` |
+| 4 — projects stub + geo shims | 2026-07-31 | `f065563` |
 | 5 — **gate the `[country]` pages** | | |
 | 6 — thank-you ×2 | | |
 | 7 — submitBusiness | | |
@@ -700,14 +779,32 @@ Legend: **A** = already covered by `[country]`, **B** = merge, **C** = relocate,
 
 ## 10. Resume here (cold start)
 
-**Next stage: S1 — rewire `routes/us/(layout-1)/+layout.svelte` to `SiteHeader`/`SiteFooter`.**
-Nothing has been applied. Read §3 (decisions), then §4.1 (the gating hazard), then S1.
+**Next stage: S5 — gate the `[country]` pages.** S1, S3 and S4 are applied; S2 is deleted.
+Read §4.1 (the gating hazard) before starting — S5 exists entirely for it, and every stage
+from S6 on assumes it has landed.
 
-**Two things to settle with the user before you reach them:**
-1. **§3.4 / S7** — per-country legacy-table dispatch in `submitBusiness`. Recommended and
-   written up, but the user did not answer the question that proposed it.
-2. **S9** — whether the US home keeps `LeadFormBusiness`. Removing it removes the only US
-   consumer lead form.
+**What is left under `routes/us/` (8 files):**
+
+```
+(layout-1)/+layout.server.ts          S11
+(layout-1)/+layout.svelte             S11  (already shared chrome since S1)
+(layout-1)/+page.svelte  +page.js     S9   (the home merge)
+(layout-1)/business-listing/+page.svelte, +page.server.js, +page.js   S8
+(layout-1)/thank-you/+page.svelte                                     S6
+(layout-1)/thank-you-business/+page.svelte                            S6
+api/submitBusiness/+server.js                                         S7
+```
+
+**Both open questions are settled** — the user confirmed §3.4 (per-country legacy-table
+dispatch in `submitBusiness`) and S9 (the US home keeps `LeadFormBusiness`, its only
+consumer lead form). Nothing is blocked.
+
+**Standing constraints established during S1–S4, do not rediscover:**
+- **Dev writes to the live DB.** Read-only verification by default.
+- **Contact details are deliberately shared.** An Indian number on a US page is intended
+  (S2's deletion). Do not "fix" it.
+- **The prerendered count is now 2** (`/us`, `/us/business-listing`) → 1 after S8 → 0
+  after S9.
 
 **The ordering constraint that matters most:** S5 gates the `[country]` pages *before* any
 `/us` page is deleted. Every stage from S6 on assumes it has landed. If you find yourself
