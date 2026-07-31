@@ -770,7 +770,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | 7a.1 — moved-content wiring (no-op) | 2026-07-31 | `23ffdb9` |
 | 7a.2 — rooftop-solar + solar-installation | 2026-07-31 | `2e8b08b` |
 | 7a.3 — aboutStats on country-less root | 2026-07-31 | `b7b98bc` |
-| 7b — the 3 product pillars | 2026-07-31 | _pending_ |
+| 7b — the 3 product pillars | 2026-07-31 | `b222d3d` |
 
 ## 9. Hazards
 
