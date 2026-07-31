@@ -1,7 +1,7 @@
 # Migration plan: delete `routes/us/`
 
-> **STATUS: IN PROGRESS. S1, S3 and S4 applied 2026-07-31. S2 deleted — its
-> premise did not hold. Next stage: S5.**
+> **STATUS: IN PROGRESS. S1, S3–S7 applied 2026-07-31. S2 deleted — its premise
+> did not hold. Next stage: S8. Only 7 files remain under `routes/us/`.**
 >
 > ⚠️ **S2 no longer exists.** §5a assumed a per-country contact split. There is
 > exactly **one** support number (`+918983066701`) and **one** support email
@@ -518,6 +518,51 @@ seeing Indian copy would be a *deploy* away from discovery rather than a `git re
 Verify: `/in`, `/in/business-listing`, `/in/thank-you?ref={uuid}`, `/in/thank-you-business`
 all 200 with an **empty href diff and empty text diff** against the pre-stage capture.
 
+**Done 2026-07-31 (`e8c8f9e`).** Three of the four pages gated.
+
+⚠️ **Deviation: the home is NOT gated here — it moved into S9.** Its gating is
+*inseparable* from its merge: the US content only exists in the file S9 deletes, so a
+"gate first" pass would mean writing US copy twice. S9 therefore becomes gate + merge +
+delete in one commit, verified by loading `/us` and grepping it (§7.5) — a **stronger**
+check than S5's rename-and-curl, since the page is really being served.
+
+As built:
+- **thank-you-business** — the two countries make different *service promises*, not just
+  differently-styled ones: IN calls the business back and offers a number, US commits to
+  a 2-business-day turnaround and mentions no call. Both kept verbatim behind `cc === 'in'`.
+- **thank-you** — the whole lead-detail body is IN-only, and the loader now returns early
+  for non-IN instead of running `LeadData`/`in_business_profiles` queries. US renders the
+  bare headline it always has. A real US lead-detail page needs `us_leaddata` — a
+  behaviour addition, deliberately not made.
+- **business-listing** — `og:locale`, `areaServed`, `priceCurrency`, `addressCountry` and
+  `availableLanguage` all now derive from `CountryConfig`. Both JSON-LD blocks moved into
+  the JS block, since they carry country-dependent values; that is the **same svelte2tsx
+  workaround** the file already used for `breadcrumbScript`. Its *marketing copy* is left
+  to S8, where the US page's own copy is in hand to reconcile against.
+
+**⚠️ Fixed a bug that was already live on `/us`, found by previewing the gated pages.**
+`AboutSolarVipani` labelled its counter **"Leads Generated Across India"**
+unconditionally, while `[country]/(layout-1)/+layout.server.ts` counts
+`leads WHERE country_code = $1`. So `/us/solar/**` and `/us/installer/**` have been
+showing a **US** number (2,004) under an **Indian** label. The label is now just
+"Leads Generated" — the count is always scoped to the country whose page you are on, so
+naming a country added nothing and could only be wrong. **This is the first intended
+change to `/in` rendered copy in this migration.** The alternatives were a new config
+field for one string, or leaving `/us` wrong.
+
+**Technique worth reusing:** to see what a gated `[country]` page will render for `/us`
+while the literal `/us` route still wins, `mv` the `/us` directory aside, curl, `mv` it
+back — and do not commit it. That is what surfaced the label bug.
+
+### S6 — thank-you + thank-you-business — **Done 2026-07-31 (`dd9782b`)**
+Both `/us` pages deleted; the S5-gated `[country]` versions took over. The loader was
+gated to IN in S5 (the first option in the stage text), so US behaviour is unchanged.
+
+Verified: `/us/thank-you` renders only "Thank you for submitting your details." — not the
+IN body's "We have received your details" or "Next Steps"; `/us/thank-you-business`
+renders the US 2-business-day promise; **zero** Indian content on either; the IN-branch
+phone link renders on `/in` only. `npm run check` 13/1, build passes, 2 prerendered.
+
 ### S6 — thank-you + thank-you-business
 Delete both `/us` pages; the gated `[country]` versions take over.
 
@@ -568,6 +613,33 @@ Verify: POST an empty body to `/us/api/submitBusiness` and `/in/api/submitBusine
 from each = handler reached); an unknown country 404s; then submit one real business per
 country in dev and confirm the row lands in the right legacy tables **and** in unified
 `businesses`/`business_accounts` with the right `country_code`. Roll both back.
+
+**Done 2026-07-31 (`4fd3733`).**
+
+⚠️ **The stage text missed the schema entirely, and it was a blocker.** The shared
+`submitBusinessSchema` required **`gstn`** and **`district`** — but the shared
+`BusinessForm` posts `gstn: ""` for US (`taxId.collectOnSignup: false`) and keys level2
+as **`county`** there. Applied to US traffic unchanged it would have rejected every US
+signup, twice over. It is now `submitBusinessSchema(country)`, following the
+`leadSchema(country)` factory already in that package. `SubmitBusinessInput` became
+`z.output<ReturnType<typeof …>>`. It has exactly one consumer, so this was safe.
+
+**This closes the S15c trap instead of merely avoiding it.** Both nouns are declared and
+exactly one is required per country, so sending the wrong one is a loud 400 rather than a
+silently dropped value. Verified in both directions (IN+`county`, US+`district`).
+
+⚠️ **The confirmation endpoint emails `admin@solarvipani.com` for real**, and it
+**ignores `sendEmail`'s return value** — so `{"success":true}` is *not* evidence that a
+send was suppressed. The e2e was run with `BREVO_API_KEY` blanked; the proof that no mail
+left is the **absence** of `sendEmail`'s "Email sent successfully" log line, not the
+endpoint's response. Note `BREVO_API_KEY=""` on the `npm run dev` command line does
+override `.env.local` for `$env/static/private`, but confirm it per run.
+
+Verified with one real submission per country against the live DB, then rolled back (all
+six tables re-checked at **0** residue): the US row's `Maricopa` landed in
+`us_businesses.county` — not dropped — and both rows synced to unified
+`businesses`/`business_accounts` under the correct `country_code`, the US one as `us`.
+`npm run check` 13/1, build passes, 2 prerendered.
 
 ### S8 — business-listing
 The larger merge: 1391 US lines vs 695 IN. Delete the `/us` page and `+page.server.js`;
@@ -720,9 +792,9 @@ Legend: **A** = already covered by `[country]`, **B** = merge, **C** = relocate,
 | `(layout-1)/recent-solar-installation-projects/[page_slug]/` | D | 4 | n/a | n/a | ✅ | ✅ |
 | `county/[county_slug]/+server.ts` | C | 4 | n/a | n/a | ✅ moved | ✅ |
 | `solar-panel-installer-directory/[city]/+server.ts` | C | 4 | n/a | n/a | ✅ moved | ✅ |
-| `(layout-1)/thank-you/+page.svelte` | B | 6 | ☐ | ☐ | ☐ | ☐ |
-| `(layout-1)/thank-you-business/+page.svelte` | B | 6 | ☐ | ☐ | ☐ | ☐ |
-| `api/submitBusiness/+server.js` | B | 7 | n/a | ☐ | ☐ | ☐ |
+| `(layout-1)/thank-you/+page.svelte` | B | 6 | ✅ | ✅ | ✅ | ✅ |
+| `(layout-1)/thank-you-business/+page.svelte` | B | 6 | ✅ | ✅ | ✅ | ✅ |
+| `api/submitBusiness/+server.js` | B | 7 | n/a | ✅ | ✅ | ✅ |
 | `(layout-1)/business-listing/+page.server.js` | B | 8 | n/a | ☐ | ☐ | ☐ |
 | `(layout-1)/business-listing/+page.svelte` | B | 8 | ☐ | ☐ | ☐ | ☐ |
 | `(layout-1)/business-listing/+page.js` | D | 8 | n/a | n/a | ☐ | ☐ |
@@ -740,9 +812,9 @@ Legend: **A** = already covered by `[country]`, **B** = merge, **C** = relocate,
 | ~~2 — `CountryConfig.support`~~ | — | deleted, premise did not hold |
 | 3 — free deletes | 2026-07-31 | `7644d83` |
 | 4 — projects stub + geo shims | 2026-07-31 | `f065563` |
-| 5 — **gate the `[country]` pages** | | |
-| 6 — thank-you ×2 | | |
-| 7 — submitBusiness | | |
+| 5 — **gate the `[country]` pages** | 2026-07-31 | `e8c8f9e` |
+| 6 — thank-you ×2 | 2026-07-31 | `dd9782b` |
+| 7 — submitBusiness | 2026-07-31 | `4fd3733` |
 | 8 — business-listing | | |
 | 9 — the home | | |
 | 10 — prerender → ISR | | |
