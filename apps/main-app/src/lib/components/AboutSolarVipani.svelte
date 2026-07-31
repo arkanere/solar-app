@@ -4,16 +4,26 @@
 	import { Users, TrendingUp } from '@lucide/svelte';
 
 	interface Props {
-		installerCount: number;
-		leadsGenerated: number;
+		// Optional so this component can render on pages with no database access.
+		// The three /us pages are prerendered and their layout deliberately returns
+		// no aboutStats (stage 3: adding it would couple a build to the DB), so
+		// they render this section without the stats block. Both counts come from
+		// the IN legacy tables, which is why the leads label names India — it only
+		// appears when a caller actually passes them.
+		installerCount?: number;
+		leadsGenerated?: number;
 	}
 
 	let { installerCount, leadsGenerated }: Props = $props();
 
-	const stats = $derived([
-		{ label: 'Verified Installers on the Platform', value: installerCount, icon: Users },
-		{ label: 'Leads Generated Across India', value: leadsGenerated, icon: TrendingUp }
-	]);
+	const stats = $derived(
+		installerCount === undefined || leadsGenerated === undefined
+			? []
+			: [
+					{ label: 'Verified Installers on the Platform', value: installerCount, icon: Users },
+					{ label: 'Leads Generated Across India', value: leadsGenerated, icon: TrendingUp }
+				]
+	);
 
 	let hoveredLink: string | null = $state(null);
 
@@ -55,14 +65,15 @@
 				</p>
 				<p class="text-lg">
 					We believe in complete transparency: our platform is open source, and our guides are
-					written to educate you before you spend a single rupee. Compare multiple options —
+					written to educate you before you spend anything. Compare multiple options —
 					get 2-3 free quotes from verified installers in your area — and choose the solution
 					that is right for your home or business.
 				</p>
 			</div>
 		</div>
 
-		<!-- Trust Stats -->
+		<!-- Trust Stats — omitted entirely when no counts were passed (see Props) -->
+		{#if stats.length > 0}
 		<div class="grid grid-cols-2 gap-4">
 			{#each stats as stat (stat.label)}
 				<div class="flex flex-col items-center gap-2 rounded-lg bg-muted p-4 text-center">
@@ -72,6 +83,7 @@
 				</div>
 			{/each}
 		</div>
+		{/if}
 
 		<!-- Social Media Links -->
 		<div class="w-full pt-[theme(--card-padding-y)] border-t border-[hsl(var(--border))]">

@@ -14,7 +14,7 @@
 		const aboutObserver = new IntersectionObserver(
 			async (entries) => {
 				if (entries[0].isIntersecting) {
-					const module = await import('$lib/us/AboutSolarVipani.svelte');
+					const module = await import('$lib/components/AboutSolarVipani.svelte');
 					AboutSolarVipani = module.default;
 					shouldLoadAbout = true;
 					aboutObserver.disconnect();
