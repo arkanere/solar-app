@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { breadcrumbLD, faqLD, organizationLD } from '$lib/seo';
+	import { countryUrl, installerUrl } from '$lib/countries/urls';
 	import NetworkStats from '$lib/in/components/seo/NetworkStats.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Card } from '$lib/components/ui/card';
@@ -19,10 +20,17 @@
 
 	let { data } = $props();
 
-	const breadcrumb = breadcrumbLD([
-		{ name: 'Home', url: 'https://solarvipani.com/in/' },
-		{ name: 'Partners', url: 'https://solarvipani.com/in/partners/' }
-	]);
+	const cc = $derived(data.country.code);
+	const homeUrl = $derived(countryUrl(cc, '/'));
+	const partnersUrl = $derived(countryUrl(cc, '/partners/'));
+	const joinUrl = $derived(countryUrl(cc, '/partners/join/'));
+
+	const breadcrumb = $derived(
+		breadcrumbLD([
+			{ name: 'Home', url: `https://solarvipani.com${homeUrl}` },
+			{ name: 'Partners', url: `https://solarvipani.com${partnersUrl}` }
+		])
+	);
 
 	const faqs = [
 		{
@@ -109,7 +117,7 @@
 		name="description"
 		content="Join India's fastest-growing solar installer network. Get verified leads, showcase your projects, and grow your solar business — completely FREE. {data.installerCount}+ installers across {data.citiesServed}+ cities."
 	/>
-	<link rel="canonical" href="https://solarvipani.com/in/partners/" />
+	<link rel="canonical" href="https://solarvipani.com{partnersUrl}" />
 	<meta
 		name="keywords"
 		content="solar business listing, solar panel installer directory, solar installer network, solar business growth, solar marketing India"
@@ -129,7 +137,7 @@
 		content="Join India's fastest-growing solar installer network. Get verified leads and grow your solar business — completely FREE."
 	/>
 	<meta property="og:type" content="website" />
-	<meta property="og:url" content="https://solarvipani.com/in/partners/" />
+	<meta property="og:url" content="https://solarvipani.com{partnersUrl}" />
 	<meta
 		property="og:image"
 		content="https://solarvipani.com/images/solar-business-listing-og.jpg"
@@ -229,7 +237,7 @@
 				Join {data.installerCount.toLocaleString('en-IN')}+ verified installers — completely
 				<span class="font-bold text-amber-300">FREE</span>
 			</p>
-			<a href="/in/partners/join/">
+			<a href={joinUrl}>
 				<Button size="lg" class="gap-2 uppercase tracking-wider">
 					Join as Partner <ArrowRight class="h-4 w-4" />
 				</Button>
@@ -241,7 +249,7 @@
 		<!-- Breadcrumb -->
 		<nav class="mb-6 text-sm text-muted-foreground" aria-label="Breadcrumb">
 			<ol class="flex flex-wrap gap-1">
-				<li><a href="/in/" class="hover:text-primary">Home</a> /</li>
+				<li><a href={homeUrl} class="hover:text-primary">Home</a> /</li>
 				<li class="font-medium text-foreground">Partners</li>
 			</ol>
 		</nav>
@@ -288,7 +296,7 @@
 			</div>
 
 			<div class="mt-8 text-center">
-				<a href="/in/partners/join/">
+				<a href={joinUrl}>
 					<Button class="gap-2 uppercase tracking-wider">
 						Get Started for Free <ArrowRight class="h-4 w-4" />
 					</Button>
@@ -314,7 +322,7 @@
 				{#if data.businesses && data.businesses.length > 0}
 					{#each data.businesses as business}
 						<a
-							href={`/in/installer/${business.slug}/`}
+							href={installerUrl(cc, business.slug)}
 							target="_blank"
 							rel="noopener noreferrer"
 							class="block no-underline"
@@ -356,7 +364,7 @@
 			</div>
 
 			<div class="mt-8 text-center">
-				<a href="/in/partners/join/">
+				<a href={joinUrl}>
 					<Button class="gap-2 uppercase tracking-wider">
 						Join These Businesses <ArrowRight class="h-4 w-4" />
 					</Button>
@@ -391,7 +399,7 @@
 			</div>
 
 			<div class="mt-8 text-center">
-				<a href="/in/partners/join/">
+				<a href={joinUrl}>
 					<Button class="gap-2 uppercase tracking-wider">
 						Try It Now — Free <ArrowRight class="h-4 w-4" />
 					</Button>

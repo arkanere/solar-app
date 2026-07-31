@@ -1,19 +1,25 @@
 <script lang="ts">
 	import { breadcrumbLD } from '$lib/seo';
+	import { countryUrl } from '$lib/countries/urls';
 	import BusinessForm from '$lib/in/components/BusinessForm.svelte';
 	import { Card } from '$lib/components/ui/card';
 	import { Users, MapPin, TrendingUp } from '@lucide/svelte';
 
 	let { data } = $props();
 
+	const cc = $derived(data.country.code);
+	const homeUrl = $derived(countryUrl(cc, '/'));
+	const partnersUrl = $derived(countryUrl(cc, '/partners/'));
+	const joinUrl = $derived(countryUrl(cc, '/partners/join/'));
+
 	const breadcrumb = $derived(
 		breadcrumbLD([
-			{ name: 'Home', url: 'https://solarvipani.com/in/' },
-			{ name: 'Partners', url: 'https://solarvipani.com/in/partners/' },
-			{ name: 'Join', url: 'https://solarvipani.com/in/partners/join/' },
+			{ name: 'Home', url: `https://solarvipani.com${homeUrl}` },
+			{ name: 'Partners', url: `https://solarvipani.com${partnersUrl}` },
+			{ name: 'Join', url: `https://solarvipani.com${joinUrl}` },
 			{
 				name: data.district,
-				url: `https://solarvipani.com/in/partners/join/${data.districtSlug}/`
+				url: `https://solarvipani.com${joinUrl}${data.districtSlug}/`
 			}
 		])
 	);
@@ -62,7 +68,7 @@
 			? `${data.recentLeadCount} homeowners requested solar quotes last month.`
 			: ''} Get verified leads and grow your business."
 	/>
-	<link rel="canonical" href="https://solarvipani.com/in/partners/join/{data.districtSlug}/" />
+	<link rel="canonical" href="https://solarvipani.com{joinUrl}{data.districtSlug}/" />
 	{@html `<script type="application/ld+json">${JSON.stringify(breadcrumb)}<\u002Fscript>`}
 </svelte:head>
 
@@ -70,9 +76,9 @@
 	<!-- Breadcrumb -->
 	<nav class="mb-6 text-sm text-muted-foreground" aria-label="Breadcrumb">
 		<ol class="flex flex-wrap gap-1">
-			<li><a href="/in/" class="hover:text-primary">Home</a> /</li>
-			<li><a href="/in/partners/" class="hover:text-primary">Partners</a> /</li>
-			<li><a href="/in/partners/join/" class="hover:text-primary">Join</a> /</li>
+			<li><a href={homeUrl} class="hover:text-primary">Home</a> /</li>
+			<li><a href={partnersUrl} class="hover:text-primary">Partners</a> /</li>
+			<li><a href={joinUrl} class="hover:text-primary">Join</a> /</li>
 			<li class="font-medium text-foreground">{data.district}</li>
 		</ol>
 	</nav>
@@ -125,7 +131,7 @@
 			<div class="flex flex-wrap justify-center gap-2">
 				{#each nearbyWithInstallers as d}
 					<a
-						href="/in/partners/join/{d.slug}/"
+						href="{joinUrl}{d.slug}/"
 						class="rounded-full border px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary"
 					>
 						{d.name}

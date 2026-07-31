@@ -30,6 +30,18 @@ function legacyRedirect(pathname: string): string | null {
 	const blogsMatch = clean.match(/^\/(in|us)\/blogs(\/.*)?$/);
 	if (blogsMatch) return `/${blogsMatch[1]}`;
 
+	// Marketplace routes that moved from /in into the shared [country] tree
+	// (stage 11) but whose loaders still read the IN-only legacy tables
+	// (in_business_profiles, locations, LeadData). Without these rules /us/partners
+	// and /us/get-quotes would start answering with Indian data at a US URL.
+	//
+	// This runs before routing, so it is also what keeps the [country] loaders
+	// reachable only as /in — they need no feature gate of their own. **When the
+	// shared IN/US pages land (stage 15c), delete the matching rule in the same
+	// commit that makes the page country-aware.**
+	if (clean === '/us/partners' || clean.startsWith('/us/partners/')) return '/us/business-listing';
+	if (clean === '/us/get-quotes') return '/us';
+
 	// Content that has moved out from under the country prefix — see
 	// docs/migration-plan-in-country.md. **Append a family here in the same commit
 	// that moves it, never before**: a rule added early 301s a page that is still

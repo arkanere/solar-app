@@ -1,12 +1,23 @@
 <script lang="ts">
 	import { breadcrumbLD } from '$lib/seo';
+	import { countryUrl } from '$lib/countries/urls';
 	import { CheckCircle } from '@lucide/svelte';
 
-	const breadcrumb = breadcrumbLD([
-		{ name: 'Home', url: 'https://solarvipani.com/in/' },
-		{ name: 'Partners', url: 'https://solarvipani.com/in/partners/' },
-		{ name: 'Thank You', url: 'https://solarvipani.com/in/partners/join/thank-you/' }
-	]);
+	let { data } = $props();
+
+	const cc = $derived(data.country.code);
+	const partnersUrl = $derived(countryUrl(cc, '/partners/'));
+
+	const breadcrumb = $derived(
+		breadcrumbLD([
+			{ name: 'Home', url: `https://solarvipani.com${countryUrl(cc, '/')}` },
+			{ name: 'Partners', url: `https://solarvipani.com${partnersUrl}` },
+			{
+				name: 'Thank You',
+				url: `https://solarvipani.com${countryUrl(cc, '/partners/join/thank-you/')}`
+			}
+		])
+	);
 </script>
 
 <svelte:head>
@@ -34,7 +45,7 @@
 		</ol>
 	</div>
 
-	<a href="/in/partners/" class="text-sm text-primary hover:underline">
+	<a href={partnersUrl} class="text-sm text-primary hover:underline">
 		Back to Partners
 	</a>
 </div>
