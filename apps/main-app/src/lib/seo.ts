@@ -1,3 +1,6 @@
+import type { CountryCode } from './countries/types';
+import { installerUrl } from './countries/urls';
+
 const BASE_URL = 'https://solarvipani.com';
 
 export function breadcrumbLD(items: { name: string; url: string }[]): object {
@@ -36,12 +39,12 @@ export function localBusinessLD(business: {
 	state: string;
 	postalCode: string;
 	phone?: string;
-}): object {
+}, country: CountryCode): object {
 	return {
 		'@context': 'https://schema.org',
 		'@type': 'LocalBusiness',
 		name: business.name,
-		url: `${BASE_URL}/in/installer/${business.slug}`,
+		url: `${BASE_URL}${installerUrl(country, business.slug)}`,
 		address: {
 			'@type': 'PostalAddress',
 			streetAddress: business.address,
@@ -97,7 +100,7 @@ export function personLD(author: {
 		'@context': 'https://schema.org',
 		'@type': 'Person',
 		name: author.name,
-		url: `${BASE_URL}/in/authors/${author.slug}/`,
+		url: `${BASE_URL}/authors/${author.slug}/`,
 		...(author.credentials ? { jobTitle: author.credentials } : {}),
 		...(author.photo ? { image: author.photo } : {})
 	};

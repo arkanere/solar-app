@@ -38,5 +38,9 @@ export const MOVED_TO_ROOT = [
 	'solar-subsidy',
 
 	// stage 8 — tools
-	'tools'
+	'tools',
+
+	// stage 9 — authors ('seo-index' is already listed above: its route moved
+	// early with stage 4, only its hrefs were deferred to this stage)
+	'authors'
 ];

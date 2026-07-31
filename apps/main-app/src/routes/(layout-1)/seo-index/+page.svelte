@@ -201,7 +201,7 @@
 				{ label: 'Get Quotes', href: '/in/get-quotes' },
 				{ label: 'Installer — Sunspark Energy Pune', href: '/in/installer/sunspark-energy-pune' },
 				{ label: 'Project — 5kW Kothrud', href: '/in/project/5kw-kothrud-pune-march-2025' },
-				{ label: 'Author — Rahul Sharma', href: '/in/authors/rahul-sharma' }
+				{ label: 'Author — Rahul Sharma', href: '/authors/rahul-sharma' }
 			]
 		},
 		{

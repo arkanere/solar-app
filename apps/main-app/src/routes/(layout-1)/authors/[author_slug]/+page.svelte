@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { countryUrl } from '$lib/countries/urls';
+	import { contentUrl, countryUrl } from '$lib/countries/urls';
 	import Breadcrumb from '$lib/in/components/seo/Breadcrumb.svelte';
 	import { personLD, breadcrumbLD } from '$lib/seo';
 
@@ -14,21 +14,23 @@
 
 	const jsonLdBreadcrumb = $derived(JSON.stringify(breadcrumbLD([
 		{ name: 'Home', url: 'https://solarvipani.com/in/' },
-		{ name: data.author.name, url: `https://solarvipani.com/in/authors/${data.author.slug}/` }
+		{ name: data.author.name, url: `https://solarvipani.com/authors/${data.author.slug}/` }
 	])));
 
-	const allArticles = $derived([
-		...data.blogPosts.map((p: { title: string; slug: string; published_at: string }) => ({
-			title: p.title,
-			href: `/in/blog/${p.slug}/`,
-			date: p.published_at
-		})),
-		...data.seoPages.map((p: { title: string; slug: string; pillar_slug: string; updated_at: string }) => ({
-			title: p.title,
-			href: `/in/${p.pillar_slug}/${p.slug}/`,
-			date: p.updated_at
-		}))
-	].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+	// Blog posts are deliberately not listed. The blogs feature was removed 2026-07
+	// and no /blog route exists; these rendered as `/in/blog/<slug>/`, which the
+	// hooks.server.ts redirect does not even match (it covers `/blogs`, plural), so
+	// every one was a hard 404. The loader still selects them — see §3.5 — but a
+	// link that cannot resolve is worse than an absent one.
+	const allArticles = $derived(
+		data.seoPages
+			.map((p: { title: string; slug: string; pillar_slug: string; updated_at: string }) => ({
+				title: p.title,
+				href: contentUrl(`/${p.pillar_slug}/${p.slug}/`),
+				date: p.updated_at
+			}))
+			.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+	);
 
 	const socialLinks = $derived(
 		typeof data.author.social_links === 'string'
@@ -40,7 +42,7 @@
 <svelte:head>
 	<title>{data.author.name} - Author | Solar Vipani</title>
 	<meta name="description" content="{data.author.name}{data.author.credentials ? `, ${data.author.credentials}` : ''} — Solar energy expert and author at Solar Vipani." />
-	<link rel="canonical" href="https://solarvipani.com/in/authors/{data.author.slug}/" />
+	<link rel="canonical" href="https://solarvipani.com/authors/{data.author.slug}/" />
 	{@html `<script type="application/ld+json">${jsonLdPerson}<\u002Fscript>`}
 	{@html `<script type="application/ld+json">${jsonLdBreadcrumb}<\u002Fscript>`}
 </svelte:head>

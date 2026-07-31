@@ -1,8 +1,8 @@
 # Migration plan: dissolve `routes/in/`
 
-> **STATUS: in progress. Stages 1–5, 7 and 8 done (2026-07-31).** All 7 content
-> pillars and tools are country-less. Next: **S9** (authors + seo-index). S6 no
-> longer exists as a separate stage — see its note.
+> **STATUS: in progress. Stages 1–5 and 7–9 done (2026-07-31).** Destination A is
+> complete — every content family is country-less. Next: **S10** (`[country]`:
+> projects). S6 no longer exists as a separate stage — see its note.
 >
 > ⚠️ **S6 has been restructured — read the S4 and S6 notes before continuing.**
 > Redirects are no longer one late stage; each move stage lands its own.
@@ -660,6 +660,40 @@ converting its ~150 hardcoded `/in/...` hrefs, which the S2 note deferred to thi
 By the end of S9 the array holds every destination-A family and `contentUrl()` returns its
 argument unchanged for all of them; that is the signal it can be deleted in S15.
 
+**Done 2026-07-31 — destination A is complete.** `authors/[author_slug]` moved, `'authors'`
+appended. `seo-index`'s hrefs are finally all converted; what remains in that file is
+`/in/{get-quotes,installer,partners,project,solar}`, which is correct — destination B and
+already-migrated geo.
+
+**The blogs check the stage text asked for found a live 404, not a redirect.** The author
+page emitted `` `/in/blog/${slug}/` `` — **singular**. `hooks.server.ts:30` matches
+`^/(in|us)/blogs(/.*)?$`, **plural**, so the rule never fired and no `/blog` route exists:
+every blog link on every author page was a hard 404. Blog posts are now omitted from the
+article list. The loader still SELECTs `in_blog_posts` (§3.5 — SQL untouched); only the
+rendering changed, because a link that cannot resolve is worse than an absent one. **If the
+blog archive is ever meant to come back, that decision is now recorded in one place** — the
+comment above `allArticles`.
+
+`src/lib/seo.ts` both fixed:
+- `:100` `personLD` -> country-less `/authors/`.
+- `:44` `localBusinessLD` -> `installerUrl(country, slug)`, with `country: CountryCode` added
+  to the signature and `cc` passed at all three call sites (`solar/[state]/[district]`, that
+  route's `[slug]`, and `installer/[installer_slug]`). **This was a live `/us` bug**: all
+  three callers are `[country]` routes, so every US installer and district page has been
+  emitting `https://solarvipani.com/in/installer/...` in its LocalBusiness JSON-LD.
+  Verified IN is byte-unchanged; **the `/us` half is unverifiable in dev** — no US
+  businesses are seeded, so no `localBusinessLD` renders there. Same bucket as the S2
+  brand-page gap: check on prod.
+
+The `authors` table is also empty in dev, so `/authors/<slug>` 404s locally. Confirmed this
+is data, not routing: it returns the loader's own "Author not found", where a genuinely
+missing route returns "Not Found".
+
+Verified: `/in/authors/**` and `/us/authors/**` 301 in one hop with the query string
+preserved; `seo-index` emits the country-less author link. `npm run check` 17/14, build
+passes, 3 prerendered US pages. Leakage: quote-anchored 67 -> **65**, `BASE_URL}/in` -> **3**
+(the three tools `Home` breadcrumbs, correct per S2).
+
 ### S10 — `[country]`: projects
 `project/[project_id]`, `recent-solar-installation-projects/` (+`[page_slug]`) →
 `routes/[country=country]/(layout-1)/`. Joins `projects` → `in_business_profiles`.
@@ -778,7 +812,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | `solar-financing/` + `[slug]` | A | 7c | ✅ | ✅ | ✅ |
 | `solar-subsidy/` + `[slug]` | A | 7c | ✅ | ✅ | ✅ |
 | `tools/` + 3 calculators | A | 8 | ✅ | ✅ | ✅ |
-| `authors/[author_slug]` | A | 9 | ☐ | ☐ | ☐ |
+| `authors/[author_slug]` | A | 9 | ✅ | ✅ | ✅ |
 | `seo-index/` | A | **4** | ✅ | ✅ | ✅ | ← moved early with S4; its ~150 hardcoded `/in/` hrefs still await S9
 | `privacy-policy/` | A | 4 | ✅ | ✅ | ✅ |
 | `terms-of-use/` | A | 4 | ✅ | ✅ | ✅ |
@@ -829,6 +863,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | 7b — the 3 product pillars | 2026-07-31 | `b222d3d` |
 | 7c — financing + subsidy | 2026-07-31 | `2f94434` |
 | 8 — tools | 2026-07-31 | `ee41427` |
+| 9 — authors + seo-index | 2026-07-31 | _pending_ |
 
 ## 9. Hazards
 
