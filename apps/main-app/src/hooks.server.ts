@@ -15,11 +15,8 @@ const MOVED_TO_ROOT = [
 	'data-deletion'
 ];
 
-// Which country prefixes the rule above applies to. /us still serves its own
-// literal privacy-policy, terms-of-use, about-us and write-for-us — and
-// /us/about-us is prerendered, so redirecting it here would 301 the crawler.
-// Stage 5 deletes those four pages and adds 'us'.
-const MOVED_TO_ROOT_FROM = ['in'];
+// Which country prefixes the rule above applies to.
+const MOVED_TO_ROOT_FROM = ['in', 'us'];
 
 // Legacy URL rewrites that need no DB lookup. Suffix-parsing redirects
 // that DO need geo data live as +server.ts shims under routes/us/ (county,

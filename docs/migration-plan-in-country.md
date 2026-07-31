@@ -1,7 +1,8 @@
 # Migration plan: dissolve `routes/in/`
 
-> **STATUS: in progress. Stages 1–4 of 16 done (2026-07-31).** Next: **S5**
-> (delete the `/us` duplicate legal pages).
+> **STATUS: in progress. Stages 1–5 of 16 done (2026-07-31).** Next: **S7a**
+> (country-less: `rooftop-solar`, `solar-installation`). S6 no longer exists as a
+> separate stage — see its note.
 >
 > ⚠️ **S6 has been restructured — read the S4 and S6 notes before continuing.**
 > Redirects are no longer one late stage; each move stage lands its own.
@@ -319,6 +320,23 @@ Now redundant: `us/(layout-1)/{privacy-policy,terms-of-use,about-us,write-for-us
 in `src/hooks.server.ts` — **in this same commit**, since that is what vacates them. Note `us/about-us/+page.js` carries
 `prerender = true` — removing it changes the prerender set; confirm the build still passes.
 
+**Done 2026-07-31.** All four deleted; `'us'` added to `MOVED_TO_ROOT_FROM` in the same
+commit. No inbound references existed outside the deleted pages themselves.
+
+**The prerender set is now three, not four:** `/us`, `/us/business-form`,
+`/us/business-listing`. `/us/about-us` is gone with its `+page.js`. Build passes — the
+crawler follows `/us`'s About us link to the country-less `/about-us`, which is a normal
+SSR route, and Kit does not enqueue non-prerenderable routes. **Update the "four
+prerendered US pages" wording in §4 and §9.5 when reading them — it is three now, and
+S15's crawler hazard is correspondingly smaller.**
+
+Verified: all four `/us` twins 301 in one hop; the `/in` originals still 301 in one hop
+(no chain was introduced). `npm run check` 17/14.
+
+**Note for S13:** `src/lib/server/sitemap.ts:22-24` still emits
+`{BASE_URL}/{c}/about-us`, `/terms-of-use` and `/privacy-policy` for every country. All
+six of those URLs now 301. They belong in the new content sitemap.
+
 ### S6 — Redirect layer
 *Why before the big moves: the redirects must be live the moment a URL vacates.*
 
@@ -543,6 +561,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | 2 — de-hardcode seo/* | 2026-07-31 | `1b80cb0` |
 | 3 — /us layout country | 2026-07-31 | `6d6e7df` |
 | 4 — legal & static -> root | 2026-07-31 | `2f9ff0d` |
+| 5 — delete /us legal dupes | 2026-07-31 | `S5_SHA` |
 
 ## 9. Hazards
 
