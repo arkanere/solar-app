@@ -1,8 +1,13 @@
+// Sitemap for the country-less content surface — the 7 SEO pillars and their
+// clusters, brand and product pages, subsidy/discom/financing pages, authors,
+// tools and the legal pages. These left the country prefix in stages 4 and 7–9
+// (docs/migration-plan-in-country.md §5b), so they belong to no country sitemap.
+//
+// The per-country sitemaps at /{cc}/sitemap.xml keep geo, installers and the
+// genuinely per-country static pages. Both are listed by /sitemap.xml.
 import type { RequestHandler } from '@sveltejs/kit';
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
-import { generateSitemapEntries } from '$lib/server/sitemap';
-import { getCountry } from '$lib/countries';
+import { pool } from '$lib/server/db';
+import { generateContentSitemapEntries } from '$lib/server/sitemap';
 
 function escapeXml(unsafe: string): string {
 	return unsafe
@@ -18,8 +23,7 @@ function urlEntry(loc: string, lastmod: string, changefreq: string, priority: st
 }
 
 export const GET: RequestHandler = async () => {
-	const pool = createPool({ connectionString: POSTGRES_URL });
-	const entries = await generateSitemapEntries(pool, getCountry('in'));
+	const entries = await generateContentSitemapEntries(pool);
 
 	const parts: string[] = [
 		'<?xml version="1.0" encoding="UTF-8"?>',

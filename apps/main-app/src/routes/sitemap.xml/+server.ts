@@ -6,10 +6,16 @@ const BASE_URL = 'https://solarvipani.com';
 export const GET: RequestHandler = async () => {
 	const today = new Date().toISOString().split('T')[0];
 
-	const children = Object.keys(COUNTRIES)
+	// One child per country, plus the country-less content sitemap added in
+	// stage 13 — the 7 SEO pillars, tools, authors and the legal pages live
+	// under no country prefix and would otherwise be unlisted.
+	const children = [
+		...Object.keys(COUNTRIES).map((code) => `${BASE_URL}/${code}/sitemap.xml`),
+		`${BASE_URL}/content-sitemap.xml`
+	]
 		.map(
-			(code) => `  <sitemap>
-    <loc>${BASE_URL}/${code}/sitemap.xml</loc>
+			(loc) => `  <sitemap>
+    <loc>${loc}</loc>
     <lastmod>${today}</lastmod>
   </sitemap>`
 		)
