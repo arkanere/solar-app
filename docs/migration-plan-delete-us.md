@@ -941,7 +941,7 @@ in one hop (`/us/state`, `/us/state/solar-panel-installers-in-*`,
 `/us/solar-panel-installer-directory`, `/us/solar-panel-installer/*`, `/us/county/*`,
 `/us/blogs`, `/us/partners`, `/us/get-quotes`, plus every `MOVED_TO_ROOT` family).
 
-**Done 2026-08-01 (`<S11-SHA>`).** A no-op in the strongest sense, and for a reason the
+**Done 2026-08-01 (`44a9307`).** A no-op in the strongest sense, and for a reason the
 stage text did not anticipate:
 
 ⚠️ **`routes/us/(layout-1)/+layout.svelte` had been dead code since S9.** A Svelte layout
@@ -1058,7 +1058,7 @@ Legend: **A** = already covered by `[country]`, **B** = merge, **C** = relocate,
 | 8 — business-listing | 2026-07-31 | `dd4867a` |
 | 9 — the home | 2026-07-31 | `38f7d97` |
 | 10 — prerender → ISR | 2026-08-01 | `029e803` |
-| 11 — delete `routes/us/` + `$lib/us/` | 2026-08-01 | `<S11-SHA>` |
+| 11 — delete `routes/us/` + `$lib/us/` | 2026-08-01 | `44a9307` |
 | 12 — hooks comments + decision record | | |
 | 13 — docs | | |
 
