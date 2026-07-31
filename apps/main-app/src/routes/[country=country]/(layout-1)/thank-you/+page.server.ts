@@ -1,7 +1,14 @@
 import type { PageServerLoad } from './$types';
 import { pool } from '$lib/server/db';
 
-export const load: PageServerLoad = async ({ url }) => {
+export const load: PageServerLoad = async ({ url, params }) => {
+	// IN-only: every query below reads LeadData / in_business_profiles, and US
+	// leads live in us_leaddata. The page renders a plain confirmation without
+	// customerDetails, which is what /us has always shown.
+	if (params.country !== 'in') {
+		return { customerDetails: null };
+	}
+
 	const referenceUuid = url.searchParams.get('ref');
 
 	if (!referenceUuid) {

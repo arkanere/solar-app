@@ -5,23 +5,26 @@
 
 	interface Props {
 		// Optional so this component can render on pages with no database access.
-		// The three /us pages are prerendered and their layout deliberately returns
-		// no aboutStats (stage 3: adding it would couple a build to the DB), so
-		// they render this section without the stats block. Both counts come from
-		// the IN legacy tables, which is why the leads label names India — it only
-		// appears when a caller actually passes them.
+		// The prerendered /us pages' layout deliberately returns no aboutStats
+		// (stage 3 of the /in plan: adding it would couple a build to the DB), so
+		// they render this section without the stats block.
 		installerCount?: number;
 		leadsGenerated?: number;
 	}
 
 	let { installerCount, leadsGenerated }: Props = $props();
 
+	// The label used to read "Leads Generated Across India". That was already
+	// wrong on /us/solar/** and /us/installer/**: the [country] layout counts
+	// `leads WHERE country_code = $1`, so those pages showed a US number under
+	// an Indian label. The count is always scoped to the country whose page you
+	// are on, so naming a country added nothing and could only be wrong.
 	const stats = $derived(
 		installerCount === undefined || leadsGenerated === undefined
 			? []
 			: [
 					{ label: 'Verified Installers on the Platform', value: installerCount, icon: Users },
-					{ label: 'Leads Generated Across India', value: leadsGenerated, icon: TrendingUp }
+					{ label: 'Leads Generated', value: leadsGenerated, icon: TrendingUp }
 				]
 	);
 

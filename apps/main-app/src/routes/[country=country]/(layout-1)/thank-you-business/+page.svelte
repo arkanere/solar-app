@@ -1,5 +1,8 @@
 <script>
 	import { Card } from '$lib/components/ui/card';
+
+	let { data } = $props();
+	const cc = $derived(data.country.code);
 </script>
 
 <svelte:head>
@@ -46,12 +49,22 @@
 <main class="pt-8 flex flex-col items-center justify-center min-h-screen text-center bg-background text-foreground">
 	<Card class="w-full max-w-2xl mx-2">
 		<h1 class="text-4xl md:text-5xl font-bold mb-4">Thank you for submitting your details.</h1>
-		<p class="text-xl md:text-2xl mb-4">We will call you soon to verify the business details submitted in the form.</p>
-		<p class="text-xl md:text-2xl">
-			If you'd like to speak with us right away, feel free to give us a call at <a
-				href="tel:+918983066701"
-				class="text-primary hover:opacity-80 transition-opacity">+91 8983066701</a
-			>
-		</p>
+		<!-- The two countries make different service promises: IN calls the
+		     business back, US commits to a 2-business-day turnaround and says
+		     nothing about a call. Kept verbatim from each country's own page. -->
+		{#if cc === 'in'}
+			<p class="text-xl md:text-2xl mb-4">We will call you soon to verify the business details submitted in the form.</p>
+			<p class="text-xl md:text-2xl">
+				If you'd like to speak with us right away, feel free to give us a call at <a
+					href="tel:+918983066701"
+					class="text-primary hover:opacity-80 transition-opacity">+91 8983066701</a
+				>
+			</p>
+		{:else}
+			<p class="text-xl md:text-2xl mb-4">
+				We will verify the business details submitted in the form. Our response time is 2 business days
+			</p>
+			<p class="text-xl md:text-2xl">After successful verification we will list your business in the directory on Solar Vipani.</p>
+		{/if}
 	</Card>
 </main>

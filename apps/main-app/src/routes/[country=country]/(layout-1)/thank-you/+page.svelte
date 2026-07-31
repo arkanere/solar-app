@@ -4,6 +4,8 @@
 
 	let { data } = $props();
 
+	const cc = $derived(data.country.code);
+
 	// Extract customer details from server data
 	let customerDetails = $derived(data?.customerDetails || null);
 	let error = $derived(data?.error || null);
@@ -64,7 +66,15 @@
 </svelte:head>
 
 <main class="min-h-screen pt-2 flex flex-col items-center justify-start text-center transition-colors duration-[theme(--transition-default)] bg-background text-foreground">
-	{#if error}
+	<!-- The lead-detail body below is IN-only: its loader reads LeadData and
+	     in_business_profiles, both IN-only tables, and US leads live in
+	     us_leaddata. The /us page has only ever shown this headline, and this
+	     preserves that exactly. Giving /us a real lead-detail page means
+	     reading us_leaddata — a behaviour addition, deliberately not done here
+	     (see S6 of docs/migration-plan-delete-us.md). -->
+	{#if cc !== 'in'}
+		<h1 class="text-2xl md:text-4xl font-bold mb-4">Thank you for submitting your details.</h1>
+	{:else if error}
 		<h1 class="text-2xl md:text-4xl font-bold mb-2">Details not found</h1>
 		<p class="text-base md:text-lg max-w-2xl mx-auto mb-3">The requested information could not be found. Please contact us if you need assistance.</p>
 		<p class="text-base md:text-lg max-w-2xl mx-auto mb-3">

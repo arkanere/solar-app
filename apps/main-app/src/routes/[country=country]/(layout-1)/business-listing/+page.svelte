@@ -83,6 +83,19 @@
   const cc = $derived(data.country.code);
   const listingUrl = $derived(countryUrl(cc, "/business-listing"));
 
+  // Structured data and locale metadata were hardcoded to India. Everything
+  // here is derivable from CountryConfig; the marketing copy is not, and is
+  // reconciled against the US page's own copy in stage 8 of
+  // docs/migration-plan-delete-us.md.
+  const ogLocale = $derived(data.country.locale.replace("-", "_"));
+  const areaServed = $derived(data.country.name);
+  const priceCurrency = $derived(data.country.currency);
+  const addressCountry = $derived(cc.toUpperCase());
+  // Hindi is an India-only support language; every country serves English.
+  const availableLanguage = $derived(
+    cc === "in" ? ["English", "Hindi"] : ["English"],
+  );
+
   // The <script> tag is assembled here rather than inline in the markup:
   // svelte2tsx mis-parses `{@html `<script ...`}` and reports a phantom
   // "Expected token }" (it is the same false positive behind the two
@@ -97,6 +110,53 @@
         },
       ]),
     )}<\/script>`,
+  );
+
+  // Assembled in JS for the same svelte2tsx reason as breadcrumbScript above:
+  // these carry country-dependent values now, so they cannot stay literal JSON
+  // in the markup.
+  const organizationScript = $derived(
+    `<script type="application/ld+json">${JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: "Solar Vipani",
+      url: "https://solarvipani.com",
+      logo: "https://solarvipani.com/images/solar-vipani-logo.png",
+      description:
+        "India's leading solar panel installer directory connecting customers with verified solar installation services",
+      contactPoint: {
+        "@type": "ContactPoint",
+        telephone: "+91-8983066701",
+        contactType: "customer service",
+        email: "admin@solarvipani.com",
+        availableLanguage,
+      },
+      address: { "@type": "PostalAddress", addressCountry },
+      sameAs: [
+        "https://www.facebook.com/solarvipani",
+        "https://www.linkedin.com/company/solarvipani",
+        "https://twitter.com/solarvipani",
+      ],
+    })}<\/script>`,
+  );
+
+  const serviceScript = $derived(
+    `<script type="application/ld+json">${JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Service",
+      name: "Solar Business Directory Listing",
+      description:
+        "Free business listing service for solar panel installers and solar energy companies",
+      provider: { "@type": "Organization", name: "Solar Vipani" },
+      serviceType: "Business Directory",
+      areaServed: { "@type": "Country", name: areaServed },
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency,
+        description: "Free business listing for solar installers",
+      },
+    })}<\/script>`,
   );
 
   // Navigation function
@@ -167,46 +227,8 @@
   <!-- End Meta Pixel Code -->
 
   <!-- Structured Data / JSON-LD - Minified -->
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "Solar Vipani",
-      "url": "https://solarvipani.com",
-      "logo": "https://solarvipani.com/images/solar-vipani-logo.png",
-      "description": "India's leading solar panel installer directory connecting customers with verified solar installation services",
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "telephone": "+91-8983066701",
-        "contactType": "customer service",
-        "email": "admin@solarvipani.com",
-        "availableLanguage": ["English", "Hindi"]
-      },
-      "address": { "@type": "PostalAddress", "addressCountry": "IN" },
-      "sameAs": [
-        "https://www.facebook.com/solarvipani",
-        "https://www.linkedin.com/company/solarvipani",
-        "https://twitter.com/solarvipani"
-      ]
-    }
-  </script>
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Service",
-      "name": "Solar Business Directory Listing",
-      "description": "Free business listing service for solar panel installers and solar energy companies",
-      "provider": { "@type": "Organization", "name": "Solar Vipani" },
-      "serviceType": "Business Directory",
-      "areaServed": { "@type": "Country", "name": "India" },
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "INR",
-        "description": "Free business listing for solar installers"
-      }
-    }
-  </script>
+  {@html organizationScript}
+  {@html serviceScript}
   <!-- Built with breadcrumbLD() rather than inline JSON so the Business Listing
        entry follows the country prefix. It was hardcoded to the country-less
        /business-listing, which is not a route and 404s. -->
@@ -243,7 +265,7 @@
     content="https://solarvipani.com/images/solar-business-listing-og.jpg"
   />
   <meta property="og:site_name" content="Solar Vipani" />
-  <meta property="og:locale" content="en_IN" />
+  <meta property="og:locale" content={ogLocale} />
 
   <!-- Twitter Card Tags -->
   <meta name="twitter:card" content="summary_large_image" />
