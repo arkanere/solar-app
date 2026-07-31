@@ -561,7 +561,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | 2 — de-hardcode seo/* | 2026-07-31 | `1b80cb0` |
 | 3 — /us layout country | 2026-07-31 | `6d6e7df` |
 | 4 — legal & static -> root | 2026-07-31 | `2f9ff0d` |
-| 5 — delete /us legal dupes | 2026-07-31 | `S5_SHA` |
+| 5 — delete /us legal dupes | 2026-07-31 | `4f446fe` |
 
 ## 9. Hazards
 
