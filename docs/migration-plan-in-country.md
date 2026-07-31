@@ -1,8 +1,8 @@
 # Migration plan: dissolve `routes/in/`
 
-> **STATUS: in progress. Stages 1–5, 7–10, 11a and 11b done (2026-07-31).** Destination A
-> is complete; destination B is in progress. Next: **S11c** (`[country]`: thank-you,
-> thank-you-business, unsubscribe, district shim). S11 runs in four sub-stages — see §10.
+> **STATUS: in progress. Stages 1–5, 7–10, 11a–11c done (2026-07-31).** Destination A is
+> complete; destination B is in progress. Next: **S11d** (`[country]`: the IN home) — the
+> last thing under `routes/in/(layout-1)/`. S11 runs in four sub-stages — see §10.
 > S6 no longer exists as a separate stage — see its note.
 >
 > ⚠️ **A user decision changed S11's US fallback from 404 to 301** — read the S11 note.
@@ -834,6 +834,37 @@ Workaround: assemble the whole `<script>` string in the JS block and emit
 `{@html breadcrumbScript}`. Back to 17/14. Note the error location is nowhere near the
 real cause — do not go hunting at the reported line.
 
+**S11c done 2026-07-31.** `thank-you`, `thank-you-business`, `unsubscribe` and the
+`district/[district_slug]` shim moved. `/us` keeps its own literals for the first three
+(verified 0 hops).
+
+Per-file work beyond the `git mv`:
+- **`unsubscribe/+page.svelte` posted to a hardcoded `/in/unsubscribe`** — now
+  `countryUrl(cc, '/unsubscribe')`, the `+server.js` at its own route.
+- **`unsubscribe/+server.js` got its own `isCountry()` guard** — the one the stage text
+  flagged. No layout runs for a `+server.js`. Its private `createPool` is left alone.
+- **The district shim is gated to IN before the lookup**, and its 301 target is now
+  `geoUrl(params.country, ...)`. It resolves slugs against IN-only `locations`, so
+  `/us/district/{slug}` would otherwise match a US slug against Indian rows.
+- **`$lib/in/components/BusinessForm.svelte` hardcoded `goto('/in/thank-you-business')`.**
+  It now takes an explicit `country: CountryCode` prop (S2 convention), passed by its
+  three call sites. **Its `LOCATION_ENDPOINTS` are still `/in/api/*` — that is S12's
+  scope**, deliberately untouched here.
+
+**`/in/unsubscribe` returns 405 on GET.** Pre-existing, not caused by the move: the
+POST-only `+server.js` wins over the `+page.svelte` in the same directory. The S3 note
+recorded the same thing for `/us`.
+
+Verified: thank-you and thank-you-business href diffs empty; district shim still 1 hop to
+`/in/solar/maharashtra/pune`; `/us/district/pune` 404s; the unsubscribe POST succeeds on
+`/in` and 404s on an unknown country; and **`/in/thank-you?ref={uuid}` renders the lead** —
+that is the URL **user-app** posts to and it must not change. `npm run check` 17/14, build
+passes, 3 prerendered US pages. Route dirs: 5 moved, count unchanged at 95. `/in/` grep
+35 → **33**.
+
+**⚠️ S11d — the IN home — is all that is left under `routes/in/(layout-1)/`.** After it,
+`routes/in/` holds only the 3 API routes (S12) and `sitemap.xml` (S13).
+
 **Correction to §7.2's route-manifest check:** `npx svelte-kit sync` does **not** prune
 stale directories, so a before/after `find` over `.svelte-kit/types` silently compares
 leftovers and reports no change no matter what moved. `rm -rf .svelte-kit/types` before
@@ -949,10 +980,10 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | `business-listing/` | B | 11b | ✅ | n/a (`/us` literal wins) | ✅ |
 | `business-form/` | B | 11b | ✅ | n/a (`/us` literal wins) | ✅ |
 | `get-quotes/` | B | 11b | ✅ | ✅ 301 `/us`→`/us` | ✅ |
-| `thank-you/` | B | 11 | ☐ | n/a | ☐ |
-| `thank-you-business/` | B | 11 | ☐ | n/a | ☐ |
-| `unsubscribe/` (`+page.svelte` + `+server.js`) | B | 11 | ☐ | n/a | ☐ |
-| `district/[district_slug]` | B | 11 | ☐ | n/a | ☐ |
+| `thank-you/` | B | 11c | ✅ | n/a (`/us` literal wins) | ✅ |
+| `thank-you-business/` | B | 11c | ✅ | n/a (`/us` literal wins) | ✅ |
+| `unsubscribe/` (`+page.svelte` + `+server.js`) | B | 11c | ✅ | n/a (`/us` literal wins) | ✅ |
+| `district/[district_slug]` | B | 11c | ✅ | n/a (gated 404 for `/us`) | ✅ |
 | `api/postRecentProject` | B | 12 | ☐ | n/a | ☐ |
 | `api/submitBusiness` | B | 12 | ☐ | n/a | ☐ |
 | `api/updateRecentProject` | B | 12 | ☐ | n/a | ☐ |
@@ -990,6 +1021,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | 10 — projects -> [country] | 2026-07-31 | `79cd2d9` |
 | 11a — partners -> [country] | 2026-07-31 | `4b24a26` |
 | 11b — listing/form/get-quotes | 2026-07-31 | `039ae86` |
+| 11c — funnels + district shim | 2026-07-31 | `ec8de21` |
 
 ## 9. Hazards
 
@@ -1013,17 +1045,18 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 
 ## 10. Resume here (cold start)
 
-**Done: stages 1–5, 7–10, 11a and 11b.** Every stage is one commit plus a SHA-recording commit,
+**Done: stages 1–5, 7–10, 11a, 11b and 11c.** Every stage is one commit plus a SHA-recording commit,
 listed in the §8 stage log. Destination A is complete — all 7 content pillars, tools,
 authors, seo-index and the legal pages answer country-less, each with a one-hop 301 from
 `/in/**` and `/us/**`. Destination B is in progress: projects (S10), partners (S11a) and
-business-listing/business-form/get-quotes (S11b) have moved.
+business-listing/business-form/get-quotes (S11b) and the funnels plus district shim
+(S11c) have moved. Only the IN home is left under `routes/in/(layout-1)/`.
 
 **S11 is being run in four sub-stages** (it is by far the largest move stage):
 - **11a — partners.** ✅ Done, `4b24a26`.
 - **11b — business-listing, business-form, get-quotes.** ✅ Done, `039ae86`.
-- **11c — thank-you, thank-you-business, unsubscribe, district shim.** Next.
-- **11d — the IN home** (`in/(layout-1)/+page.*`). Last, and the riskiest: it makes the
+- **11c — thank-you, thank-you-business, unsubscribe, district shim.** ✅ Done, `ec8de21`.
+- **11d — the IN home** (`in/(layout-1)/+page.*`). **Next**, and the riskiest: it makes the
   IN home the default for any future country, and moving it under the `[country]` layout
   is what flips `/in`'s `aboutStats` from legacy 3199 to unified **3196** — §8 already
   blesses that, do not chase it as a bug.
