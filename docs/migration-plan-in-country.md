@@ -828,7 +828,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | 7a.3 — aboutStats on country-less root | 2026-07-31 | `b7b98bc` |
 | 7b — the 3 product pillars | 2026-07-31 | `b222d3d` |
 | 7c — financing + subsidy | 2026-07-31 | `2f94434` |
-| 8 — tools | 2026-07-31 | _pending_ |
+| 8 — tools | 2026-07-31 | `ee41427` |
 
 ## 9. Hazards
 
