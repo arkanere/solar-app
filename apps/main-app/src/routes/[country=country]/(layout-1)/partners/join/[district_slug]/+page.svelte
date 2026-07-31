@@ -118,7 +118,7 @@
 	<!-- Business Form -->
 	<div class="flex justify-center">
 		<Card class="w-full max-w-2xl">
-			<BusinessForm />
+			<BusinessForm country={data.country.code} />
 		</Card>
 	</div>
 

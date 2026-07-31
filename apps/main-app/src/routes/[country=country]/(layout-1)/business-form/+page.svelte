@@ -1,6 +1,8 @@
 <script>
 	import BusinessForm from '$lib/in/components/BusinessForm.svelte';
 	import { Card } from '$lib/components/ui/card';
+
+	let { data } = $props();
 </script>
 
 <!-- svelte-ignore a11y_img_redundant_alt -->
@@ -47,6 +49,6 @@
 <main class="min-h-screen flex flex-col items-center justify-center px-[theme(--container-padding)] md:px-[theme(--container-padding)] py-8 transition-colors duration-[theme(--transition-default)] bg-background text-foreground">
 	<!-- Business Form Component -->
 	<Card class="w-full max-w-2xl">
-		<BusinessForm />
+		<BusinessForm country={data.country.code} />
 	</Card>
 </main>

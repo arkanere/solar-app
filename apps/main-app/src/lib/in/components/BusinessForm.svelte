@@ -9,6 +9,14 @@
   import * as Select from "$lib/components/ui/select";
   import { INDIAN_STATES, LOCATION_ENDPOINTS } from "$lib/constants/india";
   import { validatePhoneNumber, validateGSTN } from "$lib/constants/formValidation";
+  import { countryUrl } from "$lib/countries/urls";
+  import type { CountryCode } from "$lib/countries";
+
+  // Explicit country prop rather than page.data.country, per the S2 convention:
+  // every call site is a [country] route and passes its own code. Only the
+  // post-submit redirect uses it; LOCATION_ENDPOINTS is still /in/api/* and
+  // belongs to stage 12.
+  let { country }: { country: CountryCode } = $props();
 
   let businessName = $state("");
   let address = $state("");
@@ -135,7 +143,7 @@
         const result: { success: boolean; error?: string } = await response.json();
 
         if (result.success) {
-          goto(`${base}/in/thank-you-business`);
+          goto(`${base}${countryUrl(country, "/thank-you-business")}`);
         } else {
           alert(`Submission failed: ${result.error}`);
         }

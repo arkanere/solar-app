@@ -4,6 +4,11 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Alert, AlertDescription } from '$lib/components/ui/alert';
 	import { Card, CardContent } from '$lib/components/ui/card';
+	import { countryUrl } from '$lib/countries/urls';
+
+	let { data } = $props();
+
+	const cc = $derived(data.country.code);
 
 	let email = $state('');
 	let isConfirming = $state(true);
@@ -29,7 +34,8 @@
 		isLoading = true;
 
 		try {
-			const response = await fetch('/in/unsubscribe', {
+			// Posts to the +server.js sitting at this same route.
+			const response = await fetch(countryUrl(cc, '/unsubscribe'), {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'

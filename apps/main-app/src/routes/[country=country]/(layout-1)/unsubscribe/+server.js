@@ -1,9 +1,17 @@
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
+import { isCountry } from '$lib/countries';
 
 // Handle POST request for unsubscription
-export async function POST({ request }) {
+export async function POST({ request, params }) {
+	// No layout runs for a +server.js, so this endpoint validates the country
+	// itself. The matcher already restricts [country=country], but this keeps the
+	// guard local to the file that needs it.
+	if (!params.country || !isCountry(params.country)) {
+		return json({ success: false, error: 'Unknown country' }, { status: 404 });
+	}
+
 	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
