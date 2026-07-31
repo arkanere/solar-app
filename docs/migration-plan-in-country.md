@@ -904,7 +904,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | 7c — financing + subsidy | 2026-07-31 | `2f94434` |
 | 8 — tools | 2026-07-31 | `ee41427` |
 | 9 — authors + seo-index | 2026-07-31 | `a233a62` |
-| 10 — projects -> [country] | 2026-07-31 | _pending_ |
+| 10 — projects -> [country] | 2026-07-31 | `79cd2d9` |
 
 ## 9. Hazards
 
