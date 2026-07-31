@@ -25,6 +25,7 @@
 </svelte:head>
 
 <PillarPage
+	country="in"
 	pillarData={data.pillarData}
 	clusters={data.clusters}
 	stats={data.stats}

@@ -132,7 +132,7 @@
 
 	<!-- Recent Projects -->
 	{#if country.features.projects && data.recentProjects?.length > 0}
-		<ProjectGallery projects={data.recentProjects} locationName={data.level2} />
+		<ProjectGallery country={cc} projects={data.recentProjects} locationName={data.level2} />
 	{/if}
 
 	<!-- Subsidy -->

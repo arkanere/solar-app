@@ -47,6 +47,7 @@
 
 {#if isCluster}
 	<ClusterPage
+	country="in"
 		clusterData={d.clusterData}
 		siblingClusters={d.siblingClusters}
 		pillarSlug={d.pillarSlug}
@@ -55,6 +56,7 @@
 	/>
 {:else if isBrand}
 	<BrandPage
+	country="in"
 		brand={d.brand}
 		products={d.products}
 		pillarSlug={d.pillarSlug}

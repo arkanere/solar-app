@@ -49,6 +49,7 @@
 
 {#if isCluster}
 	<ClusterPage
+	country="in"
 		clusterData={d.clusterData}
 		siblingClusters={d.siblingClusters}
 		pillarSlug={d.pillarSlug}
@@ -56,5 +57,5 @@
 		topDistricts={d.topDistricts}
 	/>
 {:else if isBank}
-	<BankSchemePage bank={d.bank} siblingBanks={d.siblingBanks} />
+	<BankSchemePage country="in" bank={d.bank} siblingBanks={d.siblingBanks} />
 {/if}

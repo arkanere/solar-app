@@ -70,6 +70,7 @@
 
 {#if isCluster}
 	<ClusterPage
+	country="in"
 		clusterData={d.clusterData}
 		siblingClusters={d.siblingClusters}
 		pillarSlug={d.pillarSlug}
@@ -77,7 +78,7 @@
 		topDistricts={d.topDistricts}
 	/>
 {:else if isState}
-	<StateSubsidyPage subsidy={d.subsidy} discoms={d.discoms} />
+	<StateSubsidyPage country="in" subsidy={d.subsidy} discoms={d.discoms} />
 {:else if isDiscom}
-	<DiscomPage discom={d.discom} stateSubsidy={d.stateSubsidy} siblingDiscoms={d.siblingDiscoms} />
+	<DiscomPage country="in" discom={d.discom} stateSubsidy={d.stateSubsidy} siblingDiscoms={d.siblingDiscoms} />
 {/if}

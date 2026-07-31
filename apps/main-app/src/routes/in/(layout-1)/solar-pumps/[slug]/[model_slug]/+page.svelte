@@ -29,6 +29,7 @@
 </svelte:head>
 
 <ProductSpecPage
+	country="in"
 	product={data.product}
 	brand={data.brand}
 	siblingProducts={data.siblingProducts}

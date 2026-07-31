@@ -183,7 +183,7 @@
 
 	<!-- Recent Projects (city only) -->
 	{#if isCity && country.features.projects && d.recentProjects?.length > 0}
-		<ProjectGallery projects={d.recentProjects} locationName={d.city} />
+		<ProjectGallery country={cc} projects={d.recentProjects} locationName={d.city} />
 	{/if}
 
 	<!-- Subsidy (city only) -->

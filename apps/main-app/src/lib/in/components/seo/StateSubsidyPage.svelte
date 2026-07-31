@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { contentUrl, countryUrl, geoUrl } from '$lib/countries/urls';
+	import type { CountryCode } from '$lib/countries';
 	import Breadcrumb from './Breadcrumb.svelte';
 	import ContentSections from './ContentSections.svelte';
 	import FAQ from './FAQ.svelte';
 
-	let { subsidy, discoms }: {
+	let { subsidy, discoms, country }: {
 		subsidy: {
 			state_slug: string;
 			state_name: string;
@@ -15,13 +17,14 @@
 			faq: { question: string; answer: string }[] | null;
 		};
 		discoms: { slug: string; name: string }[];
+		country: CountryCode;
 	} = $props();
 </script>
 
 <div class="max-w-6xl mx-auto px-4 py-8">
 	<Breadcrumb items={[
-		{ name: 'Home', href: '/in/' },
-		{ name: 'Solar Subsidy', href: '/in/solar-subsidy/' },
+		{ name: 'Home', href: countryUrl(country, '/') },
+		{ name: 'Solar Subsidy', href: contentUrl('/solar-subsidy/') },
 		{ name: subsidy.state_name, href: '' }
 	]} />
 
@@ -69,7 +72,7 @@
 	<section class="mb-8 bg-accent/10 rounded-lg p-6">
 		<p class="text-sm text-muted-foreground mb-2">Ready to install solar with subsidy benefits?</p>
 		<a
-			href="/in/solar/{subsidy.state_slug}/"
+			href={`${geoUrl(country, subsidy.state_slug)}/`}
 			class="text-primary font-semibold hover:underline"
 		>
 			Find verified solar installers in {subsidy.state_name} →
@@ -82,7 +85,7 @@
 			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 				{#each discoms as discom}
 					<a
-						href="/in/solar-subsidy/{discom.slug}/"
+						href={contentUrl(`/solar-subsidy/${discom.slug}/`)}
 						class="block border rounded-lg p-4 hover:border-primary hover:shadow-sm transition-all"
 					>
 						<h3 class="font-medium text-foreground">{discom.name}</h3>
@@ -96,10 +99,10 @@
 	<section class="mb-8">
 		<h2 class="text-lg font-semibold text-primary mb-3">Related Guides</h2>
 		<div class="flex flex-wrap gap-2">
-			<a href="/in/solar-subsidy/state-wise/" class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
+			<a href={contentUrl('/solar-subsidy/state-wise/')} class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
 				State-wise Subsidy Comparison
 			</a>
-			<a href="/in/solar-subsidy/how-to-apply/" class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
+			<a href={contentUrl('/solar-subsidy/how-to-apply/')} class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
 				How to Apply for Subsidy
 			</a>
 		</div>
@@ -109,7 +112,7 @@
 
 	<div class="text-center mt-8 mb-8">
 		<a
-			href="/in/get-quotes/"
+			href={countryUrl(country, '/get-quotes/')}
 			class="inline-block bg-primary text-primary-foreground font-semibold px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
 		>
 			Get Free Solar Quotes

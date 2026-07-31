@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { contentUrl, countryUrl, geoUrl } from '$lib/countries/urls';
+	import type { CountryCode } from '$lib/countries';
 	import Breadcrumb from './Breadcrumb.svelte';
 	import ClusterNav from './ClusterNav.svelte';
 	import ContentSections from './ContentSections.svelte';
@@ -13,7 +15,7 @@
 		installerCount: number;
 	};
 
-	let { clusterData, siblingClusters, pillarSlug, pillarName, topDistricts = [] }: {
+	let { clusterData, siblingClusters, pillarSlug, pillarName, topDistricts = [], country }: {
 		clusterData: {
 			h1: string;
 			slug: string;
@@ -24,6 +26,7 @@
 		pillarSlug: string;
 		pillarName: string;
 		topDistricts?: TopDistrict[];
+		country: CountryCode;
 	} = $props();
 
 	const sizeMatch = $derived(clusterData.slug.match(/^(\d+)kw-system$/));
@@ -32,13 +35,13 @@
 	const toolLink = $derived.by(() => {
 		const slug = clusterData.slug;
 		if (/cost|price|\d+kw-system/.test(slug) || pillarSlug === 'rooftop-solar') {
-			return { href: '/in/tools/solar-calculator/', name: 'Solar Calculator', cta: 'Estimate your system size and savings' };
+			return { href: contentUrl('/tools/solar-calculator/'), name: 'Solar Calculator', cta: 'Estimate your system size and savings' };
 		}
 		if (/emi|loan|financing/.test(slug) || pillarSlug === 'solar-financing') {
-			return { href: '/in/tools/emi-calculator/', name: 'EMI Calculator', cta: 'Calculate your monthly solar loan EMI' };
+			return { href: contentUrl('/tools/emi-calculator/'), name: 'EMI Calculator', cta: 'Calculate your monthly solar loan EMI' };
 		}
 		if (/subsidy|eligibility|pm-surya-ghar|how-to-apply/.test(slug) || pillarSlug === 'solar-subsidy') {
-			return { href: '/in/tools/subsidy-checker/', name: 'Subsidy Checker', cta: 'Check your solar subsidy eligibility' };
+			return { href: contentUrl('/tools/subsidy-checker/'), name: 'Subsidy Checker', cta: 'Check your solar subsidy eligibility' };
 		}
 		return null;
 	});
@@ -46,8 +49,8 @@
 
 <div class="max-w-6xl mx-auto px-4 py-8">
 	<Breadcrumb items={[
-		{ name: 'Home', href: '/in/' },
-		{ name: pillarName, href: `/in/${pillarSlug}/` },
+		{ name: 'Home', href: countryUrl(country, '/') },
+		{ name: pillarName, href: contentUrl(`/${pillarSlug}/`) },
 		{ name: clusterData.h1, href: '' }
 	]} />
 
@@ -69,7 +72,7 @@
 		</section>
 	{/if}
 
-	<DistrictCTA districts={topDistricts} />
+	<DistrictCTA districts={topDistricts} {country} />
 
 	{#if sizeKw && topDistricts.length > 0}
 		<section class="mb-8">
@@ -82,7 +85,7 @@
 			<div class="flex flex-wrap gap-2">
 				{#each topDistricts as d}
 					<a
-						href="/in/solar/{d.stateSlug}/{d.districtSlug}/{sizeKw}kw-solar-system/"
+						href={`${geoUrl(country, d.stateSlug, d.districtSlug)}/${sizeKw}kw-solar-system/`}
 						class="bg-card border rounded-lg px-4 py-2 text-sm font-medium hover:border-primary hover:shadow-sm transition-all"
 					>
 						{sizeKw}kW in {d.name}
@@ -96,7 +99,7 @@
 
 	<div class="text-center mt-8 mb-8">
 		<a
-			href="/in/get-quotes/"
+			href={countryUrl(country, '/get-quotes/')}
 			class="inline-block bg-primary text-primary-foreground font-semibold px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
 		>
 			Get Free Solar Quotes

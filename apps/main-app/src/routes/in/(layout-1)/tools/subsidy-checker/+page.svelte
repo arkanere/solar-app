@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { contentUrl, countryUrl } from '$lib/countries/urls';
 	import { Label } from '$lib/components/ui/label';
 	import { Slider } from '$lib/components/ui/slider';
 	import * as Select from '$lib/components/ui/select';
@@ -142,9 +143,9 @@
 <div class="max-w-4xl mx-auto px-4 py-8">
 	<Breadcrumb
 		items={[
-			{ name: 'Home', href: '/in/' },
-			{ name: 'Tools', href: '/in/tools/' },
-			{ name: 'Subsidy Checker', href: '/in/tools/subsidy-checker/' }
+			{ name: 'Home', href: countryUrl('in', '/') },
+			{ name: 'Tools', href: contentUrl('/tools/') },
+			{ name: 'Subsidy Checker', href: contentUrl('/tools/subsidy-checker/') }
 		]}
 	/>
 

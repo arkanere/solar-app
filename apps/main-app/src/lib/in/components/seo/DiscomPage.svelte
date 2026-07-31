@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { contentUrl, countryUrl } from '$lib/countries/urls';
+	import type { CountryCode } from '$lib/countries';
 	import Breadcrumb from './Breadcrumb.svelte';
 	import ContentSections from './ContentSections.svelte';
 	import FAQ from './FAQ.svelte';
 
-	let { discom, stateSubsidy, siblingDiscoms = [] }: {
+	let { discom, stateSubsidy, siblingDiscoms = [], country }: {
 		discom: {
 			slug: string;
 			name: string;
@@ -16,6 +18,7 @@
 		};
 		stateSubsidy: { state_name: string } | null;
 		siblingDiscoms?: { slug: string; name: string }[];
+		country: CountryCode;
 	} = $props();
 
 	const stateName = $derived(stateSubsidy?.state_name ?? discom.state_slug);
@@ -23,9 +26,9 @@
 
 <div class="max-w-6xl mx-auto px-4 py-8">
 	<Breadcrumb items={[
-		{ name: 'Home', href: '/in/' },
-		{ name: 'Solar Subsidy', href: '/in/solar-subsidy/' },
-		{ name: stateName, href: `/in/solar-subsidy/${discom.state_slug}/` },
+		{ name: 'Home', href: countryUrl(country, '/') },
+		{ name: 'Solar Subsidy', href: contentUrl('/solar-subsidy/') },
+		{ name: stateName, href: contentUrl(`/solar-subsidy/${discom.state_slug}/`) },
 		{ name: discom.name, href: '' }
 	]} />
 
@@ -64,7 +67,7 @@
 	<section class="mb-8">
 		<p class="text-sm text-muted-foreground">
 			Learn more about net metering policies →
-			<a href="/in/solar-subsidy/net-metering/" class="text-primary hover:underline font-medium">
+			<a href={contentUrl('/solar-subsidy/net-metering/')} class="text-primary hover:underline font-medium">
 				Net Metering Guide
 			</a>
 		</p>
@@ -76,7 +79,7 @@
 			<div class="flex flex-wrap gap-2">
 				{#each siblingDiscoms as sibling}
 					<a
-						href="/in/solar-subsidy/{sibling.slug}/"
+						href={contentUrl(`/solar-subsidy/${sibling.slug}/`)}
 						class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors"
 					>
 						{sibling.name}
@@ -89,14 +92,14 @@
 	<FAQ items={discom.faq ?? []} title="FAQs — {discom.name}" />
 
 	<div class="mt-8">
-		<a href="/in/solar-subsidy/{discom.state_slug}/" class="text-primary hover:underline text-sm">
+		<a href={contentUrl(`/solar-subsidy/${discom.state_slug}/`)} class="text-primary hover:underline text-sm">
 			← Solar Subsidy in {stateName}
 		</a>
 	</div>
 
 	<div class="text-center mt-8 mb-8">
 		<a
-			href="/in/get-quotes/"
+			href={countryUrl(country, '/get-quotes/')}
 			class="inline-block bg-primary text-primary-foreground font-semibold px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
 		>
 			Get Free Solar Quotes

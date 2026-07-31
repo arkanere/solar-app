@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { countryUrl } from '$lib/countries/urls';
 	import Breadcrumb from '$lib/in/components/seo/Breadcrumb.svelte';
 	import { personLD, breadcrumbLD } from '$lib/seo';
 
@@ -46,7 +47,7 @@
 
 <div class="max-w-4xl mx-auto px-4 py-8">
 	<Breadcrumb items={[
-		{ name: 'Home', href: '/in/' },
+		{ name: 'Home', href: countryUrl('in', '/') },
 		{ name: data.author.name, href: '' }
 	]} />
 

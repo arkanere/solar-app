@@ -34,3 +34,20 @@ export function geoUrl(
 export function installerUrl(country: CountryCode, slug: string): string {
 	return `/${country}/installer/${slug}`;
 }
+
+export function projectUrl(country: CountryCode, slug: string): string {
+	return `/${country}/project/${slug}`;
+}
+
+// The SEO content families — the 7 pillars, tools, authors, seo-index — are
+// moving out from under the country prefix entirely (destination A of
+// docs/migration-plan-in-country.md). They still answer on /in until stage 7
+// moves the routes; flipping CONTENT_PREFIX to '' there moves every link with
+// them. Pass a path with the leading and trailing slash the caller wants:
+// contentUrl('/rooftop-solar/') -> '/in/rooftop-solar/' today, '/rooftop-solar/'
+// after.
+const CONTENT_PREFIX = '/in';
+
+export function contentUrl(path = '/'): string {
+	return `${CONTENT_PREFIX}${path}`;
+}

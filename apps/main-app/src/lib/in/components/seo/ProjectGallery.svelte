@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { projectUrl } from '$lib/countries/urls';
+	import type { CountryCode } from '$lib/countries';
 	import * as Card from '$lib/components/ui/card';
 	import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
 	import { formatDate, formatBusinessName } from '$lib/constants/projectFormatters';
@@ -17,9 +19,10 @@
 	interface Props {
 		projects: Project[];
 		locationName: string;
+		country: CountryCode;
 	}
 
-	const { projects, locationName }: Props = $props();
+	const { projects, locationName, country }: Props = $props();
 
 	function getImageUrl(cloudinaryId: string | null, imageUrl: string | null): string {
 		if (cloudinaryId) {
@@ -37,7 +40,7 @@
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
 			{#each projects as project (project.id)}
 				<a
-					href="/in/project/{project.project_slug}/"
+					href={`${projectUrl(country, project.project_slug)}/`}
 					rel="noopener"
 					class="group"
 				>

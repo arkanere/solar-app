@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { contentUrl } from '$lib/countries/urls';
 	import PillarPage from '$lib/in/components/seo/PillarPage.svelte';
 	import { breadcrumbLD, faqLD } from '$lib/seo';
 
@@ -25,12 +26,13 @@
 </svelte:head>
 
 <PillarPage
+	country="in"
 	pillarData={data.pillarData}
 	clusters={data.clusters}
 	stats={data.stats}
 	siblingPillars={[
-		{ name: 'Solar Subsidy', href: '/in/solar-subsidy/' }
+		{ name: 'Solar Subsidy', href: contentUrl('/solar-subsidy/') }
 	]}
-	toolLink={{ name: 'EMI Calculator', href: '/in/tools/emi-calculator/' }}
+	toolLink={{ name: 'EMI Calculator', href: contentUrl('/tools/emi-calculator/') }}
 	entitySection={{ title: 'Bank Solar Loan Schemes', items: data.bankSchemes }}
 />

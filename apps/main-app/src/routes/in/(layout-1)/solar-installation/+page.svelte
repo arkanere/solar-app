@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { contentUrl } from '$lib/countries/urls';
 	import PillarPage from '$lib/in/components/seo/PillarPage.svelte';
 	import { breadcrumbLD, faqLD } from '$lib/seo';
 
@@ -25,10 +26,11 @@
 </svelte:head>
 
 <PillarPage
+	country="in"
 	pillarData={data.pillarData}
 	clusters={data.clusters}
 	stats={data.stats}
 	siblingPillars={[
-		{ name: 'Rooftop Solar Guide', href: '/in/rooftop-solar/' }
+		{ name: 'Rooftop Solar Guide', href: contentUrl('/rooftop-solar/') }
 	]}
 />

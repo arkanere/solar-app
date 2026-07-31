@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { contentUrl, countryUrl } from '$lib/countries/urls';
+	import type { CountryCode } from '$lib/countries';
 	import Breadcrumb from './Breadcrumb.svelte';
 	import FAQ from './FAQ.svelte';
 
-	let { brand, products, pillarSlug, pillarName }: {
+	let { brand, products, pillarSlug, pillarName, country }: {
 		brand: {
 			slug: string;
 			name: string;
@@ -18,13 +20,14 @@
 		}[];
 		pillarSlug: string;
 		pillarName: string;
+		country: CountryCode;
 	} = $props();
 </script>
 
 <div class="max-w-6xl mx-auto px-4 py-8">
 	<Breadcrumb items={[
-		{ name: 'Home', href: '/in/' },
-		{ name: pillarName, href: `/in/${pillarSlug}/` },
+		{ name: 'Home', href: countryUrl(country, '/') },
+		{ name: pillarName, href: contentUrl(`/${pillarSlug}/`) },
 		{ name: brand.name, href: '' }
 	]} />
 
@@ -45,7 +48,7 @@
 			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 				{#each products as product}
 					<a
-						href="/in/{pillarSlug}/{brand.slug}/{product.model_slug}/"
+						href={contentUrl(`/${pillarSlug}/${brand.slug}/${product.model_slug}/`)}
 						class="block border rounded-lg p-4 hover:border-primary hover:shadow-sm transition-all"
 					>
 						<h3 class="font-medium text-foreground mb-1">{product.name}</h3>
@@ -66,7 +69,7 @@
 
 	<div class="text-center mt-8 mb-8">
 		<a
-			href="/in/get-quotes/"
+			href={countryUrl(country, '/get-quotes/')}
 			class="inline-block bg-primary text-primary-foreground font-semibold px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
 		>
 			Get Free Solar Quotes

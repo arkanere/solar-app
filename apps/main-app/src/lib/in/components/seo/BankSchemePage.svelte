@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { contentUrl, countryUrl } from '$lib/countries/urls';
+	import type { CountryCode } from '$lib/countries';
 	import Breadcrumb from './Breadcrumb.svelte';
 	import ContentSections from './ContentSections.svelte';
 	import FAQ from './FAQ.svelte';
 
-	let { bank, siblingBanks = [] }: {
+	let { bank, siblingBanks = [], country }: {
 		bank: {
 			slug: string;
 			name: string;
@@ -16,13 +18,14 @@
 			faq: { question: string; answer: string }[] | null;
 		};
 		siblingBanks?: { slug: string; name: string }[];
+		country: CountryCode;
 	} = $props();
 </script>
 
 <div class="max-w-6xl mx-auto px-4 py-8">
 	<Breadcrumb items={[
-		{ name: 'Home', href: '/in/' },
-		{ name: 'Solar Financing', href: '/in/solar-financing/' },
+		{ name: 'Home', href: countryUrl(country, '/') },
+		{ name: 'Solar Financing', href: contentUrl('/solar-financing/') },
 		{ name: bank.name, href: '' }
 	]} />
 
@@ -76,10 +79,10 @@
 	<section class="mb-8">
 		<h2 class="text-lg font-semibold text-primary mb-3">Related Resources</h2>
 		<div class="flex flex-wrap gap-2">
-			<a href="/in/solar-financing/solar-loan/" class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
+			<a href={contentUrl('/solar-financing/solar-loan/')} class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
 				Solar Loan Guide
 			</a>
-			<a href="/in/tools/emi-calculator/" class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
+			<a href={contentUrl('/tools/emi-calculator/')} class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
 				EMI Calculator
 			</a>
 		</div>
@@ -91,7 +94,7 @@
 			<div class="flex flex-wrap gap-2">
 				{#each siblingBanks as sibling}
 					<a
-						href="/in/solar-financing/{sibling.slug}/"
+						href={contentUrl(`/solar-financing/${sibling.slug}/`)}
 						class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors"
 					>
 						{sibling.name}
@@ -105,7 +108,7 @@
 
 	<div class="text-center mt-8 mb-8">
 		<a
-			href="/in/get-quotes/"
+			href={countryUrl(country, '/get-quotes/')}
 			class="inline-block bg-primary text-primary-foreground font-semibold px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
 		>
 			Get Free Solar Quotes

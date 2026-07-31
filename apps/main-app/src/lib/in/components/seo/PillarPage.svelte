@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { contentUrl, countryUrl, geoUrl } from '$lib/countries/urls';
+	import type { CountryCode } from '$lib/countries';
 	import Breadcrumb from './Breadcrumb.svelte';
 	import ContentSections from './ContentSections.svelte';
 	import FAQ from './FAQ.svelte';
@@ -11,7 +13,8 @@
 		stats,
 		siblingPillars = [],
 		toolLink,
-		entitySection
+		entitySection,
+		country
 	}: {
 		pillarData: {
 			h1: string;
@@ -23,12 +26,13 @@
 		siblingPillars?: LinkItem[];
 		toolLink?: LinkItem;
 		entitySection?: { title: string; items: LinkItem[] };
+		country: CountryCode;
 	} = $props();
 </script>
 
 <div class="max-w-6xl mx-auto px-4 py-8">
 	<Breadcrumb items={[
-		{ name: 'Home', href: '/in/' },
+		{ name: 'Home', href: countryUrl(country, '/') },
 		{ name: pillarData.h1, href: '' }
 	]} />
 
@@ -53,7 +57,7 @@
 			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 				{#each clusters as cluster}
 					<a
-						href="/in/{cluster.pillarSlug}/{cluster.slug}/"
+						href={contentUrl(`/${cluster.pillarSlug}/${cluster.slug}/`)}
 						class="block border rounded-lg p-4 hover:border-primary hover:shadow-sm transition-all"
 					>
 						<h3 class="font-medium text-foreground">{cluster.name}</h3>
@@ -108,14 +112,14 @@
 	<!-- Geographic funnel bridge -->
 	<section class="mb-8 bg-accent/10 rounded-lg p-6">
 		<p class="text-sm text-muted-foreground mb-2">Ready to go solar?</p>
-		<a href="/in/solar/" class="text-primary font-semibold hover:underline">
+		<a href={`${geoUrl(country)}/`} class="text-primary font-semibold hover:underline">
 			Find verified solar installers across India →
 		</a>
 	</section>
 
 	<div class="text-center mt-8 mb-8">
 		<a
-			href="/in/get-quotes/"
+			href={countryUrl(country, '/get-quotes/')}
 			class="inline-block bg-primary text-primary-foreground font-semibold px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
 		>
 			Get a Free Solar Quotation Online

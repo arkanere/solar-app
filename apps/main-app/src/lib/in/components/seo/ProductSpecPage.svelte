@@ -1,7 +1,9 @@
 <script lang="ts">
+	import { contentUrl, countryUrl } from '$lib/countries/urls';
+	import type { CountryCode } from '$lib/countries';
 	import Breadcrumb from './Breadcrumb.svelte';
 
-	let { product, brand, siblingProducts, pillarSlug, pillarName }: {
+	let { product, brand, siblingProducts, pillarSlug, pillarName, country }: {
 		product: {
 			name: string;
 			model_slug: string;
@@ -14,6 +16,7 @@
 		siblingProducts: { model_slug: string; name: string }[];
 		pillarSlug: string;
 		pillarName: string;
+		country: CountryCode;
 	} = $props();
 
 	const specEntries = $derived(Object.entries(product.specs));
@@ -21,9 +24,9 @@
 
 <div class="max-w-6xl mx-auto px-4 py-8">
 	<Breadcrumb items={[
-		{ name: 'Home', href: '/in/' },
-		{ name: pillarName, href: `/in/${pillarSlug}/` },
-		{ name: brand.name, href: `/in/${pillarSlug}/${brand.slug}/` },
+		{ name: 'Home', href: countryUrl(country, '/') },
+		{ name: pillarName, href: contentUrl(`/${pillarSlug}/`) },
+		{ name: brand.name, href: contentUrl(`/${pillarSlug}/${brand.slug}/`) },
 		{ name: product.name, href: '' }
 	]} />
 
@@ -75,7 +78,7 @@
 				{#each siblingProducts as sibling}
 					{#if sibling.model_slug !== product.model_slug}
 						<a
-							href="/in/{pillarSlug}/{brand.slug}/{sibling.model_slug}/"
+							href={contentUrl(`/${pillarSlug}/${brand.slug}/${sibling.model_slug}/`)}
 							class="text-sm bg-muted rounded-lg px-3 py-1.5 hover:bg-accent hover:text-accent-foreground transition-colors"
 						>
 							{sibling.name}
@@ -88,7 +91,7 @@
 
 	<div class="text-center mt-8 mb-8">
 		<a
-			href="/in/get-quotes/"
+			href={countryUrl(country, '/get-quotes/')}
 			class="inline-block bg-primary text-primary-foreground font-semibold px-8 py-3 rounded-lg hover:opacity-90 transition-opacity"
 		>
 			Get Free Solar Quotes

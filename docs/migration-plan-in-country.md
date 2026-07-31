@@ -1,7 +1,7 @@
 # Migration plan: dissolve `routes/in/`
 
-> **STATUS: in progress. Stage 1 of 16 done (2026-07-31).** Next: **S2**
-> (de-hardcode `$lib/in/components/seo/*` URLs).
+> **STATUS: in progress. Stages 1–2 of 16 done (2026-07-31).** Next: **S3**
+> (add `routes/us/(layout-1)/+layout.server.ts`).
 >
 > This document is written to be executed across many cold-start sessions. The
 > per-route checklist in §8 and the stage log beneath it are the **only** memory
@@ -90,9 +90,12 @@ only**, not routes. Do not delete the flags — `slug-resolver.ts` still uses
   the `in` layout — it renders `/{cc}/rooftop-solar`, `/{cc}/tools` etc. behind feature
   flags. Under this plan those links become country-less (`/rooftop-solar`), which
   *simplifies* it.
-- **`/us/solar/**` already emits `/in/` links today** — a live bug.
-  `$lib/in/components/seo/ProjectGallery.svelte:40` and `DistrictCTA.svelte:22` hardcode
-  `/in/`, and `[country]/solar/**` imports them. Stage 2 fixes it.
+- ~~**`/us/solar/**` already emits `/in/` links today** — a live bug.~~ **Wrong, corrected
+  in S2.** `DistrictCTA` is not imported by `[country]/solar/**` at all — only by
+  `ClusterPage`, which lives entirely under `routes/in/`. `ProjectGallery` *is* imported
+  there, but both call sites sit behind `{#if country.features.projects}` and US has
+  `projects: false`, so the hardcoded `/in/project/` never rendered on `/us`. It was dead
+  code, not a live bug. S2 de-hardcoded it anyway.
 - **`in/api/submitBusiness` fetches `/in/api/sendBusinessSubmissionConfirmation`**, which no
   longer exists under `/in`. It resolves only via `[country]` fallthrough. Fix in Stage 12.
 - **`aboutStats` will change value.** `in/(layout-1)/+layout.server.ts` counts legacy
@@ -209,6 +212,45 @@ which is `undefined` in the country-less tree.
 Update the four already-migrated callers under `routes/[country=country]/(layout-1)/solar/**`.
 
 Verify: `/us/solar/california/orange` HTML contains zero `/in/` hrefs.
+
+**Done 2026-07-31.** As built, with three deviations from the text above:
+1. **`contentUrl()` instead of literal country-less paths.** Emitting `/rooftop-solar/`
+   here would 404 until S7 — a live regression for the whole interim. Instead
+   `src/lib/countries/urls.ts` gained `contentUrl(path)`, backed by a single
+   `CONTENT_PREFIX = '/in'`. **S7 flips that one constant to `''`** and every content
+   link in the app follows. Same discipline S1 used for its `contentPrefix`.
+   (`SiteHeader`/`SiteFooter` still have their own local `contentPrefix` — S7 flips
+   three constants, not one. Grep `CONTENT_PREFIX|contentPrefix`.)
+2. **The prop is `country: CountryCode`, not `CountryConfig`.** Nothing in these
+   components needs more than the code, and `country="in"` at 20-odd call sites is far
+   lighter than `getCountry('in')`. Widen it in S15 if the merged components need labels.
+3. **`seo-index/+page.svelte` was left alone.** It is ~150 hardcoded `/in/...` hrefs and
+   belongs to S9; converting it here would have tripled the diff for no benefit.
+
+Also added: `projectUrl(country, slug)` to `urls.ts`.
+
+Split of link kinds, for reference when doing S7–S11:
+- `contentUrl(...)` — pillars, clusters, brands, products, tools, authors, subsidy and
+  financing sub-pages. Destination A.
+- `countryUrl(country, ...)` — the **Home breadcrumb** and `/get-quotes/`. Destination B.
+  Note `{ name: 'Home' }` means the *IN home*, which S11 moves to `[country]`. It is
+  deliberately **not** `contentUrl` anywhere.
+- `geoUrl(country, ...)` — `/solar/**`. Already migrated.
+- `projectUrl(country, ...)` — `/project/**`. Destination B, S10.
+
+**Open question for S8/S9:** once tools and authors are country-less, should their Home
+breadcrumb still point at `/in/` (`countryUrl('in', '/')`, what it does today) or at the
+country-less `/`? Left as-is in S2 so the stage changed no behavior. Decide when moving.
+
+**Verification gap:** `solar_brands`, `state_subsidies` and `discoms` appear to be empty
+in the dev DB — no brand, product-spec, state-subsidy or discom URL is in
+`/in/sitemap.xml`, and those routes 404 locally. So `BrandPage`, `ProductSpecPage`,
+`StateSubsidyPage`, `DiscomPage` and `BankSchemePage` were verified by `svelte-check` and
+the build only, never by rendering. Re-check them against prod after S7b/S7c.
+
+Verified: `/in/rooftop-solar` and `/in/rooftop-solar/cost` render an identical href
+multiset before and after. `npm run check` still 17/14. Build passes. `/in/` grep
+(excluding migrations) 329 -> **240**.
 
 ### S3 — `routes/us/(layout-1)/+layout.server.ts`
 *Why: `/us` pages have no `data.country` today; S15's merged components need it.*
@@ -439,6 +481,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | Stage | Date | SHA |
 |---|---|---|
 | 1 — shared chrome | 2026-07-31 | `af5fa11` |
+| 2 — de-hardcode seo/* | 2026-07-31 | `S2_SHA` |
 
 ## 9. Hazards
 

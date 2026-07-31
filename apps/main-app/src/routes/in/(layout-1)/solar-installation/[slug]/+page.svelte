@@ -26,6 +26,7 @@
 </svelte:head>
 
 <ClusterPage
+	country="in"
 	clusterData={data.clusterData}
 	siblingClusters={data.siblingClusters}
 	pillarSlug={data.pillarSlug}

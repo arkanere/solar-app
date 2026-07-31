@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { contentUrl } from '$lib/countries/urls';
 	let { name, slug, photo, date }: {
 		name: string;
 		slug: string;
@@ -14,7 +15,7 @@
 		<img src={photo} alt={name} class="w-8 h-8 rounded-full object-cover" />
 	{/if}
 	<div>
-		<a href="/in/authors/{slug}/" class="font-medium text-foreground hover:text-primary">{name}</a>
+		<a href={contentUrl(`/authors/${slug}/`)} class="font-medium text-foreground hover:text-primary">{name}</a>
 		{#if formattedDate}
 			<span class="mx-1">&middot;</span>
 			<time datetime={date}>{formattedDate}</time>

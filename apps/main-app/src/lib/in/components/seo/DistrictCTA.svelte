@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { geoUrl } from '$lib/countries/urls';
+	import type { CountryCode } from '$lib/countries';
 	type District = {
 		name: string;
 		state: string;
@@ -7,7 +9,7 @@
 		installerCount: number;
 	};
 
-	let { districts }: { districts: District[] } = $props();
+	let { districts, country }: { districts: District[]; country: CountryCode } = $props();
 </script>
 
 {#if districts.length > 0}
@@ -19,7 +21,7 @@
 		<div class="flex flex-wrap gap-2">
 			{#each districts as d}
 				<a
-					href="/in/solar/{d.stateSlug}/{d.districtSlug}/"
+					href={`${geoUrl(country, d.stateSlug, d.districtSlug)}/`}
 					class="bg-card border rounded-lg px-4 py-2 text-sm font-medium hover:border-primary hover:shadow-sm transition-all"
 				>
 					{d.name} <span class="text-muted-foreground">({d.installerCount})</span>

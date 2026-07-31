@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { contentUrl } from '$lib/countries/urls';
 	let { clusters, currentSlug, pillarSlug }: {
 		clusters: { slug: string; name: string }[];
 		currentSlug?: string;
@@ -13,7 +14,7 @@
 			{#each clusters as cluster}
 				{#if cluster.slug !== currentSlug}
 					<a
-						href="/in/{pillarSlug}/{cluster.slug}/"
+						href={contentUrl(`/${pillarSlug}/${cluster.slug}/`)}
 						class="text-sm bg-muted rounded-lg px-3 py-1.5 hover:bg-accent hover:text-accent-foreground transition-colors"
 					>
 						{cluster.name}
