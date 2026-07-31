@@ -1,6 +1,9 @@
 // 301 shim for legacy US city directory URLs: /us/solar-panel-installer-
 // directory/anaheim-ca (or bare city slug) -> /us/solar/{state}/{county}/{city}.
 // Needs a geo_locations lookup because the old URL never carried the county.
+//
+// US-only for the same reason as the sibling county shim — see the comment
+// there.
 import { redirect, error } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
 import { getStateName } from '$lib/countries/us-states';
@@ -8,6 +11,8 @@ import { findCity } from '$lib/server/geo';
 import { toSlug } from '$lib/countries/urls';
 
 export const GET: RequestHandler = async ({ params }) => {
+	if (params.country !== 'us') error(404, 'Not found');
+
 	const cityParam = (params.city ?? '').toLowerCase();
 	if (!cityParam) error(404, 'Invalid city URL');
 

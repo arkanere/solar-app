@@ -2,6 +2,13 @@
 // /us/county/orange) -> /us/solar/{state}/{county}. Suffixed slugs resolve
 // via the abbreviation map; suffix-less legacy slugs fall back to a
 // geo_locations lookup.
+//
+// Lives under [country] since routes/us/ was dissolved, but stays US-only on
+// purpose: this is a legacy *US* URL shape, and getStateName() is US
+// state-abbreviation data. Without the gate an IN request would skip the
+// suffix branch and fall through to the bare-slug lookup, matching a US-style
+// slug against Indian rows. Same reasoning as the district shim (stage 11c of
+// docs/migration-plan-in-country.md).
 import { redirect, error } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
 import { getStateName } from '$lib/countries/us-states';
@@ -9,6 +16,8 @@ import { findLevel1ForLevel2, resolveLevel2 } from '$lib/server/geo';
 import { toSlug } from '$lib/countries/urls';
 
 export const GET: RequestHandler = async ({ params }) => {
+	if (params.country !== 'us') error(404, 'Not found');
+
 	const countySlug = (params.county_slug ?? '').toLowerCase();
 	if (!countySlug) error(404, 'Invalid county URL');
 
