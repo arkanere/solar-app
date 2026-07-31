@@ -1053,6 +1053,14 @@ Run at **every** stage against `npm run dev` (port **7123**):
 8. **Cross-app smoke** after S7: `apps/business-app` links to
    `https://solarvipani.com/us/solar-panel-installer/{slug}` and posts to
    `/us/api/*` — confirm both still resolve.
+   **Verified 2026-08-01 (post-S13 sweep; it was not recorded at S7).** ⚠️ **Half of this
+   item was a misreading.** Every `/us/api/*` fetch in `business-app` is **relative and
+   hits `business-app`'s own routes** — all 17 exist under
+   `apps/business-app/src/routes/us/api/`. None of them ever crossed into `main-app`, so
+   this plan could not have broken them. The only genuine cross-app references are the
+   three absolute `https://solarvipani.com/us/solar-panel-installer/{slug}` profile links
+   (`claimLead:283`, `branch/+page.svelte` ×2); both slugs tested resolve in **1 hop → 200**
+   via the `hooks.server.ts` rewrite to `/us/installer/{slug}`.
 9. **Business signup e2e** after S7: submit one business per country in dev; confirm the
    row lands in the correct legacy tables **and** in unified `businesses` /
    `business_accounts` with the right `country_code`. Roll back.
@@ -1168,3 +1176,15 @@ stage).
 
 ⚠️ **Carry forward: `hooks.server.ts` is the sole chokepoint protecting IN-only data.**
 See the status header. Grep it before adding a third country.
+
+**Post-completion sweep, 2026-08-01.** Checked for leftovers after S13: no unticked
+checklist boxes, no unfilled stage-log rows, no SHA placeholders, and no source reference
+to a deleted path that is not deliberately historical. Two things did turn up and are
+resolved:
+1. **A stale comment in `AboutSolarVipani.svelte`** — written in S10, invalidated by S11.
+   It said `routes/us/(layout-1)/+layout.server.ts` returns no `aboutStats` "so /us renders
+   this section without the stats block". S11 deleted that file, so `/us` now *does* show
+   the stats, from `[country]/(layout-1)/`. Corrected. Noted there that **both remaining
+   call sites pass both props**, so the props' optionality is now vestigial and they could
+   be made required — a small tidy-up, deliberately not bundled into a docs stage.
+2. **§7.8 was never recorded as done at S7**; it is now verified and annotated above.

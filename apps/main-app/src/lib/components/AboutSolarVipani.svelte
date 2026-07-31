@@ -4,12 +4,16 @@
 	import { Users, TrendingUp } from '@lucide/svelte';
 
 	interface Props {
-		// Optional so this component can render on pages with no database access.
-		// routes/us/(layout-1)/+layout.server.ts returns no aboutStats, so /us
-		// renders this section without the stats block. That started as a
+		// Optional because routes/us/(layout-1)/ had no aboutStats loader, so /us
+		// rendered this section without the stats block — originally a
 		// prerendering constraint (stage 3 of the /in plan: a DB call would have
-		// coupled the build to the database); nothing is prerendered any more,
-		// but the layout is still statsless until stage 11 deletes it.
+		// coupled the build to the database).
+		//
+		// Both of those reasons are gone: nothing is prerendered, and stage 11 of
+		// docs/migration-plan-delete-us.md deleted that layout, so /us now gets
+		// the stats from [country]/(layout-1)/ like every other page. **Every
+		// remaining call site passes both props** — the optionality is vestigial
+		// and these could be made required.
 		installerCount?: number;
 		leadsGenerated?: number;
 	}
