@@ -1,11 +1,17 @@
 # Migration plan: dissolve `routes/in/`
 
-> **STATUS: stages 1–5 and 7–15 done (2026-07-31). Only S16 (update the architecture doc)
-> remains.** `routes/in/` no longer exists — §1's goal is met — and `$lib/us/` is down to
-> `themeStore.js`.
+> **STATUS: COMPLETE (2026-07-31). All 16 stages applied.** `routes/in/` no longer exists
+> — §1's goal is met — `$lib/us/` is down to `themeStore.js`, and the reversal is recorded
+> in `docs/country-scalable-architecture.md`.
 >
-> ⚠️ **`npm run check` baseline is now 13 errors / 1 warning**, not 17/14: S15a deleted the
-> dead files that carried the difference.
+> ⚠️ **`npm run check` baseline is now 13 errors / 1 warning**, not the 17/14 quoted in §8:
+> S15a deleted the dead files that carried the difference.
+>
+> **Nothing here touched the data layer.** The final write cutover in
+> `country-scalable-architecture.md` is untouched and unaffected.
+>
+> Carried-forward items that outlived this plan are listed at the end of §10 — none are
+> blockers, but the three "verify against prod after deploy" items are worth doing.
 > S6 no longer exists as a separate stage — see its note.
 >
 > ⚠️ **A user decision changed S11's US fallback from 404 to 301** — read the S11 note.
@@ -1129,6 +1135,18 @@ questions on both `/in/solar/maharashtra/pune` and `/us/solar/arizona/maricopa`.
 ### S16 — Update `docs/country-scalable-architecture.md`
 Record the reversal of line 103 and mark Step 6 done.
 
+**Done 2026-07-31 (`202bc45`) — this plan is complete.** Three edits to that document:
+line 103 struck through and annotated as reversed (with the actual final route surface,
+and a note that its rationale was *superseded*, not wrong — feature-flag-404ing was in
+fact avoided); Step 6 marked done, recording that **19 of its listed pairs were dead code
+and were deleted rather than merged**, which also resolves its JSON-LD item
+(`city_jsonLD1.js` deleted, not absorbed); and a pointer under "Remaining steps" that
+`routes/(layout-1)/+layout.server.ts` is now the only main-app legacy-table reader of the
+aboutStats counts.
+
+**Explicitly recorded there: nothing about the data layer changed.** The final write
+cutover is untouched and remains that document's only outstanding slice.
+
 ## 7. Verification (no tests exist)
 
 Run at **every** stage against `npm run dev`:
@@ -1237,6 +1255,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | 15b — `$lib/in/components` → `$lib/components` | 2026-07-31 | `f656c6a` |
 | 15d — faqData → `$lib/countries` | 2026-07-31 | `3287e97` |
 | 15c — merge the 3 live pairs | 2026-07-31 | `310db71`, `25d1d89`, `7c9c6cc` |
+| 16 — architecture doc updated | 2026-07-31 | `202bc45` |
 
 ## 9. Hazards
 
@@ -1260,7 +1279,8 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 
 ## 10. Resume here (cold start)
 
-**Done: stages 1–5 and 7–15. `routes/in/` is gone and `$lib/us/` is down to `themeStore`.** Every stage is one commit plus a SHA-recording commit,
+**Done: all 16 stages. `routes/in/` is gone, `$lib/us/` is down to `themeStore`, and the
+reversal is recorded in the architecture doc. There is no next stage.** Every stage is one commit plus a SHA-recording commit,
 listed in the §8 stage log. Destination A is complete — all 7 content pillars, tools,
 authors, seo-index and the legal pages answer country-less, each with a one-hop 301 from
 `/in/**` and `/us/**`. **Destination B is also complete**: projects (S10), partners (S11a),
@@ -1286,8 +1306,8 @@ routing, the moved loaders need no feature gate — but that also means **hazard
 net is now one file, not one check per loader**; see the note before adding a third country
 to `COUNTRIES`.
 
-**Next and last: S16** — record in `docs/country-scalable-architecture.md` that line 103's
-decision is reversed and that Step 6 (the component merge) is done.
+**There is no next stage — the plan is finished.** What remains are the carried-forward
+items at the end of this section, none of which block anything.
 
 ⚠️ **Correction to an earlier claim in this document and in session notes.** S15c was
 described as the stage that produces "one shared page for `/us` and `/in`". **It is not.**
