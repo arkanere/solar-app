@@ -1,7 +1,7 @@
 # Migration plan: dissolve `routes/in/`
 
-> **STATUS: in progress. Stages 1–2 of 16 done (2026-07-31).** Next: **S3**
-> (add `routes/us/(layout-1)/+layout.server.ts`).
+> **STATUS: in progress. Stages 1–3 of 16 done (2026-07-31).** Next: **S4**
+> (country-less: legal & static). S4 is the first stage that actually moves a route.
 >
 > This document is written to be executed across many cold-start sessions. The
 > per-route checklist in §8 and the stage log beneath it are the **only** memory
@@ -263,6 +263,17 @@ Pure and non-async, so the four `prerender = true` US pages keep prerendering �
 their HTML still lands in `.svelte-kit/output/prerendered/`. Do **not** add `aboutStats`
 here; that would couple a prerendered page's build to the DB.
 
+**Done 2026-07-31.** Exactly as specified. All four prerendered pages still emit.
+`/us` markup and hrefs are identical; `data.country` is now in the payload. Every page
+under `us/(layout-1)/` returns 200, including the
+`recent-solar-installation-projects/[page_slug]` stub the S10 note flagged — it ignores
+the new prop and does not crash. (`/us/unsubscribe` returns 405 on GET; that is a
+POST-only `+server.js` and predates this work.)
+
+Note for HTML diffing in dev: the inline `<style>` block varies run to run with Vite's
+dev CSS injection, so a raw `diff` reports large phantom changes. Compare the tag
+sequence with `<style>` bodies elided, or compare the href multiset.
+
 ### S4 — Country-less: legal & static
 *Why the first move: near-zero logic, exercises the pattern cheaply.*
 
@@ -482,6 +493,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 |---|---|---|
 | 1 — shared chrome | 2026-07-31 | `af5fa11` |
 | 2 — de-hardcode seo/* | 2026-07-31 | `1b80cb0` |
+| 3 — /us layout country | 2026-07-31 | `S3_SHA` |
 
 ## 9. Hazards
 
