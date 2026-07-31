@@ -44,7 +44,7 @@ export const load: PageServerLoad = async () => {
 
 	const bankSchemes = bankListResult.rows.map((r: { slug: string; name: string }) => ({
 		name: r.name,
-		href: `/in/solar-financing/${r.slug}/`
+		href: `/solar-financing/${r.slug}/`
 	}));
 
 	return {

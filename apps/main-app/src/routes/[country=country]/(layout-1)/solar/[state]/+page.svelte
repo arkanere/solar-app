@@ -2,6 +2,7 @@
 	import GeoDirectory from '$lib/in/components/seo/GeoDirectory.svelte';
 	import { breadcrumbLD, faqLD } from '$lib/seo';
 	import { faqFor } from '$lib/countries/faq';
+	import { contentUrl } from '$lib/countries/urls';
 
 	let { data } = $props();
 
@@ -82,7 +83,7 @@
 		<div class="bg-accent/10 rounded-lg p-4 mb-8">
 			<p class="text-sm">
 				<strong class="text-primary">{data.level1} Solar Subsidy:</strong> Residents can avail the PM Surya Ghar Yojana subsidy of up to ₹78,000.
-				<a href="/{cc}/solar-subsidy/{data.subsidy.state_slug}/" class="text-primary hover:underline ml-1">View details →</a>
+				<a href={contentUrl(`/solar-subsidy/${data.subsidy.state_slug}/`)} class="text-primary hover:underline ml-1">View details →</a>
 			</p>
 		</div>
 	{/if}

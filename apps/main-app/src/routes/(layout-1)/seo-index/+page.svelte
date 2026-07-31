@@ -81,26 +81,26 @@
 				},
 				{
 					name: '1.4 Solar Subsidy',
-					pillar: { label: 'Solar Subsidy', href: '/in/solar-subsidy' },
+					pillar: { label: 'Solar Subsidy', href: '/solar-subsidy' },
 					clusters: [
-						{ label: 'PM Surya Ghar', href: '/in/solar-subsidy/pm-surya-ghar' },
-						{ label: 'Central Government', href: '/in/solar-subsidy/central-government' },
-						{ label: 'State-Wise', href: '/in/solar-subsidy/state-wise' },
-						{ label: 'Eligibility', href: '/in/solar-subsidy/eligibility' },
-						{ label: 'How to Apply', href: '/in/solar-subsidy/how-to-apply' },
-						{ label: 'Net Metering', href: '/in/solar-subsidy/net-metering' },
-						{ label: 'Application Process', href: '/in/solar-subsidy/application-process' },
-						{ label: 'Documents Required', href: '/in/solar-subsidy/documents-required' },
-						{ label: 'Central Subsidy', href: '/in/solar-subsidy/central-subsidy' },
-						{ label: 'State Subsidy', href: '/in/solar-subsidy/state-subsidy' },
-						{ label: 'Commercial Subsidy', href: '/in/solar-subsidy/commercial-subsidy' },
-						{ label: 'MNRE Guidelines', href: '/in/solar-subsidy/mnre-guidelines' },
-						{ label: 'Subsidy Calculator', href: '/in/solar-subsidy/subsidy-calculator' },
-						{ label: 'Latest Updates', href: '/in/solar-subsidy/latest-updates' }
+						{ label: 'PM Surya Ghar', href: '/solar-subsidy/pm-surya-ghar' },
+						{ label: 'Central Government', href: '/solar-subsidy/central-government' },
+						{ label: 'State-Wise', href: '/solar-subsidy/state-wise' },
+						{ label: 'Eligibility', href: '/solar-subsidy/eligibility' },
+						{ label: 'How to Apply', href: '/solar-subsidy/how-to-apply' },
+						{ label: 'Net Metering', href: '/solar-subsidy/net-metering' },
+						{ label: 'Application Process', href: '/solar-subsidy/application-process' },
+						{ label: 'Documents Required', href: '/solar-subsidy/documents-required' },
+						{ label: 'Central Subsidy', href: '/solar-subsidy/central-subsidy' },
+						{ label: 'State Subsidy', href: '/solar-subsidy/state-subsidy' },
+						{ label: 'Commercial Subsidy', href: '/solar-subsidy/commercial-subsidy' },
+						{ label: 'MNRE Guidelines', href: '/solar-subsidy/mnre-guidelines' },
+						{ label: 'Subsidy Calculator', href: '/solar-subsidy/subsidy-calculator' },
+						{ label: 'Latest Updates', href: '/solar-subsidy/latest-updates' }
 					],
 					dynamic: [
-						{ label: 'State — Maharashtra', href: '/in/solar-subsidy/maharashtra', type: 'state' },
-						{ label: 'DISCOM — MSEDCL', href: '/in/solar-subsidy/msedcl', type: 'discom' }
+						{ label: 'State — Maharashtra', href: '/solar-subsidy/maharashtra', type: 'state' },
+						{ label: 'DISCOM — MSEDCL', href: '/solar-subsidy/msedcl', type: 'discom' }
 					]
 				},
 				{
@@ -160,24 +160,24 @@
 				},
 				{
 					name: '1.7 Solar Financing',
-					pillar: { label: 'Solar Financing', href: '/in/solar-financing' },
+					pillar: { label: 'Solar Financing', href: '/solar-financing' },
 					clusters: [
-						{ label: 'Solar Loan', href: '/in/solar-financing/solar-loan' },
-						{ label: 'EMI', href: '/in/solar-financing/emi' },
-						{ label: 'Free Solar Scheme', href: '/in/solar-financing/free-solar-scheme' },
-						{ label: 'ROI', href: '/in/solar-financing/roi' },
-						{ label: 'EMI Options', href: '/in/solar-financing/emi-options' },
-						{ label: 'Interest Rates', href: '/in/solar-financing/interest-rates' },
-						{ label: 'Eligibility', href: '/in/solar-financing/eligibility' },
-						{ label: 'Documents Required', href: '/in/solar-financing/documents-required' },
-						{ label: 'Payback Period', href: '/in/solar-financing/payback-period' },
-						{ label: 'Lease vs Loan', href: '/in/solar-financing/lease-vs-loan' },
-						{ label: 'Commercial Financing', href: '/in/solar-financing/commercial-financing' },
-						{ label: 'Green Bonds', href: '/in/solar-financing/green-bonds' }
+						{ label: 'Solar Loan', href: '/solar-financing/solar-loan' },
+						{ label: 'EMI', href: '/solar-financing/emi' },
+						{ label: 'Free Solar Scheme', href: '/solar-financing/free-solar-scheme' },
+						{ label: 'ROI', href: '/solar-financing/roi' },
+						{ label: 'EMI Options', href: '/solar-financing/emi-options' },
+						{ label: 'Interest Rates', href: '/solar-financing/interest-rates' },
+						{ label: 'Eligibility', href: '/solar-financing/eligibility' },
+						{ label: 'Documents Required', href: '/solar-financing/documents-required' },
+						{ label: 'Payback Period', href: '/solar-financing/payback-period' },
+						{ label: 'Lease vs Loan', href: '/solar-financing/lease-vs-loan' },
+						{ label: 'Commercial Financing', href: '/solar-financing/commercial-financing' },
+						{ label: 'Green Bonds', href: '/solar-financing/green-bonds' }
 					],
 					dynamic: [
-						{ label: 'Bank — SBI', href: '/in/solar-financing/sbi', type: 'bank' },
-						{ label: 'Bank — HDFC', href: '/in/solar-financing/hdfc', type: 'bank' }
+						{ label: 'Bank — SBI', href: '/solar-financing/sbi', type: 'bank' },
+						{ label: 'Bank — HDFC', href: '/solar-financing/hdfc', type: 'bank' }
 					]
 				}
 			]

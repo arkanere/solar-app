@@ -44,7 +44,7 @@ export const load: PageServerLoad = async () => {
 
 	const stateSubsidies = statesResult.rows.map((r: { state_slug: string; state_name: string }) => ({
 		name: r.state_name,
-		href: `/in/solar-subsidy/${r.state_slug}/`
+		href: `/solar-subsidy/${r.state_slug}/`
 	}));
 
 	return {

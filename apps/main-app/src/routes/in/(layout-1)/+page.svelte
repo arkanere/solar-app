@@ -364,8 +364,8 @@
           { href: contentUrl("/solar-panels"), title: "Solar Panels", desc: "Compare panel brands, technologies, and specifications", icon: "🔋" },
           { href: contentUrl("/solar-inverters"), title: "Solar Inverters", desc: "On-grid, hybrid, and micro inverter options for your system", icon: "⚡" },
           { href: contentUrl("/solar-installation"), title: "Solar Installation", desc: "Site assessment, installation process, and timeline", icon: "🔧" },
-          { href: "/in/solar-subsidy", title: "Solar Subsidy", desc: "PM Surya Ghar Yojana, state subsidies, and how to apply", icon: "🏛️" },
-          { href: "/in/solar-financing", title: "Solar Financing", desc: "Solar loans, EMI options, and bank schemes", icon: "💳" },
+          { href: contentUrl("/solar-subsidy"), title: "Solar Subsidy", desc: "PM Surya Ghar Yojana, state subsidies, and how to apply", icon: "🏛️" },
+          { href: contentUrl("/solar-financing"), title: "Solar Financing", desc: "Solar loans, EMI options, and bank schemes", icon: "💳" },
           { href: contentUrl("/solar-pumps"), title: "Solar Pumps", desc: "Agricultural and residential solar pump solutions", icon: "💧" }
         ] as pillar}
           <a

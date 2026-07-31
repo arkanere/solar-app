@@ -231,7 +231,7 @@
 								<tr class="border-b last:border-0">
 									<td class="py-2.5 pr-4">
 										<a
-											href="/in/solar-financing/{bank.slug}/"
+											href={contentUrl(`/solar-financing/${bank.slug}/`)}
 											class="text-primary hover:underline font-medium"
 										>
 											{bank.name}
@@ -271,7 +271,7 @@
 	<div class="flex flex-wrap gap-3 text-sm mb-8">
 		<a href="/in/tools/solar-calculator/" class="text-primary hover:underline">Solar Calculator</a>
 		<span class="text-muted-foreground">|</span>
-		<a href="/in/solar-financing/" class="text-primary hover:underline">Solar Financing Guide</a>
+		<a href={contentUrl("/solar-financing/")} class="text-primary hover:underline">Solar Financing Guide</a>
 		<span class="text-muted-foreground">|</span>
 		<a href="/in/solar/" class="text-primary hover:underline">Browse Installers</a>
 	</div>

@@ -31,5 +31,9 @@ export const MOVED_TO_ROOT = [
 	// stage 7b — the three product pillars
 	'solar-panels',
 	'solar-inverters',
-	'solar-pumps'
+	'solar-pumps',
+
+	// stage 7c — completes the 7 content pillars
+	'solar-financing',
+	'solar-subsidy'
 ];

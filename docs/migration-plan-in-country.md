@@ -1,8 +1,8 @@
 # Migration plan: dissolve `routes/in/`
 
-> **STATUS: in progress. Stages 1–5 done, plus S7a and S7b (2026-07-31).** Next:
-> **S7c** (country-less: `solar-financing`, `solar-subsidy`). S6 no longer exists
-> as a separate stage — see its note.
+> **STATUS: in progress. Stages 1–5 and 7 done (2026-07-31).** All 7 content
+> pillars are country-less. Next: **S8** (tools). S6 no longer exists as a
+> separate stage — see its note.
 >
 > ⚠️ **S6 has been restructured — read the S4 and S6 notes before continuing.**
 > Redirects are no longer one late stage; each move stage lands its own.
@@ -582,6 +582,36 @@ string preserved; href diff of `/in/solar-panels` (pre) vs `/solar-panels` (post
 the prefix strip, the country-less canonical and the deliberately-hidden per-country CTAs.
 `npm run check` 17/14, build passes, 3 prerendered US pages. `/in/` grep 187 -> **127**.
 
+**7c done 2026-07-31 — S7 is complete.** 8 files `git mv`d, two families appended.
+Inbound links retargeted: three `[country]/solar/**` pages, two IN-home entries, the
+subsidy-checker and emi-calculator tools, and ~30 `seo-index` hrefs. The
+`StateSubsidyPage`/`BankSchemePage`/`DiscomPage` links needed no edit — they were already on
+`contentUrl()` from S2 and followed automatically, which is the payoff §5c was built for.
+
+The roi shim now resolves country-less in **1 hop**; `/in/rooftop-solar/roi` is 2, unchanged
+from its pre-7a baseline.
+
+**Two misses worth learning from:**
+1. **Loaders build hrefs too.** `solar-financing/+page.server.ts` and
+   `solar-subsidy/+page.server.ts` each emitted `` `/in/<family>/${slug}/` `` for their bank
+   and state lists. The inbound-link grep missed them because it *excluded the moved
+   directories* — but a moved route can still self-reference the old prefix. **For S8/S9,
+   grep inside the moved directory too, `+page.server.ts` included.** Both are now literal
+   country-less paths, per the §5c rule that already-moved families stop using `contentUrl`.
+   Neither renders in dev (`solar_financing_banks` and `state_subsidies` are empty), so this
+   is a `svelte-check`-and-read-only fix — **verify against prod**, same bucket as the S2
+   brand-page gap.
+2. **`seo_pages.content` still emits `/in/` hrefs** — ~20 per pillar page, from the JSONB
+   body (§4 fact 4). Verified they 301 in one hop, which is what the plan intends, so this
+   is correct-but-suboptimal: every content page now carries ~20 internal links through a
+   redirect. Fixable with an `UPDATE` on `seo_pages.content` — **a data change, not a
+   migration rewrite, which stays forbidden**. Worth a dedicated pass; deliberately not done
+   here.
+
+Verified: 6 country-less URLs 200; `/in` and `/us` originals 301 in one hop with the query
+string preserved; header and footer emit all 7 pillars country-less with zero `/in` content
+links. `npm run check` 17/14, build passes, 3 prerendered US pages. `/in/` grep 127 -> **88**.
+
 ### S8 — Country-less: tools
 `tools/`, `tools/{solar-calculator,emi-calculator,subsidy-checker}` → `routes/(layout-1)/`.
 Queries hit **legacy `locations`** (not `geo_locations`) plus `in_business_profiles`,
@@ -719,8 +749,8 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | `solar-panels/` + `[slug]` + `[model_slug]` | A | 7b | ✅ | ✅ | ✅ |
 | `solar-inverters/` + `[slug]` + `[model_slug]` | A | 7b | ✅ | ✅ | ✅ |
 | `solar-pumps/` + `[slug]` + `[model_slug]` | A | 7b | ✅ | ✅ | ✅ |
-| `solar-financing/` + `[slug]` | A | 7c | ☐ | ☐ | ☐ |
-| `solar-subsidy/` + `[slug]` | A | 7c | ☐ | ☐ | ☐ |
+| `solar-financing/` + `[slug]` | A | 7c | ✅ | ✅ | ✅ |
+| `solar-subsidy/` + `[slug]` | A | 7c | ✅ | ✅ | ✅ |
 | `tools/` + 3 calculators | A | 8 | ☐ | ☐ | ☐ |
 | `authors/[author_slug]` | A | 9 | ☐ | ☐ | ☐ |
 | `seo-index/` | A | **4** | ✅ | ✅ | ✅ | ← moved early with S4; its ~150 hardcoded `/in/` hrefs still await S9
@@ -771,6 +801,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | 7a.2 — rooftop-solar + solar-installation | 2026-07-31 | `2e8b08b` |
 | 7a.3 — aboutStats on country-less root | 2026-07-31 | `b7b98bc` |
 | 7b — the 3 product pillars | 2026-07-31 | `b222d3d` |
+| 7c — financing + subsidy | 2026-07-31 | _pending_ |
 
 ## 9. Hazards
 

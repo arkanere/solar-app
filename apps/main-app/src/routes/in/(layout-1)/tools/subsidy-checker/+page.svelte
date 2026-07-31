@@ -381,7 +381,7 @@
 
 	<!-- Authority links -->
 	<div class="flex flex-wrap gap-3 text-sm mb-8">
-		<a href="/in/solar-subsidy/how-to-apply/" class="text-primary hover:underline">
+		<a href={contentUrl("/solar-subsidy/how-to-apply/")} class="text-primary hover:underline">
 			How to Apply for Solar Subsidy
 		</a>
 		<span class="text-muted-foreground">|</span>

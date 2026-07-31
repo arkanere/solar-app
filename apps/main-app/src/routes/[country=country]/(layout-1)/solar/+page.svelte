@@ -85,10 +85,10 @@
 				<a href={contentUrl("/rooftop-solar/")} class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
 					Rooftop Solar Guide
 				</a>
-				<a href="/{cc}/solar-subsidy/" class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
+				<a href={contentUrl("/solar-subsidy/")} class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
 					Solar Subsidy Guide
 				</a>
-				<a href="/{cc}/solar-financing/" class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
+				<a href={contentUrl("/solar-financing/")} class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
 					Solar Financing
 				</a>
 				<a href={contentUrl("/solar-panels/")} class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">

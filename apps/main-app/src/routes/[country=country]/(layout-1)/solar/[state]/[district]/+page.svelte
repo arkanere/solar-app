@@ -168,7 +168,7 @@
 					Solar System Cost Guide
 				</a>
 				<a
-					href="/{cc}/solar-subsidy/pm-surya-ghar/"
+					href={contentUrl("/solar-subsidy/pm-surya-ghar/")}
 					class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors"
 				>
 					PM Surya Ghar Subsidy
