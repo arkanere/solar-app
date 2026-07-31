@@ -5,11 +5,12 @@
   import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
   import { page } from "$app/stores";
   import StoriesModal from "$lib/in/components/StoriesModal.svelte";
+  import AboutSolarVipani from "$lib/in/components/AboutSolarVipani.svelte";
   import SiteHeader from "$lib/components/chrome/SiteHeader.svelte";
   import SiteFooter from "$lib/components/chrome/SiteFooter.svelte";
 
   // Accept children snippet from SvelteKit
-  let { children } = $props();
+  let { children, data } = $props();
 
 
   // Create a shared store for chat messages
@@ -205,6 +206,14 @@
 <SiteHeader />
 
 {@render children?.()}
+
+<!-- About Solar Vipani (shown on every page in this layout) -->
+<div class="mx-auto max-w-[1140px] px-[theme(--container-padding)]">
+  <AboutSolarVipani
+    installerCount={data.aboutStats.installerCount}
+    leadsGenerated={data.aboutStats.leadsGenerated}
+  />
+</div>
 
 <SiteFooter />
 

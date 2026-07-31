@@ -4,9 +4,6 @@
 > (country-less: `solar-panels`, `solar-inverters`, `solar-pumps`). S6 no longer
 > exists as a separate stage — see its note.
 >
-> ⚠️ **One open decision is waiting — the `AboutSolarVipani`/social-links gap on
-> country-less pages. See the end of the S7 note; decide before S8.**
->
 > ⚠️ **S6 has been restructured — read the S4 and S6 notes before continuing.**
 > Redirects are no longer one late stage; each move stage lands its own.
 >
@@ -543,18 +540,29 @@ contain zero `/in/` hrefs and no dead content links; href diff of `/in/rooftop-s
 deliberately-hidden per-country CTAs. `npm run check` 17/14, build passes, 3 prerendered
 US pages. `/in/` grep 240 -> **187**.
 
-> ⚠️ **OPEN DECISION, surfaced by this stage — affects S8/S9 and the already-shipped S4.**
-> Country-less pages do not render `AboutSolarVipani`, so they lose that whole section
-> **including the five social links** (WhatsApp, Facebook, Instagram, LinkedIn, X). Cause is
-> the S1 note: the component needs `data.aboutStats` and `routes/(layout-1)/` has no layout
-> loader. S4 already shipped this for the legal pages, where it is minor; `/rooftop-solar`
-> and `/solar-installation` are high-traffic SEO pages, where it is not, and S8/S9 will
-> extend it to tools and authors.
->
-> Fix is a `routes/(layout-1)/+layout.server.ts` running the same `aboutStats` query the IN
-> layout uses, plus rendering the component. Nothing country-less is prerendered, so the S3
-> warning about coupling a prerendered page to the DB does not apply; the ISR configs on the
-> legal pages cache the result. **Decide before S8.**
+**`AboutSolarVipani` gap — found here, fixed here (7a.3).** Country-less pages rendered
+neither that section nor its five social links (WhatsApp, Facebook, Instagram, LinkedIn, X),
+because the component needs `data.aboutStats` and `routes/(layout-1)/` had no layout loader
+— the consequence the S1 note recorded but did not resolve. S4 had already shipped the loss
+on the legal pages; S7a extended it to high-traffic pillars and S8/S9 would have extended it
+to tools and authors.
+
+Fixed by adding `routes/(layout-1)/+layout.server.ts` and rendering the component in
+`routes/(layout-1)/+layout.svelte`. Notes for later stages:
+- **The SQL is a byte-identical copy of `routes/in/(layout-1)/+layout.server.ts`** — legacy
+  `in_business_profiles` + `LeadData`, `+ 2000` on the lead count, per §3.5. That is what
+  makes a moved page show the same numbers it showed before it moved: verified `634+` and
+  `3199` on `/rooftop-solar`, matching `/in` and the §8 baseline. When the write cutover
+  switches the `/in` layout to unified tables, **switch this one in the same commit** or the
+  two trees will disagree.
+- Every country-less page now runs two COUNT queries per render. Nothing there is
+  prerendered so no build is coupled to the DB (§S3), and the legal pages' `isr.expiration`
+  caches the result — but S13 should not add a third consumer casually.
+- **`/` gained the About section**, which it never had. Consistent with the direction S1
+  set when `/` gained the footer; called out because it is a visible change to the
+  country-less home, not just to moved pages.
+- S15b's requirement stands and is now load-bearing: `AboutSolarVipani` must move to
+  `$lib/components/` in the **same commit** as this layout, which imports it.
 
 ### S8 — Country-less: tools
 `tools/`, `tools/{solar-calculator,emi-calculator,subsidy-checker}` → `routes/(layout-1)/`.
@@ -743,6 +751,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | 5 — delete /us legal dupes | 2026-07-31 | `4f446fe` |
 | 7a.1 — moved-content wiring (no-op) | 2026-07-31 | `23ffdb9` |
 | 7a.2 — rooftop-solar + solar-installation | 2026-07-31 | `2e8b08b` |
+| 7a.3 — aboutStats on country-less root | 2026-07-31 | _pending_ |
 
 ## 9. Hazards
 
