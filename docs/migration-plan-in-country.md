@@ -1,9 +1,9 @@
 # Migration plan: dissolve `routes/in/`
 
-> **STATUS: in progress. Stages 1–5 and 7–11 done (2026-07-31).** Destinations A and B are
-> both complete — every page route has left `routes/in/`. Next: **S12** (the 3 API routes).
-> Only `in/api/*`, `in/sitemap.xml` and the two now-childless `in/(layout-1)/+layout.*`
-> files remain under `routes/in/`.
+> **STATUS: in progress. Stages 1–5, 7–11 and 12 done (2026-07-31).** Destinations A and B
+> are complete — every page route **and** every API route has left `routes/in/`. Next:
+> **S13** (sitemap restructure). Only `in/sitemap.xml` and the two now-childless
+> `in/(layout-1)/+layout.*` files remain under `routes/in/`.
 > S6 no longer exists as a separate stage — see its note.
 >
 > ⚠️ **A user decision changed S11's US fallback from 404 to 301** — read the S11 note.
@@ -918,6 +918,43 @@ Leave every DB write exactly as-is (`businesses_1` + `in_business_profiles` +
 Also fix `src/lib/constants/india.ts:45-47` and
 `src/lib/components/chat/widgets/LeadFormCard.svelte:51`, which call `/in/api/*`.
 
+**Done 2026-07-31.** All three moved; URLs unchanged (`/in/api/*` still resolves because
+`[country=country]` matches `in`), so **business-app's calls keep working** — that is §7.8's
+cross-app check, satisfied by construction rather than by luck.
+
+**Deviation from the stage text, deliberate:** `postRecentProject` (POST) and
+`updateRecentProject` (PUT **and** DELETE) are gated on `isCountry` **and**
+`features.projects`, not `isCountry` alone. The `projects` table is IN-only with no
+`country_code` column — exactly why S10 gated the project *pages* on `features.projects`.
+`isCountry` alone would let a US caller write Indian rows. `submitBusiness` keeps the
+plain `isCountry` guard; `/us` has its own literal route that wins.
+
+⚠️ **`syncBusinessToUnified`/`syncAccountToUnified` keep their hardcoded `'in'` and must
+NOT become `params.country`.** Every INSERT in that handler targets the IN-only legacy
+tables (`businesses_1`, `in_business_profiles`, `in_business_accounts`), so the synced row
+is an IN row whatever prefix the request arrived on. Passing `params.country` would label
+an Indian business as American. Commented at the call site.
+
+Both stage-text follow-ups done:
+- `LOCATION_ENDPOINTS` → **`locationEndpoints(country)`**, a function, since all three
+  targets are now under `[country]/api`. Its only consumer is `BusinessForm.svelte`, which
+  S11c had already given a `country` prop — the two stages composed cleanly.
+- `LeadFormCard.svelte` → `/{cc}/api/submitLead`, read off `page.data.country`. It reads
+  the page rather than taking a prop because the chatbot is mounted **only** by the
+  `[country]` layout, three components up, so the data is always there.
+
+**Still hardcoded, deferred to S15 with the rest of `$lib/in`:**
+`LeadFormModal.svelte` also posts to `/in/api/submitLead`. It resolves correctly today.
+Note its sibling line pointing at `https://user.solarvipani.com/in/thank-you` is a
+**different app** and must never be rewritten (§4).
+
+Verified: all 3 endpoints answer on `/in` (400 on an empty body = handler reached);
+`/us/api/postRecentProject` and `/us/api/updateRecentProject` 404 through the
+`features.projects` gate; an unknown country 404s; `/us/api/submitBusiness` is still
+served by its own literal route. `npm run check` 17/14, build passes, 3 prerendered US
+pages. **Route dirs 95 → 94** — the `in/api` parent directory is gone, no route lost.
+`/in/` grep 31 → **26**.
+
 ### S13 — Sitemap restructure
 Per §5b. Delete `routes/in/sitemap.xml/+server.ts` (has an inline `createPool`);
 `[country=country]/sitemap.xml` — currently dead code — takes over `/in/sitemap.xml`.
@@ -1012,9 +1049,9 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | `thank-you-business/` | B | 11c | ✅ | n/a (`/us` literal wins) | ✅ |
 | `unsubscribe/` (`+page.svelte` + `+server.js`) | B | 11c | ✅ | n/a (`/us` literal wins) | ✅ |
 | `district/[district_slug]` | B | 11c | ✅ | n/a (gated 404 for `/us`) | ✅ |
-| `api/postRecentProject` | B | 12 | ☐ | n/a | ☐ |
-| `api/submitBusiness` | B | 12 | ☐ | n/a | ☐ |
-| `api/updateRecentProject` | B | 12 | ☐ | n/a | ☐ |
+| `api/postRecentProject` | B | 12 | ✅ | n/a | ✅ |
+| `api/submitBusiness` | B | 12 | ✅ | n/a | ✅ |
+| `api/updateRecentProject` | B | 12 | ✅ | n/a | ✅ |
 | `sitemap.xml/` | C | 13 | ☐ | n/a | ☐ |
 
 **Baselines captured 2026-07-31, before S1** (dev server runs on port **7123**, not 5173):
@@ -1051,6 +1088,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | 11b — listing/form/get-quotes | 2026-07-31 | `039ae86` |
 | 11c — funnels + district shim | 2026-07-31 | `ec8de21` |
 | 11d — the IN home (S11 complete) | 2026-07-31 | `45ed22e` |
+| 12 — the 3 API routes | 2026-07-31 | `6562d77` |
 
 ## 9. Hazards
 
@@ -1074,7 +1112,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 
 ## 10. Resume here (cold start)
 
-**Done: stages 1–5 and 7–11.** Every stage is one commit plus a SHA-recording commit,
+**Done: stages 1–5, 7–11 and 12.** Every stage is one commit plus a SHA-recording commit,
 listed in the §8 stage log. Destination A is complete — all 7 content pillars, tools,
 authors, seo-index and the legal pages answer country-less, each with a one-hop 301 from
 `/in/**` and `/us/**`. **Destination B is also complete**: projects (S10), partners (S11a),
@@ -1100,15 +1138,18 @@ routing, the moved loaders need no feature gate — but that also means **hazard
 net is now one file, not one check per loader**; see the note before adding a third country
 to `COUNTRIES`.
 
-**Next: S12** (the 3 API routes), then S13 (sitemaps), S14 (delete `routes/in/`), S15
-(component merge — including **15c, which is where the shared IN/US pages you asked for
-actually get built**), S16 (doc).
+**Next: S13** (sitemaps), then S14 (delete `routes/in/`), S15 (component merge —
+including **15c, which is where the shared IN/US pages you asked for actually get built**),
+S16 (doc).
 
-Two S12 items are already staged by S11: `$lib/constants/india.ts:45-47`
-(`LOCATION_ENDPOINTS`, still `/in/api/*`) is read by `BusinessForm.svelte`, which S11c
-already gave a `country: CountryCode` prop — so the endpoint fix has a country to use.
-And `submitBusiness`'s fetch of `/in/api/sendBusinessSubmissionConfirmation` still
-resolves only by `[country]` fallthrough.
+**What is left under `routes/in/`:** `sitemap.xml/+server.ts` (S13 deletes it) and
+`(layout-1)/+layout.server.ts` + `+layout.svelte`, which have had no child routes since
+S11d. That is already the exact precondition §S14 states, so S14 is a formality once S13
+lands.
+
+**S13 needs a fresh `/in/sitemap.xml` baseline.** The §8 figure of **1346** `<loc>`s was
+captured before S1. Every destination-A URL in it has since moved and now 301s, so diff
+against a freshly captured pre-S13 snapshot, not against 1346.
 
 ### How to work a move stage (learned across 7a–10, follow this)
 
