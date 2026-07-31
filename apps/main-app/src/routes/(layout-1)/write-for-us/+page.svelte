@@ -113,12 +113,12 @@
     name="keywords"
     content="solar guest post, write for solar energy, solar expert contributor, renewable energy writing, solar industry articles, guest blogging solar"
   />
-  <link rel="canonical" href="https://solarvipani.com/in/write-for-us" />
+  <link rel="canonical" href="https://solarvipani.com/write-for-us" />
 
   <!-- Open Graph -->
   <meta property="og:title" content="Contribute as a Solar Expert | Write for Solar Vipani" />
   <meta property="og:description" content="Share your solar expertise with thousands of Indian homeowners and businesses researching solar solutions." />
-  <meta property="og:url" content="https://solarvipani.com/in/write-for-us" />
+  <meta property="og:url" content="https://solarvipani.com/write-for-us" />
   <meta property="og:type" content="website" />
 </svelte:head>
 

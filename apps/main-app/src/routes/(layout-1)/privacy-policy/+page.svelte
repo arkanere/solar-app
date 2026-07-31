@@ -56,7 +56,7 @@
 				and tick the consent checkbox, in accordance with Section 6 of the DPDP Act. Your consent is
 				free, specific, informed, and unambiguous. You may withdraw your consent at any time by
 				contacting our Grievance Officer (Section 9) or by using our
-				<a href="/in/data-deletion" class="text-primary underline hover:no-underline">Data Deletion Request</a>
+				<a href="/data-deletion" class="text-primary underline hover:no-underline">Data Deletion Request</a>
 				page; withdrawal does not affect processing carried out before withdrawal.
 			</p>
 		</section>
@@ -149,7 +149,7 @@
 				<li>
 					<strong class="text-foreground">Right to access:</strong> obtain a summary of the personal data
 					we hold about you and who it has been shared with, via our
-					<a href="/in/data-access" class="text-primary underline hover:no-underline">Request My Data</a>
+					<a href="/data-access" class="text-primary underline hover:no-underline">Request My Data</a>
 					page. We will respond within 30 days.
 				</li>
 				<li>
@@ -159,7 +159,7 @@
 				<li>
 					<strong class="text-foreground">Right to erasure:</strong> request deletion of your personal
 					data via our
-					<a href="/in/data-deletion" class="text-primary underline hover:no-underline">Data Deletion Request</a>
+					<a href="/data-deletion" class="text-primary underline hover:no-underline">Data Deletion Request</a>
 					page. We will process your request within 30 days.
 				</li>
 				<li>

@@ -34,7 +34,7 @@
     <p class="cookie-consent__text">
       We use cookies and analytics to understand how visitors use Solar Vipani and
       to improve the site. You can accept or decline analytics cookies. See our
-      <a href="/in/privacy-policy">Privacy Policy</a> for details.
+      <a href="/privacy-policy">Privacy Policy</a> for details.
     </p>
     <div class="cookie-consent__actions">
       <button type="button" class="cookie-consent__btn cookie-consent__btn--ghost" onclick={decline}>

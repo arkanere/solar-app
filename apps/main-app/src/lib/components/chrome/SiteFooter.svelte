@@ -56,7 +56,7 @@
       <div>
         <h4 class="text-sm font-semibold text-primary mb-3">Company</h4>
         <ul class="space-y-2 list-none p-0 m-0">
-          <li><a href="{contentPrefix}/about-us" class="text-sm text-foreground no-underline hover:text-primary transition-colors">About Us</a></li>
+          <li><a href="/about-us" class="text-sm text-foreground no-underline hover:text-primary transition-colors">About Us</a></li>
           {#if cc === 'in'}
             <li><a href="/{cc}/partners" class="text-sm text-foreground no-underline hover:text-primary transition-colors">Partner with Us</a></li>
           {/if}

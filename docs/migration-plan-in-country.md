@@ -1,7 +1,10 @@
 # Migration plan: dissolve `routes/in/`
 
-> **STATUS: in progress. Stages 1–3 of 16 done (2026-07-31).** Next: **S4**
-> (country-less: legal & static). S4 is the first stage that actually moves a route.
+> **STATUS: in progress. Stages 1–4 of 16 done (2026-07-31).** Next: **S5**
+> (delete the `/us` duplicate legal pages).
+>
+> ⚠️ **S6 has been restructured — read the S4 and S6 notes before continuing.**
+> Redirects are no longer one late stage; each move stage lands its own.
 >
 > This document is written to be executed across many cold-start sessions. The
 > per-route checklist in §8 and the stage log beneath it are the **only** memory
@@ -284,13 +287,58 @@ and reconcile.) Most `+page.server.ts` are ISR-only shells returning `{}`.
 **Copy `export const config` verbatim.** Losing an `isr.expiration` silently turns a cached
 page into an on-demand function — invisible in dev, visible on the Vercel bill.
 
+**Done 2026-07-31.** All seven moved via `git mv`, so every `export const config`
+(`isr.expiration: 1296000` on privacy-policy, terms-of-use, about-us, data-deletion) came
+across byte-identical. `data-access`, `write-for-us` and `seo-index` have no
+`+page.server.ts` at all.
+
+- **`data-deletion` reconciliation:** the two copies had diverged a long way. The `/in`
+  copy is the newer one — it uses the shadcn `Card`/`Input`/`Alert` components; the root
+  copy was older raw-Tailwind markup and its loader returned an unused `{ user: null }`.
+  **The `/in` copy won** and replaced the root copy wholesale. Same rule as S15c: start
+  from the IN version.
+- **Redirects landed here, not in S6** — see the S6 note above.
+- Internal links between these seven are now written as literal country-less paths
+  (`/privacy-policy`), **not** `contentUrl()`. `contentUrl`/`contentPrefix` mean "still
+  under `/in`, moves at S7"; these have already moved. Same for `SiteFooter`'s About Us,
+  which came off `contentPrefix`, and `/us/(layout-1)/+layout.svelte`'s About us link.
+- `CookieConsent.svelte` and `routes/(layout-1)/+page.svelte` also pointed at
+  `/in/privacy-policy`; both retargeted.
+
+Verified: all seven country-less URLs 200. All seven `/in/*` originals redirect in
+**exactly one hop** with the query string preserved. The four `/us` twins still 200 with
+zero hops — S5 owns those. `npm run check` 17/14, build passes.
+
+**Known gap, closed by S13:** `/in/sitemap.xml` still advertises `/in/privacy-policy`,
+`/in/terms-of-use` and `/in/data-deletion`, which now 301. Three URLs, correctly
+redirected, so it is cosmetic until the sitemap restructure.
+
 ### S5 — Delete `/us` duplicate legal pages
 Now redundant: `us/(layout-1)/{privacy-policy,terms-of-use,about-us,write-for-us}`.
-`/us/privacy-policy` 301s to `/privacy-policy` via S6. Note `us/about-us/+page.js` carries
+`/us/privacy-policy` 301s to `/privacy-policy` by adding `'us'` to `MOVED_TO_ROOT_FROM`
+in `src/hooks.server.ts` — **in this same commit**, since that is what vacates them. Note `us/about-us/+page.js` carries
 `prerender = true` — removing it changes the prerender set; confirm the build still passes.
 
 ### S6 — Redirect layer
 *Why before the big moves: the redirects must be live the moment a URL vacates.*
+
+> **RESTRUCTURED IN S4 — this stage no longer exists as a standalone step.**
+> The ordering in §6's table was self-contradictory: S4 vacates `/in/privacy-policy`
+> and friends, but S6 (which adds the 301s) was scheduled *after* it, so those URLs
+> would 404 for a whole deploy. And S6's single combined rule could not simply be
+> moved earlier either — it lists `rooftop-solar`, `tools`, `authors` etc., which are
+> still **live** until S7–S9, so landing it first would 301 working pages.
+>
+> Both failure modes come from the same mistake: treating the redirect list as one
+> atomic thing. It is now incremental. `src/hooks.server.ts` holds
+> `MOVED_TO_ROOT` (families) and `MOVED_TO_ROOT_FROM` (country prefixes the rule
+> applies to). **Each move stage appends its own families in the same commit that
+> moves them.** The invariant is written at the call site.
+>
+> What is left of S6 is the pieces that are not per-family, to be done during S7a:
+> retarget `rooftop-solar/roi/+server.ts` at the country-less `/solar-financing/roi/`
+> so it does not become a two-hop chain, and re-run the §7.4 hop check across the
+> whole moved surface.
 
 Extend `legacyRedirect()` in `src/hooks.server.ts` (pure string rewrites, no DB, already has
 the `building` guard). One rule covers the lot:
@@ -452,13 +500,13 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | `solar-subsidy/` + `[slug]` | A | 7c | ☐ | ☐ | ☐ |
 | `tools/` + 3 calculators | A | 8 | ☐ | ☐ | ☐ |
 | `authors/[author_slug]` | A | 9 | ☐ | ☐ | ☐ |
-| `seo-index/` | A | 9 | ☐ | ☐ | ☐ |
-| `privacy-policy/` | A | 4 | ☐ | ☐ | ☐ |
-| `terms-of-use/` | A | 4 | ☐ | ☐ | ☐ |
-| `about-us/` | A | 4 | ☐ | ☐ | ☐ |
-| `write-for-us/` | A | 4 | ☐ | ☐ | ☐ |
-| `data-access/` | A | 4 | ☐ | ☐ | ☐ |
-| `data-deletion/` (root copy exists) | A | 4 | ☐ | ☐ | ☐ |
+| `seo-index/` | A | **4** | ✅ | ✅ | ✅ | ← moved early with S4; its ~150 hardcoded `/in/` hrefs still await S9
+| `privacy-policy/` | A | 4 | ✅ | ✅ | ✅ |
+| `terms-of-use/` | A | 4 | ✅ | ✅ | ✅ |
+| `about-us/` | A | 4 | ✅ | ✅ | ✅ |
+| `write-for-us/` | A | 4 | ✅ | ✅ | ✅ |
+| `data-access/` | A | 4 | ✅ | ✅ | ✅ |
+| `data-deletion/` (root copy exists) | A | 4 | ✅ | ✅ | ✅ |
 | `project/[project_id]` | B | 10 | ☐ | n/a | ☐ |
 | `recent-solar-installation-projects/` + `[page_slug]` | B | 10 | ☐ | n/a | ☐ |
 | `partners/` + `join/` + `join/[district_slug]` + `join/thank-you` | B | 11 | ☐ | n/a | ☐ |
@@ -494,6 +542,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | 1 — shared chrome | 2026-07-31 | `af5fa11` |
 | 2 — de-hardcode seo/* | 2026-07-31 | `1b80cb0` |
 | 3 — /us layout country | 2026-07-31 | `6d6e7df` |
+| 4 — legal & static -> root | 2026-07-31 | `S4_SHA` |
 
 ## 9. Hazards
 

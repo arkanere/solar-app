@@ -179,7 +179,7 @@
           </li>
           <li class="leading-relaxed">
             If you instead want your data deleted, use our
-            <a href="/in/data-deletion" class="text-[hsl(var(--accent))] hover:underline">Data Deletion</a> page
+            <a href="/data-deletion" class="text-[hsl(var(--accent))] hover:underline">Data Deletion</a> page
           </li>
         </ul>
 

@@ -190,7 +190,7 @@
 	<a href="/us/">Solar Vipani</a>
 	<a href="/us/business-listing">List Business</a>
 	<a href="/us/solar">Directory</a>
-	<a href="/us/about-us">About us</a>
+	<a href="/about-us">About us</a>
 	<button onclick={toggleTheme}>
 		{$isDarkMode ? 'Light mode' : 'Dark mode'}
 	</button>

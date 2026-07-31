@@ -113,7 +113,7 @@
 				<h2 class="text-2xl font-semibold mb-3">10. Privacy Policy</h2>
 				<p class="text-base md:text-lg leading-relaxed text-foreground-secondary">
 					Your use of the Website is governed by our <a
-						href="/in/privacy-policy"
+						href="/privacy-policy"
 						aria-label="Privacy Policy"
 						class="text-primary underline hover:no-underline">Privacy Policy</a
 					>.

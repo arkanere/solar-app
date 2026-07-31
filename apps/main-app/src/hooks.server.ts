@@ -1,6 +1,26 @@
 import type { Handle } from '@sveltejs/kit';
 import { building } from '$app/environment';
 
+// Route families that used to live under /in (and sometimes /us) and now answer
+// at the country-less root. Grows one migration stage at a time; see
+// legacyRedirect() below for why the timing matters.
+const MOVED_TO_ROOT = [
+	// stage 4 — legal & static
+	'privacy-policy',
+	'terms-of-use',
+	'about-us',
+	'data-access',
+	'write-for-us',
+	'seo-index',
+	'data-deletion'
+];
+
+// Which country prefixes the rule above applies to. /us still serves its own
+// literal privacy-policy, terms-of-use, about-us and write-for-us — and
+// /us/about-us is prerendered, so redirecting it here would 301 the crawler.
+// Stage 5 deletes those four pages and adds 'us'.
+const MOVED_TO_ROOT_FROM = ['in'];
+
 // Legacy URL rewrites that need no DB lookup. Suffix-parsing redirects
 // that DO need geo data live as +server.ts shims under routes/us/ (county,
 // solar-panel-installer-directory/[city]).
@@ -20,6 +40,15 @@ function legacyRedirect(pathname: string): string | null {
 	// Blogs feature removed 2026-07: send indexed blog URLs to the country home.
 	const blogsMatch = clean.match(/^\/(in|us)\/blogs(\/.*)?$/);
 	if (blogsMatch) return `/${blogsMatch[1]}`;
+
+	// Content that has moved out from under the country prefix — see
+	// docs/migration-plan-in-country.md. **Append a family here in the same commit
+	// that moves it, never before**: a rule added early 301s a page that is still
+	// live, and a rule added late leaves an indexed URL 404ing.
+	const rootMatch = clean.match(
+		new RegExp(`^/(?:${MOVED_TO_ROOT_FROM.join('|')})/(${MOVED_TO_ROOT.join('|')})(/.*)?$`)
+	);
+	if (rootMatch) return `/${rootMatch[1]}${rootMatch[2] ?? ''}`;
 
 	return null;
 }
