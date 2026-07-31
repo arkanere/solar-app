@@ -2,9 +2,9 @@
 // an entry simply render no FAQ section (and no FAQ JSON-LD).
 
 import type { CountryCode } from './types';
-import type { FAQItem } from '$lib/in/faqData';
-import * as inFaq from '$lib/in/faqData';
-import * as usFaq from '$lib/us/faqData';
+import type { FAQItem } from './faq-in';
+import * as inFaq from './faq-in';
+import * as usFaq from './faq-us';
 
 export interface FaqGenerators {
 	generateFAQ(city: string): FAQItem[];

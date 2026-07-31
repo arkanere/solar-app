@@ -1,9 +1,9 @@
 // US-localized FAQ copy for the /us geo pages. Mirrors the generator
-// interface of $lib/in/faqData so pages can dispatch per country via
-// $lib/countries/faq. Incentive wording is deliberately non-specific:
+// interface of ./faq-in so pages can dispatch per country via
+// ./faq. Incentive wording is deliberately non-specific:
 // federal/state/utility programs change frequently and vary by state.
 
-import type { FAQItem } from '$lib/in/faqData';
+import type { FAQItem } from './faq-in';
 
 export function generateFAQ(city: string): FAQItem[] {
 	const cityName = city.replace('-', ' ');
