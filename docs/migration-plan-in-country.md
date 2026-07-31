@@ -542,7 +542,7 @@ Legend: dest **A** = country-less root, **B** = `[country=country]`, **C** = del
 | 1 — shared chrome | 2026-07-31 | `af5fa11` |
 | 2 — de-hardcode seo/* | 2026-07-31 | `1b80cb0` |
 | 3 — /us layout country | 2026-07-31 | `6d6e7df` |
-| 4 — legal & static -> root | 2026-07-31 | `S4_SHA` |
+| 4 — legal & static -> root | 2026-07-31 | `2f9ff0d` |
 
 ## 9. Hazards
 
