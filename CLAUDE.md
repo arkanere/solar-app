@@ -19,9 +19,21 @@ unless I ask for one — solo maintainer, no review step to wait on.
 
 ## Database queries
 
-New or modified queries always use Drizzle (`db` from `$lib/server/db`), even in files that still
-contain raw `pool.query` SQL — the migration is in progress (see next-steps.md). The `sql` template
-escape hatch is allowed for genuinely awkward queries; note each use in the commit message.
+All queries use Drizzle (`db` from `$lib/server/db`). `main-app` and `business-app` are fully
+migrated — neither exports a raw `pool` any more, so there is no way to write `pool.query` in them.
+The `sql` template escape hatch is allowed for genuinely awkward queries (`LOWER(a) = LOWER(b)`,
+window functions, `NOW() - INTERVAL`, the `sv_sync_*` functions); note each use in the commit
+message. It still parameterises — never interpolate a value into a query string.
+
+`user-app` is the exception: it is plain JavaScript and still on raw `pool.query` throughout. It was
+outside the migration's scope; see next-steps.md before touching it.
+
+Two things `drizzle-kit pull` does that regularly bite:
+- `jsonb` columns are typed `unknown` and timestamps `mode: 'string'`. Restate a shape with
+  ``sql<T>`${table.col}` `` (renders as the bare column, so the SQL is unchanged); don't annotate
+  `schema.ts`, which is generated and will be overwritten.
+- Nullability is real. Many components declare columns non-null that the schema allows to be NULL —
+  the old driver's `any` hid it. Prefer restating the existing contract over widening components.
 
 ## Tests
 

@@ -3,11 +3,12 @@ import { POSTGRES_URL } from '$env/static/private';
 import { createDb } from '@solar/db';
 
 // Single module-scoped pool, reused across warm invocations. Mirrors
-// apps/main-app/src/lib/server/db.ts. Import this instead of calling
-// createPool() in handlers.
-export const pool = createPool({ connectionString: POSTGRES_URL });
+// apps/main-app/src/lib/server/db.ts.
+//
+// Deliberately NOT exported (Drizzle migration, Phase 10): every query in this
+// app goes through `db`, and nothing outside this file needs the raw pool. If
+// you find yourself wanting it, you are probably about to write raw SQL — use
+// the `sql` template escape hatch on `db` instead, which still parameterises.
+const pool = createPool({ connectionString: POSTGRES_URL });
 
-// Drizzle wraps the same pool, so converted and not-yet-converted queries share
-// one connection pool (and can share a transaction). `pool` stays exported for
-// the raw SQL that hasn't been migrated.
 export const db = createDb(pool);

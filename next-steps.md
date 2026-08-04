@@ -224,13 +224,21 @@ There is **no test coverage for main-app**. The Phase 5.5 suite is business-app 
 have no safety net; the `npm run check` baseline is the only automated signal. Consider whether the
 main-app lead pipeline deserves its own characterization tests before Phase 9, the way 5.5 preceded 6.
 
-### Phase 10 — closeout
-Grep-verify no `pool.query`/`client.query` remain outside `db.ts`; consider un-exporting the raw `pool`
-from both apps' `db.ts` (or leaving it export-only-for-Drizzle); update this doc and CLAUDE.md.
+### ✅ Phase 10 — closeout — DONE 2026-08-05
+Grep verified: `grep -rn "pool\.query\|client\.query" apps/main-app/src apps/business-app/src`
+returns nothing, and `createPool` appears in neither app outside `lib/server/db.ts`.
 
-Business-app already passes the grep as of Phase 6, and nothing outside its `db.ts` imports `pool`
-any more — so un-exporting it there is possible today, independently of main-app. Left alone for now
-because `db.ts` is shared shape with main-app and the symmetry is worth more than the early cleanup.
+**The raw `pool` export is gone from both apps' `db.ts`.** It is now a module-private const feeding
+`createDb`. Nothing outside `db.ts` needed it, and removing the export is what makes the
+Drizzle-only convention self-enforcing rather than a rule to remember. `business-app/tests` are
+unaffected — they alias `$lib/server/db` to `tests/setup/testDb.ts`, which exports its own
+node-postgres pool for assertions.
+
+CLAUDE.md updated: the "migration in progress" wording is replaced with the finished state, the
+`user-app` exception below, and the two `drizzle-kit pull` gotchas (jsonb → `unknown`, timestamps →
+`mode: 'string'`, and real nullability) that caused most of the Phase 7 churn.
+
+Baselines held throughout: main-app `npm run check` 13 errors, business-app 84 errors + 92 tests.
 
 ### Progress
 - [x] Phase 0 (2026-08-04)
@@ -362,9 +370,17 @@ with NOTE comments at each site, pending a decision. `/us/api/claimLead` has no 
   appearing. Unlike the `/us/claimLead` mail bug below, this sends nothing to anyone, so it was
   fixed rather than left pending a decision.
 
-- [ ] Phase 8
-- [ ] Phase 9
-- [ ] Phase 10
+- [x] Phase 8 (2026-08-05) — 9 files in 2 commits (8a, 8b). Three endpoints were still calling
+      createPool per request or per module. api/stories, submitBusiness, postRecentProject and
+      updateRecentProject all moved to the shared db. **Security fix in updateRecentProject:** the
+      UPDATE interpolated the caller-supplied business_slug into the SQL string while every other
+      value was parameterised; the query builder parameterises it.
+- [x] Phase 9 (2026-08-05) — 1 file, folded into the 8b commit. unifiedSync converting to
+      Pick<Database, 'execute'> forced leads.ts at the same time (exactly as business-app 6a
+      forced claimLead): its pool.connect() + BEGIN/COMMIT/ROLLBACK around createDb(client) is now a
+      plain db.transaction(), with syncLeadToUnified taking the tx handle.
+- [x] Phase 10 (2026-08-05) — grep clean, raw pool un-exported from both apps, CLAUDE.md updated.
+      Surfaced that user-app was never in scope — see the new section at the end of this file.
 
 ---
 
@@ -387,3 +403,45 @@ progress" — it's effectively two permanently coexisting query styles, which is
 and sticking with it (new contributors have no clear convention to follow, and Drizzle's schema/types drift in
 relevance if most queries never go through it). Worth explicitly deciding: keep pushing the migration forward,
 or accept raw SQL as the standard and demote `@solar/db` to schema/type-reference only.
+
+---
+
+## Found 2026-08-05 during Phase 10: `user-app` was never in the migration's scope
+
+The Phase 10 grep across the whole monorepo turned up a **third app the Drizzle plan never counted**.
+The plan's inventory was "59 business-app files, 53 main-app files, 1 file in packages" — `apps/user-app`
+is absent from it, and the "1 file in packages" turned out to be a false positive (the phrase
+`pool.query()` in `packages/db/src/client.ts`'s doc comment).
+
+**Still on raw SQL — 12 files, 31 call sites:**
+
+| Count | File |
+| --- | --- |
+| 3 | `user-app/src/routes/in/thank-you/+page.server.js`, `user-app/src/routes/in/api/uploadBill/+server.js`, `user-app/src/routes/in/api/generateUserMagicLink/+server.js`, `user-app/src/lib/auth/user/TokenManager.js`, `user-app/src/lib/auth/user/LoginTracker.js` |
+| 2 | `user-app/src/routes/in/+page.server.js`, `user-app/src/routes/in/feedback/+page.server.js`, `user-app/src/routes/in/api/submitLead/+server.js`, `user-app/src/routes/in/api/sendLeadSubmissionConfirmation/+server.js` |
+| 3 | `main-app/scripts/chatbot-related/sync-embedding-index.js` |
+| 2 | `main-app/scripts/chatbot-related/embed-city-pages.js` |
+
+**This is a decision, not a leftover batch.** The whole rationale in the plan's header is "solo
+maintainer — the type-checker is the reviewer." `user-app` is **plain JavaScript**, not TypeScript:
+there is no `npm run check` type-checking to catch a schema change, so converting it buys the
+convention and the parameterised `sql` helper, but not the compile-time safety that justified the
+work everywhere else. It also has no `@solar/db` dependency and no `lib/server/db.js`, so it needs a
+Phase 0-style plumbing step first — and it still creates pools per handler, the problem the
+2026-08-04 pooling fix removed from business-app.
+
+Three options, roughly in order of cost:
+1. **Convert `user-app` to TypeScript first, then migrate it.** Highest cost, but the only one that
+   delivers the reason the migration was worth doing. The app is small (12 files touch the DB).
+2. **Migrate it as JavaScript.** Cheap, gets one query style across the monorepo and fixes the
+   per-handler pooling, but no type-checking payoff.
+3. **Leave it and say so.** Then CLAUDE.md's "all queries use Drizzle" needs to keep its `user-app`
+   carve-out permanently, which is the "two coexisting query styles" outcome the original 2026-08-04
+   observation argued against.
+
+The two `main-app/scripts/chatbot-related/*.js` files are offline scripts, not request handlers —
+lower stakes either way, but they belong with whichever decision is taken.
+
+**Also noted:** `apps/main-app/src/lib/server/magicLink.ts` has no importers anywhere in the
+monorepo (business-app has its own). It was converted in Phase 8a so the Phase 10 grep would come
+back clean; it is a deletion candidate.
