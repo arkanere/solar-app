@@ -17,6 +17,12 @@ I'm always open to ideas on better ways to do things. Please don't hesitate to s
 Commit straight to `main` and push. Don't create a branch and don't open a pull request
 unless I ask for one — solo maintainer, no review step to wait on.
 
+## Database queries
+
+New or modified queries always use Drizzle (`db` from `$lib/server/db`), even in files that still
+contain raw `pool.query` SQL — the migration is in progress (see next-steps.md). The `sql` template
+escape hatch is allowed for genuinely awkward queries; note each use in the commit message.
+
 ## About Solar-app
 
 This is a open source project.

@@ -46,8 +46,13 @@ business-app's raw SQL touches — no schema work is a prerequisite. Raw SQL liv
 - New/modified queries always use Drizzle from now on, even in not-yet-converted files (rule also added
   to CLAUDE.md in Phase 0).
 
-### Phase 0 — plumbing (no query changes)
-Add `@solar/db` as a dependency of business-app; extend `apps/business-app/src/lib/server/db.ts` to also
+### ✅ Phase 0 — plumbing (no query changes) — DONE 2026-08-04
+Added `@solar/db` dep, `db = createDb(pool)` export in business-app's `db.ts`, CLAUDE.md convention
+line. Schema verified current against live DB via `npm run pull -w @solar/db` (only import-order churn,
+reverted). Baseline: `npm run check` in business-app has 84 pre-existing errors in 28 files (UI
+components) — a converted batch passes if the count stays at 84.
+
+Original plan: Add `@solar/db` as a dependency of business-app; extend `apps/business-app/src/lib/server/db.ts` to also
 export `db = createDb(pool)` (same pattern as main-app, shared pool). Add the convention line to CLAUDE.md.
 Run `drizzle-kit check` to confirm schema is current against the live DB.
 
@@ -101,7 +106,7 @@ Grep-verify no `pool.query`/`client.query` remain outside `db.ts`; consider un-e
 from both apps' `db.ts` (or leaving it export-only-for-Drizzle); update this doc and CLAUDE.md.
 
 ### Progress
-- [ ] Phase 0
+- [x] Phase 0 (2026-08-04)
 - [ ] Phase 1
 - [ ] Phase 2
 - [ ] Phase 3
