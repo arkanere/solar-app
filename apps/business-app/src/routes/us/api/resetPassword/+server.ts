@@ -1,17 +1,12 @@
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { usBusinesses } from '@solar/db/schema';
+import { eq } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import bcrypt from 'bcrypt';
 import { TokenSecurity } from '$lib/auth/business';
 import { passwordResetLimiter } from '$lib/auth/business';
 import { parseBody, resetPasswordSchema } from '@solar/validation';
-
-interface BusinessResetRow {
-	reset_token_hash: string | null;
-	reset_token_expires: Date | null;
-	reset_token_used: boolean;
-	id: number;
-}
 
 export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 	// Generic error message to prevent account enumeration
@@ -67,55 +62,50 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 		// 3. Hash the incoming token to compare with stored hash
 		const hashedToken = TokenSecurity.hashToken(token);
 
-		// 4. Verify the token (now comparing hashed versions)
-		const query = `
-      SELECT reset_token_hash, reset_token_expires, reset_token_used, id
-      FROM us_businesses
-      WHERE slug = $1;
-    `;
-		const result = await pool.query<BusinessResetRow>(query, [business_slug]);
+		// 4. Verify the token. Reset tokens are stored hashed in `reset_token`, the
+		// same way magic-link tokens are; the columns this handler used to read
+		// (reset_token_hash, reset_token_used) do not exist on us_businesses.
+		const [business] = await db
+			.select({
+				id: usBusinesses.id,
+				resetToken: usBusinesses.resetToken,
+				resetTokenExpires: usBusinesses.resetTokenExpires
+			})
+			.from(usBusinesses)
+			.where(eq(usBusinesses.slug, business_slug))
+			.limit(1);
 
-		if (result.rows.length === 0) {
+		if (!business) {
 			// Business doesn't exist, but don't reveal that
 			return json({ success: false, error: genericError }, { status: 400 });
 		}
 
-		const business = result.rows[0];
-
 		// 5. Check if token matches (compare hashes)
-		if (business.reset_token_hash !== hashedToken) {
+		if (business.resetToken !== hashedToken) {
 			return json({ success: false, error: genericError }, { status: 400 });
 		}
 
 		// 6. Check if token has expired
-		if (TokenSecurity.isTokenExpired(business.reset_token_expires)) {
+		if (TokenSecurity.isTokenExpired(business.resetTokenExpires)) {
 			return json({ success: false, error: genericError }, { status: 400 });
 		}
 
-		// 7. Check if token has already been used
-		if (business.reset_token_used) {
-			return json(
-				{ success: false, error: 'This password reset link has already been used' },
-				{ status: 400 }
-			);
-		}
-
-		// 8. Hash the new password
+		// 7. Hash the new password
 		const hashedPassword = await bcrypt.hash(newPassword, 12);
 
-		// 9. Update password and mark token as used (don't delete, mark as used)
-		const updateQuery = `
-      UPDATE us_businesses
-      SET
-        login_password = $1,
-        reset_token_used = TRUE,
-        reset_token_hash = NULL,
-        reset_token_expires = NULL
-      WHERE id = $2;
-    `;
-		await pool.query(updateQuery, [hashedPassword, business.id]);
+		// 8. Update password and consume the token. Clearing it is what makes a
+		// second use fail — there is no separate "already used" flag, so a reused
+		// link reports the generic invalid/expired error.
+		await db
+			.update(usBusinesses)
+			.set({
+				loginPassword: hashedPassword,
+				resetToken: null,
+				resetTokenExpires: null
+			})
+			.where(eq(usBusinesses.id, business.id));
 
-		// 10. Reset rate limit on successful password reset
+		// 9. Reset rate limit on successful password reset
 		await passwordResetLimiter.reset(rateLimitKey);
 
 		return json({
