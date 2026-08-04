@@ -68,12 +68,8 @@ export const POST: RequestHandler = async ({ request, params }) => {
 			magicLinkUrl,
 			message: 'Magic link generated successfully (valid for 15 days)'
 		});
-
 	} catch (error) {
 		console.error('Error generating user magic link:', error);
-		return json(
-			{ error: 'Internal server error' },
-			{ status: 500 }
-		);
+		return json({ error: 'Internal server error' }, { status: 500 });
 	}
 };

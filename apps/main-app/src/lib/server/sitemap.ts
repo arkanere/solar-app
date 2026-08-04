@@ -39,7 +39,12 @@ function staticPages(country: CountryConfig): SitemapEntry[] {
 	const pages: SitemapEntry[] = [
 		{ loc: `${BASE_URL}/${c}`, lastmod: '', changefreq: 'monthly', priority: '1.0' },
 		{ loc: `${BASE_URL}/${c}/solar`, lastmod: '', changefreq: 'weekly', priority: '1.0' },
-		{ loc: `${BASE_URL}/${c}/business-listing`, lastmod: '', changefreq: 'monthly', priority: '0.8' },
+		{
+			loc: `${BASE_URL}/${c}/business-listing`,
+			lastmod: '',
+			changefreq: 'monthly',
+			priority: '0.8'
+		},
 		{ loc: `${BASE_URL}/${c}/business-form`, lastmod: '', changefreq: 'monthly', priority: '0.8' }
 	];
 	// Gated for the same reason stage 10 gated the route itself: with
@@ -224,46 +229,48 @@ export async function generateContentSitemapEntries(): Promise<SitemapEntry[]> {
 		lastmod: p.lastmod || today
 	}));
 
-	const [seoPageRows, brandRows, subsidyRows, discomRows, bankRows, authorRows] = await Promise.all([
-		db
-			.select({
-				slug: seoPages.slug,
-				pillar_slug: seoPages.pillarSlug,
-				page_type: seoPages.pageType,
-				// The schema types this timestamptz as `mode: 'string'`, so Drizzle
-				// hands back a string where the raw driver handed back a Date and
-				// this function called .toISOString(). Formatting in SQL keeps the
-				// output identical (and explicitly UTC) instead of depending on the
-				// session timezone of the string rendering.
-				updated_at: sql<
-					string | null
-				>`to_char(${seoPages.updatedAt} AT TIME ZONE 'UTC', 'YYYY-MM-DD')`
-			})
-			.from(seoPages)
-			.where(eq(seoPages.status, 'published'))
-			.orderBy(asc(seoPages.slug)),
-		db
-			.select({ slug: solarBrands.slug, product_category: solarBrands.productCategory })
-			.from(solarBrands)
-			.where(eq(solarBrands.status, 'published'))
-			.orderBy(asc(solarBrands.slug)),
-		db
-			.select({ state_slug: stateSubsidies.stateSlug })
-			.from(stateSubsidies)
-			.where(eq(stateSubsidies.status, 'published'))
-			.orderBy(asc(stateSubsidies.stateSlug)),
-		db
-			.select({ slug: discoms.slug })
-			.from(discoms)
-			.where(eq(discoms.status, 'published'))
-			.orderBy(asc(discoms.slug)),
-		db
-			.select({ slug: solarFinancingBanks.slug })
-			.from(solarFinancingBanks)
-			.where(eq(solarFinancingBanks.status, 'published'))
-			.orderBy(asc(solarFinancingBanks.slug)),
-		db.select({ slug: authors.slug }).from(authors).orderBy(asc(authors.slug))
-	]);
+	const [seoPageRows, brandRows, subsidyRows, discomRows, bankRows, authorRows] = await Promise.all(
+		[
+			db
+				.select({
+					slug: seoPages.slug,
+					pillar_slug: seoPages.pillarSlug,
+					page_type: seoPages.pageType,
+					// The schema types this timestamptz as `mode: 'string'`, so Drizzle
+					// hands back a string where the raw driver handed back a Date and
+					// this function called .toISOString(). Formatting in SQL keeps the
+					// output identical (and explicitly UTC) instead of depending on the
+					// session timezone of the string rendering.
+					updated_at: sql<
+						string | null
+					>`to_char(${seoPages.updatedAt} AT TIME ZONE 'UTC', 'YYYY-MM-DD')`
+				})
+				.from(seoPages)
+				.where(eq(seoPages.status, 'published'))
+				.orderBy(asc(seoPages.slug)),
+			db
+				.select({ slug: solarBrands.slug, product_category: solarBrands.productCategory })
+				.from(solarBrands)
+				.where(eq(solarBrands.status, 'published'))
+				.orderBy(asc(solarBrands.slug)),
+			db
+				.select({ state_slug: stateSubsidies.stateSlug })
+				.from(stateSubsidies)
+				.where(eq(stateSubsidies.status, 'published'))
+				.orderBy(asc(stateSubsidies.stateSlug)),
+			db
+				.select({ slug: discoms.slug })
+				.from(discoms)
+				.where(eq(discoms.status, 'published'))
+				.orderBy(asc(discoms.slug)),
+			db
+				.select({ slug: solarFinancingBanks.slug })
+				.from(solarFinancingBanks)
+				.where(eq(solarFinancingBanks.status, 'published'))
+				.orderBy(asc(solarFinancingBanks.slug)),
+			db.select({ slug: authors.slug }).from(authors).orderBy(asc(authors.slug))
+		]
+	);
 
 	// SEO pages — pillar landing at /{pillar}, clusters at /{pillar}/{slug}.
 	//

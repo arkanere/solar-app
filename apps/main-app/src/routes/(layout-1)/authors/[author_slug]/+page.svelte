@@ -9,7 +9,7 @@
 		name: data.author.name,
 		slug: data.author.slug,
 		credentials: data.author.credentials,
-		photo: data.author.photo
+		photo: data.author.photo_url
 	})));
 
 	const jsonLdBreadcrumb = $derived(JSON.stringify(breadcrumbLD([
@@ -54,9 +54,9 @@
 	]} />
 
 	<div class="flex items-start gap-6 mb-8">
-		{#if data.author.photo}
+		{#if data.author.photo_url}
 			<img
-				src={data.author.photo}
+				src={data.author.photo_url}
 				alt={data.author.name}
 				class="w-24 h-24 rounded-full object-cover shrink-0"
 			/>

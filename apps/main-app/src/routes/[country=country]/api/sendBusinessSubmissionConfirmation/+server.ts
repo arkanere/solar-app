@@ -17,8 +17,18 @@ export const POST: RequestHandler = async ({ request, params }) => {
 
 	try {
 		const data = await request.json();
-		const { businessName, address, plusCode, phoneNumber, email, login_email, website, gstn, state, city } =
-			data;
+		const {
+			businessName,
+			address,
+			plusCode,
+			phoneNumber,
+			email,
+			login_email,
+			website,
+			gstn,
+			state,
+			city
+		} = data;
 		// Callers send district (IN) or county (US).
 		const level2 = data.district ?? data.county ?? data.level2 ?? '';
 

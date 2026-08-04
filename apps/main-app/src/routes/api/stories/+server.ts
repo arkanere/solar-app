@@ -5,65 +5,57 @@ export const config = {
 };
 
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
-
-const pool = createPool({ connectionString: POSTGRES_URL });
+import { db } from '$lib/server/db';
+import { projects } from '@solar/db/schema';
+import { and, desc, eq, isNotNull, or } from 'drizzle-orm';
 
 export const GET: RequestHandler = async () => {
 	const limit = 5; // Only 5 projects for stories
 
 	try {
-		const client = await pool.connect();
+		// Query to get 5 most recent visible projects for stories
+		const projectRows = await db
+			.select({
+				id: projects.id,
+				business_slug: projects.businessSlug,
+				title: projects.title,
+				pincode: projects.pincode,
+				project_date: projects.projectDate,
+				created_at: projects.createdAt,
+				image_url: projects.imageUrl,
+				cloudinary_public_id: projects.cloudinaryPublicId,
+				image_width: projects.imageWidth,
+				image_height: projects.imageHeight,
+				image_format: projects.imageFormat,
+				project_slug: projects.projectSlug
+			})
+			.from(projects)
+			.where(
+				and(
+					eq(projects.isvisible, true),
+					isNotNull(projects.businessSlug),
+					or(isNotNull(projects.cloudinaryPublicId), isNotNull(projects.imageUrl))
+				)
+			)
+			.orderBy(desc(projects.projectDate))
+			.limit(limit);
 
-		try {
-			// Query to get 5 most recent visible projects for stories
-			const projectsQuery = `
-        SELECT 
-          id, 
-          business_slug, 
-          title, 
-          pincode, 
-          project_date, 
-          created_at,
-          image_url,
-          cloudinary_public_id,
-          image_width,
-          image_height,
-          image_format,
-          project_slug
-        FROM projects 
-        WHERE isvisible = true
-        AND business_slug IS NOT NULL
-        AND (cloudinary_public_id IS NOT NULL OR image_url IS NOT NULL)
-        ORDER BY project_date DESC
-        LIMIT $1
-      `;
-
-			const projectsResult = await client.query(projectsQuery, [limit]);
-
-			return json({
-				success: true,
-				projects: projectsResult.rows,
-				debug: {
-					timestamp: new Date().toISOString(),
-					projectCount: projectsResult.rowCount
-				}
-			});
-		} catch (queryError) {
-			console.error('Database query error:', queryError);
-			return json({
+		return json({
+			success: true,
+			projects: projectRows,
+			debug: {
+				timestamp: new Date().toISOString(),
+				projectCount: projectRows.length
+			}
+		});
+	} catch (queryError) {
+		console.error('Database query error:', queryError);
+		return json(
+			{
 				success: false,
 				error: 'Failed to fetch projects: ' + (queryError as Error).message
-			}, { status: 500 });
-		} finally {
-			client.release();
-		}
-	} catch (connectionError) {
-		console.error('Database connection error:', connectionError);
-		return json({
-			success: false,
-			error: 'Database connection error: ' + (connectionError as Error).message
-		}, { status: 500 });
+			},
+			{ status: 500 }
+		);
 	}
-}
+};

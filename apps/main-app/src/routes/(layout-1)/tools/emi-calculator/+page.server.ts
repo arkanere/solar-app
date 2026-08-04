@@ -1,33 +1,28 @@
 import type { PageServerLoad } from './$types';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { solarFinancingBanks } from '@solar/db/schema';
+import { asc, eq, sql } from 'drizzle-orm';
 
 export const config = {
 	isr: { expiration: false }
 };
 
 export const load: PageServerLoad = async () => {
-	const banksResult = await pool.query(
-		`SELECT slug, name, interest_rate, max_amount, tenure
-		 FROM solar_financing_banks
-		 WHERE status = 'published'
-		 ORDER BY name`
-	);
+	const bankRows = await db
+		.select({
+			slug: solarFinancingBanks.slug,
+			name: solarFinancingBanks.name,
+			// Nullable columns the page arithmetic treats as required strings —
+			// restated, matching the raw driver's `any`.
+			interestRate: sql<string>`${solarFinancingBanks.interestRate}`,
+			maxAmount: sql<string>`${solarFinancingBanks.maxAmount}`,
+			tenure: sql<string>`${solarFinancingBanks.tenure}`
+		})
+		.from(solarFinancingBanks)
+		.where(eq(solarFinancingBanks.status, 'published'))
+		.orderBy(asc(solarFinancingBanks.name));
 
 	return {
-		banks: banksResult.rows.map(
-			(r: {
-				slug: string;
-				name: string;
-				interest_rate: string;
-				max_amount: string;
-				tenure: string;
-			}) => ({
-				slug: r.slug,
-				name: r.name,
-				interestRate: r.interest_rate,
-				maxAmount: r.max_amount,
-				tenure: r.tenure
-			})
-		)
+		banks: bankRows
 	};
 };

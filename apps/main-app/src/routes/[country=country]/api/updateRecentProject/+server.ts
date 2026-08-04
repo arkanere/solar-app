@@ -95,7 +95,7 @@ async function uploadToCloudinary(file: File) {
 async function deleteFromCloudinary(publicId: string) {
 	try {
 		if (!publicId) return;
-		
+
 		const result = await new Promise((resolve, reject) => {
 			cloudinary.uploader.destroy(publicId, (error: any, result: any) => {
 				if (error) reject(error);
@@ -259,13 +259,14 @@ export const PUT: RequestHandler = async ({ request, params }) => {
 			// Build the update query dynamically
 			const updateFields = [
 				'title = $2',
-				'project_slug = $3', 
+				'project_slug = $3',
 				'pincode = $4',
 				'district = $5',
 				'project_date = $6'
 			];
 			const queryParams = [projectId, projectTitle, projectSlug, pincode, district, projectDate];
-			let returnFields = 'id, business_slug, title, project_slug, pincode, district, project_date, created_at';
+			let returnFields =
+				'id, business_slug, title, project_slug, pincode, district, project_date, created_at';
 			let index = 7;
 
 			// Handle image updates
@@ -280,7 +281,7 @@ export const PUT: RequestHandler = async ({ request, params }) => {
 					`image_height = NULL`,
 					`image_format = NULL`
 				);
-				
+
 				// Delete old image from Cloudinary if it exists
 				if (oldPublicId) {
 					await deleteFromCloudinary(oldPublicId);
@@ -301,7 +302,8 @@ export const PUT: RequestHandler = async ({ request, params }) => {
 					imageData.height,
 					imageData.format
 				);
-				returnFields += ', image_url, cloudinary_public_id, image_width, image_height, image_format';
+				returnFields +=
+					', image_url, cloudinary_public_id, image_width, image_height, image_format';
 
 				// Delete old image from Cloudinary if it exists
 				if (oldPublicId) {
@@ -310,7 +312,8 @@ export const PUT: RequestHandler = async ({ request, params }) => {
 			} else {
 				// Keep existing image data in return fields if it exists
 				if (existingProject.image_url) {
-					returnFields += ', image_url, cloudinary_public_id, image_width, image_height, image_format';
+					returnFields +=
+						', image_url, cloudinary_public_id, image_width, image_height, image_format';
 				}
 			}
 
@@ -351,7 +354,7 @@ export const PUT: RequestHandler = async ({ request, params }) => {
 			{ status: 500 }
 		);
 	}
-}
+};
 
 export const DELETE: RequestHandler = async ({ request, params }) => {
 	// No layout runs for a +server.ts, so both guards live here. The features
@@ -443,4 +446,4 @@ export const DELETE: RequestHandler = async ({ request, params }) => {
 			{ status: 500 }
 		);
 	}
-}
+};

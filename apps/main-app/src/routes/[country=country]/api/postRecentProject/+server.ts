@@ -67,13 +67,14 @@ async function uploadFileToCloudinary(file: File) {
 					resource_type: 'auto', // Auto-detect resource type
 					transformation: [
 						{ width: 1200, crop: 'limit' }, // Resize large images to max width 1200px
-						                        { quality: 'auto' } // Auto-optimize quality
-						                    ]
-						                },
-						                (error, result: any) => {
-						                    if (error) reject(error);
-						                    else resolve(result);
-						                }			);
+						{ quality: 'auto' } // Auto-optimize quality
+					]
+				},
+				(error, result: any) => {
+					if (error) reject(error);
+					else resolve(result);
+				}
+			);
 		});
 
 		console.log('File uploaded to Cloudinary:', result.secure_url);
@@ -95,7 +96,7 @@ async function uploadBase64ToCloudinary(base64Data: string, mimetype: string, fi
 	try {
 		// Clean filename for public_id
 		const cleanFilename = filename.replace(/[^a-zA-Z0-9-_]/g, '');
-		
+
 		const dataURI = `data:${mimetype};base64,${base64Data}`;
 
 		const result: any = await new Promise((resolve, reject) => {
@@ -105,10 +106,7 @@ async function uploadBase64ToCloudinary(base64Data: string, mimetype: string, fi
 					folder: 'projects',
 					resource_type: 'auto',
 					public_id: `android-${Date.now()}-${cleanFilename}`,
-					transformation: [
-						{ width: 1200, crop: 'limit' },
-						{ quality: 'auto' }
-					]
+					transformation: [{ width: 1200, crop: 'limit' }, { quality: 'auto' }]
 				},
 				(error, result: any) => {
 					if (error) reject(error);
@@ -159,7 +157,7 @@ export const POST: RequestHandler = async ({ request, params }) => {
 
 	try {
 		const contentType = request.headers.get('content-type') || '';
-		
+
 		let projectTitle, pincode, projectDate, business_slug;
 		let imageData = null;
 
@@ -167,7 +165,7 @@ export const POST: RequestHandler = async ({ request, params }) => {
 			// Handle form data (Website)
 			console.log('Processing multipart form data (Website)');
 			const formData = await request.formData();
-			
+
 			projectTitle = formData.get('projectTitle') as string;
 			pincode = formData.get('pincode') as string;
 			projectDate = formData.get('projectDate') as string;
@@ -182,7 +180,6 @@ export const POST: RequestHandler = async ({ request, params }) => {
 					console.error('Error uploading multipart image:', imageError);
 				}
 			}
-
 		} else if (contentType.includes('application/json')) {
 			// Handle JSON data (Android App)
 			console.log('Processing JSON data (Android App)');
@@ -207,10 +204,7 @@ export const POST: RequestHandler = async ({ request, params }) => {
 				}
 			}
 		} else {
-			return json(
-				{ success: false, error: 'Unsupported content type' },
-				{ status: 400 }
-			);
+			return json({ success: false, error: 'Unsupported content type' }, { status: 400 });
 		}
 
 		// Validate required fields
@@ -268,10 +262,16 @@ export const POST: RequestHandler = async ({ request, params }) => {
 			console.log('Using business slug:', business_slug);
 
 			// Build the query dynamically based on available data
-			let queryFields =
-				'business_slug, title, project_slug, pincode, district, project_date';
+			let queryFields = 'business_slug, title, project_slug, pincode, district, project_date';
 			let queryValues = '$1, $2, $3, $4, $5, $6';
-			const queryParams = [business_slug, projectTitle, projectSlug, pincode, district, projectDate];
+			const queryParams = [
+				business_slug,
+				projectTitle,
+				projectSlug,
+				pincode,
+				district,
+				projectDate
+			];
 			let returnFields =
 				'id, business_slug, title, project_slug, pincode, district, project_date, created_at';
 			let index = 7;
@@ -339,4 +339,4 @@ export const POST: RequestHandler = async ({ request, params }) => {
 			{ status: 500 }
 		);
 	}
-}
+};

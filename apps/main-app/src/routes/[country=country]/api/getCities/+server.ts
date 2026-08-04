@@ -11,7 +11,10 @@ export const GET: RequestHandler = async ({ params, url }) => {
 	const country = getCountry(params.country);
 
 	const state = url.searchParams.get('state');
-	const level2 = url.searchParams.get('level2') ?? url.searchParams.get('district') ?? url.searchParams.get('county');
+	const level2 =
+		url.searchParams.get('level2') ??
+		url.searchParams.get('district') ??
+		url.searchParams.get('county');
 	if (!state || !level2) {
 		return json({ error: 'state and level2 query parameters are required' }, { status: 400 });
 	}

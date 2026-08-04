@@ -34,10 +34,7 @@ export const GET: RequestHandler = async ({ params }) => {
 	// No (valid) state suffix — first match on the bare city slug.
 	const fallback = await findCity('us', cityParam);
 	if (fallback) {
-		redirect(
-			301,
-			`/us/solar/${fallback.level1Slug}/${fallback.level2Slug}/${fallback.citySlug}`
-		);
+		redirect(301, `/us/solar/${fallback.level1Slug}/${fallback.level2Slug}/${fallback.citySlug}`);
 	}
 
 	error(404, 'City not found');
