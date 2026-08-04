@@ -128,6 +128,32 @@ Also fold in `lib/server/unifiedSync.ts`: it isn't raw `pool.query` in its own r
 `sv_sync_*` SQL functions through a `Queryable`), but every caller has to keep importing `pool`
 purely to feed it. Converting it to take `db` and use the `sql` escape hatch for the function calls
 would remove the last reason for a `pool` import outside `db.ts`, which Phase 10 wants anyway.
+Note `claimLead` and `updateLeadByBusiness` pass a *transaction client* into these helpers, so
+whatever `unifiedSync` takes must also accept a Drizzle transaction handle — do that conversion
+before or together with those two files, not after.
+
+**Cold start for this phase.** Re-verified 2026-08-05 — these are all the `pool.query`/`client.query`
+call sites left in business-app, 65 across 12 files:
+
+| Count | File (`apps/business-app/src/`) |
+| --- | --- |
+| 26 | `routes/in/api/claimLead/+server.ts` |
+| 14 | `routes/us/api/claimLead/+server.ts` |
+| 5 | `routes/in/api/updateLeadByBusiness/+server.ts` |
+| 3 | `routes/in/api/deleteAccount/+server.ts`, `routes/in/api/deleteLeadByBusiness/+server.ts`, `routes/us/api/deleteAccount/+server.ts` |
+| 2 | `routes/in/api/sendLeadClaimNotificationToCustomer/+server.ts`, `routes/in/api/submitLead/+server.ts`, `routes/us/api/deleteLeadByBusiness/+server.ts`, `routes/us/api/submitLead/+server.ts`, `routes/us/api/updateLeadByBusiness/+server.ts` |
+| 1 | `routes/in/api/fixClaimedLead/+server.ts` |
+
+Workflow per file: convert → `npm test -w solarvipani-business` (must stay 92 passing) →
+`npm run check` (must stay at 84 errors) → commit → push. Start with the three files the Phase 5.5
+tests actually cover — `in/claimLead`, `in/updateLeadByBusiness`, `in/submitLead` — since those are
+the only ones with a real safety net; the `/us` twins and the delete/fix endpoints are unguarded, so
+convert them by close reading and keep the diffs small.
+
+**Prerequisite:** the tests need a Postgres on `localhost:5433`
+(`docker compose -f docker-compose.test.yml up -d`). As of 2026-08-05 Docker was not installed on the
+dev machine and the local PostgreSQL 16 service was stopped — resolve that first, or set
+`TEST_POSTGRES_URL` to point at another scratch database, or this phase has no safety net at all.
 
 ### Phases 7–9 — main-app (53 files)
 Enumerate and batch the same way once business-app is done (main-app already imports `db`, so no plumbing
