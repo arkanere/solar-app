@@ -6,40 +6,45 @@
 // idempotent — but it keeps business-app correct on its own once those
 // triggers are dropped (after user-app/admin-app migrate).
 
-interface Queryable {
-	query(text: string, params?: unknown[]): Promise<unknown>;
-}
+import { sql } from 'drizzle-orm';
+import type { Database } from '@solar/db';
+
+// Accepts the module-scoped `db` or a transaction handle from `db.transaction()`
+// — both expose `execute`, so a caller inside a transaction still projects its
+// rows on the same connection. The sv_sync_* functions have no query-builder
+// equivalent, so every call here is a deliberate `sql` escape hatch.
+type SyncExecutor = Pick<Database, 'execute'>;
 
 export type SyncCountry = 'in' | 'us';
 
 export async function syncLeadToUnified(
-	db: Queryable,
+	db: SyncExecutor,
 	country: SyncCountry,
 	sourceId: number
 ): Promise<void> {
-	await db.query('SELECT sv_sync_lead($1, $2)', [country, sourceId]);
+	await db.execute(sql`SELECT sv_sync_lead(${country}, ${sourceId})`);
 }
 
 export async function syncBusinessToUnified(
-	db: Queryable,
+	db: SyncExecutor,
 	country: SyncCountry,
 	sourceId: number
 ): Promise<void> {
-	await db.query('SELECT sv_sync_business($1, $2)', [country, sourceId]);
+	await db.execute(sql`SELECT sv_sync_business(${country}, ${sourceId})`);
 }
 
 export async function syncAccountToUnified(
-	db: Queryable,
+	db: SyncExecutor,
 	country: SyncCountry,
 	sourceId: number
 ): Promise<void> {
-	await db.query('SELECT sv_sync_account($1, $2)', [country, sourceId]);
+	await db.execute(sql`SELECT sv_sync_account(${country}, ${sourceId})`);
 }
 
 // businesses_1 -> in_business_profiles/in_business_accounts (migration 050).
 // IN-only: call after a businesses_1 write, BEFORE syncBusinessToUnified —
 // sv_sync_business('in') sources from in_business_profiles. Idempotent with
 // the 039/040 triggers; keeps the split tables fresh once those drop.
-export async function syncInSplitTables(db: Queryable, sourceId: number): Promise<void> {
-	await db.query('SELECT sv_sync_in_split($1)', [sourceId]);
+export async function syncInSplitTables(db: SyncExecutor, sourceId: number): Promise<void> {
+	await db.execute(sql`SELECT sv_sync_in_split(${sourceId})`);
 }

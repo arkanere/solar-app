@@ -1,6 +1,5 @@
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
-import type { VercelPool } from '@vercel/postgres';
 import { db } from '$lib/server/db';
 import { businesses1, inUser, usBusinesses } from '@solar/db/schema';
 import { eq, sql } from 'drizzle-orm';
@@ -21,9 +20,7 @@ export function newMagicToken() {
 
 // `table` names the per-country business table, as it did when these were raw
 // SQL; it maps to a Drizzle table here instead of being interpolated.
-// `pool` is still needed for the unifiedSync helpers, which take a raw Queryable.
 export async function mintBusinessTokenById(
-	pool: VercelPool,
 	table: 'businesses_1' | 'us_businesses',
 	businessId: number
 ): Promise<string | null> {
@@ -38,9 +35,9 @@ export async function mintBusinessTokenById(
 
 	if (updated.length === 0) return null;
 	if (table !== 'us_businesses') {
-		await syncInSplitTables(pool, businessId);
+		await syncInSplitTables(db, businessId);
 	}
-	await syncAccountToUnified(pool, table === 'us_businesses' ? 'us' : 'in', businessId);
+	await syncAccountToUnified(db, table === 'us_businesses' ? 'us' : 'in', businessId);
 	return raw;
 }
 

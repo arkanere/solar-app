@@ -37,9 +37,9 @@ export class LoginTracker {
 
 			if (rows.length > 0) {
 				if (this.country === 'in') {
-					await syncInSplitTables(pool, businessId);
+					await syncInSplitTables(db, businessId);
 				}
-				await syncAccountToUnified(pool, this.country, businessId);
+				await syncAccountToUnified(db, this.country, businessId);
 				return {
 					updated: true,
 					lastLogin: rows[0].lastLogin ? new Date(rows[0].lastLogin) : null

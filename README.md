@@ -18,11 +18,12 @@ Switching to solar is a high-stakes, low-trust purchase. Solar Vipani removes th
 
 This is an operated production system, not a demo. Some of the more interesting problems solved here:
 
-- **RAG-powered solar advisor** — a chatbot that answers sizing, subsidy, and pricing questions over a Pinecone vector index. Follow-up questions ("and for a shop?") are rewritten into standalone queries with a condenser model before retrieval, and quote-intent messages hand off into a guided lead flow. Embedding sync and city-page embedding pipelines keep the index current with site content.
+- **RAG-powered solar advisor** — a chatbot, served by the standalone `solar-agent-backend` microservice, that answers sizing, subsidy, and pricing questions over a Pinecone vector index. Follow-up questions ("and for a shop?") are rewritten into standalone queries with a condenser model before retrieval, and quote-intent messages hand off into a guided lead flow. Embedding sync and city-page embedding pipelines keep the index current with site content.
 - **PII compliance built in** — consent capture, DSAR endpoints (data access and deletion), private bill storage, and a scheduled retention purge (Vercel cron) that deletes stale leads automatically.
 - **Programmatic SEO at scale** — city/district/installer pages generated from Postgres with slug resolution, per-region sitemaps, and content shipped through versioned SQL migrations.
 - **Passwordless auth** — magic-link sign-in for both customer and installer portals; tokens are stored hashed at rest with last-write-wins invalidation, and token-minting endpoints are guarded by a timing-safe internal-secret check so they can't be hit anonymously.
-- **Multi-region monorepo** — one npm-workspaces repo serving the India marketplace, US marketplace, installer portal, and customer portal as separate SvelteKit deployments.
+- **Modular monorepo** — one npm-workspaces repo serving the India marketplace, US marketplace, installer portal, and customer portal as separate SvelteKit deployments, with a single microservice (`solar-agent-backend`) bolted on outside the monorepo for the one capability that warrants it: the AI/LLM-powered chatbot.
+- **BFF (Backend for Frontend)** — each app (`main-app`, `business-app`, `user-app`) owns its own SvelteKit server routes and load functions tailored to that frontend's needs, while all three share a single Postgres database underneath.
 
 ## Stack
 

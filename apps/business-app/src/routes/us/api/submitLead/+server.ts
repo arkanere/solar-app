@@ -1,5 +1,5 @@
 // src/routes/api/submitLead/+server.ts
-import { pool } from '$lib/server/db';
+import { pool, db } from '$lib/server/db';
 import { json } from '@sveltejs/kit';
 import { syncLeadToUnified } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
@@ -70,7 +70,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 		// endpoint fail outright); the unified leads table owns that concept.
 		const referenceUuid = null;
 
-		await syncLeadToUnified(pool, 'us', leadId);
+		await syncLeadToUnified(db, 'us', leadId);
 
 		// Use `fetch` from event
 		await fetch('/us/api/sendLeadSubmissionConfirmation', {

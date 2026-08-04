@@ -130,8 +130,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			isactive: true // Set as active by default
 		});
 
-		await syncBusinessToUnified(pool, 'us', branchId);
-		await syncAccountToUnified(pool, 'us', branchId);
+		await syncBusinessToUnified(db, 'us', branchId);
+		await syncAccountToUnified(db, 'us', branchId);
 
 		return json({
 			success: true,

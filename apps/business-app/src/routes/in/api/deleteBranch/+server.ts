@@ -60,9 +60,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		await db.update(businesses1).set({ isvisible: false }).where(eq(businesses1.id, branchId));
 
-		await syncInSplitTables(pool, branchId);
-		await syncBusinessToUnified(pool, 'in', branchId);
-		await syncAccountToUnified(pool, 'in', branchId);
+		await syncInSplitTables(db, branchId);
+		await syncBusinessToUnified(db, 'in', branchId);
+		await syncAccountToUnified(db, 'in', branchId);
 
 		return json({ success: true, message: 'Branch deleted successfully' });
 	} catch (error) {

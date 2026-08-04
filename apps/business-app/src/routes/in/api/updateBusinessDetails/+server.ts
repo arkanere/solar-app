@@ -103,7 +103,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		await db.update(businesses1).set(values).where(eq(businesses1.slug, business_slug));
 
 		if (updated) {
-			await syncBusinessToUnified(pool, 'in', updated.id);
+			await syncBusinessToUnified(db, 'in', updated.id);
 			return json({
 				success: true,
 				id: updated.id

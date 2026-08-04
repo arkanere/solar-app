@@ -1,5 +1,5 @@
 // api/updateLeadByBusiness/server.ts
-import { pool } from '$lib/server/db';
+import { pool, db } from '$lib/server/db';
 import { json } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/us/auth/business';
 import { syncLeadToUnified } from '$lib/server/unifiedSync';
@@ -73,7 +73,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			);
 		}
 
-		await syncLeadToUnified(pool, 'us', id);
+		await syncLeadToUnified(db, 'us', id);
 
 		return json({ success: true, lead: result.rows[0] });
 	} catch (error) {

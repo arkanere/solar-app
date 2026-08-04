@@ -60,7 +60,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			.returning({ id: usBusinesses.id });
 
 		if (updated) {
-			await syncBusinessToUnified(pool, 'us', updated.id);
+			await syncBusinessToUnified(db, 'us', updated.id);
 			return json({
 				success: true,
 				id: updated.id

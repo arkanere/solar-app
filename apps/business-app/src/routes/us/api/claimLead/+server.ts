@@ -1,7 +1,6 @@
 import { pool } from '$lib/server/db';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/us/auth/business';
-import { syncLeadToUnified } from '$lib/server/unifiedSync';
 import { sendEmail } from '$lib/us/sendEmail';
 import { mintBusinessTokenById } from '$lib/server/magicLink';
 import { checkLeadDataPolicy } from '$lib/compliance';
@@ -177,11 +176,14 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 					]
 				);
 				if (newLeadResult.rows[0]) {
-					await syncLeadToUnified(client, 'us', newLeadResult.rows[0].id);
+					// TODO(phase 6): restore syncLeadToUnified(tx, ...) when this file
+					// converts to Drizzle — the helper now takes a Drizzle handle.
+					await client.query('SELECT sv_sync_lead($1, $2)', ['us', newLeadResult.rows[0].id]);
 				}
 			}
 
-			await syncLeadToUnified(client, 'us', lead_id);
+			// TODO(phase 6): restore syncLeadToUnified(tx, ...) — see note above.
+			await client.query('SELECT sv_sync_lead($1, $2)', ['us', lead_id]);
 
 			// Prepare email data but don't send yet (move outside transaction)
 			emailData = { business_id, isallotted: true };
@@ -215,7 +217,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 					const { businessname, login_email, slug } = bizResult.rows[0];
 					const adminEmail = 'admin@solarvipani.com';
 					// Mint a fresh token (stored hashed); email the raw token.
-					const rawToken = await mintBusinessTokenById(pool, 'businesses_1', emailData.business_id);
+					const rawToken = await mintBusinessTokenById('businesses_1', emailData.business_id);
 					const magicLink = `https://business.solarvipani.com/us/${slug}/signin-link/${rawToken}`;
 
 					const subject = 'New Lead Allotted - Solar Vipani';

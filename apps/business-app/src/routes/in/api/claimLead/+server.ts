@@ -5,12 +5,6 @@ import { sendEmail } from '$lib/in/sendEmail';
 import { mintBusinessTokenById, mintUserToken } from '$lib/server/magicLink';
 import { checkLeadDataPolicy } from '$lib/compliance';
 import type { ClaimRequestPayload } from '$lib/types/lead';
-import {
-	syncLeadToUnified,
-	syncBusinessToUnified,
-	syncAccountToUnified,
-	syncInSplitTables
-} from '$lib/server/unifiedSync';
 
 // Allow time for the full claim pipeline including Brevo calls — the default
 // limit kills the function mid-run and silently drops the notification emails
@@ -366,12 +360,14 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 			// Project the rows written above into the unified tables (covers the
 			// auto-created branch, the claim-count bump and the claimed copy).
-			await syncInSplitTables(client, effectiveBusinessId);
-			await syncBusinessToUnified(client, 'in', effectiveBusinessId);
-			await syncAccountToUnified(client, 'in', effectiveBusinessId);
-			await syncLeadToUnified(client, 'in', lead_id);
+			// TODO(phase 6): restore the $lib/server/unifiedSync helpers when this
+			// file converts to Drizzle — they now take a Drizzle handle, not a client.
+			await client.query('SELECT sv_sync_in_split($1)', [effectiveBusinessId]);
+			await client.query('SELECT sv_sync_business($1, $2)', ['in', effectiveBusinessId]);
+			await client.query('SELECT sv_sync_account($1, $2)', ['in', effectiveBusinessId]);
+			await client.query('SELECT sv_sync_lead($1, $2)', ['in', lead_id]);
 			if (newLead) {
-				await syncLeadToUnified(client, 'in', newLead.id);
+				await client.query('SELECT sv_sync_lead($1, $2)', ['in', newLead.id]);
 			}
 
 			await client.query('COMMIT');
@@ -405,7 +401,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				}
 				const { businessname, login_email, slug } = bizResult.rows[0];
 				// Mint a fresh token (stored hashed); email the raw token.
-				const rawToken = await mintBusinessTokenById(pool, 'businesses_1', allotmentBusinessId);
+				const rawToken = await mintBusinessTokenById('businesses_1', allotmentBusinessId);
 				const magicLink = `https://business.solarvipani.com/in/${slug}/signin-link/${rawToken}`;
 
 				const subject = 'New Lead Allotted - Solar Vipani';

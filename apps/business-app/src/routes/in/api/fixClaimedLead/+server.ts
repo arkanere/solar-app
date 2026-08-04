@@ -1,4 +1,4 @@
-import { pool } from '$lib/server/db';
+import { pool, db } from '$lib/server/db';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/in/auth/business';
 import { syncLeadToUnified } from '$lib/server/unifiedSync';
@@ -37,7 +37,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		for (const row of result.rows) {
-			await syncLeadToUnified(pool, 'in', row.id);
+			await syncLeadToUnified(db, 'in', row.id);
 		}
 
 		return json({

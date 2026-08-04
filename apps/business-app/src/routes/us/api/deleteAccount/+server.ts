@@ -1,4 +1,4 @@
-import { pool } from '$lib/server/db';
+import { pool, db } from '$lib/server/db';
 import { json } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/us/auth/business';
 import { syncBusinessToUnified, syncAccountToUnified } from '$lib/server/unifiedSync';
@@ -40,8 +40,8 @@ export const POST: RequestHandler = async ({ cookies }) => {
 		);
 
 		for (const row of [{ id: businessId }, ...hiddenBranches.rows]) {
-			await syncBusinessToUnified(pool, 'us', row.id);
-			await syncAccountToUnified(pool, 'us', row.id);
+			await syncBusinessToUnified(db, 'us', row.id);
+			await syncAccountToUnified(db, 'us', row.id);
 		}
 
 		// End the session
