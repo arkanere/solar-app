@@ -1,10 +1,13 @@
 // api/updateLeadByBusiness/server.ts
-import { pool, db } from '$lib/server/db';
+import { db } from '$lib/server/db';
 import { json } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/us/auth/business';
 import { syncLeadToUnified } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
-import type { LeadUpdatePayload, LeadData } from '$lib/types/lead';
+import type { LeadUpdatePayload } from '$lib/types/lead';
+import { US_LEAD_RETURNING } from '$lib/server/leads';
+import { usLeaddata } from '@solar/db/schema';
+import { eq } from 'drizzle-orm';
 
 /**
  * Updates lead fields (stage, status) for a business's lead in US region
@@ -35,12 +38,12 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		// First, verify the lead belongs to the logged-in business
-		const verifyQuery = `
-            SELECT business_id FROM us_leaddata WHERE id = $1
-        `;
-		const verifyResult = await pool.query<{ business_id: number | null }>(verifyQuery, [id]);
+		const verifyResult = await db
+			.select({ businessId: usLeaddata.businessId })
+			.from(usLeaddata)
+			.where(eq(usLeaddata.id, id));
 
-		if (verifyResult.rows.length === 0) {
+		if (verifyResult.length === 0) {
 			return json(
 				{ success: false, error: 'Lead not found' },
 				{ status: 404 }
@@ -48,7 +51,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		// Check if the lead belongs to this business
-		const leadBusinessId = verifyResult.rows[0].business_id;
+		const leadBusinessId = verifyResult[0].businessId;
 		if (leadBusinessId && leadBusinessId !== sessionResult.session.businessId) {
 			return json(
 				{ success: false, error: 'Forbidden - You can only update your own leads' },
@@ -57,16 +60,13 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		// ✅ Update only `stage` and `status`
-		const updateQuery = `
-            UPDATE us_leaddata
-            SET stage = $1, status = $2
-            WHERE id = $3
-            RETURNING *;
-        `;
+		const result = await db
+			.update(usLeaddata)
+			.set({ stage, status })
+			.where(eq(usLeaddata.id, id))
+			.returning(US_LEAD_RETURNING);
 
-		const result = await pool.query<LeadData>(updateQuery, [stage, status, id]);
-
-		if (result.rows.length === 0) {
+		if (result.length === 0) {
 			return json(
 				{ success: false, error: 'Lead not found' },
 				{ status: 404 }
@@ -75,7 +75,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		await syncLeadToUnified(db, 'us', id);
 
-		return json({ success: true, lead: result.rows[0] });
+		return json({ success: true, lead: result[0] });
 	} catch (error) {
 		console.error('❌ Error updating lead data:', error);
 		return json(

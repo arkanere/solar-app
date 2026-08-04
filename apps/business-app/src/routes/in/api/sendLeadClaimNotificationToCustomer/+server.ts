@@ -1,21 +1,10 @@
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
 import { json } from '@sveltejs/kit';
 import { sendEmail } from '$lib/in/sendEmail';
 import { mintUserToken } from '$lib/server/magicLink';
 import type { RequestHandler } from './$types';
-
-
-interface LeadRow {
-	name: string;
-	email: string | null;
-}
-
-interface BusinessRow {
-	businessname: string;
-	phonenumber: string | null;
-	email: string | null;
-	slug: string;
-}
+import { businesses, leads } from '@solar/db/schema';
+import { and, eq } from 'drizzle-orm';
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
@@ -25,31 +14,36 @@ export const POST: RequestHandler = async ({ request }) => {
 			return json({ success: false, error: 'Lead ID and Business ID are required' }, { status: 400 });
 		}
 
-		const leadResult = await pool.query<LeadRow>(
-			`SELECT name, email FROM leads WHERE country_code = 'in' AND source_id = $1`,
-			[lead_id]
-		);
+		const leadResult = await db
+			.select({ name: leads.name, email: leads.email })
+			.from(leads)
+			.where(and(eq(leads.countryCode, 'in'), eq(leads.sourceId, lead_id)));
 
-		if (leadResult.rows.length === 0) {
+		if (leadResult.length === 0) {
 			return json({ success: false, error: 'Lead not found' }, { status: 404 });
 		}
 
-		const lead = leadResult.rows[0];
+		const lead = leadResult[0];
 
 		if (!lead.email) {
 			return json({ success: true, skipped: true, reason: 'No customer email' });
 		}
 
-		const businessResult = await pool.query<BusinessRow>(
-			`SELECT businessname, phonenumber, email, slug FROM businesses WHERE country_code = 'in' AND source_id = $1`,
-			[business_id]
-		);
+		const businessResult = await db
+			.select({
+				businessname: businesses.businessname,
+				phonenumber: businesses.phonenumber,
+				email: businesses.email,
+				slug: businesses.slug
+			})
+			.from(businesses)
+			.where(and(eq(businesses.countryCode, 'in'), eq(businesses.sourceId, business_id)));
 
-		if (businessResult.rows.length === 0) {
+		if (businessResult.length === 0) {
 			return json({ success: false, error: 'Business not found' }, { status: 404 });
 		}
 
-		const business = businessResult.rows[0];
+		const business = businessResult[0];
 		const profileLink = `https://solarvipani.com/in/installer/${business.slug}`;
 		const adminEmail = 'admin@solarvipani.com';
 

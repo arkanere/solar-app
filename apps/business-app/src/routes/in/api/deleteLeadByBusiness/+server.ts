@@ -1,7 +1,10 @@
-import { pool, db } from '$lib/server/db';
+import { db } from '$lib/server/db';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/in/auth/business';
 import { syncLeadToUnified } from '$lib/server/unifiedSync';
+import { IN_LEAD_RETURNING } from '$lib/server/leads';
+import { branches, leaddata } from '@solar/db/schema';
+import { and, eq } from 'drizzle-orm';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
 
@@ -29,24 +32,26 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		// Get all business IDs this session can manage (main + branches)
 		const mainBusinessId = sessionResult.session.businessId;
-		const branchResult = await pool.query<{ branch_id: number }>(
-			'SELECT branch_id FROM branches WHERE main_id = $1 AND isactive = true',
-			[mainBusinessId]
-		);
-		const allowedBusinessIds = [mainBusinessId, ...branchResult.rows.map(r => r.branch_id)];
+		const branchResult = await db
+			.select({ branchId: branches.branchId })
+			.from(branches)
+			.where(and(eq(branches.mainId, mainBusinessId), eq(branches.isactive, true)));
+		const allowedBusinessIds = [mainBusinessId, ...branchResult.map((r) => r.branchId)];
 
 		// Verify the lead exists and belongs to main business or its branches
-		const verifyQuery = `SELECT business_id FROM leaddata WHERE id = $1`;
-		const verifyResult = await pool.query<{ business_id: number | null }>(verifyQuery, [id]);
+		const verifyResult = await db
+			.select({ businessId: leaddata.businessId })
+			.from(leaddata)
+			.where(eq(leaddata.id, id));
 
-		if (verifyResult.rows.length === 0) {
+		if (verifyResult.length === 0) {
 			return json(
 				{ success: false, error: 'Lead not found' },
 				{ status: 404 }
 			);
 		}
 
-		const leadBusinessId = verifyResult.rows[0].business_id;
+		const leadBusinessId = verifyResult[0].businessId;
 		if (leadBusinessId && !allowedBusinessIds.includes(leadBusinessId)) {
 			return json(
 				{ success: false, error: 'Forbidden - You can only delete your own leads' },
@@ -55,16 +60,13 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		// ✅ Update `isvisible` to FALSE instead of deleting the record
-		const updateQuery = `
-            UPDATE leaddata
-            SET isvisible = FALSE
-            WHERE id = $1
-            RETURNING *;
-        `;
+		const result = await db
+			.update(leaddata)
+			.set({ isvisible: false })
+			.where(eq(leaddata.id, id))
+			.returning(IN_LEAD_RETURNING);
 
-		const result = await pool.query(updateQuery, [id]);
-
-		if (result.rows.length === 0) {
+		if (result.length === 0) {
 			return json(
 				{ success: false, error: 'Lead not found' },
 				{ status: 404 }
@@ -73,7 +75,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		await syncLeadToUnified(db, 'in', id);
 
-		return json({ success: true, lead: result.rows[0] });
+		return json({ success: true, lead: result[0] });
 	} catch (error) {
 		console.error('❌ Error deleting lead data:', error);
 		return json(

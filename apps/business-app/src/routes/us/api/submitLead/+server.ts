@@ -1,8 +1,10 @@
 // src/routes/api/submitLead/+server.ts
-import { pool, db } from '$lib/server/db';
+import { db } from '$lib/server/db';
 import { json } from '@sveltejs/kit';
 import { syncLeadToUnified } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
+import { pincodeMapping, usLeaddata } from '@solar/db/schema';
+import { eq } from 'drizzle-orm';
 
 interface SubmitLeadRequest {
 	name: string;
@@ -12,15 +14,6 @@ interface SubmitLeadRequest {
 	comment: string;
 	urlParam: string;
 	email?: string;
-}
-
-interface LeadInsertResult {
-	id: number;
-	reference_uuid: string;
-}
-
-interface CountyResult {
-	district: string;
 }
 
 export const POST: RequestHandler = async ({ request, fetch }) => {
@@ -33,14 +26,13 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 		let county: string | null = null;
 		if (pinCode) {
 			try {
-				const countyQuery = `
-					SELECT district FROM pincode_mapping
-					WHERE pincode = $1
-					LIMIT 1
-				`;
-				const countyResult = await pool.query<CountyResult>(countyQuery, [pinCode]);
-				if (countyResult.rows.length > 0) {
-					county = countyResult.rows[0].district;
+				const countyResult = await db
+					.select({ district: pincodeMapping.district })
+					.from(pincodeMapping)
+					.where(eq(pincodeMapping.pincode, pinCode))
+					.limit(1);
+				if (countyResult.length > 0) {
+					county = countyResult[0].district;
 				}
 			} catch (countyError) {
 				console.log('County lookup failed for pincode:', pinCode, countyError);
@@ -48,24 +40,21 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 			}
 		}
 
-		const insertQuery = `
-            INSERT INTO us_leaddata (name, phone, zipcode, type, comment, urlparams, email, county)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-            RETURNING id
-        `;
+		const result = await db
+			.insert(usLeaddata)
+			.values({
+				name,
+				phone,
+				zipcode: pinCode,
+				type,
+				comment,
+				urlparams: urlParam,
+				email: email || null,
+				county
+			})
+			.returning({ id: usLeaddata.id });
 
-		const result = await pool.query<LeadInsertResult>(insertQuery, [
-			name,
-			phone,
-			pinCode,
-			type,
-			comment,
-			urlParam,
-			email || null,
-			county
-		]);
-
-		const leadId = result.rows[0].id;
+		const leadId = result[0].id;
 		// us_leaddata has no reference_uuid column (the old RETURNING made this
 		// endpoint fail outright); the unified leads table owns that concept.
 		const referenceUuid = null;

@@ -1,8 +1,10 @@
-import { pool, db } from '$lib/server/db';
+import { db } from '$lib/server/db';
 import { json } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/us/auth/business';
 import { syncBusinessToUnified, syncAccountToUnified } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
+import { usBranches, usBusinesses } from '@solar/db/schema';
+import { eq, inArray } from 'drizzle-orm';
 
 export const POST: RequestHandler = async ({ cookies }) => {
 
@@ -22,24 +24,28 @@ export const POST: RequestHandler = async ({ cookies }) => {
 
 		// Soft-delete the account: hide the business, disable re-login by clearing
 		// credentials, and deactivate/hide any branches it owns.
-		await pool.query(
-			`UPDATE us_businesses
-			 SET isvisible = false, login_password = NULL, magic_link_token = NULL
-			 WHERE id = $1`,
-			[businessId]
-		);
+		await db
+			.update(usBusinesses)
+			.set({ isvisible: false, loginPassword: null, magicLinkToken: null })
+			.where(eq(usBusinesses.id, businessId));
 
-		await pool.query(`UPDATE us_branches SET isactive = false WHERE main_id = $1`, [businessId]);
+		await db.update(usBranches).set({ isactive: false }).where(eq(usBranches.mainId, businessId));
 
-		const hiddenBranches = await pool.query<{ id: number }>(
-			`UPDATE us_businesses
-			 SET isvisible = false
-			 WHERE id IN (SELECT branch_id FROM us_branches WHERE main_id = $1)
-			 RETURNING id`,
-			[businessId]
-		);
+		const hiddenBranches = await db
+			.update(usBusinesses)
+			.set({ isvisible: false })
+			.where(
+				inArray(
+					usBusinesses.id,
+					db
+						.select({ branchId: usBranches.branchId })
+						.from(usBranches)
+						.where(eq(usBranches.mainId, businessId))
+				)
+			)
+			.returning({ id: usBusinesses.id });
 
-		for (const row of [{ id: businessId }, ...hiddenBranches.rows]) {
+		for (const row of [{ id: businessId }, ...hiddenBranches]) {
 			await syncBusinessToUnified(db, 'us', row.id);
 			await syncAccountToUnified(db, 'us', row.id);
 		}

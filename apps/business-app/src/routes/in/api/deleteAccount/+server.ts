@@ -1,8 +1,10 @@
-import { pool, db } from '$lib/server/db';
+import { db } from '$lib/server/db';
 import { json } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/in/auth/business';
 import { syncBusinessToUnified, syncAccountToUnified, syncInSplitTables } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
+import { branches, businesses1 } from '@solar/db/schema';
+import { eq, inArray } from 'drizzle-orm';
 
 export const POST: RequestHandler = async ({ cookies }) => {
 
@@ -22,24 +24,28 @@ export const POST: RequestHandler = async ({ cookies }) => {
 
 		// Soft-delete the account: hide the business, disable re-login by clearing
 		// credentials, and deactivate/hide any branches it owns.
-		await pool.query(
-			`UPDATE businesses_1
-			 SET isvisible = false, login_password = NULL, magic_link_token = NULL
-			 WHERE id = $1`,
-			[businessId]
-		);
+		await db
+			.update(businesses1)
+			.set({ isvisible: false, loginPassword: null, magicLinkToken: null })
+			.where(eq(businesses1.id, businessId));
 
-		await pool.query(`UPDATE branches SET isactive = false WHERE main_id = $1`, [businessId]);
+		await db.update(branches).set({ isactive: false }).where(eq(branches.mainId, businessId));
 
-		const hiddenBranches = await pool.query<{ id: number }>(
-			`UPDATE businesses_1
-			 SET isvisible = false
-			 WHERE id IN (SELECT branch_id FROM branches WHERE main_id = $1)
-			 RETURNING id`,
-			[businessId]
-		);
+		const hiddenBranches = await db
+			.update(businesses1)
+			.set({ isvisible: false })
+			.where(
+				inArray(
+					businesses1.id,
+					db
+						.select({ branchId: branches.branchId })
+						.from(branches)
+						.where(eq(branches.mainId, businessId))
+				)
+			)
+			.returning({ id: businesses1.id });
 
-		for (const row of [{ id: businessId }, ...hiddenBranches.rows]) {
+		for (const row of [{ id: businessId }, ...hiddenBranches]) {
 			await syncInSplitTables(db, row.id);
 			await syncBusinessToUnified(db, 'in', row.id);
 			await syncAccountToUnified(db, 'in', row.id);
