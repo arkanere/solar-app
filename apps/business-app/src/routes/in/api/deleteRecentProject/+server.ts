@@ -1,5 +1,7 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { projects } from '@solar/db/schema';
+import { eq } from 'drizzle-orm';
 import { v2 as cloudinary } from 'cloudinary';
 import { CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } from '$env/static/private';
 import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
@@ -39,53 +41,50 @@ export const DELETE: RequestHandler = async ({ request, cookies }) => {
 			);
 		}
 
-		const client = await pool.connect();
+		const [project] = await db
+			.select({
+				businessSlug: projects.businessSlug,
+				cloudinaryPublicId: projects.cloudinaryPublicId
+			})
+			.from(projects)
+			.where(eq(projects.id, Number(projectId)))
+			.limit(1);
 
-		try {
-			const projectResult = await client.query(
-				'SELECT business_slug, cloudinary_public_id FROM projects WHERE id = $1',
-				[projectId]
-			);
-
-			if (projectResult.rows.length === 0) {
-				return json({ success: false, error: 'Project not found' }, { status: 404 });
-			}
-
-			const project = projectResult.rows[0];
-
-			if (project.business_slug !== business_slug) {
-				return json(
-					{ success: false, error: 'Forbidden - This project belongs to another business' },
-					{ status: 403 }
-				);
-			}
-
-			if (project.cloudinary_public_id) {
-				try {
-					await cloudinary.uploader.destroy(project.cloudinary_public_id);
-					console.log('Deleted image from Cloudinary:', project.cloudinary_public_id);
-				} catch (cloudinaryError) {
-					console.error('❌ Error deleting from Cloudinary:', cloudinaryError);
-				}
-			}
-
-			const deleteResult = await client.query('DELETE FROM projects WHERE id = $1 RETURNING id', [
-				projectId
-			]);
-
-			if (deleteResult.rows.length === 0) {
-				return json({ success: false, error: 'Failed to delete project' }, { status: 500 });
-			}
-
-			console.log('Project deleted successfully:', projectId);
-
-			return json({
-				success: true,
-				message: 'Project deleted successfully'
-			});
-		} finally {
-			client.release();
+		if (!project) {
+			return json({ success: false, error: 'Project not found' }, { status: 404 });
 		}
+
+		if (project.businessSlug !== business_slug) {
+			return json(
+				{ success: false, error: 'Forbidden - This project belongs to another business' },
+				{ status: 403 }
+			);
+		}
+
+		if (project.cloudinaryPublicId) {
+			try {
+				await cloudinary.uploader.destroy(project.cloudinaryPublicId);
+				console.log('Deleted image from Cloudinary:', project.cloudinaryPublicId);
+			} catch (cloudinaryError) {
+				console.error('❌ Error deleting from Cloudinary:', cloudinaryError);
+			}
+		}
+
+		const deleted = await db
+			.delete(projects)
+			.where(eq(projects.id, Number(projectId)))
+			.returning({ id: projects.id });
+
+		if (deleted.length === 0) {
+			return json({ success: false, error: 'Failed to delete project' }, { status: 500 });
+		}
+
+		console.log('Project deleted successfully:', projectId);
+
+		return json({
+			success: true,
+			message: 'Project deleted successfully'
+		});
 	} catch (error) {
 		console.error('❌ Error deleting project:', error);
 		return json(

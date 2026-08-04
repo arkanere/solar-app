@@ -1,5 +1,7 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { pincodeMapping, projects } from '@solar/db/schema';
+import { eq } from 'drizzle-orm';
 import { CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } from '$env/static/private';
 import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
 import { v2 as cloudinary } from 'cloudinary';
@@ -220,17 +222,17 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		const projectSlug = generateProjectSlug(projectTitle);
 		console.log('Generated project slug:', projectSlug);
 
-		const client = await pool.connect();
 		try {
 			let district = 'Unknown';
 			try {
-				const districtResult = await client.query(
-					'SELECT district FROM pincode_mapping WHERE pincode = $1',
-					[pincode]
-				);
+				const [districtRow] = await db
+					.select({ district: pincodeMapping.district })
+					.from(pincodeMapping)
+					.where(eq(pincodeMapping.pincode, pincode))
+					.limit(1);
 
-				if (districtResult.rows.length > 0) {
-					district = districtResult.rows[0].district;
+				if (districtRow) {
+					district = districtRow.district;
 					console.log('Found district for pincode', pincode, ':', district);
 				} else {
 					console.log('No district found for pincode', pincode, ', using "Unknown"');
@@ -241,47 +243,53 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 			console.log('Using business slug:', business_slug);
 
-			let queryFields = 'business_slug, title, project_slug, pincode, district, project_date';
-			let queryValues = '$1, $2, $3, $4, $5, $6';
-			const queryParams: any[] = [business_slug, projectTitle, projectSlug, pincode, district, projectDate];
-			let returnFields =
-				'id, business_slug, title, project_slug, pincode, district, project_date, created_at';
-			let index = 7;
+			// Returned keys are aliased to snake_case so the JSON response shape is
+			// unchanged; the image columns are only included when an image was
+			// uploaded, matching the old dynamic RETURNING list.
+			const [project] = await db
+				.insert(projects)
+				.values({
+					businessSlug: business_slug,
+					title: projectTitle,
+					projectSlug,
+					pincode,
+					district,
+					projectDate,
+					...(imageData
+						? {
+								imageUrl: imageData.url,
+								cloudinaryPublicId: imageData.publicId,
+								imageWidth: imageData.width,
+								imageHeight: imageData.height,
+								imageFormat: imageData.format
+							}
+						: {})
+				})
+				.returning({
+					id: projects.id,
+					business_slug: projects.businessSlug,
+					title: projects.title,
+					project_slug: projects.projectSlug,
+					pincode: projects.pincode,
+					district: projects.district,
+					project_date: projects.projectDate,
+					created_at: projects.createdAt,
+					...(imageData
+						? {
+								image_url: projects.imageUrl,
+								cloudinary_public_id: projects.cloudinaryPublicId,
+								image_width: projects.imageWidth,
+								image_height: projects.imageHeight,
+								image_format: projects.imageFormat
+							}
+						: {})
+				});
 
-			if (imageData) {
-				queryFields += ', image_url';
-				queryValues += `, $${index++}`;
-				queryParams.push(imageData.url);
-				returnFields += ', image_url';
-
-				queryFields += ', cloudinary_public_id';
-				queryValues += `, $${index++}`;
-				queryParams.push(imageData.publicId);
-				returnFields += ', cloudinary_public_id';
-
-				queryFields += ', image_width, image_height';
-				queryValues += `, $${index++}, $${index++}`;
-				queryParams.push(imageData.width, imageData.height);
-				returnFields += ', image_width, image_height';
-
-				queryFields += ', image_format';
-				queryValues += `, $${index++}`;
-				queryParams.push(imageData.format);
-				returnFields += ', image_format';
-			}
-
-			const result = await client.query(
-				`INSERT INTO projects (${queryFields})
-         VALUES (${queryValues})
-         RETURNING ${returnFields}`,
-				queryParams
-			);
-
-			console.log('Project inserted successfully:', result.rows[0]);
+			console.log('Project inserted successfully:', project);
 
 			return json({
 				success: true,
-				project: result.rows[0]
+				project
 			});
 		} catch (dbError) {
 			console.error('❌ Database error:', dbError);
@@ -292,8 +300,6 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				},
 				{ status: 500 }
 			);
-		} finally {
-			client.release();
 		}
 	} catch (error) {
 		console.error('❌ Error processing request:', error);

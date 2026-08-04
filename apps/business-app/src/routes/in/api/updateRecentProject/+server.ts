@@ -1,5 +1,7 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { pincodeMapping, projects } from '@solar/db/schema';
+import { and, eq } from 'drizzle-orm';
 import { CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } from '$env/static/private';
 import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
 import { v2 as cloudinary } from 'cloudinary';
@@ -199,14 +201,16 @@ const { BusinessAuthService } = await import('$lib/in/auth/business');
 			);
 		}
 
-		const client = await pool.connect();
 		try {
-			const existingProjectResult = await client.query(
-				'SELECT * FROM projects WHERE id = $1 AND business_slug = $2',
-				[projectId, business_slug]
-			);
+			const [existingProject] = await db
+				.select()
+				.from(projects)
+				.where(
+					and(eq(projects.id, Number(projectId)), eq(projects.businessSlug, business_slug))
+				)
+				.limit(1);
 
-			if (existingProjectResult.rows.length === 0) {
+			if (!existingProject) {
 				return json(
 					{
 						success: false,
@@ -216,18 +220,18 @@ const { BusinessAuthService } = await import('$lib/in/auth/business');
 				);
 			}
 
-			const existingProject = existingProjectResult.rows[0];
 			console.log('Existing project:', existingProject);
 
 			let district = 'Unknown';
 			try {
-				const districtResult = await client.query(
-					'SELECT district FROM pincode_mapping WHERE pincode = $1',
-					[pincode]
-				);
+				const [districtRow] = await db
+					.select({ district: pincodeMapping.district })
+					.from(pincodeMapping)
+					.where(eq(pincodeMapping.pincode, pincode))
+					.limit(1);
 
-				if (districtResult.rows.length > 0) {
-					district = districtResult.rows[0].district;
+				if (districtRow) {
+					district = districtRow.district;
 					console.log('Found district for pincode', pincode, ':', district);
 				} else {
 					console.log('No district found for pincode', pincode, ', using "Unknown"');
@@ -236,82 +240,81 @@ const { BusinessAuthService } = await import('$lib/in/auth/business');
 				console.error('Error looking up district for pincode', pincode, ':', districtError);
 			}
 
-			let projectSlug = existingProject.project_slug;
+			let projectSlug = existingProject.projectSlug;
 			if (projectTitle !== existingProject.title) {
 				projectSlug = generateProjectSlug(projectTitle);
 				console.log('Generated new project slug:', projectSlug);
 			}
 
-			const updateFields = [
-				'title = $2',
-				'project_slug = $3',
-				'pincode = $4',
-				'district = $5',
-				'project_date = $6'
-			];
-			const queryParams: any[] = [projectId, projectTitle, projectSlug, pincode, district, projectDate];
-			let returnFields =
-				'id, business_slug, title, project_slug, pincode, district, project_date, created_at';
-			let index = 7;
+			const updateValues: Partial<typeof projects.$inferInsert> = {
+				title: projectTitle,
+				projectSlug,
+				pincode,
+				district,
+				projectDate
+			};
 
-			const oldPublicId = existingProject.cloudinary_public_id;
+			const oldPublicId = existingProject.cloudinaryPublicId;
+
+			// The old dynamic RETURNING list included the image columns only when a
+			// new image was uploaded, or when the row already had one and nothing
+			// changed. Preserved here so the JSON response shape is unchanged.
+			let includeImageFields = false;
 
 			if (removeImage) {
-				updateFields.push(
-					`image_url = NULL`,
-					`cloudinary_public_id = NULL`,
-					`image_width = NULL`,
-					`image_height = NULL`,
-					`image_format = NULL`
-				);
+				updateValues.imageUrl = null;
+				updateValues.cloudinaryPublicId = null;
+				updateValues.imageWidth = null;
+				updateValues.imageHeight = null;
+				updateValues.imageFormat = null;
 
 				if (oldPublicId) {
 					await deleteFromCloudinary(oldPublicId);
 				}
 			} else if (imageData) {
-				updateFields.push(
-					`image_url = $${index++}`,
-					`cloudinary_public_id = $${index++}`,
-					`image_width = $${index++}`,
-					`image_height = $${index++}`,
-					`image_format = $${index++}`
-				);
-				queryParams.push(
-					imageData.url,
-					imageData.publicId,
-					imageData.width,
-					imageData.height,
-					imageData.format
-				);
-				returnFields +=
-					', image_url, cloudinary_public_id, image_width, image_height, image_format';
+				updateValues.imageUrl = imageData.url;
+				updateValues.cloudinaryPublicId = imageData.publicId;
+				updateValues.imageWidth = imageData.width;
+				updateValues.imageHeight = imageData.height;
+				updateValues.imageFormat = imageData.format;
+				includeImageFields = true;
 
 				if (oldPublicId) {
 					await deleteFromCloudinary(oldPublicId);
 				}
-			} else {
-				if (existingProject.image_url) {
-					returnFields +=
-						', image_url, cloudinary_public_id, image_width, image_height, image_format';
-				}
+			} else if (existingProject.imageUrl) {
+				includeImageFields = true;
 			}
 
-			queryParams.push(business_slug);
-			const businessSlugParamIndex = queryParams.length;
+			const [project] = await db
+				.update(projects)
+				.set(updateValues)
+				.where(and(eq(projects.id, Number(projectId)), eq(projects.businessSlug, business_slug)))
+				.returning({
+					id: projects.id,
+					business_slug: projects.businessSlug,
+					title: projects.title,
+					project_slug: projects.projectSlug,
+					pincode: projects.pincode,
+					district: projects.district,
+					project_date: projects.projectDate,
+					created_at: projects.createdAt,
+					...(includeImageFields
+						? {
+								image_url: projects.imageUrl,
+								cloudinary_public_id: projects.cloudinaryPublicId,
+								image_width: projects.imageWidth,
+								image_height: projects.imageHeight,
+								image_format: projects.imageFormat
+							}
+						: {})
+				});
 
-			const result = await client.query(
-				`UPDATE projects
-				 SET ${updateFields.join(', ')}
-				 WHERE id = $1 AND business_slug = $${businessSlugParamIndex}
-				 RETURNING ${returnFields}`,
-				queryParams
-			);
-
-			console.log('Project updated successfully:', result.rows[0]);
+			console.log('Project updated successfully:', project);
 
 			return json({
 				success: true,
-				project: result.rows[0]
+				project
 			});
 		} catch (dbError) {
 			console.error('❌ Database error:', dbError);
@@ -322,8 +325,6 @@ const { BusinessAuthService } = await import('$lib/in/auth/business');
 				},
 				{ status: 500 }
 			);
-		} finally {
-			client.release();
 		}
 };
 
@@ -359,14 +360,13 @@ export const DELETE: RequestHandler = async ({ request, cookies }) => {
 			);
 		}
 
-		const client = await pool.connect();
 		try {
-			const existingProjectResult = await client.query(
-				'SELECT * FROM projects WHERE id = $1 AND business_slug = $2',
-				[projectId, business_slug]
-			);
+			const existingProject = await db
+				.select({ id: projects.id })
+				.from(projects)
+				.where(and(eq(projects.id, Number(projectId)), eq(projects.businessSlug, business_slug)));
 
-			if (existingProjectResult.rows.length === 0) {
+			if (existingProject.length === 0) {
 				return json(
 					{
 						success: false,
@@ -376,12 +376,13 @@ export const DELETE: RequestHandler = async ({ request, cookies }) => {
 				);
 			}
 
-			const result = await client.query(
-				'UPDATE projects SET isvisible = FALSE WHERE id = $1 AND business_slug = $2 RETURNING id, title',
-				[projectId, business_slug]
-			);
+			const hidden = await db
+				.update(projects)
+				.set({ isvisible: false })
+				.where(and(eq(projects.id, Number(projectId)), eq(projects.businessSlug, business_slug)))
+				.returning({ id: projects.id, title: projects.title });
 
-			if (result.rows.length === 0) {
+			if (hidden.length === 0) {
 				return json(
 					{
 						success: false,
@@ -406,8 +407,6 @@ export const DELETE: RequestHandler = async ({ request, cookies }) => {
 				},
 				{ status: 500 }
 			);
-		} finally {
-			client.release();
 		}
 } catch (error) {
 	console.error('Error in DELETE handler:', error);

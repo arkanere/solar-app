@@ -1,5 +1,7 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { pincodeMapping, usProjects } from '@solar/db/schema';
+import { and, eq } from 'drizzle-orm';
 import { CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } from '$env/static/private';
 import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
 import { v2 as cloudinary } from 'cloudinary';
@@ -199,14 +201,17 @@ const { BusinessAuthService } = await import('$lib/us/auth/business');
 			);
 		}
 
-		const client = await pool.connect();
 		try {
-			const existingProjectResult = await client.query(
-				'SELECT * FROM projects WHERE id = $1 AND business_slug = $2',
-				[projectId, business_slug]
-			);
+			// us_projects, not `projects` — see the note in us/api/postRecentProject.
+			const [existingProject] = await db
+				.select()
+				.from(usProjects)
+				.where(
+					and(eq(usProjects.id, Number(projectId)), eq(usProjects.businessSlug, business_slug))
+				)
+				.limit(1);
 
-			if (existingProjectResult.rows.length === 0) {
+			if (!existingProject) {
 				return json(
 					{
 						success: false,
@@ -216,18 +221,18 @@ const { BusinessAuthService } = await import('$lib/us/auth/business');
 				);
 			}
 
-			const existingProject = existingProjectResult.rows[0];
 			console.log('Existing project:', existingProject);
 
 			let county = 'Unknown';
 			try {
-				const countyResult = await client.query(
-					'SELECT district FROM pincode_mapping WHERE pincode = $1',
-					[pincode]
-				);
+				const [countyRow] = await db
+					.select({ district: pincodeMapping.district })
+					.from(pincodeMapping)
+					.where(eq(pincodeMapping.pincode, pincode))
+					.limit(1);
 
-				if (countyResult.rows.length > 0) {
-					county = countyResult.rows[0].district;
+				if (countyRow) {
+					county = countyRow.district;
 					console.log('Found county for pincode', pincode, ':', county);
 				} else {
 					console.log('No county found for pincode', pincode, ', using "Unknown"');
@@ -236,82 +241,83 @@ const { BusinessAuthService } = await import('$lib/us/auth/business');
 				console.error('Error looking up county for pincode', pincode, ':', countyError);
 			}
 
-			let projectSlug = existingProject.project_slug;
+			let projectSlug = existingProject.projectSlug;
 			if (projectTitle !== existingProject.title) {
 				projectSlug = generateProjectSlug(projectTitle);
 				console.log('Generated new project slug:', projectSlug);
 			}
 
-			const updateFields = [
-				'title = $2',
-				'project_slug = $3',
-				'pincode = $4',
-				'county = $5',
-				'project_date = $6'
-			];
-			const queryParams: any[] = [projectId, projectTitle, projectSlug, pincode, county, projectDate];
-			let returnFields =
-				'id, business_slug, title, project_slug, pincode, county, project_date, created_at';
-			let index = 7;
+			const updateValues: Partial<typeof usProjects.$inferInsert> = {
+				title: projectTitle,
+				projectSlug,
+				zipcode: pincode,
+				county,
+				projectDate
+			};
 
-			const oldPublicId = existingProject.cloudinary_public_id;
+			const oldPublicId = existingProject.cloudinaryPublicId;
+
+			// The old dynamic RETURNING list included the image columns only when a
+			// new image was uploaded, or when the row already had one and nothing
+			// changed. Preserved here so the JSON response shape is unchanged.
+			let includeImageFields = false;
 
 			if (removeImage) {
-				updateFields.push(
-					`image_url = NULL`,
-					`cloudinary_public_id = NULL`,
-					`image_width = NULL`,
-					`image_height = NULL`,
-					`image_format = NULL`
-				);
+				updateValues.imageUrl = null;
+				updateValues.cloudinaryPublicId = null;
+				updateValues.imageWidth = null;
+				updateValues.imageHeight = null;
+				updateValues.imageFormat = null;
 
 				if (oldPublicId) {
 					await deleteFromCloudinary(oldPublicId);
 				}
 			} else if (imageData) {
-				updateFields.push(
-					`image_url = $${index++}`,
-					`cloudinary_public_id = $${index++}`,
-					`image_width = $${index++}`,
-					`image_height = $${index++}`,
-					`image_format = $${index++}`
-				);
-				queryParams.push(
-					imageData.url,
-					imageData.publicId,
-					imageData.width,
-					imageData.height,
-					imageData.format
-				);
-				returnFields +=
-					', image_url, cloudinary_public_id, image_width, image_height, image_format';
+				updateValues.imageUrl = imageData.url;
+				updateValues.cloudinaryPublicId = imageData.publicId;
+				updateValues.imageWidth = imageData.width;
+				updateValues.imageHeight = imageData.height;
+				updateValues.imageFormat = imageData.format;
+				includeImageFields = true;
 
 				if (oldPublicId) {
 					await deleteFromCloudinary(oldPublicId);
 				}
-			} else {
-				if (existingProject.image_url) {
-					returnFields +=
-						', image_url, cloudinary_public_id, image_width, image_height, image_format';
-				}
+			} else if (existingProject.imageUrl) {
+				includeImageFields = true;
 			}
 
-			queryParams.push(business_slug);
-			const businessSlugParamIndex = queryParams.length;
+			const [project] = await db
+				.update(usProjects)
+				.set(updateValues)
+				.where(
+					and(eq(usProjects.id, Number(projectId)), eq(usProjects.businessSlug, business_slug))
+				)
+				.returning({
+					id: usProjects.id,
+					business_slug: usProjects.businessSlug,
+					title: usProjects.title,
+					project_slug: usProjects.projectSlug,
+					pincode: usProjects.zipcode,
+					county: usProjects.county,
+					project_date: usProjects.projectDate,
+					created_at: usProjects.createdAt,
+					...(includeImageFields
+						? {
+								image_url: usProjects.imageUrl,
+								cloudinary_public_id: usProjects.cloudinaryPublicId,
+								image_width: usProjects.imageWidth,
+								image_height: usProjects.imageHeight,
+								image_format: usProjects.imageFormat
+							}
+						: {})
+				});
 
-			const result = await client.query(
-				`UPDATE projects
-				 SET ${updateFields.join(', ')}
-				 WHERE id = $1 AND business_slug = $${businessSlugParamIndex}
-				 RETURNING ${returnFields}`,
-				queryParams
-			);
-
-			console.log('Project updated successfully:', result.rows[0]);
+			console.log('Project updated successfully:', project);
 
 			return json({
 				success: true,
-				project: result.rows[0]
+				project
 			});
 		} catch (dbError) {
 			console.error('❌ Database error:', dbError);
@@ -322,8 +328,6 @@ const { BusinessAuthService } = await import('$lib/us/auth/business');
 				},
 				{ status: 500 }
 			);
-		} finally {
-			client.release();
 		}
 };
 
@@ -359,14 +363,15 @@ export const DELETE: RequestHandler = async ({ request, cookies }) => {
 			);
 		}
 
-		const client = await pool.connect();
 		try {
-			const existingProjectResult = await client.query(
-				'SELECT * FROM projects WHERE id = $1 AND business_slug = $2',
-				[projectId, business_slug]
-			);
+			const existingProject = await db
+				.select({ id: usProjects.id })
+				.from(usProjects)
+				.where(
+					and(eq(usProjects.id, Number(projectId)), eq(usProjects.businessSlug, business_slug))
+				);
 
-			if (existingProjectResult.rows.length === 0) {
+			if (existingProject.length === 0) {
 				return json(
 					{
 						success: false,
@@ -376,12 +381,15 @@ export const DELETE: RequestHandler = async ({ request, cookies }) => {
 				);
 			}
 
-			const result = await client.query(
-				'UPDATE projects SET isvisible = FALSE WHERE id = $1 AND business_slug = $2 RETURNING id, title',
-				[projectId, business_slug]
-			);
+			const hidden = await db
+				.update(usProjects)
+				.set({ isvisible: false })
+				.where(
+					and(eq(usProjects.id, Number(projectId)), eq(usProjects.businessSlug, business_slug))
+				)
+				.returning({ id: usProjects.id, title: usProjects.title });
 
-			if (result.rows.length === 0) {
+			if (hidden.length === 0) {
 				return json(
 					{
 						success: false,
@@ -406,8 +414,6 @@ export const DELETE: RequestHandler = async ({ request, cookies }) => {
 				},
 				{ status: 500 }
 			);
-		} finally {
-			client.release();
 		}
 	} catch (error) {
 		console.error('❌ Error processing request:', error);
