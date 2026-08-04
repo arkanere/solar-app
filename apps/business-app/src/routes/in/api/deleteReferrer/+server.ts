@@ -1,4 +1,6 @@
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { inReferrers } from '@solar/db/schema';
+import { and, eq } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/in/auth/business';
 import type { RequestHandler } from './$types';
@@ -6,11 +8,6 @@ import type { RequestHandler } from './$types';
 interface DeleteReferrerRequest {
 	referrerId: number;
 	businessId: number;
-}
-
-interface ReferrerResult {
-	id: number;
-	name: string;
 }
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
@@ -44,13 +41,12 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		// Check if referrer exists and belongs to this business
-		const checkQuery = `
-			SELECT id, name FROM in_referrers
-			WHERE id = $1 AND business_id = $2
-		`;
-		const checkResult = await pool.query<ReferrerResult>(checkQuery, [referrerId, businessId]);
+		const existing = await db
+			.select({ id: inReferrers.id, name: inReferrers.name })
+			.from(inReferrers)
+			.where(and(eq(inReferrers.id, referrerId), eq(inReferrers.businessId, businessId)));
 
-		if (checkResult.rows.length === 0) {
+		if (existing.length === 0) {
 			return json(
 				{ success: false, error: 'Referrer not found or does not belong to your business' },
 				{ status: 404 }
@@ -58,14 +54,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		// Delete the referrer
-		const deleteQuery = `
-			DELETE FROM in_referrers
-			WHERE id = $1 AND business_id = $2
-			RETURNING id, name
-		`;
-		const deleteResult = await pool.query<ReferrerResult>(deleteQuery, [referrerId, businessId]);
-
-		const deletedReferrer = deleteResult.rows[0];
+		const [deletedReferrer] = await db
+			.delete(inReferrers)
+			.where(and(eq(inReferrers.id, referrerId), eq(inReferrers.businessId, businessId)))
+			.returning({ id: inReferrers.id, name: inReferrers.name });
 
 		return json({
 			success: true,

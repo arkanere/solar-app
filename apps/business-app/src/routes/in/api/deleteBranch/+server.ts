@@ -1,4 +1,6 @@
-import { pool } from '$lib/server/db';
+import { pool, db } from '$lib/server/db';
+import { branches, businesses1 } from '@solar/db/schema';
+import { and, eq } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/in/auth/business';
 import { syncBusinessToUnified, syncAccountToUnified, syncInSplitTables } from '$lib/server/unifiedSync';
@@ -27,18 +29,18 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		// Verify this branch belongs to the logged-in business
-		const verifyQuery = `
-			SELECT br.id, br.main_id, br.branch_id
-			FROM branches br
-			WHERE br.branch_id = $1 AND br.main_id = $2 AND br.isactive = true
-		`;
+		const existingBranch = await db
+			.select({ id: branches.id, mainId: branches.mainId, branchId: branches.branchId })
+			.from(branches)
+			.where(
+				and(
+					eq(branches.branchId, branchId),
+					eq(branches.mainId, sessionResult.session.businessId),
+					eq(branches.isactive, true)
+				)
+			);
 
-		const verifyResult = await pool.query(verifyQuery, [
-			branchId,
-			sessionResult.session.businessId
-		]);
-
-		if (verifyResult.rows.length === 0) {
+		if (existingBranch.length === 0) {
 			return json(
 				{ success: false, error: 'Branch not found or not authorized' },
 				{ status: 403 }
@@ -46,15 +48,17 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		// Soft-delete: deactivate the branch relationship and hide from listings
-		await pool.query(
-			`UPDATE branches SET isactive = false WHERE branch_id = $1 AND main_id = $2`,
-			[branchId, sessionResult.session.businessId]
-		);
+		await db
+			.update(branches)
+			.set({ isactive: false })
+			.where(
+				and(
+					eq(branches.branchId, branchId),
+					eq(branches.mainId, sessionResult.session.businessId)
+				)
+			);
 
-		await pool.query(
-			`UPDATE businesses_1 SET isvisible = false WHERE id = $1`,
-			[branchId]
-		);
+		await db.update(businesses1).set({ isvisible: false }).where(eq(businesses1.id, branchId));
 
 		await syncInSplitTables(pool, branchId);
 		await syncBusinessToUnified(pool, 'in', branchId);

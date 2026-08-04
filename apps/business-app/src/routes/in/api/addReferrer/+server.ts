@@ -1,24 +1,10 @@
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { inReferrers } from '@solar/db/schema';
+import { and, eq } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { addReferrerSchema, parseBody } from '@solar/validation';
 import { BusinessAuthService } from '$lib/in/auth/business';
 import type { RequestHandler } from './$types';
-
-interface ReferrerIdResult {
-	id: number;
-}
-
-interface ReferrerResult {
-	id: number;
-	business_id: number;
-	name: string;
-	slug: string;
-	phone: string;
-	email: string | null;
-	notes: string | null;
-	created_at: Date;
-	updated_at: Date;
-}
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
 
@@ -46,16 +32,12 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		// Check if referrer with same phone already exists for this business
-		const checkPhoneQuery = `
-			SELECT id FROM in_referrers
-			WHERE business_id = $1 AND phone = $2
-		`;
-		const checkPhoneResult = await pool.query<ReferrerIdResult>(checkPhoneQuery, [
-			businessId,
-			phone
-		]);
+		const phoneMatches = await db
+			.select({ id: inReferrers.id })
+			.from(inReferrers)
+			.where(and(eq(inReferrers.businessId, businessId), eq(inReferrers.phone, phone)));
 
-		if (checkPhoneResult.rows.length > 0) {
+		if (phoneMatches.length > 0) {
 			return json(
 				{ success: false, error: 'A referrer with this phone number already exists' },
 				{ status: 400 }
@@ -63,13 +45,12 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		// Check if referrer with same slug already exists for this business
-		const checkSlugQuery = `
-			SELECT id FROM in_referrers
-			WHERE business_id = $1 AND slug = $2
-		`;
-		const checkSlugResult = await pool.query<ReferrerIdResult>(checkSlugQuery, [businessId, slug]);
+		const slugMatches = await db
+			.select({ id: inReferrers.id })
+			.from(inReferrers)
+			.where(and(eq(inReferrers.businessId, businessId), eq(inReferrers.slug, slug)));
 
-		if (checkSlugResult.rows.length > 0) {
+		if (slugMatches.length > 0) {
 			return json(
 				{
 					success: false,
@@ -79,30 +60,22 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			);
 		}
 
-		// Insert referrer into database
-		const insertQuery = `
-			INSERT INTO in_referrers (
-				business_id,
-				name,
-				slug,
-				phone,
-				email,
-				notes
-			)
-			VALUES ($1, $2, $3, $4, $5, $6)
-			RETURNING id, business_id, name, slug, phone, email, notes, created_at, updated_at
-		`;
-
-		const insertResult = await pool.query<ReferrerResult>(insertQuery, [
-			businessId,
-			name,
-			slug,
-			phone,
-			email,
-			notes
-		]);
-
-		const newReferrer = insertResult.rows[0];
+		// Insert referrer into database. Keys are aliased back to snake_case so the
+		// JSON response shape stays identical to the raw-SQL version.
+		const [newReferrer] = await db
+			.insert(inReferrers)
+			.values({ businessId, name, slug, phone, email, notes })
+			.returning({
+				id: inReferrers.id,
+				business_id: inReferrers.businessId,
+				name: inReferrers.name,
+				slug: inReferrers.slug,
+				phone: inReferrers.phone,
+				email: inReferrers.email,
+				notes: inReferrers.notes,
+				created_at: inReferrers.createdAt,
+				updated_at: inReferrers.updatedAt
+			});
 
 		return json({
 			success: true,

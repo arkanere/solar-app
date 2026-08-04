@@ -1,5 +1,7 @@
 // src/routes/api/addBranch/+server.ts
-import { pool } from '$lib/server/db';
+import { pool, db } from '$lib/server/db';
+import { branches, businesses1, inBusinessProfiles } from '@solar/db/schema';
+import { and, eq, sql } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { randomBytes } from 'crypto';
 import { BusinessAuthService } from '$lib/in/auth/business';
@@ -45,24 +47,23 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		// 1. Fetch the main business data
-		const fetchBusinessQuery = `
-      SELECT * FROM businesses_1 WHERE id = $1
-    `;
-		const businessResult = await pool.query(fetchBusinessQuery, [businessId]);
+		const [mainBusiness] = await db
+			.select()
+			.from(businesses1)
+			.where(eq(businesses1.id, businessId))
+			.limit(1);
 
-		if (businessResult.rows.length === 0) {
+		if (!mainBusiness) {
 			return json(
 				{ success: false, error: 'Main business not found' },
 				{ status: 404 }
 			);
 		}
 
-		const mainBusiness = businessResult.rows[0];
-
 		// 2. Check if the business already has a presence in the specified city
 
 		// 2.1 First, check if the main business is in the same city
-		if (mainBusiness.city.toLowerCase() === city.toLowerCase()) {
+		if (mainBusiness.city?.toLowerCase() === city.toLowerCase()) {
 			return json(
 				{ success: false, error: 'Your business already has its main office in this city' },
 				{ status: 400 }
@@ -70,18 +71,20 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		// 2.2 Next, check if any existing branches are in the same city
-		const checkBranchesQuery = `
-      SELECT b.business_id AS id
-      FROM in_business_profiles b
-      JOIN branches br ON b.business_id = br.branch_id
-      WHERE br.main_id = $1
-      AND LOWER(b.city) = LOWER($2)
-      AND b.isvisible = TRUE
-    `;
+		// `sql` escape hatch: case-insensitive city compare (LOWER() = LOWER()).
+		const existingBranches = await db
+			.select({ id: inBusinessProfiles.businessId })
+			.from(inBusinessProfiles)
+			.innerJoin(branches, eq(inBusinessProfiles.businessId, branches.branchId))
+			.where(
+				and(
+					eq(branches.mainId, businessId),
+					sql`LOWER(${inBusinessProfiles.city}) = LOWER(${city})`,
+					eq(inBusinessProfiles.isvisible, true)
+				)
+			);
 
-		const branchesResult = await pool.query(checkBranchesQuery, [businessId, city]);
-
-		if (branchesResult.rows.length > 0) {
+		if (existingBranches.length > 0) {
 			return json(
 				{ success: false, error: 'Your business already has a branch office in this city' },
 				{ status: 400 }
@@ -90,57 +93,42 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		// 3. If no presence in the city, create a new branch entry in businesses_1
 		// Generate a unique slug for the branch using main business slug
-		const branchSlug = generateBranchSlug(mainBusiness.slug);
-
-		const insertBranchQuery = `
-      INSERT INTO businesses_1 (
-        rscore, isvisible, pluscode, phonenumber, email, login_email,
-        website, gstn, state, district, tag, slug, notes, city,
-        businessname, address, login_password, services, description
-      )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
-      RETURNING id
-    `;
+		const branchSlug = generateBranchSlug(mainBusiness.slug ?? '');
 
 		// Use the main business values but update state, district, city, and add branch notes
-		const branchResult = await pool.query(insertBranchQuery, [
-			mainBusiness.rscore,
-			mainBusiness.isvisible,
-			mainBusiness.pluscode,
-			mainBusiness.phonenumber,
-			mainBusiness.email,
-			mainBusiness.login_email,
-			mainBusiness.website,
-			mainBusiness.gstn,
-			state, // Use the provided state
-			district, // Use the provided district
-			mainBusiness.tag,
-			branchSlug, // Use the generated branch slug
-			`Branch office of ${mainBusiness.businessname}`, // Set notes to indicate it's a branch
-			city, // Use the provided city
-			mainBusiness.businessname, // Same business name
-			mainBusiness.address, // Same address
-			mainBusiness.login_password, // Same login password
-			mainBusiness.services, // Copy services array from main business
-			mainBusiness.description || 'Solar panel installer' // Copy description or use default
-		]);
+		const [insertedBranch] = await db
+			.insert(businesses1)
+			.values({
+				rscore: mainBusiness.rscore,
+				isvisible: mainBusiness.isvisible,
+				pluscode: mainBusiness.pluscode,
+				phonenumber: mainBusiness.phonenumber,
+				email: mainBusiness.email,
+				loginEmail: mainBusiness.loginEmail,
+				website: mainBusiness.website,
+				gstn: mainBusiness.gstn,
+				state, // Use the provided state
+				district, // Use the provided district
+				tag: mainBusiness.tag,
+				slug: branchSlug, // Use the generated branch slug
+				notes: `Branch office of ${mainBusiness.businessname}`, // Mark it as a branch
+				city, // Use the provided city
+				businessname: mainBusiness.businessname, // Same business name
+				address: mainBusiness.address, // Same address
+				loginPassword: mainBusiness.loginPassword, // Same login password
+				services: mainBusiness.services, // Copy services array from main business
+				description: mainBusiness.description || 'Solar panel installer'
+			})
+			.returning({ id: businesses1.id });
 
-		const branchId = branchResult.rows[0].id as number;
+		const branchId = insertedBranch.id;
 
 		// 4. Create an entry in the branches table to establish the relationship
-		const insertBranchRelationQuery = `
-      INSERT INTO branches (
-        main_id, branch_id, isactive
-      )
-      VALUES ($1, $2, $3)
-      RETURNING id
-    `;
-
-		await pool.query(insertBranchRelationQuery, [
-			businessId, // Main business ID
+		await db.insert(branches).values({
+			mainId: businessId, // Main business ID
 			branchId, // Branch business ID
-			true // Set as active by default
-		]);
+			isactive: true // Set as active by default
+		});
 
 		await syncInSplitTables(pool, branchId);
 		await syncBusinessToUnified(pool, 'in', branchId);
