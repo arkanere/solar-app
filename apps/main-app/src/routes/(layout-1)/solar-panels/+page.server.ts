@@ -1,27 +1,39 @@
 import type { PageServerLoad } from './$types';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { seoPages, inBusinessProfiles } from '@solar/db/schema';
+import { and, asc, count, eq } from 'drizzle-orm';
+import { SEO_PILLAR_SELECTION, SEO_CLUSTER_LINK_SELECTION } from '$lib/server/seo';
 
 export const config = {
 	isr: { expiration: 1296000 }
 };
 
+const PILLAR = 'solar-panels';
+
 export const load: PageServerLoad = async () => {
-	const [pillarResult, clustersResult, statsResult] = await Promise.all([
-		pool.query(
-			`SELECT h1, meta_title, meta_description, content, faq
-			 FROM seo_pages WHERE slug = $1 AND status = $2`,
-			['solar-panels', 'published']
-		),
-		pool.query(
-			`SELECT slug, h1 as name FROM seo_pages
-			 WHERE pillar_slug = $1 AND page_type = $2 AND status = $3
-			 ORDER BY slug ASC`,
-			['solar-panels', 'cluster', 'published']
-		),
-		pool.query(`SELECT COUNT(*) as total FROM in_business_profiles WHERE isvisible = true`)
+	const [pillarRows, clusterRows, statsRows] = await Promise.all([
+		db
+			.select(SEO_PILLAR_SELECTION)
+			.from(seoPages)
+			.where(and(eq(seoPages.slug, PILLAR), eq(seoPages.status, 'published'))),
+		db
+			.select(SEO_CLUSTER_LINK_SELECTION)
+			.from(seoPages)
+			.where(
+				and(
+					eq(seoPages.pillarSlug, PILLAR),
+					eq(seoPages.pageType, 'cluster'),
+					eq(seoPages.status, 'published')
+				)
+			)
+			.orderBy(asc(seoPages.slug)),
+		db
+			.select({ total: count() })
+			.from(inBusinessProfiles)
+			.where(eq(inBusinessProfiles.isvisible, true))
 	]);
 
-	const pillarData = pillarResult.rows[0] ?? {
+	const pillarData = pillarRows[0] ?? {
 		h1: 'Solar Panels in India',
 		meta_title: 'Solar Panels — Types, Prices & Brands | Solar Vipani',
 		meta_description: 'Compare solar panel types, brands, prices and specifications in India. Find the best solar panels for your home or business.',
@@ -29,14 +41,14 @@ export const load: PageServerLoad = async () => {
 		faq: []
 	};
 
-	const clusters = clustersResult.rows.map((r: { slug: string; name: string }) => ({
+	const clusters = clusterRows.map((r) => ({
 		...r,
-		pillarSlug: 'solar-panels'
+		pillarSlug: PILLAR
 	}));
 
 	return {
 		pillarData,
 		clusters,
-		stats: { installerCount: Number(statsResult.rows[0]?.total || 0) }
+		stats: { installerCount: Number(statsRows[0]?.total || 0) }
 	};
 };
