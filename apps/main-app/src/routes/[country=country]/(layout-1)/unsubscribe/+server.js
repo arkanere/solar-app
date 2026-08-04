@@ -1,5 +1,6 @@
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { db } from '$lib/server/db';
+import { unsubscribe } from '@solar/db/schema';
+import { eq } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { isCountry } from '$lib/countries';
 
@@ -12,8 +13,6 @@ export async function POST({ request, params }) {
 		return json({ success: false, error: 'Unknown country' }, { status: 404 });
 	}
 
-	const pool = createPool({ connectionString: POSTGRES_URL });
-
 	try {
 		// Get the email from the request body
 		const { email } = await request.json();
@@ -24,29 +23,26 @@ export async function POST({ request, params }) {
 		}
 
 		// Check if email is already unsubscribed
-		const checkQuery = `
-            SELECT email FROM unsubscribe
-            WHERE email = $1
-        `;
-		const checkResult = await pool.query(checkQuery, [email]);
+		const existing = await db
+			.select({ email: unsubscribe.email })
+			.from(unsubscribe)
+			.where(eq(unsubscribe.email, email));
 
 		// If email already exists in unsubscribe table, just return success
-		if (checkResult.rows.length > 0) {
+		if (existing.length > 0) {
 			return json({ success: true, message: 'Email already unsubscribed' });
 		}
 
 		// Insert email into unsubscribe table
-		const insertQuery = `
-            INSERT INTO unsubscribe (email)
-            VALUES ($1)
-            RETURNING id
-        `;
-		const result = await pool.query(insertQuery, [email]);
+		const inserted = await db
+			.insert(unsubscribe)
+			.values({ email })
+			.returning({ id: unsubscribe.id });
 
 		// Respond with success and the inserted unsubscribe ID
 		return json({
 			success: true,
-			id: result.rows[0].id,
+			id: inserted[0].id,
 			message: 'Successfully unsubscribed'
 		});
 	} catch (error) {

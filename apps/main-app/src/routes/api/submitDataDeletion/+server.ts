@@ -1,15 +1,10 @@
-import { createPool, type VercelPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { db } from '$lib/server/db';
+import { dataDeletionRequests } from '@solar/db/schema';
 import { json, type RequestHandler } from '@sveltejs/kit';
+import { sql } from 'drizzle-orm';
 import { dataRequestSchema, parseBody } from '@solar/validation';
 
-interface DeletionResult {
-	id: number;
-}
-
 export const POST: RequestHandler = async ({ request }) => {
-	const pool: VercelPool = createPool({ connectionString: POSTGRES_URL });
-
 	try {
 		const parsed = await parseBody(request, dataRequestSchema);
 		if (!parsed.ok) {
@@ -17,17 +12,17 @@ export const POST: RequestHandler = async ({ request }) => {
 		}
 		const { email, phone, reason } = parsed.data;
 
-		const insertQuery = `
-            INSERT INTO data_deletion_requests (email, phone, reason, created_at, status)
-            VALUES ($1, $2, $3, NOW(), 'pending')
-            RETURNING id
-        `;
-
-		const result = await pool.query<DeletionResult>(insertQuery, [email, phone, reason]);
+		// created_at defaults to CURRENT_TIMESTAMP, but the old INSERT wrote NOW()
+		// explicitly; kept as an sql escape hatch so the value is still set by the
+		// statement rather than relying on the column default.
+		const inserted = await db
+			.insert(dataDeletionRequests)
+			.values({ email, phone, reason, createdAt: sql`NOW()`, status: 'pending' })
+			.returning({ id: dataDeletionRequests.id });
 
 		return json({
 			success: true,
-			id: result.rows[0].id,
+			id: inserted[0].id,
 			message: 'Data deletion request submitted successfully'
 		});
 	} catch (error) {

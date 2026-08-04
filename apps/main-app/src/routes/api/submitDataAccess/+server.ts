@@ -1,16 +1,10 @@
-import { createPool, type VercelPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { db } from '$lib/server/db';
+import { dataAccessRequests } from '@solar/db/schema';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { dataRequestSchema, parseBody } from '@solar/validation';
 import { sendEmail } from '$lib/sendEmail';
 
-interface AccessResult {
-	id: number;
-}
-
 export const POST: RequestHandler = async ({ request }) => {
-	const pool: VercelPool = createPool({ connectionString: POSTGRES_URL });
-
 	try {
 		const parsed = await parseBody(request, dataRequestSchema);
 		if (!parsed.ok) {
@@ -18,13 +12,12 @@ export const POST: RequestHandler = async ({ request }) => {
 		}
 		const { email, phone, reason } = parsed.data;
 
-		const insertQuery = `
-            INSERT INTO data_access_requests (email, phone, reason, created_at, status)
-            VALUES ($1, $2, $3, NOW(), 'pending')
-            RETURNING id
-        `;
-
-		const result = await pool.query<AccessResult>(insertQuery, [email, phone, reason]);
+		// created_at and status both have defaults matching the old literals
+		// (defaultNow() and 'pending'), so neither is written explicitly.
+		const inserted = await db
+			.insert(dataAccessRequests)
+			.values({ email, phone, reason })
+			.returning({ id: dataAccessRequests.id });
 
 		// Acknowledge the request — fulfillment itself is manual (team emails a CSV
 		// within 30 days). Email failure must not fail the request submission.
@@ -46,7 +39,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		return json({
 			success: true,
-			id: result.rows[0].id,
+			id: inserted[0].id,
 			message: 'Data access request submitted successfully'
 		});
 	} catch (error) {

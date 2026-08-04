@@ -1,4 +1,6 @@
-import { createPool } from '@vercel/postgres';
+import { db } from '$lib/server/db';
+import { leaddata } from '@solar/db/schema';
+import { and, eq, sql } from 'drizzle-orm';
 import { env } from '$env/dynamic/private';
 import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
 import { json, type RequestHandler } from '@sveltejs/kit';
@@ -16,10 +18,6 @@ export const config = { maxDuration: 60 };
 // Only unclaimed leads (category = 1) are purged. Claimed leads (category = 2)
 // belong to the business actively working them and are retained.
 
-interface PurgeRow {
-	bill_cloudinary_public_id: string | null;
-}
-
 export const POST: RequestHandler = async ({ request }) => {
 	const expected = env.CRON_SECRET;
 	const provided = request.headers.get('authorization');
@@ -28,20 +26,19 @@ export const POST: RequestHandler = async ({ request }) => {
 		return json({ success: false, error: 'Unauthorized' }, { status: 401 });
 	}
 
-	const pool = createPool({ connectionString: env.POSTGRES_URL });
-
 	try {
 		// Delete old unclaimed leads, returning any associated Cloudinary bill ids
 		// so the underlying files can be removed too.
-		const result = await pool.query<PurgeRow>(
-			`DELETE FROM leaddata
-			 WHERE created_at < NOW() - INTERVAL '6 months'
-			   AND category = 1
-			 RETURNING bill_cloudinary_public_id`
-		);
+		// The 6-month cutoff stays on the sql escape hatch (NOW() - INTERVAL).
+		const deleted = await db
+			.delete(leaddata)
+			.where(
+				and(sql`${leaddata.createdAt} < NOW() - INTERVAL '6 months'`, eq(leaddata.category, 1))
+			)
+			.returning({ bill_cloudinary_public_id: leaddata.billCloudinaryPublicId });
 
-		const deletedLeads = result.rowCount ?? 0;
-		const publicIds = result.rows
+		const deletedLeads = deleted.length;
+		const publicIds = deleted
 			.map((r) => r.bill_cloudinary_public_id)
 			.filter((id): id is string => !!id);
 
