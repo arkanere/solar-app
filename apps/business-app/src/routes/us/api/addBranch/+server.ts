@@ -1,5 +1,5 @@
 // src/routes/api/addBranch/+server.ts
-import { pool, db } from '$lib/server/db';
+import { db } from '$lib/server/db';
 import { usBranches, usBusinesses } from '@solar/db/schema';
 import { and, eq, sql } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';

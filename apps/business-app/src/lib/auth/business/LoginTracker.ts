@@ -1,4 +1,4 @@
-import { db, pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
 import { businessAccounts, businesses1, usBusinesses } from '@solar/db/schema';
 import { and, eq, isNull, lt, or, sql } from 'drizzle-orm';
 import { AUTH_CONFIG, type LoginTrackerResult } from './AuthTypes';

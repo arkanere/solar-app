@@ -1,4 +1,4 @@
-import { pool, db } from '$lib/server/db';
+import { db } from '$lib/server/db';
 import { branches, businesses1, inBusinessProfiles } from '@solar/db/schema';
 import { and, eq, sql } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';

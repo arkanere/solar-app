@@ -117,7 +117,7 @@ after the migration as the permanent regression net for the critical path; UI/co
 trivial lookups (`getCities` etc.) are deliberately skipped — low failure probability, low failure
 cost. Ongoing rule: every bug fixed from now on gets a test that reproduces it first.
 
-### Phase 6 — the hard ones (business-app, 12 files)
+### ✅ Phase 6 — the hard ones (business-app, 12 files) — DONE 2026-08-05
 `claimLead`, `submitLead`, `updateLeadByBusiness`, `deleteLeadByBusiness` (all ×2 countries),
 `fixClaimedLead`, `deleteAccount` (×2), `sendLeadClaimNotificationToCustomer` — transactions,
 `FOR UPDATE` locks, multi-table writes, `syncLeadToUnified` interplay. Slowest, most careful phase;
@@ -131,6 +131,10 @@ would remove the last reason for a `pool` import outside `db.ts`, which Phase 10
 Note `claimLead` and `updateLeadByBusiness` pass a *transaction client* into these helpers, so
 whatever `unifiedSync` takes must also accept a Drizzle transaction handle — do that conversion
 before or together with those two files, not after.
+
+**Done** — see the Phase 6 entry in Progress below for what the conversion actually looked like, the
+patterns it added, and the one bug it surfaced and left unfixed. The rest of this section is the
+plan as written before the work; the call-site table is now historical (all 65 are converted).
 
 **Cold start for this phase.** Re-verified 2026-08-05 — these are all the `pool.query`/`client.query`
 call sites left in business-app, 65 across 12 files:
@@ -150,19 +154,56 @@ tests actually cover — `in/claimLead`, `in/updateLeadByBusiness`, `in/submitLe
 the only ones with a real safety net; the `/us` twins and the delete/fix endpoints are unguarded, so
 convert them by close reading and keep the diffs small.
 
-**Prerequisite:** the tests need a Postgres on `localhost:5433`
-(`docker compose -f docker-compose.test.yml up -d`). As of 2026-08-05 Docker was not installed on the
-dev machine and the local PostgreSQL 16 service was stopped — resolve that first, or set
-`TEST_POSTGRES_URL` to point at another scratch database, or this phase has no safety net at all.
+**Prerequisite (resolved 2026-08-05, but read this before the next session):** the tests need a
+Postgres the suite can reach. Docker is still **not** installed on the dev machine, so
+`docker compose -f docker-compose.test.yml up -d` does not work. Port 5433 does answer — that's the
+EDB PostgreSQL 16 install, which has no `solar` role and needs a password we don't have, so the
+default `postgres://solar:solar@localhost:5433/solar_test` fails auth.
 
-### Phases 7–9 — main-app (53 files)
-Enumerate and batch the same way once business-app is done (main-app already imports `db`, so no plumbing
+What Phase 6 actually ran against: a throwaway cluster built from the EDB binaries, no Docker and
+no password, leaving the 5433 server untouched.
+
+```sh
+export PATH=/System/Volumes/Data/Library/PostgreSQL/16/bin:$PATH
+initdb -D pgdata -U solar --auth=trust
+pg_ctl -D pgdata -o "-p 5544 -k /tmp" -l pg.log start
+psql -h localhost -p 5544 -U solar -d postgres \
+  -c "create database solar_test;" \
+  -c "alter role solar with password 'solar' superuser;"
+
+export TEST_POSTGRES_URL="postgres://solar:solar@localhost:5544/solar_test"
+npm test -w solarvipani-business
+```
+
+The cluster lived in a scratch directory and is gone. Either install Docker and use the compose
+file as originally intended, or re-run the four commands above (anywhere writable) and export
+`TEST_POSTGRES_URL`. The suite rebuilds its schema per run, so a fresh empty database is fine.
+
+### Phases 7–9 — main-app (53 files) ← **next**
+Enumerate and batch the same way now that business-app is done (main-app already imports `db`, so no plumbing
 phase). Rough split: 7 = reads/page loads, 8 = simple mutations, 9 = lead pipeline + anything transactional.
 Also the 1 raw-SQL file in `packages/`.
+
+**Cold start for Phase 7.** Nothing has been enumerated yet — start by re-running
+`grep -rln "pool\.query\|client\.query" apps/main-app/src packages/` and splitting the result into the
+three batches above. Two things carry over from business-app and will save time:
+- The patterns are all established: `db.transaction()` + `.for('update')`, `earlyExit` +
+  `tx.rollback()` for rollback-then-return, snake_case `*_RETURNING` maps wherever a handler ships a
+  driver row to the client, `sql` escape hatch noted in the commit message.
+- `$lib/server/leads.ts`'s returning maps are business-app-local. If main-app writes the same lead
+  tables, either mirror them there or lift them into `packages/db` — decide before Phase 9, not during.
+
+There is **no test coverage for main-app**. The Phase 5.5 suite is business-app only, so Phases 7–9
+have no safety net; the `npm run check` baseline is the only automated signal. Consider whether the
+main-app lead pipeline deserves its own characterization tests before Phase 9, the way 5.5 preceded 6.
 
 ### Phase 10 — closeout
 Grep-verify no `pool.query`/`client.query` remain outside `db.ts`; consider un-exporting the raw `pool`
 from both apps' `db.ts` (or leaving it export-only-for-Drizzle); update this doc and CLAUDE.md.
+
+Business-app already passes the grep as of Phase 6, and nothing outside its `db.ts` imports `pool`
+any more — so un-exporting it there is possible today, independently of main-app. Left alone for now
+because `db.ts` is shared shape with main-app and the symmetry is worth more than the early cleanup.
 
 ### Progress
 - [x] Phase 0 (2026-08-04)
@@ -215,7 +256,43 @@ from both apps' `db.ts` (or leaving it export-only-for-Drizzle); update this doc
       `apps/business-app/tests/`. `npm test -w solarvipani-business`. Surfaced that the numbered
       migrations cover only 19 of 55 tables (see the phase entry above). `npm run check` unchanged
       at the 84-error baseline.
-- [ ] Phase 6
+- [x] Phase 6 (2026-08-05) — 12 route files + `unifiedSync`, in 6 commits (6a–6f). **business-app is
+      now fully converted:** `grep -rn "pool\.query\|client\.query" apps/business-app/src` returns
+      nothing. 92 tests passing throughout, `npm run check` unchanged at 84.
+  - **6a — `unifiedSync` first, as the phase entry required.** The four `sv_sync_*` helpers now take
+    `Pick<Database, 'execute'>`, which both `db` and a `db.transaction()` handle satisfy, so a caller
+    inside a transaction still projects on the same connection. The 16 non-transactional call sites
+    moved from `pool` to `db` in the same commit, and `mintBusinessTokenById` lost its now-dead
+    `pool` parameter. The two `claimLead` files pass a transaction client, so their sync calls were
+    temporarily inlined as raw `SELECT sv_sync_*` and restored in 6b/6e — that's why 6a touches 18
+    files and why those TODO(phase 6) comments existed for two commits.
+  - **Transaction pattern (6b, 6e).** `db.transaction(async (tx) => ...)`, with `.for('update')`
+    for the `FOR UPDATE` claim-count lock. The branches that did `ROLLBACK` then returned a specific
+    response set an outer `earlyExit` and call `tx.rollback()`; since that throws, the outer catch
+    checks `earlyExit` before falling through to the 500. All such branches fire before any write,
+    so rollback-vs-commit is not a behavioural difference — worth re-checking if new ones are added.
+  - **`RETURNING *` needed explicit maps.** Several handlers shipped the driver row straight to the
+    client, so the wire shape is the table's snake_case column names; bare `.returning()` would
+    have silently switched them to camelCase. Added `$lib/server/leads.ts` with `IN_LEAD_RETURNING`
+    and `US_LEAD_RETURNING` (same idea as Phase 5's `PROPOSAL_RETURNING`). Used by claimLead,
+    updateLeadByBusiness and deleteLeadByBusiness on both sides.
+  - `sql` escape hatches added: the claim gate's `NOW() - INTERVAL '60 days'` compare, the
+    district-presence `EXISTS` subquery, `claim_count + 1` (×2), `NOW()` for the claimed copy's
+    `created_at` (×2). Everything else converted to the query builder.
+  - All the hand-written row interfaces in these files are gone (`ClaimCountRow`, `ClaimRequestRow`,
+    `NewLeadRow`, `LeadDataRow`, `LeadRow`, `BusinessRow`, `LeadInsertResult`, `DistrictResult`,
+    `CountyResult`).
+
+**Bug found and deliberately NOT fixed — `/us/api/claimLead` never sends its emails.** Both
+post-commit lookups, and the `mintBusinessTokenById` call between them, read `businesses_1` — the
+**IN** table — for a `/us` business id. `us_businesses` and `businesses_1` share an id sequence
+(`nextval('businesses_1_id_seq')`), so the id can't collide into a real row: the lookup returns
+nothing, the handler logs "business not found", and both the allotment email and the customer
+notification are silently skipped. Same family as the two Phase 5 bugs, but unlike those, fixing it
+*starts* sending mail this endpoint has never sent — to real installers and real customers. Left as
+a one-line-per-site change (`businesses1` → `usBusinesses`, `'businesses_1'` → `'us_businesses'`)
+with NOTE comments at each site, pending a decision. `/us/api/claimLead` has no test coverage.
+
 - [ ] Phase 7
 - [ ] Phase 8
 - [ ] Phase 9
