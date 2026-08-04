@@ -28,7 +28,78 @@ in-handler `createPool` call sites to import the shared pool instead of creating
 `finally { await pool.end(); }` blocks that would have closed the now-shared pool. Log check was skipped
 (no Vercel access from this session) — the change is safe regardless of whether limits were being hit.
 
-## Drizzle ORM adoption is stalled mid-migration
+## Drizzle migration plan (decided 2026-08-04: migrate, in small batches)
+
+**Decision:** finish the Drizzle migration rather than demote it. Rationale: solo maintainer — the
+type-checker is the reviewer. Schema changes (`drizzle-kit pull`) should surface every affected query at
+compile time instead of failing at runtime route-by-route.
+
+**Verified before planning:** `packages/db` schema defines 56 tables and covers all 25 tables that
+business-app's raw SQL touches — no schema work is a prerequisite. Raw SQL lives in 59 business-app files,
+53 main-app files, 1 file in packages.
+
+**Ground rules for every phase:**
+- Convert one batch, run `npm run check` in the affected app, commit, push. Never leave a batch half-done.
+- Use `db.transaction()` for multi-statement work and `.for('update')` for row locks. The `sql` template
+  escape hatch is allowed for genuinely awkward queries, but each use is noted in the commit message.
+- Delete the hand-written row interfaces (`ClaimCountRow` etc.) as queries convert — Drizzle infers them.
+- New/modified queries always use Drizzle from now on, even in not-yet-converted files (rule also added
+  to CLAUDE.md in Phase 0).
+
+### Phase 0 — plumbing (no query changes)
+Add `@solar/db` as a dependency of business-app; extend `apps/business-app/src/lib/server/db.ts` to also
+export `db = createDb(pool)` (same pattern as main-app, shared pool). Add the convention line to CLAUDE.md.
+Run `drizzle-kit check` to confirm schema is current against the live DB.
+
+### Phase 1 — pilot: simple lookup reads (business-app, ~9 files)
+`getCities`, `getDistricts`, `getDistrictByPincode` (both `/us` and `/in`), `getCounties`,
+`getCountyByZipcode`. Single-table selects, no auth, no writes. Purpose: establish what converted code
+looks like; stop and review before continuing.
+
+### Phase 2 — auth lib (business-app, 4 files)
+`lib/auth/business/`: `RateLimiter`, `TokenManager`, `LoginTracker`, `PasswordManager`. Small, self-contained,
+well-understood queries; RateLimiter's upsert exercises `onConflictDoUpdate`.
+
+### Phase 3 — `/in` page loads (business-app, ~9 files)
+The `(layout-1)/[business_slug]/**` `+layout.server.ts` / `+page.server.ts` files. Read-only joins.
+
+### Phase 4 — `/us` page loads (business-app, ~5 files)
+`us/[business_slug]/**` page loads. Same shape as Phase 3.
+
+### Phase 5 — simple mutations (business-app, ~20 files)
+add/delete/update for branches, referrers, recent projects, proposals, business details, compliance
+accept/status, resetPassword — both countries. Straightforward single-row inserts/updates/deletes.
+
+### Phase 6 — the hard ones (business-app, ~8 files)
+`claimLead`, `submitLead`, `updateLeadByBusiness`, `deleteLeadByBusiness`, `fixClaimedLead`,
+`deleteAccount`, `sendLeadClaimNotificationToCustomer` — transactions, `FOR UPDATE` locks, multi-table
+writes, `syncLeadToUnified` interplay. Slowest, most careful phase; convert one file per commit.
+
+### Phases 7–9 — main-app (53 files)
+Enumerate and batch the same way once business-app is done (main-app already imports `db`, so no plumbing
+phase). Rough split: 7 = reads/page loads, 8 = simple mutations, 9 = lead pipeline + anything transactional.
+Also the 1 raw-SQL file in `packages/`.
+
+### Phase 10 — closeout
+Grep-verify no `pool.query`/`client.query` remain outside `db.ts`; consider un-exporting the raw `pool`
+from both apps' `db.ts` (or leaving it export-only-for-Drizzle); update this doc and CLAUDE.md.
+
+### Progress
+- [ ] Phase 0
+- [ ] Phase 1
+- [ ] Phase 2
+- [ ] Phase 3
+- [ ] Phase 4
+- [ ] Phase 5
+- [ ] Phase 6
+- [ ] Phase 7
+- [ ] Phase 8
+- [ ] Phase 9
+- [ ] Phase 10
+
+---
+
+## Original observation (2026-08-04): Drizzle ORM adoption is stalled mid-migration
 
 **Found:** 2026-08-04, same session, while checking ORM usage.
 
