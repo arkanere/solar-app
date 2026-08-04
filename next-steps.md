@@ -179,7 +179,7 @@ The cluster lived in a scratch directory and is gone. Either install Docker and 
 file as originally intended, or re-run the four commands above (anywhere writable) and export
 `TEST_POSTGRES_URL`. The suite rebuilds its schema per run, so a fresh empty database is fine.
 
-### Phases 7–9 — main-app (54 files) ← **in progress**
+### Phases 7–9 — main-app (54 files) — Phase 7 done, **Phase 8 next**
 Enumerate and batch the same way now that business-app is done (main-app already imports `db`, so no plumbing
 phase). Rough split: 7 = reads/page loads, 8 = simple mutations, 9 = lead pipeline + anything transactional.
 Also the 1 raw-SQL file in `packages/`.
@@ -192,7 +192,7 @@ batch passes if the count stays there. There is no test suite for main-app, so `
 appears in its doc comment. `packages/` has no real raw-SQL call sites; the "1 file in packages" in the
 plan above was that comment.
 
-**Phase 7 — reads / page loads (24 files, 7 done).**
+**✅ Phase 7 — reads / page loads (24 files) — DONE 2026-08-05.**
 
 | Status | Files |
 | --- | --- |
@@ -200,9 +200,9 @@ plan above was that comment.
 | ✅ 7b | the 7 `[slug]` loads + 3 `[model_slug]` loads + `lib/server/slug-resolver.ts` |
 | ✅ 7c | `lib/server/geo.ts`, `lib/server/sitemap.ts`, `lib/server/businesses.ts` — the shared read helpers |
 | ✅ 7d | `[country]/(layout-1)/solar/` tree: index, `[state]`, `[state]/[district]`, `[state]/[district]/[slug]` |
-| ☐ 7e | `partners/` (5), `partners/join/[district_slug]` (5), `installer/[installer_slug]` (3), `district/[district_slug]` (1), `business-listing` (1) |
-| ☐ 7f | `tools/solar-calculator` (4), `tools/subsidy-checker` (3), `tools/emi-calculator` (1), `authors/[author_slug]` (3), `api/stories` (1) |
-| ☐ 7g | `recent-solar-installation-projects` (2) + `[page_slug]` (2), `project/[project_id]` (1), `thank-you` (2), `get-quotes` (2), both `+layout.server.ts` (2+2), `[country]/(layout-1)/+page.server.ts` (1) |
+| ✅ 7e | `partners/` (5), `partners/join/[district_slug]` (5), `installer/[installer_slug]` (3), `district/[district_slug]` (1), `business-listing` (1) |
+| ✅ 7f | `tools/solar-calculator` (4), `tools/subsidy-checker` (3), `tools/emi-calculator` (1), `authors/[author_slug]` (3), `api/stories` (1) |
+| ✅ 7g | `recent-solar-installation-projects` (2) + `[page_slug]` (2), `project/[project_id]` (1), `thank-you` (2), `get-quotes` (2), both `+layout.server.ts` (2+2), `[country]/(layout-1)/+page.server.ts` (1) |
 
 **Phase 8 — simple mutations (9 files).** `api/submitBusiness` (5), `api/updateRecentProject` (5),
 `api/postRecentProject` (2), `api/generateUserMagicLink` (3), `lib/server/magicLink.ts` (1),
@@ -328,34 +328,40 @@ notification are silently skipped. Same family as the two Phase 5 bugs, but unli
 a one-line-per-site change (`businesses1` → `usBusinesses`, `'businesses_1'` → `'us_businesses'`)
 with NOTE comments at each site, pending a decision. `/us/api/claimLead` has no test coverage.
 
-- [ ] Phase 7 — **in progress**, 7a and 7b done (2026-08-05), 17 files left. Patterns added:
-      `apps/main-app/src/lib/server/seo.ts` holds snake_case-aliased selection maps for the SEO
-      content families (`SEO_PILLAR_SELECTION`, `SEO_CLUSTER_SELECTION`, `SEO_CLUSTER_LINK_SELECTION`,
-      `BRAND_SELECTION`, `PRODUCT_CARD_SELECTION`, `PRODUCT_SELECTION`) — same idea as business-app's
-      `unifiedRead.ts`, and needed for the same reason: these loads return rows straight to the client.
-      **New escape-hatch idiom worth reusing:** `drizzle-kit pull` types every `jsonb` column as
-      `unknown`, which the raw driver used to hand over as `any`. Wrapping the column in
-      ``sql<T>`${table.col}` `` restates the shape without changing the generated SQL (it renders as
-      the bare column reference). Annotating `schema.ts` with `.$type<T>()` instead would not survive
-      the next `pull`. Used for `seo_pages.content`/`.faq`, `solar_products.specs`, and the `faq`
-      columns on `solar_brands`, `solar_financing_banks`, `state_subsidies`, `discoms`.
-      `slug-resolver.ts`'s three exports dropped their `pool` parameter (Phase 5 precedent).
-      7c/7d (2026-08-05) added `lib/server/projects.ts` (`PROJECT_CARD_SELECTION`,
-      `getTopProjectsPerBusiness`) and `BUSINESS_CARD_SELECTION` in `businesses.ts`, and dropped the
-      `pool` parameter from `sitemap.ts`'s two exports too. `businesses.ts`'s `BUSINESS_COLUMNS`
-      string and `mapBusiness()` mapper are gone — a camelCase selection map infers the shape.
-      **Two things worth knowing before the remaining batches:**
-      - **Nullability is the recurring friction, not the SQL.** Drizzle reports the real
-        nullability that the raw driver's `any` hid, and several components declare columns
-        non-null that the schema allows to be NULL. Default to restating the old contract with
-        ``sql<T>`${table.col}` `` and a comment (done for `businesses.businessname`,
-        `projects.business_slug`/`.project_slug`); only widen the component when it already
-        guards at runtime and the wrapper would be a lie (done once, for `ProjectGallery.svelte`'s
-        four optional props).
-      - **`mode: 'string'` timestamps.** The introspected schema types timestamptz columns as
-        strings, so callers that did `row.col.toISOString()` break. `sitemap.ts` formats in SQL
-        with `to_char(... AT TIME ZONE 'UTC', 'YYYY-MM-DD')` instead — grep for `.toISOString()`
-        on a query result before converting a file.
+- [x] Phase 7 (2026-08-05) — 24 files in 7 commits (7a–7g). **main-app has no raw SQL left in any
+      page load or layout**; what remains is the nine Phase 8 mutation endpoints and
+      `lib/server/leads.ts`. Shared modules added: `lib/server/seo.ts` (selection maps for the SEO
+      content families), `lib/server/projects.ts` (`PROJECT_CARD_SELECTION`,
+      `getTopProjectsPerBusiness`, `listVisibleProjects`), `BUSINESS_CARD_SELECTION` in
+      `businesses.ts`, and `getDistrictsWithInstallerCounts` / `getVisibleInstallerCount` in
+      `queries.ts`. `slug-resolver.ts` and `sitemap.ts` exports dropped their `pool` parameters
+      (Phase 5 precedent). `businesses.ts`'s `BUSINESS_COLUMNS` string and `mapBusiness()` mapper are
+      gone. `api/stories` was still creating its own module-scope `createPool` — now on the shared `db`.
+      **Three things worth carrying into Phases 8–9:**
+      - **Nullability is the recurring friction, not the SQL.** Drizzle reports the real nullability
+        the raw driver's `any` hid, and many components declare columns non-null that the schema
+        allows to be NULL. Default to restating the old contract with ``sql<T>`${table.col}` `` plus a
+        comment; only widen the component when it already guards at runtime (done once, for
+        `ProjectGallery.svelte`'s four optional props). This accounted for most of the churn in 7d–7g.
+      - **`mode: 'string'` timestamps.** The introspected schema types timestamptz as strings, so
+        callers doing `row.col.toISOString()` break. `sitemap.ts` formats in SQL with
+        `to_char(... AT TIME ZONE 'UTC', 'YYYY-MM-DD')`. Grep for `.toISOString()` on a query result
+        before converting a file.
+      - **`jsonb` is typed `unknown`.** Wrapping the column in ``sql<T>`${table.col}` `` restates the
+        shape without changing the generated SQL. Annotating `schema.ts` with `.$type<T>()` would not
+        survive the next `drizzle-kit pull`.
+
+**Two more bugs surfaced by Phase 7, both fixed (7f), both in `/authors/[author_slug]`:**
+- **The page 500'd on every request.** Its blog-post query selected `excerpt` and `featured_image`,
+  neither of which exists on `in_blog_posts` in any schema or migration — same family as the Phase 5
+  `resetPassword` bug. Both columns dropped; nothing in the app reads `blogPosts` (the blogs feature
+  was removed 2026-07), so no rendered output changed.
+- **The author avatar never rendered.** The load did `SELECT *`, which returns `photo_url`, but the
+  page reads `data.author.photo` — always undefined, always skipped by its `{#if}` guard. `SELECT *`
+  typed the row `any`, so nothing caught it. The page now reads `photo_url`, so author photos start
+  appearing. Unlike the `/us/claimLead` mail bug below, this sends nothing to anyone, so it was
+  fixed rather than left pending a decision.
+
 - [ ] Phase 8
 - [ ] Phase 9
 - [ ] Phase 10
