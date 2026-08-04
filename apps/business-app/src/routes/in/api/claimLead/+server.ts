@@ -1,60 +1,36 @@
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/in/auth/business';
 import { sendEmail } from '$lib/in/sendEmail';
 import { mintBusinessTokenById, mintUserToken } from '$lib/server/magicLink';
 import { checkLeadDataPolicy } from '$lib/compliance';
 import type { ClaimRequestPayload } from '$lib/types/lead';
+import { IN_LEAD_RETURNING } from '$lib/server/leads';
+import {
+	syncLeadToUnified,
+	syncBusinessToUnified,
+	syncAccountToUnified,
+	syncInSplitTables
+} from '$lib/server/unifiedSync';
+import {
+	branches,
+	businesses1,
+	inBusinessProfiles,
+	leaddata,
+	leaddataClaimrequests,
+	projects
+} from '@solar/db/schema';
+import { and, count, eq, inArray, sql } from 'drizzle-orm';
 
 // Allow time for the full claim pipeline including Brevo calls — the default
 // limit kills the function mid-run and silently drops the notification emails
 export const config = { maxDuration: 60 };
 
-interface ClaimCountRow {
-	claim_count: number;
-}
-
-interface ClaimRequestRow {
-	id: number;
-}
-
-interface NewLeadRow {
-	id: number;
-	name: string;
-	phone: string;
-	email: string | null;
-	pin_code: string;
-	district: string | null;
-	type: string | null;
-	comment: string | null;
-	created_at: string;
-	svnotes: string | null;
-	sv_comment_for_businesses: string | null;
-	urlparams: string | null;
-	isvisible: boolean;
-	category: number;
-	stage: number;
-	status: boolean;
-	claim_count: number;
-	original_id: number | null;
-	business_id: number | null;
-	business_notes: string | null;
-}
-
-interface LeadDataRow {
-	id: number;
-	name: string;
-	phone: string;
-	email: string | null;
-	pin_code: string;
-	type: string | null;
-	comment: string | null;
-	svnotes: string | null;
-	sv_comment_for_businesses: string | null;
-	urlparams: string | null;
-	district: string | null;
-	state: string | null;
-}
+// Row shapes are inferred from the Drizzle schema; the claimed copy returned to
+// the client keeps the legacy snake_case names via IN_LEAD_RETURNING.
+type NewLeadRow = {
+	[K in keyof typeof IN_LEAD_RETURNING]: (typeof IN_LEAD_RETURNING)[K]['_']['data'];
+};
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
 
@@ -94,44 +70,70 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		// Claim gate: businesses with 10+ claimed leads must meet requirements
-		const gateBranchesRes = await pool.query(
-			`SELECT branch_id FROM branches WHERE main_id = $1 AND isactive = true`,
-			[business_id]
-		);
-		const gateAllIds = [business_id, ...gateBranchesRes.rows.map((r: { branch_id: number }) => r.branch_id)];
+		const gateBranchesRes = await db
+			.select({ branchId: branches.branchId })
+			.from(branches)
+			.where(and(eq(branches.mainId, business_id), eq(branches.isactive, true)));
+		const gateAllIds = [business_id, ...gateBranchesRes.map((r) => r.branchId)];
 
+		const gateSlug = sessionResult.session.businessSlug;
 		const [gateClaimedRes, gateStaleRes, gateProjectsRes, gateRecentRes, gateBizRes] = await Promise.all([
-			pool.query(
-				`SELECT COUNT(*) as count FROM leaddata WHERE business_id = ANY($1) AND category = 2 AND isvisible = true`,
-				[gateAllIds]
-			),
-			pool.query(
-				`SELECT COUNT(*) as count FROM leaddata WHERE business_id = ANY($1) AND category = 2 AND isvisible = true AND stage = 0 AND status = true`,
-				[gateAllIds]
-			),
-			pool.query(
-				`SELECT COUNT(*) as count FROM projects WHERE business_slug = $1 AND isvisible = true`,
-				[sessionResult.session.businessSlug]
-			),
-			pool.query(
-				`SELECT COUNT(*) as count FROM projects WHERE business_slug = $1 AND isvisible = true AND created_at > NOW() - INTERVAL '60 days'`,
-				[sessionResult.session.businessSlug]
-			),
-			pool.query(
-				`SELECT description, brands, google_maps_link FROM in_business_profiles WHERE business_id = $1`,
-				[business_id]
-			)
+			db
+				.select({ count: count() })
+				.from(leaddata)
+				.where(
+					and(
+						inArray(leaddata.businessId, gateAllIds),
+						eq(leaddata.category, 2),
+						eq(leaddata.isvisible, true)
+					)
+				),
+			db
+				.select({ count: count() })
+				.from(leaddata)
+				.where(
+					and(
+						inArray(leaddata.businessId, gateAllIds),
+						eq(leaddata.category, 2),
+						eq(leaddata.isvisible, true),
+						eq(leaddata.stage, 0),
+						eq(leaddata.status, true)
+					)
+				),
+			db
+				.select({ count: count() })
+				.from(projects)
+				.where(and(eq(projects.businessSlug, gateSlug), eq(projects.isvisible, true))),
+			db
+				.select({ count: count() })
+				.from(projects)
+				.where(
+					and(
+						eq(projects.businessSlug, gateSlug),
+						eq(projects.isvisible, true),
+						// `sql` escape hatch: interval arithmetic against NOW().
+						sql`${projects.createdAt} > NOW() - INTERVAL '60 days'`
+					)
+				),
+			db
+				.select({
+					description: inBusinessProfiles.description,
+					brands: inBusinessProfiles.brands,
+					googleMapsLink: inBusinessProfiles.googleMapsLink
+				})
+				.from(inBusinessProfiles)
+				.where(eq(inBusinessProfiles.businessId, business_id))
 		]);
 
-		const gateTotalClaimed = parseInt(gateClaimedRes.rows[0]?.count || '0');
+		const gateTotalClaimed = gateClaimedRes[0]?.count ?? 0;
 		if (gateTotalClaimed >= 10) {
-			const gateStaleClaimed = parseInt(gateStaleRes.rows[0]?.count || '0');
-			const gateProjectsCount = parseInt(gateProjectsRes.rows[0]?.count || '0');
-			const gateRecentProject = parseInt(gateRecentRes.rows[0]?.count || '0') > 0;
-			const biz = gateBizRes.rows[0];
+			const gateStaleClaimed = gateStaleRes[0]?.count ?? 0;
+			const gateProjectsCount = gateProjectsRes[0]?.count ?? 0;
+			const gateRecentProject = (gateRecentRes[0]?.count ?? 0) > 0;
+			const biz = gateBizRes[0];
 			const gateProfileComplete = !!biz?.description
 				&& Array.isArray(biz?.brands) && biz.brands.length > 0
-				&& !!biz?.google_maps_link;
+				&& !!biz?.googleMapsLink;
 			const gateStalePercent = gateTotalClaimed > 0 ? (gateStaleClaimed / gateTotalClaimed) * 100 : 0;
 
 			const blocked = gateStalePercent > 50 || gateProjectsCount < 6 || !gateRecentProject || !gateProfileComplete;
@@ -143,241 +145,251 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			}
 		}
 
-		// Start a transaction
-		const client = await pool.connect();
 		// Email inputs captured during the transaction, sent after commit
 		let allotmentBusinessId: number | null = null;
 		let customerBusinessId: number | null = null;
 		let customer: { name: string; email: string | null } | null = null;
 		let newLead: NewLeadRow | null = null;
+		// Set by the branches that used to ROLLBACK and return a specific
+		// response; tx.rollback() throws, so the response is carried out here.
+		let earlyExit: { status: number; body: Record<string, unknown> } | null = null;
 
 		try {
-			await client.query('BEGIN');
+			await db.transaction(async (tx) => {
+				// Lock the row to prevent race conditions & fetch claim count
+				const claimCountResult = await tx
+					.select({ claimCount: leaddata.claimCount })
+					.from(leaddata)
+					.where(eq(leaddata.id, lead_id))
+					.for('update');
 
-			// Lock the row to prevent race conditions & fetch claim count
-			const claimCountResult = await client.query<ClaimCountRow>(
-				'SELECT claim_count FROM leaddata WHERE id = $1 FOR UPDATE',
-				[lead_id]
-			);
-
-			if (claimCountResult.rows.length === 0) {
-				throw new Error('Lead not found');
-			}
-
-			const claim_id = claimCountResult.rows[0].claim_count;
-
-			// **Check if lead can still be claimed (Max = 5 claims)**
-			if (claim_id >= 5) {
-				await client.query('ROLLBACK');
-				return json(
-					{ success: false, error: 'Maximum claim limit reached for this lead' },
-					{ status: 400 }
-				);
-			}
-
-			// **Check if this business already claimed this lead (duplicate prevention)**
-			const duplicateCheck = await client.query<ClaimRequestRow>(
-				'SELECT id FROM leaddata_claimrequests WHERE lead_id = $1 AND business_id = $2',
-				[lead_id, business_id]
-			);
-
-			if (duplicateCheck.rows.length > 0) {
-				await client.query('ROLLBACK');
-				return json(
-					{ success: false, error: 'You have already claimed this lead' },
-					{ status: 400 }
-				);
-			}
-
-			// Determine effective business_id — auto-create branch if no presence in lead's district
-			let effectiveBusinessId = business_id;
-			let mainBusinessId = business_id;
-
-			const leadLocationResult = await client.query<{ district: string | null; state: string | null }>(
-				'SELECT district, state FROM leaddata WHERE id = $1',
-				[lead_id]
-			);
-			const leadDistrict = leadLocationResult.rows[0]?.district ?? null;
-			const leadState = leadLocationResult.rows[0]?.state ?? null;
-
-			if (leadDistrict) {
-				// Resolve main business ID (in case business_id belongs to a branch)
-				const parentResult = await client.query<{ main_id: number }>(
-					'SELECT main_id FROM branches WHERE branch_id = $1 AND isactive = true LIMIT 1',
-					[business_id]
-				);
-				mainBusinessId =
-					parentResult.rows.length > 0 ? parentResult.rows[0].main_id : business_id;
-
-				// Check if main or any branch already serves the lead's district
-				const presenceResult = await client.query<{ id: number }>(
-					`SELECT b.business_id AS id FROM in_business_profiles b
-					 WHERE b.district = $1
-					 AND (b.business_id = $2 OR EXISTS (
-					     SELECT 1 FROM branches WHERE main_id = $2 AND branch_id = b.business_id AND isactive = true
-					 ))
-					 LIMIT 1`,
-					[leadDistrict, mainBusinessId]
-				);
-
-				if (presenceResult.rows.length === 0) {
-					if (!confirm_branch_creation) {
-						await client.query('ROLLBACK');
-						return json({ success: false, needsBranchConfirmation: true, district: leadDistrict });
-					}
-
-					// Confirmed — create a branch in the lead's district
-					const mainResult = await client.query<{
-						slug: string;
-						businessname: string;
-						phonenumber: string | null;
-						email: string | null;
-						login_email: string;
-						login_password: string;
-						address: string | null;
-						website: string | null;
-						rscore: number | null;
-						isvisible: boolean | null;
-						pluscode: string | null;
-						gstn: string | null;
-						tag: string | null;
-						services: string[] | null;
-						description: string | null;
-					}>('SELECT slug, businessname, phonenumber, email, login_email, login_password, address, website, rscore, isvisible, pluscode, gstn, tag, services, description FROM businesses_1 WHERE id = $1', [
-						mainBusinessId
-					]);
-					const main = mainResult.rows[0];
-					const branchSlug = `${main.slug}-branch-${Math.random().toString(16).slice(2, 8)}`;
-
-					const newBranchResult = await client.query<{ id: number }>(
-						`INSERT INTO businesses_1
-						 (rscore, isvisible, pluscode, phonenumber, email, login_email, login_password,
-						  website, gstn, state, district, tag, slug, city, businessname, address, services, description)
-						 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $11, $14, $15, $16, $17)
-						 RETURNING id`,
-						[
-							main.rscore,
-							main.isvisible,
-							main.pluscode,
-							main.phonenumber,
-							main.email,
-							main.login_email,
-							main.login_password,
-							main.website,
-							main.gstn,
-							leadState,
-							leadDistrict,
-							main.tag,
-							branchSlug,
-							main.businessname,
-							main.address,
-							main.services,
-							main.description ?? 'Solar panel installer'
-						]
-					);
-					const newBranchId = newBranchResult.rows[0].id;
-
-					await client.query(
-						'INSERT INTO branches (main_id, branch_id, isactive) VALUES ($1, $2, true)',
-						[mainBusinessId, newBranchId]
-					);
-
-					effectiveBusinessId = newBranchId;
-				} else {
-					effectiveBusinessId = presenceResult.rows[0].id;
+				if (claimCountResult.length === 0) {
+					throw new Error('Lead not found');
 				}
-			}
 
-			// Insert into leaddata_claimrequests
-			// Note: UNIQUE constraint on (lead_id, business_id) provides additional protection
-			const insertResult = await client
-				.query<ClaimRequestRow>(
-					'INSERT INTO leaddata_claimrequests (lead_id, claim_id, business_id) VALUES ($1, $2, $3) RETURNING id',
-					[lead_id, claim_id, effectiveBusinessId]
-				)
-				.catch((error: Error & { code?: string }) => {
-					// Handle unique constraint violation (PostgreSQL error code 23505)
-					if (error.code === '23505') {
-						throw new Error('You have already claimed this lead');
+				const claim_id = claimCountResult[0].claimCount ?? 0;
+
+				// **Check if lead can still be claimed (Max = 5 claims)**
+				if (claim_id >= 5) {
+					earlyExit = {
+						status: 400,
+						body: { success: false, error: 'Maximum claim limit reached for this lead' }
+					};
+					tx.rollback();
+				}
+
+				// **Check if this business already claimed this lead (duplicate prevention)**
+				const duplicateCheck = await tx
+					.select({ id: leaddataClaimrequests.id })
+					.from(leaddataClaimrequests)
+					.where(
+						and(
+							eq(leaddataClaimrequests.leadId, lead_id),
+							eq(leaddataClaimrequests.businessId, business_id)
+						)
+					);
+
+				if (duplicateCheck.length > 0) {
+					earlyExit = {
+						status: 400,
+						body: { success: false, error: 'You have already claimed this lead' }
+					};
+					tx.rollback();
+				}
+
+				// Determine effective business_id — auto-create branch if no presence in lead's district
+				let effectiveBusinessId = business_id;
+				let mainBusinessId = business_id;
+
+				const leadLocationResult = await tx
+					.select({ district: leaddata.district, state: leaddata.state })
+					.from(leaddata)
+					.where(eq(leaddata.id, lead_id));
+				const leadDistrict = leadLocationResult[0]?.district ?? null;
+				const leadState = leadLocationResult[0]?.state ?? null;
+
+				if (leadDistrict) {
+					// Resolve main business ID (in case business_id belongs to a branch)
+					const parentResult = await tx
+						.select({ mainId: branches.mainId })
+						.from(branches)
+						.where(and(eq(branches.branchId, business_id), eq(branches.isactive, true)))
+						.limit(1);
+					mainBusinessId = parentResult.length > 0 ? parentResult[0].mainId : business_id;
+
+					// Check if main or any branch already serves the lead's district
+					const presenceResult = await tx
+						.select({ id: inBusinessProfiles.businessId })
+						.from(inBusinessProfiles)
+						.where(
+							and(
+								eq(inBusinessProfiles.district, leadDistrict),
+								sql`(${inBusinessProfiles.businessId} = ${mainBusinessId} OR EXISTS (
+								     SELECT 1 FROM ${branches} WHERE ${branches.mainId} = ${mainBusinessId}
+								     AND ${branches.branchId} = ${inBusinessProfiles.businessId}
+								     AND ${branches.isactive} = true
+								 ))`
+							)
+						)
+						.limit(1);
+
+					if (presenceResult.length === 0) {
+						if (!confirm_branch_creation) {
+							earlyExit = {
+								status: 200,
+								body: { success: false, needsBranchConfirmation: true, district: leadDistrict }
+							};
+							tx.rollback();
+						}
+
+						// Confirmed — create a branch in the lead's district
+						const mainResult = await tx
+							.select({
+								slug: businesses1.slug,
+								businessname: businesses1.businessname,
+								phonenumber: businesses1.phonenumber,
+								email: businesses1.email,
+								loginEmail: businesses1.loginEmail,
+								loginPassword: businesses1.loginPassword,
+								address: businesses1.address,
+								website: businesses1.website,
+								rscore: businesses1.rscore,
+								isvisible: businesses1.isvisible,
+								pluscode: businesses1.pluscode,
+								gstn: businesses1.gstn,
+								tag: businesses1.tag,
+								services: businesses1.services,
+								description: businesses1.description
+							})
+							.from(businesses1)
+							.where(eq(businesses1.id, mainBusinessId));
+						const main = mainResult[0];
+						const branchSlug = `${main.slug}-branch-${Math.random().toString(16).slice(2, 8)}`;
+
+						// `city` took the same parameter as `district` in the raw INSERT ($11).
+						const newBranchResult = await tx
+							.insert(businesses1)
+							.values({
+								rscore: main.rscore,
+								isvisible: main.isvisible,
+								pluscode: main.pluscode,
+								phonenumber: main.phonenumber,
+								email: main.email,
+								loginEmail: main.loginEmail,
+								loginPassword: main.loginPassword,
+								website: main.website,
+								gstn: main.gstn,
+								state: leadState,
+								district: leadDistrict,
+								tag: main.tag,
+								slug: branchSlug,
+								city: leadDistrict,
+								businessname: main.businessname,
+								address: main.address,
+								services: main.services,
+								description: main.description ?? 'Solar panel installer'
+							})
+							.returning({ id: businesses1.id });
+						const newBranchId = newBranchResult[0].id;
+
+						await tx
+							.insert(branches)
+							.values({ mainId: mainBusinessId, branchId: newBranchId, isactive: true });
+
+						effectiveBusinessId = newBranchId;
+					} else {
+						effectiveBusinessId = presenceResult[0].id;
 					}
-					throw error;
-				});
+				}
 
-			const claimRequestId = insertResult.rows[0].id;
+				// Insert into leaddata_claimrequests
+				// Note: UNIQUE constraint on (lead_id, business_id) provides additional protection
+				const insertResult = await tx
+					.insert(leaddataClaimrequests)
+					.values({ leadId: lead_id, claimId: claim_id, businessId: effectiveBusinessId })
+					.returning({ id: leaddataClaimrequests.id })
+					.catch((error: Error & { code?: string }) => {
+						// Handle unique constraint violation (PostgreSQL error code 23505)
+						if (error.code === '23505') {
+							throw new Error('You have already claimed this lead');
+						}
+						throw error;
+					});
 
-			// Increment claim_count in leaddata
-			await client.query('UPDATE leaddata SET claim_count = claim_count + 1 WHERE id = $1', [
-				lead_id
-			]);
+				const claimRequestId = insertResult[0].id;
 
-			// Auto-allocate ALL successful claims (within 5-claim limit)
-			// Since we passed the claim limit check, auto-allocate this claim
+				// Increment claim_count in leaddata
+				await tx
+					.update(leaddata)
+					.set({ claimCount: sql`${leaddata.claimCount} + 1` })
+					.where(eq(leaddata.id, lead_id));
 
-			// Set this claim as allotted
-			await client.query(
-				'UPDATE leaddata_claimrequests SET isallotted = true, isresolved = true WHERE id = $1',
-				[claimRequestId]
-			);
+				// Auto-allocate ALL successful claims (within 5-claim limit)
+				// Since we passed the claim limit check, auto-allocate this claim
 
-			// Fetch original lead data to create allocated lead
-			const leadDataResult = await client.query<LeadDataRow>(
-				'SELECT * FROM leaddata WHERE id = $1',
-				[lead_id]
-			);
+				// Set this claim as allotted
+				await tx
+					.update(leaddataClaimrequests)
+					.set({ isallotted: true, isresolved: true })
+					.where(eq(leaddataClaimrequests.id, claimRequestId));
 
-			if (leadDataResult.rows.length > 0) {
-				const originalLead = leadDataResult.rows[0];
-				customer = { name: originalLead.name, email: originalLead.email };
+				// Fetch original lead data to create allocated lead
+				const leadDataResult = await tx.select().from(leaddata).where(eq(leaddata.id, lead_id));
 
-				// Create new lead entry for the allocated business
-				const newLeadResult = await client.query<NewLeadRow>(
-					`INSERT INTO leaddata
-                     (name, phone, email, pin_code, type, comment, created_at, svnotes, sv_comment_for_businesses, urlparams, isvisible, category, district, stage, status, claim_count, original_id, business_id)
-                    VALUES
-                     ($1, $2, $3, $4, $5, $6, NOW(), $7, $8, $9, true, 2, $10, 0, true, 0, $11, $12)
-                    RETURNING *`,
-					[
-						originalLead.name,
-						originalLead.phone,
-						originalLead.email,
-						originalLead.pin_code,
-						originalLead.type,
-						originalLead.comment,
-						originalLead.svnotes,
-						originalLead.sv_comment_for_businesses,
-						originalLead.urlparams,
-						originalLead.district,
-						originalLead.id, // Set original_id to the original lead's ID
-						effectiveBusinessId // Set business_id to the branch serving the lead's district
-					]
-				);
-				newLead = newLeadResult.rows[0] ?? null;
-			}
+				if (leadDataResult.length > 0) {
+					const originalLead = leadDataResult[0];
+					customer = { name: originalLead.name, email: originalLead.email };
 
-			// Prepare email data but don't send yet (move outside transaction)
-			allotmentBusinessId = mainBusinessId;
-			customerBusinessId = effectiveBusinessId;
+					// Create new lead entry for the allocated business
+					const newLeadResult = await tx
+						.insert(leaddata)
+						.values({
+							name: originalLead.name,
+							phone: originalLead.phone,
+							email: originalLead.email,
+							pinCode: originalLead.pinCode,
+							type: originalLead.type,
+							comment: originalLead.comment,
+							// `sql` escape hatch: NOW() for created_at, as the raw INSERT had.
+							createdAt: sql`NOW()`,
+							svnotes: originalLead.svnotes,
+							svCommentForBusinesses: originalLead.svCommentForBusinesses,
+							urlparams: originalLead.urlparams,
+							isvisible: true,
+							category: 2,
+							district: originalLead.district,
+							stage: 0,
+							status: true,
+							claimCount: 0,
+							originalId: originalLead.id, // Set original_id to the original lead's ID
+							businessId: effectiveBusinessId // the branch serving the lead's district
+						})
+						.returning(IN_LEAD_RETURNING);
+					newLead = newLeadResult[0] ?? null;
+				}
+
+				// Prepare email data but don't send yet (move outside transaction)
+				allotmentBusinessId = mainBusinessId;
+				customerBusinessId = effectiveBusinessId;
 
 			// Project the rows written above into the unified tables (covers the
 			// auto-created branch, the claim-count bump and the claimed copy).
-			// TODO(phase 6): restore the $lib/server/unifiedSync helpers when this
-			// file converts to Drizzle — they now take a Drizzle handle, not a client.
-			await client.query('SELECT sv_sync_in_split($1)', [effectiveBusinessId]);
-			await client.query('SELECT sv_sync_business($1, $2)', ['in', effectiveBusinessId]);
-			await client.query('SELECT sv_sync_account($1, $2)', ['in', effectiveBusinessId]);
-			await client.query('SELECT sv_sync_lead($1, $2)', ['in', lead_id]);
-			if (newLead) {
-				await client.query('SELECT sv_sync_lead($1, $2)', ['in', newLead.id]);
-			}
-
-			await client.query('COMMIT');
+				await syncInSplitTables(tx, effectiveBusinessId);
+				await syncBusinessToUnified(tx, 'in', effectiveBusinessId);
+				await syncAccountToUnified(tx, 'in', effectiveBusinessId);
+				await syncLeadToUnified(tx, 'in', lead_id);
+				if (newLead) {
+					await syncLeadToUnified(tx, 'in', newLead.id);
+				}
+			});
 		} catch (error) {
-			await client.query('ROLLBACK');
+			// tx.rollback() throws, so the deliberate early exits land here first.
+			if (earlyExit) {
+				return json(earlyExit.body, { status: earlyExit.status });
+			}
 			console.error('❌ Error claiming lead:', error);
 			const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
 			return json({ success: false, error: errorMessage }, { status: 500 });
-		} finally {
-			client.release();
 		}
 
 		// Send emails AFTER transaction commits, directly and in parallel —
@@ -387,19 +399,20 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		const sendAllotmentEmail = async () => {
 			if (!allotmentBusinessId) return;
 			try {
-				const bizResult = await pool.query<{
-					businessname: string;
-					login_email: string;
-					slug: string;
-				}>(
-					'SELECT businessname, login_email, slug FROM businesses_1 WHERE id = $1 LIMIT 1',
-					[allotmentBusinessId]
-				);
-				if (bizResult.rows.length === 0) {
+				const bizResult = await db
+					.select({
+						businessname: businesses1.businessname,
+						loginEmail: businesses1.loginEmail,
+						slug: businesses1.slug
+					})
+					.from(businesses1)
+					.where(eq(businesses1.id, allotmentBusinessId))
+					.limit(1);
+				if (bizResult.length === 0) {
 					console.error('❌ Allotment email skipped: business not found', allotmentBusinessId);
 					return;
 				}
-				const { businessname, login_email, slug } = bizResult.rows[0];
+				const { businessname, loginEmail, slug } = bizResult[0];
 				// Mint a fresh token (stored hashed); email the raw token.
 				const rawToken = await mintBusinessTokenById('businesses_1', allotmentBusinessId);
 				const magicLink = `https://business.solarvipani.com/in/${slug}/signin-link/${rawToken}`;
@@ -425,7 +438,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     </p>
     `;
 
-				const result = await sendEmail([login_email, adminEmail], subject, message, { isHtml: true });
+				const result = await sendEmail([loginEmail, adminEmail], subject, message, { isHtml: true });
 				if (!result.success) {
 					console.error('❌ Failed to send lead allotment email:', result.error);
 				}
@@ -437,20 +450,20 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		const sendCustomerEmail = async () => {
 			if (!customerBusinessId || !customer?.email) return;
 			try {
-				const bizResult = await pool.query<{
-					businessname: string;
-					phonenumber: string | null;
-					email: string | null;
-					slug: string;
-				}>(
-					`SELECT businessname, phonenumber, email, slug FROM in_business_profiles WHERE business_id = $1`,
-					[customerBusinessId]
-				);
-				if (bizResult.rows.length === 0) {
+				const bizResult = await db
+					.select({
+						businessname: inBusinessProfiles.businessname,
+						phonenumber: inBusinessProfiles.phonenumber,
+						email: inBusinessProfiles.email,
+						slug: inBusinessProfiles.slug
+					})
+					.from(inBusinessProfiles)
+					.where(eq(inBusinessProfiles.businessId, customerBusinessId));
+				if (bizResult.length === 0) {
 					console.error('❌ Customer email skipped: business not found', customerBusinessId);
 					return;
 				}
-				const business = bizResult.rows[0];
+				const business = bizResult[0];
 				const profileLink = `https://solarvipani.com/in/installer/${business.slug}`;
 
 				// Mint a fresh user token (stored hashed, upserts the in_user row);
