@@ -198,8 +198,8 @@ plan above was that comment.
 | --- | --- |
 | ✅ 7a | the 7 pillar `+page.server.ts` (solar-panels, -inverters, -pumps, -installation, rooftop-solar, -financing, -subsidy) |
 | ✅ 7b | the 7 `[slug]` loads + 3 `[model_slug]` loads + `lib/server/slug-resolver.ts` |
-| ☐ 7c | `lib/server/geo.ts` (10), `lib/server/sitemap.ts` (10), `lib/server/businesses.ts` (7) — the shared read helpers; convert before the routes that call them |
-| ☐ 7d | `[country]/(layout-1)/solar/` tree: `+page.server.ts` (2), `[state]` (4), `[state]/[district]` (7), `[state]/[district]/[slug]` (7) |
+| ✅ 7c | `lib/server/geo.ts`, `lib/server/sitemap.ts`, `lib/server/businesses.ts` — the shared read helpers |
+| ✅ 7d | `[country]/(layout-1)/solar/` tree: index, `[state]`, `[state]/[district]`, `[state]/[district]/[slug]` |
 | ☐ 7e | `partners/` (5), `partners/join/[district_slug]` (5), `installer/[installer_slug]` (3), `district/[district_slug]` (1), `business-listing` (1) |
 | ☐ 7f | `tools/solar-calculator` (4), `tools/subsidy-checker` (3), `tools/emi-calculator` (1), `authors/[author_slug]` (3), `api/stories` (1) |
 | ☐ 7g | `recent-solar-installation-projects` (2) + `[page_slug]` (2), `project/[project_id]` (1), `thank-you` (2), `get-quotes` (2), both `+layout.server.ts` (2+2), `[country]/(layout-1)/+page.server.ts` (1) |
@@ -340,6 +340,22 @@ with NOTE comments at each site, pending a decision. `/us/api/claimLead` has no 
       the next `pull`. Used for `seo_pages.content`/`.faq`, `solar_products.specs`, and the `faq`
       columns on `solar_brands`, `solar_financing_banks`, `state_subsidies`, `discoms`.
       `slug-resolver.ts`'s three exports dropped their `pool` parameter (Phase 5 precedent).
+      7c/7d (2026-08-05) added `lib/server/projects.ts` (`PROJECT_CARD_SELECTION`,
+      `getTopProjectsPerBusiness`) and `BUSINESS_CARD_SELECTION` in `businesses.ts`, and dropped the
+      `pool` parameter from `sitemap.ts`'s two exports too. `businesses.ts`'s `BUSINESS_COLUMNS`
+      string and `mapBusiness()` mapper are gone — a camelCase selection map infers the shape.
+      **Two things worth knowing before the remaining batches:**
+      - **Nullability is the recurring friction, not the SQL.** Drizzle reports the real
+        nullability that the raw driver's `any` hid, and several components declare columns
+        non-null that the schema allows to be NULL. Default to restating the old contract with
+        ``sql<T>`${table.col}` `` and a comment (done for `businesses.businessname`,
+        `projects.business_slug`/`.project_slug`); only widen the component when it already
+        guards at runtime and the wrapper would be a lie (done once, for `ProjectGallery.svelte`'s
+        four optional props).
+      - **`mode: 'string'` timestamps.** The introspected schema types timestamptz columns as
+        strings, so callers that did `row.col.toISOString()` break. `sitemap.ts` formats in SQL
+        with `to_char(... AT TIME ZONE 'UTC', 'YYYY-MM-DD')` instead — grep for `.toISOString()`
+        on a query result before converting a file.
 - [ ] Phase 8
 - [ ] Phase 9
 - [ ] Phase 10
