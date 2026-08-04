@@ -179,14 +179,41 @@ The cluster lived in a scratch directory and is gone. Either install Docker and 
 file as originally intended, or re-run the four commands above (anywhere writable) and export
 `TEST_POSTGRES_URL`. The suite rebuilds its schema per run, so a fresh empty database is fine.
 
-### Phases 7–9 — main-app (53 files) ← **next**
+### Phases 7–9 — main-app (54 files) ← **in progress**
 Enumerate and batch the same way now that business-app is done (main-app already imports `db`, so no plumbing
 phase). Rough split: 7 = reads/page loads, 8 = simple mutations, 9 = lead pipeline + anything transactional.
 Also the 1 raw-SQL file in `packages/`.
 
-**Cold start for Phase 7.** Nothing has been enumerated yet — start by re-running
-`grep -rln "pool\.query\|client\.query" apps/main-app/src packages/` and splitting the result into the
-three batches above. Two things carry over from business-app and will save time:
+**Cold start for Phase 7.** Enumerated 2026-08-05: **54 files**, split below. `npm run check` baseline
+for main-app is **13 errors + 1 warning in 7 files** (all pre-existing, in UI components) — a converted
+batch passes if the count stays there. There is no test suite for main-app, so `check` is the only signal.
+
+`packages/db/src/client.ts` shows up in the grep but is a false positive — the phrase `pool.query()`
+appears in its doc comment. `packages/` has no real raw-SQL call sites; the "1 file in packages" in the
+plan above was that comment.
+
+**Phase 7 — reads / page loads (24 files, 7 done).**
+
+| Status | Files |
+| --- | --- |
+| ✅ 7a | the 7 pillar `+page.server.ts` (solar-panels, -inverters, -pumps, -installation, rooftop-solar, -financing, -subsidy) |
+| ✅ 7b | the 7 `[slug]` loads + 3 `[model_slug]` loads + `lib/server/slug-resolver.ts` |
+| ☐ 7c | `lib/server/geo.ts` (10), `lib/server/sitemap.ts` (10), `lib/server/businesses.ts` (7) — the shared read helpers; convert before the routes that call them |
+| ☐ 7d | `[country]/(layout-1)/solar/` tree: `+page.server.ts` (2), `[state]` (4), `[state]/[district]` (7), `[state]/[district]/[slug]` (7) |
+| ☐ 7e | `partners/` (5), `partners/join/[district_slug]` (5), `installer/[installer_slug]` (3), `district/[district_slug]` (1), `business-listing` (1) |
+| ☐ 7f | `tools/solar-calculator` (4), `tools/subsidy-checker` (3), `tools/emi-calculator` (1), `authors/[author_slug]` (3), `api/stories` (1) |
+| ☐ 7g | `recent-solar-installation-projects` (2) + `[page_slug]` (2), `project/[project_id]` (1), `thank-you` (2), `get-quotes` (2), both `+layout.server.ts` (2+2), `[country]/(layout-1)/+page.server.ts` (1) |
+
+**Phase 8 — simple mutations (9 files).** `api/submitBusiness` (5), `api/updateRecentProject` (5),
+`api/postRecentProject` (2), `api/generateUserMagicLink` (3), `lib/server/magicLink.ts` (1),
+`api/submitDataAccess` (1), `api/submitDataDeletion` (1), `api/cron/purge-old-leads` (1),
+`(layout-1)/unsubscribe/+server.js` (2 — note: `.js`, not TypeScript, so `check` won't cover it).
+
+**Phase 9 — lead pipeline (1 file).** `lib/server/leads.ts` (3) — already partly Drizzle; the raw
+call sites are the transactional insert path. Smaller than expected because main-app's lead writes
+are concentrated here.
+
+Two things carry over from business-app and will save time:
 - The patterns are all established: `db.transaction()` + `.for('update')`, `earlyExit` +
   `tx.rollback()` for rollback-then-return, snake_case `*_RETURNING` maps wherever a handler ships a
   driver row to the client, `sql` escape hatch noted in the commit message.
@@ -246,6 +273,14 @@ because `db.ts` is shared shape with main-app and the symmetry is worth more tha
 **Still open, found in passing (no action taken):**
 - Nothing in the app issues a password reset token, so `resetPassword` is unreachable end to end
   even now that it works. Either add a forgot-password endpoint or delete the flow and its pages.
+- **`faq` is nullable but typed non-null (Phase 7a).** Every `faq` jsonb column is nullable in the
+  DB, and the raw driver's `any` hid that. `PillarPage.svelte` and the seven pillar `+page.svelte`
+  files all declare it non-null; the component guards with `?? []`, but the pages do
+  `data.pillarData.faq?.length > 0`, which is a TS error the moment the type is honest
+  (`undefined > 0`). The selection maps in `lib/server/seo.ts` therefore declare `FaqItem[]`, which
+  is exactly the pre-conversion behaviour, with a comment pointing here. Fixing it properly means
+  widening the component prop to `FaqItem[] | null` and correcting the `?.length` guard in seven
+  page files — a UI change, not a query change, so it was left out of the conversion batch.
 - `/us`'s county lookups (`getCountyByZipcode` and both recent-project endpoints) resolve a US
   zipcode against `pincode_mapping`, the Indian pincode table, and validate it as 6 digits. The
   app-wide pattern predates the migration and was left alone; `us_locations` has the county data.
@@ -293,7 +328,18 @@ notification are silently skipped. Same family as the two Phase 5 bugs, but unli
 a one-line-per-site change (`businesses1` → `usBusinesses`, `'businesses_1'` → `'us_businesses'`)
 with NOTE comments at each site, pending a decision. `/us/api/claimLead` has no test coverage.
 
-- [ ] Phase 7
+- [ ] Phase 7 — **in progress**, 7a and 7b done (2026-08-05), 17 files left. Patterns added:
+      `apps/main-app/src/lib/server/seo.ts` holds snake_case-aliased selection maps for the SEO
+      content families (`SEO_PILLAR_SELECTION`, `SEO_CLUSTER_SELECTION`, `SEO_CLUSTER_LINK_SELECTION`,
+      `BRAND_SELECTION`, `PRODUCT_CARD_SELECTION`, `PRODUCT_SELECTION`) — same idea as business-app's
+      `unifiedRead.ts`, and needed for the same reason: these loads return rows straight to the client.
+      **New escape-hatch idiom worth reusing:** `drizzle-kit pull` types every `jsonb` column as
+      `unknown`, which the raw driver used to hand over as `any`. Wrapping the column in
+      ``sql<T>`${table.col}` `` restates the shape without changing the generated SQL (it renders as
+      the bare column reference). Annotating `schema.ts` with `.$type<T>()` instead would not survive
+      the next `pull`. Used for `seo_pages.content`/`.faq`, `solar_products.specs`, and the `faq`
+      columns on `solar_brands`, `solar_financing_banks`, `state_subsidies`, `discoms`.
+      `slug-resolver.ts`'s three exports dropped their `pool` parameter (Phase 5 precedent).
 - [ ] Phase 8
 - [ ] Phase 9
 - [ ] Phase 10
