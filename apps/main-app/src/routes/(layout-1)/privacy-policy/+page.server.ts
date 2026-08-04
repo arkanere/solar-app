@@ -7,4 +7,4 @@ export const config = {
 
 export const load: PageServerLoad = async () => {
 	return {};
-}
+};

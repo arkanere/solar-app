@@ -41,7 +41,8 @@ export const load: PageServerLoad = async () => {
 	const pillarData = pillarRows[0] ?? {
 		h1: 'Solar Financing in India',
 		meta_title: 'Solar Financing — Loans, EMI & Bank Schemes | Solar Vipani',
-		meta_description: 'Compare solar loan options, EMI plans and financing schemes from banks in India. Find the best solar financing for your needs.',
+		meta_description:
+			'Compare solar loan options, EMI plans and financing schemes from banks in India. Find the best solar financing for your needs.',
 		content: [],
 		faq: []
 	};

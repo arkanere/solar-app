@@ -75,9 +75,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			db
 				.select(PRODUCT_CARD_SELECTION)
 				.from(solarProducts)
-				.where(
-					and(eq(solarProducts.brandSlug, brand.slug), ne(solarProducts.status, 'draft'))
-				)
+				.where(and(eq(solarProducts.brandSlug, brand.slug), ne(solarProducts.status, 'draft')))
 				.orderBy(asc(solarProducts.name))
 		]);
 

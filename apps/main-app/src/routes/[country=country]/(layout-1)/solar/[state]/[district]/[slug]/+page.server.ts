@@ -50,10 +50,7 @@ export const load: PageServerLoad = async ({ params }) => {
 						.select(PROJECT_CARD_SELECTION)
 						.from(projects)
 						.where(
-							and(
-								sql`LOWER(${projects.district}) = LOWER(${level2})`,
-								eq(projects.isvisible, true)
-							)
+							and(sql`LOWER(${projects.district}) = LOWER(${level2})`, eq(projects.isvisible, true))
 						)
 						.orderBy(desc(projects.projectDate), desc(projects.createdAt))
 						.limit(6)
@@ -73,9 +70,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		}
 
 		// Attach recent projects per business
-		const businessSlugs = businessRows
-			.map((b) => b.slug)
-			.filter((s): s is string => s !== null);
+		const businessSlugs = businessRows.map((b) => b.slug).filter((s): s is string => s !== null);
 
 		const businessProjectsMap = country.features.projects
 			? await getTopProjectsPerBusiness(businessSlugs)
@@ -97,9 +92,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		const siblingCityRows = await db
 			.selectDistinct({ city: businessesTable.city })
 			.from(businessesTable)
-			.where(
-				and(inLevel2, sql`LOWER(REPLACE(${businessesTable.city}, ' ', '-')) != ${slug}`)
-			)
+			.where(and(inLevel2, sql`LOWER(REPLACE(${businessesTable.city}, ' ', '-')) != ${slug}`))
 			.orderBy(asc(businessesTable.city))
 			.limit(5);
 
@@ -161,7 +154,10 @@ export const load: PageServerLoad = async ({ params }) => {
 	if (resolved.type === 'size') {
 		const sizeKw = resolved.data.sizeKw as number;
 
-		const businessRows = await db.select(BUSINESS_CARD_SELECTION).from(businessesTable).where(inLevel2);
+		const businessRows = await db
+			.select(BUSINESS_CARD_SELECTION)
+			.from(businessesTable)
+			.where(inLevel2);
 
 		if (businessRows.length === 0) {
 			error(404, `No solar installers found in ${level2}`);

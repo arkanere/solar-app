@@ -77,4 +77,4 @@ export const load: PageServerLoad = async ({ params }) => {
 			error: 'Failed to fetch projects: ' + (error instanceof Error ? error.message : String(error))
 		};
 	}
-}
+};

@@ -67,9 +67,8 @@ export const load: PageServerLoad = async ({ url, params }) => {
 				hasVerifiedBusinessInDistrict
 			}
 		};
-
 	} catch (err) {
 		console.error('Error fetching lead details:', err);
 		return { customerDetails: null };
 	}
-}
+};

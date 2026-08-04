@@ -36,7 +36,8 @@ export const load: PageServerLoad = async () => {
 	const pillarData = pillarRows[0] ?? {
 		h1: 'Solar Installation Guide',
 		meta_title: 'Solar Installation — Process, Timeline & Guide | Solar Vipani',
-		meta_description: 'Complete guide to solar panel installation in India. Learn about process, timeline, permits and best practices.',
+		meta_description:
+			'Complete guide to solar panel installation in India. Learn about process, timeline, permits and best practices.',
 		content: [],
 		faq: []
 	};

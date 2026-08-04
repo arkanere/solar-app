@@ -1,5 +1,7 @@
 import type { PageServerLoad } from './$types';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { inBusinessProfiles, leaddata, locations } from '@solar/db/schema';
+import { and, asc, count, countDistinct, eq, sql } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 
 export const config = {
@@ -9,56 +11,75 @@ export const config = {
 export const load: PageServerLoad = async ({ params }) => {
 	const districtSlug = params.district_slug.toLowerCase();
 
-	const locationResult = await pool.query(
-		`SELECT DISTINCT state, district FROM locations
-		 WHERE LOWER(REPLACE(district, ' ', '-')) = $1
-		 LIMIT 1`,
-		[districtSlug]
-	);
+	// state/district are nullable columns the page uses as required strings —
+	// restated non-null, matching the raw driver's `any`.
+	const locationRows = await db
+		.selectDistinct({
+			state: sql<string>`${locations.state}`,
+			district: sql<string>`${locations.district}`
+		})
+		.from(locations)
+		.where(sql`LOWER(REPLACE(${locations.district}, ' ', '-')) = ${districtSlug}`)
+		.limit(1);
 
-	if (locationResult.rows.length === 0) {
+	if (locationRows.length === 0) {
 		error(404, 'District not found');
 	}
 
-	const { state, district } = locationResult.rows[0];
+	const { state, district } = locationRows[0];
 
-	const [installerResult, leadResult, cityResult, nearbyResult] = await Promise.all([
-		pool.query(
-			`SELECT COUNT(*) as count FROM in_business_profiles WHERE LOWER(district) = LOWER($1) AND isvisible = true`,
-			[district]
-		),
-		pool.query(
-			`SELECT COUNT(*) as count FROM LeadData WHERE LOWER(district) = LOWER($1) AND created_at > NOW() - INTERVAL '30 days'`,
-			[district]
-		),
-		pool.query(`SELECT COUNT(DISTINCT city) as count FROM locations WHERE LOWER(district) = LOWER($1)`, [
-			district
-		]),
-		pool.query(
-			`SELECT DISTINCT l.district,
-			        LOWER(REPLACE(l.district, ' ', '-')) as slug,
-			        (SELECT COUNT(*) FROM in_business_profiles b WHERE LOWER(b.district) = LOWER(l.district) AND b.isvisible = true) as installer_count
-			 FROM locations l
-			 WHERE LOWER(l.state) = LOWER($1) AND LOWER(l.district) != LOWER($2)
-			 ORDER BY l.district ASC
-			 LIMIT 6`,
-			[state, district]
-		)
+	const [installerRows, leadRows, cityRows, nearbyRows] = await Promise.all([
+		db
+			.select({ count: count() })
+			.from(inBusinessProfiles)
+			.where(
+				and(
+					sql`LOWER(${inBusinessProfiles.district}) = LOWER(${district})`,
+					eq(inBusinessProfiles.isvisible, true)
+				)
+			),
+		db
+			.select({ count: count() })
+			.from(leaddata)
+			.where(
+				and(
+					sql`LOWER(${leaddata.district}) = LOWER(${district})`,
+					sql`${leaddata.createdAt} > NOW() - INTERVAL '30 days'`
+				)
+			),
+		db
+			.select({ count: countDistinct(locations.city) })
+			.from(locations)
+			.where(sql`LOWER(${locations.district}) = LOWER(${district})`),
+		db
+			.selectDistinct({
+				district: sql<string>`${locations.district}`,
+				slug: sql<string>`LOWER(REPLACE(${locations.district}, ' ', '-'))`,
+				installer_count: sql<string>`(SELECT COUNT(*) FROM in_business_profiles b
+				        WHERE LOWER(b.district) = LOWER(${locations.district}) AND b.isvisible = true)`
+			})
+			.from(locations)
+			.where(
+				and(
+					sql`LOWER(${locations.state}) = LOWER(${state})`,
+					sql`LOWER(${locations.district}) != LOWER(${district})`
+				)
+			)
+			.orderBy(asc(locations.district))
+			.limit(6)
 	]);
 
 	return {
 		state,
 		district,
 		districtSlug,
-		installerCount: parseInt(installerResult.rows[0].count, 10),
-		recentLeadCount: parseInt(leadResult.rows[0].count, 10),
-		cityCount: parseInt(cityResult.rows[0].count, 10),
-		nearbyDistricts: nearbyResult.rows.map(
-			(r: { district: string; slug: string; installer_count: string }) => ({
-				name: r.district,
-				slug: r.slug,
-				installerCount: parseInt(r.installer_count)
-			})
-		)
+		installerCount: installerRows[0].count,
+		recentLeadCount: leadRows[0].count,
+		cityCount: cityRows[0].count,
+		nearbyDistricts: nearbyRows.map((r) => ({
+			name: r.district,
+			slug: r.slug,
+			installerCount: parseInt(r.installer_count)
+		}))
 	};
 };

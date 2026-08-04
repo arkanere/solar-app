@@ -36,7 +36,8 @@ export const load: PageServerLoad = async () => {
 	const pillarData = pillarRows[0] ?? {
 		h1: 'Solar Inverters in India',
 		meta_title: 'Solar Inverters — Types, Prices & Brands | Solar Vipani',
-		meta_description: 'Compare solar inverter types, brands and prices in India. Find the best inverter for your solar system.',
+		meta_description:
+			'Compare solar inverter types, brands and prices in India. Find the best inverter for your solar system.',
 		content: [],
 		faq: []
 	};

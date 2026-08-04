@@ -36,7 +36,8 @@ export const load: PageServerLoad = async () => {
 	const pillarData = pillarRows[0] ?? {
 		h1: 'Solar Pumps in India',
 		meta_title: 'Solar Pumps — Types, Prices & Subsidies | Solar Vipani',
-		meta_description: 'Compare solar water pump types, prices and government subsidies in India. Find the best solar pump for agriculture and irrigation.',
+		meta_description:
+			'Compare solar water pump types, prices and government subsidies in India. Find the best solar pump for agriculture and irrigation.',
 		content: [],
 		faq: []
 	};

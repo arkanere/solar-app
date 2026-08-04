@@ -1,6 +1,8 @@
 import type { PageServerLoad } from './$types';
 import { error, redirect } from '@sveltejs/kit';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { locations } from '@solar/db/schema';
+import { sql } from 'drizzle-orm';
 import { geoUrl } from '$lib/countries/urls';
 
 export const config = {
@@ -22,21 +24,20 @@ export const load: PageServerLoad = async ({ params }) => {
 		error(404, 'Invalid district URL');
 	}
 
-	const result = await pool.query(
-		`SELECT DISTINCT state, district
-		 FROM locations
-		 WHERE LOWER(REPLACE(district, ' ', '-')) = $1
-		 LIMIT 1`,
-		[districtSlug]
-	);
+	// LOWER(REPLACE(...)) has no query builder equivalent — sql escape hatch.
+	const rows = await db
+		.selectDistinct({ state: locations.state, district: locations.district })
+		.from(locations)
+		.where(sql`LOWER(REPLACE(${locations.district}, ' ', '-')) = ${districtSlug}`)
+		.limit(1);
 
-	if (result.rows.length === 0) {
+	if (rows.length === 0) {
 		error(404, { message: `No district found for "${districtSlug}"` });
 	}
 
-	const { state, district } = result.rows[0];
-	const stateSlug = state.toLowerCase().replace(/\s+/g, '-');
-	const newDistrictSlug = district.toLowerCase().replace(/\s+/g, '-');
+	const { state, district } = rows[0];
+	const stateSlug = (state as string).toLowerCase().replace(/\s+/g, '-');
+	const newDistrictSlug = (district as string).toLowerCase().replace(/\s+/g, '-');
 
 	redirect(301, geoUrl(params.country, stateSlug, newDistrictSlug));
 };

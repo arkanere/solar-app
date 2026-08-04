@@ -36,7 +36,8 @@ export const load: PageServerLoad = async () => {
 	const pillarData = pillarRows[0] ?? {
 		h1: 'Rooftop Solar in India',
 		meta_title: 'Rooftop Solar — Complete Guide for India | Solar Vipani',
-		meta_description: 'Complete guide to rooftop solar systems for homes and businesses in India. Learn about costs, benefits, and how to go solar.',
+		meta_description:
+			'Complete guide to rooftop solar systems for homes and businesses in India. Learn about costs, benefits, and how to go solar.',
 		content: [],
 		faq: []
 	};

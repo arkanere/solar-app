@@ -81,10 +81,7 @@ export const load: PageServerLoad = async ({ params }) => {
 						)
 					)
 					.where(
-						and(
-							sql`LOWER(${businesses.level1}) = LOWER(${level1})`,
-							eq(projects.isvisible, true)
-						)
+						and(sql`LOWER(${businesses.level1}) = LOWER(${level1})`, eq(projects.isvisible, true))
 					)
 			: Promise.resolve([])
 	]);

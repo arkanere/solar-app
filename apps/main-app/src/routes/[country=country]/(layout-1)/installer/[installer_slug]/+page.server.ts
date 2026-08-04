@@ -1,5 +1,7 @@
 import type { PageServerLoad } from './$types';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { businesses, geoLocations, projects } from '@solar/db/schema';
+import { and, asc, desc, eq, sql } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 import { getCountry } from '$lib/countries';
 
@@ -11,22 +13,47 @@ export const load: PageServerLoad = async ({ params }) => {
 	const country = getCountry(params.country);
 	const slug = params.installer_slug.toLowerCase();
 
-	const businessResult = await pool.query(
-		`SELECT businessname, description, phonenumber, email, website,
-		        slug, address, level2 as district, level1 as state, city, tag, rscore,
-		        businessfilled, services, brands, instagram_id, google_maps_link
-		 FROM businesses
-		 WHERE country_code = $1 AND slug = $2 AND isvisible = true
-		 ORDER BY rscore DESC NULLS LAST
-		 LIMIT 1`,
-		[country.code, slug]
-	);
+	// Shipped straight to the client, so the wire shape stays snake_case.
+	// slug/phonenumber/city/services/brands are nullable in the schema but the
+	// page dereferences them as required (businessname too) (`b.slug`, `b.services?.length > 0`) —
+	// restated non-null to keep the raw driver's `any` contract rather than
+	// rewriting the page.
+	const businessRows = await db
+		.select({
+			businessname: sql<string>`${businesses.businessname}`,
+			description: businesses.description,
+			phonenumber: sql<string>`${businesses.phonenumber}`,
+			email: businesses.email,
+			website: businesses.website,
+			slug: sql<string>`${businesses.slug}`,
+			address: businesses.address,
+			district: businesses.level2,
+			state: businesses.level1,
+			city: sql<string>`${businesses.city}`,
+			tag: businesses.tag,
+			rscore: businesses.rscore,
+			businessfilled: businesses.businessfilled,
+			services: sql<number[]>`${businesses.services}`,
+			brands: sql<number[]>`${businesses.brands}`,
+			instagram_id: businesses.instagramId,
+			google_maps_link: businesses.googleMapsLink
+		})
+		.from(businesses)
+		.where(
+			and(
+				eq(businesses.countryCode, country.code),
+				eq(businesses.slug, slug),
+				eq(businesses.isvisible, true)
+			)
+		)
+		.orderBy(sql`${businesses.rscore} DESC NULLS LAST`)
+		.limit(1);
 
-	if (businessResult.rows.length === 0) {
+	if (businessRows.length === 0) {
 		error(404, 'Installer not found');
 	}
 
-	const business = businessResult.rows[0];
+	const business = businessRows[0];
 
 	// Projects, service area cities in parallel (projects are IN-only today)
 	let mainSlug = slug;
@@ -35,34 +62,48 @@ export const load: PageServerLoad = async ({ params }) => {
 		mainSlug = slug.replace(branchPattern, '');
 	}
 
-	const [projectsResult, locationsResult] = await Promise.all([
+	const [projectRows, locationRows] = await Promise.all([
 		country.features.projects
-			? pool.query(
-					`SELECT id, business_slug, project_slug, title, pincode, district,
-					        project_date, created_at, image_url, cloudinary_public_id
-					 FROM projects
-					 WHERE business_slug = $1 AND isvisible = true
-					 ORDER BY project_date DESC, created_at DESC
-					 LIMIT 12`,
-					[mainSlug]
+			? db
+					.select({
+						id: projects.id,
+						business_slug: projects.businessSlug,
+						project_slug: projects.projectSlug,
+						title: projects.title,
+						pincode: projects.pincode,
+						district: projects.district,
+						project_date: projects.projectDate,
+						created_at: projects.createdAt,
+						image_url: projects.imageUrl,
+						cloudinary_public_id: projects.cloudinaryPublicId
+					})
+					.from(projects)
+					.where(and(eq(projects.businessSlug, mainSlug), eq(projects.isvisible, true)))
+					.orderBy(desc(projects.projectDate), desc(projects.createdAt))
+					.limit(12)
+			: Promise.resolve([]),
+		db
+			.selectDistinct({
+				city: geoLocations.city,
+				state_slug: geoLocations.level1Slug,
+				district_slug: geoLocations.level2Slug,
+				city_slug: geoLocations.citySlug
+			})
+			.from(geoLocations)
+			.where(
+				and(
+					eq(geoLocations.countryCode, country.code),
+					sql`LOWER(${geoLocations.level2}) = LOWER(${business.district})`,
+					sql`LOWER(${geoLocations.level1}) = LOWER(${business.state})`
 				)
-			: Promise.resolve({ rows: [] }),
-		pool.query(
-			`SELECT DISTINCT g.city,
-			        g.level1_slug as state_slug,
-			        g.level2_slug as district_slug,
-			        g.city_slug
-			 FROM geo_locations g
-			 WHERE g.country_code = $1 AND LOWER(g.level2) = LOWER($2) AND LOWER(g.level1) = LOWER($3)
-			 ORDER BY g.city
-			 LIMIT 20`,
-			[country.code, business.district, business.state]
-		)
+			)
+			.orderBy(asc(geoLocations.city))
+			.limit(20)
 	]);
 
 	return {
 		business,
-		projects: projectsResult.rows,
-		serviceAreas: locationsResult.rows
+		projects: projectRows,
+		serviceAreas: locationRows
 	};
 };

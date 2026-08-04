@@ -1,5 +1,7 @@
 import type { PageServerLoad } from './$types';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { inBusinessProfiles, usBusinesses } from '@solar/db/schema';
+import { and, desc, eq } from 'drizzle-orm';
 
 export const config = {
 	isr: {
@@ -16,38 +18,45 @@ export const config = {
 // and the IN query's unused `district` was the one thing that made this page's
 // serialized payload differ across the merge. Both branches now return the
 // same shape without needing an alias.
-const QUERY_BY_COUNTRY: Record<string, string> = {
-	us: `SELECT
-        id,
-        businessname,
-        phonenumber,
-        city,
-        state,
-        slug
-      FROM us_businesses
-      WHERE isvisible = true
-      AND businessfilled = true
-      ORDER BY id DESC
-      LIMIT 10;`,
-	in: `SELECT
-        business_id AS id,
-        businessname,
-        phonenumber,
-        city,
-        state,
-        slug
-      FROM in_business_profiles
-      WHERE isvisible = true
-      AND businessfilled = true
-      ORDER BY business_id DESC
-      LIMIT 10;`
-};
+//
+// The two table-name-keyed SQL strings became two Drizzle queries, continuing
+// the per-country-tables approach from Phases 2 and 5. The IN table keys the
+// business on `business_id`, the US one on `id`; both are aliased to `id`.
+function latestBusinesses(country: string) {
+	if (country === 'us') {
+		return db
+			.select({
+				id: usBusinesses.id,
+				businessname: usBusinesses.businessname,
+				phonenumber: usBusinesses.phonenumber,
+				city: usBusinesses.city,
+				state: usBusinesses.state,
+				slug: usBusinesses.slug
+			})
+			.from(usBusinesses)
+			.where(and(eq(usBusinesses.isvisible, true), eq(usBusinesses.businessfilled, true)))
+			.orderBy(desc(usBusinesses.id))
+			.limit(10);
+	}
+
+	return db
+		.select({
+			id: inBusinessProfiles.businessId,
+			businessname: inBusinessProfiles.businessname,
+			phonenumber: inBusinessProfiles.phonenumber,
+			city: inBusinessProfiles.city,
+			state: inBusinessProfiles.state,
+			slug: inBusinessProfiles.slug
+		})
+		.from(inBusinessProfiles)
+		.where(and(eq(inBusinessProfiles.isvisible, true), eq(inBusinessProfiles.businessfilled, true)))
+		.orderBy(desc(inBusinessProfiles.businessId))
+		.limit(10);
+}
 
 export const load: PageServerLoad = async ({ params }) => {
 	try {
-		const latestBusinessesResult = await pool.query(QUERY_BY_COUNTRY[params.country]);
-
-		const businesses = latestBusinessesResult.rows;
+		const businesses = await latestBusinesses(params.country);
 
 		if (businesses.length > 0) {
 			return { businesses };

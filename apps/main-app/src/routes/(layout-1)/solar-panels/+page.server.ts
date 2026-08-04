@@ -36,7 +36,8 @@ export const load: PageServerLoad = async () => {
 	const pillarData = pillarRows[0] ?? {
 		h1: 'Solar Panels in India',
 		meta_title: 'Solar Panels — Types, Prices & Brands | Solar Vipani',
-		meta_description: 'Compare solar panel types, brands, prices and specifications in India. Find the best solar panels for your home or business.',
+		meta_description:
+			'Compare solar panel types, brands, prices and specifications in India. Find the best solar panels for your home or business.',
 		content: [],
 		faq: []
 	};

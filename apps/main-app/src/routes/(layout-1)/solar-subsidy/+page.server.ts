@@ -44,7 +44,8 @@ export const load: PageServerLoad = async () => {
 	const pillarData = pillarRows[0] ?? {
 		h1: 'Solar Subsidy in India',
 		meta_title: 'Solar Subsidy — State-wise Rates & Application | Solar Vipani',
-		meta_description: 'Complete guide to solar subsidies in India. State-wise rates, eligibility, application process and DISCOM policies.',
+		meta_description:
+			'Complete guide to solar subsidies in India. State-wise rates, eligibility, application process and DISCOM policies.',
 		content: [],
 		faq: []
 	};

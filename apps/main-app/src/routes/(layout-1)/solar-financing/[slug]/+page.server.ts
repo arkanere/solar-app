@@ -73,15 +73,11 @@ export const load: PageServerLoad = async ({ params }) => {
 				faq: sql<FaqItem[]>`${solarFinancingBanks.faq}`
 			})
 			.from(solarFinancingBanks)
-			.where(
-				and(eq(solarFinancingBanks.slug, slug), eq(solarFinancingBanks.status, 'published'))
-			),
+			.where(and(eq(solarFinancingBanks.slug, slug), eq(solarFinancingBanks.status, 'published'))),
 		db
 			.select({ slug: solarFinancingBanks.slug, name: solarFinancingBanks.name })
 			.from(solarFinancingBanks)
-			.where(
-				and(ne(solarFinancingBanks.slug, slug), eq(solarFinancingBanks.status, 'published'))
-			)
+			.where(and(ne(solarFinancingBanks.slug, slug), eq(solarFinancingBanks.status, 'published')))
 			.orderBy(asc(solarFinancingBanks.name))
 	]);
 

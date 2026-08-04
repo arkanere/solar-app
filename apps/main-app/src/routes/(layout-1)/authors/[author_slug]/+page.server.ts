@@ -9,10 +9,7 @@ export const config = {
 export const load: PageServerLoad = async ({ params }) => {
 	const slug = params.author_slug.toLowerCase();
 
-	const authorResult = await pool.query(
-		`SELECT * FROM authors WHERE slug = $1`,
-		[slug]
-	);
+	const authorResult = await pool.query(`SELECT * FROM authors WHERE slug = $1`, [slug]);
 
 	const author = authorResult.rows[0];
 	if (!author) {
