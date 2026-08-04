@@ -70,6 +70,22 @@ The `(layout-1)/[business_slug]/**` `+layout.server.ts` / `+page.server.ts` file
 add/delete/update for branches, referrers, recent projects, proposals, business details, compliance
 accept/status, resetPassword — both countries. Straightforward single-row inserts/updates/deletes.
 
+### Phase 5.5 — characterization tests for the code Phase 6 will rewrite
+The project has no tests; rather than a blanket testing effort, write integration tests that pin down the
+*current* behavior of the two areas where a silent regression hurts most, while they are still raw SQL:
+- **Lead pipeline:** `submitLead`, `claimLead`, `updateLeadByBusiness` — claim-count limits, `FOR UPDATE`
+  locking (two concurrent claims → exactly one wins), `syncLeadToUnified` side effects.
+- **Auth:** `PasswordManager`, `TokenManager`, `LoginTracker`, `RateLimiter` — lockout thresholds, token
+  expiry, rate-limit fail-open behavior.
+Runner: Vitest. Tests run against a real Postgres, not a mocked pool — the risk being guarded *is* the SQL.
+**Decision needed before starting (owner: Ani):** what that Postgres is — a local Docker container with
+migrations applied in test setup, or a Neon/Vercel branch database. Depends on local workflow and whether
+CI gets added.
+Phase 6 then becomes "convert until the tests pass again" instead of "convert and hope." The suite stays
+after the migration as the permanent regression net for the critical path; skip UI/component tests and
+trivial lookups (`getCities` etc.) — low failure probability, low failure cost. Ongoing rule: every bug
+fixed from now on gets a test that reproduces it first.
+
 ### Phase 6 — the hard ones (business-app, ~8 files)
 `claimLead`, `submitLead`, `updateLeadByBusiness`, `deleteLeadByBusiness`, `fixClaimedLead`,
 `deleteAccount`, `sendLeadClaimNotificationToCustomer` — transactions, `FOR UPDATE` locks, multi-table
@@ -91,6 +107,7 @@ from both apps' `db.ts` (or leaving it export-only-for-Drizzle); update this doc
 - [ ] Phase 3
 - [ ] Phase 4
 - [ ] Phase 5
+- [ ] Phase 5.5 (tests — blocked on test-DB decision)
 - [ ] Phase 6
 - [ ] Phase 7
 - [ ] Phase 8
