@@ -129,7 +129,7 @@ from both apps' `db.ts` (or leaving it export-only-for-Drizzle); update this doc
 - [x] Phase 4 (2026-08-04) — all 5 `/us` server loads converted (main page, branch, crm,
       open-inquiries, project). Same pattern as Phase 3; `US_BUSINESS_SELECTION`/`US_LEAD_SELECTION`
       reused from `unifiedRead.ts`.
-- [x] Phase 5 (2026-08-04) — 22 files in 6 commits: branch/referrer mutations (4), recent-project
+- [x] Phase 5 (2026-08-04) — 22 files in 7 commits (5a–5f): branch/referrer mutations (4), recent-project
       mutations (6), proposal mutations + `ownsBusinessSlug` (4), resetPassword (2),
       updateBusinessDetails + compliance lib + magicLink (5), us/addBranch (1). Patterns added:
       snake_case-aliased `.returning()` maps where the raw handler shipped driver rows straight to
