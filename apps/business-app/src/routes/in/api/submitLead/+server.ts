@@ -1,7 +1,9 @@
 // src/routes/api/submitLead/+server.ts
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import { leaddata, pincodeMapping } from '@solar/db/schema';
+import { eq } from 'drizzle-orm';
 
 interface SubmitLeadRequest {
 	name: string;
@@ -11,15 +13,6 @@ interface SubmitLeadRequest {
 	comment: string;
 	urlParam: string;
 	email?: string;
-}
-
-interface LeadInsertResult {
-	id: number;
-	reference_uuid: string;
-}
-
-interface DistrictResult {
-	district: string;
 }
 
 export const POST: RequestHandler = async ({ request, fetch }) => {
@@ -32,14 +25,13 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 		let district: string | null = null;
 		if (pinCode) {
 			try {
-				const districtQuery = `
-					SELECT district FROM pincode_mapping
-					WHERE pincode = $1
-					LIMIT 1
-				`;
-				const districtResult = await pool.query<DistrictResult>(districtQuery, [pinCode]);
-				if (districtResult.rows.length > 0) {
-					district = districtResult.rows[0].district;
+				const districtResult = await db
+					.select({ district: pincodeMapping.district })
+					.from(pincodeMapping)
+					.where(eq(pincodeMapping.pincode, pinCode))
+					.limit(1);
+				if (districtResult.length > 0) {
+					district = districtResult[0].district;
 				}
 			} catch (districtError) {
 				console.log('District lookup failed for pincode:', pinCode, districtError);
@@ -47,25 +39,22 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 			}
 		}
 
-		const insertQuery = `
-            INSERT INTO LeadData (name, phone, pin_code, type, comment, urlparams, email, district)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-            RETURNING id, reference_uuid
-        `;
+		const result = await db
+			.insert(leaddata)
+			.values({
+				name,
+				phone,
+				pinCode,
+				type,
+				comment,
+				urlparams: urlParam,
+				email: email || null,
+				district
+			})
+			.returning({ id: leaddata.id, referenceUuid: leaddata.referenceUuid });
 
-		const result = await pool.query<LeadInsertResult>(insertQuery, [
-			name,
-			phone,
-			pinCode,
-			type,
-			comment,
-			urlParam,
-			email || null,
-			district
-		]);
-
-		const leadId = result.rows[0].id;
-		const referenceUuid = result.rows[0].reference_uuid;
+		const leadId = result[0].id;
+		const referenceUuid = result[0].referenceUuid;
 
 		// Use `fetch` from event
 		await fetch('/in/api/sendLeadSubmissionConfirmation', {
