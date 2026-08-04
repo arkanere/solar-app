@@ -71,9 +71,12 @@ The `(layout-1)/[business_slug]/**` `+layout.server.ts` / `+page.server.ts` file
 ### Phase 4 — `/us` page loads (business-app, ~5 files)
 `us/[business_slug]/**` page loads. Same shape as Phase 3.
 
-### Phase 5 — simple mutations (business-app, ~20 files)
+### ✅ Phase 5 — simple mutations (business-app, 22 files) — DONE 2026-08-04
 add/delete/update for branches, referrers, recent projects, proposals, business details, compliance
 accept/status, resetPassword — both countries. Straightforward single-row inserts/updates/deletes.
+Also picked up the three lib helpers these routes share: `lib/compliance/ComplianceChecker`,
+`lib/in/ownsBusinessSlug`, `lib/server/magicLink`. See the Progress section for details and for the
+two live bugs the conversion surfaced.
 
 ### Phase 5.5 — characterization tests for the code Phase 6 will rewrite
 The project has no tests; rather than a blanket testing effort, write integration tests that pin down the
@@ -91,10 +94,17 @@ after the migration as the permanent regression net for the critical path; skip 
 trivial lookups (`getCities` etc.) — low failure probability, low failure cost. Ongoing rule: every bug
 fixed from now on gets a test that reproduces it first.
 
-### Phase 6 — the hard ones (business-app, ~8 files)
-`claimLead`, `submitLead`, `updateLeadByBusiness`, `deleteLeadByBusiness`, `fixClaimedLead`,
-`deleteAccount`, `sendLeadClaimNotificationToCustomer` — transactions, `FOR UPDATE` locks, multi-table
-writes, `syncLeadToUnified` interplay. Slowest, most careful phase; convert one file per commit.
+### Phase 6 — the hard ones (business-app, 12 files)
+`claimLead`, `submitLead`, `updateLeadByBusiness`, `deleteLeadByBusiness` (all ×2 countries),
+`fixClaimedLead`, `deleteAccount` (×2), `sendLeadClaimNotificationToCustomer` — transactions,
+`FOR UPDATE` locks, multi-table writes, `syncLeadToUnified` interplay. Slowest, most careful phase;
+convert one file per commit. These are the only `pool.query`/`client.query` call sites left in
+business-app after Phase 5 — verified by grep.
+
+Also fold in `lib/server/unifiedSync.ts`: it isn't raw `pool.query` in its own right (it calls the
+`sv_sync_*` SQL functions through a `Queryable`), but every caller has to keep importing `pool`
+purely to feed it. Converting it to take `db` and use the `sql` escape hatch for the function calls
+would remove the last reason for a `pool` import outside `db.ts`, which Phase 10 wants anyway.
 
 ### Phases 7–9 — main-app (53 files)
 Enumerate and batch the same way once business-app is done (main-app already imports `db`, so no plumbing
@@ -119,7 +129,37 @@ from both apps' `db.ts` (or leaving it export-only-for-Drizzle); update this doc
 - [x] Phase 4 (2026-08-04) — all 5 `/us` server loads converted (main page, branch, crm,
       open-inquiries, project). Same pattern as Phase 3; `US_BUSINESS_SELECTION`/`US_LEAD_SELECTION`
       reused from `unifiedRead.ts`.
-- [ ] Phase 5
+- [x] Phase 5 (2026-08-04) — 22 files in 6 commits: branch/referrer mutations (4), recent-project
+      mutations (6), proposal mutations + `ownsBusinessSlug` (4), resetPassword (2),
+      updateBusinessDetails + compliance lib + magicLink (5), us/addBranch (1). Patterns added:
+      snake_case-aliased `.returning()` maps where the raw handler shipped driver rows straight to
+      the client (`PROPOSAL_RETURNING` in `lib/server/proposals.ts`); conditional spreads into
+      `.returning()` to reproduce the old dynamically-built RETURNING lists; `aliasedTable` for
+      self-joins; per-country Drizzle tables replacing trusted table-name strings (magicLink),
+      continuing the Phase 2 approach. `sql` escape hatches: `LOWER() = LOWER()` city compares
+      (×2), `NOW()` for created_at/updated_at (×4), `COALESCE` in the mintUserToken upsert.
+      Helpers that took a `pool` argument (compliance ×4, `ownsBusinessSlug`, `mintUserToken`)
+      now use `db` directly; their call sites lost the argument, including two in Phase 6 files.
+      `unifiedSync`'s helpers still take a raw `Queryable`, so files calling them still import
+      `pool` — those convert with `unifiedSync` itself, which is not yet assigned to a phase.
+
+**Two live bugs surfaced by the conversion** (both fixed, per decision):
+- The three `/us` recent-project endpoints wrote to `projects` (the IN table) and set a `county`
+  column that table doesn't have — the INSERT/UPDATE could never have succeeded, and the deletes
+  hit the wrong country's rows. Now on `us_projects`, which is what the `/us` project page reads.
+  `pincode` maps to `us_projects.zipcode`, still returned to the client as `pincode`.
+- Both `resetPassword` endpoints read/wrote `reset_token_hash` and `reset_token_used`, columns that
+  exist in no schema or migration; every request was failing on the SELECT. Now on the real
+  `reset_token` / `reset_token_expires`. The "already used" branch is gone — a successful reset
+  clears the token, so reuse reports the generic invalid/expired error.
+
+**Still open, found in passing (no action taken):**
+- Nothing in the app issues a password reset token, so `resetPassword` is unreachable end to end
+  even now that it works. Either add a forgot-password endpoint or delete the flow and its pages.
+- `/us`'s county lookups (`getCountyByZipcode` and both recent-project endpoints) resolve a US
+  zipcode against `pincode_mapping`, the Indian pincode table, and validate it as 6 digits. The
+  app-wide pattern predates the migration and was left alone; `us_locations` has the county data.
+
 - [ ] Phase 5.5 (tests — blocked on test-DB decision)
 - [ ] Phase 6
 - [ ] Phase 7
