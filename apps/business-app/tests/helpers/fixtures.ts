@@ -1,0 +1,224 @@
+// Row builders for the integration suite.
+//
+// Deliberately thin: each helper inserts one row with the minimum a test needs
+// and returns its id. No factory framework, no implicit relationships — a test
+// that depends on a branch existing says so by calling createBranch().
+//
+// Everything writes through the raw pool rather than Drizzle. Fixtures are
+// arrange-phase scaffolding, and the suite exists to catch Drizzle conversion
+// mistakes; building the world with the same query layer under test would let a
+// symmetrical mistake hide itself.
+
+import { pool } from '../setup/testDb';
+
+export async function resetDatabase(): Promise<void> {
+	// TRUNCATE ... CASCADE over the tables the suite writes. Faster than
+	// re-running migrations per test, and RESTART IDENTITY keeps ids small —
+	// leaddata.business_id and leaddata_claimrequests.business_id are smallint,
+	// so a long-running sequence would eventually overflow them.
+	await pool.query(`
+		TRUNCATE TABLE
+			leaddata_claimrequests, leaddata, leads,
+			branches, businesses_1, in_business_profiles, in_business_accounts,
+			businesses, business_accounts,
+			legal_acceptances, legal_policies,
+			projects, project_management, pincode_mapping,
+			rate_limits, in_user
+		RESTART IDENTITY CASCADE
+	`);
+}
+
+export interface BusinessOptions {
+	businessname?: string;
+	slug?: string;
+	loginEmail?: string;
+	loginPassword?: string | null;
+	district?: string | null;
+	state?: string | null;
+	city?: string | null;
+	isvisible?: boolean;
+	description?: string | null;
+	googleMapsLink?: string | null;
+	brands?: number[] | null;
+	lastLogin?: string | null;
+}
+
+let businessSeq = 0;
+
+/**
+ * Insert a businesses_1 row and project it into the split + unified tables the
+ * same way the app does after a write. Returns the businesses_1 id.
+ */
+export async function createBusiness(options: BusinessOptions = {}): Promise<number> {
+	businessSeq += 1;
+	const slug = options.slug ?? `test-business-${businessSeq}`;
+	const {
+		businessname = `Test Business ${businessSeq}`,
+		loginEmail = `${slug}@example.test`,
+		loginPassword = null,
+		district = 'Pune',
+		state = 'Maharashtra',
+		city = 'Pune',
+		isvisible = true,
+		description = 'Solar panel installer',
+		googleMapsLink = null,
+		brands = null,
+		lastLogin = null
+	} = options;
+
+	const { rows } = await pool.query<{ id: number }>(
+		`INSERT INTO businesses_1
+		   (businessname, slug, login_email, login_password, district, state, city,
+		    isvisible, description, google_maps_link, brands, last_login)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+		 RETURNING id`,
+		[
+			businessname,
+			slug,
+			loginEmail,
+			loginPassword,
+			district,
+			state,
+			city,
+			isvisible,
+			description,
+			googleMapsLink,
+			brands,
+			lastLogin
+		]
+	);
+	const id = rows[0].id;
+
+	// Mirror the app's post-write sync so business_accounts / businesses /
+	// in_business_profiles are populated — the auth code reads those, not
+	// businesses_1.
+	await pool.query('SELECT sv_sync_in_split($1)', [id]);
+	await pool.query('SELECT sv_sync_business($1, $2)', ['in', id]);
+	await pool.query('SELECT sv_sync_account($1, $2)', ['in', id]);
+
+	return id;
+}
+
+export async function createBranch(mainId: number, branchId: number, isactive = true): Promise<void> {
+	await pool.query('INSERT INTO branches (main_id, branch_id, isactive) VALUES ($1, $2, $3)', [
+		mainId,
+		branchId,
+		isactive
+	]);
+}
+
+export interface LeadOptions {
+	name?: string;
+	phone?: string;
+	email?: string | null;
+	pinCode?: string;
+	district?: string | null;
+	state?: string | null;
+	category?: number | null;
+	stage?: number;
+	status?: boolean;
+	isvisible?: boolean;
+	claimCount?: number;
+	businessId?: number | null;
+	createdAt?: string | null;
+}
+
+let leadSeq = 0;
+
+/** Insert a leaddata row and sync it to `leads`. Returns the leaddata id. */
+export async function createLead(options: LeadOptions = {}): Promise<number> {
+	leadSeq += 1;
+	const {
+		name = `Test Customer ${leadSeq}`,
+		phone = `90000000${String(leadSeq).padStart(2, '0')}`,
+		email = `customer${leadSeq}@example.test`,
+		pinCode = '411001',
+		district = 'Pune',
+		state = 'Maharashtra',
+		category = null,
+		stage = 0,
+		status = true,
+		isvisible = true,
+		claimCount = 0,
+		businessId = null,
+		createdAt = null
+	} = options;
+
+	const { rows } = await pool.query<{ id: number }>(
+		`INSERT INTO leaddata
+		   (name, phone, email, pin_code, district, state, category, stage, status,
+		    isvisible, claim_count, business_id, created_at)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12, COALESCE($13::timestamp, NOW()))
+		 RETURNING id`,
+		[
+			name,
+			phone,
+			email,
+			pinCode,
+			district,
+			state,
+			category,
+			stage,
+			status,
+			isvisible,
+			claimCount,
+			businessId,
+			createdAt
+		]
+	);
+	const id = rows[0].id;
+	await pool.query('SELECT sv_sync_lead($1, $2)', ['in', id]);
+	return id;
+}
+
+export async function createPincodeMapping(
+	pincode: string,
+	district: string,
+	state: string | null = 'Maharashtra'
+): Promise<void> {
+	await pool.query('INSERT INTO pincode_mapping (pincode, district, state) VALUES ($1, $2, $3)', [
+		pincode,
+		district,
+		state
+	]);
+}
+
+export async function createProject(
+	businessSlug: string,
+	options: { createdAt?: string; isvisible?: boolean; title?: string } = {}
+): Promise<void> {
+	const { createdAt, isvisible = true, title = 'Test Project' } = options;
+	await pool.query(
+		`INSERT INTO projects (title, pincode, project_date, business_slug, isvisible, created_at)
+		 VALUES ($1, '411001', CURRENT_DATE, $2, $3, COALESCE($4::timestamptz, NOW()))`,
+		[title, businessSlug, isvisible, createdAt ?? null]
+	);
+}
+
+/**
+ * Seed the lead-data-handling policy and, unless told otherwise, an acceptance
+ * for `businessId`. claimLead refuses to run without a current acceptance, so
+ * most lead-pipeline tests need this.
+ */
+export async function seedLeadDataPolicy(
+	businessId: number | null,
+	options: { acceptedAt?: string; skipAcceptance?: boolean } = {}
+): Promise<number> {
+	const { rows } = await pool.query<{ id: number }>(
+		`INSERT INTO legal_policies (type, version, summary, effective_at)
+		 VALUES ('lead_data_handling', 'v1', 'Test policy', NOW() - INTERVAL '1 day')
+		 ON CONFLICT (type, version) DO UPDATE SET summary = EXCLUDED.summary
+		 RETURNING id`
+	);
+	const policyId = rows[0].id;
+
+	if (businessId !== null && !options.skipAcceptance) {
+		await pool.query(
+			`INSERT INTO legal_acceptances (business_id, policy_id, accepted_at)
+			 VALUES ($1, $2, COALESCE($3::timestamptz, NOW()))`,
+			[businessId, policyId, options.acceptedAt ?? null]
+		);
+	}
+
+	return policyId;
+}

@@ -78,21 +78,44 @@ Also picked up the three lib helpers these routes share: `lib/compliance/Complia
 `lib/in/ownsBusinessSlug`, `lib/server/magicLink`. See the Progress section for details and for the
 two live bugs the conversion surfaced.
 
-### Phase 5.5 — characterization tests for the code Phase 6 will rewrite
-The project has no tests; rather than a blanket testing effort, write integration tests that pin down the
-*current* behavior of the two areas where a silent regression hurts most, while they are still raw SQL:
-- **Lead pipeline:** `submitLead`, `claimLead`, `updateLeadByBusiness` — claim-count limits, `FOR UPDATE`
-  locking (two concurrent claims → exactly one wins), `syncLeadToUnified` side effects.
-- **Auth:** `PasswordManager`, `TokenManager`, `LoginTracker`, `RateLimiter` — lockout thresholds, token
-  expiry, rate-limit fail-open behavior.
-Runner: Vitest. Tests run against a real Postgres, not a mocked pool — the risk being guarded *is* the SQL.
-**Decision needed before starting (owner: Ani):** what that Postgres is — a local Docker container with
-migrations applied in test setup, or a Neon/Vercel branch database. Depends on local workflow and whether
-CI gets added.
-Phase 6 then becomes "convert until the tests pass again" instead of "convert and hope." The suite stays
-after the migration as the permanent regression net for the critical path; skip UI/component tests and
-trivial lookups (`getCities` etc.) — low failure probability, low failure cost. Ongoing rule: every bug
-fixed from now on gets a test that reproduces it first.
+### ✅ Phase 5.5 — characterization tests for the code Phase 6 will rewrite — DONE 2026-08-05
+92 integration tests against real Postgres (Vitest), covering the two areas where a silent regression
+hurts most:
+- **Lead pipeline (52):** `submitLead`, `claimLead`, `updateLeadByBusiness` — claim-count limits,
+  `FOR UPDATE` locking (two concurrent claims on the last slot → exactly one wins), duplicate-claim
+  rejection, branch auto-creation, the 10-claim quality gate, `syncLeadToUnified` side effects.
+- **Auth (40):** `PasswordManager`, `TokenManager`, `LoginTracker`, `RateLimiter` — throttle windows,
+  token expiry (incl. NULL expiry = expired), hash-at-rest, rate-limit fail-**open**.
+
+Test DB decision (owner: Ani, taken 2026-08-05): **local Docker Postgres**, `docker-compose.test.yml`,
+port 5433, schema rebuilt per run. Overridable via `TEST_POSTGRES_URL`. See `tests/README.md` for the
+full picture; the two things worth knowing here:
+
+- **The migrations cannot build a test schema on their own.** 36 of 55 tables — `leaddata`,
+  `businesses_1`, `branches`, `in_business_profiles`, `leaddata_claimrequests` among them — have no
+  `CREATE TABLE` anywhere in the repo; they predate the migrations convention. Replaying from empty
+  dies at `034`. So the schema is built as `tests/schema/000-baseline.sql` (generated from the
+  introspected Drizzle schema by `scripts/generate-test-baseline.mjs`) plus the only three migrations
+  that are pure final-state declarations: `042` (countries seed + `sv_slugify`), `047` and `050` (the
+  `sv_sync_*` functions). History-encoding migrations can't replay over a final-state baseline —
+  `039` creates `business_profiles`, `040` renames it, and the rename fails when the table is
+  already there.
+- **Regenerate the baseline after any schema change:** `npm run pull -w @solar/db && node
+  scripts/generate-test-baseline.mjs`.
+
+Only outbound email is mocked. Sessions use the real `SessionManager`, so the 401/403 branches stay
+under test. `$lib/server/db` is aliased to a node-postgres pool of the same shape — the app's
+`@vercel/postgres` driver talks to Neon over a WebSocket proxy and cannot reach a local Postgres. The
+swap changes the driver, not the SQL.
+
+Note: the plan assumed auth would still be raw SQL at this point, but Phase 2 had already converted it.
+Those 40 tests are therefore a regression net rather than a pre-conversion snapshot — still worth
+having, but they did not get to characterize pre-Drizzle behavior. The lead-pipeline tests did.
+
+Phase 6 is now "convert until the tests pass again" instead of "convert and hope." The suite stays
+after the migration as the permanent regression net for the critical path; UI/component tests and
+trivial lookups (`getCities` etc.) are deliberately skipped — low failure probability, low failure
+cost. Ongoing rule: every bug fixed from now on gets a test that reproduces it first.
 
 ### Phase 6 — the hard ones (business-app, 12 files)
 `claimLead`, `submitLead`, `updateLeadByBusiness`, `deleteLeadByBusiness` (all ×2 countries),
@@ -160,7 +183,12 @@ from both apps' `db.ts` (or leaving it export-only-for-Drizzle); update this doc
   zipcode against `pincode_mapping`, the Indian pincode table, and validate it as 6 digits. The
   app-wide pattern predates the migration and was left alone; `us_locations` has the county data.
 
-- [ ] Phase 5.5 (tests — blocked on test-DB decision)
+- [x] Phase 5.5 (2026-08-05) — 92 tests, 7 files. Vitest + local Docker Postgres. Harness:
+      `docker-compose.test.yml`, `scripts/apply-test-migrations.mjs`,
+      `scripts/generate-test-baseline.mjs`, `tests/schema/000-baseline.sql`,
+      `apps/business-app/tests/`. `npm test -w solarvipani-business`. Surfaced that the numbered
+      migrations cover only 19 of 55 tables (see the phase entry above). `npm run check` unchanged
+      at the 84-error baseline.
 - [ ] Phase 6
 - [ ] Phase 7
 - [ ] Phase 8
