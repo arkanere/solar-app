@@ -1,6 +1,9 @@
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import type { VercelPool } from '@vercel/postgres';
+import { db } from '$lib/server/db';
+import { businesses1, inUser, usBusinesses } from '@solar/db/schema';
+import { eq, sql } from 'drizzle-orm';
 import { syncAccountToUnified, syncInSplitTables } from '$lib/server/unifiedSync';
 
 // Magic-link tokens are stored hashed at rest and expire after 15 days.
@@ -16,18 +19,24 @@ export function newMagicToken() {
 	return { raw, hash, expiresAt };
 }
 
-// `table` is a trusted constant ('businesses_1' | 'us_businesses'), never user input.
+// `table` names the per-country business table, as it did when these were raw
+// SQL; it maps to a Drizzle table here instead of being interpolated.
+// `pool` is still needed for the unifiedSync helpers, which take a raw Queryable.
 export async function mintBusinessTokenById(
 	pool: VercelPool,
-	table: string,
+	table: 'businesses_1' | 'us_businesses',
 	businessId: number
 ): Promise<string | null> {
 	const { raw, hash, expiresAt } = newMagicToken();
-	const result = await pool.query(
-		`UPDATE ${table} SET magic_link_token = $1, magic_link_token_expires_at = $2 WHERE id = $3`,
-		[hash, expiresAt, businessId]
-	);
-	if (result.rowCount === 0) return null;
+	const businessTable = table === 'us_businesses' ? usBusinesses : businesses1;
+
+	const updated = await db
+		.update(businessTable)
+		.set({ magicLinkToken: hash, magicLinkTokenExpiresAt: expiresAt.toISOString() })
+		.where(eq(businessTable.id, businessId))
+		.returning({ id: businessTable.id });
+
+	if (updated.length === 0) return null;
 	if (table !== 'us_businesses') {
 		await syncInSplitTables(pool, businessId);
 	}
@@ -37,20 +46,30 @@ export async function mintBusinessTokenById(
 
 // Upserts the user by email and returns the raw token (in_user has no slug).
 export async function mintUserToken(
-	pool: VercelPool,
 	email: string,
 	name: string | null = null
 ): Promise<string> {
 	const { raw, hash, expiresAt } = newMagicToken();
-	const updated = await pool.query(
-		'UPDATE in_user SET magic_link_token = $1, magic_link_token_expires_at = $2, name = COALESCE($3, name) WHERE email = $4',
-		[hash, expiresAt, name, email]
-	);
-	if (updated.rowCount === 0) {
-		await pool.query(
-			'INSERT INTO in_user (email, name, magic_link_token, magic_link_token_expires_at) VALUES ($1, $2, $3, $4)',
-			[email, name, hash, expiresAt]
-		);
-	}
+
+	// in_user has a unique index on email, so this is a real upsert. The old
+	// UPDATE-then-INSERT pair did the same thing with a race between the two.
+	await db
+		.insert(inUser)
+		.values({
+			email,
+			name,
+			magicLinkToken: hash,
+			magicLinkTokenExpiresAt: expiresAt.toISOString()
+		})
+		.onConflictDoUpdate({
+			target: inUser.email,
+			set: {
+				magicLinkToken: hash,
+				magicLinkTokenExpiresAt: expiresAt.toISOString(),
+				// COALESCE: a null name must not wipe an existing one.
+				name: sql`COALESCE(${name}::varchar, ${inUser.name})`
+			}
+		});
+
 	return raw;
 }

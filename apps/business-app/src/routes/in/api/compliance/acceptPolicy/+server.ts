@@ -1,4 +1,3 @@
-import { pool } from '$lib/server/db';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/in/auth/business';
 import { recordLeadDataAcceptance } from '$lib/compliance';
@@ -21,7 +20,7 @@ export const POST: RequestHandler = async ({ cookies, getClientAddress }) => {
 			ip = null;
 		}
 
-		const policy = await recordLeadDataAcceptance(pool, businessId, ip);
+		const policy = await recordLeadDataAcceptance(businessId, ip);
 		if (!policy) {
 			return json(
 				{ success: false, error: 'No active policy configured' },

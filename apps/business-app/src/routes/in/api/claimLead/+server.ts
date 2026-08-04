@@ -94,7 +94,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		// Data-handling policy gate: require a valid acceptance within 90 days
-		const compliance = await checkLeadDataPolicy(pool, business_id);
+		const compliance = await checkLeadDataPolicy(business_id);
 		if (!compliance.compliant) {
 			return json({ success: false, error: 'compliance_required' }, { status: 403 });
 		}
@@ -459,7 +459,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 				// Mint a fresh user token (stored hashed, upserts the in_user row);
 				// email the raw token.
-				const magicLinkToken = await mintUserToken(pool, customer.email, customer.name || null);
+				const magicLinkToken = await mintUserToken(customer.email, customer.name || null);
 				const customerAccountLink = `https://user.solarvipani.com/signin-link/${magicLinkToken}`;
 
 				const subject = 'A Solar Installer is Interested in Your Inquiry - Solar Vipani';

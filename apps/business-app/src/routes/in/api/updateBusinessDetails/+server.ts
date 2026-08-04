@@ -1,4 +1,6 @@
-import { pool } from '$lib/server/db';
+import { pool, db } from '$lib/server/db';
+import { branches, businesses1, inBusinessProfiles } from '@solar/db/schema';
+import { and, eq, sql } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { parseBody, updateBusinessDetailsSchema } from '@solar/validation';
 import { BusinessAuthService } from '$lib/in/auth/business';
@@ -41,27 +43,30 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			// Main business updating itself - allowed
 		} else {
 			// Check if the business_slug belongs to a branch of the logged-in business
-			const mainBusinessQuery = await pool.query(
-				`SELECT business_id AS id FROM in_business_profiles WHERE slug = $1`,
-				[sessionResult.session.businessSlug]
-			);
+			const [mainBusiness] = await db
+				.select({ id: inBusinessProfiles.businessId })
+				.from(inBusinessProfiles)
+				.where(eq(inBusinessProfiles.slug, sessionResult.session.businessSlug))
+				.limit(1);
 
-			if (mainBusinessQuery.rows.length === 0) {
+			if (!mainBusiness) {
 				return json({ success: false, error: 'Main business not found' }, { status: 404 });
 			}
 
-			const mainBusinessId = mainBusinessQuery.rows[0].id;
-
 			// Check if business_slug is a branch of this main business
-			const branchCheckQuery = await pool.query(
-				`SELECT br.branch_id
-				 FROM branches br
-				 JOIN in_business_profiles b ON br.branch_id = b.business_id
-				 WHERE br.main_id = $1 AND b.slug = $2 AND br.isactive = true`,
-				[mainBusinessId, business_slug]
-			);
+			const branchCheck = await db
+				.select({ branchId: branches.branchId })
+				.from(branches)
+				.innerJoin(inBusinessProfiles, eq(branches.branchId, inBusinessProfiles.businessId))
+				.where(
+					and(
+						eq(branches.mainId, mainBusiness.id),
+						eq(inBusinessProfiles.slug, business_slug),
+						eq(branches.isactive, true)
+					)
+				);
 
-			if (branchCheckQuery.rows.length === 0) {
+			if (branchCheck.length === 0) {
 				return json(
 					{
 						success: false,
@@ -72,7 +77,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			}
 		}
 
-		const values = [
+		const values = {
 			businessname,
 			address,
 			phonenumber,
@@ -80,36 +85,28 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			email,
 			website,
 			description,
-			instagram_id,
-			google_maps_link,
+			instagramId: instagram_id,
+			googleMapsLink: google_maps_link,
 			services,
-			brands,
-			business_slug
-		];
+			brands
+		};
 
 		// in_business_profiles is the source of truth for profile data
-		const result = await pool.query(
-			`UPDATE in_business_profiles
-       SET businessname = $1, address = $2, phonenumber = $3, whatsapp = $4, email = $5, website = $6, description = $7, instagram_id = $8, google_maps_link = $9, services = $10, brands = $11, updated_at = NOW()
-       WHERE slug = $12
-       RETURNING business_id AS id`,
-			values
-		);
+		const [updated] = await db
+			.update(inBusinessProfiles)
+			.set({ ...values, updatedAt: sql`NOW()` })
+			.where(eq(inBusinessProfiles.slug, business_slug))
+			.returning({ id: inBusinessProfiles.businessId });
 
 		// TODO(remove after main-app/admin-app migrate to in_business_profiles):
 		// dual-write so the marketplace and admin views stay fresh
-		await pool.query(
-			`UPDATE businesses_1
-       SET businessname = $1, address = $2, phonenumber = $3, whatsapp = $4, email = $5, website = $6, description = $7, instagram_id = $8, google_maps_link = $9, services = $10, brands = $11
-       WHERE slug = $12`,
-			values
-		);
+		await db.update(businesses1).set(values).where(eq(businesses1.slug, business_slug));
 
-		if (result.rows.length > 0) {
-			await syncBusinessToUnified(pool, 'in', result.rows[0].id as number);
+		if (updated) {
+			await syncBusinessToUnified(pool, 'in', updated.id);
 			return json({
 				success: true,
-				id: result.rows[0].id as number
+				id: updated.id
 			});
 		} else {
 			return json({ success: false, error: 'Business not found' }, { status: 404 });

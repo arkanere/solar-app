@@ -9,8 +9,7 @@ export {
 	getActiveLeadDataPolicy,
 	recordLeadDataAcceptance,
 	getAcceptanceHistory,
-	deriveComplianceState,
-	type Queryable
+	deriveComplianceState
 } from './ComplianceChecker';
 
 export {

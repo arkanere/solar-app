@@ -55,7 +55,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		// Mint a fresh user token (stored hashed, upserts the in_user row);
 		// email the raw token.
-		const magicLinkToken = await mintUserToken(pool, lead.email, lead.name || null);
+		const magicLinkToken = await mintUserToken(lead.email, lead.name || null);
 		const customerAccountLink = `https://user.solarvipani.com/signin-link/${magicLinkToken}`;
 
 		const subject = 'A Solar Installer is Interested in Your Inquiry - Solar Vipani';

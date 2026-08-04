@@ -1,5 +1,5 @@
 import type { PageServerLoad } from './$types';
-import { db, pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
 import { businesses } from '@solar/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
@@ -53,9 +53,9 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		const businessId = businessRows[0].id as number;
 
 		const [policy, acceptance, history] = await Promise.all([
-			getActiveLeadDataPolicy(pool),
-			checkLeadDataPolicy(pool, businessId),
-			getAcceptanceHistory(pool, businessId)
+			getActiveLeadDataPolicy(),
+			checkLeadDataPolicy(businessId),
+			getAcceptanceHistory(businessId)
 		]);
 
 		const expiresAt = acceptance.acceptedAt

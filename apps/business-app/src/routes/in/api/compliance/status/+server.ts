@@ -1,4 +1,3 @@
-import { pool } from '$lib/server/db';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/in/auth/business';
 import { checkLeadDataPolicy, getActiveLeadDataPolicy } from '$lib/compliance';
@@ -15,8 +14,8 @@ export const GET: RequestHandler = async ({ cookies }) => {
 
 	try {
 		const [status, policy] = await Promise.all([
-			checkLeadDataPolicy(pool, businessId),
-			getActiveLeadDataPolicy(pool)
+			checkLeadDataPolicy(businessId),
+			getActiveLeadDataPolicy()
 		]);
 
 		return json({

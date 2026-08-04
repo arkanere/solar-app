@@ -1,4 +1,6 @@
-import { pool } from '$lib/server/db';
+import { pool, db } from '$lib/server/db';
+import { usBusinesses } from '@solar/db/schema';
+import { eq } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { parseBody, usUpdateBusinessDetailsSchema } from '@solar/validation';
 import { BusinessAuthService } from '$lib/us/auth/business';
@@ -41,32 +43,27 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			);
 		}
 
-		// Update query for the us_businesses table
-		const updateQuery = `
-      UPDATE us_businesses
-      SET businessname = $1, address = $2, phonenumber = $3, whatsapp = $4, email = $5, website = $6, description = $7, instagram_id = $8, google_maps_link = $9
-      WHERE slug = $10
-      RETURNING id
-    `;
+		const [updated] = await db
+			.update(usBusinesses)
+			.set({
+				businessname,
+				address,
+				phonenumber,
+				whatsapp,
+				email,
+				website,
+				description,
+				instagramId: instagram_id,
+				googleMapsLink: google_maps_link
+			})
+			.where(eq(usBusinesses.slug, business_slug))
+			.returning({ id: usBusinesses.id });
 
-		const result = await pool.query(updateQuery, [
-			businessname,
-			address,
-			phonenumber,
-			whatsapp,
-			email,
-			website,
-			description,
-			instagram_id,
-			google_maps_link,
-			business_slug
-		]);
-
-		if (result.rows.length > 0) {
-			await syncBusinessToUnified(pool, 'us', result.rows[0].id as number);
+		if (updated) {
+			await syncBusinessToUnified(pool, 'us', updated.id);
 			return json({
 				success: true,
-				id: result.rows[0].id as number
+				id: updated.id
 			});
 		} else {
 			return json({ success: false, error: 'Business not found' }, { status: 404 });
