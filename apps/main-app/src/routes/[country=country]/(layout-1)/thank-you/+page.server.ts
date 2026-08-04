@@ -1,5 +1,7 @@
 import type { PageServerLoad } from './$types';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { inBusinessProfiles, leaddata } from '@solar/db/schema';
+import { and, count, eq } from 'drizzle-orm';
 
 export const load: PageServerLoad = async ({ url, params }) => {
 	// IN-only: every query below reads LeadData / in_business_profiles, and US
@@ -16,19 +18,28 @@ export const load: PageServerLoad = async ({ url, params }) => {
 	}
 
 	try {
-		const result = await pool.query(
-			`SELECT id, name, phone, pin_code, type, comment, email, district, created_at, isvisible
-			FROM LeadData
-			WHERE reference_uuid = $1
-			LIMIT 1`,
-			[referenceUuid]
-		);
+		const leadRows = await db
+			.select({
+				id: leaddata.id,
+				name: leaddata.name,
+				phone: leaddata.phone,
+				pinCode: leaddata.pinCode,
+				type: leaddata.type,
+				comment: leaddata.comment,
+				email: leaddata.email,
+				district: leaddata.district,
+				createdAt: leaddata.createdAt,
+				isvisible: leaddata.isvisible
+			})
+			.from(leaddata)
+			.where(eq(leaddata.referenceUuid, referenceUuid))
+			.limit(1);
 
-		if (result.rows.length === 0) {
+		if (leadRows.length === 0) {
 			return { customerDetails: null, error: 'Details not found' };
 		}
 
-		const lead = result.rows[0];
+		const lead = leadRows[0];
 
 		if (!lead.isvisible) {
 			return { customerDetails: null, error: 'Details not found' };
@@ -37,14 +48,16 @@ export const load: PageServerLoad = async ({ url, params }) => {
 		let hasVerifiedBusinessInDistrict = false;
 		if (lead.district) {
 			try {
-				const businessResult = await pool.query(
-					`SELECT COUNT(*) as business_count
-					FROM in_business_profiles
-					WHERE district = $1 AND isvisible = true
-					LIMIT 1`,
-					[lead.district]
-				);
-				hasVerifiedBusinessInDistrict = businessResult.rows[0].business_count > 0;
+				const businessRows = await db
+					.select({ business_count: count() })
+					.from(inBusinessProfiles)
+					.where(
+						and(
+							eq(inBusinessProfiles.district, lead.district),
+							eq(inBusinessProfiles.isvisible, true)
+						)
+					);
+				hasVerifiedBusinessInDistrict = businessRows[0].business_count > 0;
 			} catch (businessError) {
 				console.error('Error checking businesses in district:', businessError);
 				hasVerifiedBusinessInDistrict = true;
@@ -58,12 +71,12 @@ export const load: PageServerLoad = async ({ url, params }) => {
 				id: lead.id,
 				name: lead.name,
 				phone: lead.phone,
-				pinCode: lead.pin_code,
+				pinCode: lead.pinCode,
 				type: lead.type,
 				comment: lead.comment,
 				email: lead.email,
 				district: lead.district,
-				submittedAt: lead.created_at,
+				submittedAt: lead.createdAt,
 				hasVerifiedBusinessInDistrict
 			}
 		};

@@ -1,5 +1,7 @@
 import type { PageServerLoad } from './$types';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { inBusinessProfiles, projects } from '@solar/db/schema';
+import { and, eq, sql } from 'drizzle-orm';
 import { getCountry } from '$lib/countries';
 import { error } from '@sveltejs/kit';
 
@@ -18,36 +20,42 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	const projectSlug = params.project_id.toLowerCase();
 
-	const result = await pool.query(
-		`SELECT
-			p.id as project_id,
-			p.title as project_title,
-			p.pincode,
-			p.district as project_district,
-			p.city as project_city,
-			p.project_date,
-			p.cloudinary_public_id,
-			p.image_url,
-			p.project_slug,
-			b.businessname,
-			b.slug as business_slug,
-			b.city as business_city,
-			b.district as business_district,
-			b.state as business_state,
-			b.phonenumber
-		 FROM projects p
-		 INNER JOIN in_business_profiles b ON p.business_slug = b.slug
-		 WHERE p.project_slug = $1
-		   AND p.isvisible = true
-		   AND b.isvisible = true`,
-		[projectSlug]
-	);
+	// Several of these columns are nullable in the schema but the page
+	// dereferences them as required strings; the raw driver's `any` hid that, so
+	// they are restated rather than the page rewritten.
+	const rows = await db
+		.select({
+			project_id: projects.id,
+			project_title: projects.title,
+			pincode: projects.pincode,
+			project_district: sql<string>`${projects.district}`,
+			project_city: sql<string>`${projects.city}`,
+			project_date: projects.projectDate,
+			cloudinary_public_id: sql<string>`${projects.cloudinaryPublicId}`,
+			image_url: sql<string>`${projects.imageUrl}`,
+			project_slug: sql<string>`${projects.projectSlug}`,
+			businessname: sql<string>`${inBusinessProfiles.businessname}`,
+			business_slug: sql<string>`${inBusinessProfiles.slug}`,
+			business_city: sql<string>`${inBusinessProfiles.city}`,
+			business_district: sql<string>`${inBusinessProfiles.district}`,
+			business_state: sql<string>`${inBusinessProfiles.state}`,
+			phonenumber: sql<string>`${inBusinessProfiles.phonenumber}`
+		})
+		.from(projects)
+		.innerJoin(inBusinessProfiles, eq(projects.businessSlug, inBusinessProfiles.slug))
+		.where(
+			and(
+				eq(projects.projectSlug, projectSlug),
+				eq(projects.isvisible, true),
+				eq(inBusinessProfiles.isvisible, true)
+			)
+		);
 
-	if (result.rows.length === 0) {
+	if (rows.length === 0) {
 		error(404, 'Project not found');
 	}
 
-	const row = result.rows[0];
+	const row = rows[0];
 
 	const district = row.project_district || row.business_district;
 	const stateSlug = row.business_state?.toLowerCase().replace(/ /g, '-') || '';

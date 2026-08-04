@@ -1,5 +1,7 @@
 import type { PageServerLoad } from './$types';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { projects } from '@solar/db/schema';
+import { and, desc, eq, isNotNull } from 'drizzle-orm';
 import { getCountry } from '$lib/countries';
 
 export const config = {
@@ -19,29 +21,28 @@ export const load: PageServerLoad = async ({ params }) => {
 	}
 
 	try {
-		const projectsResult = await pool.query(
-			`SELECT
-				id,
-				business_slug,
-				title,
-				pincode,
-				project_date,
-				created_at,
-				image_url,
-				cloudinary_public_id,
-				image_width,
-				image_height,
-				image_format,
-				project_slug
-			FROM projects
-			WHERE isvisible = true
-			AND business_slug IS NOT NULL
-			ORDER BY project_date DESC
-			LIMIT 6`
-		);
+		const recentProjects = await db
+			.select({
+				id: projects.id,
+				business_slug: projects.businessSlug,
+				title: projects.title,
+				pincode: projects.pincode,
+				project_date: projects.projectDate,
+				created_at: projects.createdAt,
+				image_url: projects.imageUrl,
+				cloudinary_public_id: projects.cloudinaryPublicId,
+				image_width: projects.imageWidth,
+				image_height: projects.imageHeight,
+				image_format: projects.imageFormat,
+				project_slug: projects.projectSlug
+			})
+			.from(projects)
+			.where(and(eq(projects.isvisible, true), isNotNull(projects.businessSlug)))
+			.orderBy(desc(projects.projectDate))
+			.limit(6);
 
 		return {
-			recentProjects: projectsResult.rows,
+			recentProjects,
 			dateModified: new Date().toISOString().split('T')[0]
 		};
 	} catch (error) {

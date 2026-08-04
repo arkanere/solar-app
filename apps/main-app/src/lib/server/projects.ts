@@ -5,7 +5,7 @@
 
 import { db } from './db';
 import { projects } from '@solar/db/schema';
-import { and, eq, inArray, sql } from 'drizzle-orm';
+import { and, count, desc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 
 export const PROJECT_CARD_SELECTION = {
 	id: projects.id,
@@ -24,6 +24,26 @@ export const PROJECT_CARD_SELECTION = {
 	image_height: projects.imageHeight,
 	image_format: projects.imageFormat
 };
+
+// The paginated public project gallery. Shared by
+// recent-solar-installation-projects and its [page_slug] pages, which ran
+// identical list + count queries.
+export async function listVisibleProjects(limit: number, offset: number) {
+	const visible = and(eq(projects.isvisible, true), isNotNull(projects.businessSlug));
+
+	const [rows, countRows] = await Promise.all([
+		db
+			.select(PROJECT_CARD_SELECTION)
+			.from(projects)
+			.where(visible)
+			.orderBy(desc(projects.projectDate))
+			.limit(limit)
+			.offset(offset),
+		db.select({ total: count() }).from(projects).where(visible)
+	]);
+
+	return { projects: rows, totalProjects: countRows[0].total };
+}
 
 export type BusinessProject = {
 	business_slug: string;

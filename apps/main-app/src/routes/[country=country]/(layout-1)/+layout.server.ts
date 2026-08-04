@@ -1,23 +1,25 @@
 import type { LayoutServerLoad } from './$types';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { businesses, leads } from '@solar/db/schema';
+import { and, count, eq } from 'drizzle-orm';
 import { getCountry } from '$lib/countries';
 
 export const load: LayoutServerLoad = async ({ params }) => {
 	const country = getCountry(params.country);
 
-	const [installerResult, leadResult] = await Promise.all([
-		pool.query(
-			`SELECT COUNT(*) as count FROM businesses WHERE country_code = $1 AND isvisible = true`,
-			[country.code]
-		),
-		pool.query(`SELECT COUNT(*) as count FROM leads WHERE country_code = $1`, [country.code])
+	const [installerRows, leadRows] = await Promise.all([
+		db
+			.select({ count: count() })
+			.from(businesses)
+			.where(and(eq(businesses.countryCode, country.code), eq(businesses.isvisible, true))),
+		db.select({ count: count() }).from(leads).where(eq(leads.countryCode, country.code))
 	]);
 
 	return {
 		country,
 		aboutStats: {
-			installerCount: parseInt(installerResult.rows[0].count, 10),
-			leadsGenerated: parseInt(leadResult.rows[0].count, 10) + 2000
+			installerCount: installerRows[0].count,
+			leadsGenerated: leadRows[0].count + 2000
 		}
 	};
 };

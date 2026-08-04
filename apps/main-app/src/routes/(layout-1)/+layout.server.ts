@@ -1,5 +1,7 @@
 import type { LayoutServerLoad } from './$types';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { inBusinessProfiles, leaddata } from '@solar/db/schema';
+import { count, eq } from 'drizzle-orm';
 
 // Content pages at the country-less root (destination A of
 // docs/migration-plan-in-country.md) render AboutSolarVipani, which needs these
@@ -20,15 +22,18 @@ import { pool } from '$lib/server/db';
 // docs/migration-plan-delete-us.md), so this cannot couple a build to the DB;
 // the ISR configs on the pages under this layout cache the result.
 export const load: LayoutServerLoad = async () => {
-	const [installerResult, leadResult] = await Promise.all([
-		pool.query(`SELECT COUNT(*) as count FROM in_business_profiles WHERE isvisible = true`),
-		pool.query(`SELECT COUNT(*) as count FROM LeadData`)
+	const [installerRows, leadRows] = await Promise.all([
+		db
+			.select({ count: count() })
+			.from(inBusinessProfiles)
+			.where(eq(inBusinessProfiles.isvisible, true)),
+		db.select({ count: count() }).from(leaddata)
 	]);
 
 	return {
 		aboutStats: {
-			installerCount: parseInt(installerResult.rows[0].count, 10),
-			leadsGenerated: parseInt(leadResult.rows[0].count, 10) + 2000
+			installerCount: installerRows[0].count,
+			leadsGenerated: leadRows[0].count + 2000
 		}
 	};
 };

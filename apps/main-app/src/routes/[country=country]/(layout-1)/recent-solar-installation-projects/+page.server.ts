@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
-import { pool } from '$lib/server/db';
 import { getCountry } from '$lib/countries';
 import { error } from '@sveltejs/kit';
+import { listVisibleProjects } from '$lib/server/projects';
 
 export const config = {
 	isr: {
@@ -23,41 +23,12 @@ export const load: PageServerLoad = async ({ params }) => {
 	const offset = 0;
 
 	try {
-		const projectsResult = await pool.query(
-			`SELECT
-				id,
-				business_slug,
-				title,
-				pincode,
-				project_date,
-				created_at,
-				image_url,
-				cloudinary_public_id,
-				image_width,
-				image_height,
-				image_format,
-				project_slug
-			FROM projects
-			WHERE isvisible = true
-			AND business_slug IS NOT NULL
-			ORDER BY project_date DESC
-			LIMIT $1 OFFSET $2`,
-			[limit, offset]
-		);
-
-		const countResult = await pool.query(
-			`SELECT COUNT(*) AS total
-			FROM projects
-			WHERE isvisible = true
-			AND business_slug IS NOT NULL`
-		);
-
-		const totalProjects = parseInt(countResult.rows[0].total, 10);
+		const { projects, totalProjects } = await listVisibleProjects(limit, offset);
 		const totalPages = Math.ceil(totalProjects / limit);
 
 		return {
 			success: true,
-			projects: projectsResult.rows,
+			projects,
 			pagination: {
 				currentPage: page,
 				totalPages,
@@ -67,7 +38,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			},
 			debug: {
 				timestamp: new Date().toISOString(),
-				projectCount: projectsResult.rowCount
+				projectCount: projects.length
 			}
 		};
 	} catch (error) {
