@@ -1,6 +1,8 @@
 import type { PageServerLoad } from './$types';
-import { pool } from '$lib/server/db';
-import { US_LEAD_COLUMNS } from '$lib/server/unifiedRead';
+import { db } from '$lib/server/db';
+import { US_LEAD_SELECTION } from '$lib/server/unifiedRead';
+import { businesses, leads, usBranches, usLeaddataClaimrequests } from '@solar/db/schema';
+import { and, desc, eq, inArray, like, not, or, sql } from 'drizzle-orm';
 
 export const prerender = false;
 
@@ -43,88 +45,108 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 
 	try {
 		// Query business details
-		const businessResult = await pool.query(
-			`SELECT source_id AS id, businessname, description, phonenumber, email, address, website, level2 AS county
-			 FROM businesses WHERE country_code = 'us' AND slug = $1 LIMIT 1`,
-			[business_slug]
-		);
+		const businessRows = await db
+			.select({
+				id: businesses.sourceId,
+				businessname: businesses.businessname,
+				description: businesses.description,
+				phonenumber: businesses.phonenumber,
+				email: businesses.email,
+				address: businesses.address,
+				website: businesses.website,
+				county: businesses.level2
+			})
+			.from(businesses)
+			.where(and(eq(businesses.countryCode, 'us'), eq(businesses.slug, business_slug)))
+			.limit(1);
 
-		if (businessResult.rows.length === 0) {
+		if (businessRows.length === 0) {
 			return { errorMessage: 'Business not found' };
 		}
 
-		const business = businessResult.rows[0] as Business;
+		const business = businessRows[0] as unknown as Business;
 		const { county, id: businessId } = business; // Extract county & business ID
 
 		// ✅ Get all branch business IDs and slugs for this main business
-		const branchesResult = await pool.query(
-			`SELECT b.source_id AS id, b.slug, b.level2 AS county
-			FROM us_branches br
-			JOIN businesses b ON b.country_code = 'us' AND br.branch_id = b.source_id
-			WHERE br.main_id = $1 AND br.isactive = true`,
-			[businessId]
-		);
+		const branchRows = (await db
+			.select({ id: businesses.sourceId, slug: businesses.slug, county: businesses.level2 })
+			.from(usBranches)
+			.innerJoin(
+				businesses,
+				and(eq(businesses.countryCode, 'us'), eq(usBranches.branchId, businesses.sourceId))
+			)
+			.where(and(eq(usBranches.mainId, businessId), eq(usBranches.isactive, true)))) as unknown as Branch[];
 
 		// Create arrays of all business IDs (main + branches) and slugs for queries
-		const allBusinessIds = [businessId, ...branchesResult.rows.map((branch: Branch) => branch.id)];
-		const allSlugs = [business_slug, ...branchesResult.rows.map((branch: Branch) => branch.slug)];
-		const allCounties = [county, ...branchesResult.rows.map((branch: Branch) => branch.county)];
+		const allBusinessIds = [businessId, ...branchRows.map((branch) => branch.id)];
+		const allSlugs = [business_slug, ...branchRows.map((branch) => branch.slug)];
+		const allCounties = [county, ...branchRows.map((branch) => branch.county)];
 		const uniqueCounties = [...new Set(allCounties.filter((d: string | null) => d))]; // Remove duplicates and nulls
 
 		// ✅ Fetch exclusive leads for main business and all its branches
-		let exclusiveLeadResult = { rows: [] as Lead[] };
+		let exclusiveLeads: Lead[] = [];
 		if (allSlugs.length > 0) {
-			exclusiveLeadResult = await pool.query(
-				`SELECT ${US_LEAD_COLUMNS} FROM leads
-				WHERE country_code = 'us' AND isvisible = true
-				AND (${allSlugs.map((_, index) => `urlparams LIKE $${index + 1}`).join(' OR ')})
-				ORDER BY id DESC`,
-				allSlugs.map((slug) => `/solar-panel-installer/${slug}%`)
-			);
+			exclusiveLeads = (await db
+				.select(US_LEAD_SELECTION)
+				.from(leads)
+				.where(
+					and(
+						eq(leads.countryCode, 'us'),
+						eq(leads.isvisible, true),
+						or(...allSlugs.map((slug) => like(leads.urlparams, `/solar-panel-installer/${slug}%`)))
+					)
+				)
+				.orderBy(desc(leads.id))) as unknown as Lead[];
 		}
 
 		// ✅ Fetch claimed leads from `leaddata_claimrequests` for main business and all branches
-		const claimedLeadResult = await pool.query(
-			`SELECT lead_id FROM us_leaddata_claimrequests
-			WHERE business_id = ANY($1)`,
-			[allBusinessIds]
-		);
+		const claimedLeadRows = await db
+			.select({ lead_id: usLeaddataClaimrequests.leadId })
+			.from(usLeaddataClaimrequests)
+			.where(inArray(usLeaddataClaimrequests.businessId, allBusinessIds));
 
-		const claimedLeadIds = new Set(claimedLeadResult.rows.map((row: { lead_id: number }) => row.lead_id));
+		const claimedLeadIds = new Set(claimedLeadRows.map((row) => row.lead_id));
 
 		// ✅ Fetch non-exclusive claimed leads for main business and all branches
-		const nonExclusiveClaimedResult = await pool.query(
-			`SELECT ${US_LEAD_COLUMNS} FROM leads
-			WHERE country_code = 'us' AND category = 2
-			AND business_id = ANY($1)
-			AND isvisible = true
-			ORDER BY id DESC`,
-			[allBusinessIds]
-		);
+		const nonExclusiveClaimedLeads = (await db
+			.select(US_LEAD_SELECTION)
+			.from(leads)
+			.where(
+				and(
+					eq(leads.countryCode, 'us'),
+					eq(leads.category, 2),
+					inArray(leads.businessId, allBusinessIds),
+					eq(leads.isvisible, true)
+				)
+			)
+			.orderBy(desc(leads.id))) as unknown as Lead[];
 
 		// ✅ Extract original_id of claimed leads (i.e., leads that were originally non-exclusive)
-		const claimedOriginalIds = new Set(
-			nonExclusiveClaimedResult.rows.map((lead: Lead) => lead.original_id)
-		);
+		const claimedOriginalIds = new Set(nonExclusiveClaimedLeads.map((lead) => lead.original_id));
 
 		// ✅ Fetch non-exclusive leads from all counties where main business and branches operate
 		// Only exclude leads that are unavailable (claim_count > 4) AND older than 60 days
-		let nonExclusiveLeadResult = { rows: [] as Lead[] };
+		let nonExclusiveLeads: Lead[] = [];
 		if (uniqueCounties.length > 0) {
-			nonExclusiveLeadResult = await pool.query(
-				`SELECT ${US_LEAD_COLUMNS}, COALESCE(claim_count, 0) as claim_count
-				FROM leads
-				WHERE country_code = 'us' AND category = 1
-				AND level2 = ANY($1)
-				AND isvisible = true
-				AND NOT (COALESCE(claim_count, 0) > 4 AND created_at < NOW() - INTERVAL '60 days')
-				ORDER BY id DESC`,
-				[uniqueCounties]
-			);
+			nonExclusiveLeads = (await db
+				.select({ ...US_LEAD_SELECTION, claim_count: sql<number>`COALESCE(${leads.claimCount}, 0)` })
+				.from(leads)
+				.where(
+					and(
+						eq(leads.countryCode, 'us'),
+						eq(leads.category, 1),
+						inArray(leads.level2, uniqueCounties as string[]),
+						eq(leads.isvisible, true),
+						not(
+							sql`(COALESCE(${leads.claimCount}, 0) > 4 AND ${leads.createdAt} < NOW() - INTERVAL '60 days')`
+						)
+					)
+				)
+				.orderBy(desc(leads.id))) as unknown as Lead[];
 		}
 
 		// ✅ Remove non-exclusive leads that have been claimed
-		const filteredNonExclusiveLeads = nonExclusiveLeadResult.rows.filter(
+		const filteredNonExclusiveLeads = nonExclusiveLeads.filter(
 			(lead: Lead) => !claimedOriginalIds.has(lead.original_id)
 		);
 
@@ -137,9 +159,9 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 
 		// ✅ Merge all lead lists and sort by latest first
 		const allLeads = [
-			...exclusiveLeadResult.rows,
+			...exclusiveLeads,
 			...maskedNonExclusiveLeads,
-			...nonExclusiveClaimedResult.rows
+			...nonExclusiveClaimedLeads
 		].sort((a: Lead, b: Lead) => {
 			// Sort by created_at date in descending order (latest first)
 			const dateA = new Date(a.created_at || a.id);
@@ -149,7 +171,7 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 
 		return {
 			business,
-			branches: branchesResult.rows as Branch[], // Include branch information for debugging/UI
+			branches: branchRows, // Include branch information for debugging/UI
 			leads: allLeads.length > 0 ? allLeads : [],
 			leadClaims: Array.from(claimedLeadIds) // ✅ Export leadClaims as an array of claimed lead IDs
 		};

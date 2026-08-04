@@ -1,5 +1,7 @@
 import type { PageServerLoad } from './$types';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { businesses, geoLocations, leads } from '@solar/db/schema';
+import { and, desc, eq, gte, lte, sql } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 
 export const prerender = false;
@@ -31,46 +33,54 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 
 	try {
 		// First get the business information from slug
-		const businessResult = await pool.query(
-			`SELECT source_id AS id, businessname FROM businesses WHERE country_code = 'us' AND slug = $1`,
-			[businessSlug]
-		);
+		const businessRows = await db
+			.select({ id: businesses.sourceId, businessname: businesses.businessname })
+			.from(businesses)
+			.where(and(eq(businesses.countryCode, 'us'), eq(businesses.slug, businessSlug)));
 
-		if (businessResult.rows.length === 0) {
+		if (businessRows.length === 0) {
 			throw error(404, 'Business not found');
 		}
 
-		const business = businessResult.rows[0] as Business;
+		const business = businessRows[0] as unknown as Business;
 		const businessId = business.id;
 
 		// Get Non-Exclusive-Available-to-Claim leads with state information
 		// Only show leads that are at least 10 days old and within the last 90 days
-		const leadsResult = await pool.query(`
-			SELECT DISTINCT
-				l.source_id AS id,
-				l.name,
-				l.level2 AS county,
-				l.postal_code AS pin_code,
-				l.created_at,
-				l.claim_count,
-				l.sv_comment_for_businesses,
-				COALESCE(loc.level1, 'Unknown') as state
-			FROM leads l
-			LEFT JOIN geo_locations loc ON loc.country_code = 'us' AND loc.level2 = l.level2
-			WHERE l.country_code = 'us' AND l.category = 1
-			AND l.claim_count <= 4
-			AND l.isvisible = true
-			AND l.created_at <= NOW() - INTERVAL '10 days'
-			AND l.created_at >= NOW() - INTERVAL '90 days'
-			ORDER BY l.created_at DESC
-		`);
+		const leadRows = await db
+			.selectDistinct({
+				id: leads.sourceId,
+				name: leads.name,
+				county: leads.level2,
+				pin_code: leads.postalCode,
+				created_at: leads.createdAt,
+				claim_count: leads.claimCount,
+				sv_comment_for_businesses: leads.svCommentForBusinesses,
+				state: sql<string>`COALESCE(${geoLocations.level1}, 'Unknown')`
+			})
+			.from(leads)
+			.leftJoin(
+				geoLocations,
+				and(eq(geoLocations.countryCode, 'us'), eq(geoLocations.level2, leads.level2))
+			)
+			.where(
+				and(
+					eq(leads.countryCode, 'us'),
+					eq(leads.category, 1),
+					lte(leads.claimCount, 4),
+					eq(leads.isvisible, true),
+					lte(leads.createdAt, sql`NOW() - INTERVAL '10 days'`),
+					gte(leads.createdAt, sql`NOW() - INTERVAL '90 days'`)
+				)
+			)
+			.orderBy(desc(leads.createdAt));
 
-		const leads = leadsResult.rows as Lead[];
+		const openLeads = leadRows as unknown as Lead[];
 
 		return {
 			business,
 			business_id: businessId,
-			leads
+			leads: openLeads
 		};
 	} catch (err) {
 		console.error('❌ Error loading open inquiries:', err);

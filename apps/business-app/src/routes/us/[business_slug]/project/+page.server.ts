@@ -1,7 +1,9 @@
 import type { PageServerLoad } from './$types';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
 import { error } from '@sveltejs/kit';
-import { US_BUSINESS_COLUMNS } from '$lib/server/unifiedRead';
+import { US_BUSINESS_SELECTION } from '$lib/server/unifiedRead';
+import { businesses, usProjects } from '@solar/db/schema';
+import { and, desc, eq, isNull, or } from 'drizzle-orm';
 
 export const prerender = false;
 
@@ -50,45 +52,46 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 	try {
 		// First, get the main business using the slug (unified table: profile
 		// columns only, so credentials can never reach page data)
-		const mainBusinessQuery = `
-      SELECT ${US_BUSINESS_COLUMNS} FROM businesses
-      WHERE country_code = 'us' AND slug = $1
-    `;
+		const mainBusinessRows = await db
+			.select(US_BUSINESS_SELECTION)
+			.from(businesses)
+			.where(and(eq(businesses.countryCode, 'us'), eq(businesses.slug, businessSlug)));
 
-		const mainBusinessResult = await pool.query(mainBusinessQuery, [businessSlug]);
-
-		if (mainBusinessResult.rows.length === 0) {
+		if (mainBusinessRows.length === 0) {
 			return {
 				errorMessage: 'Business not found',
 				projects: []
 			};
 		}
 
-		const mainBusiness = mainBusinessResult.rows[0] as Business;
+		const mainBusiness = mainBusinessRows[0] as unknown as Business;
 
 		// Get all visible projects for this business
-		const projectsQuery = `
-      SELECT
-        id,
-        business_slug,
-        project_slug,
-        title,
-        pincode,
-        county,
-        project_date,
-        created_at,
-        image_url,
-        cloudinary_public_id,
-        image_width,
-        image_height,
-        image_format
-      FROM us_projects
-      WHERE business_slug = $1 AND (isvisible = TRUE OR isvisible IS NULL)
-      ORDER BY project_date DESC, created_at DESC
-    `;
-
-		const projectsResult = await pool.query(projectsQuery, [businessSlug]);
-		const projects = projectsResult.rows as Project[];
+		const projectRows = await db
+			.select({
+				id: usProjects.id,
+				business_slug: usProjects.businessSlug,
+				project_slug: usProjects.projectSlug,
+				title: usProjects.title,
+				pincode: usProjects.zipcode,
+				county: usProjects.county,
+				project_date: usProjects.projectDate,
+				created_at: usProjects.createdAt,
+				image_url: usProjects.imageUrl,
+				cloudinary_public_id: usProjects.cloudinaryPublicId,
+				image_width: usProjects.imageWidth,
+				image_height: usProjects.imageHeight,
+				image_format: usProjects.imageFormat
+			})
+			.from(usProjects)
+			.where(
+				and(
+					eq(usProjects.businessSlug, businessSlug),
+					or(eq(usProjects.isvisible, true), isNull(usProjects.isvisible))
+				)
+			)
+			.orderBy(desc(usProjects.projectDate), desc(usProjects.createdAt));
+		const projects = projectRows as unknown as Project[];
 
 		return {
 			mainBusiness,

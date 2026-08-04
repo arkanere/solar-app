@@ -1,7 +1,9 @@
 import type { PageServerLoad } from './$types';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
 import { error } from '@sveltejs/kit';
-import { US_BUSINESS_COLUMNS } from '$lib/server/unifiedRead';
+import { US_BUSINESS_SELECTION } from '$lib/server/unifiedRead';
+import { businesses, usBranches } from '@solar/db/schema';
+import { and, eq } from 'drizzle-orm';
 
 export const prerender = false;
 
@@ -34,37 +36,31 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 	try {
 		// First, get the main business using the slug (unified table: profile
 		// columns only, so credentials can never reach page data)
-		const mainBusinessQuery = `
-      SELECT ${US_BUSINESS_COLUMNS} FROM businesses
-      WHERE country_code = 'us' AND slug = $1
-    `;
+		const mainBusinessRows = await db
+			.select(US_BUSINESS_SELECTION)
+			.from(businesses)
+			.where(and(eq(businesses.countryCode, 'us'), eq(businesses.slug, businessSlug)));
 
-		const mainBusinessResult = await pool.query(mainBusinessQuery, [businessSlug]);
-
-		if (mainBusinessResult.rows.length === 0) {
+		if (mainBusinessRows.length === 0) {
 			return {
 				errorMessage: 'Business not found',
 				branches: []
 			};
 		}
 
-		const mainBusiness = mainBusinessResult.rows[0] as Business;
+		const mainBusiness = mainBusinessRows[0] as unknown as Business;
 		const mainBusinessId = mainBusiness.id;
 
 		// Get all branch offices linked to this main business
-		const branchesQuery = `
-      SELECT b.source_id AS id, b.slug, b.businessname, b.email, b.phonenumber,
-             b.whatsapp, b.description, b.website, b.instagram_id, b.google_maps_link,
-             b.address, b.pluscode, b.services, b.tax_id AS ein, b.level1 AS state,
-             b.level2 AS county, b.city, b.postal_code AS zipcode, b.rscore, b.tag,
-             b.notes, b.businessfilled, b.tier3, b.isvisible, b.created_at
-      FROM us_branches br
-      JOIN businesses b ON b.country_code = 'us' AND br.branch_id = b.source_id
-      WHERE br.main_id = $1 AND br.isactive = true
-    `;
-
-		const branchesResult = await pool.query(branchesQuery, [mainBusinessId]);
-		const branches = branchesResult.rows as Business[];
+		const branchRows = await db
+			.select(US_BUSINESS_SELECTION)
+			.from(usBranches)
+			.innerJoin(
+				businesses,
+				and(eq(businesses.countryCode, 'us'), eq(usBranches.branchId, businesses.sourceId))
+			)
+			.where(and(eq(usBranches.mainId, mainBusinessId), eq(usBranches.isactive, true)));
+		const branches = branchRows as unknown as Business[];
 
 		// Also include the main business in the response
 		return {
