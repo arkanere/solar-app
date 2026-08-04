@@ -1,8 +1,9 @@
 // api/updateRecentProject/+server.js
 
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { db } from '$lib/server/db';
+import { pincodeMapping, projects } from '@solar/db/schema';
+import { and, eq } from 'drizzle-orm';
 import { CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } from '$env/static/private';
 import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
 import { v2 as cloudinary } from 'cloudinary';
@@ -15,8 +16,6 @@ cloudinary.config({
 	api_secret: CLOUDINARY_API_SECRET,
 	secure: true
 });
-
-const pool = createPool({ connectionString: POSTGRES_URL });
 
 // Helper function to generate project slug
 function generateProjectSlug(title: string) {
@@ -209,15 +208,21 @@ export const PUT: RequestHandler = async ({ request, params }) => {
 
 		console.log('All validations passed');
 
-		const client = await pool.connect();
 		try {
 			// First, get the existing project to check ownership and get old image data
-			const existingProjectResult = await client.query(
-				'SELECT * FROM projects WHERE id = $1 AND business_slug = $2',
-				[projectId, business_slug]
+			//
+			// SECURITY: the old UPDATE interpolated business_slug straight into the
+			// SQL string (`business_slug = '${business_slug}'`) while every other
+			// value was parameterised — an injection hole on a caller-supplied
+			// field. The query builder parameterises it.
+			const owns = and(
+				eq(projects.id, Number(projectId)),
+				eq(projects.businessSlug, business_slug)
 			);
 
-			if (existingProjectResult.rows.length === 0) {
+			const existingRows = await db.select().from(projects).where(owns);
+
+			if (existingRows.length === 0) {
 				return json(
 					{
 						success: false,
@@ -227,19 +232,19 @@ export const PUT: RequestHandler = async ({ request, params }) => {
 				);
 			}
 
-			const existingProject = existingProjectResult.rows[0];
+			const existingProject = existingRows[0];
 			console.log('Existing project:', existingProject);
 
 			// Look up district using pincode
 			let district = 'Unknown'; // Default value
 			try {
-				const districtResult = await client.query(
-					'SELECT district FROM pincode_mapping WHERE pincode = $1',
-					[pincode]
-				);
+				const districtRows = await db
+					.select({ district: pincodeMapping.district })
+					.from(pincodeMapping)
+					.where(eq(pincodeMapping.pincode, pincode));
 
-				if (districtResult.rows.length > 0) {
-					district = districtResult.rows[0].district;
+				if (districtRows.length > 0) {
+					district = districtRows[0].district;
 					console.log('Found district for pincode', pincode, ':', district);
 				} else {
 					console.log('No district found for pincode', pincode, ', using "Unknown"');
@@ -250,87 +255,81 @@ export const PUT: RequestHandler = async ({ request, params }) => {
 			}
 
 			// Generate new project slug if title changed
-			let projectSlug = existingProject.project_slug;
+			let projectSlug = existingProject.projectSlug;
 			if (projectTitle !== existingProject.title) {
 				projectSlug = generateProjectSlug(projectTitle);
 				console.log('Generated new project slug:', projectSlug);
 			}
 
-			// Build the update query dynamically
-			const updateFields = [
-				'title = $2',
-				'project_slug = $3',
-				'pincode = $4',
-				'district = $5',
-				'project_date = $6'
-			];
-			const queryParams = [projectId, projectTitle, projectSlug, pincode, district, projectDate];
-			let returnFields =
-				'id, business_slug, title, project_slug, pincode, district, project_date, created_at';
-			let index = 7;
+			// Handle image updates. The dynamically built SET and RETURNING lists
+			// became conditional spreads (the Phase 5 pattern); the RETURNING shape
+			// is preserved exactly, including the branch that echoes the existing
+			// image columns back when neither removing nor replacing.
+			const oldPublicId = existingProject.cloudinaryPublicId;
+			const clearImage = Boolean(removeImage);
+			const returnsImage = clearImage
+				? false
+				: Boolean(imageData) || Boolean(existingProject.imageUrl);
 
-			// Handle image updates
-			const oldPublicId = existingProject.cloudinary_public_id;
-
-			if (removeImage) {
-				// Remove image fields
-				updateFields.push(
-					`image_url = NULL`,
-					`cloudinary_public_id = NULL`,
-					`image_width = NULL`,
-					`image_height = NULL`,
-					`image_format = NULL`
-				);
-
+			if ((clearImage || imageData) && oldPublicId) {
 				// Delete old image from Cloudinary if it exists
-				if (oldPublicId) {
-					await deleteFromCloudinary(oldPublicId);
-				}
-			} else if (imageData) {
-				// Update with new image
-				updateFields.push(
-					`image_url = $${index++}`,
-					`cloudinary_public_id = $${index++}`,
-					`image_width = $${index++}`,
-					`image_height = $${index++}`,
-					`image_format = $${index++}`
-				);
-				queryParams.push(
-					imageData.url,
-					imageData.publicId,
-					imageData.width,
-					imageData.height,
-					imageData.format
-				);
-				returnFields +=
-					', image_url, cloudinary_public_id, image_width, image_height, image_format';
-
-				// Delete old image from Cloudinary if it exists
-				if (oldPublicId) {
-					await deleteFromCloudinary(oldPublicId);
-				}
-			} else {
-				// Keep existing image data in return fields if it exists
-				if (existingProject.image_url) {
-					returnFields +=
-						', image_url, cloudinary_public_id, image_width, image_height, image_format';
-				}
+				await deleteFromCloudinary(oldPublicId);
 			}
 
-			const result = await client.query(
-				`UPDATE projects 
-				 SET ${updateFields.join(', ')}
-				 WHERE id = $1 AND business_slug = '${business_slug}'
-				 RETURNING ${returnFields}`,
-				queryParams
-			);
+			const updated = await db
+				.update(projects)
+				.set({
+					title: projectTitle,
+					projectSlug,
+					pincode,
+					district,
+					projectDate,
+					...(clearImage
+						? {
+								imageUrl: null,
+								cloudinaryPublicId: null,
+								imageWidth: null,
+								imageHeight: null,
+								imageFormat: null
+							}
+						: {}),
+					...(!clearImage && imageData
+						? {
+								imageUrl: imageData.url,
+								cloudinaryPublicId: imageData.publicId,
+								imageWidth: imageData.width,
+								imageHeight: imageData.height,
+								imageFormat: imageData.format
+							}
+						: {})
+				})
+				.where(owns)
+				.returning({
+					id: projects.id,
+					business_slug: projects.businessSlug,
+					title: projects.title,
+					project_slug: projects.projectSlug,
+					pincode: projects.pincode,
+					district: projects.district,
+					project_date: projects.projectDate,
+					created_at: projects.createdAt,
+					...(returnsImage
+						? {
+								image_url: projects.imageUrl,
+								cloudinary_public_id: projects.cloudinaryPublicId,
+								image_width: projects.imageWidth,
+								image_height: projects.imageHeight,
+								image_format: projects.imageFormat
+							}
+						: {})
+				});
 
-			console.log('Project updated successfully:', result.rows[0]);
+			console.log('Project updated successfully:', updated[0]);
 
 			// Return the updated project
 			return json({
 				success: true,
-				project: result.rows[0]
+				project: updated[0]
 			});
 		} catch (dbError) {
 			console.error('Database error:', dbError);
@@ -341,8 +340,6 @@ export const PUT: RequestHandler = async ({ request, params }) => {
 				},
 				{ status: 500 }
 			);
-		} finally {
-			client.release();
 		}
 	} catch (error) {
 		console.error('Error processing request:', error);
@@ -384,15 +381,16 @@ export const DELETE: RequestHandler = async ({ request, params }) => {
 			);
 		}
 
-		const client = await pool.connect();
 		try {
-			// First, get the existing project to check ownership
-			const existingProjectResult = await client.query(
-				'SELECT * FROM projects WHERE id = $1 AND business_slug = $2',
-				[projectId, business_slug]
+			const owns = and(
+				eq(projects.id, Number(projectId)),
+				eq(projects.businessSlug, business_slug)
 			);
 
-			if (existingProjectResult.rows.length === 0) {
+			// First, get the existing project to check ownership
+			const existingRows = await db.select({ id: projects.id }).from(projects).where(owns);
+
+			if (existingRows.length === 0) {
 				return json(
 					{
 						success: false,
@@ -403,12 +401,13 @@ export const DELETE: RequestHandler = async ({ request, params }) => {
 			}
 
 			// Set isvisible to FALSE instead of deleting the record
-			const result = await client.query(
-				'UPDATE projects SET isvisible = FALSE WHERE id = $1 AND business_slug = $2 RETURNING id, title',
-				[projectId, business_slug]
-			);
+			const hidden = await db
+				.update(projects)
+				.set({ isvisible: false })
+				.where(owns)
+				.returning({ id: projects.id, title: projects.title });
 
-			if (result.rows.length === 0) {
+			if (hidden.length === 0) {
 				return json(
 					{
 						success: false,
@@ -433,8 +432,6 @@ export const DELETE: RequestHandler = async ({ request, params }) => {
 				},
 				{ status: 500 }
 			);
-		} finally {
-			client.release();
 		}
 	} catch (error) {
 		console.error('Error processing request:', error);

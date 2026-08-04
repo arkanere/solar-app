@@ -7,10 +7,9 @@
 // When business-app migrates to leads, this switches to a direct insert
 // and the triggers are dropped.
 
-import { db, pool } from './db';
+import { db } from './db';
 import { syncLeadToUnified } from './unifiedSync';
 import type { CountryCode } from '$lib/countries';
-import { createDb } from '@solar/db';
 import { leaddata, usLeaddata, leads, pincodeMapping } from '@solar/db/schema';
 import { and, eq } from 'drizzle-orm';
 
@@ -58,13 +57,12 @@ export async function insertLead(
 		}
 	}
 
-	const client = await pool.connect();
-	// Drizzle bound to the checked-out client, so these statements run inside
-	// the BEGIN/COMMIT below alongside the raw sv_sync_lead() call.
-	const tx = createDb(client);
-	try {
-		await client.query('BEGIN');
-
+	// One transaction for the legacy insert, the sv_sync_lead() projection and
+	// the read-back of the unified row. syncLeadToUnified takes the same tx
+	// handle, so the projection runs on this connection rather than a second
+	// one — that is what the hand-rolled BEGIN/COMMIT on a checked-out client
+	// was doing before.
+	return db.transaction(async (tx) => {
 		let sourceId: number;
 		let referenceUuid: string | null = null;
 
@@ -105,14 +103,12 @@ export async function insertLead(
 
 		// Idempotent with migration 045's sync trigger; keeps this write
 		// self-sufficient once the triggers drop (phase 2.4).
-		await syncLeadToUnified(client, country, sourceId);
+		await syncLeadToUnified(tx, country, sourceId);
 
 		const [unified] = await tx
 			.select({ id: leads.id })
 			.from(leads)
 			.where(and(eq(leads.countryCode, country), eq(leads.sourceId, sourceId)));
-
-		await client.query('COMMIT');
 
 		return {
 			id: unified?.id ?? sourceId,
@@ -121,10 +117,5 @@ export async function insertLead(
 			level1,
 			level2
 		};
-	} catch (err) {
-		await client.query('ROLLBACK');
-		throw err;
-	} finally {
-		client.release();
-	}
+	});
 }

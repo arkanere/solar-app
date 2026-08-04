@@ -1,8 +1,9 @@
 // api/postRecentProject/+server.js
 
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { db } from '$lib/server/db';
+import { pincodeMapping, projects } from '@solar/db/schema';
+import { eq } from 'drizzle-orm';
 import { CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } from '$env/static/private';
 import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
 import { v2 as cloudinary } from 'cloudinary';
@@ -15,8 +16,6 @@ cloudinary.config({
 	api_secret: CLOUDINARY_API_SECRET,
 	secure: true
 });
-
-const pool = createPool({ connectionString: POSTGRES_URL });
 
 // Helper function to generate project slug
 function generateProjectSlug(title: string) {
@@ -237,18 +236,17 @@ export const POST: RequestHandler = async ({ request, params }) => {
 		const projectSlug = projectTitle ? generateProjectSlug(projectTitle) : '';
 		console.log('Generated project slug:', projectSlug);
 
-		const client = await pool.connect();
 		try {
 			// Look up district using pincode
 			let district = 'Unknown'; // Default value
 			try {
-				const districtResult = await client.query(
-					'SELECT district FROM pincode_mapping WHERE pincode = $1',
-					[pincode]
-				);
+				const districtRows = await db
+					.select({ district: pincodeMapping.district })
+					.from(pincodeMapping)
+					.where(eq(pincodeMapping.pincode, pincode));
 
-				if (districtResult.rows.length > 0) {
-					district = districtResult.rows[0].district;
+				if (districtRows.length > 0) {
+					district = districtRows[0].district;
 					console.log('Found district for pincode', pincode, ':', district);
 				} else {
 					console.log('No district found for pincode', pincode, ', using "Unknown"');
@@ -261,61 +259,55 @@ export const POST: RequestHandler = async ({ request, params }) => {
 			// Now we directly use the business_slug instead of looking up the business_id
 			console.log('Using business slug:', business_slug);
 
-			// Build the query dynamically based on available data
-			let queryFields = 'business_slug, title, project_slug, pincode, district, project_date';
-			let queryValues = '$1, $2, $3, $4, $5, $6';
-			const queryParams = [
-				business_slug,
-				projectTitle,
-				projectSlug,
-				pincode,
-				district,
-				projectDate
-			];
-			let returnFields =
-				'id, business_slug, title, project_slug, pincode, district, project_date, created_at';
-			let index = 7;
+			// The dynamically built column/RETURNING lists became conditional
+			// spreads (the Phase 5 pattern). Spreading rather than always
+			// selecting the image columns keeps the response shape identical:
+			// without an image, those keys were absent, not null.
+			const inserted = await db
+				.insert(projects)
+				.values({
+					businessSlug: business_slug,
+					title: projectTitle,
+					projectSlug,
+					pincode,
+					district,
+					projectDate,
+					...(imageData
+						? {
+								imageUrl: imageData.url,
+								cloudinaryPublicId: imageData.publicId,
+								imageWidth: imageData.width,
+								imageHeight: imageData.height,
+								imageFormat: imageData.format
+							}
+						: {})
+				})
+				.returning({
+					id: projects.id,
+					business_slug: projects.businessSlug,
+					title: projects.title,
+					project_slug: projects.projectSlug,
+					pincode: projects.pincode,
+					district: projects.district,
+					project_date: projects.projectDate,
+					created_at: projects.createdAt,
+					...(imageData
+						? {
+								image_url: projects.imageUrl,
+								cloudinary_public_id: projects.cloudinaryPublicId,
+								image_width: projects.imageWidth,
+								image_height: projects.imageHeight,
+								image_format: projects.imageFormat
+							}
+						: {})
+				});
 
-			// Add image data if available
-			if (imageData) {
-				// Add URL
-				queryFields += ', image_url';
-				queryValues += `, $${index++}`;
-				queryParams.push(imageData.url);
-				returnFields += ', image_url';
-
-				// Add public ID
-				queryFields += ', cloudinary_public_id';
-				queryValues += `, $${index++}`;
-				queryParams.push(imageData.publicId);
-				returnFields += ', cloudinary_public_id';
-
-				// Add image dimensions
-				queryFields += ', image_width, image_height';
-				queryValues += `, $${index++}, $${index++}`;
-				queryParams.push(imageData.width, imageData.height);
-				returnFields += ', image_width, image_height';
-
-				// Add image format
-				queryFields += ', image_format';
-				queryValues += `, $${index++}`;
-				queryParams.push(imageData.format);
-				returnFields += ', image_format';
-			}
-
-			const result = await client.query(
-				`INSERT INTO projects (${queryFields}) 
-         VALUES (${queryValues}) 
-         RETURNING ${returnFields}`,
-				queryParams
-			);
-
-			console.log('Project inserted successfully:', result.rows[0]);
+			console.log('Project inserted successfully:', inserted[0]);
 
 			// Return the newly created project
 			return json({
 				success: true,
-				project: result.rows[0]
+				project: inserted[0]
 			});
 		} catch (dbError: any) {
 			console.error('Database error:', dbError);
@@ -326,8 +318,6 @@ export const POST: RequestHandler = async ({ request, params }) => {
 				},
 				{ status: 500 }
 			);
-		} finally {
-			client.release();
 		}
 	} catch (error: any) {
 		console.error('Error processing request:', error);

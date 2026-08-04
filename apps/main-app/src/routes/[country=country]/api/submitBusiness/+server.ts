@@ -1,6 +1,11 @@
-import { createPool } from '@vercel/postgres';
-import type { VercelPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { db } from '$lib/server/db';
+import {
+	businesses1,
+	inBusinessAccounts,
+	inBusinessProfiles,
+	usBusinesses
+} from '@solar/db/schema';
+import { eq, sql } from 'drizzle-orm';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { parseBody, submitBusinessSchema } from '@solar/validation';
 import { syncBusinessToUnified, syncAccountToUnified } from '$lib/server/unifiedSync';
@@ -10,57 +15,55 @@ import { isCountry } from '$lib/countries';
 // table sets stay exactly as they were: de-countrying these writes belongs to
 // the write cutover in docs/country-scalable-architecture.md, not to this
 // migration (plan §3.4).
-async function insertUsBusiness(
-	pool: VercelPool,
-	b: {
-		businessName: string;
-		address: string;
-		plusCode: string | null;
-		phoneNumber: string;
-		whatsappNumber: string | null;
-		email: string;
-		login_email: string;
-		website: string | null;
-		ein: string | null;
-		state: string;
-		county: string;
-		city: string;
-	}
-): Promise<number> {
-	const result = await pool.query<{ id: number }>(
-		`INSERT INTO us_businesses (
-                rscore, isvisible, businessfilled, pluscode, phonenumber, whatsapp, email, login_email, website, ein, state, county, city, tag, slug, notes, businessname, address)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
-            RETURNING id`,
-		[
-			0, // rscore
-			0, // isvisible
-			false, // businessfilled
-			b.plusCode || null,
-			b.phoneNumber,
-			b.whatsappNumber || null,
-			b.email || null,
-			b.login_email || null,
-			b.website || null,
-			b.ein || null,
-			b.state,
-			b.county,
-			b.city,
-			'blank', // tag
-			null, // slug
-			null, // notes
-			b.businessName,
-			b.address
-		]
-	);
+//
+// NOTE on `isvisible`: the raw INSERTs passed the number 0 for these boolean
+// columns, which Postgres coerced to false on the way in. Drizzle types them
+// as booleans, so they are written as `false` — same stored value.
+async function insertUsBusiness(b: {
+	businessName: string;
+	address: string;
+	plusCode: string | null;
+	phoneNumber: string;
+	whatsappNumber: string | null;
+	email: string;
+	login_email: string;
+	website: string | null;
+	ein: string | null;
+	state: string;
+	county: string;
+	city: string;
+}): Promise<number> {
+	const inserted = await db
+		.insert(usBusinesses)
+		.values({
+			rscore: 0,
+			isvisible: false,
+			businessfilled: false,
+			pluscode: b.plusCode || null,
+			phonenumber: b.phoneNumber,
+			whatsapp: b.whatsappNumber || null,
+			email: b.email || null,
+			loginEmail: b.login_email,
+			website: b.website || null,
+			ein: b.ein || null,
+			state: b.state,
+			county: b.county,
+			city: b.city,
+			tag: 'blank',
+			slug: null,
+			notes: null,
+			businessname: b.businessName,
+			address: b.address
+		})
+		.returning({ id: usBusinesses.id });
 
-	const businessId = result.rows[0].id;
+	const businessId = inserted[0].id;
 
 	// Idempotent with the us_businesses sync triggers (043/046); keeps the
 	// unified tables fresh once those triggers drop (phase 2.4). 'us' is tied to
 	// the table written above, exactly as 'in' is on the IN path below.
-	await syncBusinessToUnified(pool, 'us', businessId);
-	await syncAccountToUnified(pool, 'us', businessId);
+	await syncBusinessToUnified(db, 'us', businessId);
+	await syncAccountToUnified(db, 'us', businessId);
 
 	return businessId;
 }
@@ -83,9 +86,6 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 	if (!params.country || !isCountry(params.country)) {
 		return json({ error: 'Unknown country' }, { status: 404 });
 	}
-
-	// ✅ Added fetch from event
-	const pool: VercelPool = createPool({ connectionString: POSTGRES_URL });
 
 	const country = params.country;
 
@@ -114,7 +114,7 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 		const level2 = (country === 'in' ? parsed.data.district : parsed.data.county) as string;
 
 		if (country === 'us') {
-			const businessId = await insertUsBusiness(pool, {
+			const businessId = await insertUsBusiness({
 				businessName,
 				address,
 				plusCode,
@@ -149,12 +149,12 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 
 		// Check for duplicate GSTN. IN-only: US does not collect a tax id on
 		// signup, so every US row would collide on an empty value.
-		const duplicateCheck = await pool.query<{ business_id: number }>(
-			'SELECT business_id FROM in_business_profiles WHERE gstn = $1',
-			[gstn]
-		);
+		const duplicates = await db
+			.select({ business_id: inBusinessProfiles.businessId })
+			.from(inBusinessProfiles)
+			.where(eq(inBusinessProfiles.gstn, gstn as string));
 
-		if (duplicateCheck.rows.length > 0) {
+		if (duplicates.length > 0) {
 			return json(
 				{
 					success: false,
@@ -167,7 +167,7 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 
 		// Set default values for non-form fields
 		const rscore = 0;
-		const isvisible = 0;
+		const isvisible = false;
 		const tag = 'blank';
 		const slug = null;
 		const notes = null;
@@ -177,80 +177,71 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 		// the legacy table fresh for admin-app. The explicit upserts below are the
 		// forward-facing writes; the sync triggers on businesses_1 upsert the same
 		// values, so both paths are idempotent.
-		const insertQuery = `
-            INSERT INTO businesses_1 (
-                rscore, isvisible, pluscode, phonenumber, whatsapp, email, login_email, website, gstn, state, district, tag, slug, notes, city, businessname, address)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
-            RETURNING id
-        `;
-
-		const result = await pool.query<{ id: number }>(insertQuery, [
-			rscore,
-			isvisible,
-			plusCode || null,
-			phoneNumber,
-			whatsappNumber || null,
-			email || null,
-			login_email || null,
-			website || null,
-			gstn || null,
-			state,
-			district,
-			tag,
-			slug,
-			notes,
-			city,
-			businessName,
-			address
-		]);
-
-		const businessId = result.rows[0].id;
-
-		// Forward-facing writes: the new tables are the source of truth for the
-		// /in side. ON CONFLICT keeps them idempotent against the businesses_1
-		// sync triggers, which upsert the same rows.
-		await pool.query(
-			`INSERT INTO in_business_profiles (
-                business_id, rscore, isvisible, pluscode, phonenumber, whatsapp, email, website, gstn, state, district, tag, slug, notes, city, businessname, address)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
-            ON CONFLICT (business_id) DO UPDATE SET
-                rscore = EXCLUDED.rscore, isvisible = EXCLUDED.isvisible,
-                pluscode = EXCLUDED.pluscode, phonenumber = EXCLUDED.phonenumber,
-                whatsapp = EXCLUDED.whatsapp, email = EXCLUDED.email,
-                website = EXCLUDED.website, gstn = EXCLUDED.gstn,
-                state = EXCLUDED.state, district = EXCLUDED.district,
-                tag = EXCLUDED.tag, slug = EXCLUDED.slug, notes = EXCLUDED.notes,
-                city = EXCLUDED.city, businessname = EXCLUDED.businessname,
-                address = EXCLUDED.address, updated_at = NOW()`,
-			[
-				businessId,
+		const inserted = await db
+			.insert(businesses1)
+			.values({
 				rscore,
 				isvisible,
-				plusCode || null,
-				phoneNumber,
-				whatsappNumber || null,
-				email || null,
-				website || null,
-				gstn || null,
+				pluscode: plusCode || null,
+				phonenumber: phoneNumber,
+				whatsapp: whatsappNumber || null,
+				email: email || null,
+				loginEmail: login_email,
+				website: website || null,
+				gstn: gstn || null,
 				state,
 				district,
 				tag,
 				slug,
 				notes,
 				city,
-				businessName,
+				businessname: businessName,
 				address
-			]
-		);
+			})
+			.returning({ id: businesses1.id });
 
-		await pool.query(
-			`INSERT INTO in_business_accounts (business_id, login_email, isvisible)
-            VALUES ($1, $2, $3)
-            ON CONFLICT (business_id) DO UPDATE SET
-                login_email = EXCLUDED.login_email, isvisible = EXCLUDED.isvisible,
-                updated_at = NOW()`,
-			[businessId, login_email || null, isvisible]
-		);
+		const businessId = inserted[0].id;
+
+		// Forward-facing writes: the new tables are the source of truth for the
+		// /in side. ON CONFLICT keeps them idempotent against the businesses_1
+		// sync triggers, which upsert the same rows.
+		const profileValues = {
+			businessId,
+			rscore,
+			isvisible,
+			pluscode: plusCode || null,
+			phonenumber: phoneNumber,
+			whatsapp: whatsappNumber || null,
+			email: email || null,
+			website: website || null,
+			gstn: gstn || null,
+			state,
+			district,
+			tag,
+			slug,
+			notes,
+			city,
+			businessname: businessName,
+			address
+		};
+
+		await db
+			.insert(inBusinessProfiles)
+			.values(profileValues)
+			.onConflictDoUpdate({
+				target: inBusinessProfiles.businessId,
+				set: { ...profileValues, updatedAt: sql`NOW()` }
+			});
+
+		const accountValues = { businessId, loginEmail: login_email || null, isvisible };
+
+		await db
+			.insert(inBusinessAccounts)
+			.values(accountValues)
+			.onConflictDoUpdate({
+				target: inBusinessAccounts.businessId,
+				set: { ...accountValues, updatedAt: sql`NOW()` }
+			});
 
 		// Idempotent with the businesses_1/in_business_profiles sync triggers;
 		// keeps the unified tables fresh once those triggers drop (phase 2.4).
@@ -261,8 +252,8 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 		// the synced row is an IN row whatever prefix the request arrived on. A
 		// US request never reaches here — it returned from the us_businesses
 		// branch above.
-		await syncBusinessToUnified(pool, 'in', businessId);
-		await syncAccountToUnified(pool, 'in', businessId);
+		await syncBusinessToUnified(db, 'in', businessId);
+		await syncAccountToUnified(db, 'in', businessId);
 
 		await sendConfirmation(fetch, country, businessId, {
 			businessName,

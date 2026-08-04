@@ -6,32 +6,38 @@
 // idempotent — but it keeps main-app correct on its own once those
 // triggers are dropped (phase 2.4, after admin-app migrates).
 
-interface Queryable {
-	query(text: string, params?: unknown[]): Promise<unknown>;
-}
+import { sql } from 'drizzle-orm';
+import type { Database } from '@solar/db';
+
+// Accepts the module-scoped `db` or a transaction handle from `db.transaction()`
+// — both expose `execute`, so a caller inside a transaction still projects its
+// rows on the same connection. The sv_sync_* functions have no query-builder
+// equivalent, so every call here is a deliberate `sql` escape hatch. Same
+// shape as business-app's unifiedSync (its Phase 6a).
+type SyncExecutor = Pick<Database, 'execute'>;
 
 export type SyncCountry = 'in' | 'us';
 
 export async function syncLeadToUnified(
-	db: Queryable,
+	db: SyncExecutor,
 	country: SyncCountry,
 	sourceId: number
 ): Promise<void> {
-	await db.query('SELECT sv_sync_lead($1, $2)', [country, sourceId]);
+	await db.execute(sql`SELECT sv_sync_lead(${country}, ${sourceId})`);
 }
 
 export async function syncBusinessToUnified(
-	db: Queryable,
+	db: SyncExecutor,
 	country: SyncCountry,
 	sourceId: number
 ): Promise<void> {
-	await db.query('SELECT sv_sync_business($1, $2)', [country, sourceId]);
+	await db.execute(sql`SELECT sv_sync_business(${country}, ${sourceId})`);
 }
 
 export async function syncAccountToUnified(
-	db: Queryable,
+	db: SyncExecutor,
 	country: SyncCountry,
 	sourceId: number
 ): Promise<void> {
-	await db.query('SELECT sv_sync_account($1, $2)', [country, sourceId]);
+	await db.execute(sql`SELECT sv_sync_account(${country}, ${sourceId})`);
 }
