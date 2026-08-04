@@ -68,6 +68,24 @@ const lower = (col: PgColumn, value: string) => sql`LOWER(${col}) = LOWER(${valu
 
 const RSCORE_DESC = sql`${businesses.rscore} DESC NULLS LAST`;
 
+// The geo directory pages (solar/[state]/[district] and its [slug] leaf) ship
+// installer cards straight to the client, so this one keeps the table's
+// snake_case names — a different wire shape from Business above.
+export const BUSINESS_CARD_SELECTION = {
+	businessname: businesses.businessname,
+	description: businesses.description,
+	phonenumber: businesses.phonenumber,
+	slug: businesses.slug,
+	address: businesses.address,
+	pluscode: businesses.pluscode,
+	state: businesses.level1,
+	city: businesses.city,
+	tag: businesses.tag,
+	rscore: businesses.rscore,
+	businessfilled: businesses.businessfilled,
+	services: businesses.services
+};
+
 export async function getBusinessBySlug(
 	country: CountryCode,
 	slug: string

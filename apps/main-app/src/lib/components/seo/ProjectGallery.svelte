@@ -10,10 +10,13 @@
 		business_slug: string;
 		project_slug: string;
 		title: string;
-		pincode?: string;
-		project_date?: string;
-		image_url?: string;
-		cloudinary_public_id?: string;
+		// Nullable in the database; every use below truthiness-guards, so `null`
+		// behaves exactly as `undefined` did. Widened when the page loads moved
+		// to Drizzle, which reports the real nullability the raw driver hid.
+		pincode?: string | null;
+		project_date?: string | null;
+		image_url?: string | null;
+		cloudinary_public_id?: string | null;
 	}
 
 	interface Props {

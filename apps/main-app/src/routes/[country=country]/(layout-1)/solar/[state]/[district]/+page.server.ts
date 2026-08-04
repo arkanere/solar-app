@@ -1,8 +1,18 @@
 import type { PageServerLoad } from './$types';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import {
+	businesses as businessesTable,
+	leads,
+	pincodeMapping,
+	projects,
+	stateSubsidies
+} from '@solar/db/schema';
+import { and, count, desc, eq, sql } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 import { getCountry } from '$lib/countries';
 import { resolveLevel2, getCitiesForLevel2 } from '$lib/server/geo';
+import { BUSINESS_CARD_SELECTION } from '$lib/server/businesses';
+import { PROJECT_CARD_SELECTION, getTopProjectsPerBusiness } from '$lib/server/projects';
 
 export const config = {
 	isr: { expiration: 1296000 }
@@ -20,94 +30,85 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	const { level1, level2 } = resolved;
 
-	const [businessesResult, projectsResult, cities, subsidyResult, postalResult, leadResult] =
-		await Promise.all([
-			pool.query(
-				`SELECT businessname, description, phonenumber, slug, address, pluscode,
-				        level1 as state, city, tag, rscore, businessfilled, services
-				 FROM businesses
-				 WHERE country_code = $1 AND LOWER(level2) = LOWER($2) AND isvisible = true`,
-				[country.code, level2]
-			),
-			country.features.projects
-				? pool.query(
-						`SELECT id, business_slug, project_slug, title, pincode, project_date, created_at,
-						        image_url, cloudinary_public_id, image_width, image_height, image_format, district
-						 FROM projects
-						 WHERE LOWER(district) = LOWER($1) AND isvisible = true
-						 ORDER BY project_date DESC, created_at DESC
-						 LIMIT 6`,
-						[level2]
+	const inLevel2 = and(
+		eq(businessesTable.countryCode, country.code),
+		sql`LOWER(${businessesTable.level2}) = LOWER(${level2})`,
+		eq(businessesTable.isvisible, true)
+	);
+
+	const [businessRows, projectRows, cities, subsidyRows, postalRows, leadRows] = await Promise.all([
+		db.select(BUSINESS_CARD_SELECTION).from(businessesTable).where(inLevel2),
+		country.features.projects
+			? db
+					.select({ ...PROJECT_CARD_SELECTION, district: projects.district })
+					.from(projects)
+					.where(
+						and(sql`LOWER(${projects.district}) = LOWER(${level2})`, eq(projects.isvisible, true))
 					)
-				: Promise.resolve({ rows: [] }),
-			getCitiesForLevel2(country.code, level1Slug, level2Slug).then(async (cityRows) => {
-				if (cityRows.length === 0) return [];
-				const hasBusinessResult = await pool.query(
-					`SELECT DISTINCT LOWER(city) as city FROM businesses
-					 WHERE country_code = $1 AND LOWER(level2) = LOWER($2) AND isvisible = true`,
-					[country.code, level2]
-				);
-				const citiesWithBusiness = new Set(
-					hasBusinessResult.rows.map((r: { city: string }) => r.city)
-				);
-				return cityRows.map((c) => ({
-					name: c.city,
-					slug: c.citySlug,
-					hasBusiness: citiesWithBusiness.has(c.city.toLowerCase())
-				}));
-			}),
-			country.features.subsidy
-				? pool.query(
-						`SELECT state_slug, state_name FROM state_subsidies
-						 WHERE LOWER(state_name) = LOWER($1) AND status = 'published' LIMIT 1`,
-						[level1]
+					.orderBy(desc(projects.projectDate), desc(projects.createdAt))
+					.limit(6)
+			: Promise.resolve([]),
+		getCitiesForLevel2(country.code, level1Slug, level2Slug).then(async (cityRows) => {
+			if (cityRows.length === 0) return [];
+			const cityRowsWithBusiness = await db
+				.selectDistinct({ city: sql<string>`LOWER(${businessesTable.city})` })
+				.from(businessesTable)
+				.where(inLevel2);
+			const citiesWithBusiness = new Set(cityRowsWithBusiness.map((r) => r.city));
+			return cityRows.map((c) => ({
+				name: c.city,
+				slug: c.citySlug,
+				hasBusiness: citiesWithBusiness.has(c.city.toLowerCase())
+			}));
+		}),
+		country.features.subsidy
+			? db
+					.select({
+						state_slug: stateSubsidies.stateSlug,
+						state_name: stateSubsidies.stateName
+					})
+					.from(stateSubsidies)
+					.where(
+						and(
+							sql`LOWER(${stateSubsidies.stateName}) = LOWER(${level1})`,
+							eq(stateSubsidies.status, 'published')
+						)
 					)
-				: Promise.resolve({ rows: [] }),
-			country.features.pincodeLookup
-				? pool.query(
-						`SELECT pincode FROM pincode_mapping WHERE LOWER(district) = LOWER($1) LIMIT 1`,
-						[level2]
-					)
-				: Promise.resolve({ rows: [] }),
-			pool.query(
-				`SELECT COUNT(*) as count FROM leads WHERE country_code = $1 AND LOWER(level2) = LOWER($2)`,
-				[country.code, level2]
+					.limit(1)
+			: Promise.resolve([]),
+		country.features.pincodeLookup
+			? db
+					.select({ pincode: pincodeMapping.pincode })
+					.from(pincodeMapping)
+					.where(sql`LOWER(${pincodeMapping.district}) = LOWER(${level2})`)
+					.limit(1)
+			: Promise.resolve([]),
+		db
+			.select({ count: count() })
+			.from(leads)
+			.where(
+				and(eq(leads.countryCode, country.code), sql`LOWER(${leads.level2}) = LOWER(${level2})`)
 			)
-		]);
+	]);
 
-	const businessSlugs = businessesResult.rows.map((b: { slug: string }) => b.slug);
-	const businessProjectsMap = new Map();
+	const businessSlugs = businessRows
+		.map((b) => b.slug)
+		.filter((slug): slug is string => slug !== null);
 
-	if (country.features.projects && businessSlugs.length > 0) {
-		const projectsByBusiness = await pool.query(
-			`SELECT business_slug, project_slug, title, cloudinary_public_id
-			 FROM (
-				 SELECT *, ROW_NUMBER() OVER (PARTITION BY business_slug ORDER BY project_date DESC, created_at DESC) as rn
-				 FROM projects
-				 WHERE business_slug = ANY($1) AND isvisible = true
-			 ) ranked
-			 WHERE rn <= 3`,
-			[businessSlugs]
-		);
+	const businessProjectsMap = country.features.projects
+		? await getTopProjectsPerBusiness(businessSlugs)
+		: new Map();
 
-		for (const project of projectsByBusiness.rows) {
-			if (!businessProjectsMap.has(project.business_slug)) {
-				businessProjectsMap.set(project.business_slug, []);
-			}
-			businessProjectsMap.get(project.business_slug).push(project);
-		}
-	}
-
-	const businesses = businessesResult.rows
-		.map((b: Record<string, unknown>) => ({
+	const businesses = businessRows
+		.map((b) => ({
 			...b,
-			recent_projects: businessProjectsMap.get(b.slug as string) || []
+			recent_projects: (b.slug && businessProjectsMap.get(b.slug)) || []
 		}))
-		.sort((a: Record<string, unknown>, b: Record<string, unknown>) => {
-			const aProjects = (a.recent_projects as unknown[]).length;
-			const bProjects = (b.recent_projects as unknown[]).length;
-			if (aProjects !== bProjects) return bProjects - aProjects;
-			return ((b.rscore as number) || 0) - ((a.rscore as number) || 0);
+		.sort((a, b) => {
+			if (a.recent_projects.length !== b.recent_projects.length) {
+				return b.recent_projects.length - a.recent_projects.length;
+			}
+			return (b.rscore || 0) - (a.rscore || 0);
 		});
 
 	if (businesses.length === 0) {
@@ -120,11 +121,11 @@ export const load: PageServerLoad = async ({ params }) => {
 		level2,
 		level2Slug,
 		businesses,
-		recentProjects: projectsResult.rows,
+		recentProjects: projectRows,
 		cities,
-		subsidy: subsidyResult.rows[0] || null,
-		postalCode: postalResult.rows[0]?.pincode || null,
-		level2LeadCount: parseInt(leadResult.rows[0].count, 10),
+		subsidy: subsidyRows[0] || null,
+		postalCode: postalRows[0]?.pincode || null,
+		level2LeadCount: leadRows[0].count,
 		installerCount: businesses.length,
 		lastUpdated: new Date().toISOString()
 	};

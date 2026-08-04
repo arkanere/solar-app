@@ -1,17 +1,17 @@
 import type { PageServerLoad } from './$types';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { businesses as businessesTable, pincodeMapping, projects } from '@solar/db/schema';
+import { and, asc, desc, eq, sql } from 'drizzle-orm';
 import { error, redirect } from '@sveltejs/kit';
 import { getCountry } from '$lib/countries';
 import { resolveLevel2 } from '$lib/server/geo';
 import { resolveLeafSlug } from '$lib/server/slug-resolver';
+import { BUSINESS_CARD_SELECTION } from '$lib/server/businesses';
+import { PROJECT_CARD_SELECTION, getTopProjectsPerBusiness } from '$lib/server/projects';
 
 export const config = {
 	isr: { expiration: 1296000 }
 };
-
-const BUSINESS_SELECT = `SELECT businessname, description, phonenumber, slug, address, pluscode,
-	level1 as state, city, tag, rscore, businessfilled, services
-	FROM businesses`;
 
 export const load: PageServerLoad = async ({ params }) => {
 	const country = getCountry(params.country);
@@ -31,86 +31,81 @@ export const load: PageServerLoad = async ({ params }) => {
 		error(404, 'Page not found');
 	}
 
+	const inLevel2 = and(
+		eq(businessesTable.countryCode, country.code),
+		sql`LOWER(${businessesTable.level2}) = LOWER(${level2})`,
+		eq(businessesTable.isvisible, true)
+	);
+
 	if (resolved.type === 'city') {
 		const city = resolved.data.city as string;
 
-		const [businessesResult, projectsResult, postalResult] = await Promise.all([
-			pool.query(
-				`${BUSINESS_SELECT}
-				 WHERE country_code = $1 AND LOWER(level2) = LOWER($2) AND LOWER(city) = LOWER($3) AND isvisible = true`,
-				[country.code, level2, city]
-			),
+		const [businessRows, projectRows, postalRows] = await Promise.all([
+			db
+				.select(BUSINESS_CARD_SELECTION)
+				.from(businessesTable)
+				.where(and(inLevel2, sql`LOWER(${businessesTable.city}) = LOWER(${city})`)),
 			country.features.projects
-				? pool.query(
-						`SELECT p.id, p.business_slug, p.project_slug, p.title, p.pincode, p.project_date, p.created_at,
-						        p.image_url, p.cloudinary_public_id, p.image_width, p.image_height, p.image_format
-						 FROM projects p
-						 WHERE LOWER(p.district) = LOWER($1) AND p.isvisible = true
-						 ORDER BY p.project_date DESC, p.created_at DESC
-						 LIMIT 6`,
-						[level2]
-					)
-				: Promise.resolve({ rows: [] }),
+				? db
+						.select(PROJECT_CARD_SELECTION)
+						.from(projects)
+						.where(
+							and(
+								sql`LOWER(${projects.district}) = LOWER(${level2})`,
+								eq(projects.isvisible, true)
+							)
+						)
+						.orderBy(desc(projects.projectDate), desc(projects.createdAt))
+						.limit(6)
+				: Promise.resolve([]),
 			country.features.pincodeLookup
-				? pool.query(
-						`SELECT pincode FROM pincode_mapping WHERE LOWER(district) = LOWER($1) LIMIT 1`,
-						[level2]
-					)
-				: Promise.resolve({ rows: [] })
+				? db
+						.select({ pincode: pincodeMapping.pincode })
+						.from(pincodeMapping)
+						.where(sql`LOWER(${pincodeMapping.district}) = LOWER(${level2})`)
+						.limit(1)
+				: Promise.resolve([])
 		]);
 
 		// City has no installers of its own: the level2 page is the canonical listing.
-		if (businessesResult.rows.length === 0) {
+		if (businessRows.length === 0) {
 			redirect(301, `/${country.code}/solar/${level1Slug}/${level2Slug}`);
 		}
 
 		// Attach recent projects per business
-		const businessSlugs = businessesResult.rows.map((b: { slug: string }) => b.slug);
-		const businessProjectsMap = new Map();
+		const businessSlugs = businessRows
+			.map((b) => b.slug)
+			.filter((s): s is string => s !== null);
 
-		if (country.features.projects && businessSlugs.length > 0) {
-			const projectsByBusiness = await pool.query(
-				`SELECT business_slug, project_slug, title, cloudinary_public_id
-				 FROM (
-					 SELECT *, ROW_NUMBER() OVER (PARTITION BY business_slug ORDER BY project_date DESC, created_at DESC) as rn
-					 FROM projects
-					 WHERE business_slug = ANY($1) AND isvisible = true
-				 ) ranked
-				 WHERE rn <= 3`,
-				[businessSlugs]
-			);
-			for (const project of projectsByBusiness.rows) {
-				if (!businessProjectsMap.has(project.business_slug)) {
-					businessProjectsMap.set(project.business_slug, []);
-				}
-				businessProjectsMap.get(project.business_slug).push(project);
-			}
-		}
+		const businessProjectsMap = country.features.projects
+			? await getTopProjectsPerBusiness(businessSlugs)
+			: new Map();
 
-		const businesses = businessesResult.rows
-			.map((b: Record<string, unknown>) => ({
+		const businesses = businessRows
+			.map((b) => ({
 				...b,
-				recent_projects: businessProjectsMap.get(b.slug as string) || []
+				recent_projects: (b.slug && businessProjectsMap.get(b.slug)) || []
 			}))
-			.sort((a: Record<string, unknown>, b: Record<string, unknown>) => {
-				const aProjects = (a.recent_projects as unknown[]).length;
-				const bProjects = (b.recent_projects as unknown[]).length;
-				if (aProjects !== bProjects) return bProjects - aProjects;
-				return ((b.rscore as number) || 0) - ((a.rscore as number) || 0);
+			.sort((a, b) => {
+				if (a.recent_projects.length !== b.recent_projects.length) {
+					return b.recent_projects.length - a.recent_projects.length;
+				}
+				return (b.rscore || 0) - (a.rscore || 0);
 			});
 
 		// Fetch sibling cities
-		const siblingCitiesResult = await pool.query(
-			`SELECT DISTINCT city FROM businesses
-			 WHERE country_code = $1 AND LOWER(level2) = LOWER($2) AND isvisible = true
-			   AND LOWER(REPLACE(city, ' ', '-')) != $3
-			 ORDER BY city ASC LIMIT 5`,
-			[country.code, level2, slug]
-		);
+		const siblingCityRows = await db
+			.selectDistinct({ city: businessesTable.city })
+			.from(businessesTable)
+			.where(
+				and(inLevel2, sql`LOWER(REPLACE(${businessesTable.city}, ' ', '-')) != ${slug}`)
+			)
+			.orderBy(asc(businessesTable.city))
+			.limit(5);
 
-		const siblingCities = siblingCitiesResult.rows.map((r: { city: string }) => ({
-			name: r.city,
-			slug: r.city.toLowerCase().replace(/\s+/g, '-')
+		const siblingCities = siblingCityRows.map((r) => ({
+			name: r.city as string,
+			slug: (r.city as string).toLowerCase().replace(/\s+/g, '-')
 		}));
 
 		return {
@@ -122,8 +117,8 @@ export const load: PageServerLoad = async ({ params }) => {
 			city,
 			citySlug: slug,
 			businesses,
-			recentProjects: projectsResult.rows,
-			postalCode: postalResult.rows[0]?.pincode || null,
+			recentProjects: projectRows,
+			postalCode: postalRows[0]?.pincode || null,
 			installerCount: businesses.length,
 			siblingCities,
 			lastUpdated: new Date().toISOString()
@@ -133,15 +128,19 @@ export const load: PageServerLoad = async ({ params }) => {
 	if (resolved.type === 'brand') {
 		const brandName = resolved.data.name as string;
 		const brandSlug = resolved.data.slug as string;
+		const needle = `%${brandName.toLowerCase()}%`;
 
-		const businessesResult = await pool.query(
-			`${BUSINESS_SELECT}
-			 WHERE country_code = $1 AND LOWER(level2) = LOWER($2) AND isvisible = true
-			   AND (LOWER(services::text) LIKE $3 OR LOWER(description) LIKE $3)`,
-			[country.code, level2, `%${brandName.toLowerCase()}%`]
-		);
+		const businessRows = await db
+			.select(BUSINESS_CARD_SELECTION)
+			.from(businessesTable)
+			.where(
+				and(
+					inLevel2,
+					sql`(LOWER(${businessesTable.services}::text) LIKE ${needle} OR LOWER(${businessesTable.description}) LIKE ${needle})`
+				)
+			);
 
-		if (businessesResult.rows.length === 0) {
+		if (businessRows.length === 0) {
 			error(404, `No ${brandName} solar installers found in ${level2}`);
 		}
 
@@ -153,8 +152,8 @@ export const load: PageServerLoad = async ({ params }) => {
 			level2Slug,
 			brandName,
 			brandSlug,
-			businesses: businessesResult.rows,
-			installerCount: businessesResult.rows.length,
+			businesses: businessRows,
+			installerCount: businessRows.length,
 			lastUpdated: new Date().toISOString()
 		};
 	}
@@ -162,13 +161,9 @@ export const load: PageServerLoad = async ({ params }) => {
 	if (resolved.type === 'size') {
 		const sizeKw = resolved.data.sizeKw as number;
 
-		const businessesResult = await pool.query(
-			`${BUSINESS_SELECT}
-			 WHERE country_code = $1 AND LOWER(level2) = LOWER($2) AND isvisible = true`,
-			[country.code, level2]
-		);
+		const businessRows = await db.select(BUSINESS_CARD_SELECTION).from(businessesTable).where(inLevel2);
 
-		if (businessesResult.rows.length === 0) {
+		if (businessRows.length === 0) {
 			error(404, `No solar installers found in ${level2}`);
 		}
 
@@ -179,8 +174,8 @@ export const load: PageServerLoad = async ({ params }) => {
 			level2,
 			level2Slug,
 			sizeKw,
-			businesses: businessesResult.rows,
-			installerCount: businessesResult.rows.length,
+			businesses: businessRows,
+			installerCount: businessRows.length,
 			lastUpdated: new Date().toISOString()
 		};
 	}
