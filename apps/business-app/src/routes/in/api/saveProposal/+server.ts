@@ -1,10 +1,12 @@
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { PROPOSAL_RETURNING } from '$lib/server/proposals';
+import { inProposals } from '@solar/db/schema';
+import { and, eq, sql } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { parseBody, saveProposalSchema } from '@solar/validation';
 import { BusinessAuthService } from '$lib/in/auth/business';
 import { ownsBusinessSlug } from '$lib/in/ownsBusinessSlug';
 import type { RequestHandler } from './$types';
-import type { Proposal } from '$lib/types/lead';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
 
@@ -38,7 +40,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		// Derive authorization from the session: the target business_slug must be
 		// the logged-in business or one of its active branches.
-		if (!(await ownsBusinessSlug(pool, sessionResult.session.businessSlug, business_slug))) {
+		if (!(await ownsBusinessSlug(sessionResult.session.businessSlug, business_slug))) {
 			return json(
 				{
 					success: false,
@@ -48,86 +50,54 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			);
 		}
 
-		let result;
+		let proposal;
 
 		// Update existing proposal
 		if (id) {
-			const updateQuery = `
-				UPDATE in_proposals
-				SET
-					customer_name = $1,
-					phone_number = $2,
-					address = $3,
-					email = $4,
-					system_capacity_kw = $5,
-					panels_brand_model = $6,
-					number_of_panels = $7,
-					inverter_brand_model = $8,
-					notes = $9,
-					updated_at = NOW()
-				WHERE id = $10 AND business_slug = $11
-				RETURNING *
-			`;
+			[proposal] = await db
+				.update(inProposals)
+				.set({
+					customerName: customer_name,
+					phoneNumber: phone_number,
+					address,
+					email,
+					systemCapacityKw: String(system_capacity_kw),
+					panelsBrandModel: panels_brand_model,
+					numberOfPanels: number_of_panels,
+					inverterBrandModel: inverter_brand_model,
+					notes,
+					updatedAt: sql`NOW()`
+				})
+				.where(and(eq(inProposals.id, id), eq(inProposals.businessSlug, business_slug)))
+				.returning(PROPOSAL_RETURNING);
 
-			const values = [
-				customer_name,
-				phone_number,
-				address,
-				email,
-				system_capacity_kw,
-				panels_brand_model,
-				number_of_panels,
-				inverter_brand_model,
-				notes,
-				id,
-				business_slug
-			];
-
-			result = await pool.query<Proposal>(updateQuery, values);
-
-			if (result.rows.length === 0) {
+			if (!proposal) {
 				return json({ success: false, error: 'Proposal not found' }, { status: 404 });
 			}
 		}
 		// Create new proposal
 		else {
-			const insertQuery = `
-				INSERT INTO in_proposals (
-					business_slug,
-					lead_id,
-					customer_name,
-					phone_number,
+			[proposal] = await db
+				.insert(inProposals)
+				.values({
+					businessSlug: business_slug,
+					leadId: lead_id,
+					customerName: customer_name,
+					phoneNumber: phone_number,
 					address,
 					email,
-					system_capacity_kw,
-					panels_brand_model,
-					number_of_panels,
-					inverter_brand_model,
+					systemCapacityKw: String(system_capacity_kw),
+					panelsBrandModel: panels_brand_model,
+					numberOfPanels: number_of_panels,
+					inverterBrandModel: inverter_brand_model,
 					notes,
-					created_at,
-					updated_at
-				) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())
-				RETURNING *
-			`;
-
-			const values = [
-				business_slug,
-				lead_id,
-				customer_name,
-				phone_number,
-				address,
-				email,
-				system_capacity_kw,
-				panels_brand_model,
-				number_of_panels,
-				inverter_brand_model,
-				notes
-			];
-
-			result = await pool.query<Proposal>(insertQuery, values);
+					createdAt: sql`NOW()`,
+					updatedAt: sql`NOW()`
+				})
+				.returning(PROPOSAL_RETURNING);
 		}
 
-		return json({ success: true, proposal: result.rows[0] });
+		return json({ success: true, proposal });
 	} catch (error) {
 		console.error('❌ Error saving proposal:', error);
 		return json({ success: false, error: 'Failed to save proposal' }, { status: 500 });

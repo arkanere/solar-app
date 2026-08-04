@@ -1,9 +1,12 @@
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { PROPOSAL_RETURNING } from '$lib/server/proposals';
+import { inProposals } from '@solar/db/schema';
+import { and, eq, sql } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/in/auth/business';
 import { ownsBusinessSlug } from '$lib/in/ownsBusinessSlug';
 import type { RequestHandler } from './$types';
-import type { ProposalPayload, Proposal } from '$lib/types/lead';
+import type { ProposalPayload } from '$lib/types/lead';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
 
@@ -56,54 +59,40 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		// the logged-in business or one of its active branches. Combined with the
 		// `business_slug = $11` predicate below, this prevents editing another
 		// business's proposal even if its id is known.
-		if (!(await ownsBusinessSlug(pool, sessionResult.session.businessSlug, business_slug))) {
+		if (!(await ownsBusinessSlug(sessionResult.session.businessSlug, business_slug))) {
 			return json(
 				{ success: false, error: 'Forbidden - You can only manage proposals for your own business' },
 				{ status: 403 }
 			);
 		}
 
-		const updateQuery = `
-			UPDATE in_proposals
-			SET
-				customer_name = $1,
-				phone_number = $2,
-				address = $3,
-				email = $4,
-				system_capacity_kw = $5,
-				panels_brand_model = $6,
-				number_of_panels = $7,
-				inverter_brand_model = $8,
-				notes = $9,
-				updated_at = NOW()
-			WHERE id = $10 AND business_slug = $11
-			RETURNING *
-		`;
+		// `business_slug` in the predicate is what stops another business's proposal
+		// being edited by id; the ownership check above is the other half.
+		const [proposal] = await db
+			.update(inProposals)
+			.set({
+				customerName: customer_name,
+				phoneNumber: phone_number ?? null,
+				address: address ?? null,
+				email: email ?? null,
+				systemCapacityKw: parseFloat(system_capacity_kw.toString()).toString(),
+				panelsBrandModel: panels_brand_model ?? null,
+				numberOfPanels: number_of_panels ? parseInt(number_of_panels.toString()) : null,
+				inverterBrandModel: inverter_brand_model ?? null,
+				notes: notes ?? null,
+				updatedAt: sql`NOW()`
+			})
+			.where(and(eq(inProposals.id, id), eq(inProposals.businessSlug, business_slug)))
+			.returning(PROPOSAL_RETURNING);
 
-		const values = [
-			customer_name,
-			phone_number ?? null,
-			address ?? null,
-			email ?? null,
-			parseFloat(system_capacity_kw.toString()),
-			panels_brand_model ?? null,
-			number_of_panels ? parseInt(number_of_panels.toString()) : null,
-			inverter_brand_model ?? null,
-			notes ?? null,
-			id,
-			business_slug
-		];
-
-		const result = await pool.query<Proposal>(updateQuery, values);
-
-		if (result.rows.length === 0) {
+		if (!proposal) {
 			return json(
 				{ success: false, error: 'Proposal not found' },
 				{ status: 404 }
 			);
 		}
 
-		return json({ success: true, proposal: result.rows[0] });
+		return json({ success: true, proposal });
 	} catch (error) {
 		console.error('❌ Error updating proposal:', error);
 		return json(

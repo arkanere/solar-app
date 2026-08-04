@@ -1,8 +1,9 @@
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { inProposals } from '@solar/db/schema';
+import { and, eq } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { BusinessAuthService } from '$lib/in/auth/business';
-import type { Proposal } from '$lib/types/lead';
 
 interface DeleteProposalRequest {
 	proposalId: number;
@@ -42,16 +43,12 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		// Check if proposal exists for this business
-		const checkQuery = `
-			SELECT id, customer_name FROM in_proposals
-			WHERE id = $1 AND business_slug = $2
-		`;
-		const checkResult = await pool.query<Pick<Proposal, 'id' | 'customer_name'>>(checkQuery, [
-			proposalId,
-			businessSlug
-		]);
+		const existing = await db
+			.select({ id: inProposals.id, customer_name: inProposals.customerName })
+			.from(inProposals)
+			.where(and(eq(inProposals.id, proposalId), eq(inProposals.businessSlug, businessSlug)));
 
-		if (checkResult.rows.length === 0) {
+		if (existing.length === 0) {
 			return json(
 				{ success: false, error: 'Proposal not found' },
 				{ status: 404 }
@@ -59,17 +56,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		// Delete the proposal
-		const deleteQuery = `
-			DELETE FROM in_proposals
-			WHERE id = $1 AND business_slug = $2
-			RETURNING id, customer_name
-		`;
-		const deleteResult = await pool.query<Pick<Proposal, 'id' | 'customer_name'>>(deleteQuery, [
-			proposalId,
-			businessSlug
-		]);
-
-		const deletedProposal = deleteResult.rows[0];
+		const [deletedProposal] = await db
+			.delete(inProposals)
+			.where(and(eq(inProposals.id, proposalId), eq(inProposals.businessSlug, businessSlug)))
+			.returning({ id: inProposals.id, customer_name: inProposals.customerName });
 
 		return json({
 			success: true,
