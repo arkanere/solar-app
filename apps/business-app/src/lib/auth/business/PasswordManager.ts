@@ -1,5 +1,7 @@
 import bcrypt from 'bcrypt';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { businessAccounts, businesses } from '@solar/db/schema';
+import { and, eq } from 'drizzle-orm';
 import type { Business, AuthResponse } from '$lib/types/auth';
 import { AUTH_ERRORS, SUCCESS_RESPONSE, ERROR_RESPONSE } from '$lib/types/auth';
 import type { AuthCountry } from './countryTables';
@@ -19,35 +21,38 @@ export class PasswordManager {
 			}
 
 			// Get business with password hash from database
-			let client;
-
-			try {
-				client = await pool.connect();
-				const result = await client.query<{ login_password: string | null }>(
-					`SELECT a.login_password
-					 FROM business_accounts a
-					 JOIN businesses p ON p.country_code = a.country_code AND p.source_id = a.source_id
-					 WHERE a.country_code = $1 AND a.login_email = $2 AND p.slug = $3`,
-					[this.country, email, business.slug]
+			const rows = await db
+				.select({ loginPassword: businessAccounts.loginPassword })
+				.from(businessAccounts)
+				.innerJoin(
+					businesses,
+					and(
+						eq(businesses.countryCode, businessAccounts.countryCode),
+						eq(businesses.sourceId, businessAccounts.sourceId)
+					)
+				)
+				.where(
+					and(
+						eq(businessAccounts.countryCode, this.country),
+						eq(businessAccounts.loginEmail, email),
+						eq(businesses.slug, business.slug)
+					)
 				);
 
-				if (result.rows.length === 0 || !result.rows[0].login_password) {
-					return ERROR_RESPONSE(
-						'Password authentication not available. Please use magic link.',
-						AUTH_ERRORS.INVALID_CREDENTIALS
-					);
-				}
+			if (rows.length === 0 || !rows[0].loginPassword) {
+				return ERROR_RESPONSE(
+					'Password authentication not available. Please use magic link.',
+					AUTH_ERRORS.INVALID_CREDENTIALS
+				);
+			}
 
-				const hashedPassword = result.rows[0].login_password;
-				const isValid = await bcrypt.compare(password, hashedPassword);
+			const hashedPassword = rows[0].loginPassword;
+			const isValid = await bcrypt.compare(password, hashedPassword);
 
-				if (isValid) {
-					return SUCCESS_RESPONSE({ business });
-				} else {
-					return ERROR_RESPONSE('Invalid credentials', AUTH_ERRORS.INVALID_CREDENTIALS);
-				}
-			} finally {
-				if (client) client.release();
+			if (isValid) {
+				return SUCCESS_RESPONSE({ business });
+			} else {
+				return ERROR_RESPONSE('Invalid credentials', AUTH_ERRORS.INVALID_CREDENTIALS);
 			}
 		} catch (error) {
 			console.error('❌ Error validating password:', error);

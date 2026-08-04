@@ -1,6 +1,8 @@
-import { pool } from '$lib/server/db';
+import { db, pool } from '$lib/server/db';
+import { businessAccounts, businesses1, usBusinesses } from '@solar/db/schema';
+import { and, eq, isNull, lt, or, sql } from 'drizzle-orm';
 import { AUTH_CONFIG, type LoginTrackerResult } from './AuthTypes';
-import { LEGACY_BUSINESS_TABLE, type AuthCountry } from './countryTables';
+import type { AuthCountry } from './countryTables';
 import { syncAccountToUnified, syncInSplitTables } from '$lib/server/unifiedSync';
 
 
@@ -18,34 +20,45 @@ export class LoginTracker {
 			// Writes still target the legacy table (phase-2 transition); the
 			// explicit sync projects the row into business_accounts.
 			// Bind the interval as a parameter via make_interval (no string interpolation).
-			const result = await pool.query(
-				`UPDATE ${LEGACY_BUSINESS_TABLE[this.country]}
-				 SET last_login = NOW()
-				 WHERE id = $1
-				   AND (last_login IS NULL OR last_login < NOW() - make_interval(hours => $2))
-				 RETURNING last_login`,
-				[businessId, throttleHours]
-			);
+			const table = this.country === 'in' ? businesses1 : usBusinesses;
+			const rows = await db
+				.update(table)
+				.set({ lastLogin: sql`NOW()` })
+				.where(
+					and(
+						eq(table.id, businessId),
+						or(
+							isNull(table.lastLogin),
+							lt(table.lastLogin, sql`NOW() - make_interval(hours => ${throttleHours})`)
+						)
+					)
+				)
+				.returning({ lastLogin: table.lastLogin });
 
-			if (result.rows.length > 0) {
+			if (rows.length > 0) {
 				if (this.country === 'in') {
 					await syncInSplitTables(pool, businessId);
 				}
 				await syncAccountToUnified(pool, this.country, businessId);
 				return {
 					updated: true,
-					lastLogin: result.rows[0].last_login
+					lastLogin: rows[0].lastLogin ? new Date(rows[0].lastLogin) : null
 				};
 			} else {
 				// Get current last_login for reference
-				const currentResult = await pool.query(
-					`SELECT last_login FROM business_accounts WHERE country_code = $1 AND source_id = $2`,
-					[this.country, businessId]
-				);
+				const current = await db
+					.select({ lastLogin: businessAccounts.lastLogin })
+					.from(businessAccounts)
+					.where(
+						and(
+							eq(businessAccounts.countryCode, this.country),
+							eq(businessAccounts.sourceId, businessId)
+						)
+					);
 
 				return {
 					updated: false,
-					lastLogin: currentResult.rows[0]?.last_login || null
+					lastLogin: current[0]?.lastLogin ? new Date(current[0].lastLogin) : null
 				};
 			}
 		} catch (error) {
@@ -61,11 +74,16 @@ export class LoginTracker {
 
 	async getLastLogin(businessId: number): Promise<Date | null> {
 		try {
-			const result = await pool.query(
-				`SELECT last_login FROM business_accounts WHERE country_code = $1 AND source_id = $2`,
-				[this.country, businessId]
-			);
-			return result.rows[0]?.last_login || null;
+			const rows = await db
+				.select({ lastLogin: businessAccounts.lastLogin })
+				.from(businessAccounts)
+				.where(
+					and(
+						eq(businessAccounts.countryCode, this.country),
+						eq(businessAccounts.sourceId, businessId)
+					)
+				);
+			return rows[0]?.lastLogin ? new Date(rows[0].lastLogin) : null;
 		} catch (error) {
 			console.error('❌ Error getting last_login:', error);
 			return null;

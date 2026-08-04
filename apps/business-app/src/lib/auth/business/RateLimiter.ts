@@ -7,7 +7,9 @@
 // Fail-open: if the store is unreachable we allow the request rather than block
 // logins/resets on a DB hiccup. The limiter is a throttle, not an auth boundary.
 
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { rateLimits } from '@solar/db/schema';
+import { eq, sql } from 'drizzle-orm';
 
 interface RateLimitResult {
 	allowed: boolean;
@@ -25,19 +27,21 @@ export class RateLimiter {
 		try {
 			// Atomic upsert: start a fresh window when none exists or the previous
 			// one has elapsed, otherwise increment the count in the current window.
-			const result = await pool.query<{ count: number; reset_time: string }>(
-				`INSERT INTO rate_limits (identifier, count, reset_time)
-				 VALUES ($1, 1, now() + ($2 || ' seconds')::interval)
-				 ON CONFLICT (identifier) DO UPDATE SET
-				   count = CASE WHEN rate_limits.reset_time <= now() THEN 1 ELSE rate_limits.count + 1 END,
-				   reset_time = CASE WHEN rate_limits.reset_time <= now()
-				     THEN now() + ($2 || ' seconds')::interval ELSE rate_limits.reset_time END
-				 RETURNING count, reset_time`,
-				[identifier, windowSeconds]
-			);
+			const freshResetTime = sql`now() + make_interval(secs => ${windowSeconds})`;
+			const rows = await db
+				.insert(rateLimits)
+				.values({ identifier, count: 1, resetTime: freshResetTime })
+				.onConflictDoUpdate({
+					target: rateLimits.identifier,
+					set: {
+						count: sql`CASE WHEN ${rateLimits.resetTime} <= now() THEN 1 ELSE ${rateLimits.count} + 1 END`,
+						resetTime: sql`CASE WHEN ${rateLimits.resetTime} <= now() THEN now() + make_interval(secs => ${windowSeconds}) ELSE ${rateLimits.resetTime} END`
+					}
+				})
+				.returning({ count: rateLimits.count, resetTime: rateLimits.resetTime });
 
-			const { count, reset_time } = result.rows[0];
-			const retryAfter = Math.max(0, Math.ceil((new Date(reset_time).getTime() - Date.now()) / 1000));
+			const { count, resetTime } = rows[0];
+			const retryAfter = Math.max(0, Math.ceil((new Date(resetTime).getTime() - Date.now()) / 1000));
 
 			if (count > maxAttempts) {
 				return { allowed: false, retryAfter };
@@ -51,7 +55,7 @@ export class RateLimiter {
 
 	async reset(identifier: string): Promise<void> {
 		try {
-			await pool.query('DELETE FROM rate_limits WHERE identifier = $1', [identifier]);
+			await db.delete(rateLimits).where(eq(rateLimits.identifier, identifier));
 		} catch (error) {
 			console.error('❌ RateLimiter reset error:', error);
 		}

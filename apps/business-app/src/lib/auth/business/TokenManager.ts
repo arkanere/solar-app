@@ -1,7 +1,9 @@
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { branches, businessAccounts, businesses, usBranches } from '@solar/db/schema';
+import { and, eq, isNotNull, notExists } from 'drizzle-orm';
 import { AUTH_ERRORS, SUCCESS_RESPONSE, ERROR_RESPONSE } from './AuthTypes';
 import { TokenSecurity } from './TokenSecurity';
-import { BRANCHES_TABLE, type AuthCountry } from './countryTables';
+import type { AuthCountry } from './countryTables';
 import type {
 	AuthErrorResponse,
 	TokenValidationSuccess,
@@ -20,19 +22,38 @@ export class TokenManager {
 			// Tokens are stored hashed at rest; match against the hash of the
 			// incoming raw token.
 			const tokenHash = TokenSecurity.hashToken(token);
-			const result = await pool.query(
-				`SELECT a.source_id AS id, p.businessname, p.slug, a.login_email, a.magic_link_token, a.isvisible, a.magic_link_token_expires_at
-				 FROM business_accounts a
-				 JOIN businesses p ON p.country_code = a.country_code AND p.source_id = a.source_id
-				 WHERE a.country_code = $1 AND p.slug = $2 AND a.magic_link_token = $3 AND a.magic_link_token IS NOT NULL`,
-				[this.country, businessSlug, tokenHash]
-			);
+			const rows = await db
+				.select({
+					id: businessAccounts.sourceId,
+					businessname: businesses.businessname,
+					slug: businesses.slug,
+					login_email: businessAccounts.loginEmail,
+					magic_link_token: businessAccounts.magicLinkToken,
+					isvisible: businessAccounts.isvisible,
+					magic_link_token_expires_at: businessAccounts.magicLinkTokenExpiresAt
+				})
+				.from(businessAccounts)
+				.innerJoin(
+					businesses,
+					and(
+						eq(businesses.countryCode, businessAccounts.countryCode),
+						eq(businesses.sourceId, businessAccounts.sourceId)
+					)
+				)
+				.where(
+					and(
+						eq(businessAccounts.countryCode, this.country),
+						eq(businesses.slug, businessSlug),
+						eq(businessAccounts.magicLinkToken, tokenHash),
+						isNotNull(businessAccounts.magicLinkToken)
+					)
+				);
 
-			if (result.rows.length === 0) {
+			if (rows.length === 0) {
 				return ERROR_RESPONSE('Invalid or expired magic link', AUTH_ERRORS.INVALID_TOKEN);
 			}
 
-			const business = result.rows[0];
+			const business = rows[0];
 
 			// Reject expired tokens (a NULL expiry is treated as expired).
 			if (TokenSecurity.isTokenExpired(business.magic_link_token_expires_at)) {
@@ -59,25 +80,49 @@ export class TokenManager {
 	}
 
 	async getBusinessByEmail(email: string): Promise<BusinessLookupSuccess | AuthErrorResponse> {
-		let client;
 		try {
-			client = await pool.connect();
+			const branchesTable = this.country === 'in' ? branches : usBranches;
+			const rows = await db
+				.select({
+					id: businessAccounts.sourceId,
+					businessname: businesses.businessname,
+					slug: businesses.slug,
+					login_email: businessAccounts.loginEmail,
+					isvisible: businessAccounts.isvisible
+				})
+				.from(businessAccounts)
+				.innerJoin(
+					businesses,
+					and(
+						eq(businesses.countryCode, businessAccounts.countryCode),
+						eq(businesses.sourceId, businessAccounts.sourceId)
+					)
+				)
+				.where(
+					and(
+						eq(businessAccounts.countryCode, this.country),
+						eq(businessAccounts.loginEmail, email),
+						eq(businessAccounts.isvisible, true),
+						notExists(
+							db
+								.select({ one: branchesTable.id })
+								.from(branchesTable)
+								.where(
+									and(
+										eq(branchesTable.branchId, businessAccounts.sourceId),
+										eq(branchesTable.isactive, true)
+									)
+								)
+						)
+					)
+				)
+				.limit(1);
 
-			const result = await client.query(
-				`SELECT a.source_id AS id, p.businessname, p.slug, a.login_email, a.isvisible
-				 FROM business_accounts a
-				 JOIN businesses p ON p.country_code = a.country_code AND p.source_id = a.source_id
-				 WHERE a.country_code = $1 AND a.login_email = $2 AND a.isvisible = true
-				   AND NOT EXISTS (SELECT 1 FROM ${BRANCHES_TABLE[this.country]} br WHERE br.branch_id = a.source_id AND br.isactive = true)
-				 LIMIT 1`,
-				[this.country, email]
-			);
-
-			if (result.rows.length === 0) {
+			if (rows.length === 0) {
 				return ERROR_RESPONSE('Business not found', AUTH_ERRORS.BUSINESS_NOT_FOUND);
 			}
 
-			const business = result.rows[0];
+			const business = rows[0];
 
 			return SUCCESS_RESPONSE({
 				business: {
@@ -91,26 +136,40 @@ export class TokenManager {
 		} catch (error) {
 			console.error('❌ Error getting business by email:', error);
 			return ERROR_RESPONSE('Database error during business lookup', AUTH_ERRORS.DATABASE_ERROR);
-		} finally {
-			if (client) client.release();
 		}
 	}
 
 	async getBusinessBySlug(businessSlug: string): Promise<BusinessLookupSuccess | AuthErrorResponse> {
 		try {
-			const result = await pool.query(
-				`SELECT a.source_id AS id, p.businessname, p.slug, a.login_email, a.isvisible
-				 FROM business_accounts a
-				 JOIN businesses p ON p.country_code = a.country_code AND p.source_id = a.source_id
-				 WHERE a.country_code = $1 AND p.slug = $2 AND a.isvisible = true`,
-				[this.country, businessSlug]
-			);
+			const rows = await db
+				.select({
+					id: businessAccounts.sourceId,
+					businessname: businesses.businessname,
+					slug: businesses.slug,
+					login_email: businessAccounts.loginEmail,
+					isvisible: businessAccounts.isvisible
+				})
+				.from(businessAccounts)
+				.innerJoin(
+					businesses,
+					and(
+						eq(businesses.countryCode, businessAccounts.countryCode),
+						eq(businesses.sourceId, businessAccounts.sourceId)
+					)
+				)
+				.where(
+					and(
+						eq(businessAccounts.countryCode, this.country),
+						eq(businesses.slug, businessSlug),
+						eq(businessAccounts.isvisible, true)
+					)
+				);
 
-			if (result.rows.length === 0) {
+			if (rows.length === 0) {
 				return ERROR_RESPONSE('Business not found', AUTH_ERRORS.BUSINESS_NOT_FOUND);
 			}
 
-			const business = result.rows[0];
+			const business = rows[0];
 
 			return SUCCESS_RESPONSE({
 				business: {
