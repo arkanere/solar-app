@@ -2,7 +2,6 @@
 // route (the literal /in and /us routes win while they exist).
 import type { RequestHandler } from '@sveltejs/kit';
 import { error } from '@sveltejs/kit';
-import { pool } from '$lib/server/db';
 import { generateSitemapEntries } from '$lib/server/sitemap';
 import { getCountry, isCountry } from '$lib/countries';
 
@@ -23,7 +22,7 @@ export const GET: RequestHandler = async ({ params }) => {
 	if (!params.country || !isCountry(params.country)) {
 		error(404, 'Unknown country');
 	}
-	const entries = await generateSitemapEntries(pool, getCountry(params.country));
+	const entries = await generateSitemapEntries(getCountry(params.country));
 
 	const parts: string[] = [
 		'<?xml version="1.0" encoding="UTF-8"?>',

@@ -6,7 +6,6 @@
 // The per-country sitemaps at /{cc}/sitemap.xml keep geo, installers and the
 // genuinely per-country static pages. Both are listed by /sitemap.xml.
 import type { RequestHandler } from '@sveltejs/kit';
-import { pool } from '$lib/server/db';
 import { generateContentSitemapEntries } from '$lib/server/sitemap';
 
 function escapeXml(unsafe: string): string {
@@ -23,7 +22,7 @@ function urlEntry(loc: string, lastmod: string, changefreq: string, priority: st
 }
 
 export const GET: RequestHandler = async () => {
-	const entries = await generateContentSitemapEntries(pool);
+	const entries = await generateContentSitemapEntries();
 
 	const parts: string[] = [
 		'<?xml version="1.0" encoding="UTF-8"?>',

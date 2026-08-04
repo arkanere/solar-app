@@ -1,4 +1,15 @@
-import type { Pool } from '@vercel/postgres';
+import { db } from './db';
+import {
+	authors,
+	businesses,
+	discoms,
+	geoLocations,
+	seoPages,
+	solarBrands,
+	solarFinancingBanks,
+	stateSubsidies
+} from '@solar/db/schema';
+import { and, asc, eq, exists, sql } from 'drizzle-orm';
 import type { CountryConfig } from '$lib/countries';
 import { geoUrl, installerUrl } from '$lib/countries/urls';
 
@@ -44,10 +55,25 @@ function staticPages(country: CountryConfig): SitemapEntry[] {
 	return pages;
 }
 
-export async function generateSitemapEntries(
-	pool: Pool,
-	country: CountryConfig
-): Promise<SitemapEntry[]> {
+// `EXISTS (... LOWER(b.col) = LOWER(g.col) ...)` compares LOWER() on both
+// sides, which the query builder cannot express — the correlated subquery
+// stays on the sql escape hatch.
+function businessesExistFor(...matches: ReturnType<typeof sql>[]) {
+	return exists(
+		db
+			.select({ one: sql`1` })
+			.from(businesses)
+			.where(
+				and(
+					eq(businesses.countryCode, geoLocations.countryCode),
+					...matches,
+					eq(businesses.isvisible, true)
+				)
+			)
+	);
+}
+
+export async function generateSitemapEntries(country: CountryConfig): Promise<SitemapEntry[]> {
 	const code = country.code;
 	const today = new Date().toISOString().split('T')[0];
 	const entries: SitemapEntry[] = staticPages(country).map((p) => ({
@@ -55,47 +81,61 @@ export async function generateSitemapEntries(
 		lastmod: p.lastmod || today
 	}));
 
-	const [businessesResult, geoLevel1Result, geoLevel2Result, geoCitiesResult] = await Promise.all([
-		pool.query(
-			`SELECT slug FROM businesses WHERE country_code = $1 AND isvisible = true ORDER BY slug ASC`,
-			[code]
-		),
-		pool.query(
-			`SELECT DISTINCT g.level1, g.level1_slug FROM geo_locations g
-			 WHERE g.country_code = $1 AND EXISTS (
-			   SELECT 1 FROM businesses b
-			   WHERE b.country_code = g.country_code
-			     AND LOWER(b.level1) = LOWER(g.level1) AND b.isvisible = true
-			 )
-			 ORDER BY g.level1 ASC`,
-			[code]
-		),
-		pool.query(
-			`SELECT DISTINCT g.level1, g.level1_slug, g.level2, g.level2_slug FROM geo_locations g
-			 WHERE g.country_code = $1 AND EXISTS (
-			   SELECT 1 FROM businesses b
-			   WHERE b.country_code = g.country_code
-			     AND LOWER(b.level2) = LOWER(g.level2) AND b.isvisible = true
-			 )
-			 ORDER BY g.level1, g.level2 ASC`,
-			[code]
-		),
-		pool.query(
-			`SELECT DISTINCT g.level1, g.level1_slug, g.level2, g.level2_slug, g.city, g.city_slug
-			 FROM geo_locations g
-			 WHERE g.country_code = $1 AND EXISTS (
-			   SELECT 1 FROM businesses b
-			   WHERE b.country_code = g.country_code
-			     AND LOWER(b.city) = LOWER(g.city)
-			     AND LOWER(b.level2) = LOWER(g.level2) AND b.isvisible = true
-			 )
-			 ORDER BY g.level1, g.level2, g.city ASC`,
-			[code]
-		)
+	const [businessRows, geoLevel1Rows, geoLevel2Rows, geoCityRows] = await Promise.all([
+		db
+			.select({ slug: businesses.slug })
+			.from(businesses)
+			.where(and(eq(businesses.countryCode, code), eq(businesses.isvisible, true)))
+			.orderBy(asc(businesses.slug)),
+		db
+			.selectDistinct({ level1: geoLocations.level1, level1_slug: geoLocations.level1Slug })
+			.from(geoLocations)
+			.where(
+				and(
+					eq(geoLocations.countryCode, code),
+					businessesExistFor(sql`LOWER(${businesses.level1}) = LOWER(${geoLocations.level1})`)
+				)
+			)
+			.orderBy(asc(geoLocations.level1)),
+		db
+			.selectDistinct({
+				level1: geoLocations.level1,
+				level1_slug: geoLocations.level1Slug,
+				level2: geoLocations.level2,
+				level2_slug: geoLocations.level2Slug
+			})
+			.from(geoLocations)
+			.where(
+				and(
+					eq(geoLocations.countryCode, code),
+					businessesExistFor(sql`LOWER(${businesses.level2}) = LOWER(${geoLocations.level2})`)
+				)
+			)
+			.orderBy(asc(geoLocations.level1), asc(geoLocations.level2)),
+		db
+			.selectDistinct({
+				level1: geoLocations.level1,
+				level1_slug: geoLocations.level1Slug,
+				level2: geoLocations.level2,
+				level2_slug: geoLocations.level2Slug,
+				city: geoLocations.city,
+				city_slug: geoLocations.citySlug
+			})
+			.from(geoLocations)
+			.where(
+				and(
+					eq(geoLocations.countryCode, code),
+					businessesExistFor(
+						sql`LOWER(${businesses.city}) = LOWER(${geoLocations.city})`,
+						sql`LOWER(${businesses.level2}) = LOWER(${geoLocations.level2})`
+					)
+				)
+			)
+			.orderBy(asc(geoLocations.level1), asc(geoLocations.level2), asc(geoLocations.city))
 	]);
 
 	// Business pages — priority 0.8
-	for (const row of businessesResult.rows) {
+	for (const row of businessRows) {
 		if (row.slug) {
 			entries.push({
 				loc: `${BASE_URL}${installerUrl(code, row.slug)}`,
@@ -107,7 +147,7 @@ export async function generateSitemapEntries(
 	}
 
 	// Geographic level1 hubs (states) — priority 0.9
-	for (const row of geoLevel1Result.rows) {
+	for (const row of geoLevel1Rows) {
 		entries.push({
 			loc: `${BASE_URL}${geoUrl(code, row.level1_slug)}`,
 			lastmod: today,
@@ -117,7 +157,7 @@ export async function generateSitemapEntries(
 	}
 
 	// Geographic level2 pillars (districts/counties) — priority 1.0
-	for (const row of geoLevel2Result.rows) {
+	for (const row of geoLevel2Rows) {
 		entries.push({
 			loc: `${BASE_URL}${geoUrl(code, row.level1_slug, row.level2_slug)}`,
 			lastmod: today,
@@ -127,7 +167,7 @@ export async function generateSitemapEntries(
 	}
 
 	// Geographic city pages — priority 0.7
-	for (const row of geoCitiesResult.rows) {
+	for (const row of geoCityRows) {
 		entries.push({
 			loc: `${BASE_URL}${geoUrl(code, row.level1_slug, row.level2_slug, row.city_slug)}`,
 			lastmod: today,
@@ -177,28 +217,53 @@ function contentStaticPages(): SitemapEntry[] {
 	];
 }
 
-export async function generateContentSitemapEntries(pool: Pool): Promise<SitemapEntry[]> {
+export async function generateContentSitemapEntries(): Promise<SitemapEntry[]> {
 	const today = new Date().toISOString().split('T')[0];
 	const entries: SitemapEntry[] = contentStaticPages().map((p) => ({
 		...p,
 		lastmod: p.lastmod || today
 	}));
 
-	const [seoPagesResult, brandsResult, subsidiesResult, discomsResult, banksResult, authorsResult] =
-		await Promise.all([
-			pool.query(
-				"SELECT slug, pillar_slug, page_type, updated_at FROM seo_pages WHERE status = 'published' ORDER BY slug"
-			),
-			pool.query(
-				"SELECT slug, product_category FROM solar_brands WHERE status = 'published' ORDER BY slug"
-			),
-			pool.query(
-				"SELECT state_slug FROM state_subsidies WHERE status = 'published' ORDER BY state_slug"
-			),
-			pool.query("SELECT slug FROM discoms WHERE status = 'published' ORDER BY slug"),
-			pool.query("SELECT slug FROM solar_financing_banks WHERE status = 'published' ORDER BY slug"),
-			pool.query(`SELECT slug FROM authors ORDER BY slug`)
-		]);
+	const [seoPageRows, brandRows, subsidyRows, discomRows, bankRows, authorRows] = await Promise.all([
+		db
+			.select({
+				slug: seoPages.slug,
+				pillar_slug: seoPages.pillarSlug,
+				page_type: seoPages.pageType,
+				// The schema types this timestamptz as `mode: 'string'`, so Drizzle
+				// hands back a string where the raw driver handed back a Date and
+				// this function called .toISOString(). Formatting in SQL keeps the
+				// output identical (and explicitly UTC) instead of depending on the
+				// session timezone of the string rendering.
+				updated_at: sql<
+					string | null
+				>`to_char(${seoPages.updatedAt} AT TIME ZONE 'UTC', 'YYYY-MM-DD')`
+			})
+			.from(seoPages)
+			.where(eq(seoPages.status, 'published'))
+			.orderBy(asc(seoPages.slug)),
+		db
+			.select({ slug: solarBrands.slug, product_category: solarBrands.productCategory })
+			.from(solarBrands)
+			.where(eq(solarBrands.status, 'published'))
+			.orderBy(asc(solarBrands.slug)),
+		db
+			.select({ state_slug: stateSubsidies.stateSlug })
+			.from(stateSubsidies)
+			.where(eq(stateSubsidies.status, 'published'))
+			.orderBy(asc(stateSubsidies.stateSlug)),
+		db
+			.select({ slug: discoms.slug })
+			.from(discoms)
+			.where(eq(discoms.status, 'published'))
+			.orderBy(asc(discoms.slug)),
+		db
+			.select({ slug: solarFinancingBanks.slug })
+			.from(solarFinancingBanks)
+			.where(eq(solarFinancingBanks.status, 'published'))
+			.orderBy(asc(solarFinancingBanks.slug)),
+		db.select({ slug: authors.slug }).from(authors).orderBy(asc(authors.slug))
+	]);
 
 	// SEO pages — pillar landing at /{pillar}, clusters at /{pillar}/{slug}.
 	//
@@ -206,9 +271,9 @@ export async function generateContentSitemapEntries(pool: Pool): Promise<Sitemap
 	// only cluster rows populate `pillar_slug`. Reading pillar_slug for pillars
 	// (as this did before stage 13) emitted seven literal ".../null" URLs — every
 	// pillar landing page was advertised as a 404 and no real one was listed.
-	for (const row of seoPagesResult.rows) {
+	for (const row of seoPageRows) {
 		const isPillar = row.page_type === 'pillar';
-		const lastmod = row.updated_at ? row.updated_at.toISOString().split('T')[0] : today;
+		const lastmod = row.updated_at ?? today;
 		const path = isPillar ? `/${row.slug}` : `/${row.pillar_slug}/${row.slug}`;
 		if (path.includes('/null')) continue;
 		entries.push({
@@ -220,7 +285,7 @@ export async function generateContentSitemapEntries(pool: Pool): Promise<Sitemap
 	}
 
 	// Brand pages — /solar-{product_category}/{slug} — priority 0.7
-	for (const row of brandsResult.rows) {
+	for (const row of brandRows) {
 		entries.push({
 			loc: `${BASE_URL}/solar-${row.product_category}/${row.slug}`,
 			lastmod: today,
@@ -230,7 +295,7 @@ export async function generateContentSitemapEntries(pool: Pool): Promise<Sitemap
 	}
 
 	// State subsidy pages — priority 0.9
-	for (const row of subsidiesResult.rows) {
+	for (const row of subsidyRows) {
 		entries.push({
 			loc: `${BASE_URL}/solar-subsidy/${row.state_slug}`,
 			lastmod: today,
@@ -240,7 +305,7 @@ export async function generateContentSitemapEntries(pool: Pool): Promise<Sitemap
 	}
 
 	// Discom pages — priority 0.7
-	for (const row of discomsResult.rows) {
+	for (const row of discomRows) {
 		entries.push({
 			loc: `${BASE_URL}/solar-subsidy/${row.slug}`,
 			lastmod: today,
@@ -250,7 +315,7 @@ export async function generateContentSitemapEntries(pool: Pool): Promise<Sitemap
 	}
 
 	// Financing bank pages — priority 0.7
-	for (const row of banksResult.rows) {
+	for (const row of bankRows) {
 		entries.push({
 			loc: `${BASE_URL}/solar-financing/${row.slug}`,
 			lastmod: today,
@@ -260,7 +325,7 @@ export async function generateContentSitemapEntries(pool: Pool): Promise<Sitemap
 	}
 
 	// Author profiles — priority 0.5
-	for (const row of authorsResult.rows) {
+	for (const row of authorRows) {
 		entries.push({
 			loc: `${BASE_URL}/authors/${row.slug}`,
 			lastmod: today,
