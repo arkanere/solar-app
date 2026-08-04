@@ -1,6 +1,5 @@
 // src/routes/api/submitLead/+server.ts
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
 import { json } from '@sveltejs/kit';
 import { syncLeadToUnified } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
@@ -25,7 +24,6 @@ interface CountyResult {
 }
 
 export const POST: RequestHandler = async ({ request, fetch }) => {
-	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
 		const data = (await request.json()) as SubmitLeadRequest;

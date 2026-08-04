@@ -1,5 +1,4 @@
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import bcrypt from 'bcrypt';
@@ -15,7 +14,6 @@ interface BusinessResetRow {
 }
 
 export const POST: RequestHandler = async ({ request, getClientAddress }) => {
-	const pool = createPool({ connectionString: POSTGRES_URL });
 	// Generic error message to prevent account enumeration
 	const genericError = 'Invalid or expired password reset link';
 

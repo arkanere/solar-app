@@ -1,5 +1,4 @@
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { BusinessAuthService } from '$lib/in/auth/business';
@@ -11,7 +10,6 @@ interface DeleteProposalRequest {
 }
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
-	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
 		// Validate session and authorization
@@ -93,7 +91,5 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			{ success: false, error: 'Failed to delete proposal' },
 			{ status: 500 }
 		);
-	} finally {
-		await pool.end();
 	}
 };

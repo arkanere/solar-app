@@ -1,6 +1,5 @@
 import type { PageServerLoad } from './$types';
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
 import { US_LEAD_COLUMNS } from '$lib/server/unifiedRead';
 
 export const prerender = false;
@@ -40,7 +39,6 @@ interface PageData {
 }
 
 export const load: PageServerLoad<PageData> = async ({ params }) => {
-	const pool = createPool({ connectionString: POSTGRES_URL });
 	const { business_slug } = params;
 
 	try {

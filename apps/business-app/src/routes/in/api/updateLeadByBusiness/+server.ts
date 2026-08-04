@@ -1,6 +1,5 @@
 // api/updateLeadByBusiness/server.ts
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
 import { json } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/in/auth/business';
 import type { RequestHandler } from './$types';
@@ -14,7 +13,6 @@ import { syncLeadToUnified } from '$lib/server/unifiedSync';
  * - Auto-creates project when stage moves to Won (3)
  */
 export const POST: RequestHandler = async ({ request, cookies }) => {
-	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
 		// Validate session and authorization

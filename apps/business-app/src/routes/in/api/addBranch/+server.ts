@@ -1,6 +1,5 @@
 // src/routes/api/addBranch/+server.ts
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
 import { json } from '@sveltejs/kit';
 import { randomBytes } from 'crypto';
 import { BusinessAuthService } from '$lib/in/auth/business';
@@ -16,7 +15,6 @@ function generateBranchSlug(mainBusinessSlug: string): string {
 }
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
-	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
 		// Validate session and authorization
@@ -164,8 +162,5 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			{ success: false, error: 'Failed to add branch office' },
 			{ status: 500 }
 		);
-	} finally {
-		// Release the pool connection
-		await pool.end();
 	}
 };

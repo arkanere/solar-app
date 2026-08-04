@@ -1,6 +1,5 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
 import { CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } from '$env/static/private';
 import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
 import { v2 as cloudinary } from 'cloudinary';
@@ -13,7 +12,6 @@ cloudinary.config({
 	secure: true
 });
 
-const pool = createPool({ connectionString: POSTGRES_URL });
 
 interface CloudinaryUploadResult {
 	url: string;

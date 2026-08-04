@@ -1,11 +1,9 @@
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
 import { json } from '@sveltejs/kit';
 import { sendEmail } from '$lib/in/sendEmail';
 import { mintUserToken } from '$lib/server/magicLink';
 import type { RequestHandler } from './$types';
 
-const pool = createPool({ connectionString: POSTGRES_URL });
 
 interface LeadRow {
 	name: string;

@@ -1,6 +1,5 @@
 import type { PageServerLoad } from './$types';
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
 import { error } from '@sveltejs/kit';
 
 export const prerender = false;
@@ -30,7 +29,6 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		throw error(403, 'Not authorized');
 	}
 
-	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
 		// First, get the main business profile using the slug
@@ -82,7 +80,5 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 			errorMessage: 'Failed to load branches',
 			branches: []
 		};
-	} finally {
-		await pool.end();
 	}
 };

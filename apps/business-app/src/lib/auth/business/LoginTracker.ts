@@ -1,10 +1,8 @@
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
 import { AUTH_CONFIG, type LoginTrackerResult } from './AuthTypes';
 import { LEGACY_BUSINESS_TABLE, type AuthCountry } from './countryTables';
 import { syncAccountToUnified, syncInSplitTables } from '$lib/server/unifiedSync';
 
-const pool = createPool({ connectionString: POSTGRES_URL });
 
 export class LoginTracker {
 	constructor(private readonly country: AuthCountry) {}

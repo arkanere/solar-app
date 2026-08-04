@@ -1,5 +1,4 @@
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
 import { json } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/in/auth/business';
 import type { RequestHandler } from './$types';
@@ -15,7 +14,6 @@ interface ReferrerResult {
 }
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
-	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
 		// Validate session and authorization
@@ -86,7 +84,5 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		return json({ success: false, error: 'Failed to delete referrer' }, { status: 500 });
-	} finally {
-		await pool.end();
 	}
 };

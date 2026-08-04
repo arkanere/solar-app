@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import { pool } from '$lib/server/db';
 import type { Business, AuthResponse } from '$lib/types/auth';
 import { AUTH_ERRORS, SUCCESS_RESPONSE, ERROR_RESPONSE } from '$lib/types/auth';
 import type { AuthCountry } from './countryTables';
@@ -18,10 +19,6 @@ export class PasswordManager {
 			}
 
 			// Get business with password hash from database
-			const { createPool } = await import('@vercel/postgres');
-			const { POSTGRES_URL } = await import('$env/static/private');
-
-			const pool = createPool({ connectionString: POSTGRES_URL });
 			let client;
 
 			try {

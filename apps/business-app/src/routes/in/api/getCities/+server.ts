@@ -1,9 +1,7 @@
-import { createPool } from '@vercel/postgres';
+import { pool } from '$lib/server/db';
 import { json } from '@sveltejs/kit';
-import { POSTGRES_URL } from '$env/static/private';
 import type { RequestHandler } from '@sveltejs/kit';
 
-const pool = createPool({ connectionString: POSTGRES_URL });
 
 export const POST: RequestHandler = async ({ request }) => {
 	const body = await request.json() as { district?: string };

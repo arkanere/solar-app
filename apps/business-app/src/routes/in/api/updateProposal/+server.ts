@@ -1,5 +1,4 @@
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
 import { json } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/in/auth/business';
 import { ownsBusinessSlug } from '$lib/in/ownsBusinessSlug';
@@ -7,7 +6,6 @@ import type { RequestHandler } from './$types';
 import type { ProposalPayload, Proposal } from '$lib/types/lead';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
-	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
 		// Validate session before any proposal mutation

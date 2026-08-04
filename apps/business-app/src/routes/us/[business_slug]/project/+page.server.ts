@@ -1,6 +1,5 @@
 import type { PageServerLoad } from './$types';
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
 import { error } from '@sveltejs/kit';
 import { US_BUSINESS_COLUMNS } from '$lib/server/unifiedRead';
 
@@ -47,7 +46,6 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		throw error(403, 'Not authorized');
 	}
 
-	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
 		// First, get the main business using the slug (unified table: profile
@@ -103,7 +101,5 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 			errorMessage: 'Failed to load projects',
 			projects: []
 		};
-	} finally {
-		await pool.end();
 	}
 };

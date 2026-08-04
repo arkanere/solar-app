@@ -1,5 +1,4 @@
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
 
@@ -18,7 +17,6 @@ export const POST: RequestHandler = async ({ request }) => {
 			return json({ success: false, error: 'Invalid pincode format. Must be 6 digits.' });
 		}
 
-		const pool = createPool({ connectionString: POSTGRES_URL });
 
 		const result = await pool.query<{ district: string }>(
 			'SELECT district FROM pincode_mapping WHERE pincode = $1',

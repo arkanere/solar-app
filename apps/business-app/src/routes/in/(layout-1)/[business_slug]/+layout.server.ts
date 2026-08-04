@@ -1,6 +1,5 @@
 import { redirect } from '@sveltejs/kit';
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
 import type { LayoutServerLoad } from './$types';
 import type { SessionData } from '$lib/types/auth';
 import { SessionManager } from '$lib/in/auth/business';
@@ -71,7 +70,6 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 			}
 
 			// Load basic business info for sidebar
-			const pool = createPool({ connectionString: POSTGRES_URL });
 			try {
 				const businessResult = await pool.query(
 					`SELECT source_id AS id, businessname, slug, email, description, website, google_maps_link, brands

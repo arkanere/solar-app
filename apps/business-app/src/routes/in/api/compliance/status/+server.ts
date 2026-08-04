@@ -1,5 +1,4 @@
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/in/auth/business';
 import { checkLeadDataPolicy, getActiveLeadDataPolicy } from '$lib/compliance';
@@ -13,7 +12,6 @@ export const GET: RequestHandler = async ({ cookies }) => {
 	}
 
 	const businessId = sessionResult.session.businessId;
-	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
 		const [status, policy] = await Promise.all([

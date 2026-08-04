@@ -1,12 +1,10 @@
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
 import { json } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/in/auth/business';
 import { syncBusinessToUnified, syncAccountToUnified, syncInSplitTables } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
-	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
 		const authService = new BusinessAuthService();
@@ -69,7 +67,5 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			{ success: false, error: 'Failed to delete branch' },
 			{ status: 500 }
 		);
-	} finally {
-		await pool.end();
 	}
 };

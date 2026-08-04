@@ -1,6 +1,5 @@
 import type { PageServerLoad } from './$types';
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
 import { error } from '@sveltejs/kit';
 import {
 	getActiveLeadDataPolicy,
@@ -38,7 +37,6 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		throw error(403, 'Not authorized');
 	}
 
-	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
 		const businessResult = await pool.query<{ id: number }>(
@@ -81,7 +79,5 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 	} catch (err) {
 		console.error('❌ Error loading compliance data:', err);
 		return { errorMessage: 'Failed to load compliance data', history: [] };
-	} finally {
-		await pool.end();
 	}
 };

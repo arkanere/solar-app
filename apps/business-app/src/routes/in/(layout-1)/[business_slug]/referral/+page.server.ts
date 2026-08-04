@@ -1,6 +1,5 @@
 import type { PageServerLoad } from './$types';
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
 import { error } from '@sveltejs/kit';
 
 export const prerender = false;
@@ -30,7 +29,6 @@ interface PageData {
 }
 
 export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
-	const pool = createPool({ connectionString: POSTGRES_URL });
 	const businessSlug = params.business_slug;
 
 	try {
@@ -110,7 +108,5 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 
 		console.error('❌ Error loading referrers:', err);
 		throw error(500, 'Failed to load referrers');
-	} finally {
-		await pool.end();
 	}
 };

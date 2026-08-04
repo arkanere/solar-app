@@ -1,11 +1,9 @@
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/in/auth/business';
 import { syncLeadToUnified } from '$lib/server/unifiedSync';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
-	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
 		// Validate session and authorization

@@ -1,5 +1,4 @@
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
 import { AUTH_ERRORS, SUCCESS_RESPONSE, ERROR_RESPONSE } from './AuthTypes';
 import { TokenSecurity } from './TokenSecurity';
 import { BRANCHES_TABLE, type AuthCountry } from './countryTables';
@@ -9,7 +8,6 @@ import type {
 	BusinessLookupSuccess
 } from '$lib/types/auth';
 
-const pool = createPool({ connectionString: POSTGRES_URL });
 
 export class TokenManager {
 	constructor(private readonly country: AuthCountry) {}

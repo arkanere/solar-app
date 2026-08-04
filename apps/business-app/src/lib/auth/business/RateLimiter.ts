@@ -7,15 +7,13 @@
 // Fail-open: if the store is unreachable we allow the request rather than block
 // logins/resets on a DB hiccup. The limiter is a throttle, not an auth boundary.
 
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { pool } from '$lib/server/db';
 
 interface RateLimitResult {
 	allowed: boolean;
 	retryAfter: number;
 }
 
-const pool = createPool({ connectionString: POSTGRES_URL });
 
 export class RateLimiter {
 	async checkLimit(
