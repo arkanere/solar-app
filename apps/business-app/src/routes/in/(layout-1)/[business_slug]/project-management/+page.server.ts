@@ -1,5 +1,7 @@
 import type { PageServerLoad } from './$types';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { businesses, leads, projectManagement } from '@solar/db/schema';
+import { and, desc, eq } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 
 export const prerender = false;
@@ -33,41 +35,41 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 
 	try {
 		// First get the business information from slug
-		const businessResult = await pool.query(
-			`SELECT source_id AS id, businessname FROM businesses WHERE country_code = 'in' AND slug = $1`,
-			[businessSlug]
-		);
+		const businessRows = await db
+			.select({ id: businesses.sourceId, businessname: businesses.businessname })
+			.from(businesses)
+			.where(and(eq(businesses.countryCode, 'in'), eq(businesses.slug, businessSlug)));
 
-		if (businessResult.rows.length === 0) {
+		if (businessRows.length === 0) {
 			throw error(404, 'Business not found');
 		}
 
-		const business = businessResult.rows[0] as Business;
+		const business = businessRows[0] as unknown as Business;
 		const businessId = business.id;
 
 		// Get all projects for this business with lead information
-		const projectsResult = await pool.query(
-			`
-			SELECT
-				pm.id,
-				pm.lead_id,
-				pm.stage,
-				pm.created_at,
-				pm.last_updated,
-				l.name as customer_name,
-				l.email,
-				l.phone,
-				l.level2 as district,
-				l.postal_code as pin_code
-			FROM project_management pm
-			INNER JOIN leads l ON l.country_code = 'in' AND pm.lead_id = l.source_id
-			WHERE l.business_id = $1
-			ORDER BY pm.last_updated DESC
-		`,
-			[businessId]
-		);
+		const projectRows = await db
+			.select({
+				id: projectManagement.id,
+				lead_id: projectManagement.leadId,
+				stage: projectManagement.stage,
+				created_at: projectManagement.createdAt,
+				last_updated: projectManagement.lastUpdated,
+				customer_name: leads.name,
+				email: leads.email,
+				phone: leads.phone,
+				district: leads.level2,
+				pin_code: leads.postalCode
+			})
+			.from(projectManagement)
+			.innerJoin(
+				leads,
+				and(eq(leads.countryCode, 'in'), eq(projectManagement.leadId, leads.sourceId))
+			)
+			.where(eq(leads.businessId, businessId))
+			.orderBy(desc(projectManagement.lastUpdated));
 
-		const projects = projectsResult.rows as ProjectManagement[];
+		const projects = projectRows as unknown as ProjectManagement[];
 
 		return {
 			business,

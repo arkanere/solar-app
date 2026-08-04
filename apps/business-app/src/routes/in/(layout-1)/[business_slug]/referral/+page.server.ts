@@ -1,5 +1,7 @@
 import type { PageServerLoad } from './$types';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { businesses, inReferrers } from '@solar/db/schema';
+import { and, desc, eq } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 
 export const prerender = false;
@@ -41,38 +43,35 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		}
 
 		// First get the business information from slug
-		const businessResult = await pool.query(
-			`SELECT source_id AS id, businessname, slug FROM businesses WHERE country_code = 'in' AND slug = $1`,
-			[businessSlug]
-		);
+		const businessRows = await db
+			.select({ id: businesses.sourceId, businessname: businesses.businessname, slug: businesses.slug })
+			.from(businesses)
+			.where(and(eq(businesses.countryCode, 'in'), eq(businesses.slug, businessSlug)));
 
-		if (businessResult.rows.length === 0) {
+		if (businessRows.length === 0) {
 			throw error(404, 'Business not found');
 		}
 
-		const business = businessResult.rows[0] as Business;
+		const business = businessRows[0] as unknown as Business;
 
 		// Get all referrers for this business from in_referrers table
-		const referrersResult = await pool.query(
-			`
-			SELECT
-				id,
-				business_id,
-				name,
-				slug,
-				phone,
-				email,
-				notes,
-				created_at,
-				updated_at
-			FROM in_referrers
-			WHERE business_id = $1
-			ORDER BY created_at DESC
-		`,
-			[business.id]
-		);
+		const referrerRows = await db
+			.select({
+				id: inReferrers.id,
+				business_id: inReferrers.businessId,
+				name: inReferrers.name,
+				slug: inReferrers.slug,
+				phone: inReferrers.phone,
+				email: inReferrers.email,
+				notes: inReferrers.notes,
+				created_at: inReferrers.createdAt,
+				updated_at: inReferrers.updatedAt
+			})
+			.from(inReferrers)
+			.where(eq(inReferrers.businessId, business.id))
+			.orderBy(desc(inReferrers.createdAt));
 
-		const referrers = (referrersResult.rows || []) as Referrer[];
+		const referrers = (referrerRows || []) as unknown as Referrer[];
 
 		return {
 			business,
@@ -85,13 +84,13 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 
 			// Still try to get business info
 			try {
-				const businessResult = await pool.query(
-					`SELECT source_id AS id, businessname, slug FROM businesses WHERE country_code = 'in' AND slug = $1`,
-					[businessSlug]
-				);
+				const fallbackRows = await db
+					.select({ id: businesses.sourceId, businessname: businesses.businessname, slug: businesses.slug })
+					.from(businesses)
+					.where(and(eq(businesses.countryCode, 'in'), eq(businesses.slug, businessSlug)));
 
 				return {
-					business: businessResult.rows[0] as Business || undefined,
+					business: (fallbackRows[0] as unknown as Business) || undefined,
 					referrers: [],
 					error: 'Referrers table not created. Please contact administrator.'
 				};

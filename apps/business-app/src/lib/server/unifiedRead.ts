@@ -41,3 +41,122 @@ export const US_BUSINESS_COLUMNS = `
 	services, tax_id AS ein, level1 AS state, level2 AS county, city,
 	postal_code AS zipcode, rscore, tag, notes, businessfilled, tier3,
 	isvisible, created_at`;
+
+// ── Drizzle equivalents ─────────────────────────────────────────────────────
+// Typed selection maps mirroring the string projections above, for converted
+// queries: db.select(IN_LEAD_SELECTION).from(leads)... Same legacy-name
+// aliasing; both forms coexist until the raw-SQL call sites finish migrating.
+
+import { businesses, leads } from '@solar/db/schema';
+
+export const IN_LEAD_SELECTION = {
+	id: leads.sourceId,
+	name: leads.name,
+	phone: leads.phone,
+	pin_code: leads.postalCode,
+	type: leads.type,
+	comment: leads.comment,
+	created_at: leads.createdAt,
+	svnotes: leads.svnotes,
+	urlparams: leads.urlparams,
+	isvisible: leads.isvisible,
+	email: leads.email,
+	category: leads.category,
+	district: leads.level2,
+	stage: leads.stage,
+	status: leads.status,
+	claim_count: leads.claimCount,
+	original_id: leads.originalId,
+	business_id: leads.businessId,
+	email_invite_count: leads.emailInviteCount,
+	sv_comment_for_businesses: leads.svCommentForBusinesses,
+	reference_uuid: leads.referenceUuid,
+	business_notes: leads.businessNotes,
+	state: leads.level1,
+	qualification_score: leads.qualificationScore,
+	bill_url: leads.billUrl,
+	bill_cloudinary_public_id: leads.billCloudinaryPublicId,
+	bill_format: leads.billFormat,
+	bill_uploaded_at: leads.billUploadedAt,
+	marketing_consent: leads.marketingConsent
+};
+
+export const US_LEAD_SELECTION = {
+	id: leads.sourceId,
+	name: leads.name,
+	phone: leads.phone,
+	zipcode: leads.postalCode,
+	type: leads.type,
+	comment: leads.comment,
+	created_at: leads.createdAt,
+	svnotes: leads.svnotes,
+	urlparams: leads.urlparams,
+	isvisible: leads.isvisible,
+	email: leads.email,
+	category: leads.category,
+	county: leads.level2,
+	stage: leads.stage,
+	status: leads.status,
+	claim_count: leads.claimCount,
+	original_id: leads.originalId,
+	business_id: leads.businessId,
+	email_invite_count: leads.emailInviteCount,
+	sv_comment_for_businesses: leads.svCommentForBusinesses,
+	marketing_consent: leads.marketingConsent
+};
+
+export const IN_BUSINESS_SELECTION = {
+	id: businesses.sourceId,
+	slug: businesses.slug,
+	businessname: businesses.businessname,
+	email: businesses.email,
+	phonenumber: businesses.phonenumber,
+	whatsapp: businesses.whatsapp,
+	description: businesses.description,
+	website: businesses.website,
+	instagram_id: businesses.instagramId,
+	google_maps_link: businesses.googleMapsLink,
+	address: businesses.address,
+	pluscode: businesses.pluscode,
+	services: businesses.services,
+	brands: businesses.brands,
+	gstn: businesses.taxId,
+	state: businesses.level1,
+	district: businesses.level2,
+	city: businesses.city,
+	pincode: businesses.postalCode,
+	rscore: businesses.rscore,
+	tag: businesses.tag,
+	notes: businesses.notes,
+	businessfilled: businesses.businessfilled,
+	tier3: businesses.tier3,
+	isvisible: businesses.isvisible
+};
+
+export const US_BUSINESS_SELECTION = {
+	id: businesses.sourceId,
+	slug: businesses.slug,
+	businessname: businesses.businessname,
+	email: businesses.email,
+	phonenumber: businesses.phonenumber,
+	whatsapp: businesses.whatsapp,
+	description: businesses.description,
+	website: businesses.website,
+	instagram_id: businesses.instagramId,
+	google_maps_link: businesses.googleMapsLink,
+	address: businesses.address,
+	pluscode: businesses.pluscode,
+	services: businesses.services,
+	ein: businesses.taxId,
+	state: businesses.level1,
+	county: businesses.level2,
+	city: businesses.city,
+	zipcode: businesses.postalCode,
+	rscore: businesses.rscore,
+	tag: businesses.tag,
+	notes: businesses.notes,
+	businessfilled: businesses.businessfilled,
+	tier3: businesses.tier3,
+	isvisible: businesses.isvisible,
+	created_at: businesses.createdAt
+};

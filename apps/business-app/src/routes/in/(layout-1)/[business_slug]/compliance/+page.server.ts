@@ -1,5 +1,7 @@
 import type { PageServerLoad } from './$types';
-import { pool } from '$lib/server/db';
+import { db, pool } from '$lib/server/db';
+import { businesses } from '@solar/db/schema';
+import { and, eq } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 import {
 	getActiveLeadDataPolicy,
@@ -39,16 +41,16 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 
 
 	try {
-		const businessResult = await pool.query<{ id: number }>(
-			`SELECT source_id AS id FROM businesses WHERE country_code = 'in' AND slug = $1`,
-			[businessSlug]
-		);
+		const businessRows = await db
+			.select({ id: businesses.sourceId })
+			.from(businesses)
+			.where(and(eq(businesses.countryCode, 'in'), eq(businesses.slug, businessSlug)));
 
-		if (businessResult.rows.length === 0) {
+		if (businessRows.length === 0) {
 			return { errorMessage: 'Business not found', history: [] };
 		}
 
-		const businessId = businessResult.rows[0].id;
+		const businessId = businessRows[0].id as number;
 
 		const [policy, acceptance, history] = await Promise.all([
 			getActiveLeadDataPolicy(pool),

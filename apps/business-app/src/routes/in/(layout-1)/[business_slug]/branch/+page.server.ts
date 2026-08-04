@@ -1,6 +1,34 @@
 import type { PageServerLoad } from './$types';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { branches as branchesTable, businesses } from '@solar/db/schema';
+import { and, eq } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
+
+const BRANCH_BUSINESS_SELECTION = {
+	id: businesses.sourceId,
+	slug: businesses.slug,
+	businessname: businesses.businessname,
+	email: businesses.email,
+	phonenumber: businesses.phonenumber,
+	whatsapp: businesses.whatsapp,
+	description: businesses.description,
+	website: businesses.website,
+	instagram_id: businesses.instagramId,
+	google_maps_link: businesses.googleMapsLink,
+	address: businesses.address,
+	pluscode: businesses.pluscode,
+	services: businesses.services,
+	brands: businesses.brands,
+	gstn: businesses.taxId,
+	state: businesses.level1,
+	district: businesses.level2,
+	city: businesses.city,
+	pincode: businesses.postalCode,
+	rscore: businesses.rscore,
+	tag: businesses.tag,
+	businessfilled: businesses.businessfilled,
+	isvisible: businesses.isvisible
+};
 
 export const prerender = false;
 
@@ -32,41 +60,31 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 
 	try {
 		// First, get the main business profile using the slug
-		const mainBusinessQuery = `
-      SELECT source_id AS id, slug, businessname, email, phonenumber, whatsapp,
-        description, website, instagram_id, google_maps_link, address, pluscode,
-        services, brands, tax_id AS gstn, level1 AS state, level2 AS district,
-        city, postal_code AS pincode, rscore, tag, businessfilled, isvisible
-      FROM businesses
-      WHERE country_code = 'in' AND slug = $1
-    `;
+		const mainBusinessRows = await db
+			.select(BRANCH_BUSINESS_SELECTION)
+			.from(businesses)
+			.where(and(eq(businesses.countryCode, 'in'), eq(businesses.slug, businessSlug)));
 
-		const mainBusinessResult = await pool.query(mainBusinessQuery, [businessSlug]);
-
-		if (mainBusinessResult.rows.length === 0) {
+		if (mainBusinessRows.length === 0) {
 			return {
 				errorMessage: 'Business not found',
 				branches: []
 			};
 		}
 
-		const mainBusiness = mainBusinessResult.rows[0] as Business;
+		const mainBusiness = mainBusinessRows[0] as unknown as Business;
 		const mainBusinessId = mainBusiness.id;
 
 		// Get all branch offices linked to this main business
-		const branchesQuery = `
-      SELECT b.source_id AS id, b.slug, b.businessname, b.email, b.phonenumber,
-        b.whatsapp, b.description, b.website, b.instagram_id, b.google_maps_link,
-        b.address, b.pluscode, b.services, b.brands, b.tax_id AS gstn,
-        b.level1 AS state, b.level2 AS district, b.city, b.postal_code AS pincode,
-        b.rscore, b.tag, b.businessfilled, b.isvisible
-      FROM branches br
-      JOIN businesses b ON b.country_code = 'in' AND br.branch_id = b.source_id
-      WHERE br.main_id = $1 AND br.isactive = true
-    `;
-
-		const branchesResult = await pool.query(branchesQuery, [mainBusinessId]);
-		const branches = branchesResult.rows as Business[];
+		const branchRows = await db
+			.select(BRANCH_BUSINESS_SELECTION)
+			.from(branchesTable)
+			.innerJoin(
+				businesses,
+				and(eq(businesses.countryCode, 'in'), eq(branchesTable.branchId, businesses.sourceId))
+			)
+			.where(and(eq(branchesTable.mainId, mainBusinessId), eq(branchesTable.isactive, true)));
+		const branches = branchRows as unknown as Business[];
 
 		// Also include the main business in the response
 		return {

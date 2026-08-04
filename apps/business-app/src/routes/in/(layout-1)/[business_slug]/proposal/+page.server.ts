@@ -1,5 +1,7 @@
 import type { PageServerLoad } from './$types';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { businesses, inProposals } from '@solar/db/schema';
+import { and, desc, eq } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 
 export const prerender = false;
@@ -35,38 +37,38 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 
 	try {
 		// First get the business information from slug
-		const businessResult = await pool.query(
-			`SELECT source_id AS id, businessname, slug FROM businesses WHERE country_code = 'in' AND slug = $1`,
-			[businessSlug]
-		);
+		const businessRows = await db
+			.select({ id: businesses.sourceId, businessname: businesses.businessname, slug: businesses.slug })
+			.from(businesses)
+			.where(and(eq(businesses.countryCode, 'in'), eq(businesses.slug, businessSlug)));
 
-		if (businessResult.rows.length === 0) {
+		if (businessRows.length === 0) {
 			throw error(404, 'Business not found');
 		}
 
-		const business = businessResult.rows[0] as Business;
+		const business = businessRows[0] as unknown as Business;
 
 		// Get proposals filtered by business slug
-		const proposalsResult = await pool.query(`
-			SELECT
-				id,
-				customer_name,
-				phone_number,
-				address,
-				email,
-				system_capacity_kw,
-				panels_brand_model,
-				number_of_panels,
-				inverter_brand_model,
-				notes,
-				created_at,
-				updated_at
-			FROM in_proposals
-			WHERE business_slug = $1
-			ORDER BY created_at DESC
-		`, [businessSlug]);
+		const proposalRows = await db
+			.select({
+				id: inProposals.id,
+				customer_name: inProposals.customerName,
+				phone_number: inProposals.phoneNumber,
+				address: inProposals.address,
+				email: inProposals.email,
+				system_capacity_kw: inProposals.systemCapacityKw,
+				panels_brand_model: inProposals.panelsBrandModel,
+				number_of_panels: inProposals.numberOfPanels,
+				inverter_brand_model: inProposals.inverterBrandModel,
+				notes: inProposals.notes,
+				created_at: inProposals.createdAt,
+				updated_at: inProposals.updatedAt
+			})
+			.from(inProposals)
+			.where(eq(inProposals.businessSlug, businessSlug))
+			.orderBy(desc(inProposals.createdAt));
 
-		const proposals = proposalsResult.rows as Proposal[];
+		const proposals = proposalRows as unknown as Proposal[];
 
 		return {
 			business,

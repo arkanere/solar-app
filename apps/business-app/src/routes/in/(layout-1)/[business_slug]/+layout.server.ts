@@ -1,18 +1,20 @@
 import { redirect } from '@sveltejs/kit';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { branches, businesses, leads, projects } from '@solar/db/schema';
+import { and, count, eq, gt, inArray, sql } from 'drizzle-orm';
 import type { LayoutServerLoad } from './$types';
 import type { SessionData } from '$lib/types/auth';
 import { SessionManager } from '$lib/in/auth/business';
 
 interface BusinessRow {
-	id: number;
-	businessname: string;
-	slug: string;
-	email: string;
-	description?: string;
-	website?: string;
-	google_maps_link?: string;
-	brands?: number[];
+	id: number | null;
+	businessname: string | null;
+	slug: string | null;
+	email: string | null;
+	description?: string | null;
+	website?: string | null;
+	google_maps_link?: string | null;
+	brands?: number[] | null;
 }
 
 export interface ClaimGateStatus {
@@ -71,49 +73,65 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 
 			// Load basic business info for sidebar
 			try {
-				const businessResult = await pool.query(
-					`SELECT source_id AS id, businessname, slug, email, description, website, google_maps_link, brands
-					 FROM businesses WHERE country_code = 'in' AND slug = $1 LIMIT 1`,
-					[business_slug]
-				);
+				const businessRows = await db
+					.select({
+						id: businesses.sourceId,
+						businessname: businesses.businessname,
+						slug: businesses.slug,
+						email: businesses.email,
+						description: businesses.description,
+						website: businesses.website,
+						google_maps_link: businesses.googleMapsLink,
+						brands: businesses.brands
+					})
+					.from(businesses)
+					.where(and(eq(businesses.countryCode, 'in'), eq(businesses.slug, business_slug)))
+					.limit(1);
 
-				if (businessResult.rows.length > 0) {
-					const business = businessResult.rows[0] as BusinessRow;
-					const businessId = business.id;
+				if (businessRows.length > 0) {
+					const business: BusinessRow = businessRows[0];
+					const businessId = business.id as number;
 
 					// Get all branch IDs so lead counts include branch-assigned leads
-					const branchesRes = await pool.query(
-						`SELECT branch_id FROM branches WHERE main_id = $1 AND isactive = true`,
-						[businessId]
+					const branchRows = await db
+						.select({ branch_id: branches.branchId })
+						.from(branches)
+						.where(and(eq(branches.mainId, businessId), eq(branches.isactive, true)));
+					const allBusinessIds = [businessId, ...branchRows.map((r) => r.branch_id)];
+
+					const claimedLeadWhere = and(
+						eq(leads.countryCode, 'in'),
+						inArray(leads.businessId, allBusinessIds),
+						eq(leads.category, 2),
+						eq(leads.isvisible, true)
 					);
-					const allBusinessIds = [businessId, ...branchesRes.rows.map((r: { branch_id: number }) => r.branch_id)];
 
 					const [claimedRes, staleRes, projectsRes, recentProjectRes] = await Promise.all([
-						pool.query(
-							`SELECT COUNT(*) as count FROM leads
-							 WHERE country_code = 'in' AND business_id = ANY($1) AND category = 2 AND isvisible = true`,
-							[allBusinessIds]
-						),
-						pool.query(
-							`SELECT COUNT(*) as count FROM leads
-							 WHERE country_code = 'in' AND business_id = ANY($1) AND category = 2 AND isvisible = true AND stage = 0 AND status = true`,
-							[allBusinessIds]
-						),
-						pool.query(
-							'SELECT COUNT(*) as count FROM projects WHERE business_slug = $1 AND isvisible = true',
-							[business_slug]
-						),
-						pool.query(
-							`SELECT COUNT(*) as count FROM projects
-							 WHERE business_slug = $1 AND isvisible = true AND created_at > NOW() - INTERVAL '60 days'`,
-							[business_slug]
-						)
+						db.select({ count: count() }).from(leads).where(claimedLeadWhere),
+						db
+							.select({ count: count() })
+							.from(leads)
+							.where(and(claimedLeadWhere, eq(leads.stage, 0), eq(leads.status, true))),
+						db
+							.select({ count: count() })
+							.from(projects)
+							.where(and(eq(projects.businessSlug, business_slug), eq(projects.isvisible, true))),
+						db
+							.select({ count: count() })
+							.from(projects)
+							.where(
+								and(
+									eq(projects.businessSlug, business_slug),
+									eq(projects.isvisible, true),
+									gt(projects.createdAt, sql`NOW() - INTERVAL '60 days'`)
+								)
+							)
 					]);
 
-					const totalClaimed = parseInt(claimedRes.rows[0]?.count || '0');
-					const staleClaimed = parseInt(staleRes.rows[0]?.count || '0');
-					const projectsCount = parseInt(projectsRes.rows[0]?.count || '0');
-					const recentProjectExists = parseInt(recentProjectRes.rows[0]?.count || '0') > 0;
+					const totalClaimed = claimedRes[0]?.count ?? 0;
+					const staleClaimed = staleRes[0]?.count ?? 0;
+					const projectsCount = projectsRes[0]?.count ?? 0;
+					const recentProjectExists = (recentProjectRes[0]?.count ?? 0) > 0;
 					const stalePercent = totalClaimed > 0 ? Math.round((staleClaimed / totalClaimed) * 100) : 0;
 					const profileComplete = !!business.description
 						&& Array.isArray(business.brands) && business.brands.length > 0

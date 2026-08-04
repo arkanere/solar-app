@@ -1,5 +1,7 @@
 import type { PageServerLoad } from './$types';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { businesses, projects as projectsTable } from '@solar/db/schema';
+import { and, desc, eq, isNull, or } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 
 export const prerender = false;
@@ -48,49 +50,70 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 
 	try {
 		// First, get the main business profile using the slug
-		const mainBusinessQuery = `
-      SELECT source_id AS id, slug, businessname, email, phonenumber, whatsapp,
-        description, website, instagram_id, google_maps_link, address, pluscode,
-        services, brands, tax_id AS gstn, level1 AS state, level2 AS district,
-        city, postal_code AS pincode, rscore, tag, businessfilled, isvisible
-      FROM businesses
-      WHERE country_code = 'in' AND slug = $1
-    `;
+		const mainBusinessRows = await db
+			.select({
+				id: businesses.sourceId,
+				slug: businesses.slug,
+				businessname: businesses.businessname,
+				email: businesses.email,
+				phonenumber: businesses.phonenumber,
+				whatsapp: businesses.whatsapp,
+				description: businesses.description,
+				website: businesses.website,
+				instagram_id: businesses.instagramId,
+				google_maps_link: businesses.googleMapsLink,
+				address: businesses.address,
+				pluscode: businesses.pluscode,
+				services: businesses.services,
+				brands: businesses.brands,
+				gstn: businesses.taxId,
+				state: businesses.level1,
+				district: businesses.level2,
+				city: businesses.city,
+				pincode: businesses.postalCode,
+				rscore: businesses.rscore,
+				tag: businesses.tag,
+				businessfilled: businesses.businessfilled,
+				isvisible: businesses.isvisible
+			})
+			.from(businesses)
+			.where(and(eq(businesses.countryCode, 'in'), eq(businesses.slug, businessSlug)));
 
-		const mainBusinessResult = await pool.query(mainBusinessQuery, [businessSlug]);
-
-		if (mainBusinessResult.rows.length === 0) {
+		if (mainBusinessRows.length === 0) {
 			return {
 				errorMessage: 'Business not found',
 				projects: []
 			};
 		}
 
-		const mainBusiness = mainBusinessResult.rows[0] as Business;
+		const mainBusiness = mainBusinessRows[0] as unknown as Business;
 
 		// Get all visible projects for this business
-		const projectsQuery = `
-      SELECT
-        id,
-        business_slug,
-        project_slug,
-        title,
-        pincode,
-        district,
-        project_date,
-        created_at,
-        image_url,
-        cloudinary_public_id,
-        image_width,
-        image_height,
-        image_format
-      FROM projects
-      WHERE business_slug = $1 AND (isvisible = TRUE OR isvisible IS NULL)
-      ORDER BY project_date DESC, created_at DESC
-    `;
-
-		const projectsResult = await pool.query(projectsQuery, [businessSlug]);
-		const projects = projectsResult.rows as Project[];
+		const projectRows = await db
+			.select({
+				id: projectsTable.id,
+				business_slug: projectsTable.businessSlug,
+				project_slug: projectsTable.projectSlug,
+				title: projectsTable.title,
+				pincode: projectsTable.pincode,
+				district: projectsTable.district,
+				project_date: projectsTable.projectDate,
+				created_at: projectsTable.createdAt,
+				image_url: projectsTable.imageUrl,
+				cloudinary_public_id: projectsTable.cloudinaryPublicId,
+				image_width: projectsTable.imageWidth,
+				image_height: projectsTable.imageHeight,
+				image_format: projectsTable.imageFormat
+			})
+			.from(projectsTable)
+			.where(
+				and(
+					eq(projectsTable.businessSlug, businessSlug),
+					or(eq(projectsTable.isvisible, true), isNull(projectsTable.isvisible))
+				)
+			)
+			.orderBy(desc(projectsTable.projectDate), desc(projectsTable.createdAt));
+		const projects = projectRows as unknown as Project[];
 
 		return {
 			mainBusiness,
