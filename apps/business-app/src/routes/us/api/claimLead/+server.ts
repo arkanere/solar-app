@@ -1,32 +1,13 @@
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { BusinessAuthService } from '$lib/us/auth/business';
 import { sendEmail } from '$lib/us/sendEmail';
 import { mintBusinessTokenById } from '$lib/server/magicLink';
 import { checkLeadDataPolicy } from '$lib/compliance';
 import type { ClaimRequestPayload } from '$lib/types/lead';
-
-interface ClaimCountRow {
-	claim_count: number;
-}
-
-interface ClaimRequestRow {
-	id: number;
-}
-
-interface LeadDataRow {
-	id: number;
-	name: string;
-	phone: string;
-	email: string | null;
-	pin_code: string;
-	type: string | null;
-	comment: string | null;
-	svnotes: string | null;
-	sv_comment_for_businesses: string | null;
-	urlparams: string | null;
-	county: string | null;
-}
+import { syncLeadToUnified } from '$lib/server/unifiedSync';
+import { businesses1, usLeaddata, usLeaddataClaimrequests } from '@solar/db/schema';
+import { and, eq, sql } from 'drizzle-orm';
 
 interface EmailData {
 	business_id: number;
@@ -70,151 +51,160 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			return json({ success: false, error: 'compliance_required' }, { status: 403 });
 		}
 
-		// Start a transaction
-		const client = await pool.connect();
 		let emailData: EmailData | null = null; // Store email data to send after transaction
 		let customerEmailData: { lead_id: number; business_id: number } | null = null;
+		// Set by the branches that used to ROLLBACK and return a specific
+		// response; tx.rollback() throws, so the response is carried out here.
+		let earlyExit: { status: number; body: Record<string, unknown> } | null = null;
 
 		try {
-			await client.query('BEGIN');
+			await db.transaction(async (tx) => {
+				// Lock the row to prevent race conditions & fetch claim count
+				const claimCountResult = await tx
+					.select({ claimCount: usLeaddata.claimCount })
+					.from(usLeaddata)
+					.where(eq(usLeaddata.id, lead_id))
+					.for('update');
 
-			// Lock the row to prevent race conditions & fetch claim count
-			const claimCountResult = await client.query<ClaimCountRow>(
-				'SELECT claim_count FROM us_leaddata WHERE id = $1 FOR UPDATE',
-				[lead_id]
-			);
-
-			if (claimCountResult.rows.length === 0) {
-				throw new Error('Lead not found');
-			}
-
-			const claim_id = claimCountResult.rows[0].claim_count;
-
-			// **Check if lead can still be claimed (Max = 5 claims)**
-			if (claim_id >= 5) {
-				await client.query('ROLLBACK');
-				return json(
-					{ success: false, error: 'Maximum claim limit reached for this lead' },
-					{ status: 400 }
-				);
-			}
-
-			// **Check if this business already claimed this lead (duplicate prevention)**
-			const duplicateCheck = await client.query<ClaimRequestRow>(
-				'SELECT id FROM us_leaddata_claimrequests WHERE lead_id = $1 AND business_id = $2',
-				[lead_id, business_id]
-			);
-
-			if (duplicateCheck.rows.length > 0) {
-				await client.query('ROLLBACK');
-				return json(
-					{ success: false, error: 'You have already claimed this lead' },
-					{ status: 400 }
-				);
-			}
-
-			// Insert into us_leaddata_claimrequests
-			// Note: UNIQUE constraint on (lead_id, business_id) provides additional protection
-			const insertResult = await client
-				.query<ClaimRequestRow>(
-					'INSERT INTO us_leaddata_claimrequests (lead_id, claim_id, business_id) VALUES ($1, $2, $3) RETURNING id',
-					[lead_id, claim_id, business_id]
-				)
-				.catch((error: Error & { code?: string }) => {
-					// Handle unique constraint violation (PostgreSQL error code 23505)
-					if (error.code === '23505') {
-						throw new Error('You have already claimed this lead');
-					}
-					throw error;
-				});
-
-			const claimRequestId = insertResult.rows[0].id;
-
-			// Increment claim_count in us_leaddata
-			await client.query('UPDATE us_leaddata SET claim_count = claim_count + 1 WHERE id = $1', [
-				lead_id
-			]);
-
-			// Auto-allocate ALL successful claims (within 5-claim limit)
-			// Since we passed the claim limit check, auto-allocate this claim
-
-			// Set this claim as allotted
-			await client.query(
-				'UPDATE us_leaddata_claimrequests SET isallotted = true, isresolved = true WHERE id = $1',
-				[claimRequestId]
-			);
-
-			// Fetch original lead data to create allocated lead
-			const leadDataResult = await client.query<LeadDataRow>(
-				'SELECT * FROM us_leaddata WHERE id = $1',
-				[lead_id]
-			);
-
-			if (leadDataResult.rows.length > 0) {
-				const originalLead = leadDataResult.rows[0];
-
-				// Create new lead entry for the allocated business
-				const newLeadResult = await client.query<{ id: number }>(
-					`INSERT INTO us_leaddata
-                     (name, phone, email, zipcode, type, comment, created_at, svnotes, sv_comment_for_businesses, urlparams, isvisible, category, county, stage, status, claim_count, original_id, business_id)
-                    VALUES
-                     ($1, $2, $3, $4, $5, $6, NOW(), $7, $8, $9, true, 2, $10, 0, true, 0, $11, $12)
-                    RETURNING id`,
-					[
-						originalLead.name,
-						originalLead.phone,
-						originalLead.email,
-						originalLead.zipcode,
-						originalLead.type,
-						originalLead.comment,
-						originalLead.svnotes,
-						originalLead.sv_comment_for_businesses,
-						originalLead.urlparams,
-						originalLead.county,
-						originalLead.id, // Set original_id to the original lead's ID
-						business_id // Set business_id from claim request
-					]
-				);
-				if (newLeadResult.rows[0]) {
-					// TODO(phase 6): restore syncLeadToUnified(tx, ...) when this file
-					// converts to Drizzle — the helper now takes a Drizzle handle.
-					await client.query('SELECT sv_sync_lead($1, $2)', ['us', newLeadResult.rows[0].id]);
+				if (claimCountResult.length === 0) {
+					throw new Error('Lead not found');
 				}
-			}
 
-			// TODO(phase 6): restore syncLeadToUnified(tx, ...) — see note above.
-			await client.query('SELECT sv_sync_lead($1, $2)', ['us', lead_id]);
+				const claim_id = claimCountResult[0].claimCount ?? 0;
 
-			// Prepare email data but don't send yet (move outside transaction)
-			emailData = { business_id, isallotted: true };
-			customerEmailData = { lead_id, business_id };
+				// **Check if lead can still be claimed (Max = 5 claims)**
+				if (claim_id >= 5) {
+					earlyExit = {
+						status: 400,
+						body: { success: false, error: 'Maximum claim limit reached for this lead' }
+					};
+					tx.rollback();
+				}
 
-			await client.query('COMMIT');
+				// **Check if this business already claimed this lead (duplicate prevention)**
+				const duplicateCheck = await tx
+					.select({ id: usLeaddataClaimrequests.id })
+					.from(usLeaddataClaimrequests)
+					.where(
+						and(
+							eq(usLeaddataClaimrequests.leadId, lead_id),
+							eq(usLeaddataClaimrequests.businessId, business_id)
+						)
+					);
+
+				if (duplicateCheck.length > 0) {
+					earlyExit = {
+						status: 400,
+						body: { success: false, error: 'You have already claimed this lead' }
+					};
+					tx.rollback();
+				}
+
+				// Insert into us_leaddata_claimrequests
+				// Note: UNIQUE constraint on (lead_id, business_id) provides additional protection
+				const insertResult = await tx
+					.insert(usLeaddataClaimrequests)
+					.values({ leadId: lead_id, claimId: claim_id, businessId: business_id })
+					.returning({ id: usLeaddataClaimrequests.id })
+					.catch((error: Error & { code?: string }) => {
+						// Handle unique constraint violation (PostgreSQL error code 23505)
+						if (error.code === '23505') {
+							throw new Error('You have already claimed this lead');
+						}
+						throw error;
+					});
+
+				const claimRequestId = insertResult[0].id;
+
+				// Increment claim_count in us_leaddata
+				await tx
+					.update(usLeaddata)
+					.set({ claimCount: sql`${usLeaddata.claimCount} + 1` })
+					.where(eq(usLeaddata.id, lead_id));
+
+				// Auto-allocate ALL successful claims (within 5-claim limit)
+				// Since we passed the claim limit check, auto-allocate this claim
+
+				// Set this claim as allotted
+				await tx
+					.update(usLeaddataClaimrequests)
+					.set({ isallotted: true, isresolved: true })
+					.where(eq(usLeaddataClaimrequests.id, claimRequestId));
+
+				// Fetch original lead data to create allocated lead
+				const leadDataResult = await tx
+					.select()
+					.from(usLeaddata)
+					.where(eq(usLeaddata.id, lead_id));
+
+				if (leadDataResult.length > 0) {
+					const originalLead = leadDataResult[0];
+
+					// Create new lead entry for the allocated business
+					const newLeadResult = await tx
+						.insert(usLeaddata)
+						.values({
+							name: originalLead.name,
+							phone: originalLead.phone,
+							email: originalLead.email,
+							zipcode: originalLead.zipcode,
+							type: originalLead.type,
+							comment: originalLead.comment,
+							// `sql` escape hatch: NOW() for created_at, as the raw INSERT had.
+							createdAt: sql`NOW()`,
+							svnotes: originalLead.svnotes,
+							svCommentForBusinesses: originalLead.svCommentForBusinesses,
+							urlparams: originalLead.urlparams,
+							isvisible: true,
+							category: 2,
+							county: originalLead.county,
+							stage: 0,
+							status: true,
+							claimCount: 0,
+							originalId: originalLead.id, // Set original_id to the original lead's ID
+							businessId: business_id // Set business_id from claim request
+						})
+						.returning({ id: usLeaddata.id });
+					if (newLeadResult[0]) {
+						await syncLeadToUnified(tx, 'us', newLeadResult[0].id);
+					}
+				}
+
+				await syncLeadToUnified(tx, 'us', lead_id);
+
+				// Prepare email data but don't send yet (move outside transaction)
+				emailData = { business_id, isallotted: true };
+				customerEmailData = { lead_id, business_id };
+			});
 		} catch (error) {
-			await client.query('ROLLBACK');
+			// tx.rollback() throws, so the deliberate early exits land here first.
+			if (earlyExit) {
+				return json(earlyExit.body, { status: earlyExit.status });
+			}
 			console.error('❌ Error claiming lead:', error);
 			const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
 			return json({ success: false, error: errorMessage }, { status: 500 });
-		} finally {
-			client.release();
 		}
 
 		// Send email AFTER transaction commits (outside transaction for better performance)
 		if (emailData) {
 			try {
-				const bizResult = await pool.query<{
-					businessname: string;
-					login_email: string;
-					slug: string;
-				}>(
-					'SELECT businessname, login_email, slug FROM businesses_1 WHERE id = $1 LIMIT 1',
-					[emailData.business_id]
-				);
+				// NOTE: reads businesses_1, the IN table, for a /us business id.
+				// Preserved verbatim from the raw SQL — see next-steps.md.
+				const bizResult = await db
+					.select({
+						businessname: businesses1.businessname,
+						loginEmail: businesses1.loginEmail,
+						slug: businesses1.slug
+					})
+					.from(businesses1)
+					.where(eq(businesses1.id, emailData.business_id))
+					.limit(1);
 
-				if (bizResult.rows.length === 0) {
+				if (bizResult.length === 0) {
 					console.error('❌ Allotment email skipped: business not found', emailData.business_id);
 				} else {
-					const { businessname, login_email, slug } = bizResult.rows[0];
+					const { businessname, loginEmail, slug } = bizResult[0];
 					const adminEmail = 'admin@solarvipani.com';
 					// Mint a fresh token (stored hashed); email the raw token.
 					const rawToken = await mintBusinessTokenById('businesses_1', emailData.business_id);
@@ -240,7 +230,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     </p>
     `;
 
-					const result = await sendEmail([login_email, adminEmail], subject, message, {
+					const result = await sendEmail([loginEmail, adminEmail], subject, message, {
 						isHtml: true
 					});
 					if (!result.success) {
@@ -254,32 +244,33 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		if (customerEmailData) {
 			try {
-				const leadResult = await pool.query<{ name: string; email: string | null }>(
-					'SELECT name, email FROM us_leaddata WHERE id = $1',
-					[customerEmailData.lead_id]
-				);
-				const lead = leadResult.rows[0];
+				const leadResult = await db
+					.select({ name: usLeaddata.name, email: usLeaddata.email })
+					.from(usLeaddata)
+					.where(eq(usLeaddata.id, customerEmailData.lead_id));
+				const lead = leadResult[0];
 
 				if (!lead?.email) {
 					// No customer email on file — nothing to notify
 				} else {
-					const bizResult = await pool.query<{
-						businessname: string;
-						phonenumber: string | null;
-						email: string | null;
-						slug: string;
-					}>(
-						'SELECT businessname, phonenumber, email, slug FROM businesses_1 WHERE id = $1',
-						[customerEmailData.business_id]
-					);
+					// NOTE: also reads businesses_1 for a /us business id — see above.
+					const bizResult = await db
+						.select({
+							businessname: businesses1.businessname,
+							phonenumber: businesses1.phonenumber,
+							email: businesses1.email,
+							slug: businesses1.slug
+						})
+						.from(businesses1)
+						.where(eq(businesses1.id, customerEmailData.business_id));
 
-					if (bizResult.rows.length === 0) {
+					if (bizResult.length === 0) {
 						console.error(
 							'❌ Customer notification skipped: business not found',
 							customerEmailData.business_id
 						);
 					} else {
-						const business = bizResult.rows[0];
+						const business = bizResult[0];
 						const profileLink = `https://solarvipani.com/us/solar-panel-installer/${business.slug}`;
 						const adminEmail = 'admin@solarvipani.com';
 
