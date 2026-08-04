@@ -107,10 +107,18 @@ from both apps' `db.ts` (or leaving it export-only-for-Drizzle); update this doc
 
 ### Progress
 - [x] Phase 0 (2026-08-04)
-- [ ] Phase 1
-- [ ] Phase 2
-- [ ] Phase 3
-- [ ] Phase 4
+- [x] Phase 1 (2026-08-04) — 8 files (not 9; that's all the lookup endpoints that exist). Pattern
+      established: `db.selectDistinct({col: table.col}).from(...).where(eq(...)).orderBy(asc(...))`;
+      schema tables imported from `@solar/db/schema`; one `sql` escape hatch for `LOWER() = LOWER()`.
+- [x] Phase 2 (2026-08-04) — auth lib converted; `onConflictDoUpdate` + `sql` CASE for RateLimiter's
+      window reset; per-country Drizzle tables replace the table-name string maps (removed from
+      countryTables.ts); timestamps wrapped in `new Date()` to keep Date-typed contracts.
+- [x] Phase 3 (2026-08-04) — all 9 `/in` server loads converted; added typed `*_SELECTION` Drizzle
+      maps to `unifiedRead.ts` (string projections kept until remaining raw call sites migrate).
+      Compliance page still passes `pool` into `$lib/compliance` helpers (those convert in Phase 5).
+- [x] Phase 4 (2026-08-04) — all 5 `/us` server loads converted (main page, branch, crm,
+      open-inquiries, project). Same pattern as Phase 3; `US_BUSINESS_SELECTION`/`US_LEAD_SELECTION`
+      reused from `unifiedRead.ts`.
 - [ ] Phase 5
 - [ ] Phase 5.5 (tests — blocked on test-DB decision)
 - [ ] Phase 6
