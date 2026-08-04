@@ -1,4 +1,6 @@
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { usLocations } from '@solar/db/schema';
+import { asc, eq } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
 
@@ -12,12 +14,13 @@ export const POST: RequestHandler = async ({ request }) => {
 	}
 
 	try {
-		const result = await pool.query<{ county: string }>(
-			'SELECT DISTINCT county FROM us_locations WHERE state = $1 ORDER BY county ASC',
-			[state]
-		);
+		const rows = await db
+			.selectDistinct({ county: usLocations.county })
+			.from(usLocations)
+			.where(eq(usLocations.state, state))
+			.orderBy(asc(usLocations.county));
 
-		const countiesData = result.rows.map((row) => row.county);
+		const countiesData = rows.map((row) => row.county);
 
 		const response = json({
 			counties: countiesData,

@@ -1,4 +1,6 @@
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { pincodeMapping } from '@solar/db/schema';
+import { eq } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
 
@@ -18,15 +20,15 @@ export const POST: RequestHandler = async ({ request }) => {
 		}
 
 
-		const result = await pool.query<{ district: string }>(
-			'SELECT district FROM pincode_mapping WHERE pincode = $1',
-			[pincode.trim()]
-		);
+		const rows = await db
+			.select({ district: pincodeMapping.district })
+			.from(pincodeMapping)
+			.where(eq(pincodeMapping.pincode, pincode.trim()));
 
-		if (result.rows.length > 0) {
+		if (rows.length > 0) {
 			return json({
 				success: true,
-				county: result.rows[0].district
+				county: rows[0].district
 			});
 		} else {
 			return json({
