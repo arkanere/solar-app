@@ -26,7 +26,7 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	const { level1, level2 } = location;
 
-	const resolved = await resolveLeafSlug(pool, country, slug, level1Slug, level2Slug);
+	const resolved = await resolveLeafSlug(country, slug, level1Slug, level2Slug);
 	if (!resolved) {
 		error(404, 'Page not found');
 	}

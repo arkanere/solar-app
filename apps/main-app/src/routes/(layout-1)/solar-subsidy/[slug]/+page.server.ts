@@ -1,5 +1,8 @@
 import type { PageServerLoad } from './$types';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { discoms, seoPages, stateSubsidies } from '@solar/db/schema';
+import { and, asc, eq, ne, sql } from 'drizzle-orm';
+import { SEO_CLUSTER_SELECTION, SEO_CLUSTER_LINK_SELECTION, type FaqItem } from '$lib/server/seo';
 import { error } from '@sveltejs/kit';
 import { isClusterSlug } from '$lib/in/pillar-config';
 import { resolveSubsidySlug } from '$lib/server/slug-resolver';
@@ -16,22 +19,32 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	// 1. Check cluster whitelist
 	if (isClusterSlug(PILLAR, slug)) {
-		const [clusterResult, siblingsResult, topDistricts] = await Promise.all([
-			pool.query(
-				`SELECT slug, h1, meta_title, meta_description, content, faq
-				 FROM seo_pages WHERE slug = $1 AND pillar_slug = $2 AND status = $3`,
-				[slug, PILLAR, 'published']
-			),
-			pool.query(
-				`SELECT slug, h1 as name FROM seo_pages
-				 WHERE pillar_slug = $1 AND page_type = $2 AND status = $3
-				 ORDER BY slug ASC`,
-				[PILLAR, 'cluster', 'published']
-			),
+		const [clusterRows, siblingRows, topDistricts] = await Promise.all([
+			db
+				.select(SEO_CLUSTER_SELECTION)
+				.from(seoPages)
+				.where(
+					and(
+						eq(seoPages.slug, slug),
+						eq(seoPages.pillarSlug, PILLAR),
+						eq(seoPages.status, 'published')
+					)
+				),
+			db
+				.select(SEO_CLUSTER_LINK_SELECTION)
+				.from(seoPages)
+				.where(
+					and(
+						eq(seoPages.pillarSlug, PILLAR),
+						eq(seoPages.pageType, 'cluster'),
+						eq(seoPages.status, 'published')
+					)
+				)
+				.orderBy(asc(seoPages.slug)),
 			getTopDistricts()
 		]);
 
-		const clusterData = clusterResult.rows[0];
+		const clusterData = clusterRows[0];
 		if (!clusterData) {
 			error(404, 'Page not found');
 		}
@@ -39,7 +52,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		return {
 			pageType: 'cluster' as const,
 			clusterData,
-			siblingClusters: siblingsResult.rows,
+			siblingClusters: siblingRows,
 			pillarSlug: PILLAR,
 			pillarName: 'Solar Subsidy',
 			topDistricts
@@ -47,25 +60,33 @@ export const load: PageServerLoad = async ({ params }) => {
 	}
 
 	// 2. Try state/discom resolution
-	const resolved = await resolveSubsidySlug(pool, slug);
+	const resolved = await resolveSubsidySlug(slug);
 
 	if (resolved?.type === 'state') {
 		const stateSlug = resolved.data.state_slug as string;
 
-		const [subsidyResult, discomsResult] = await Promise.all([
-			pool.query(
-				`SELECT state_slug, state_name, central_subsidy_rate, state_topup_rate,
-				        eligibility, application_process, content, faq
-				 FROM state_subsidies WHERE state_slug = $1`,
-				[stateSlug]
-			),
-			pool.query(
-				`SELECT slug, name FROM discoms WHERE state_slug = $1 AND status = $2 ORDER BY name ASC`,
-				[stateSlug, 'published']
-			)
+		const [subsidyRows, discomRows] = await Promise.all([
+			db
+				.select({
+					state_slug: stateSubsidies.stateSlug,
+					state_name: stateSubsidies.stateName,
+					central_subsidy_rate: stateSubsidies.centralSubsidyRate,
+					state_topup_rate: stateSubsidies.stateTopupRate,
+					eligibility: stateSubsidies.eligibility,
+					application_process: stateSubsidies.applicationProcess,
+					content: stateSubsidies.content,
+					faq: sql<FaqItem[]>`${stateSubsidies.faq}`
+				})
+				.from(stateSubsidies)
+				.where(eq(stateSubsidies.stateSlug, stateSlug)),
+			db
+				.select({ slug: discoms.slug, name: discoms.name })
+				.from(discoms)
+				.where(and(eq(discoms.stateSlug, stateSlug), eq(discoms.status, 'published')))
+				.orderBy(asc(discoms.name))
 		]);
 
-		const subsidy = subsidyResult.rows[0];
+		const subsidy = subsidyRows[0];
 		if (!subsidy) {
 			error(404, 'State subsidy not found');
 		}
@@ -73,7 +94,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		return {
 			pageType: 'state-subsidy' as const,
 			subsidy,
-			discoms: discomsResult.rows,
+			discoms: discomRows,
 			pillarSlug: PILLAR,
 			pillarName: 'Solar Subsidy'
 		};
@@ -83,26 +104,38 @@ export const load: PageServerLoad = async ({ params }) => {
 		const discomSlug = resolved.data.slug as string;
 		const stateSlug = resolved.data.state_slug as string;
 
-		const [discomResult, stateResult, siblingsResult] = await Promise.all([
-			pool.query(
-				`SELECT slug, name, state_slug, net_metering_policy, tariff_structure,
-				        application_process, content, faq
-				 FROM discoms WHERE slug = $1`,
-				[discomSlug]
-			),
-			pool.query(
-				`SELECT state_name FROM state_subsidies WHERE state_slug = $1`,
-				[stateSlug]
-			),
-			pool.query(
-				`SELECT slug, name FROM discoms
-				 WHERE state_slug = $1 AND slug != $2 AND status = $3
-				 ORDER BY name ASC`,
-				[stateSlug, discomSlug, 'published']
-			)
+		const [discomRows, stateRows, siblingRows] = await Promise.all([
+			db
+				.select({
+					slug: discoms.slug,
+					name: discoms.name,
+					state_slug: discoms.stateSlug,
+					net_metering_policy: discoms.netMeteringPolicy,
+					tariff_structure: discoms.tariffStructure,
+					application_process: discoms.applicationProcess,
+					content: discoms.content,
+					faq: sql<FaqItem[]>`${discoms.faq}`
+				})
+				.from(discoms)
+				.where(eq(discoms.slug, discomSlug)),
+			db
+				.select({ state_name: stateSubsidies.stateName })
+				.from(stateSubsidies)
+				.where(eq(stateSubsidies.stateSlug, stateSlug)),
+			db
+				.select({ slug: discoms.slug, name: discoms.name })
+				.from(discoms)
+				.where(
+					and(
+						eq(discoms.stateSlug, stateSlug),
+						ne(discoms.slug, discomSlug),
+						eq(discoms.status, 'published')
+					)
+				)
+				.orderBy(asc(discoms.name))
 		]);
 
-		const discom = discomResult.rows[0];
+		const discom = discomRows[0];
 		if (!discom) {
 			error(404, 'DISCOM not found');
 		}
@@ -110,8 +143,8 @@ export const load: PageServerLoad = async ({ params }) => {
 		return {
 			pageType: 'discom' as const,
 			discom,
-			stateSubsidy: stateResult.rows[0] ?? null,
-			siblingDiscoms: siblingsResult.rows,
+			stateSubsidy: stateRows[0] ?? null,
+			siblingDiscoms: siblingRows,
 			pillarSlug: PILLAR,
 			pillarName: 'Solar Subsidy'
 		};

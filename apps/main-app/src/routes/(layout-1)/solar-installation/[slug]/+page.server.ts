@@ -1,5 +1,8 @@
 import type { PageServerLoad } from './$types';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { seoPages } from '@solar/db/schema';
+import { and, asc, eq } from 'drizzle-orm';
+import { SEO_CLUSTER_SELECTION, SEO_CLUSTER_LINK_SELECTION } from '$lib/server/seo';
 import { error } from '@sveltejs/kit';
 import { isClusterSlug } from '$lib/in/pillar-config';
 import { getTopDistricts } from '$lib/server/queries';
@@ -17,22 +20,32 @@ export const load: PageServerLoad = async ({ params }) => {
 		error(404, 'Page not found');
 	}
 
-	const [clusterResult, siblingsResult, topDistricts] = await Promise.all([
-		pool.query(
-			`SELECT slug, h1, meta_title, meta_description, content, faq
-			 FROM seo_pages WHERE slug = $1 AND pillar_slug = $2 AND status = $3`,
-			[slug, PILLAR, 'published']
-		),
-		pool.query(
-			`SELECT slug, h1 as name FROM seo_pages
-			 WHERE pillar_slug = $1 AND page_type = $2 AND status = $3
-			 ORDER BY slug ASC`,
-			[PILLAR, 'cluster', 'published']
-		),
+	const [clusterRows, siblingRows, topDistricts] = await Promise.all([
+		db
+			.select(SEO_CLUSTER_SELECTION)
+			.from(seoPages)
+			.where(
+				and(
+					eq(seoPages.slug, slug),
+					eq(seoPages.pillarSlug, PILLAR),
+					eq(seoPages.status, 'published')
+				)
+			),
+		db
+			.select(SEO_CLUSTER_LINK_SELECTION)
+			.from(seoPages)
+			.where(
+				and(
+					eq(seoPages.pillarSlug, PILLAR),
+					eq(seoPages.pageType, 'cluster'),
+					eq(seoPages.status, 'published')
+				)
+			)
+			.orderBy(asc(seoPages.slug)),
 		getTopDistricts()
 	]);
 
-	const clusterData = clusterResult.rows[0];
+	const clusterData = clusterRows[0];
 	if (!clusterData) {
 		error(404, 'Page not found');
 	}
@@ -40,7 +53,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	return {
 		pageType: 'cluster' as const,
 		clusterData,
-		siblingClusters: siblingsResult.rows,
+		siblingClusters: siblingRows,
 		pillarSlug: PILLAR,
 		pillarName: 'Solar Installation',
 		topDistricts

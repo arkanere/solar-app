@@ -73,7 +73,7 @@ export const PRODUCT_CARD_SELECTION = {
 export const PRODUCT_SELECTION = {
 	name: solarProducts.name,
 	model_slug: solarProducts.modelSlug,
-	specs: solarProducts.specs,
+	specs: sql<Record<string, string>>`${solarProducts.specs}`,
 	price_range_min: solarProducts.priceRangeMin,
 	price_range_max: solarProducts.priceRangeMax,
 	datasheet_url: solarProducts.datasheetUrl

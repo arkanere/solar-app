@@ -1,4 +1,6 @@
-import type { Pool } from '@vercel/postgres';
+import { db } from './db';
+import { discoms, solarBrands, stateSubsidies } from '@solar/db/schema';
+import { and, eq, ne } from 'drizzle-orm';
 import type { CountryConfig } from '$lib/countries';
 import { resolveCity } from './geo';
 
@@ -7,40 +9,53 @@ interface ResolveResult {
 	data: Record<string, unknown>;
 }
 
-export async function resolveSubsidySlug(
-	pool: Pool,
-	slug: string
-): Promise<ResolveResult | null> {
-	const stateResult = await pool.query(
-		'SELECT state_slug, state_name FROM state_subsidies WHERE state_slug = $1 AND status = $2',
-		[slug, 'published']
-	);
-	if (stateResult.rows.length > 0) {
-		return { type: 'state', data: stateResult.rows[0] };
+export async function resolveSubsidySlug(slug: string): Promise<ResolveResult | null> {
+	const stateRows = await db
+		.select({
+			state_slug: stateSubsidies.stateSlug,
+			state_name: stateSubsidies.stateName
+		})
+		.from(stateSubsidies)
+		.where(and(eq(stateSubsidies.stateSlug, slug), eq(stateSubsidies.status, 'published')));
+	if (stateRows.length > 0) {
+		return { type: 'state', data: stateRows[0] };
 	}
 
-	const discomResult = await pool.query(
-		'SELECT d.slug, d.name, d.state_slug FROM discoms d WHERE d.slug = $1 AND d.status = $2',
-		[slug, 'published']
-	);
-	if (discomResult.rows.length > 0) {
-		return { type: 'discom', data: discomResult.rows[0] };
+	const discomRows = await db
+		.select({
+			slug: discoms.slug,
+			name: discoms.name,
+			state_slug: discoms.stateSlug
+		})
+		.from(discoms)
+		.where(and(eq(discoms.slug, slug), eq(discoms.status, 'published')));
+	if (discomRows.length > 0) {
+		return { type: 'discom', data: discomRows[0] };
 	}
 
 	return null;
 }
 
 export async function resolveBrandSlug(
-	pool: Pool,
 	slug: string,
 	category: string
 ): Promise<ResolveResult | null> {
-	const result = await pool.query(
-		'SELECT slug, name, product_category FROM solar_brands WHERE slug = $1 AND product_category = $2 AND status != $3',
-		[slug, category, 'draft']
-	);
-	if (result.rows.length > 0) {
-		return { type: 'brand', data: result.rows[0] };
+	const rows = await db
+		.select({
+			slug: solarBrands.slug,
+			name: solarBrands.name,
+			product_category: solarBrands.productCategory
+		})
+		.from(solarBrands)
+		.where(
+			and(
+				eq(solarBrands.slug, slug),
+				eq(solarBrands.productCategory, category),
+				ne(solarBrands.status, 'draft')
+			)
+		);
+	if (rows.length > 0) {
+		return { type: 'brand', data: rows[0] };
 	}
 	return null;
 }
@@ -50,7 +65,6 @@ export async function resolveBrandSlug(
 // IN-only SEO content families and are gated on the country's feature flag
 // so e.g. a US city slug can never resolve to a brand page.
 export async function resolveLeafSlug(
-	pool: Pool,
 	country: CountryConfig,
 	slug: string,
 	level1Slug: string,
@@ -68,12 +82,17 @@ export async function resolveLeafSlug(
 		return null;
 	}
 
-	const brandResult = await pool.query(
-		'SELECT slug, name, product_category FROM solar_brands WHERE slug = $1 AND status != $2 LIMIT 1',
-		[slug, 'draft']
-	);
-	if (brandResult.rows.length > 0) {
-		return { type: 'brand', data: brandResult.rows[0] };
+	const brandRows = await db
+		.select({
+			slug: solarBrands.slug,
+			name: solarBrands.name,
+			product_category: solarBrands.productCategory
+		})
+		.from(solarBrands)
+		.where(and(eq(solarBrands.slug, slug), ne(solarBrands.status, 'draft')))
+		.limit(1);
+	if (brandRows.length > 0) {
+		return { type: 'brand', data: brandRows[0] };
 	}
 
 	const sizeMatch = slug.match(/^(\d+)kw-solar-system$/);

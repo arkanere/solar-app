@@ -1,5 +1,13 @@
 import type { PageServerLoad } from './$types';
-import { pool } from '$lib/server/db';
+import { db } from '$lib/server/db';
+import { seoPages, solarBrands, solarProducts } from '@solar/db/schema';
+import { and, asc, eq, ne } from 'drizzle-orm';
+import {
+	SEO_CLUSTER_SELECTION,
+	SEO_CLUSTER_LINK_SELECTION,
+	BRAND_SELECTION,
+	PRODUCT_CARD_SELECTION
+} from '$lib/server/seo';
 import { error } from '@sveltejs/kit';
 import { isClusterSlug } from '$lib/in/pillar-config';
 import { resolveBrandSlug } from '$lib/server/slug-resolver';
@@ -17,22 +25,32 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	// 1. Check cluster whitelist
 	if (isClusterSlug(PILLAR, slug)) {
-		const [clusterResult, siblingsResult, topDistricts] = await Promise.all([
-			pool.query(
-				`SELECT slug, h1, meta_title, meta_description, content, faq
-				 FROM seo_pages WHERE slug = $1 AND pillar_slug = $2 AND status = $3`,
-				[slug, PILLAR, 'published']
-			),
-			pool.query(
-				`SELECT slug, h1 as name FROM seo_pages
-				 WHERE pillar_slug = $1 AND page_type = $2 AND status = $3
-				 ORDER BY slug ASC`,
-				[PILLAR, 'cluster', 'published']
-			),
+		const [clusterRows, siblingRows, topDistricts] = await Promise.all([
+			db
+				.select(SEO_CLUSTER_SELECTION)
+				.from(seoPages)
+				.where(
+					and(
+						eq(seoPages.slug, slug),
+						eq(seoPages.pillarSlug, PILLAR),
+						eq(seoPages.status, 'published')
+					)
+				),
+			db
+				.select(SEO_CLUSTER_LINK_SELECTION)
+				.from(seoPages)
+				.where(
+					and(
+						eq(seoPages.pillarSlug, PILLAR),
+						eq(seoPages.pageType, 'cluster'),
+						eq(seoPages.status, 'published')
+					)
+				)
+				.orderBy(asc(seoPages.slug)),
 			getTopDistricts()
 		]);
 
-		const clusterData = clusterResult.rows[0];
+		const clusterData = clusterRows[0];
 		if (!clusterData) {
 			error(404, 'Page not found');
 		}
@@ -40,7 +58,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		return {
 			pageType: 'cluster' as const,
 			clusterData,
-			siblingClusters: siblingsResult.rows,
+			siblingClusters: siblingRows,
 			pillarSlug: PILLAR,
 			pillarName: 'Solar Panels',
 			topDistricts
@@ -48,25 +66,22 @@ export const load: PageServerLoad = async ({ params }) => {
 	}
 
 	// 2. Try brand resolution
-	const resolved = await resolveBrandSlug(pool, slug, CATEGORY);
+	const resolved = await resolveBrandSlug(slug, CATEGORY);
 	if (resolved) {
 		const brand = resolved.data as { slug: string; name: string; product_category: string };
 
-		const [brandResult, productsResult] = await Promise.all([
-			pool.query(
-				`SELECT slug, name, description, logo_url, meta_title, meta_description, faq
-				 FROM solar_brands WHERE slug = $1`,
-				[brand.slug]
-			),
-			pool.query(
-				`SELECT model_slug, name, price_range_min, price_range_max
-				 FROM solar_products WHERE brand_slug = $1 AND status != $2
-				 ORDER BY name ASC`,
-				[brand.slug, 'draft']
-			)
+		const [brandRows, productRows] = await Promise.all([
+			db.select(BRAND_SELECTION).from(solarBrands).where(eq(solarBrands.slug, brand.slug)),
+			db
+				.select(PRODUCT_CARD_SELECTION)
+				.from(solarProducts)
+				.where(
+					and(eq(solarProducts.brandSlug, brand.slug), ne(solarProducts.status, 'draft'))
+				)
+				.orderBy(asc(solarProducts.name))
 		]);
 
-		const brandData = brandResult.rows[0];
+		const brandData = brandRows[0];
 		if (!brandData) {
 			error(404, 'Brand not found');
 		}
@@ -74,7 +89,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		return {
 			pageType: 'brand' as const,
 			brand: brandData,
-			products: productsResult.rows,
+			products: productRows,
 			pillarSlug: PILLAR,
 			pillarName: 'Solar Panels'
 		};
