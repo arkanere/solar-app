@@ -1,7 +1,5 @@
 // Main export file for user authentication system
 
-import { UserAuthService } from './UserAuthService';
-
 export { UserAuthService } from './UserAuthService';
 export { SessionManager } from './SessionManager';
 export { LoginTracker } from './LoginTracker';
@@ -22,8 +20,3 @@ export type {
 	AuthResult
 } from './AuthTypes';
 export type { SessionData } from './SessionManager';
-
-// Convenience function to create a new auth service instance
-export function createUserAuthService() {
-	return new UserAuthService();
-}

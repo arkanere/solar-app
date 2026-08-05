@@ -10,9 +10,8 @@
 		{ name: data.clusterData.h1, url: `https://solarvipani.com/solar-installation/${data.clusterData.slug}` }
 	]));
 
-	const faqSchema = $derived(
-		data.clusterData.faq?.length > 0 ? faqLD(data.clusterData.faq) : null
-	);
+	const faqItems = $derived(data.clusterData.faq ?? []);
+	const faqSchema = $derived(faqItems.length > 0 ? faqLD(faqItems) : null);
 </script>
 
 <svelte:head>

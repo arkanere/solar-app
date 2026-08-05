@@ -10,9 +10,8 @@
 		{ name: 'Solar Inverters', url: 'https://solarvipani.com/solar-inverters' }
 	]));
 
-	const faqSchema = $derived(
-		data.pillarData.faq?.length > 0 ? faqLD(data.pillarData.faq) : null
-	);
+	const faqItems = $derived(data.pillarData.faq ?? []);
+	const faqSchema = $derived(faqItems.length > 0 ? faqLD(faqItems) : null);
 </script>
 
 <svelte:head>

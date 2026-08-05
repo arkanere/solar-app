@@ -19,11 +19,9 @@ export type FaqItem = { question: string; answer: string };
 // reference). Annotating in schema.ts instead would not survive the next
 // `drizzle-kit pull`.
 const seoContent = sql<ContentSection[]>`${seoPages.content}`;
-// `faq` is a nullable column, but every consumer already declares it non-null
-// and guards with `?? []`. Typing the truth here would mean editing seven
-// +page.svelte files, which is out of scope for the query conversion — see the
-// note in next-steps.md.
-const seoFaq = sql<FaqItem[]>`${seoPages.faq}`;
+// `faq` really is nullable, and every consumer already guards with `?? []`,
+// so the honest type costs nothing at the call sites.
+const seoFaq = sql<FaqItem[] | null>`${seoPages.faq}`;
 
 /** Pillar page body — `seo_pages` row for the pillar slug itself. */
 export const SEO_PILLAR_SELECTION = {
@@ -58,7 +56,7 @@ export const BRAND_SELECTION = {
 	logo_url: solarBrands.logoUrl,
 	meta_title: solarBrands.metaTitle,
 	meta_description: solarBrands.metaDescription,
-	faq: sql<FaqItem[]>`${solarBrands.faq}`
+	faq: sql<FaqItem[] | null>`${solarBrands.faq}`
 };
 
 /** Product card in a brand's product list. */

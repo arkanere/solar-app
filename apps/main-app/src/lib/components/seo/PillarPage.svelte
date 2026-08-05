@@ -19,7 +19,7 @@
 		pillarData: {
 			h1: string;
 			content: { heading: string; body: string }[];
-			faq: { question: string; answer: string }[];
+			faq: { question: string; answer: string }[] | null;
 		};
 		clusters: { slug: string; name: string; pillarSlug: string }[];
 		stats: { installerCount?: number; stateCount?: number };

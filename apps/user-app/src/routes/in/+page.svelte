@@ -18,8 +18,8 @@
 		});
 	}
 
-	function getStageLabel(stage: string | null) {
-		const stages: Record<string, string> = {
+	function getStageLabel(stage: number | null) {
+		const stages: Record<number, string> = {
 			0: 'New Inquiry',
 			1: 'Qualified',
 			2: 'Proposal Sent',

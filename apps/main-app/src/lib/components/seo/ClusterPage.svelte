@@ -20,7 +20,7 @@
 			h1: string;
 			slug: string;
 			content: { heading: string; body: string }[];
-			faq: { question: string; answer: string }[];
+			faq: { question: string; answer: string }[] | null;
 		};
 		siblingClusters: { slug: string; name: string }[];
 		pillarSlug: string;

@@ -27,8 +27,9 @@ interface Lead {
 interface ClaimedBusiness {
 	claimId: number;
 	claimDate: Date | null;
-	stage: string | null;
-	status: string | null;
+	/** leads.stage is a smallint; leads.status a boolean. */
+	stage: number | null;
+	status: boolean | null;
 	originalLeadId: number;
 	leadName: string | null;
 	leadPhone: string | null;
@@ -116,13 +117,8 @@ export const load: PageServerLoad = async ({ cookies }) => {
 				.selectDistinct({
 					claim_id: sql<number>`${claimed.sourceId}`,
 					claim_date: sql<Date | null>`${claimed.createdAt}`,
-					// `stage` is smallint and `status` boolean in the schema, but
-					// ClaimedBusiness has always declared them `string | null` and the
-					// page's getStageLabel() indexes a Record<string, string> with the
-					// value. Restating keeps the pre-conversion contract exactly; see
-					// next-steps.md for the mismatch itself.
-					stage: sql<string | null>`${claimed.stage}`,
-					status: sql<string | null>`${claimed.status}`,
+					stage: claimed.stage,
+					status: claimed.status,
 					original_lead_id: sql<number>`${original.sourceId}`,
 					lead_name: original.name,
 					lead_phone: original.phone,
