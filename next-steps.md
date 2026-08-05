@@ -56,8 +56,8 @@ the EDB install, which has no `solar` role — do not point the suite at it.
 `npm run pull -w @solar/db`. **Never pull from a test cluster** — its baseline omits three
 `loc_key(...)` expression indexes, so a pull from there silently drops them.
 
-All migrations through **053** are applied to live. **054 is written but NOT applied** — see Phase 7
-step A; it needs a decision before it touches live data.
+All migrations through **054** are applied to live (054 applied and verified 2026-08-05). **055 is
+written and dry-run validated but NOT applied** — see Phase 7 step A.
 
 
 ### What is actually open
@@ -67,9 +67,10 @@ step A; it needs a decision before it touches live data.
 2. **`business-app`'s `check` covers far less than it looks.** Its script is
    `svelte-check --no-tsconfig --ignore "src/lib/components/ui"`, so **none of its `.ts` files are
    type-checked** — only `.svelte`. Long-standing (present since at least Phase 5.5). Run
-   `npx tsc --noEmit -p apps/business-app/tsconfig.json` to see what it hides: **22 errors** as of
+   `npx tsc --noEmit -p apps/business-app/tsconfig.json` to see what it hides: **20 errors** as of
    2026-08-05 (TokenManager nullability ×3, `ui/*/index.ts` svelte re-exports, one `claimLead`
-   `NewLeadRow` mismatch). All pre-existing. Worth dropping the flag, but it will raise the count,
+   `NewLeadRow` mismatch; 2 of the 20 are in the skipped `usClaimLeadEmail.test.ts` and go away when
+   it is unskipped). All pre-existing. Worth dropping the flag, but it will raise the count,
    so give it its own commit. **Phase 7 makes this urgent** — nearly all of that migration's risk
    lives in `.ts`, where `check` is blind.
 3. **4 dependabot advisories** (3 high, 1 moderate) that GitHub reports on every push.
@@ -79,6 +80,14 @@ step A; it needs a decision before it touches live data.
    dashboard — whichever row Postgres returns first. Found during the Phase 7 pre-check
    (2026-08-05); predates it and is not caused by it. Fixing means de-duplicating live rows, which
    is its own task. It is also why `businesses` cannot take a `UNIQUE (slug)` constraint.
+5. **Pre-existing drift between `leaddata` and unified `leads`.** Found during the 055 dry run
+   (2026-08-05), predates Phase 7 and is unrelated to 054/055: **3** `leaddata` rows have no unified
+   row at all (a `sv_sync_lead` call that never happened), and **156** unified `leads` have no
+   surviving `leaddata` source (the sync never deletes, so removing a source row orphans its
+   projection). `businesses` is clean — 0 in either direction. Consequence: a full resync *raises*
+   the unified lead count, so "counts unmoved" only holds for a **targeted** resync. Reconciling
+   these is its own task; `apps/main-app/src/lib/server/migrations/check-unified-drift.sql` is the
+   existing tool for it.
 
 The pre-existing UI-component errors that make up the three baselines are known and untouched.
 
@@ -99,15 +108,33 @@ not already imply. Target is `/[business_slug]/crm`, not `/in/[business_slug]/cr
 - **Country resolution wired** (`978d6b1`) — `$lib/server/resolveCountry.ts`
   (`countryForSlug`, `countryForLoginEmail`) and `$lib/server/writeTargets.ts`, threaded through
   `[business_slug]/+layout.server.ts` and all 18 API endpoints that had `'in'` hardcoded.
-- **Migration 054 written** (`9998a92`) — unites the legacy tables on the IN structure.
-  **Not applied to live.**
+- **Migration 054 written** (`9998a92`) and **APPLIED to live 2026-08-05.** Verified: 12 businesses,
+  4 leads, 1 branch, 0 projects copied; 12 US `in_business_profiles` rows generated; zero id
+  collisions; all renames landed (`ein`→`gstn`, `county`→`district`, `zipcode`→`pincode`/`pin_code`);
+  unified counts unmoved at 6707 / 1220; sequences ahead of `max(id)`.
+
+  *Pre-flight finding, benign:* `us_businesses.slug` collides with `businesses_1.slug` 124 times, but
+  **every** collision is the single `'incorrect'` sentinel, and the US row has `isvisible = false`.
+  No real business slug spans both countries, so slug→country resolution stays unambiguous.
+
+  *One divergence from 054's own comment:* the copied US leads did **not** land with
+  `reference_uuid` NULL — the column defaults to `gen_random_uuid()`, so all 4 got one. Harmless,
+  but it is why 055 changes those 4 unified rows (see below).
+
+- **Migration 055 written** — repoints the `sv_sync_*` `'us'` arms at the united tables.
+  **Not applied to live.** Dry-run validated against live inside a rolled-back transaction: full
+  resync of all 6707 businesses / 6707 accounts / 1205 leaddata rows produced **zero** column
+  differences on `businesses` and `business_accounts`, and exactly the 4 expected
+  `leads.reference_uuid` changes. Rollback script restores the verbatim pre-055 two-arm bodies.
 
 ### Pick up here
 
-1. Decide on / apply **054** (`psql "$POSTGRES_URL_NON_POOLING" < 054-unite-country-legacy-tables.sql`),
-   then verify the copy: 12 businesses, 4 leads, 1 branch, 0 projects, ids unchanged, unified
-   `businesses`/`leads` counts unmoved.
-2. Write **055** to repoint the `sv_sync_*` `'us'` arms, then collapse `writeTargets.ts`.
+1. Apply **055** (`psql "$POSTGRES_URL_NON_POOLING" < 055-repoint-sync-fns-to-united-tables.sql`),
+   then resync the US rows per the note at the foot of that file. Expect unified counts to hold at
+   6707 / 1220 and the 4 US `reference_uuid` values to flip NULL → UUID.
+2. Then the app code: collapse `writeTargets.ts` to one table set plus a `country_code`, and add
+   `country_code` to the write sites — including `claimLead`, which does not use `writeTargets` at
+   all yet (see the blocker under step E).
 3. Steps B–D below (route move, path literals, rename) are independent of 054/055 and can proceed in
    parallel. **E is done** — the suite is green again.
 
