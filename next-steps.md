@@ -4,25 +4,19 @@
 > TypeScript conversion and the follow-up list was removed on 2026-08-05 once every phase was done;
 > it is in git history if you need it.
 
-> ## 055 — ready to apply, but ONLY together with a deploy (2026-08-05)
+> ## 054 + 055 both applied to live (2026-08-05). Deploy the app to match.
 >
-> **Live is correct and 055 is NOT applied.** It was applied once, found to be broken, and rolled
-> back the same day; the sync functions are on their two-arm form reading `us_*`. 054 stays applied.
+> **Both migrations are applied.** `sv_sync_business/_account/_lead` read the united tables for
+> every country; nothing in the sync path reads `us_*` any more.
 >
-> **The code half is now done and merged.** All five `us_*` writers below have been repointed at the
-> united tables, so the blocker is cleared. What remains is purely a *release-ordering* problem:
+> **The matching code is merged on `main` (`694faea`) — make sure it is deployed.** Until it is,
+> the deployed app writes `us_*` while the DB syncs from `businesses_1`/`leaddata`, so US writes do
+> not reach the unified tables. Low volume (12 businesses, 4 leads) but it is a real gap; it is the
+> same inconsistency that forced the first 055 rollback, in the opposite direction.
 >
-> - `main` now contains code that writes `businesses_1`/`leaddata` with `country_code='us'`.
-> - Live still runs `sv_sync_*` arms that read `us_*` for the `'us'` arm.
->
-> So **between deploying that code and applying 055, US writes will not reach the unified tables.**
-> Apply 055 and deploy in the same window — ideally 055 first, since it is backward-compatible with
-> the *old* code only in the sense that no US write is currently happening at any volume (12
-> businesses, 4 leads). Order within the window matters little; the gap between them is what counts.
->
-> Original problem, for the record — 055 repoints `sv_sync_*('us', …)` at `businesses_1` /
-> `leaddata` / `in_business_profiles` filtered by `country_code = 'us'`, and **`us_*` had five live
-> writers** that Phase 7 planning missed:
+> 055 was applied once before this, found to be broken, and rolled back — because at the time
+> **`us_*` still had five live writers** that Phase 7 planning missed. They are the reason the code
+> and the migration have to move together, and they are now all repointed:
 >
 > | writer | writes | effect after 055 |
 > | --- | --- | --- |
@@ -34,19 +28,14 @@
 > | `business-app` `magicLink.ts` | update `us_businesses` | takes a country, not a table name |
 > | `business-app` `LoginTracker.ts` | update `us_businesses` | `businesses_1` + `country_code` filter |
 >
-> **No data was corrupted.** 054 had copied `us_*` verbatim, so both sides were still identical, and
-> the break would only have triggered on the *next* US write. None occurred in the window.
+> **No data was corrupted in that window.** 054 had copied `us_*` verbatim, so both sides were still
+> identical, and the break would only have triggered on the next US write. None occurred.
 >
-> **Known harmless residue:** the 4 US `leads.reference_uuid` values that 055 populated are still
-> set — the restored `'us'` arm simply stops maintaining the column rather than clearing it. Clear
-> only if an exact pre-055 projection matters:
-> `UPDATE leads SET reference_uuid = NULL WHERE country_code = 'us';`
+> **`us_*` now has no writer and no reader in the sync path.** Dropping those tables is its own
+> later migration, once main-app's remaining direct reads (`business-listing`, the thank-you page)
+> and the external admin-app are confirmed off them.
 >
-> **Re-applying 055 is gated on repointing all five writers above at the united tables** — the app
-> half of step A. It is a hard prerequisite, not a follow-up: the migration and the code must land
-> together, since each is broken without the other.
->
-> **Lesson for the next migration of this shape.** The dry run proved the collapsed functions
+> **Lesson for the next migration of this shape.** The 055 dry run proved the collapsed functions
 > reproduce the projection for existing rows, which is necessary but not sufficient. A migration
 > that changes *where a sync reads from* must also enumerate every writer of the old location —
 > and that is a code grep, not a SQL check, so a rolled-back transaction can never surface it.
@@ -103,8 +92,8 @@ the EDB install, which has no `solar` role — do not point the suite at it.
 `npm run pull -w @solar/db`. **Never pull from a test cluster** — its baseline omits three
 `loc_key(...)` expression indexes, so a pull from there silently drops them.
 
-All migrations through **054** are applied to live. **055 was applied and rolled back the same day**
-and must not be re-applied on its own — see the note at the top of this file.
+All migrations through **055** are applied to live. Confirm `694faea` is deployed — see the note at
+the top of this file.
 
 
 ### What is actually open
@@ -181,9 +170,8 @@ not already imply. Target is `/[business_slug]/crm`, not `/in/[business_slug]/cr
 
 ### Pick up here
 
-1. **Apply 055 and deploy, in one window.** The code is merged; the migration is not applied. See
-   the release-ordering note at the top of this file. Afterwards resync the US rows per the comment
-   at the foot of the migration and confirm unified counts hold at 6707 / 1220.
+1. **Confirm `694faea` is deployed.** 055 is applied; the app code that matches it is merged. Until
+   it ships, US writes go to `us_*` and never reach unified.
 2. **Step C** (strip the `/in` prefix from path literals) is now the only thing standing between
    `usClaimLeadEmail.test.ts` and being unskipped — 5 of its 6 tests already pass; the sixth asserts
    business-app's own signin-link URL without a country segment.
