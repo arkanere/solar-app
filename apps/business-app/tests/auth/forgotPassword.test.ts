@@ -8,8 +8,9 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { pool } from '../setup/testDb';
-import { createBusiness, resetDatabase } from '../helpers/fixtures';
+import { createBusiness, createUsBusiness, resetDatabase } from '../helpers/fixtures';
 import { jsonRequest } from '../helpers/request';
+import { countryForLoginEmail } from '$lib/server/resolveCountry';
 
 const sendEmail = vi.fn(async () => ({ success: true }));
 
@@ -175,17 +176,29 @@ describe('POST /in/api/forgotPassword', () => {
 		expect(sendEmail).not.toHaveBeenCalled();
 	});
 
-	it('does not issue a token for the same address in the other country', async () => {
-		// The IN business above is not reachable through the /us endpoint.
-		const { POST: usForgot } = await import('../../src/routes/us/api/forgotPassword/+server');
-		const response = await usForgot({
-			request: jsonRequest({ email: loginEmail }),
-			getClientAddress: () => clientIp
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		} as any);
+	it('does not issue a token for an account in the other country', async () => {
+		// Used to assert this by calling the /us endpoint, which Phase 7 deleted.
+		// The isolation it was guarding is now enforced one level down: this
+		// endpoint is bound to COUNTRY = 'in', and findResetTargetByEmail filters
+		// on country_code, so a US address resolves to no target here.
+		const usEmail = 'owner@oakland-solar.test';
+		const usBusinessId = await createUsBusiness({ slug: 'oakland-solar', loginEmail: usEmail });
 
-		expect(response.status).toBe(200);
-		expect((await storedReset(businessId)).reset_token).toBeNull();
+		// The address is real — it just belongs to the other country.
+		expect(await countryForLoginEmail(usEmail)).toBe('us');
+
+		const { status, body } = await forgot({ email: usEmail });
+
+		// Indistinguishable from an unregistered address, per the enumeration rule.
+		expect(status).toBe(200);
+		expect(body.success).toBe(true);
+		expect(sendEmail).not.toHaveBeenCalled();
+
+		const { rows } = await pool.query<{ reset_token: string | null }>(
+			'SELECT reset_token FROM us_businesses WHERE id = $1',
+			[usBusinessId]
+		);
+		expect(rows[0].reset_token).toBeNull();
 	});
 
 	it('rejects a malformed email with 400', async () => {

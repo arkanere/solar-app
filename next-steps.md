@@ -23,8 +23,9 @@ through Drizzle. No app exports a raw `pool`, and no hand-written SQL exists any
 | business-app | 9 | 0 | was 61; `/us` deletion removed most. `.svelte` only — see the caveat below |
 | user-app | 0 | 2 | clean; warnings are a11y + unused CSS |
 
-`npm test -w solarvipani-business` — **RED mid-Phase-7**: two test files still import deleted `/us`
-route modules. Repointed in Phase 7 step E; was 111 passing before.
+`npm test -w solarvipani-business` — **green: 117 passed, 6 skipped**. Step E repointed the two files
+that still imported deleted `/us` route modules. The 6 skips are `usClaimLeadEmail.test.ts`, held
+back deliberately — see step E below.
 
 **Also run `npm run build -w <app>`** when you touch imports. `check` cannot see server code
 reaching a browser bundle, and that is a hard build failure — it left business-app undeployable for
@@ -107,9 +108,12 @@ not already imply. Target is `/[business_slug]/crm`, not `/in/[business_slug]/cr
    then verify the copy: 12 businesses, 4 leads, 1 branch, 0 projects, ids unchanged, unified
    `businesses`/`leads` counts unmoved.
 2. Write **055** to repoint the `sv_sync_*` `'us'` arms, then collapse `writeTargets.ts`.
-3. Steps B–E below (route move, path literals, rename, tests) are independent of 054/055 and can
-   proceed in parallel — **E unblocks the red test suite**, so it is the cheapest thing to do next
-   if the migration decision stalls.
+3. Steps B–D below (route move, path literals, rename) are independent of 054/055 and can proceed in
+   parallel. **E is done** — the suite is green again.
+
+   E also established that the claimLead write path is still entirely IN-bound, so step A is larger
+   than "collapse `writeTargets.ts` and add `country_code`": the write sites do not use
+   `writeTargets` at all yet. Details under step E.
 
 ### Two facts that constrain everything left
 
@@ -175,18 +179,38 @@ link. business-app's own absolute URLs (reset, signin-link) drop the segment.
 **D. Rename `$lib/in-new-rewrites` → `$lib/components`**, mirroring main-app's `f656c6a`. Separate
 commit — pure rename plus import rewrite.
 
-**E. Tests — the suite is currently RED.** Two files still import deleted `/us` route modules:
-`tests/auth/forgotPassword.test.ts:180` and `tests/leads/usClaimLeadEmail.test.ts`. Both are
-**repointed, not deleted**, to keep CLAUDE.md's "both countries" rule:
+**E. Tests — DONE, suite green.** Both files that imported deleted `/us` route modules are
+**repointed, not deleted**, keeping CLAUDE.md's "both countries" rule:
 
-  - `usClaimLeadEmail.test.ts` → the unified endpoint with a US fixture. Its
-    `business.solarvipani.com/us/${slug}/signin-link/` assertion becomes country-less; the
-    `solarvipani.com/us/solar-panel-installer/${slug}` one **stays** `/us/`, being a main-app URL.
-    This becomes the guard for step C's cross-app-link branching.
-  - `forgotPassword.test.ts:180` ("the IN business is not reachable through the /us endpoint")
-    becomes a test of `countryForLoginEmail`.
-  - Add a `countryForSlug` test covering one IN and one US slug.
-  - **No test currently covers a US write.** Add one before step A ships — that is the whole risk.
+  - `tests/routing/resolveCountry.test.ts` — **new, 11 tests.** Covers `countryForSlug` and
+    `countryForLoginEmail` over one IN and one US fixture each, null for unknown/empty, and the
+    `isvisible` filter that disambiguates the `'incorrect'` / `''` sentinels spanning both countries.
+  - `forgotPassword.test.ts` — the "other country" test no longer calls the deleted `/us` endpoint.
+    It asserts the isolation one level down: a real **US** login email resolves to `'us'` via
+    `countryForLoginEmail`, yet the (IN-bound) endpoint mints nothing for it and stays
+    enumeration-silent.
+  - `usClaimLeadEmail.test.ts` — repointed at the unified endpoint with a US fixture and written
+    against the intended post-A/C behaviour, but **`describe.skip`**, because the endpoint cannot
+    serve a US business yet (see the blocker below). Unskipping it is the acceptance check for
+    steps A and C, and it doubles as the "US write" coverage step A needs.
+
+**The blocker E uncovered — read before starting A.** `src/routes/in/api/claimLead/+server.ts`
+resolves `country` and uses it for the compliance gate and the `sv_sync_*` calls, but **every read
+and write still goes to `leaddata` / `businesses_1` / `in_business_profiles` unconditionally**, and
+it does not import `writeTargets.ts` at all — nothing does, except
+`[business_slug]/+layout.server.ts`. Since `us_leaddata` draws its ids from `leaddata_id_seq`, a US
+lead id matches no row and the claim dies at `"Lead not found"` (verified: 500, 2026-08-05).
+`mintBusinessTokenById` is likewise called with the literal `'businesses_1'`, and both email URLs
+hardcode `/in/`. So **there is no US write path in the app today** — which is why the US-write test
+had to be written failing-first rather than passing.
+
+Two smaller gaps found at the same time, both cheap:
+  - **`countryForLoginEmail` has zero callers.** It was written in `978d6b1` but never wired in.
+  - **`forgotPassword/+server.ts` still hardcodes `const COUNTRY = 'in'`** (line 22) — the one API
+    endpoint the country-resolution sweep missed, because it takes an email rather than a slug.
+    Wiring `countryForLoginEmail` into it fixes both at once.
+  - `resetPasswordUrl()` still emits `/${country}/` in the link — step C's job, noted here so the
+    Phase 7 smoke test's "no country segment" expectation is not a surprise.
 
 ### Verifying Phase 7
 
