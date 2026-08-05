@@ -1,19 +1,8 @@
-import { pgTable, serial, varchar, text, timestamp, boolean, smallint, integer, doublePrecision, char, unique, index, date, check, uuid, foreignKey, jsonb, numeric, uniqueIndex, primaryKey, pgSequence } from "drizzle-orm/pg-core"
+import { pgTable, serial, varchar, text, timestamp, char, boolean, smallint, integer, doublePrecision, check, uuid, unique, index, date, foreignKey, numeric, uniqueIndex, jsonb, primaryKey, pgSequence } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 
 export const personalWebsiteBlogsIdSeq = pgSequence("personal_website_blogs_id_seq", {  startWith: "1", increment: "1", minValue: "1", maxValue: "2147483647", cache: "1", cycle: false })
-
-export const claimdata = pgTable("claimdata", {
-	id: serial().primaryKey().notNull(),
-	name: varchar({ length: 255 }).notNull(),
-	phone: varchar({ length: 16 }).notNull(),
-	email: varchar({ length: 255 }).notNull(),
-	message: text().notNull(),
-	businessSlug: varchar("business_slug", { length: 255 }).notNull(),
-	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-	isresolved: boolean().default(false),
-});
 
 export const contactUsForm = pgTable("contact_us_form", {
 	id: serial().primaryKey().notNull(),
@@ -23,12 +12,32 @@ export const contactUsForm = pgTable("contact_us_form", {
 	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
 });
 
+export const ideaPot = pgTable("idea_pot", {
+	id: serial().primaryKey().notNull(),
+	idea: varchar({ length: 255 }).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	notes: char({ length: 255 }),
+	isvisible: boolean().default(true),
+	category: varchar({ length: 255 }).default(sql`NULL`),
+});
+
 export const locations = pgTable("locations", {
 	id: serial().primaryKey().notNull(),
 	state: varchar({ length: 255 }),
 	district: varchar({ length: 255 }),
 	city: varchar({ length: 255 }),
 	source: smallint(),
+});
+
+export const queries = pgTable("queries", {
+	id: serial().primaryKey().notNull(),
+	name: varchar({ length: 255 }).notNull(),
+	phone: varchar({ length: 16 }).notNull(),
+	message: text().notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	pincode: integer(),
+	notes: varchar({ length: 255 }),
+	urlparam: varchar({ length: 255 }),
 });
 
 export const serverLogs = pgTable("server_logs", {
@@ -43,33 +52,39 @@ export const serverLogs = pgTable("server_logs", {
 	errorMessage: text("error_message"),
 });
 
-export const usBranches = pgTable("us_branches", {
-	id: integer().default(sql`nextval('branches_id_seq'::regclass)`).primaryKey().notNull(),
-	mainId: integer("main_id").notNull(),
-	branchId: integer("branch_id").notNull(),
-	isactive: boolean().default(true),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
-});
-
-export const queries = pgTable("queries", {
+export const leaddata = pgTable("leaddata", {
 	id: serial().primaryKey().notNull(),
 	name: varchar({ length: 255 }).notNull(),
 	phone: varchar({ length: 16 }).notNull(),
-	message: text().notNull(),
+	pinCode: varchar("pin_code", { length: 6 }).notNull(),
+	type: varchar({ length: 510 }),
+	comment: text(),
 	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-	pincode: integer(),
-	notes: varchar({ length: 255 }),
-	urlparam: varchar({ length: 255 }),
-});
-
-export const ideaPot = pgTable("idea_pot", {
-	id: serial().primaryKey().notNull(),
-	idea: varchar({ length: 255 }).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-	notes: char({ length: 255 }),
+	svnotes: text(),
+	urlparams: varchar({ length: 255 }).default(sql`NULL`),
 	isvisible: boolean().default(true),
-	category: varchar({ length: 255 }).default(sql`NULL`),
-});
+	email: varchar({ length: 255 }),
+	category: smallint(),
+	district: varchar({ length: 255 }),
+	stage: smallint().default(0),
+	status: boolean().default(true),
+	claimCount: smallint("claim_count").default(0),
+	originalId: smallint("original_id"),
+	businessId: smallint("business_id"),
+	emailInviteCount: smallint("email_invite_count").default(0),
+	svCommentForBusinesses: text("sv_comment_for_businesses"),
+	referenceUuid: uuid("reference_uuid").defaultRandom(),
+	businessNotes: text("business_notes"),
+	state: varchar({ length: 100 }),
+	qualificationScore: integer("qualification_score"),
+	billUrl: text("bill_url"),
+	billCloudinaryPublicId: text("bill_cloudinary_public_id"),
+	billFormat: text("bill_format"),
+	billUploadedAt: timestamp("bill_uploaded_at", { withTimezone: true, mode: 'string' }),
+	marketingConsent: boolean("marketing_consent").default(false).notNull(),
+}, () => [
+	check("check_claim_count_limit", sql`(claim_count >= 0) AND (claim_count <= 5)`),
+]);
 
 export const usLeaddataClaimrequests = pgTable("us_leaddata_claimrequests", {
 	id: integer().default(sql`nextval('leaddata_claimrequests_id_seq'::regclass)`).primaryKey().notNull(),
@@ -82,6 +97,14 @@ export const usLeaddataClaimrequests = pgTable("us_leaddata_claimrequests", {
 }, (table) => [
 	unique("unique_lead_business_claim_us").on(table.leadId, table.businessId),
 ]);
+
+export const usBranches = pgTable("us_branches", {
+	id: integer().default(sql`nextval('branches_id_seq'::regclass)`).primaryKey().notNull(),
+	mainId: integer("main_id").notNull(),
+	branchId: integer("branch_id").notNull(),
+	isactive: boolean().default(true),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
+});
 
 export const businesses1 = pgTable("businesses_1", {
 	id: serial().primaryKey().notNull(),
@@ -122,28 +145,16 @@ export const businesses1 = pgTable("businesses_1", {
 	index("idx_businesses_slug").using("btree", table.slug.asc().nullsLast().op("text_ops")),
 ]);
 
-export const leaddataClaimrequests = pgTable("leaddata_claimrequests", {
+export const claimdata = pgTable("claimdata", {
 	id: serial().primaryKey().notNull(),
-	leadId: serial("lead_id").notNull(),
-	claimId: serial("claim_id").notNull(),
-	businessId: smallint("business_id"),
-	isallotted: boolean().default(false),
+	name: varchar({ length: 255 }).notNull(),
+	phone: varchar({ length: 16 }).notNull(),
+	email: varchar({ length: 255 }).notNull(),
+	message: text().notNull(),
+	businessSlug: varchar("business_slug", { length: 255 }).notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
 	isresolved: boolean().default(false),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
-}, (table) => [
-	unique("unique_lead_business_claim").on(table.leadId, table.businessId),
-]);
-
-export const chatbotmessagecount = pgTable("chatbotmessagecount", {
-	id: serial().primaryKey().notNull(),
-	ip: varchar({ length: 45 }).notNull(),
-	date: date().notNull(),
-	count: integer().default(1).notNull(),
-	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-}, (table) => [
-	unique("unique_ip_date").on(table.ip, table.date),
-]);
+});
 
 export const projects = pgTable("projects", {
 	id: serial().primaryKey().notNull(),
@@ -164,18 +175,17 @@ export const projects = pgTable("projects", {
 	city: varchar({ length: 100 }),
 });
 
-export const pincodeMapping = pgTable("pincode_mapping", {
+export const leaddataClaimrequests = pgTable("leaddata_claimrequests", {
 	id: serial().primaryKey().notNull(),
-	pincode: char({ length: 6 }).notNull(),
-	district: varchar({ length: 255 }).notNull(),
-	state: varchar({ length: 100 }),
-});
-
-export const unsubscribe = pgTable("unsubscribe", {
-	id: serial().primaryKey().notNull(),
-	email: varchar({ length: 255 }).notNull(),
-	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-});
+	leadId: serial("lead_id").notNull(),
+	claimId: serial("claim_id").notNull(),
+	businessId: smallint("business_id"),
+	isallotted: boolean().default(false),
+	isresolved: boolean().default(false),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
+}, (table) => [
+	unique("unique_lead_business_claim").on(table.leadId, table.businessId),
+]);
 
 export const inUser = pgTable("in_user", {
 	id: serial().primaryKey().notNull(),
@@ -190,12 +200,56 @@ export const inUser = pgTable("in_user", {
 	unique("users_email_key").on(table.email),
 ]);
 
+export const pincodeMapping = pgTable("pincode_mapping", {
+	id: serial().primaryKey().notNull(),
+	pincode: char({ length: 6 }).notNull(),
+	district: varchar({ length: 255 }).notNull(),
+	state: varchar({ length: 100 }),
+});
+
+export const chatbotmessagecount = pgTable("chatbotmessagecount", {
+	id: serial().primaryKey().notNull(),
+	ip: varchar({ length: 45 }).notNull(),
+	date: date().notNull(),
+	count: integer().default(1).notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+}, (table) => [
+	unique("unique_ip_date").on(table.ip, table.date),
+]);
+
 export const branches = pgTable("branches", {
 	id: serial().primaryKey().notNull(),
 	mainId: integer("main_id").notNull(),
 	branchId: integer("branch_id").notNull(),
 	isactive: boolean().default(true),
 	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
+});
+
+export const unsubscribe = pgTable("unsubscribe", {
+	id: serial().primaryKey().notNull(),
+	email: varchar({ length: 255 }).notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const dataDeletionRequests = pgTable("data_deletion_requests", {
+	id: serial().primaryKey().notNull(),
+	email: varchar({ length: 255 }).notNull(),
+	phone: varchar({ length: 20 }),
+	reason: text(),
+	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	status: varchar({ length: 50 }).default('pending'),
+	processedAt: timestamp("processed_at", { mode: 'string' }),
+	notes: text(),
+});
+
+export const usLocations = pgTable("us_locations", {
+	id: integer().default(sql`nextval('locations_id_seq'::regclass)`).primaryKey().notNull(),
+	state: varchar({ length: 255 }),
+	county: varchar({ length: 255 }),
+	city: varchar({ length: 255 }),
+	source: smallint(),
+	cityAscii: varchar("city_ascii", { length: 255 }),
 });
 
 export const callsafeusers = pgTable("callsafeusers", {
@@ -212,50 +266,20 @@ export const callsafeusers = pgTable("callsafeusers", {
 	unique("callsafeusers_email_key").on(table.email),
 ]);
 
-export const leaddata = pgTable("leaddata", {
+export const callsafehandles = pgTable("callsafehandles", {
 	id: serial().primaryKey().notNull(),
-	name: varchar({ length: 255 }).notNull(),
-	phone: varchar({ length: 16 }).notNull(),
-	pinCode: varchar("pin_code", { length: 6 }).notNull(),
-	type: varchar({ length: 510 }),
-	comment: text(),
+	userId: integer("user_id"),
+	handle: varchar({ length: 30 }).notNull(),
+	isEmbedded: boolean("is_embedded").default(false),
 	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-	svnotes: text(),
-	urlparams: varchar({ length: 255 }).default(sql`NULL`),
-	isvisible: boolean().default(true),
-	email: varchar({ length: 255 }),
-	category: smallint(),
-	district: varchar({ length: 255 }),
-	stage: smallint().default(0),
-	status: boolean().default(true),
-	claimCount: smallint("claim_count").default(0),
-	originalId: smallint("original_id"),
-	businessId: smallint("business_id"),
-	emailInviteCount: smallint("email_invite_count").default(0),
-	svCommentForBusinesses: text("sv_comment_for_businesses"),
-	referenceUuid: uuid("reference_uuid").defaultRandom(),
-	businessNotes: text("business_notes"),
-	state: varchar({ length: 100 }),
-	qualificationScore: integer("qualification_score"),
-	billUrl: text("bill_url"),
-	billCloudinaryPublicId: text("bill_cloudinary_public_id"),
-	billFormat: text("bill_format"),
-	billUploadedAt: timestamp("bill_uploaded_at", { withTimezone: true, mode: 'string' }),
-	marketingConsent: boolean("marketing_consent").default(false).notNull(),
-}, () => [
-	check("check_claim_count_limit", sql`(claim_count >= 0) AND (claim_count <= 5)`),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [callsafeusers.id],
+			name: "callsafelinks_user_id_fkey"
+		}).onDelete("cascade"),
 ]);
-
-export const dataDeletionRequests = pgTable("data_deletion_requests", {
-	id: serial().primaryKey().notNull(),
-	email: varchar({ length: 255 }).notNull(),
-	phone: varchar({ length: 20 }),
-	reason: text(),
-	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-	status: varchar({ length: 50 }).default('pending'),
-	processedAt: timestamp("processed_at", { mode: 'string' }),
-	notes: text(),
-});
 
 export const usProjects = pgTable("us_projects", {
 	id: integer().default(sql`nextval('projects_id_seq'::regclass)`).primaryKey().notNull(),
@@ -276,57 +300,42 @@ export const usProjects = pgTable("us_projects", {
 	city: varchar({ length: 100 }),
 });
 
-export const callsafehandles = pgTable("callsafehandles", {
-	id: serial().primaryKey().notNull(),
-	userId: integer("user_id"),
-	handle: varchar({ length: 30 }).notNull(),
-	isEmbedded: boolean("is_embedded").default(false),
-	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-}, (table) => [
-	foreignKey({
-			columns: [table.userId],
-			foreignColumns: [callsafeusers.id],
-			name: "callsafelinks_user_id_fkey"
-		}).onDelete("cascade"),
-]);
-
-export const solarBrands = pgTable("solar_brands", {
-	id: serial().primaryKey().notNull(),
-	slug: varchar({ length: 100 }).notNull(),
-	name: varchar({ length: 200 }).notNull(),
-	productCategory: varchar("product_category", { length: 50 }).notNull(),
-	description: text(),
-	logoUrl: text("logo_url"),
-	metaTitle: varchar("meta_title", { length: 160 }),
-	metaDescription: varchar("meta_description", { length: 320 }),
-	faq: jsonb(),
-	status: varchar({ length: 20 }).default('draft'),
-}, (table) => [
-	unique("solar_brands_slug_key").on(table.slug),
-]);
-
-export const inReferrers = pgTable("in_referrers", {
-	id: serial().primaryKey().notNull(),
-	businessId: integer("business_id").notNull(),
-	name: varchar({ length: 255 }).notNull(),
-	phone: varchar({ length: 20 }).notNull(),
+export const usBusinesses = pgTable("us_businesses", {
+	id: integer().default(sql`nextval('businesses_1_id_seq'::regclass)`).primaryKey().notNull(),
+	businessname: varchar({ length: 255 }).notNull(),
+	address: text(),
+	pluscode: varchar({ length: 255 }),
+	phonenumber: varchar({ length: 20 }),
 	email: varchar({ length: 255 }),
+	website: varchar({ length: 255 }),
+	ein: varchar({ length: 50 }),
+	state: varchar({ length: 100 }),
+	county: varchar({ length: 100 }),
+	tag: varchar({ length: 255 }),
+	slug: varchar({ length: 255 }),
 	notes: text(),
+	city: varchar({ length: 100 }),
+	rscore: integer().default(0),
+	isvisible: boolean().default(false),
+	loginEmail: varchar("login_email", { length: 255 }).notNull(),
+	loginPassword: varchar("login_password", { length: 255 }),
+	businessfilled: boolean().default(true),
+	resetToken: varchar("reset_token", { length: 255 }),
+	resetTokenExpires: timestamp("reset_token_expires", { mode: 'string' }),
+	tier3: boolean().default(false),
+	zipcode: char({ length: 6 }),
+	magicLinkToken: text("magic_link_token"),
+	description: varchar({ length: 256 }).default('Solar panel installer'),
+	services: integer().array(),
+	whatsapp: varchar({ length: 20 }),
+	instagramId: varchar("instagram_id", { length: 255 }),
+	googleMapsLink: varchar("google_maps_link", { length: 255 }),
+	lastLogin: timestamp("last_login", { mode: 'string' }),
 	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-	slug: varchar({ length: 255 }).notNull(),
+	magicLinkTokenExpiresAt: timestamp("magic_link_token_expires_at", { withTimezone: true, mode: 'string' }),
 }, (table) => [
-	index("idx_referrers_in_business_id").using("btree", table.businessId.asc().nullsLast().op("int4_ops")),
-	index("idx_referrers_in_phone").using("btree", table.phone.asc().nullsLast().op("text_ops")),
-	index("idx_referrers_slug").using("btree", table.businessId.asc().nullsLast().op("text_ops"), table.slug.asc().nullsLast().op("text_ops")),
-	foreignKey({
-			columns: [table.businessId],
-			foreignColumns: [businesses1.id],
-			name: "fk_business"
-		}).onDelete("cascade"),
-	unique("unique_business_slug").on(table.businessId, table.slug),
-	unique("referrers_in_slug_key").on(table.slug),
+	index("us_businesses_city_idx").using("btree", table.city.asc().nullsLast().op("text_ops")),
+	index("us_businesses_slug_idx").using("btree", table.slug.asc().nullsLast().op("text_ops")),
 ]);
 
 export const inProposals = pgTable("in_proposals", {
@@ -351,15 +360,6 @@ export const inProposals = pgTable("in_proposals", {
 			name: "proposals_lead_id_fkey"
 		}).onDelete("cascade"),
 ]);
-
-export const usLocations = pgTable("us_locations", {
-	id: integer().default(sql`nextval('locations_id_seq'::regclass)`).primaryKey().notNull(),
-	state: varchar({ length: 255 }),
-	county: varchar({ length: 255 }),
-	city: varchar({ length: 255 }),
-	source: smallint(),
-	cityAscii: varchar("city_ascii", { length: 255 }),
-});
 
 export const projectManagement = pgTable("project_management", {
 	id: serial().primaryKey().notNull(),
@@ -405,6 +405,38 @@ export const masterlistUsaBusinesses = pgTable("masterlist_usa_businesses", {
 	check("check_unsubscribe_usa", sql`unsubscribe = ANY (ARRAY[0, 1])`),
 ]);
 
+export const inReferrers = pgTable("in_referrers", {
+	id: serial().primaryKey().notNull(),
+	businessId: integer("business_id").notNull(),
+	name: varchar({ length: 255 }).notNull(),
+	phone: varchar({ length: 20 }).notNull(),
+	email: varchar({ length: 255 }),
+	notes: text(),
+	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	slug: varchar({ length: 255 }).notNull(),
+}, (table) => [
+	index("idx_referrers_in_business_id").using("btree", table.businessId.asc().nullsLast().op("int4_ops")),
+	index("idx_referrers_in_phone").using("btree", table.phone.asc().nullsLast().op("text_ops")),
+	index("idx_referrers_slug").using("btree", table.businessId.asc().nullsLast().op("text_ops"), table.slug.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.businessId],
+			foreignColumns: [businesses1.id],
+			name: "fk_business"
+		}).onDelete("cascade"),
+	unique("unique_business_slug").on(table.businessId, table.slug),
+	unique("referrers_in_slug_key").on(table.slug),
+]);
+
+export const callsafeUnsubscribe = pgTable("callsafe_unsubscribe", {
+	id: serial().primaryKey().notNull(),
+	email: varchar({ length: 255 }).notNull(),
+	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+}, (table) => [
+	uniqueIndex("callsafe_unsubscribe_email_idx").using("btree", table.email.asc().nullsLast().op("text_ops")),
+	unique("callsafe_unsubscribe_email_key").on(table.email),
+]);
+
 export const seoPages = pgTable("seo_pages", {
 	id: serial().primaryKey().notNull(),
 	slug: varchar({ length: 255 }).notNull(),
@@ -426,83 +458,19 @@ export const seoPages = pgTable("seo_pages", {
 	unique("seo_pages_slug_pillar_unique").on(table.slug, table.pillarSlug),
 ]);
 
-export const stateSubsidies = pgTable("state_subsidies", {
-	id: serial().primaryKey().notNull(),
-	stateSlug: varchar("state_slug", { length: 100 }).notNull(),
-	stateName: varchar("state_name", { length: 100 }).notNull(),
-	centralSubsidyRate: text("central_subsidy_rate"),
-	stateTopupRate: text("state_topup_rate"),
-	eligibility: text(),
-	applicationProcess: text("application_process"),
-	content: jsonb(),
-	faq: jsonb(),
-	lastVerified: date("last_verified"),
-	status: varchar({ length: 20 }).default('draft'),
-}, (table) => [
-	unique("state_subsidies_state_slug_key").on(table.stateSlug),
-]);
-
-export const usBusinesses = pgTable("us_businesses", {
-	id: integer().default(sql`nextval('businesses_1_id_seq'::regclass)`).primaryKey().notNull(),
-	businessname: varchar({ length: 255 }).notNull(),
-	address: text(),
-	pluscode: varchar({ length: 255 }),
-	phonenumber: varchar({ length: 20 }),
-	email: varchar({ length: 255 }),
-	website: varchar({ length: 255 }),
-	ein: varchar({ length: 50 }),
-	state: varchar({ length: 100 }),
-	county: varchar({ length: 100 }),
-	tag: varchar({ length: 255 }),
-	slug: varchar({ length: 255 }),
-	notes: text(),
-	city: varchar({ length: 100 }),
-	rscore: integer().default(0),
-	isvisible: boolean().default(false),
-	loginEmail: varchar("login_email", { length: 255 }).notNull(),
-	loginPassword: varchar("login_password", { length: 255 }),
-	businessfilled: boolean().default(true),
-	resetToken: varchar("reset_token", { length: 255 }),
-	resetTokenExpires: timestamp("reset_token_expires", { mode: 'string' }),
-	tier3: boolean().default(false),
-	zipcode: char({ length: 6 }),
-	magicLinkToken: text("magic_link_token"),
-	description: varchar({ length: 256 }).default('Solar panel installer'),
-	services: integer().array(),
-	whatsapp: varchar({ length: 20 }),
-	instagramId: varchar("instagram_id", { length: 255 }),
-	googleMapsLink: varchar("google_maps_link", { length: 255 }),
-	lastLogin: timestamp("last_login", { mode: 'string' }),
-	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-	magicLinkTokenExpiresAt: timestamp("magic_link_token_expires_at", { withTimezone: true, mode: 'string' }),
-}, (table) => [
-	index("us_businesses_city_idx").using("btree", table.city.asc().nullsLast().op("text_ops")),
-	index("us_businesses_slug_idx").using("btree", table.slug.asc().nullsLast().op("text_ops")),
-]);
-
-export const callsafeUnsubscribe = pgTable("callsafe_unsubscribe", {
-	id: serial().primaryKey().notNull(),
-	email: varchar({ length: 255 }).notNull(),
-	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-}, (table) => [
-	uniqueIndex("callsafe_unsubscribe_email_idx").using("btree", table.email.asc().nullsLast().op("text_ops")),
-	unique("callsafe_unsubscribe_email_key").on(table.email),
-]);
-
-export const solarFinancingBanks = pgTable("solar_financing_banks", {
+export const solarBrands = pgTable("solar_brands", {
 	id: serial().primaryKey().notNull(),
 	slug: varchar({ length: 100 }).notNull(),
 	name: varchar({ length: 200 }).notNull(),
-	interestRate: text("interest_rate"),
-	maxAmount: text("max_amount"),
-	tenure: text(),
-	eligibility: text(),
-	documents: text(),
-	content: jsonb(),
+	productCategory: varchar("product_category", { length: 50 }).notNull(),
+	description: text(),
+	logoUrl: text("logo_url"),
+	metaTitle: varchar("meta_title", { length: 160 }),
+	metaDescription: varchar("meta_description", { length: 320 }),
 	faq: jsonb(),
 	status: varchar({ length: 20 }).default('draft'),
 }, (table) => [
-	unique("solar_financing_banks_slug_key").on(table.slug),
+	unique("solar_brands_slug_key").on(table.slug),
 ]);
 
 export const solarProducts = pgTable("solar_products", {
@@ -523,6 +491,72 @@ export const solarProducts = pgTable("solar_products", {
 			name: "solar_products_brand_slug_fkey"
 		}),
 	unique("solar_products_brand_slug_model_slug_key").on(table.brandSlug, table.modelSlug),
+]);
+
+export const stateSubsidies = pgTable("state_subsidies", {
+	id: serial().primaryKey().notNull(),
+	stateSlug: varchar("state_slug", { length: 100 }).notNull(),
+	stateName: varchar("state_name", { length: 100 }).notNull(),
+	centralSubsidyRate: text("central_subsidy_rate"),
+	stateTopupRate: text("state_topup_rate"),
+	eligibility: text(),
+	applicationProcess: text("application_process"),
+	content: jsonb(),
+	faq: jsonb(),
+	lastVerified: date("last_verified"),
+	status: varchar({ length: 20 }).default('draft'),
+}, (table) => [
+	unique("state_subsidies_state_slug_key").on(table.stateSlug),
+]);
+
+export const discoms = pgTable("discoms", {
+	id: serial().primaryKey().notNull(),
+	slug: varchar({ length: 100 }).notNull(),
+	name: varchar({ length: 200 }).notNull(),
+	stateSlug: varchar("state_slug", { length: 100 }),
+	netMeteringPolicy: text("net_metering_policy"),
+	tariffStructure: text("tariff_structure"),
+	applicationProcess: text("application_process"),
+	content: jsonb(),
+	faq: jsonb(),
+	status: varchar({ length: 20 }).default('draft'),
+}, (table) => [
+	foreignKey({
+			columns: [table.stateSlug],
+			foreignColumns: [stateSubsidies.stateSlug],
+			name: "discoms_state_slug_fkey"
+		}),
+	unique("discoms_slug_key").on(table.slug),
+]);
+
+export const solarFinancingBanks = pgTable("solar_financing_banks", {
+	id: serial().primaryKey().notNull(),
+	slug: varchar({ length: 100 }).notNull(),
+	name: varchar({ length: 200 }).notNull(),
+	interestRate: text("interest_rate"),
+	maxAmount: text("max_amount"),
+	tenure: text(),
+	eligibility: text(),
+	documents: text(),
+	content: jsonb(),
+	faq: jsonb(),
+	status: varchar({ length: 20 }).default('draft'),
+}, (table) => [
+	unique("solar_financing_banks_slug_key").on(table.slug),
+]);
+
+export const authors = pgTable("authors", {
+	id: serial().primaryKey().notNull(),
+	slug: varchar({ length: 100 }).notNull(),
+	name: varchar({ length: 200 }).notNull(),
+	photoUrl: text("photo_url"),
+	credentials: text(),
+	expertise: text(),
+	bio: text(),
+	socialLinks: jsonb("social_links"),
+	status: varchar({ length: 20 }).default('published'),
+}, (table) => [
+	unique("authors_slug_key").on(table.slug),
 ]);
 
 export const inBlogPosts = pgTable("in_blog_posts", {
@@ -547,30 +581,17 @@ export const inBlogPosts = pgTable("in_blog_posts", {
 	unique("in_blog_posts_slug_key").on(table.slug),
 ]);
 
-export const callsafeEmailCampaignLog = pgTable("callsafe_email_campaign_log", {
+export const installerInvitationEmailCampaignLog = pgTable("installer_invitation_email_campaign_log", {
 	id: serial().primaryKey().notNull(),
-	businessId: integer("business_id"),
-	recipientEmail: text("recipient_email"),
-	website: text(),
-	country: text(),
+	dbTable: varchar("db_table", { length: 100 }).notNull(),
+	businessId: integer("business_id").notNull(),
+	recipientEmail: varchar("recipient_email", { length: 255 }).notNull(),
+	vendorName: varchar("vendor_name", { length: 255 }),
+	state: varchar({ length: 100 }),
 	emailNumber: integer("email_number"),
-	campaignRunId: text("campaign_run_id"),
-	sentAt: timestamp("sent_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	campaignRunId: varchar("campaign_run_id", { length: 50 }).notNull(),
+	sentAt: timestamp("sent_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
-
-export const authors = pgTable("authors", {
-	id: serial().primaryKey().notNull(),
-	slug: varchar({ length: 100 }).notNull(),
-	name: varchar({ length: 200 }).notNull(),
-	photoUrl: text("photo_url"),
-	credentials: text(),
-	expertise: text(),
-	bio: text(),
-	socialLinks: jsonb("social_links"),
-	status: varchar({ length: 20 }).default('published'),
-}, (table) => [
-	unique("authors_slug_key").on(table.slug),
-]);
 
 export const callsafeMasterlist = pgTable("callsafe_masterlist", {
 	id: serial().primaryKey().notNull(),
@@ -587,45 +608,16 @@ export const callsafeMasterlist = pgTable("callsafe_masterlist", {
 	updatedAt: timestamp("updated_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
 });
 
-export const discoms = pgTable("discoms", {
+export const callsafeEmailCampaignLog = pgTable("callsafe_email_campaign_log", {
 	id: serial().primaryKey().notNull(),
-	slug: varchar({ length: 100 }).notNull(),
-	name: varchar({ length: 200 }).notNull(),
-	stateSlug: varchar("state_slug", { length: 100 }),
-	netMeteringPolicy: text("net_metering_policy"),
-	tariffStructure: text("tariff_structure"),
-	applicationProcess: text("application_process"),
-	content: jsonb(),
-	faq: jsonb(),
-	status: varchar({ length: 20 }).default('draft'),
-}, (table) => [
-	foreignKey({
-			columns: [table.stateSlug],
-			foreignColumns: [stateSubsidies.stateSlug],
-			name: "discoms_state_slug_fkey"
-		}),
-	unique("discoms_slug_key").on(table.slug),
-]);
-
-export const installerInvitationEmailCampaignLog = pgTable("installer_invitation_email_campaign_log", {
-	id: serial().primaryKey().notNull(),
-	dbTable: varchar("db_table", { length: 100 }).notNull(),
-	businessId: integer("business_id").notNull(),
-	recipientEmail: varchar("recipient_email", { length: 255 }).notNull(),
-	vendorName: varchar("vendor_name", { length: 255 }),
-	state: varchar({ length: 100 }),
+	businessId: integer("business_id"),
+	recipientEmail: text("recipient_email"),
+	website: text(),
+	country: text(),
 	emailNumber: integer("email_number"),
-	campaignRunId: varchar("campaign_run_id", { length: 50 }).notNull(),
-	sentAt: timestamp("sent_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	campaignRunId: text("campaign_run_id"),
+	sentAt: timestamp("sent_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
 });
-
-export const rateLimits = pgTable("rate_limits", {
-	identifier: text().primaryKey().notNull(),
-	count: integer().default(0).notNull(),
-	resetTime: timestamp("reset_time", { withTimezone: true, mode: 'string' }).notNull(),
-}, (table) => [
-	index("rate_limits_reset_time_idx").using("btree", table.resetTime.asc().nullsLast().op("timestamptz_ops")),
-]);
 
 export const inUserFeedback = pgTable("in_user_feedback", {
 	id: serial().primaryKey().notNull(),
@@ -646,38 +638,6 @@ export const inUserFeedback = pgTable("in_user_feedback", {
 	check("in_user_feedback_recommendation_rating_check", sql`(recommendation_rating >= 1) AND (recommendation_rating <= 5)`),
 ]);
 
-export const legalAcceptances = pgTable("legal_acceptances", {
-	id: serial().primaryKey().notNull(),
-	businessId: integer("business_id").notNull(),
-	policyId: integer("policy_id").notNull(),
-	acceptedAt: timestamp("accepted_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	ipAddress: varchar("ip_address", { length: 45 }),
-	countryCode: char("country_code", { length: 2 }).notNull(),
-}, (table) => [
-	index("legal_acceptances_business_policy_idx").using("btree", table.countryCode.asc().nullsLast().op("bpchar_ops"), table.businessId.asc().nullsLast().op("int4_ops"), table.policyId.asc().nullsLast().op("int4_ops"), table.acceptedAt.desc().nullsFirst().op("timestamptz_ops")),
-	foreignKey({
-			columns: [table.businessId, table.countryCode],
-			foreignColumns: [businessAccounts.sourceId, businessAccounts.countryCode],
-			name: "legal_acceptances_business_fkey"
-		}),
-	foreignKey({
-			columns: [table.countryCode],
-			foreignColumns: [countries.code],
-			name: "legal_acceptances_country_code_fkey"
-		}),
-	foreignKey({
-			columns: [table.policyId],
-			foreignColumns: [legalPolicies.id],
-			name: "legal_acceptances_policy_id_fkey"
-		}),
-]);
-
-export const countries = pgTable("countries", {
-	code: char({ length: 2 }).primaryKey().notNull(),
-	name: text().notNull(),
-	isActive: boolean("is_active").default(true).notNull(),
-});
-
 export const dataAccessRequests = pgTable("data_access_requests", {
 	id: serial().primaryKey().notNull(),
 	email: text().notNull(),
@@ -689,6 +649,40 @@ export const dataAccessRequests = pgTable("data_access_requests", {
 	index("data_access_requests_status_idx").using("btree", table.status.asc().nullsLast().op("text_ops")),
 ]);
 
+export const rateLimits = pgTable("rate_limits", {
+	identifier: text().primaryKey().notNull(),
+	count: integer().default(0).notNull(),
+	resetTime: timestamp("reset_time", { withTimezone: true, mode: 'string' }).notNull(),
+}, (table) => [
+	index("rate_limits_reset_time_idx").using("btree", table.resetTime.asc().nullsLast().op("timestamptz_ops")),
+]);
+
+export const legalAcceptances = pgTable("legal_acceptances", {
+	id: serial().primaryKey().notNull(),
+	businessId: integer("business_id").notNull(),
+	policyId: integer("policy_id").notNull(),
+	acceptedAt: timestamp("accepted_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	ipAddress: varchar("ip_address", { length: 45 }),
+	countryCode: char("country_code", { length: 2 }).notNull(),
+}, (table) => [
+	index("legal_acceptances_business_policy_idx").using("btree", table.countryCode.asc().nullsLast().op("bpchar_ops"), table.businessId.asc().nullsLast().op("int4_ops"), table.policyId.asc().nullsLast().op("int4_ops"), table.acceptedAt.desc().nullsFirst().op("bpchar_ops")),
+	foreignKey({
+			columns: [table.policyId],
+			foreignColumns: [legalPolicies.id],
+			name: "legal_acceptances_policy_id_fkey"
+		}),
+	foreignKey({
+			columns: [table.countryCode],
+			foreignColumns: [countries.code],
+			name: "legal_acceptances_country_code_fkey"
+		}),
+	foreignKey({
+			columns: [table.countryCode, table.businessId],
+			foreignColumns: [businessAccounts.countryCode, businessAccounts.sourceId],
+			name: "legal_acceptances_business_fkey"
+		}),
+]);
+
 export const legalPolicies = pgTable("legal_policies", {
 	id: serial().primaryKey().notNull(),
 	type: varchar({ length: 50 }).notNull(),
@@ -697,44 +691,6 @@ export const legalPolicies = pgTable("legal_policies", {
 	effectiveAt: timestamp("effective_at", { withTimezone: true, mode: 'string' }).notNull(),
 }, (table) => [
 	unique("legal_policies_type_version_key").on(table.type, table.version),
-]);
-
-export const geoLocations = pgTable("geo_locations", {
-	id: serial().primaryKey().notNull(),
-	countryCode: char("country_code", { length: 2 }).notNull(),
-	level1: varchar({ length: 255 }).notNull(),
-	level2: varchar({ length: 255 }).notNull(),
-	city: varchar({ length: 255 }).notNull(),
-	level1Slug: varchar("level1_slug", { length: 255 }).notNull(),
-	level2Slug: varchar("level2_slug", { length: 255 }).notNull(),
-	citySlug: varchar("city_slug", { length: 255 }).notNull(),
-}, (table) => [
-	index("geo_locations_level2_idx").using("btree", table.countryCode.asc().nullsLast().op("text_ops"), table.level1Slug.asc().nullsLast().op("bpchar_ops"), table.level2Slug.asc().nullsLast().op("bpchar_ops")),
-	foreignKey({
-			columns: [table.countryCode],
-			foreignColumns: [countries.code],
-			name: "geo_locations_country_code_fkey"
-		}),
-	unique("geo_locations_country_code_level1_slug_level2_slug_city_slu_key").on(table.countryCode, table.level1Slug, table.level2Slug, table.citySlug),
-]);
-
-export const inBusinessAccounts = pgTable("in_business_accounts", {
-	id: serial().primaryKey().notNull(),
-	businessId: integer("business_id").notNull(),
-	loginEmail: varchar("login_email", { length: 255 }),
-	loginPassword: varchar("login_password", { length: 255 }),
-	magicLinkToken: text("magic_link_token"),
-	magicLinkTokenExpiresAt: timestamp("magic_link_token_expires_at", { withTimezone: true, mode: 'string' }),
-	resetToken: varchar("reset_token", { length: 255 }),
-	resetTokenExpires: timestamp("reset_token_expires", { mode: 'string' }),
-	isvisible: boolean(),
-	lastLogin: timestamp("last_login", { mode: 'string' }),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("in_business_accounts_login_email_idx").using("btree", table.loginEmail.asc().nullsLast().op("text_ops")),
-	index("in_business_accounts_magic_token_idx").using("btree", table.magicLinkToken.asc().nullsLast().op("text_ops")),
-	unique("in_business_accounts_business_id_key").on(table.businessId),
 ]);
 
 export const usLeaddata = pgTable("us_leaddata", {
@@ -761,40 +717,6 @@ export const usLeaddata = pgTable("us_leaddata", {
 	marketingConsent: boolean("marketing_consent").default(false).notNull(),
 }, () => [
 	check("check_claim_count_limit_us", sql`(claim_count >= 0) AND (claim_count <= 5)`),
-]);
-
-export const inBusinessProfiles = pgTable("in_business_profiles", {
-	id: serial().primaryKey().notNull(),
-	businessId: integer("business_id").notNull(),
-	slug: varchar({ length: 255 }),
-	businessname: varchar({ length: 255 }),
-	email: varchar({ length: 255 }),
-	phonenumber: varchar({ length: 20 }),
-	whatsapp: varchar({ length: 20 }),
-	description: varchar({ length: 256 }),
-	website: varchar({ length: 255 }),
-	instagramId: varchar("instagram_id", { length: 255 }),
-	googleMapsLink: varchar("google_maps_link", { length: 255 }),
-	address: text(),
-	pluscode: varchar({ length: 255 }),
-	services: integer().array(),
-	brands: integer().array(),
-	gstn: varchar({ length: 50 }),
-	state: varchar({ length: 100 }),
-	district: varchar({ length: 100 }),
-	city: varchar({ length: 100 }),
-	pincode: char({ length: 6 }),
-	rscore: integer(),
-	tag: varchar({ length: 255 }),
-	notes: text(),
-	businessfilled: boolean(),
-	tier3: boolean(),
-	isvisible: boolean(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("in_business_profiles_slug_idx").using("btree", table.slug.asc().nullsLast().op("text_ops")),
-	unique("in_business_profiles_business_id_key").on(table.businessId),
 ]);
 
 export const masterlistIndianBusinesses = pgTable("masterlist_indian_businesses", {
@@ -837,10 +759,43 @@ export const masterlistIndianBusinesses = pgTable("masterlist_indian_businesses"
 	check("check_empanelled", sql`empanelled_vendor = ANY (ARRAY[0, 1])`),
 ]);
 
-export const businessAccounts = pgTable("business_accounts", {
+export const inBusinessProfiles = pgTable("in_business_profiles", {
 	id: serial().primaryKey().notNull(),
-	countryCode: char("country_code", { length: 2 }).notNull(),
-	sourceId: integer("source_id").notNull(),
+	businessId: integer("business_id").notNull(),
+	slug: varchar({ length: 255 }),
+	businessname: varchar({ length: 255 }),
+	email: varchar({ length: 255 }),
+	phonenumber: varchar({ length: 20 }),
+	whatsapp: varchar({ length: 20 }),
+	description: varchar({ length: 256 }),
+	website: varchar({ length: 255 }),
+	instagramId: varchar("instagram_id", { length: 255 }),
+	googleMapsLink: varchar("google_maps_link", { length: 255 }),
+	address: text(),
+	pluscode: varchar({ length: 255 }),
+	services: integer().array(),
+	brands: integer().array(),
+	gstn: varchar({ length: 50 }),
+	state: varchar({ length: 100 }),
+	district: varchar({ length: 100 }),
+	city: varchar({ length: 100 }),
+	pincode: char({ length: 6 }),
+	rscore: integer(),
+	tag: varchar({ length: 255 }),
+	notes: text(),
+	businessfilled: boolean(),
+	tier3: boolean(),
+	isvisible: boolean(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("in_business_profiles_slug_idx").using("btree", table.slug.asc().nullsLast().op("text_ops")),
+	unique("in_business_profiles_business_id_key").on(table.businessId),
+]);
+
+export const inBusinessAccounts = pgTable("in_business_accounts", {
+	id: serial().primaryKey().notNull(),
+	businessId: integer("business_id").notNull(),
 	loginEmail: varchar("login_email", { length: 255 }),
 	loginPassword: varchar("login_password", { length: 255 }),
 	magicLinkToken: text("magic_link_token"),
@@ -852,29 +807,34 @@ export const businessAccounts = pgTable("business_accounts", {
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	index("business_accounts_login_email_idx").using("btree", table.countryCode.asc().nullsLast().op("text_ops"), table.loginEmail.asc().nullsLast().op("text_ops")),
-	index("business_accounts_magic_token_idx").using("btree", table.countryCode.asc().nullsLast().op("text_ops"), table.magicLinkToken.asc().nullsLast().op("bpchar_ops")),
+	index("in_business_accounts_login_email_idx").using("btree", table.loginEmail.asc().nullsLast().op("text_ops")),
+	index("in_business_accounts_magic_token_idx").using("btree", table.magicLinkToken.asc().nullsLast().op("text_ops")),
+	unique("in_business_accounts_business_id_key").on(table.businessId),
+]);
+
+export const countries = pgTable("countries", {
+	code: char({ length: 2 }).primaryKey().notNull(),
+	name: text().notNull(),
+	isActive: boolean("is_active").default(true).notNull(),
+});
+
+export const geoLocations = pgTable("geo_locations", {
+	id: serial().primaryKey().notNull(),
+	countryCode: char("country_code", { length: 2 }).notNull(),
+	level1: varchar({ length: 255 }).notNull(),
+	level2: varchar({ length: 255 }).notNull(),
+	city: varchar({ length: 255 }).notNull(),
+	level1Slug: varchar("level1_slug", { length: 255 }).notNull(),
+	level2Slug: varchar("level2_slug", { length: 255 }).notNull(),
+	citySlug: varchar("city_slug", { length: 255 }).notNull(),
+}, (table) => [
+	index("geo_locations_level2_idx").using("btree", table.countryCode.asc().nullsLast().op("text_ops"), table.level1Slug.asc().nullsLast().op("bpchar_ops"), table.level2Slug.asc().nullsLast().op("bpchar_ops")),
 	foreignKey({
 			columns: [table.countryCode],
 			foreignColumns: [countries.code],
-			name: "business_accounts_country_code_fkey"
+			name: "geo_locations_country_code_fkey"
 		}),
-	unique("business_accounts_country_code_source_id_key").on(table.countryCode, table.sourceId),
-]);
-
-export const chatbotmessagesstore = pgTable("chatbotmessagesstore", {
-	id: serial().primaryKey().notNull(),
-	ip: varchar({ length: 45 }).notNull(),
-	timestamp: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
-	messageType: varchar("message_type", { length: 10 }).notNull(),
-	messageContent: text("message_content").notNull(),
-	sessionId: varchar("session_id", { length: 100 }),
-	processingTimeMs: integer("processing_time_ms"),
-	tokensUsed: integer("tokens_used"),
-	metadata: jsonb(),
-}, (table) => [
-	index("chatbotmessagesstore_session_idx").using("btree", table.sessionId.asc().nullsLast().op("text_ops"), table.timestamp.asc().nullsLast().op("text_ops")),
-	check("chatbotmessagesstore_message_type_check", sql`(message_type)::text = ANY ((ARRAY['user'::character varying, 'assistant'::character varying])::text[])`),
+	unique("geo_locations_country_code_level1_slug_level2_slug_city_slu_key").on(table.countryCode, table.level1Slug, table.level2Slug, table.citySlug),
 ]);
 
 export const businesses = pgTable("businesses", {
@@ -918,6 +878,31 @@ export const businesses = pgTable("businesses", {
 	unique("businesses_country_code_source_id_key").on(table.countryCode, table.sourceId),
 ]);
 
+export const businessAccounts = pgTable("business_accounts", {
+	id: serial().primaryKey().notNull(),
+	countryCode: char("country_code", { length: 2 }).notNull(),
+	sourceId: integer("source_id").notNull(),
+	loginEmail: varchar("login_email", { length: 255 }),
+	loginPassword: varchar("login_password", { length: 255 }),
+	magicLinkToken: text("magic_link_token"),
+	magicLinkTokenExpiresAt: timestamp("magic_link_token_expires_at", { withTimezone: true, mode: 'string' }),
+	resetToken: varchar("reset_token", { length: 255 }),
+	resetTokenExpires: timestamp("reset_token_expires", { mode: 'string' }),
+	isvisible: boolean(),
+	lastLogin: timestamp("last_login", { mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("business_accounts_login_email_idx").using("btree", table.countryCode.asc().nullsLast().op("text_ops"), table.loginEmail.asc().nullsLast().op("text_ops")),
+	index("business_accounts_magic_token_idx").using("btree", table.countryCode.asc().nullsLast().op("text_ops"), table.magicLinkToken.asc().nullsLast().op("bpchar_ops")),
+	foreignKey({
+			columns: [table.countryCode],
+			foreignColumns: [countries.code],
+			name: "business_accounts_country_code_fkey"
+		}),
+	unique("business_accounts_country_code_source_id_key").on(table.countryCode, table.sourceId),
+]);
+
 export const leads = pgTable("leads", {
 	id: serial().primaryKey().notNull(),
 	countryCode: char("country_code", { length: 2 }).notNull(),
@@ -959,6 +944,21 @@ export const leads = pgTable("leads", {
 		}),
 	unique("leads_country_code_source_id_key").on(table.countryCode, table.sourceId),
 	check("leads_claim_count_check", sql`(claim_count >= 0) AND (claim_count <= 5)`),
+]);
+
+export const chatbotmessagesstore = pgTable("chatbotmessagesstore", {
+	id: serial().primaryKey().notNull(),
+	ip: varchar({ length: 45 }).notNull(),
+	timestamp: timestamp({ mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	messageType: varchar("message_type", { length: 10 }).notNull(),
+	messageContent: text("message_content").notNull(),
+	sessionId: varchar("session_id", { length: 100 }),
+	processingTimeMs: integer("processing_time_ms"),
+	tokensUsed: integer("tokens_used"),
+	metadata: jsonb(),
+}, (table) => [
+	index("chatbotmessagesstore_session_idx").using("btree", table.sessionId.asc().nullsLast().op("text_ops"), table.timestamp.asc().nullsLast().op("text_ops")),
+	check("chatbotmessagesstore_message_type_check", sql`(message_type)::text = ANY ((ARRAY['user'::character varying, 'assistant'::character varying])::text[])`),
 ]);
 
 export const masterlistVendorDistrictCoverage = pgTable("masterlist_vendor_district_coverage", {

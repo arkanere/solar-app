@@ -7,6 +7,8 @@
 -- Regenerate after a schema change:
 --   npm run pull -w @solar/db && node scripts/generate-test-baseline.mjs
 
+CREATE SCHEMA "embeddings";
+
 CREATE SEQUENCE "public"."personal_website_blogs_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START WITH 1 CACHE 1;
 CREATE TABLE "authors" (
 	"id" serial PRIMARY KEY NOT NULL,
@@ -826,6 +828,14 @@ CREATE TABLE "us_projects" (
 	"city" varchar(100)
 );
 
+CREATE TABLE "embeddings"."in_embedding_index" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"page_link" text NOT NULL,
+	"last_update" timestamp,
+	"chunking_strategy" text,
+	"last_embedding_update" timestamp
+);
+
 ALTER TABLE "business_accounts" ADD CONSTRAINT "business_accounts_country_code_fkey" FOREIGN KEY ("country_code") REFERENCES "public"."countries"("code") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "businesses" ADD CONSTRAINT "businesses_country_code_fkey" FOREIGN KEY ("country_code") REFERENCES "public"."countries"("code") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "callsafehandles" ADD CONSTRAINT "callsafelinks_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."callsafeusers"("id") ON DELETE cascade ON UPDATE no action;
@@ -836,9 +846,9 @@ ALTER TABLE "in_proposals" ADD CONSTRAINT "proposals_lead_id_fkey" FOREIGN KEY (
 ALTER TABLE "in_referrers" ADD CONSTRAINT "fk_business" FOREIGN KEY ("business_id") REFERENCES "public"."businesses_1"("id") ON DELETE cascade ON UPDATE no action;
 ALTER TABLE "in_user_feedback" ADD CONSTRAINT "in_user_feedback_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."in_user"("id") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "leads" ADD CONSTRAINT "leads_country_code_fkey" FOREIGN KEY ("country_code") REFERENCES "public"."countries"("code") ON DELETE no action ON UPDATE no action;
-ALTER TABLE "legal_acceptances" ADD CONSTRAINT "legal_acceptances_business_fkey" FOREIGN KEY ("business_id","country_code") REFERENCES "public"."business_accounts"("source_id","country_code") ON DELETE no action ON UPDATE no action;
-ALTER TABLE "legal_acceptances" ADD CONSTRAINT "legal_acceptances_country_code_fkey" FOREIGN KEY ("country_code") REFERENCES "public"."countries"("code") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "legal_acceptances" ADD CONSTRAINT "legal_acceptances_policy_id_fkey" FOREIGN KEY ("policy_id") REFERENCES "public"."legal_policies"("id") ON DELETE no action ON UPDATE no action;
+ALTER TABLE "legal_acceptances" ADD CONSTRAINT "legal_acceptances_country_code_fkey" FOREIGN KEY ("country_code") REFERENCES "public"."countries"("code") ON DELETE no action ON UPDATE no action;
+ALTER TABLE "legal_acceptances" ADD CONSTRAINT "legal_acceptances_business_fkey" FOREIGN KEY ("country_code","business_id") REFERENCES "public"."business_accounts"("country_code","source_id") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "project_management" ADD CONSTRAINT "projectmanagement_lead_id_fkey" FOREIGN KEY ("lead_id") REFERENCES "public"."leaddata"("id") ON DELETE cascade ON UPDATE no action;
 ALTER TABLE "solar_products" ADD CONSTRAINT "solar_products_brand_slug_fkey" FOREIGN KEY ("brand_slug") REFERENCES "public"."solar_brands"("slug") ON DELETE no action ON UPDATE no action;
 CREATE INDEX "business_accounts_login_email_idx" ON "business_accounts" USING btree ("country_code","login_email");

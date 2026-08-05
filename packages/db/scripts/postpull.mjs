@@ -36,5 +36,53 @@ for (let i = 0; i < lines.length; i++) {
 	}
 }
 
-writeFileSync(schemaPath, lines.join('\n'));
-console.log(`postpull: removed ${dropped} unused \`table\` parameter(s)`);
+// 3. Composite foreign keys come out with the two sides in different orders.
+//
+//    drizzle-kit lists `columns` in the *local* table's column order but
+//    `foreignColumns` in the *referenced* table's column order. foreignKey()
+//    pairs them positionally, so whenever those orders disagree the emitted
+//    constraint is wrong. For legal_acceptances that means
+//    business_id -> country_code (integer -> char(2)), which Postgres rejects
+//    outright — it breaks `scripts/generate-test-baseline.mjs`, so the whole
+//    integration suite fails to build its schema.
+//
+//    The fix is to reorder the local `columns` to match `foreignColumns`.
+//    Keyed by constraint name because the correct pairing lives in the
+//    database, not in the emitted file: if another composite FK is ever added,
+//    check `pg_get_constraintdef` for it and add an entry here.
+const COMPOSITE_FK_COLUMN_ORDER = {
+	// LIVE: FOREIGN KEY (country_code, business_id)
+	//       REFERENCES business_accounts(country_code, source_id)
+	legal_acceptances_business_fkey: ['table.countryCode', 'table.businessId']
+};
+
+let reordered = 0;
+let src = lines.join('\n');
+
+// One foreignKey({...}) block at a time, so a match can never span two of them.
+src = src.replace(/foreignKey\(\{[\s\S]*?\}\)/g, (block) => {
+	const name = block.match(/name: "([^"]+)"/)?.[1];
+	const order = name && COMPOSITE_FK_COLUMN_ORDER[name];
+	if (!order) return block;
+
+	const cols = block.match(/columns: \[([^\]]*)\]/)?.[1] ?? '';
+	const wanted = order.join(', ');
+	if (cols.trim() === wanted) return block;
+
+	// Only reorder — never add or drop a column.
+	const present = cols.split(',').map((c) => c.trim()).sort().join('|');
+	if (present !== [...order].sort().join('|')) {
+		throw new Error(
+			`postpull: ${name} columns [${cols.trim()}] are not a reordering of ` +
+				`[${wanted}]. The schema changed — update COMPOSITE_FK_COLUMN_ORDER.`
+		);
+	}
+	reordered++;
+	return block.replace(/columns: \[[^\]]*\]/, `columns: [${wanted}]`);
+});
+
+writeFileSync(schemaPath, src);
+console.log(
+	`postpull: removed ${dropped} unused \`table\` parameter(s), ` +
+		`reordered ${reordered} composite foreign key(s)`
+);

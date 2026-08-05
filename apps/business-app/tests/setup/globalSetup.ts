@@ -1,8 +1,8 @@
 // Runs once per `vitest` invocation, before any test file.
 //
-// Drops and rebuilds the public schema, then replays the numbered SQL
-// migrations. Rebuilding from scratch each run means a test can never pass
-// because of state a previous run left behind.
+// Drops and rebuilds every schema the baseline creates, then replays the
+// numbered SQL migrations. Rebuilding from scratch each run means a test can
+// never pass because of state a previous run left behind.
 
 import pg from 'pg';
 // @ts-expect-error - plain .mjs script shared with main-app, no types
@@ -32,11 +32,19 @@ export default async function setup() {
 		await client.end();
 		throw new Error(
 			`Refusing to run tests against database "${dbName}" — the suite drops and ` +
-				'recreates the public schema, and this name does not contain "test".'
+				'recreates its schemas, and this name does not contain "test".'
 		);
 	}
 
-	await client.query('DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;');
+	// `embeddings` is in the baseline too (packages/db/src/schema/embeddings.ts),
+	// and the baseline's CREATE SCHEMA is not idempotent — so drop it here or the
+	// second run of the suite fails on "schema already exists". `public` is
+	// recreated because Postgres expects it to exist; the baseline creates
+	// `embeddings` itself.
+	await client.query(
+		'DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public; ' +
+			'DROP SCHEMA IF EXISTS embeddings CASCADE;'
+	);
 	await client.end();
 
 	await applyMigrations(TEST_POSTGRES_URL);
