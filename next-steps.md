@@ -20,20 +20,26 @@
    `business.solarvipani.com/[slug]/reset-password/[token]` with no country segment.
 
 3. **Country-resolution gaps: the rest of the page loads.** The three sites this item originally
-   named are done (`f8eaa73`, `86bec48`, `87ddc19`), as is the **dashboard** (3d) — which was the
-   one gating item 2's smoke test. **Five** page loads still carry the literal `countryCode = 'in'`:
-   - `crm/+page.server.ts` (63, 84, 102, 129, 149), `project-management/+page.server.ts` (41, 67),
+   named are done (`f8eaa73`, `86bec48`, `87ddc19`), as are the **dashboard** (3d) — the one gating
+   item 2's smoke test — and **`/crm`** (3e). **Four** page loads still carry the literal
+   `countryCode = 'in'`:
+   - `project-management/+page.server.ts` (41, 67),
      `recent-projects/+page.server.ts` (80), `proposal/+page.server.ts` (43),
      `compliance/+page.server.ts` (47, and **57/58**, where `'in'` is passed to
      `checkLeadDataPolicy` and `getAcceptanceHistory` — the original sweep listed only line 47).
 
-   All five sit under `[business_slug]`, whose layout already resolves `country` and puts it in page
+   All four sit under `[business_slug]`, whose layout already resolves `country` and puts it in page
    data, so the fix is the same one-line substitution as `86bec48` — take `country` from `parent()`
    and **do not** default it to `'in'` when absent. `tests/routing/pageCountry.test.ts` is the
    pattern for testing a page load directly; verify any new case fails against the literal first.
 
-   Note `project-management` and `crm` also read `leads` with a literal — those need the same
-   treatment, and `crm` reads both `businesses` and `leads`.
+   Note `project-management` also reads `leads` with a literal, so it needs the same treatment on
+   both tables.
+
+   **The category-1 (non-exclusive) lead read is untested on the US side** in both the dashboard and
+   `/crm`. It filters `leads.level1 IN (uniqueStates)`, and `createUsLead()` has no `state` option,
+   so a US fixture lead can never match. Covering it means adding one — worth doing when a US
+   business first needs to see non-exclusive leads.
 
    **Still IN-shaped after the country fix:** these loads select `IN_BUSINESS_SELECTION` /
    `IN_LEAD_SELECTION` unconditionally, so a US business's rows come back under India's legacy

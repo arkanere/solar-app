@@ -26,6 +26,9 @@ const { load: referralLoad } = await import(
 const { load: dashboardLoad } = await import(
 	'../../src/routes/(layout-1)/[business_slug]/+page.server'
 );
+const { load: crmLoad } = await import(
+	'../../src/routes/(layout-1)/[business_slug]/crm/+page.server'
+);
 
 /** Stands in for the layout, which resolves country from the slug. */
 function context(business_slug: string, country: 'in' | 'us' | undefined) {
@@ -173,6 +176,63 @@ describe('country resolution in the dashboard load', () => {
 		await createBusiness({ slug: 'pune-solar' });
 
 		const data = await dashboardLoad(context('pune-solar', undefined));
+
+		expect(data.errorMessage).toBe('Business not found');
+		expect(data.business).toBeUndefined();
+	});
+});
+
+// /crm repeats the dashboard's five reads almost verbatim — same business
+// lookup, same branch join, same three lead queries — so it failed for a US
+// business the same way.
+describe('country resolution in the /crm load', () => {
+	beforeEach(async () => {
+		await resetDatabase();
+	});
+
+	it('loads a US business, its branches and both kinds of lead', async () => {
+		const mainId = await createUsBusiness({ slug: 'oakland-solar' });
+		const branchId = await createUsBusiness({ slug: 'oakland-solar-berkeley' });
+		await createBranch(mainId, branchId);
+		// One claimed (business_id + category 2) and one exclusive (urlparams),
+		// which are the two lead filters this load can reach for a US business.
+		await createUsLead({ businessId: mainId, category: 2 });
+		await createUsLead({ urlparams: '/us/installer/oakland-solar?utm_source=test' });
+
+		const data = await crmLoad(context('oakland-solar', 'us'));
+
+		// This load's business selection has no `slug` column, unlike the
+		// dashboard's — assert on the id the fixture returned instead.
+		expect(data.errorMessage).toBeUndefined();
+		expect(data.business?.id).toBe(mainId);
+		expect(data.branches?.map((b) => b.slug)).toEqual(['oakland-solar-berkeley']);
+		expect(data.leads).toHaveLength(2);
+	});
+
+	it('still loads an IN business and its claimed leads', async () => {
+		const mainId = await createBusiness({ slug: 'pune-solar' });
+		await createLead({ businessId: mainId, category: 2 });
+
+		const data = await crmLoad(context('pune-solar', 'in'));
+
+		expect(data.business?.id).toBe(mainId);
+		expect(data.leads).toHaveLength(1);
+	});
+
+	it('does not return the other country’s business for a matching slug', async () => {
+		await createBusiness({ slug: 'shared-slug' });
+		await createUsBusiness({ slug: 'shared-slug' });
+
+		const asUs = await crmLoad(context('shared-slug', 'us'));
+		const asIn = await crmLoad(context('shared-slug', 'in'));
+
+		expect(asUs.business?.id).not.toBe(asIn.business?.id);
+	});
+
+	it('reports not-found rather than guessing when the layout has no country', async () => {
+		await createBusiness({ slug: 'pune-solar' });
+
+		const data = await crmLoad(context('pune-solar', undefined));
 
 		expect(data.errorMessage).toBe('Business not found');
 		expect(data.business).toBeUndefined();
