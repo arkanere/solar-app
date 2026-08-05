@@ -98,6 +98,18 @@ not already imply. Target is `/[business_slug]/crm`, not `/in/[business_slug]/cr
 - **Country resolution wired** (`978d6b1`) — `$lib/server/resolveCountry.ts`
   (`countryForSlug`, `countryForLoginEmail`) and `$lib/server/writeTargets.ts`, threaded through
   `[business_slug]/+layout.server.ts` and all 18 API endpoints that had `'in'` hardcoded.
+- **Migration 054 written** (`9998a92`) — unites the legacy tables on the IN structure.
+  **Not applied to live.**
+
+### Pick up here
+
+1. Decide on / apply **054** (`psql "$POSTGRES_URL_NON_POOLING" < 054-unite-country-legacy-tables.sql`),
+   then verify the copy: 12 businesses, 4 leads, 1 branch, 0 projects, ids unchanged, unified
+   `businesses`/`leads` counts unmoved.
+2. Write **055** to repoint the `sv_sync_*` `'us'` arms, then collapse `writeTargets.ts`.
+3. Steps B–E below (route move, path literals, rename, tests) are independent of 054/055 and can
+   proceed in parallel — **E unblocks the red test suite**, so it is the cheapest thing to do next
+   if the migration decision stalls.
 
 ### Two facts that constrain everything left
 
