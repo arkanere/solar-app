@@ -179,7 +179,7 @@ The cluster lived in a scratch directory and is gone. Either install Docker and 
 file as originally intended, or re-run the four commands above (anywhere writable) and export
 `TEST_POSTGRES_URL`. The suite rebuilds its schema per run, so a fresh empty database is fine.
 
-### Phases 7–9 — main-app (54 files) — Phase 7 done, **Phase 8 next**
+### ✅ Phases 7–9 — main-app (54 files) — ALL DONE 2026-08-05
 Enumerate and batch the same way now that business-app is done (main-app already imports `db`, so no plumbing
 phase). Rough split: 7 = reads/page loads, 8 = simple mutations, 9 = lead pipeline + anything transactional.
 Also the 1 raw-SQL file in `packages/`.
@@ -592,7 +592,8 @@ is absent from it, and the "1 file in packages" turned out to be a false positiv
 | 3 | `main-app/scripts/chatbot-related/sync-embedding-index.js` |
 | 2 | `main-app/scripts/chatbot-related/embed-city-pages.js` |
 
-**Decided 2026-08-05: option 1.** See the "NEXT PHASE" section immediately above for the plan.
+**Decided 2026-08-05: option 1 — and both halves are now done.** See the two "DONE 2026-08-05"
+sections below for the TypeScript conversion and the Drizzle migration that followed it.
 The reasoning is recorded below as it stood when the options were open.
 
 **This is a decision, not a leftover batch.** The whole rationale in the plan's header is "solo
@@ -622,11 +623,77 @@ back clean; it is a deletion candidate.
 
 ---
 
-## ← NEXT PHASE — Migrate `user-app`'s queries to Drizzle
+## ✅ DONE 2026-08-05 — Migrate `user-app`'s queries to Drizzle
 
-The TypeScript conversion above is done, which was its stated prerequisite ("the type-checker is the
-reviewer"). This is the last raw-SQL surface in the request path, and finishing it is what lets
-CLAUDE.md drop the `user-app` carve-out.
+**The migration is finished.** `grep -rn "pool\.query\|client\.query" apps/user-app/src` returns
+nothing and `createPool` appears only in `lib/server/db.ts`, so all three apps are now converted and
+CLAUDE.md has dropped the `user-app` carve-out. `npm run check -w user-app` held at the 1-error
+baseline (the `vite.config.js` duplicate-Vite-types artifact) and `npm run build -w user-app` passed
+at every batch — the only two signals available, since user-app has no test suite.
+
+**Done in 5 commits.** Phase 0 first, then unifiedSync, then everything else:
+
+| Batch | What |
+| --- | --- |
+| ✅ 0 | `@solar/db` dep + `lib/server/db.ts` with a module-private pool feeding `createDb` |
+| ✅ A | `unifiedSync` + its two callers, `submitLead` and `uploadBill` |
+| ✅ B | auth lib: `TokenManager`, `LoginTracker` |
+| ✅ C | `generateUserMagicLink`, `sendLeadSubmissionConfirmation` |
+| ✅ D | the three `+page.server.ts` loads: `in/`, `in/feedback`, `in/thank-you` |
+
+**The five per-handler `createPool` call sites are gone**, which is the 2026-08-04 pooling fix finally
+reaching this app. `TokenManager.getUserByEmail` also dropped a `pool.connect()` /
+`finally { client.release() }` wrapped around a single SELECT.
+
+**Both `sql` hatches next-steps flagged in advance landed as predicted**, plus a few more:
+- `LOWER(level2) = LOWER($1)` in thank-you and sendLeadSubmissionConfirmation.
+- **The `LoginTracker` interval was the one real security-shaped finding.** It built
+  `INTERVAL '${throttleHours} hours'` by string interpolation of a caller-supplied number — the only
+  unparameterised value in the app. Now `NOW() - make_interval(hours => $n)`, a real bind parameter.
+  (Same family as the Phase 8 `updateRecentProject` fix, though this one is reached only from
+  internal callers.)
+- `rscore DESC NULLS LAST` (×2). Postgres defaults `DESC` to `NULLS FIRST`, so `desc()` alone would
+  have silently changed the order. **Grep for `NULLS LAST` before converting an ORDER BY.**
+- `NOW()` / `CURRENT_TIMESTAMP` writes, and `SELECT sv_sync_lead(...)` in unifiedSync.
+
+**Nullability and `mode: 'string'` were the friction, exactly as Phase 7 predicted.** Everything was
+restated with ``sql<T>`${table.col}` `` rather than widening the declared interfaces, per the
+"Carry into the follow-on Drizzle phase" note above: `sql<number>` over the nullable
+`leads.source_id` (always set on rows projected from leaddata), `sql<Date | null>` over the
+`mode: 'string'` timestamps that `AuthUser.created_at` / `LastLoginUpdate.lastLogin` /
+`submittedAt` declare as Dates, and `sql<string>` over the nullable `businesses.businessname`.
+
+`generateUserMagicLink`'s `name = COALESCE($3, name)` became a conditional spread — omitting the key
+from the `.set()` keeps the stored name, which is what the COALESCE did when the caller sent none.
+
+### One mismatch found and deliberately left
+
+**`ClaimedBusiness.stage` and `.status` are declared `string | null`, but the columns are `smallint`
+and `boolean`** (`/in/+page.server.ts`). The raw driver's `any` hid it; the page's `getStageLabel()`
+indexes a `Record<string, string>` with the value and works by JS coercion. The conversion restates
+the declared types with `sql<string | null>`, so behaviour is byte-identical — but the honest types
+are `number | null` and `boolean | null`, and fixing it means touching `+page.svelte`. That is a UI
+change, not a query change, so it was kept out of the conversion batch. Same call as the `faq`
+nullability item under Phase 7a.
+
+### What is actually left in the monorepo
+
+- **The two `apps/main-app/scripts/chatbot-related/*.js` offline scripts** (5 raw-SQL call sites).
+  Still unassigned, still not request handlers. They are now the *only* raw SQL anywhere.
+- **`svelte-check` is still pinned at `^3.6.0`** across all three apps, and the Vite-types dedupe is
+  still undone. Both are described under the TypeScript phase above; they are the same kind of
+  change and want one commit across all three apps, because they will move the main-app (13) and
+  business-app (84) baselines.
+- **Deletion candidates**, both confirmed to have no importers anywhere:
+  `apps/main-app/src/lib/server/magicLink.ts` and `user-app`'s `createUserAuthService()`.
+- **`resetPassword` is still unreachable end to end** — nothing in the app issues a reset token.
+  Either add a forgot-password endpoint or delete the flow and its pages.
+- **`/us/api/claimLead` still never sends its emails** (the Phase 6 bug, left pending a decision
+  because fixing it *starts* sending mail to real installers and customers). See that section.
+
+---
+
+## Original plan for the user-app Drizzle phase (kept for reference)
 
 **Scope: 12 files, 31 call sites** (the table in the section below is still accurate — the file
 extensions are now `.ts`, and `TokenManager`/`LoginTracker` live under `lib/auth/user/`).

@@ -19,19 +19,18 @@ unless I ask for one — solo maintainer, no review step to wait on.
 
 ## Database queries
 
-All queries use Drizzle (`db` from `$lib/server/db`). `main-app` and `business-app` are fully
-migrated — neither exports a raw `pool` any more, so there is no way to write `pool.query` in them.
-The `sql` template escape hatch is allowed for genuinely awkward queries (`LOWER(a) = LOWER(b)`,
-window functions, `NOW() - INTERVAL`, the `sv_sync_*` functions); note each use in the commit
-message. It still parameterises — never interpolate a value into a query string.
+All queries use Drizzle (`db` from `$lib/server/db`). **All three apps are fully migrated** — none of
+them exports a raw `pool` any more, so there is no way to write `pool.query` in app code. The `sql`
+template escape hatch is allowed for genuinely awkward queries (`LOWER(a) = LOWER(b)`, window
+functions, `NOW() - INTERVAL`, `DESC NULLS LAST`, the `sv_sync_*` functions); note each use in the
+commit message. It still parameterises — never interpolate a value into a query string.
 
-`user-app` is the exception, temporarily: it is still on raw `pool.query` throughout, and still
-creates pools inside handlers. It was outside the migration's scope. It **is** now TypeScript and
-Svelte 5 runes (converted 2026-08-05), which was the agreed prerequisite; migrating its queries is
-the next phase in next-steps.md. Read that before touching it. Note it has no `@solar/db` dependency
-and no `lib/server/db.ts` yet, so it needs a plumbing step before any query converts — and its
-`check` baseline is 1 error, from a duplicate-Vite-types clash in `vite.config.js`, not from app
-code.
+`user-app` was the last holdout and converted 2026-08-05, after its TypeScript conversion earlier the
+same day. Its `check` baseline is 1 error, from a duplicate-Vite-types clash in `vite.config.js`, not
+from app code — a converted change passes if the count stays at 1. It has no test suite.
+
+The only raw SQL left in the monorepo is the two `apps/main-app/scripts/chatbot-related/*.js` offline
+scripts (5 call sites) — not request handlers, and still unassigned.
 
 Two things `drizzle-kit pull` does that regularly bite:
 - `jsonb` columns are typed `unknown` and timestamps `mode: 'string'`. Restate a shape with
