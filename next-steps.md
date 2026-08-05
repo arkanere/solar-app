@@ -92,7 +92,7 @@
 10. **India-shaped write forms that US businesses now reach.** Found while checking item 3's
     read-side claim, which turned out to be the wrong place to look.
 
-    **The branch form is done** (`d418a08`, `<addbranch-ui>`). It was broken three ways, not one: the
+    **The branch form is done** (`d418a08`, `0a8351a`). It was broken three ways, not one: the
     State dropdown offered `INDIAN_STATES` only, so the cascade could never start; `/api/getDistricts`
     and `/api/getCities` read `locations`, which is India-only; and `api/addBranch` never set
     `country_code` on its `businesses_1` insert, which defaults to `'in'` — so even a completed US
