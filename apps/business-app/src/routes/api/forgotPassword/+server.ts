@@ -17,9 +17,8 @@ import {
 	resetPasswordEmail,
 	resetPasswordUrl
 } from '$lib/server/passwordReset';
+import { countryForLoginEmail } from '$lib/server/resolveCountry';
 import { forgotPasswordSchema, parseBody } from '@solar/validation';
-
-const COUNTRY = 'in';
 
 export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 	// Said on every path that could otherwise distinguish a registered address
@@ -52,10 +51,22 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 			);
 		}
 
-		const target = await findResetTargetByEmail(COUNTRY, email);
+		// /api/forgotPassword takes an email rather than a slug, so the country
+		// cannot come off the path the way it does everywhere else in the
+		// country-less route tree. Resolve it from the account instead — this is
+		// the same problem /login has, and it uses the same lookup.
+		//
+		// Resolved *after* the rate limit deliberately: an unlimited lookup keyed
+		// on an attacker-supplied address is exactly the probe the limiter exists
+		// to stop, and null is folded into the same generic success as every other
+		// not-found path so it stays out of the response.
+		const country = await countryForLoginEmail(email);
+		if (!country) return json(genericSuccess);
+
+		const target = await findResetTargetByEmail(country, email);
 		if (!target) return json(genericSuccess);
 
-		const rawToken = await mintPasswordResetToken(COUNTRY, target.businessId);
+		const rawToken = await mintPasswordResetToken(country, target.businessId);
 		if (!rawToken) return json(genericSuccess);
 
 		const url = resetPasswordUrl(target.slug, rawToken);

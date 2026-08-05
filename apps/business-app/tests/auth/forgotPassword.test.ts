@@ -12,7 +12,12 @@ import { createBusiness, createUsBusiness, resetDatabase } from '../helpers/fixt
 import { jsonRequest } from '../helpers/request';
 import { countryForLoginEmail } from '$lib/server/resolveCountry';
 
-const sendEmail = vi.fn(async () => ({ success: true }));
+// Parameters are named so `sendEmail.mock.calls[i][n]` type-checks; a bare
+// `vi.fn(async () => …)` types every call's args as the empty tuple, which makes
+// any index into them an error.
+const sendEmail = vi.fn(async (_to: string, _subject: string, _message: string, _options?: unknown) => ({
+	success: true
+}));
 
 vi.mock('$lib/in/sendEmail', () => ({
 	sendEmail: (...args: unknown[]) => sendEmail(...(args as [])),
@@ -176,33 +181,72 @@ describe('POST /api/forgotPassword', () => {
 		expect(sendEmail).not.toHaveBeenCalled();
 	});
 
-	it('does not issue a token for an account in the other country', async () => {
-		// Used to assert this by calling the /us endpoint, which Phase 7 deleted.
-		// The isolation it was guarding is now enforced one level down: this
-		// endpoint is bound to COUNTRY = 'in', and findResetTargetByEmail filters
-		// on country_code, so a US address resolves to no target here.
+	it('issues a token for a US account too — the country comes from the email', async () => {
+		// This used to assert the opposite. The endpoint was pinned to
+		// COUNTRY = 'in', so a US address resolved to no target and silently got
+		// nothing back; the test recorded that as intended isolation. It was not —
+		// it was the one endpoint the country-resolution sweep missed, because it
+		// takes an email rather than a slug. countryForLoginEmail closes it.
 		const usEmail = 'owner@oakland-solar.test';
 		const usBusinessId = await createUsBusiness({ slug: 'oakland-solar', loginEmail: usEmail });
 
-		// The address is real — it just belongs to the other country.
 		expect(await countryForLoginEmail(usEmail)).toBe('us');
 
 		const { status, body } = await forgot({ email: usEmail });
 
-		// Indistinguishable from an unregistered address, per the enumeration rule.
 		expect(status).toBe(200);
 		expect(body.success).toBe(true);
-		expect(sendEmail).not.toHaveBeenCalled();
+		expect(sendEmail).toHaveBeenCalledTimes(1);
+		expect(sendEmail.mock.calls[0][0]).toBe(usEmail);
 
 		// businesses_1 holds both countries since 054, so this reads the US row by
 		// id *and* country_code — asserting on the id alone would still pass if the
-		// row had been written under the wrong country.
+		// token had been written onto an IN row that happened to share the id.
 		const { rows } = await pool.query<{ reset_token: string | null }>(
 			"SELECT reset_token FROM businesses_1 WHERE id = $1 AND country_code = 'us'",
 			[usBusinessId]
 		);
 		expect(rows).toHaveLength(1);
-		expect(rows[0].reset_token).toBeNull();
+		expect(rows[0].reset_token).toBeTruthy();
+
+		// No country segment in the link — business-app URLs are country-less, and
+		// the slug already implies the country.
+		const message = sendEmail.mock.calls[0][2];
+		expect(message).toContain('business.solarvipani.com/oakland-solar/reset-password/');
+	});
+
+	it('the US link resets the US password end to end', async () => {
+		const usEmail = 'owner@oakland-solar.test';
+		const usBusinessId = await createUsBusiness({ slug: 'oakland-solar', loginEmail: usEmail });
+
+		await forgot({ email: usEmail });
+		const rawToken = tokenFromEmail();
+
+		const { status, body } = await reset({
+			business_slug: 'oakland-solar',
+			token: rawToken,
+			newPassword: STRONG_PASSWORD
+		});
+
+		expect(status).toBe(200);
+		expect(body.success).toBe(true);
+
+		const stored = await storedReset(usBusinessId);
+		expect(stored.login_password).toBeTruthy();
+		expect(stored.reset_token).toBeNull();
+	});
+
+	it('still leaves an IN account alone when a US address is used', async () => {
+		// The two countries share businesses_1 now, so "resolved the country" has
+		// to mean the *other* country's row is untouched, not merely that this one
+		// worked.
+		const usEmail = 'owner@oakland-solar.test';
+		await createUsBusiness({ slug: 'oakland-solar', loginEmail: usEmail });
+
+		await forgot({ email: usEmail });
+
+		const inRow = await storedReset(businessId);
+		expect(inRow.reset_token).toBeNull();
 	});
 
 	it('rejects a malformed email with 400', async () => {
