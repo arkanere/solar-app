@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, text, timestamp, char, boolean, smallint, integer, doublePrecision, check, uuid, unique, index, date, foreignKey, numeric, uniqueIndex, jsonb, primaryKey, pgSequence } from "drizzle-orm/pg-core"
+import { pgTable, serial, varchar, text, timestamp, char, boolean, smallint, integer, doublePrecision, index, check, uuid, unique, date, foreignKey, numeric, uniqueIndex, jsonb, primaryKey, pgSequence } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 
@@ -82,29 +82,11 @@ export const leaddata = pgTable("leaddata", {
 	billFormat: text("bill_format"),
 	billUploadedAt: timestamp("bill_uploaded_at", { withTimezone: true, mode: 'string' }),
 	marketingConsent: boolean("marketing_consent").default(false).notNull(),
-}, () => [
+	countryCode: char("country_code", { length: 2 }).default('in').notNull(),
+}, (table) => [
+	index("leaddata_country_idx").using("btree", table.countryCode.asc().nullsLast().op("bpchar_ops")),
 	check("check_claim_count_limit", sql`(claim_count >= 0) AND (claim_count <= 5)`),
 ]);
-
-export const usLeaddataClaimrequests = pgTable("us_leaddata_claimrequests", {
-	id: integer().default(sql`nextval('leaddata_claimrequests_id_seq'::regclass)`).primaryKey().notNull(),
-	leadId: integer("lead_id").default(sql`nextval('leaddata_claimrequests_lead_id_seq'::regclass)`).notNull(),
-	claimId: integer("claim_id").default(sql`nextval('leaddata_claimrequests_claim_id_seq'::regclass)`).notNull(),
-	businessId: smallint("business_id"),
-	isallotted: boolean().default(false),
-	isresolved: boolean().default(false),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
-}, (table) => [
-	unique("unique_lead_business_claim_us").on(table.leadId, table.businessId),
-]);
-
-export const usBranches = pgTable("us_branches", {
-	id: integer().default(sql`nextval('branches_id_seq'::regclass)`).primaryKey().notNull(),
-	mainId: integer("main_id").notNull(),
-	branchId: integer("branch_id").notNull(),
-	isactive: boolean().default(true),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
-});
 
 export const businesses1 = pgTable("businesses_1", {
 	id: serial().primaryKey().notNull(),
@@ -140,10 +122,32 @@ export const businesses1 = pgTable("businesses_1", {
 	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
 	brands: integer().array(),
 	magicLinkTokenExpiresAt: timestamp("magic_link_token_expires_at", { withTimezone: true, mode: 'string' }),
+	countryCode: char("country_code", { length: 2 }).default('in').notNull(),
 }, (table) => [
+	index("businesses_1_country_slug_idx").using("btree", table.countryCode.asc().nullsLast().op("text_ops"), table.slug.asc().nullsLast().op("text_ops")),
 	index("idx_businesses_city").using("btree", table.city.asc().nullsLast().op("text_ops")),
 	index("idx_businesses_slug").using("btree", table.slug.asc().nullsLast().op("text_ops")),
 ]);
+
+export const usLeaddataClaimrequests = pgTable("us_leaddata_claimrequests", {
+	id: integer().default(sql`nextval('leaddata_claimrequests_id_seq'::regclass)`).primaryKey().notNull(),
+	leadId: integer("lead_id").default(sql`nextval('leaddata_claimrequests_lead_id_seq'::regclass)`).notNull(),
+	claimId: integer("claim_id").default(sql`nextval('leaddata_claimrequests_claim_id_seq'::regclass)`).notNull(),
+	businessId: smallint("business_id"),
+	isallotted: boolean().default(false),
+	isresolved: boolean().default(false),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
+}, (table) => [
+	unique("unique_lead_business_claim_us").on(table.leadId, table.businessId),
+]);
+
+export const usBranches = pgTable("us_branches", {
+	id: integer().default(sql`nextval('branches_id_seq'::regclass)`).primaryKey().notNull(),
+	mainId: integer("main_id").notNull(),
+	branchId: integer("branch_id").notNull(),
+	isactive: boolean().default(true),
+	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
+});
 
 export const claimdata = pgTable("claimdata", {
 	id: serial().primaryKey().notNull(),
@@ -759,6 +763,25 @@ export const masterlistIndianBusinesses = pgTable("masterlist_indian_businesses"
 	check("check_empanelled", sql`empanelled_vendor = ANY (ARRAY[0, 1])`),
 ]);
 
+export const inBusinessAccounts = pgTable("in_business_accounts", {
+	id: serial().primaryKey().notNull(),
+	businessId: integer("business_id").notNull(),
+	loginEmail: varchar("login_email", { length: 255 }),
+	loginPassword: varchar("login_password", { length: 255 }),
+	magicLinkToken: text("magic_link_token"),
+	magicLinkTokenExpiresAt: timestamp("magic_link_token_expires_at", { withTimezone: true, mode: 'string' }),
+	resetToken: varchar("reset_token", { length: 255 }),
+	resetTokenExpires: timestamp("reset_token_expires", { mode: 'string' }),
+	isvisible: boolean(),
+	lastLogin: timestamp("last_login", { mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("in_business_accounts_login_email_idx").using("btree", table.loginEmail.asc().nullsLast().op("text_ops")),
+	index("in_business_accounts_magic_token_idx").using("btree", table.magicLinkToken.asc().nullsLast().op("text_ops")),
+	unique("in_business_accounts_business_id_key").on(table.businessId),
+]);
+
 export const inBusinessProfiles = pgTable("in_business_profiles", {
 	id: serial().primaryKey().notNull(),
 	businessId: integer("business_id").notNull(),
@@ -788,28 +811,11 @@ export const inBusinessProfiles = pgTable("in_business_profiles", {
 	isvisible: boolean(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	countryCode: char("country_code", { length: 2 }).default('in').notNull(),
 }, (table) => [
+	index("in_business_profiles_country_idx").using("btree", table.countryCode.asc().nullsLast().op("bpchar_ops")),
 	index("in_business_profiles_slug_idx").using("btree", table.slug.asc().nullsLast().op("text_ops")),
 	unique("in_business_profiles_business_id_key").on(table.businessId),
-]);
-
-export const inBusinessAccounts = pgTable("in_business_accounts", {
-	id: serial().primaryKey().notNull(),
-	businessId: integer("business_id").notNull(),
-	loginEmail: varchar("login_email", { length: 255 }),
-	loginPassword: varchar("login_password", { length: 255 }),
-	magicLinkToken: text("magic_link_token"),
-	magicLinkTokenExpiresAt: timestamp("magic_link_token_expires_at", { withTimezone: true, mode: 'string' }),
-	resetToken: varchar("reset_token", { length: 255 }),
-	resetTokenExpires: timestamp("reset_token_expires", { mode: 'string' }),
-	isvisible: boolean(),
-	lastLogin: timestamp("last_login", { mode: 'string' }),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("in_business_accounts_login_email_idx").using("btree", table.loginEmail.asc().nullsLast().op("text_ops")),
-	index("in_business_accounts_magic_token_idx").using("btree", table.magicLinkToken.asc().nullsLast().op("text_ops")),
-	unique("in_business_accounts_business_id_key").on(table.businessId),
 ]);
 
 export const countries = pgTable("countries", {
