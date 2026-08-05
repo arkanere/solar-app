@@ -22,14 +22,28 @@
 3. **Country-resolution leftovers.** The sweep itself is **done** — no `[business_slug]` page load
    filters on a literal `countryCode = 'in'` any more (`f8eaa73`, `86bec48`, `87ddc19`, `bc24d16`,
    `5c9881b`, and the last four in one commit). `tests/routing/pageCountry.test.ts` covers all nine
-   loads, 27 cases, each verified red against its literal first. Two things it left behind:
+   loads, 32 cases, each verified red against its literal first. Both of the things it left behind are
+   now closed:
 
-   **Loads are still IN-shaped.** The dashboard, `/crm` and `/recent-projects` select
-   `IN_BUSINESS_SELECTION` / `IN_LEAD_SELECTION` unconditionally, so a US business's rows come back
-   under India's legacy column names (`district`, `pincode`/`pin_code` rather than `county`,
-   `zipcode`). The values are right — the aliases differ only in name, and since 054 the legacy
-   tables are on the IN structure — but the UI labels a US county "District". Switching to the `US_*`
-   selections changes the shape the `.svelte` components read, so it is its own task.
+   **Do not switch the loads to the `US_*` selections.** This was filed as an open task on the theory
+   that the dashboard, `/crm` and `/recent-projects` selecting `IN_*` unconditionally makes the UI
+   label a US county "District". Checked against the components on 2026-08-06: it does not. The lead
+   list's only location line is `LeadTile.svelte:179`, labelled **"Location"**, rendering
+   `{lead.pin_code} ({lead.district})` — a US business already sees `94601 (Alameda)`, which is right.
+   No component reads `businessInfo.district`, `.pincode` or `.gstn`; the only `gstn` reader is
+   `api/addBranch/+server.ts:116`, server-side. The swap would be a **regression**, twice over:
+
+   - `US_LEAD_SELECTION` aliases `level2` to `county`, but `LeadTile` reads `lead.district` and types
+     `lead` as `any` — so the location line would silently render `94601` with no name, and `check`
+     would not catch it.
+   - `US_LEAD_SELECTION` omits `business_notes`, `qualification_score`, `reference_uuid` and the four
+     `bill_*` columns. `CustomerInquiry.svelte` declares `business_notes` and `qualification_score` on
+     its `Lead` type (lines 11, 16). That selection was shaped to mimic the narrow legacy
+     `us_leaddata` table; since 054 unified `leads` carries these for both countries, so narrowing
+     buys nothing.
+
+   The real IN-only leakage is in the **write forms**, which is a different task and a live US bug —
+   see item 10.
 
    **The category-1 (non-exclusive) lead read is now tested on the US side** — `createUsLead()` took a
    `state` option and both loads got a positive case, a wrong-state case and a null-state case, all
@@ -74,6 +88,20 @@
    positive cases only pass because their fixture sets a state by hand. Closing it needs a US
    postal-code-to-state source — `pincode_mapping` is IN-only — which is a data question, not a code
    one. Whoever fixes it should flip those two tests rather than delete them.
+
+10. **Two business-app write forms are hard-coded India-shaped, and US businesses now reach them.**
+    Found while checking item 3's read-side claim, which turned out to be the wrong place to look.
+
+    - `AddBranch.svelte:161` labels its middle field **"District"** and drives a cascading State →
+      District → City picker off `/api/getDistricts` (reads `locations`) and `/api/getCities`, neither
+      of which takes a country. `/branch` has loaded for US businesses since the country sweep, so a
+      US business gets an India label over dropdowns that are almost certainly empty for it.
+    - `PostRecentProject.svelte:395-419` labels its fields **"Pincode:"** and **"District
+      (Auto-filled):"**, auto-filled from `/api/getDistrictByPincode`, which queries `pincode_mapping`
+      — IN-only, the same table behind item 9.
+
+    Labels are the easy half; the hard half is that neither dropdown has a US data source. Likely
+    blocked on the same missing US location data as item 9, and worth solving once for both.
 
 ---
 
