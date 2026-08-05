@@ -1,6 +1,6 @@
 export const prerender = false;
 import { redirect } from '@sveltejs/kit';
-import { UserAuthService } from '$lib/auth/user/index.js';
+import { UserAuthService } from '$lib/auth/user';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ params, cookies }) {

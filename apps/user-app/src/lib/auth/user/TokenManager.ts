@@ -1,17 +1,21 @@
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import crypto from 'crypto';
-import { AUTH_ERRORS, SUCCESS_RESPONSE, ERROR_RESPONSE } from './AuthTypes.js';
+import {
+	AUTH_ERRORS,
+	SUCCESS_RESPONSE,
+	ERROR_RESPONSE,
+	type AuthResult,
+	type AuthUser
+} from './AuthTypes';
 
 const pool = createPool({ connectionString: POSTGRES_URL });
 
 export class TokenManager {
 	/**
 	 * Validate magic link token and get user
-	 * @param {string} token - Magic link token
-	 * @returns {Promise<Object>} Validation result with user data
 	 */
-	static async validateMagicLinkToken(token) {
+	static async validateMagicLinkToken(token: string): Promise<AuthResult<{ user: AuthUser }>> {
 		try {
 			// Tokens are stored hashed at rest; match against the hash of the
 			// incoming raw token.
@@ -51,10 +55,8 @@ export class TokenManager {
 
 	/**
 	 * Get user by email
-	 * @param {string} email - User email
-	 * @returns {Promise<Object>} User data or error
 	 */
-	static async getUserByEmail(email) {
+	static async getUserByEmail(email: string): Promise<AuthResult<{ user: AuthUser }>> {
 		let client;
 		try {
 			client = await pool.connect();
@@ -91,10 +93,8 @@ export class TokenManager {
 
 	/**
 	 * Get user by ID
-	 * @param {number} userId - User ID
-	 * @returns {Promise<Object>} User data or error
 	 */
-	static async getUserById(userId) {
+	static async getUserById(userId: number): Promise<AuthResult<{ user: AuthUser }>> {
 		try {
 			const result = await pool.query(
 				`SELECT id, email, name, created_at

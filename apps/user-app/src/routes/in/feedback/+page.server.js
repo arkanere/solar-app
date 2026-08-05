@@ -1,6 +1,6 @@
 export const prerender = false;
 import { fail } from '@sveltejs/kit';
-import { UserAuthService } from '$lib/auth/user/index.js';
+import { UserAuthService } from '$lib/auth/user';
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 

@@ -1,16 +1,32 @@
-import { AUTH_METHODS, AUTH_ERRORS, SUCCESS_RESPONSE, ERROR_RESPONSE } from './AuthTypes.js';
-import { LoginTracker } from './LoginTracker.js';
-import { SessionManager } from './SessionManager.js';
-import { TokenManager } from './TokenManager.js';
+import type { Cookies } from '@sveltejs/kit';
+import {
+	AUTH_METHODS,
+	AUTH_ERRORS,
+	SUCCESS_RESPONSE,
+	ERROR_RESPONSE,
+	type AuthResult,
+	type AuthSuccess,
+	type AuthUser
+} from './AuthTypes';
+import { LoginTracker, type LastLoginUpdate } from './LoginTracker';
+import { SessionManager, type SessionData, type SessionUser } from './SessionManager';
+import { TokenManager } from './TokenManager';
 
 export class UserAuthService {
 	/**
 	 * Authenticate user using magic link token
-	 * @param {string} token - Magic link token
-	 * @param {Object} cookies - SvelteKit cookies object
-	 * @returns {Promise<Object>} Authentication result
 	 */
-	async authenticateWithMagicLink(token, cookies) {
+	async authenticateWithMagicLink(
+		token: string,
+		cookies: Cookies
+	): Promise<
+		AuthResult<{
+			user: AuthUser;
+			session: SessionData;
+			isNewLogin: boolean;
+			lastLogin: Date | null;
+		}>
+	> {
 		try {
 			// Validate token and get user
 			const tokenResult = await TokenManager.validateMagicLinkToken(token);
@@ -45,29 +61,25 @@ export class UserAuthService {
 
 	/**
 	 * Get user by email (for login pages)
-	 * @param {string} email - User email
-	 * @returns {Promise<Object>} User lookup result
 	 */
-	async getUserByEmail(email) {
+	async getUserByEmail(email: string): Promise<AuthResult<{ user: AuthUser }>> {
 		return await TokenManager.getUserByEmail(email);
 	}
 
 	/**
 	 * Validate existing session
-	 * @param {Object} cookies - SvelteKit cookies object
-	 * @returns {Object} Session validation result
 	 */
-	validateSession(cookies) {
+	validateSession(cookies: Cookies): AuthResult<{ session: SessionData; user: SessionUser }> {
 		return SessionManager.validateSession(cookies);
 	}
 
 	/**
 	 * Refresh session and optionally update last login for long-inactive users
-	 * @param {Object} cookies - SvelteKit cookies object
-	 * @param {Object} options - Refresh options
-	 * @returns {Promise<Object>} Refresh result
 	 */
-	async refreshSession(cookies, options = {}) {
+	async refreshSession(
+		cookies: Cookies,
+		options: { updateLastLogin?: boolean; activityThresholdHours?: number } = {}
+	): Promise<AuthResult<{ session: SessionData; user: SessionUser }>> {
 		const sessionResult = SessionManager.validateSession(cookies);
 		if (!sessionResult.success) {
 			return sessionResult;
@@ -79,7 +91,7 @@ export class UserAuthService {
 		if (options.updateLastLogin) {
 			const now = new Date();
 			const lastActivity = new Date(session.lastActivity);
-			const hoursSinceActivity = (now - lastActivity) / (1000 * 60 * 60);
+			const hoursSinceActivity = (now.getTime() - lastActivity.getTime()) / (1000 * 60 * 60);
 
 			if (hoursSinceActivity >= (options.activityThresholdHours || 24)) {
 				await LoginTracker.updateLastLogin(user.id);
@@ -91,10 +103,8 @@ export class UserAuthService {
 
 	/**
 	 * Logout user and clear session
-	 * @param {Object} cookies - SvelteKit cookies object
-	 * @returns {Object} Logout result
 	 */
-	logout(cookies) {
+	logout(cookies: Cookies): AuthResult<{ message: string }> {
 		try {
 			SessionManager.clearSession(cookies);
 
@@ -111,20 +121,18 @@ export class UserAuthService {
 
 	/**
 	 * Check if user is authenticated
-	 * @param {Object} cookies - SvelteKit cookies object
-	 * @returns {boolean}
 	 */
-	isAuthenticated(cookies) {
+	isAuthenticated(cookies: Cookies): boolean {
 		return SessionManager.isSessionValid(cookies);
 	}
 
 	/**
 	 * Update last login manually (utility method)
-	 * @param {number} userId - User ID
-	 * @param {Object} options - Update options
-	 * @returns {Promise<Object>} Update result
 	 */
-	async updateLastLogin(userId, options = {}) {
+	async updateLastLogin(
+		userId: number,
+		options: { throttleHours?: number } = {}
+	): Promise<AuthSuccess<LastLoginUpdate>> {
 		const result = await LoginTracker.updateLastLogin(userId, options);
 		return SUCCESS_RESPONSE(result);
 	}

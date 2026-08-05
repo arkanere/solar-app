@@ -1,18 +1,24 @@
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
-import { AUTH_CONFIG } from './AuthTypes.js';
+import { AUTH_CONFIG } from './AuthTypes';
 
 const pool = createPool({ connectionString: POSTGRES_URL });
+
+export interface LastLoginUpdate {
+	updated: boolean;
+	lastLogin: Date | null;
+	/** Only set when the update threw; tracking failures never fail the login. */
+	error?: string;
+}
 
 export class LoginTracker {
 	/**
 	 * Update last_login for a user with throttling
-	 * @param {number} userId - The user ID
-	 * @param {Object} options - Configuration options
-	 * @param {number} options.throttleHours - Hours to throttle updates (default: from AUTH_CONFIG)
-	 * @returns {Promise<{updated: boolean, lastLogin: Date|null}>}
 	 */
-	static async updateLastLogin(userId, options = {}) {
+	static async updateLastLogin(
+		userId: number,
+		options: { throttleHours?: number } = {}
+	): Promise<LastLoginUpdate> {
 		const throttleHours = options.throttleHours || AUTH_CONFIG.LAST_LOGIN_THROTTLE_HOURS;
 
 		try {
@@ -49,17 +55,15 @@ export class LoginTracker {
 			return {
 				updated: false,
 				lastLogin: null,
-				error: error.message
+				error: error instanceof Error ? error.message : String(error)
 			};
 		}
 	}
 
 	/**
 	 * Get last login time for a user
-	 * @param {number} userId - The user ID
-	 * @returns {Promise<Date|null>}
 	 */
-	static async getLastLogin(userId) {
+	static async getLastLogin(userId: number): Promise<Date | null> {
 		try {
 			const result = await pool.query('SELECT last_login FROM in_user WHERE id = $1', [userId]);
 			return result.rows[0]?.last_login || null;

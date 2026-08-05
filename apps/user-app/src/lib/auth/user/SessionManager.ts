@@ -1,13 +1,42 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { env } from '$env/dynamic/private';
-import { AUTH_CONFIG, AUTH_ERRORS, SUCCESS_RESPONSE, ERROR_RESPONSE } from './AuthTypes.js';
+import type { Cookies } from '@sveltejs/kit';
+import {
+	AUTH_CONFIG,
+	AUTH_ERRORS,
+	SUCCESS_RESPONSE,
+	ERROR_RESPONSE,
+	type AuthResult,
+	type AuthUser
+} from './AuthTypes';
+
+/**
+ * What is stored in the session cookie. `createSession` writes real `Date`s, but
+ * the cookie round-trips through JSON, so everything read back out is a string —
+ * hence the union. Every consumer already wraps these in `new Date(...)`.
+ */
+export interface SessionData {
+	userId: number;
+	userEmail: string;
+	userName: string | null;
+	loginTime: Date | string;
+	expires: Date | string;
+	lastActivity: Date | string;
+	authMethod: string;
+}
+
+export interface SessionUser {
+	id: number;
+	email: string;
+	name: string | null;
+}
 
 /**
  * HMAC sign/verify for the session cookie. Cookie value is
  * `base64url(payload).base64url(hmacSha256(payload))`. Tampered or legacy
  * unsigned cookies fail verification and are treated as logged-out.
  */
-function getSessionSecret() {
+function getSessionSecret(): string {
 	const secret = env.SESSION_SECRET;
 	if (!secret) {
 		throw new Error('SESSION_SECRET is not configured');
@@ -15,16 +44,16 @@ function getSessionSecret() {
 	return secret;
 }
 
-function signPayload(payloadB64) {
+function signPayload(payloadB64: string): string {
 	return createHmac('sha256', getSessionSecret()).update(payloadB64).digest('base64url');
 }
 
-function serializeSession(sessionData) {
+function serializeSession(sessionData: SessionData): string {
 	const payloadB64 = Buffer.from(JSON.stringify(sessionData), 'utf8').toString('base64url');
 	return `${payloadB64}.${signPayload(payloadB64)}`;
 }
 
-function deserializeSession(cookieValue) {
+function deserializeSession(cookieValue: string): SessionData | null {
 	const dot = cookieValue.indexOf('.');
 	if (dot <= 0) return null; // unsigned / malformed (e.g. legacy plain-JSON cookie)
 
@@ -44,11 +73,8 @@ function deserializeSession(cookieValue) {
 export class SessionManager {
 	/**
 	 * Create a new user session
-	 * @param {Object} user - User data
-	 * @param {string} authMethod - Authentication method used
-	 * @returns {Object} Session data
 	 */
-	static createSession(user, authMethod) {
+	static createSession(user: AuthUser | SessionUser, authMethod: string): SessionData {
 		const now = new Date();
 		const expires = new Date(now.getTime() + AUTH_CONFIG.SESSION_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
 
@@ -65,19 +91,15 @@ export class SessionManager {
 
 	/**
 	 * Set session cookie
-	 * @param {Object} cookies - SvelteKit cookies object
-	 * @param {Object} sessionData - Session data to store
 	 */
-	static setSessionCookie(cookies, sessionData) {
+	static setSessionCookie(cookies: Cookies, sessionData: SessionData): void {
 		cookies.set(AUTH_CONFIG.COOKIE_NAME, serializeSession(sessionData), AUTH_CONFIG.COOKIE_OPTIONS);
 	}
 
 	/**
 	 * Get session from cookie
-	 * @param {Object} cookies - SvelteKit cookies object
-	 * @returns {Object|null} Session data or null
 	 */
-	static getSessionFromCookie(cookies) {
+	static getSessionFromCookie(cookies: Cookies): SessionData | null {
 		try {
 			const sessionString = cookies.get(AUTH_CONFIG.COOKIE_NAME);
 			if (!sessionString) return null;
@@ -102,11 +124,11 @@ export class SessionManager {
 
 	/**
 	 * Validate and refresh session
-	 * @param {Object} cookies - SvelteKit cookies object
-	 * @param {Object} options - Options for validation
-	 * @returns {Object} Validation result
 	 */
-	static validateSession(cookies, options = {}) {
+	static validateSession(
+		cookies: Cookies,
+		options: { skipRefresh?: boolean } = {}
+	): AuthResult<{ session: SessionData; user: SessionUser }> {
 		const sessionData = this.getSessionFromCookie(cookies);
 
 		if (!sessionData) {
@@ -121,7 +143,10 @@ export class SessionManager {
 				this.setSessionCookie(cookies, sessionData);
 			} catch (error) {
 				// If we can't set cookies (e.g., during redirect), just continue
-				console.warn('Could not refresh session cookie:', error.message);
+				console.warn(
+					'Could not refresh session cookie:',
+					error instanceof Error ? error.message : error
+				);
 			}
 		}
 
@@ -137,18 +162,15 @@ export class SessionManager {
 
 	/**
 	 * Clear session cookie
-	 * @param {Object} cookies - SvelteKit cookies object
 	 */
-	static clearSession(cookies) {
+	static clearSession(cookies: Cookies): void {
 		cookies.delete(AUTH_CONFIG.COOKIE_NAME, { path: '/' });
 	}
 
 	/**
 	 * Check if session exists and is valid
-	 * @param {Object} cookies - SvelteKit cookies object
-	 * @returns {boolean}
 	 */
-	static isSessionValid(cookies) {
+	static isSessionValid(cookies: Cookies): boolean {
 		return this.getSessionFromCookie(cookies) !== null;
 	}
 }
