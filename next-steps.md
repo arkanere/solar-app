@@ -886,3 +886,55 @@ alongside `public`. Two back-to-back runs verified.
 **Only the `svelte-check` v4 upgrade + Vite-types dedupe** — one commit across all three apps,
 because it moves every baseline. Current: main-app **13 errors + 1 warning**, business-app
 **84 errors + 111 tests**, user-app **1 error + 2 warnings**.
+
+---
+
+## ✅ DONE 2026-08-05 — svelte-check v4 + dependency dedupe (the last open item)
+
+**The "duplicate Vite types" diagnosis in the TypeScript phase above was wrong.** It blamed
+main-app's stale kit. The actual cause: **the lockfile still carried six deleted apps** —
+`admin-app`, `au-app`, `in-app`, `uk-app`, `uk-app-nextjs`, `us-app`. Their old `vite@5.4.21`,
+`@sveltejs/vite-plugin-svelte@3.1.2` and `kit@2.70.1` were hoisted to the root `node_modules`, ahead
+of each app's own `vite@7`. All three apps already declared identical modern versions; nothing
+needed bumping. Regenerating the lockfile leaves one copy of each.
+
+**svelte-check 3.6 → 4.7.4.** v3 depends on `svelte-preprocess` and falls back to it when it cannot
+load a config — business-app is the only app with a `svelte.config.ts`, and once the tree was
+deduped v3 took that path and emitted 68 spurious "Encountered type error" failures. v4 uses
+`@sveltejs/load-config`, reads `.ts` configs, and has no `svelte-preprocess` dependency.
+
+| app | before | after |
+| --- | --- | --- |
+| main-app | 13 errors, 1 warning | **10 errors, 1 warning** |
+| business-app | 84 errors | **61 errors** |
+| user-app | 1 error, 2 warnings | **0 errors, 2 warnings** |
+
+**v4 prints machine format to a non-TTY** — `COMPLETED n FILES x ERRORS`, not `found x errors`.
+Any script or habit grepping the old string silently matches nothing.
+
+### business-app could not build, and had not been able to for some time
+
+`npm run build -w solarvipani-business` failed — verified at `7ec95a6` with the original lockfile,
+so it predates this session and was not caused by the upgrade. `$lib/compliance`'s barrel
+re-exported the server functions *and* `PolicyAcceptanceModal`, so four components dragged
+`$lib/server/db` into the browser bundle and SvelteKit refused to build. **The app was
+undeployable**, which would have silently blocked every fix landed today. The barrel no longer
+re-exports the component; the four components import the file directly.
+
+Lesson worth keeping: `check` does not catch this class of bug. **Run `npm run build` as well when
+touching imports.**
+
+### Found in passing — business-app's check covers far less than it looks
+
+Its script is `svelte-check --no-tsconfig --ignore "src/lib/components/ui"`, so **none of its `.ts`
+files are type-checked** — only `.svelte`. Confirmed by planting a deliberate type error in
+`lib/server/passwordReset.ts` and watching it pass. It is pre-existing (present at `HEAD` since at
+least Phase 5.5) and explains why business-app's number is a `.svelte`-only figure while main-app's
+and user-app's cover everything. Dropping the flag is worth doing, but it will raise the count, so
+it wants its own commit.
+
+### Nothing from the original follow-up list is open now
+
+The remaining known-but-unowned items are the two above (business-app's `--no-tsconfig`, and the
+4 dependabot advisories GitHub reports on push), plus the pre-existing UI-component errors that make
+up all three baselines.

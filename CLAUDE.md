@@ -26,8 +26,7 @@ functions, `NOW() - INTERVAL`, `DESC NULLS LAST`, the `sv_sync_*` functions); no
 commit message. It still parameterises — never interpolate a value into a query string.
 
 `user-app` was the last holdout and converted 2026-08-05, after its TypeScript conversion earlier the
-same day. Its `check` baseline is 1 error, from a duplicate-Vite-types clash in `vite.config.js`, not
-from app code — a converted change passes if the count stays at 1. It has no test suite.
+same day. It has no test suite.
 
 There is **no hand-written SQL left anywhere outside tests**, including the two
 `apps/main-app/scripts/chatbot-related/*` offline scripts (converted 2026-08-05; they run via `tsx`,
@@ -55,6 +54,25 @@ A third thing that has now bitten twice, and is not a `pull` artifact:
   `date.toISOString()`; a plain `timestamp` column does not — node-postgres reads a naive column
   back in the process's local zone, so an ISO (UTC) string comes back shifted by the offset. Write
   those local-naive. This silently expired every password-reset link before a test caught it.
+
+## Baselines
+
+`npm run check` is on **svelte-check v4**, which prints machine format when stdout is not a TTY —
+grep `COMPLETED n FILES x ERRORS`, not `found x errors`. A change passes if the count does not rise:
+
+| app | errors | warnings |
+| --- | --- | --- |
+| main-app | 10 | 1 |
+| business-app | 61 | 0 |
+| user-app | 0 | 2 |
+
+**business-app's check runs with `--no-tsconfig`**, so it only covers `.svelte` files — none of its
+`.ts` is type-checked, and `src/lib/components/ui` is ignored outright. That is long-standing, not
+deliberate as far as anyone recorded; the 61 errors are all `.svelte`. Dropping the flag is worth
+doing but will raise the number, so give it its own commit.
+
+Run `npm run build -w <app>` too when touching imports: `check` will not catch server code reaching
+a component, which is a hard build failure (see the `$lib/compliance` barrel, fixed 2026-08-05).
 
 ## Tests
 
