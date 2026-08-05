@@ -57,13 +57,25 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		throw error(403, 'Not authorized');
 	}
 
+	// The country comes from the layout, which resolved it from the slug. These
+	// reads used to filter on a literal 'in', so a US business loaded this page
+	// and was told its own profile did not exist. Not defaulted to 'in' when
+	// absent: the layout only omits it on its DB-error fallback, and guessing
+	// there would show a US business an India-shaped branch list.
+	const { country } = parentData;
+	if (!country) {
+		return {
+			errorMessage: 'Business not found',
+			branches: []
+		};
+	}
 
 	try {
 		// First, get the main business profile using the slug
 		const mainBusinessRows = await db
 			.select(BRANCH_BUSINESS_SELECTION)
 			.from(businesses)
-			.where(and(eq(businesses.countryCode, 'in'), eq(businesses.slug, businessSlug)));
+			.where(and(eq(businesses.countryCode, country), eq(businesses.slug, businessSlug)));
 
 		if (mainBusinessRows.length === 0) {
 			return {
@@ -81,7 +93,7 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 			.from(branchesTable)
 			.innerJoin(
 				businesses,
-				and(eq(businesses.countryCode, 'in'), eq(branchesTable.branchId, businesses.sourceId))
+				and(eq(businesses.countryCode, country), eq(branchesTable.branchId, businesses.sourceId))
 			)
 			.where(and(eq(branchesTable.mainId, mainBusinessId), eq(branchesTable.isactive, true)));
 		const branches = branchRows as unknown as Business[];

@@ -33,20 +33,37 @@ interface PageData {
 export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 	const businessSlug = params.business_slug;
 
+	// Get the parent layout data which contains authentication info. Hoisted out
+	// of the try because the `in_referrers` fallback in the catch needs `country`
+	// too; parent()'s own redirect/403 still propagates, as the catch re-throws
+	// anything carrying a status.
+	const parentData = await parent();
+
+	// Check if we have the session data
+	if (!parentData.business_session) {
+		throw error(403, 'Not authorized');
+	}
+
+	// Resolved by the layout from the slug, not hardcoded: this read used to
+	// filter on a literal 'in', so a US business 404'd on its own referral page.
+	// Absent only on the layout's DB-error fallback, and a fallback to 'in' would
+	// be a wrong answer rather than no answer.
+	//
+	// Note the referrers below stay IN-shaped — `in_referrers` has no US
+	// counterpart, so a US business correctly gets an empty list rather than
+	// another country's rows. Business ids are globally unique across
+	// businesses_1 since 054, so there is no cross-country collision here.
+	const { country } = parentData;
+	if (!country) {
+		throw error(404, 'Business not found');
+	}
+
 	try {
-		// Get the parent layout data which contains authentication info
-		const parentData = await parent();
-
-		// Check if we have the session data
-		if (!parentData.business_session) {
-			throw error(403, 'Not authorized');
-		}
-
 		// First get the business information from slug
 		const businessRows = await db
 			.select({ id: businesses.sourceId, businessname: businesses.businessname, slug: businesses.slug })
 			.from(businesses)
-			.where(and(eq(businesses.countryCode, 'in'), eq(businesses.slug, businessSlug)));
+			.where(and(eq(businesses.countryCode, country), eq(businesses.slug, businessSlug)));
 
 		if (businessRows.length === 0) {
 			throw error(404, 'Business not found');
@@ -87,7 +104,7 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 				const fallbackRows = await db
 					.select({ id: businesses.sourceId, businessname: businesses.businessname, slug: businesses.slug })
 					.from(businesses)
-					.where(and(eq(businesses.countryCode, 'in'), eq(businesses.slug, businessSlug)));
+					.where(and(eq(businesses.countryCode, country), eq(businesses.slug, businessSlug)));
 
 				return {
 					business: (fallbackRows[0] as unknown as Business) || undefined,
