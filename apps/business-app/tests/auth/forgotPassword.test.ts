@@ -194,10 +194,14 @@ describe('POST /in/api/forgotPassword', () => {
 		expect(body.success).toBe(true);
 		expect(sendEmail).not.toHaveBeenCalled();
 
+		// businesses_1 holds both countries since 054, so this reads the US row by
+		// id *and* country_code — asserting on the id alone would still pass if the
+		// row had been written under the wrong country.
 		const { rows } = await pool.query<{ reset_token: string | null }>(
-			'SELECT reset_token FROM us_businesses WHERE id = $1',
+			"SELECT reset_token FROM businesses_1 WHERE id = $1 AND country_code = 'us'",
 			[usBusinessId]
 		);
+		expect(rows).toHaveLength(1);
 		expect(rows[0].reset_token).toBeNull();
 	});
 

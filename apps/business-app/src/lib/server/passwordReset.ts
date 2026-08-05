@@ -6,12 +6,13 @@
 // issued link (last-write-wins, by design), and `resetPassword` consumes the
 // token by clearing it — which is what makes a second use fail.
 //
-// Writes go to the per-country legacy table, the same as mintBusinessTokenById:
-// that is still the write side, and the sv_sync_* projection carries the change
-// into business_accounts, which the auth layer reads.
+// Writes go to the legacy table, the same as mintBusinessTokenById: that is
+// still the write side, and the sv_sync_* projection carries the change into
+// business_accounts, which the auth layer reads. Since 054 that is one table
+// for every country, scoped by country_code rather than by table choice.
 
 import { db } from '$lib/server/db';
-import { businessAccounts, businesses, businesses1, usBusinesses } from '@solar/db/schema';
+import { businessAccounts, businesses, businesses1 } from '@solar/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { TokenSecurity } from '$lib/auth/business';
 import { syncAccountToUnified, syncInSplitTables } from '$lib/server/unifiedSync';
@@ -99,22 +100,24 @@ export async function mintPasswordResetToken(
 	const hash = TokenSecurity.hashToken(raw);
 	const expiresAt = TokenSecurity.getTokenExpiration(RESET_TTL_HOURS);
 
-	const table = country === 'us' ? usBusinesses : businesses1;
-
+	// Since 054 both countries live in businesses_1, discriminated by
+	// country_code. The filter is what keeps a US id from matching an IN row —
+	// it replaces the table choice that used to do that job.
 	const updated = await db
-		.update(table)
+		.update(businesses1)
 		.set({
 			resetToken: hash,
 			resetTokenExpires: toNaiveLocal(expiresAt)
 		})
-		.where(eq(table.id, businessId))
-		.returning({ id: table.id });
+		.where(and(eq(businesses1.id, businessId), eq(businesses1.countryCode, country)))
+		.returning({ id: businesses1.id });
 
 	if (updated.length === 0) return null;
 
-	if (country === 'in') {
-		await syncInSplitTables(db, businessId);
-	}
+	// Both countries now have in_business_profiles rows, so the split sync is no
+	// longer IN-only. sv_sync_account reads businesses_1 directly, but keeping
+	// the profile row fresh matters for sv_sync_business.
+	await syncInSplitTables(db, businessId);
 	await syncAccountToUnified(db, country, businessId);
 
 	return raw;

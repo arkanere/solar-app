@@ -114,7 +114,8 @@ CREATE TABLE "businesses_1" (
 	"last_login" timestamp,
 	"created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
 	"brands" integer[],
-	"magic_link_token_expires_at" timestamp with time zone
+	"magic_link_token_expires_at" timestamp with time zone,
+	"country_code" char(2) DEFAULT 'in' NOT NULL
 );
 
 CREATE TABLE "callsafe_email_campaign_log" (
@@ -336,6 +337,7 @@ CREATE TABLE "in_business_profiles" (
 	"isvisible" boolean,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"country_code" char(2) DEFAULT 'in' NOT NULL,
 	CONSTRAINT "in_business_profiles_business_id_key" UNIQUE("business_id")
 );
 
@@ -437,6 +439,7 @@ CREATE TABLE "leaddata" (
 	"bill_format" text,
 	"bill_uploaded_at" timestamp with time zone,
 	"marketing_consent" boolean DEFAULT false NOT NULL,
+	"country_code" char(2) DEFAULT 'in' NOT NULL,
 	CONSTRAINT "check_claim_count_limit" CHECK ((claim_count >= 0) AND (claim_count <= 5))
 );
 
@@ -855,6 +858,7 @@ CREATE INDEX "business_accounts_login_email_idx" ON "business_accounts" USING bt
 CREATE INDEX "business_accounts_magic_token_idx" ON "business_accounts" USING btree ("country_code","magic_link_token");
 CREATE INDEX "businesses_geo_idx" ON "businesses" USING btree ("country_code","level2","isvisible");
 CREATE INDEX "businesses_slug_idx" ON "businesses" USING btree ("country_code","slug");
+CREATE INDEX "businesses_1_country_slug_idx" ON "businesses_1" USING btree ("country_code","slug");
 CREATE INDEX "idx_businesses_city" ON "businesses_1" USING btree ("city");
 CREATE INDEX "idx_businesses_slug" ON "businesses_1" USING btree ("slug");
 CREATE UNIQUE INDEX "callsafe_unsubscribe_email_idx" ON "callsafe_unsubscribe" USING btree ("email");
@@ -863,10 +867,12 @@ CREATE INDEX "data_access_requests_status_idx" ON "data_access_requests" USING b
 CREATE INDEX "geo_locations_level2_idx" ON "geo_locations" USING btree ("country_code","level1_slug","level2_slug");
 CREATE INDEX "in_business_accounts_login_email_idx" ON "in_business_accounts" USING btree ("login_email");
 CREATE INDEX "in_business_accounts_magic_token_idx" ON "in_business_accounts" USING btree ("magic_link_token");
+CREATE INDEX "in_business_profiles_country_idx" ON "in_business_profiles" USING btree ("country_code");
 CREATE INDEX "in_business_profiles_slug_idx" ON "in_business_profiles" USING btree ("slug");
 CREATE INDEX "idx_referrers_in_business_id" ON "in_referrers" USING btree ("business_id");
 CREATE INDEX "idx_referrers_in_phone" ON "in_referrers" USING btree ("phone");
 CREATE INDEX "idx_referrers_slug" ON "in_referrers" USING btree ("business_id","slug");
+CREATE INDEX "leaddata_country_idx" ON "leaddata" USING btree ("country_code");
 CREATE INDEX "leads_created_idx" ON "leads" USING btree ("country_code","created_at");
 CREATE INDEX "legal_acceptances_business_policy_idx" ON "legal_acceptances" USING btree ("country_code","business_id","policy_id","accepted_at");
 CREATE INDEX "idx_earlier_to_earlier_date" ON "masterlist_indian_businesses" USING btree ("earlier_to_earlier_date");

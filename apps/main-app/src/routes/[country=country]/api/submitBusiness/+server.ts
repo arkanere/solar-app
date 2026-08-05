@@ -1,72 +1,22 @@
 import { db } from '$lib/server/db';
-import {
-	businesses1,
-	inBusinessAccounts,
-	inBusinessProfiles,
-	usBusinesses
-} from '@solar/db/schema';
-import { eq, sql } from 'drizzle-orm';
+import { businesses1, inBusinessAccounts, inBusinessProfiles } from '@solar/db/schema';
+import { and, eq, sql } from 'drizzle-orm';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { parseBody, submitBusinessSchema } from '@solar/validation';
 import { syncBusinessToUnified, syncAccountToUnified } from '$lib/server/unifiedSync';
 import { isCountry } from '$lib/countries';
 
-// US writes a single legacy table (us_businesses) where IN writes three. Both
-// table sets stay exactly as they were: de-countrying these writes belongs to
-// the write cutover in docs/country-scalable-architecture.md, not to this
-// migration (plan §3.4).
+// Since migration 054 both countries write the same legacy tables, keyed by
+// country_code, so the separate insertUsBusiness() path is gone. The US column
+// renames it used to apply (ein/county/zipcode) no longer exist — 054 copied
+// the US rows into the IN columns, so gstn/district/pincode are the only names.
+//
+// This must ship together with 055, which repoints sv_sync_*('us', …) at these
+// tables. A writer here without that migration writes rows the sync cannot see.
 //
 // NOTE on `isvisible`: the raw INSERTs passed the number 0 for these boolean
 // columns, which Postgres coerced to false on the way in. Drizzle types them
 // as booleans, so they are written as `false` — same stored value.
-async function insertUsBusiness(b: {
-	businessName: string;
-	address: string;
-	plusCode: string | null;
-	phoneNumber: string;
-	whatsappNumber: string | null;
-	email: string;
-	login_email: string;
-	website: string | null;
-	ein: string | null;
-	state: string;
-	county: string;
-	city: string;
-}): Promise<number> {
-	const inserted = await db
-		.insert(usBusinesses)
-		.values({
-			rscore: 0,
-			isvisible: false,
-			businessfilled: false,
-			pluscode: b.plusCode || null,
-			phonenumber: b.phoneNumber,
-			whatsapp: b.whatsappNumber || null,
-			email: b.email || null,
-			loginEmail: b.login_email,
-			website: b.website || null,
-			ein: b.ein || null,
-			state: b.state,
-			county: b.county,
-			city: b.city,
-			tag: 'blank',
-			slug: null,
-			notes: null,
-			businessname: b.businessName,
-			address: b.address
-		})
-		.returning({ id: usBusinesses.id });
-
-	const businessId = inserted[0].id;
-
-	// Idempotent with the us_businesses sync triggers (043/046); keeps the
-	// unified tables fresh once those triggers drop (phase 2.4). 'us' is tied to
-	// the table written above, exactly as 'in' is on the IN path below.
-	await syncBusinessToUnified(db, 'us', businessId);
-	await syncAccountToUnified(db, 'us', businessId);
-
-	return businessId;
-}
 
 async function sendConfirmation(
 	fetch: typeof globalThis.fetch,
@@ -113,56 +63,33 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 		// silently, which is the trap stage 15c of the /in plan documented.
 		const level2 = (country === 'in' ? parsed.data.district : parsed.data.county) as string;
 
-		if (country === 'us') {
-			const businessId = await insertUsBusiness({
-				businessName,
-				address,
-				plusCode,
-				phoneNumber,
-				whatsappNumber,
-				email,
-				login_email,
-				website,
-				ein: gstn,
-				state,
-				county: level2,
-				city
-			});
-			await sendConfirmation(fetch, country, businessId, {
-				businessName,
-				address,
-				plusCode,
-				phoneNumber,
-				whatsappNumber,
-				email,
-				login_email,
-				website,
-				gstn,
-				state,
-				county: level2,
-				city
-			});
-			return json({ success: true, id: businessId });
-		}
-
 		const district = level2;
 
 		// Check for duplicate GSTN. IN-only: US does not collect a tax id on
-		// signup, so every US row would collide on an empty value.
-		const duplicates = await db
-			.select({ business_id: inBusinessProfiles.businessId })
-			.from(inBusinessProfiles)
-			.where(eq(inBusinessProfiles.gstn, gstn as string));
+		// signup, so every US row would collide on an empty value. Now that both
+		// countries share in_business_profiles this also has to be scoped by
+		// country, or an IN signup could collide with a US row's NULL/empty gstn.
+		if (country === 'in') {
+			const duplicates = await db
+				.select({ business_id: inBusinessProfiles.businessId })
+				.from(inBusinessProfiles)
+				.where(
+					and(
+						eq(inBusinessProfiles.countryCode, country),
+						eq(inBusinessProfiles.gstn, gstn as string)
+					)
+				);
 
-		if (duplicates.length > 0) {
-			return json(
-				{
-					success: false,
-					error:
-						'A business with this GSTN already exists. Please check your GSTN or contact support if you believe this is an error.'
-				},
-				{ status: 400 }
-			);
+			if (duplicates.length > 0) {
+				return json(
+					{
+						success: false,
+						error:
+							'A business with this GSTN already exists. Please check your GSTN or contact support if you believe this is an error.'
+					},
+					{ status: 400 }
+				);
+			}
 		}
 
 		// Set default values for non-form fields
@@ -172,6 +99,12 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 		const slug = null;
 		const notes = null;
 
+		// `businesses_1.businessfilled` DEFAULTS TO TRUE, and the IN path has
+		// always relied on that default while the old us_businesses insert set it
+		// to false explicitly. business-listing filters on this column, so the two
+		// countries must keep their existing values rather than converge on one.
+		const businessfilled = country === 'in';
+
 		// TODO(remove after admin-app migrates; needs id-minting moved to
 		// in_business_profiles): businesses_1 still mints the business id and keeps
 		// the legacy table fresh for admin-app. The explicit upserts below are the
@@ -180,8 +113,10 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 		const inserted = await db
 			.insert(businesses1)
 			.values({
+				countryCode: country,
 				rscore,
 				isvisible,
+				businessfilled,
 				pluscode: plusCode || null,
 				phonenumber: phoneNumber,
 				whatsapp: whatsappNumber || null,
@@ -207,8 +142,10 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 		// sync triggers, which upsert the same rows.
 		const profileValues = {
 			businessId,
+			countryCode: country,
 			rscore,
 			isvisible,
+			businessfilled,
 			pluscode: plusCode || null,
 			phonenumber: phoneNumber,
 			whatsapp: whatsappNumber || null,
@@ -233,28 +170,36 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 				set: { ...profileValues, updatedAt: sql`NOW()` }
 			});
 
-		const accountValues = { businessId, loginEmail: login_email || null, isvisible };
+		// in_business_accounts stays IN-only. 054 gave it no country_code and
+		// generated no US rows, and sv_sync_account reads businesses_1 rather than
+		// this table, so the unified projection does not depend on it. Writing US
+		// rows here would be a new behaviour, not a consolidation.
+		if (country === 'in') {
+			const accountValues = { businessId, loginEmail: login_email || null, isvisible };
 
-		await db
-			.insert(inBusinessAccounts)
-			.values(accountValues)
-			.onConflictDoUpdate({
-				target: inBusinessAccounts.businessId,
-				set: { ...accountValues, updatedAt: sql`NOW()` }
-			});
+			await db
+				.insert(inBusinessAccounts)
+				.values(accountValues)
+				.onConflictDoUpdate({
+					target: inBusinessAccounts.businessId,
+					set: { ...accountValues, updatedAt: sql`NOW()` }
+				});
+		}
 
 		// Idempotent with the businesses_1/in_business_profiles sync triggers;
 		// keeps the unified tables fresh once those triggers drop (phase 2.4).
 		//
-		// 'in' is tied to the tables written above and must NOT become
-		// params.country: every INSERT on this path targets the IN-only legacy
-		// tables (businesses_1, in_business_profiles, in_business_accounts), so
-		// the synced row is an IN row whatever prefix the request arrived on. A
-		// US request never reaches here — it returned from the us_businesses
-		// branch above.
-		await syncBusinessToUnified(db, 'in', businessId);
-		await syncAccountToUnified(db, 'in', businessId);
+		// This now passes the request's country rather than the literal 'in'. The
+		// old comment here said it must NOT — correct at the time, because every
+		// INSERT on this path hit the IN-only tables and a US request returned
+		// earlier. Since 054 those same tables hold both countries and the rows
+		// written above carry country_code, so the sync must match them.
+		await syncBusinessToUnified(db, country, businessId);
+		await syncAccountToUnified(db, country, businessId);
 
+		// The confirmation body keys level2 by the country's own noun, mirroring
+		// the form: the US path sent `county` and the IN path `district`. The
+		// table consolidation does not change what the email template reads.
 		await sendConfirmation(fetch, country, businessId, {
 			businessName,
 			address,
@@ -266,7 +211,7 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 			website,
 			gstn,
 			state,
-			district,
+			...(country === 'in' ? { district } : { county: level2 }),
 			city
 		});
 

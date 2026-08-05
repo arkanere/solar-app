@@ -114,13 +114,17 @@ export interface UsBusinessOptions {
 }
 
 /**
- * Insert a us_businesses row and project it into the unified tables, the same
- * way createBusiness() does for the IN side.
+ * Insert a US business and project it into the unified tables, the same way
+ * createBusiness() does for the IN side.
  *
- * Note us_businesses shares businesses_1's id sequence (`nextval(
- * 'businesses_1_id_seq')`), so a US id can never collide into a real IN row —
- * which is exactly why the /us/api/claimLead table mix-up failed silently
- * rather than emailing the wrong business.
+ * Since migration 054 this writes `businesses_1` with country_code = 'us', not
+ * `us_businesses` — one set of legacy tables holds both countries, on the IN
+ * structure. The `county`/`zipcode` option names are kept because that is what
+ * the US callers say, but they map to the IN columns (`district`, `pincode`).
+ *
+ * The sv_sync_in_split call is new for US and is not optional: 055's
+ * sv_sync_business reads in_business_profiles for every country, so without a
+ * profile row the projection is a silent no-op.
  */
 export async function createUsBusiness(options: UsBusinessOptions = {}): Promise<number> {
 	businessSeq += 1;
@@ -137,14 +141,16 @@ export async function createUsBusiness(options: UsBusinessOptions = {}): Promise
 	} = options;
 
 	const { rows } = await pool.query<{ id: number }>(
-		`INSERT INTO us_businesses
-		   (businessname, slug, login_email, email, phonenumber, state, county, city, isvisible)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+		`INSERT INTO businesses_1
+		   (country_code, businessname, slug, login_email, email, phonenumber, state,
+		    district, city, isvisible)
+		 VALUES ('us',$1,$2,$3,$4,$5,$6,$7,$8,$9)
 		 RETURNING id`,
 		[businessname, slug, loginEmail, email, phonenumber, state, county, city, isvisible]
 	);
 	const id = rows[0].id;
 
+	await pool.query('SELECT sv_sync_in_split($1)', [id]);
 	await pool.query('SELECT sv_sync_business($1, $2)', ['us', id]);
 	await pool.query('SELECT sv_sync_account($1, $2)', ['us', id]);
 
@@ -162,7 +168,12 @@ export interface UsLeadOptions {
 	claimCount?: number;
 }
 
-/** Insert a us_leaddata row and sync it to `leads`. Returns the us_leaddata id. */
+/**
+ * Insert a US lead and sync it to `leads`. Returns the leaddata id.
+ *
+ * Writes `leaddata` with country_code = 'us' since 054; `zipcode`/`county`
+ * options map to the IN columns `pin_code`/`district`.
+ */
 export async function createUsLead(options: UsLeadOptions = {}): Promise<number> {
 	leadSeq += 1;
 	const {
@@ -177,9 +188,9 @@ export async function createUsLead(options: UsLeadOptions = {}): Promise<number>
 	} = options;
 
 	const { rows } = await pool.query<{ id: number }>(
-		`INSERT INTO us_leaddata
-		   (name, phone, email, zipcode, county, category, isvisible, claim_count)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+		`INSERT INTO leaddata
+		   (country_code, name, phone, email, pin_code, district, category, isvisible, claim_count)
+		 VALUES ('us',$1,$2,$3,$4,$5,$6,$7,$8)
 		 RETURNING id`,
 		[name, phone, email, zipcode, county, category, isvisible, claimCount]
 	);

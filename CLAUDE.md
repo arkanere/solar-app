@@ -63,13 +63,13 @@ grep `COMPLETED n FILES x ERRORS`, not `found x errors`. A change passes if the 
 | app | errors | warnings |
 | --- | --- | --- |
 | main-app | 10 | 1 |
-| business-app | 35 | 0 |
+| business-app | 33 | 0 |
 | user-app | 0 | 2 |
 
 **business-app's check now covers everything.** `--no-tsconfig --ignore "src/lib/components/ui"` was
 dropped on 2026-08-05, so its `.ts` files are type-checked for the first time and the run went from
-44 files to 5269. The 35 errors are all pre-existing, just newly visible: 14 in
-`src/lib/components/ui`, 9 in `.svelte` (the old baseline), 12 in `.ts`.
+44 files to 5269. That surfaced 35 pre-existing errors (14 in `src/lib/components/ui`, 9 in
+`.svelte`, 12 in `.ts`); 2 were fixed the same day, leaving 33.
 
 Note `--ignore` is only valid alongside `--no-tsconfig`, so the two flags come as a pair. Moving the
 ignore into `tsconfig.json`'s `exclude` does not work either — `exclude` only filters `include`, and

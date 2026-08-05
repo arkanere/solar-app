@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { businessAccounts, businesses1, usBusinesses } from '@solar/db/schema';
+import { businessAccounts, businesses1 } from '@solar/db/schema';
 import { and, eq, isNull, lt, or, sql } from 'drizzle-orm';
 import { AUTH_CONFIG, type LoginTrackerResult } from './AuthTypes';
 import type { AuthCountry } from './countryTables';
@@ -18,27 +18,26 @@ export class LoginTracker {
 		try {
 			// Update only if last_login is null or older than throttle threshold.
 			// Writes still target the legacy table (phase-2 transition); the
-			// explicit sync projects the row into business_accounts.
+			// explicit sync projects the row into business_accounts. Since 054 that
+			// is businesses_1 for every country, scoped by country_code.
 			// Bind the interval as a parameter via make_interval (no string interpolation).
-			const table = this.country === 'in' ? businesses1 : usBusinesses;
 			const rows = await db
-				.update(table)
+				.update(businesses1)
 				.set({ lastLogin: sql`NOW()` })
 				.where(
 					and(
-						eq(table.id, businessId),
+						eq(businesses1.id, businessId),
+						eq(businesses1.countryCode, this.country),
 						or(
-							isNull(table.lastLogin),
-							lt(table.lastLogin, sql`NOW() - make_interval(hours => ${throttleHours})`)
+							isNull(businesses1.lastLogin),
+							lt(businesses1.lastLogin, sql`NOW() - make_interval(hours => ${throttleHours})`)
 						)
 					)
 				)
-				.returning({ lastLogin: table.lastLogin });
+				.returning({ lastLogin: businesses1.lastLogin });
 
 			if (rows.length > 0) {
-				if (this.country === 'in') {
-					await syncInSplitTables(db, businessId);
-				}
+				await syncInSplitTables(db, businessId);
 				await syncAccountToUnified(db, this.country, businessId);
 				return {
 					updated: true,

@@ -10,7 +10,7 @@
 import { db } from './db';
 import { syncLeadToUnified } from './unifiedSync';
 import type { CountryCode } from '$lib/countries';
-import { leaddata, usLeaddata, leads, pincodeMapping } from '@solar/db/schema';
+import { leaddata, leads, pincodeMapping } from '@solar/db/schema';
 import { and, eq } from 'drizzle-orm';
 
 export interface LeadPayload {
@@ -66,39 +66,34 @@ export async function insertLead(
 		let sourceId: number;
 		let referenceUuid: string | null = null;
 
+		// Since migration 054 both countries write `leaddata`, discriminated by
+		// country_code. level1/level2 are resolved from pincode_mapping, which is
+		// IN-only, so they are already null for US — the same values the separate
+		// us_leaddata insert produced.
+		const [inserted] = await tx
+			.insert(leaddata)
+			.values({
+				countryCode: country,
+				name,
+				phone,
+				pinCode: postalCode,
+				type: type ?? null,
+				comment: comment ?? null,
+				urlparams: urlParams ?? null,
+				email: email || null,
+				district: level2,
+				state: level1,
+				marketingConsent: marketingConsent === true
+			})
+			.returning({ id: leaddata.id, referenceUuid: leaddata.referenceUuid });
+		sourceId = inserted.id;
+
+		// `reference_uuid` stays IN-only in the *return value*, per InsertedLead's
+		// contract. The column defaults to gen_random_uuid() so US rows now carry
+		// one, but surfacing it would be a US-visible change (the confirmation
+		// path keys off this being null) and belongs in its own commit.
 		if (country === 'in') {
-			const [inserted] = await tx
-				.insert(leaddata)
-				.values({
-					name,
-					phone,
-					pinCode: postalCode,
-					type: type ?? null,
-					comment: comment ?? null,
-					urlparams: urlParams ?? null,
-					email: email || null,
-					district: level2,
-					state: level1,
-					marketingConsent: marketingConsent === true
-				})
-				.returning({ id: leaddata.id, referenceUuid: leaddata.referenceUuid });
-			sourceId = inserted.id;
 			referenceUuid = inserted.referenceUuid;
-		} else {
-			const [inserted] = await tx
-				.insert(usLeaddata)
-				.values({
-					name,
-					phone,
-					zipcode: postalCode,
-					type: type ?? null,
-					comment: comment ?? null,
-					urlparams: urlParams ?? null,
-					email: email || null,
-					marketingConsent: marketingConsent === true
-				})
-				.returning({ id: usLeaddata.id });
-			sourceId = inserted.id;
 		}
 
 		// Idempotent with migration 045's sync trigger; keeps this write

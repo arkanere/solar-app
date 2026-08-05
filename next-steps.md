@@ -4,23 +4,35 @@
 > TypeScript conversion and the follow-up list was removed on 2026-08-05 once every phase was done;
 > it is in git history if you need it.
 
-> ## 055 — applied, broken, rolled back (2026-08-05). Do not re-apply yet.
+> ## 055 — ready to apply, but ONLY together with a deploy (2026-08-05)
 >
-> **Live is correct.** 055 was applied, found to be broken, and rolled back the same day; the
-> sync functions are back to their two-arm form reading `us_*`. 054 stays applied — it is purely
-> additive and verified.
+> **Live is correct and 055 is NOT applied.** It was applied once, found to be broken, and rolled
+> back the same day; the sync functions are on their two-arm form reading `us_*`. 054 stays applied.
 >
-> **Why 055 cannot ship as written.** It repoints `sv_sync_*('us', …)` at `businesses_1` /
-> `leaddata` / `in_business_profiles` filtered by `country_code = 'us'`. But **`us_*` still has five
-> live writers**, which the Phase 7 planning missed:
+> **The code half is now done and merged.** All five `us_*` writers below have been repointed at the
+> united tables, so the blocker is cleared. What remains is purely a *release-ordering* problem:
+>
+> - `main` now contains code that writes `businesses_1`/`leaddata` with `country_code='us'`.
+> - Live still runs `sv_sync_*` arms that read `us_*` for the `'us'` arm.
+>
+> So **between deploying that code and applying 055, US writes will not reach the unified tables.**
+> Apply 055 and deploy in the same window — ideally 055 first, since it is backward-compatible with
+> the *old* code only in the sense that no US write is currently happening at any volume (12
+> businesses, 4 leads). Order within the window matters little; the gap between them is what counts.
+>
+> Original problem, for the record — 055 repoints `sv_sync_*('us', …)` at `businesses_1` /
+> `leaddata` / `in_business_profiles` filtered by `country_code = 'us'`, and **`us_*` had five live
+> writers** that Phase 7 planning missed:
 >
 > | writer | writes | effect after 055 |
 > | --- | --- | --- |
-> | `main-app/src/routes/[country=country]/api/submitBusiness/+server.ts:37` | new US business → `us_businesses` | new row has **no** `in_business_profiles` row, so `sv_sync_business` is a **no-op** — the business never reaches unified and is invisible to business-app |
-> | `main-app/src/lib/server/leads.ts:89` | new US lead → `us_leaddata` | same: no `leaddata` row, sync is a no-op, lead never reaches unified |
-> | `business-app/src/lib/server/passwordReset.ts:102` | reset token → `us_businesses` | `sv_sync_account` copies the **stale** token from the 054 copy into `business_accounts`; the emailed link cannot validate |
-> | `business-app/src/lib/server/magicLink.ts` | magic-link token → `us_businesses` | same staleness |
-> | `business-app/src/lib/auth/business/LoginTracker.ts:23` | `last_login` → `us_businesses` | never reaches unified |
+> | writer | was | now |
+> | --- | --- | --- |
+> | `main-app` `submitBusiness/+server.ts` | insert `us_businesses` | writes `businesses_1` + `in_business_profiles` with `country_code`; `insertUsBusiness()` deleted |
+> | `main-app` `leads.ts` | insert `us_leaddata` | one insert into `leaddata` with `country_code` |
+> | `business-app` `passwordReset.ts` | update `us_businesses` | `businesses_1` + `country_code` filter |
+> | `business-app` `magicLink.ts` | update `us_businesses` | takes a country, not a table name |
+> | `business-app` `LoginTracker.ts` | update `us_businesses` | `businesses_1` + `country_code` filter |
 >
 > **No data was corrupted.** 054 had copied `us_*` verbatim, so both sides were still identical, and
 > the break would only have triggered on the *next* US write. None occurred in the window.
@@ -55,7 +67,7 @@ through Drizzle. No app exports a raw `pool`, and no hand-written SQL exists any
 | app | errors | warnings | notes |
 | --- | --- | --- | --- |
 | main-app | 10 | 1 | pre-existing, UI components |
-| business-app | 35 | 0 | was 9 over 44 files; now 5269 files since `--no-tsconfig` was dropped |
+| business-app | 33 | 0 | was 9 over 44 files; now 5269 files since `--no-tsconfig` was dropped |
 | user-app | 0 | 2 | clean; warnings are a11y + unused CSS |
 
 `npm test -w solarvipani-business` — **green: 117 passed, 6 skipped**. Step E repointed the two files
@@ -169,24 +181,14 @@ not already imply. Target is `/[business_slug]/crm`, not `/in/[business_slug]/cr
 
 ### Pick up here
 
-1. **Repoint the five `us_*` writers at the united tables** — the app half of step A, now a
-   prerequisite for 055 rather than a follow-up:
-   - `main-app` `submitBusiness/+server.ts` — must write `businesses_1` + `in_business_profiles`
-     with `country_code='us'` instead of `us_businesses`. This is the big one: it is the only place
-     that *creates* a US business, and under the united tables it has to write the IN pair rather
-     than one table.
-   - `main-app` `leads.ts` — write `leaddata` with `country_code='us'`.
-   - `business-app` `passwordReset.ts`, `magicLink.ts`, `LoginTracker.ts` — all three currently pick
-     `usBusinesses` vs `businesses1` by country; they collapse to `businesses_1` + a `country_code`
-     filter.
-   - `claimLead/+server.ts` — still entirely IN-bound and does not use `writeTargets` at all
-     (see the blocker under step E).
-   Collapse `writeTargets.ts` to one table set plus a `country_code` value as part of this.
-2. **Then apply 055 and the code together**, and resync the US rows per the note at the foot of the
-   migration. Expect unified counts to hold at 6707 / 1220.
-3. Unskipping `usClaimLeadEmail.test.ts` is the acceptance check for 1–2 plus step C.
-4. Steps B–D below (route move, path literals, rename) are independent of 054/055 and can proceed in
-   parallel. **E is done** — the suite is green again.
+1. **Apply 055 and deploy, in one window.** The code is merged; the migration is not applied. See
+   the release-ordering note at the top of this file. Afterwards resync the US rows per the comment
+   at the foot of the migration and confirm unified counts hold at 6707 / 1220.
+2. **Step C** (strip the `/in` prefix from path literals) is now the only thing standing between
+   `usClaimLeadEmail.test.ts` and being unskipped — 5 of its 6 tests already pass; the sixth asserts
+   business-app's own signin-link URL without a country segment.
+3. Steps B–D below (route move, path literals, rename) are independent of 054/055 and can proceed in
+   parallel. **A and E are done.**
 
    E also established that the claimLead write path is still entirely IN-bound, so step A is larger
    than "collapse `writeTargets.ts` and add `country_code`": the write sites do not use
@@ -206,7 +208,8 @@ and `signin-link` genuinely need one.
 
 ### Remaining steps
 
-**A. Unite the legacy tables on the IN structure.** Supersedes the earlier per-country-table-pair
+**A. Unite the legacy tables on the IN structure. — DONE 2026-08-05** (code merged; 055 still to be
+applied, see the top of this file). Supersedes the earlier per-country-table-pair
 approach, and dissolves the three divergences that blocked it (`business_notes` missing from
 `us_leaddata`, `in_business_profiles` having no US counterpart, `brands` being IN-only) — under one
 set of tables those columns simply exist for every country, NULL where a country does not populate

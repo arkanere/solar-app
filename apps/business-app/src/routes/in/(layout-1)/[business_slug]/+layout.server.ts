@@ -75,13 +75,14 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 
 			// The route no longer carries an /in or /us segment, so the country comes
 			// from the business itself. The reads below are unified and filtered by
-			// it; only branches/projects are still per-country legacy tables.
+			// it. Since 054 branches/projects are single tables for every country —
+			// they key off business ids, which are globally unique.
 			const country = await countryForSlug(business_slug);
 			if (!country) {
 				throw error(404, 'Business not found');
 			}
-			const branches = branchTable(country);
-			const projects = projectTable(country);
+			const branches = branchTable;
+			const projects = projectTable;
 
 			// Load basic business info for sidebar
 			try {

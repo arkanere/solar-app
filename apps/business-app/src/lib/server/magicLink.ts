@@ -1,9 +1,13 @@
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '$lib/server/db';
-import { businesses1, inUser, usBusinesses } from '@solar/db/schema';
-import { eq, sql } from 'drizzle-orm';
-import { syncAccountToUnified, syncInSplitTables } from '$lib/server/unifiedSync';
+import { businesses1, inUser } from '@solar/db/schema';
+import { and, eq, sql } from 'drizzle-orm';
+import {
+	syncAccountToUnified,
+	syncInSplitTables,
+	type SyncCountry
+} from '$lib/server/unifiedSync';
 
 // Magic-link tokens are stored hashed at rest and expire after 15 days.
 // Emitters mint a fresh token, persist its hash, and email/return the raw token.
@@ -18,26 +22,25 @@ export function newMagicToken() {
 	return { raw, hash, expiresAt };
 }
 
-// `table` names the per-country business table, as it did when these were raw
-// SQL; it maps to a Drizzle table here instead of being interpolated.
+// Takes a country rather than a table name. The old signature named the
+// per-country business table ('businesses_1' | 'us_businesses'), a holdover
+// from when these were raw SQL strings; since 054 united those tables there is
+// only one to name, and what actually varies is the country_code filter.
 export async function mintBusinessTokenById(
-	table: 'businesses_1' | 'us_businesses',
+	country: SyncCountry,
 	businessId: number
 ): Promise<string | null> {
 	const { raw, hash, expiresAt } = newMagicToken();
-	const businessTable = table === 'us_businesses' ? usBusinesses : businesses1;
 
 	const updated = await db
-		.update(businessTable)
+		.update(businesses1)
 		.set({ magicLinkToken: hash, magicLinkTokenExpiresAt: expiresAt.toISOString() })
-		.where(eq(businessTable.id, businessId))
-		.returning({ id: businessTable.id });
+		.where(and(eq(businesses1.id, businessId), eq(businesses1.countryCode, country)))
+		.returning({ id: businesses1.id });
 
 	if (updated.length === 0) return null;
-	if (table !== 'us_businesses') {
-		await syncInSplitTables(db, businessId);
-	}
-	await syncAccountToUnified(db, table === 'us_businesses' ? 'us' : 'in', businessId);
+	await syncInSplitTables(db, businessId);
+	await syncAccountToUnified(db, country, businessId);
 	return raw;
 }
 

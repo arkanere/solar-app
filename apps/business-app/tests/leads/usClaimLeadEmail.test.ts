@@ -6,23 +6,22 @@
 // endpoint — which is also what makes it the acceptance test for the rest of
 // the phase, and the "US write" coverage that step A needs before it ships.
 //
-// It is SKIPPED because the endpoint cannot serve a US business yet. Three
-// things in src/routes/in/api/claimLead/+server.ts are still IN-bound:
+// Step A is done, so the reasons this was originally skipped are mostly gone.
+// For the record, they were:
 //
-//   - every read and write goes to `leaddata` / `businesses_1` /
-//     `in_business_profiles` unconditionally. `country` is resolved and used for
-//     the compliance gate and the sv_sync_* calls, but never for table
-//     selection, and $lib/server/writeTargets.ts is not imported here at all.
-//     us_leaddata draws its ids from leaddata_id_seq, so a US lead id simply
-//     matches no row and the claim dies at "Lead not found" (step A);
-//   - mintBusinessTokenById is called with the literal 'businesses_1' (step A);
-//   - both email URLs hardcode /in/ — including the cross-app profile link,
-//     which points at main-app and must therefore branch on the *resolved*
-//     country rather than drop its segment (step C's trap).
+//   - every read and write went to `leaddata` / `businesses_1` /
+//     `in_business_profiles` unconditionally, so a US lead id matched no row and
+//     the claim died at "Lead not found". FIXED: migration 054 united those
+//     tables under a country_code discriminator and the handler now writes it;
+//   - mintBusinessTokenById took the literal 'businesses_1'. FIXED: it takes a
+//     country;
+//   - both email URLs hardcoded /in/. The cross-app profile link is FIXED (it
+//     interpolates the resolved country, and points at main-app's canonical
+//     /installer/ path); business-app's own signin-link URL is step C and is
+//     the one thing still outstanding.
 //
-// The assertions below are written against the intended post-A/C behaviour, so
-// unskipping this is the check that both steps landed. Only outbound mail is
-// mocked; the transaction and the sv_sync_* projections run for real.
+// Only outbound mail is mocked; the transaction and the sv_sync_* projections
+// run for real.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { pool } from '../setup/testDb';
@@ -34,11 +33,14 @@ import {
 } from '../helpers/fixtures';
 import { createSessionCookies, jsonRequest } from '../helpers/request';
 
-const sendEmail = vi.fn(async () => ({ success: true }));
+// Declared with a rest parameter so `sendEmail.mock.calls` entries are typed
+// `unknown[]` rather than the empty tuple `[]` — indexing a `[]` is a type
+// error, which is what the assertions below all have to do.
+const sendEmail = vi.fn(async (..._args: unknown[]) => ({ success: true }));
 
 // $lib/us/sendEmail went with the /us tree; there is one mailer now.
 vi.mock('$lib/in/sendEmail', () => ({
-	sendEmail: (...args: unknown[]) => sendEmail(...(args as [])),
+	sendEmail: (...args: unknown[]) => sendEmail(...args),
 	sendEmailIndividually: vi.fn(async () => ({ success: true })),
 	sendTemplatedEmail: vi.fn(async () => ({ success: true }))
 }));
@@ -57,17 +59,37 @@ async function claim(
 	return { status: response.status, body: await response.json() };
 }
 
-/** The recipient list of the nth sendEmail call. */
+// The handler dispatches both mails with `await Promise.all([allotment,
+// customer])`, so their sendEmail calls RACE — indexing mock.calls[0]/[1] is
+// order-dependent and fails intermittently depending on which path's queries
+// finish first. Select the call by who it is addressed to instead.
+function callTo(recipient: string): { recipients: string[]; body: string } | undefined {
+	const call = sendEmail.mock.calls.find((c) =>
+		(c[0] as unknown as string[])?.includes(recipient)
+	);
+	if (!call) return undefined;
+	return {
+		recipients: call[0] as unknown as string[],
+		body: call[2] as unknown as string
+	};
+}
+
+/** The recipient list of the nth sendEmail call. Order-independent lookups
+ *  should use callTo(); this stays for assertions about call *count*. */
 function recipientsOf(callIndex: number): string[] {
 	return sendEmail.mock.calls[callIndex]?.[0] as unknown as string[];
 }
 
-function bodyOf(callIndex: number): string {
-	return sendEmail.mock.calls[callIndex]?.[2] as unknown as string;
-}
-
-// Unskip once step A makes the write path country-aware and step C fixes the
-// URLs. See the header for exactly what is missing.
+// STEP A HAS LANDED. Verified by unskipping this file: 5 of these 6 tests now
+// pass — the US claim writes the united tables, mints a token on the US row,
+// projects it into business_accounts, and sends both mails with the right
+// recipients and a country-correct main-app profile link.
+//
+// One assertion still fails, and it is step C's, not step A's: business-app's
+// own signin-link URL. Its routes live under src/routes/in/ until step B moves
+// them, so the handler correctly emits /in/<slug>/signin-link/ today and the
+// assertion below expects the post-C form. Unskip when step C lands — that
+// single line is all that is left.
 describe.skip('POST /api/claimLead — a US business — emails', () => {
 	let businessId: number;
 	let leadId: number;
@@ -102,9 +124,10 @@ describe.skip('POST /api/claimLead — a US business — emails', () => {
 		expect(body.success).toBe(true);
 
 		const { rows } = await pool.query<{ claim_count: number }>(
-			'SELECT claim_count FROM us_leaddata WHERE id = $1',
+			"SELECT claim_count FROM leaddata WHERE id = $1 AND country_code = 'us'",
 			[leadId]
 		);
+		expect(rows).toHaveLength(1);
 		expect(rows[0].claim_count).toBe(1);
 	});
 
@@ -123,23 +146,26 @@ describe.skip('POST /api/claimLead — a US business — emails', () => {
 			{ lead_id: leadId, business_id: businessId }
 		);
 
-		expect(recipientsOf(0)).toEqual([loginEmail, 'admin@solarvipani.com']);
-		expect(bodyOf(0)).toContain('Oakland Solar Co');
+		const allotment = callTo(loginEmail);
+		expect(allotment?.recipients).toEqual([loginEmail, 'admin@solarvipani.com']);
+		expect(allotment?.body).toContain('Oakland Solar Co');
 	});
 
-	it('mints a us_businesses magic-link token and puts it in the allotment email', async () => {
+	it('mints a magic-link token on the US row and puts it in the allotment email', async () => {
 		await claim(
 			{ id: businessId, slug, businessname: 'Oakland Solar Co' },
 			{ lead_id: leadId, business_id: businessId }
 		);
 
 		// The token is stored hashed on the write-side table and projected into
-		// business_accounts. mintBusinessTokenById currently takes the literal
-		// 'businesses_1', so step A has to pass it the country's table.
+		// business_accounts. Since 054 that table is businesses_1 for both
+		// countries, so this asserts on id AND country_code — matching on the id
+		// alone would still pass if the row had been written as an IN row.
 		const { rows } = await pool.query<{ magic_link_token: string | null }>(
-			'SELECT magic_link_token FROM us_businesses WHERE id = $1',
+			"SELECT magic_link_token FROM businesses_1 WHERE id = $1 AND country_code = 'us'",
 			[businessId]
 		);
+		expect(rows).toHaveLength(1);
 		expect(rows[0].magic_link_token).toBeTruthy();
 
 		const projected = await pool.query<{ magic_link_token: string | null }>(
@@ -148,8 +174,12 @@ describe.skip('POST /api/claimLead — a US business — emails', () => {
 		);
 		expect(projected.rows[0].magic_link_token).toBe(rows[0].magic_link_token);
 
-		// business-app's own URL: the country segment is gone in Phase 7.
-		expect(bodyOf(0)).toContain(`https://business.solarvipani.com/${slug}/signin-link/`);
+		// business-app's own URL: the country segment is gone in Phase 7. THIS IS
+		// THE ONE ASSERTION STILL WAITING ON STEP C — the routes live under
+		// src/routes/in/ until step B moves them, so the handler correctly emits
+		// /in/<slug>/signin-link/ today. It is why this file is still skipped.
+		const allotment = callTo(loginEmail);
+		expect(allotment?.body).toContain(`https://business.solarvipani.com/${slug}/signin-link/`);
 	});
 
 	it('addresses the customer notification to the lead and names the installer', async () => {
@@ -158,8 +188,9 @@ describe.skip('POST /api/claimLead — a US business — emails', () => {
 			{ lead_id: leadId, business_id: businessId }
 		);
 
-		expect(recipientsOf(1)).toEqual(['dana@example.test', 'admin@solarvipani.com']);
-		const message = bodyOf(1);
+		const customer = callTo('dana@example.test');
+		expect(customer?.recipients).toEqual(['dana@example.test', 'admin@solarvipani.com']);
+		const message = customer?.body ?? '';
 		expect(message).toContain('Dana Reyes');
 		expect(message).toContain('Oakland Solar Co');
 		expect(message).toContain('+1-555-0142');
@@ -167,9 +198,14 @@ describe.skip('POST /api/claimLead — a US business — emails', () => {
 
 		// This one is a *main-app* URL, and main-app still has [country]. It must
 		// keep its segment, and the segment must come from the resolved country —
-		// getting this wrong hands US customers an India profile link. This is
-		// the guard for step C.
-		expect(message).toContain(`https://solarvipani.com/us/solar-panel-installer/${slug}`);
+		// getting this wrong hands US customers an India profile link.
+		//
+		// The canonical path is /installer/ for BOTH countries. This originally
+		// expected /us/solar-panel-installer/, but that is only a legacy redirect:
+		// main-app's hooks.server.ts 301s it to /us/installer/. Emitting the
+		// redirect source in an email would cost every US recipient a needless
+		// hop, so the handler emits the canonical form and this asserts it.
+		expect(message).toContain(`https://solarvipani.com/us/installer/${slug}`);
 	});
 
 	it('skips only the customer notification when the lead has no email on file', async () => {

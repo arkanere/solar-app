@@ -46,7 +46,20 @@ const POST_BASELINE_MIGRATIONS = [
 	// the write endpoints under test, via $lib/server/unifiedSync.
 	'047-unified-sync-functions.sql',
 	// sv_sync_in_split — businesses_1 -> in_business_profiles/in_business_accounts.
-	'050-split-sync-functions.sql'
+	'050-split-sync-functions.sql',
+	// Unites the per-country legacy tables under a country_code discriminator.
+	// Replayable here despite being a data migration: the ALTERs are IF NOT
+	// EXISTS (the regenerated baseline already has the columns), the indexes are
+	// IF NOT EXISTS, the INSERT ... SELECT copies from empty us_* tables, and the
+	// setval() calls are no-ops on empty sequences. What it is actually here for
+	// is its CREATE OR REPLACE of sv_sync_in_split, which 050's version predates
+	// — that one does not carry country_code through to in_business_profiles.
+	'054-unite-country-legacy-tables.sql',
+	// Repoints sv_sync_business/_account/_lead at the united tables. Must be
+	// applied for the suite to mirror production: the app writes businesses_1 /
+	// leaddata with a country_code, and 047's two-arm functions still read us_*
+	// for the 'us' arm, so without this every US fixture syncs nothing.
+	'055-repoint-sync-fns-to-united-tables.sql'
 ];
 
 // The trigger-installing migrations (043/045/046) are deliberately not applied:

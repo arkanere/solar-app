@@ -230,6 +230,11 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 						.from(inBusinessProfiles)
 						.where(
 							and(
+								// district is not id-scoped, so without the country filter a US
+								// lead's district could match an IN business's and suppress the
+								// branch creation. Every other lookup here is by a globally
+								// unique id, which is why this is the only one that needs it.
+								eq(inBusinessProfiles.countryCode, country),
 								eq(inBusinessProfiles.district, leadDistrict),
 								sql`(${inBusinessProfiles.businessId} = ${mainBusinessId} OR EXISTS (
 								     SELECT 1 FROM ${branches} WHERE ${branches.mainId} = ${mainBusinessId}
@@ -277,6 +282,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 						const newBranchResult = await tx
 							.insert(businesses1)
 							.values({
+								countryCode: country,
 								rscore: main.rscore,
 								isvisible: main.isvisible,
 								pluscode: main.pluscode,
@@ -351,6 +357,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 					const newLeadResult = await tx
 						.insert(leaddata)
 						.values({
+							countryCode: country,
 							name: originalLead.name,
 							phone: originalLead.phone,
 							email: originalLead.email,
@@ -421,7 +428,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				}
 				const { businessname, loginEmail, slug } = bizResult[0];
 				// Mint a fresh token (stored hashed); email the raw token.
-				const rawToken = await mintBusinessTokenById('businesses_1', allotmentBusinessId);
+				const rawToken = await mintBusinessTokenById(country, allotmentBusinessId);
 				const magicLink = `https://business.solarvipani.com/in/${slug}/signin-link/${rawToken}`;
 
 				const subject = 'New Lead Allotted - Solar Vipani';
@@ -471,7 +478,12 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 					return;
 				}
 				const business = bizResult[0];
-				const profileLink = `https://solarvipani.com/in/installer/${business.slug}`;
+				// Cross-app link into main-app, which still carries a [country]
+				// segment — so this one takes the *resolved* country, not a literal.
+				// Hardcoding /in/ here would send every US customer to an India
+				// profile URL. (/us/solar-panel-installer/[slug] is only a legacy
+				// redirect to this canonical form; see main-app hooks.server.ts.)
+				const profileLink = `https://solarvipani.com/${country}/installer/${business.slug}`;
 
 				// Mint a fresh user token (stored hashed, upserts the in_user row);
 				// email the raw token.
