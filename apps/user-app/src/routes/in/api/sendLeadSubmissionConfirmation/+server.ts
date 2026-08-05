@@ -1,8 +1,9 @@
 import { json } from '@sveltejs/kit';
 import { sendEmail } from '$lib/sendEmail';
 import { internalSecretHeaders } from '$lib/server/internalAuth';
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { and, eq, sql } from 'drizzle-orm';
+import { schema } from '@solar/db';
+import { db } from '$lib/server/db';
 import type { RequestHandler } from './$types';
 
 /** The installer columns the email template below renders. */
@@ -11,6 +12,16 @@ interface InstallerRow {
 	address: string | null;
 	phonenumber: string | null;
 }
+
+// `businesses.businessname` is nullable in the schema; InstallerRow has always
+// declared it non-null and the template renders it unguarded. Restate the
+// existing contract rather than widen the interface — renders as the bare
+// column, so the SQL is unchanged.
+const INSTALLER_SELECTION = {
+	businessname: sql<string>`${schema.businesses.businessname}`,
+	address: schema.businesses.address,
+	phonenumber: schema.businesses.phonenumber
+};
 
 export const POST: RequestHandler = async ({ request, fetch }) => {
 	try {
@@ -42,29 +53,36 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 
 		let installers: InstallerRow[] = [];
 		try {
-			const pool = createPool({ connectionString: POSTGRES_URL });
 			if (isExclusiveLead) {
 				const slugMatch = urlParam.match(/\/(?:solar-panel-installer|installer)\/([^/?#]+)/);
 				if (slugMatch) {
-					const result = await pool.query(
-						`SELECT businessname, address, phonenumber
-						 FROM businesses
-						 WHERE country_code = 'in' AND slug = $1 AND isvisible = true
-						 LIMIT 1`,
-						[slugMatch[1]]
-					);
-					installers = result.rows;
+					installers = await db
+						.select(INSTALLER_SELECTION)
+						.from(schema.businesses)
+						.where(
+							and(
+								eq(schema.businesses.countryCode, 'in'),
+								eq(schema.businesses.slug, slugMatch[1]),
+								eq(schema.businesses.isvisible, true)
+							)
+						)
+						.limit(1);
 				}
 			} else if (district) {
-				const result = await pool.query(
-					`SELECT businessname, address, phonenumber
-					 FROM businesses
-					 WHERE country_code = 'in' AND LOWER(level2) = LOWER($1) AND isvisible = true
-					 ORDER BY rscore DESC NULLS LAST
-					 LIMIT 5`,
-					[district]
-				);
-				installers = result.rows;
+				installers = await db
+					.select(INSTALLER_SELECTION)
+					.from(schema.businesses)
+					.where(
+						and(
+							eq(schema.businesses.countryCode, 'in'),
+							// `sql` escape hatch: case-insensitive district compare, as
+							// in the raw SQL. Same pattern as Phase 1's getCities.
+							sql`LOWER(${schema.businesses.level2}) = LOWER(${district})`,
+							eq(schema.businesses.isvisible, true)
+						)
+					)
+					.orderBy(sql`${schema.businesses.rscore} DESC NULLS LAST`)
+					.limit(5);
 			}
 		} catch (e) {
 			console.error('Error fetching installers for email:', e);
