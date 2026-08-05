@@ -4,6 +4,37 @@
 > TypeScript conversion and the follow-up list was removed on 2026-08-05 once every phase was done;
 > it is in git history if you need it.
 
+> ## ⚠️ LIVE NEEDS ACTION — 055 is applied and should be rolled back
+>
+> **055 was applied to live on 2026-08-05 and is still applied.** It must be rolled back, or the
+> `us_*` writers below must be repointed, before any US write happens.
+>
+> **The bug.** 055 repoints `sv_sync_*('us', …)` at `businesses_1` / `leaddata` /
+> `in_business_profiles` filtered by `country_code = 'us'`. But **`us_*` still has live writers**,
+> which 054/055 planning missed:
+>
+> | writer | writes | effect after 055 |
+> | --- | --- | --- |
+> | `main-app/src/routes/[country=country]/api/submitBusiness/+server.ts:37` | new US business → `us_businesses` | new row has **no** `in_business_profiles` row, so `sv_sync_business` is a **no-op** — the business never reaches unified and is invisible to business-app |
+> | `main-app/src/lib/server/leads.ts:89` | new US lead → `us_leaddata` | same: no `leaddata` row, sync is a no-op, lead never reaches unified |
+> | `business-app/src/lib/server/passwordReset.ts:102` | reset token → `us_businesses` | `sv_sync_account` copies the **stale** token from the 054 copy into `business_accounts`; the emailed link cannot validate |
+> | `business-app/src/lib/server/magicLink.ts` | magic-link token → `us_businesses` | same staleness |
+> | `business-app/src/lib/auth/business/LoginTracker.ts:23` | `last_login` → `us_businesses` | never reaches unified |
+>
+> **No data is corrupt yet.** 054 copied `us_*` verbatim, so the two sides are still identical; the
+> break triggers on the *next* US write of any kind. US volume is small (12 businesses, 4 leads),
+> so the window is real but narrow.
+>
+> **Fix:** `psql "$POSTGRES_URL_NON_POOLING" < apps/main-app/src/lib/server/migrations/055-repoint-sync-fns-to-united-tables.rollback.sql`
+>
+> That restores the verbatim pre-055 two-arm functions, which read `us_*` — exactly what those
+> writers still update. It does **not** reset `leads.reference_uuid` for the 4 US rows (the restored
+> `'us'` arm simply stops maintaining the column); clear by hand if an exact pre-055 projection
+> matters: `UPDATE leads SET reference_uuid = NULL WHERE country_code = 'us';`
+>
+> **055 cannot be re-applied until every `us_*` writer above is repointed at the united tables.**
+> That is the app half of step A, and it is now a hard prerequisite rather than a follow-up.
+
 ## Where things stand — 2026-08-05
 
 **The Drizzle migration is finished and so is every follow-up it generated.** All three apps
@@ -56,8 +87,8 @@ the EDB install, which has no `solar` role — do not point the suite at it.
 `npm run pull -w @solar/db`. **Never pull from a test cluster** — its baseline omits three
 `loc_key(...)` expression indexes, so a pull from there silently drops them.
 
-All migrations through **054** are applied to live (054 applied and verified 2026-08-05). **055 is
-written and dry-run validated but NOT applied** — see Phase 7 step A.
+All migrations through **055** are applied to live (both applied 2026-08-05). **055 needs rolling
+back** — see the warning at the top of this file.
 
 
 ### What is actually open
