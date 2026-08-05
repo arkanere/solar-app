@@ -1,4 +1,4 @@
-// Characterization tests for POST /in/api/submitLead (Phase 5.5).
+// Characterization tests for POST /api/submitLead (Phase 5.5).
 //
 // Small endpoint, but two behaviors are load-bearing and easy to lose in a
 // rewrite: the pincode -> district lookup is best-effort (a lookup failure must
@@ -10,7 +10,7 @@ import { pool } from '../setup/testDb';
 import { createPincodeMapping, resetDatabase } from '../helpers/fixtures';
 import { jsonRequest, recordingFetch } from '../helpers/request';
 
-const { POST } = await import('../../src/routes/in/api/submitLead/+server');
+const { POST } = await import('../../src/routes/api/submitLead/+server');
 
 interface SubmitResponse {
 	success: boolean;
@@ -44,7 +44,7 @@ beforeEach(async () => {
 	await resetDatabase();
 });
 
-describe('POST /in/api/submitLead', () => {
+describe('POST /api/submitLead', () => {
 	it('inserts the lead and returns its reference uuid', async () => {
 		await createPincodeMapping('411001', 'Pune');
 
@@ -126,7 +126,7 @@ describe('POST /in/api/submitLead', () => {
 		const { fetchImpl, body } = await submit({ ...VALID, email: 'priya@example.test' });
 
 		expect(fetchImpl.calls).toHaveLength(1);
-		expect(fetchImpl.calls[0].url).toBe('/in/api/sendLeadSubmissionConfirmation');
+		expect(fetchImpl.calls[0].url).toBe('/api/sendLeadSubmissionConfirmation');
 		expect(fetchImpl.calls[0].body).toMatchObject({
 			name: 'Priya Sharma',
 			email: 'priya@example.test'

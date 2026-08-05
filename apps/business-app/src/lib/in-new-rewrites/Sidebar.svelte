@@ -89,7 +89,7 @@
 			type: 'standalone',
 			label: 'Dashboard',
 			icon: LayoutDashboard,
-			href: `/in/${businessSlug}`,
+			href: `/${businessSlug}`,
 			itemType: 'link'
 		},
 		{
@@ -99,7 +99,7 @@
 			icon: Users,
 			items: [
 				{ label: 'Add Lead', icon: UserPlus, action: 'addLead', type: 'modal' },
-				{ label: 'CRM', icon: Users, href: `/in/${businessSlug}/crm`, type: 'link' }
+				{ label: 'CRM', icon: Users, href: `/${businessSlug}/crm`, type: 'link' }
 			]
 		},
 		{
@@ -108,8 +108,8 @@
 			title: 'Branches',
 			icon: Building2,
 			items: [
-				{ label: 'Manage Branches', icon: Building2, href: `/in/${businessSlug}/branch`, type: 'link' },
-				{ label: 'Referrers', icon: Handshake, href: `/in/${businessSlug}/referral`, type: 'link' }
+				{ label: 'Manage Branches', icon: Building2, href: `/${businessSlug}/branch`, type: 'link' },
+				{ label: 'Referrers', icon: Handshake, href: `/${businessSlug}/referral`, type: 'link' }
 			]
 		},
 		{
@@ -118,29 +118,29 @@
 			title: 'Projects',
 			icon: FolderKanban,
 			items: [
-				{ label: 'Recent Projects', icon: FileText, href: `/in/${businessSlug}/recent-projects`, type: 'link' },
-				{ label: 'Project Management', icon: FolderKanban, href: `/in/${businessSlug}/project-management`, type: 'link' }
+				{ label: 'Recent Projects', icon: FileText, href: `/${businessSlug}/recent-projects`, type: 'link' },
+				{ label: 'Project Management', icon: FolderKanban, href: `/${businessSlug}/project-management`, type: 'link' }
 			]
 		},
 		{
 			type: 'standalone',
 			label: 'Proposals',
 			icon: FileText,
-			href: `/in/${businessSlug}/proposal`,
+			href: `/${businessSlug}/proposal`,
 			itemType: 'link'
 		},
 		{
 			type: 'standalone',
 			label: 'Quotation Maker',
 			icon: Calculator,
-			href: `/in/${businessSlug}/quotation`,
+			href: `/${businessSlug}/quotation`,
 			itemType: 'link'
 		},
 		{
 			type: 'standalone',
 			label: 'Compliance',
 			icon: ShieldCheck,
-			href: `/in/${businessSlug}/compliance`,
+			href: `/${businessSlug}/compliance`,
 			itemType: 'link'
 		},
 		{
@@ -317,7 +317,7 @@
 
 			<!-- Logout -->
 			<div class="shrink-0 p-4">
-				<form method="POST" action={`/in/${businessSlug}/logout`} onsubmit={handleLogout} class="m-0">
+				<form method="POST" action={`/${businessSlug}/logout`} onsubmit={handleLogout} class="m-0">
 					<button
 						type="submit"
 						class={cn(
@@ -482,7 +482,7 @@
 
 	<!-- Logout -->
 	<div class="p-4">
-		<form method="POST" action={`/in/${businessSlug}/logout`} onsubmit={handleLogout} class="m-0">
+		<form method="POST" action={`/${businessSlug}/logout`} onsubmit={handleLogout} class="m-0">
 			<button
 				type="submit"
 				class={cn(

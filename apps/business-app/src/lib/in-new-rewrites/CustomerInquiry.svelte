@@ -127,7 +127,7 @@
 	async function claimLead(leadId: number, businessId: number, confirmBranch: boolean) {
 		isClaiming = true;
 		try {
-			const response = await fetch('/in/api/claimLead', {
+			const response = await fetch('/api/claimLead', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
@@ -169,7 +169,7 @@
 
 	async function openComplianceModal() {
 		try {
-			const res = await fetch('/in/api/compliance/status');
+			const res = await fetch('/api/compliance/status');
 			const data = await res.json();
 			policySummary = data?.policy?.summary ?? '';
 		} catch (error) {
@@ -183,7 +183,7 @@
 		if (!pendingComplianceClaim || isAcceptingPolicy) return;
 		isAcceptingPolicy = true;
 		try {
-			const res = await fetch('/in/api/compliance/acceptPolicy', { method: 'POST' });
+			const res = await fetch('/api/compliance/acceptPolicy', { method: 'POST' });
 			const data = await res.json();
 			if (!data.success) {
 				toast.error(data.error || 'Failed to record acceptance');
@@ -296,7 +296,7 @@
 							<p class="text-sm text-foreground-secondary">
 								<strong>Showing 5 of {leads.length} leads.</strong>
 								<a
-									href="/in/{businessSlug}/crm"
+									href="/{businessSlug}/crm"
 									class="text-accent underline font-semibold hover:opacity-80 ml-1"
 								>
 									View all in CRM

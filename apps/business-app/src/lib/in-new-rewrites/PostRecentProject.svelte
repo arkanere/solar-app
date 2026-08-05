@@ -143,7 +143,7 @@
 		isDistrictLoading = true;
 
 		try {
-			const res = await fetch('/in/api/getDistrictByPincode', {
+			const res = await fetch('/api/getDistrictByPincode', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ pincode: pincodeValue })
@@ -178,7 +178,7 @@
 		isCitiesLoading = true;
 
 		try {
-			const res = await fetch('/in/api/getCities', {
+			const res = await fetch('/api/getCities', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ district: districtValue })
@@ -304,7 +304,7 @@
 
 			console.log('Submitting project data with image');
 
-			const response = await fetch(`/in/api/postRecentProject`, {
+			const response = await fetch(`/api/postRecentProject`, {
 				method: 'POST',
 				body: formDataToSend // Using FormData instead of JSON.stringify
 			});
@@ -322,7 +322,7 @@
 					show = false; // Close the modal after toast
 					// Redirect to the recent projects page after a short delay
 					setTimeout(() => {
-						window.location.href = `/in/${businessSlug}/recent-projects`;
+						window.location.href = `/${businessSlug}/recent-projects`;
 					}, 1500);
 				}, 100);
 			} else {

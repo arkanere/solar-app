@@ -32,7 +32,7 @@
 		if (confirmText !== 'DELETE') return;
 		isDeleting = true;
 		try {
-			const response = await fetch(`/in/api/deleteAccount`, {
+			const response = await fetch(`/api/deleteAccount`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' }
 			});
@@ -42,7 +42,7 @@
 				toast.success('Your account has been deleted.');
 				show = false;
 				onClose();
-				await goto(`/in/login`);
+				await goto(`/login`);
 			} else {
 				throw new Error(result.error || 'Failed to delete account');
 			}

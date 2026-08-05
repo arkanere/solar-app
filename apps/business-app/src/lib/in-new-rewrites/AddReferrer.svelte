@@ -86,7 +86,7 @@
 		isSubmitting = true;
 
 		try {
-			const response = await fetch('/in/api/addReferrer', {
+			const response = await fetch('/api/addReferrer', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ businessId, name, slug, email, phone, notes })

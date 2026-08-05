@@ -59,9 +59,9 @@ through Drizzle. No app exports a raw `pool`, and no hand-written SQL exists any
 | business-app | 33 | 0 | was 9 over 44 files; now 5269 files since `--no-tsconfig` was dropped |
 | user-app | 0 | 2 | clean; warnings are a11y + unused CSS |
 
-`npm test -w solarvipani-business` — **green: 117 passed, 6 skipped**. Step E repointed the two files
-that still imported deleted `/us` route modules. The 6 skips are `usClaimLeadEmail.test.ts`, held
-back deliberately — see step E below.
+`npm test -w solarvipani-business` — **green: 123 passed, 0 skipped**. Step E repointed the two files
+that still imported deleted `/us` route modules; step C unskipped `usClaimLeadEmail.test.ts`, which
+was the acceptance check for A+C and now passes in full.
 
 **Also run `npm run build -w <app>`** when you touch imports. `check` cannot see server code
 reaching a browser bundle, and that is a hard build failure — it left business-app undeployable for
@@ -172,15 +172,17 @@ not already imply. Target is `/[business_slug]/crm`, not `/in/[business_slug]/cr
 
 1. **Confirm `694faea` is deployed.** 055 is applied; the app code that matches it is merged. Until
    it ships, US writes go to `us_*` and never reach unified.
-2. **Step C** (strip the `/in` prefix from path literals) is now the only thing standing between
-   `usClaimLeadEmail.test.ts` and being unskipped — 5 of its 6 tests already pass; the sixth asserts
-   business-app's own signin-link URL without a country segment.
-3. Steps B–D below (route move, path literals, rename) are independent of 054/055 and can proceed in
-   parallel. **A and E are done.**
-
-   E also established that the claimLead write path is still entirely IN-bound, so step A is larger
-   than "collapse `writeTargets.ts` and add `country_code`": the write sites do not use
-   `writeTargets` at all yet. Details under step E.
+2. **Step D** is all that is left of Phase 7 — the `$lib/in-new-rewrites` → `$lib/components`
+   rename. **A, B, C and E are done.**
+3. **Two country-resolution gaps the sweep still misses**, both cheap and both now the largest
+   remaining IN-hardcoding in the app:
+   - `api/forgotPassword/+server.ts` still has `const COUNTRY = 'in'`. Wiring `countryForLoginEmail`
+     into it also gives that function its first caller — it has had **zero** since `978d6b1`.
+   - `api/sendLeadClaimNotificationToCustomer/+server.ts` hardcodes `'in'` in both queries *and* its
+     profile link. Consistent as it stands, so it is not broken — just IN-only.
+   - `branch/+page.server.ts` and `referral/+page.server.ts` still filter `countryCode = 'in'`, so a
+     US business cannot load either page. Their *links* are country-correct now; their *reads* are
+     not.
 
 ### Two facts that constrain everything left
 
@@ -232,17 +234,38 @@ Two migrations, **written but NOT applied to live**:
   *Platform-wide caveat:* `us_*` are read by main-app and the external admin-app too. 054 does not
   drop them, and dropping them should be its own later migration once every writer is confirmed off.
 
-**B. Move `/in` to the root.** `git mv` only, no content edits, so history follows the files. The
-current root `+page.svelte` is a **0-byte file** replaced by IN's landing page. Keep `api/` out of
-the HTML shell when merging the layouts.
+**B. Move `/in` to the root. — DONE 2026-08-05.** `git mv` of all 58 route files (git records every
+one as a rename, so history follows them); `routes/in/+layout.svelte` → `routes/+layout.svelte`,
+`routes/in/(layout-1)` → `routes/(layout-1)`, `routes/in/api` → `routes/api`. The 0-byte root
+`+page.svelte` was deleted so IN's landing page could answer at `/`. Only content edit was the two
+relative `app.css` imports, whose depth changed.
 
-**C. Strip the `/in` prefix from every path literal** — `` `/in/${x}` `` → `` `/${x}` ``. Wide but
-mechanical: `Sidebar.svelte` (11 sites), `$lib/in/actions/lead-api.ts`, eight `fetch('/in/api/…')`
-components, and the four `url.pathname` guards in `[business_slug]/+layout.server.ts`.
-**The trap:** cross-app links point at `main-app`, which still *has* `[country]`. So
-`/in/installer/${slug}` vs `/us/solar-panel-installer/${slug}` must branch on the *resolved*
-country, not on which file they live in. Miss it and US businesses silently get an India profile
-link. business-app's own absolute URLs (reset, signin-link) drop the segment.
+*The "keep `api/` out of the HTML shell" worry was a non-issue* — SvelteKit layouts do not apply to
+`+server.ts`, so the root `+layout.svelte` never wraps an endpoint.
+
+**C. Strip the `/in` prefix from every path literal. — DONE 2026-08-05.** Done as a quote-anchored
+rewrite (`'/in/` → `'/`, and the `"` / backtick forms), which by construction cannot touch
+`$lib/in/…` module specifiers or `solarvipani.com/in/…` absolute URLs — both are preceded by a
+letter, not a quote. 30 files: `Sidebar.svelte` (11 sites), `$lib/in/actions/lead-api.ts`, the
+`fetch('/in/api/…')` components, and the four `url.pathname` guards in
+`[business_slug]/+layout.server.ts`. `resetPasswordUrl()` lost its `country` parameter outright
+rather than keeping an unused one.
+
+**The trap, and how it was closed.** Cross-app links point at `main-app`, which still *has*
+`[country]` — `installer`, `business-form` and `solar-panel-installer` are all absent from
+`MOVED_TO_ROOT`, so they still carry the prefix. Those links now branch on the *resolved* country
+via **`$lib/mainAppUrls.ts`** (`installerProfileUrl`), fed by a new `country` field on
+`[business_slug]/+layout.server.ts`'s returned data — the layout already resolved it, it just was
+not being handed down. business-app's own absolute URLs (reset, signin-link) dropped the segment.
+
+*Two findings while doing it, both pre-existing and left alone:*
+  - `/{country}/installer/{slug}` is the canonical profile URL for **both** countries.
+    `/us/solar-panel-installer/{slug}` is only a legacy 301 in main-app's `hooks.server.ts`, and
+    there is **no matching `/in` rule** — so the `/in/solar-panel-installer/…` links this replaced
+    were 404ing, not merely burning a hop.
+  - `referral/+page.svelte`'s referrer link (`…/solar-panel-installer/{slug}/referrer/{ref}`) points
+    at a route main-app does not have, in either country, and no rewrite produces one. Only its
+    country segment was made dynamic; the shape was left as found. **Its own task.**
 
 **D. Rename `$lib/in-new-rewrites` → `$lib/components`**, mirroring main-app's `f656c6a`. Separate
 commit — pure rename plus import rewrite.
@@ -282,7 +305,9 @@ Two smaller gaps found at the same time, both cheap:
 
 ### Verifying Phase 7
 
-`npm run check -w solarvipani-business` is **35 errors / 0 warnings** and must not rise. Since
+`npm run check -w solarvipani-business` is **33 errors / 0 warnings** and must not rise. (This file
+said 35 in two places; 33 is the real number and the one CLAUDE.md carries. File count is 5268, one
+below the 5269 recorded on 2026-08-05, because B deleted the 0-byte root `+page.svelte`.) Since
 `--no-tsconfig` was dropped it now covers `.ts` too, so the separate
 `npx tsc --noEmit -p apps/business-app/tsconfig.json` pass is no longer needed. Still run
 `npm run build -w solarvipani-business`, which is mandatory: `resolveCountry` is server-only and

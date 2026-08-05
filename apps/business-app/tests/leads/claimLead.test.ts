@@ -1,4 +1,4 @@
-// Characterization tests for POST /in/api/claimLead (Phase 5.5).
+// Characterization tests for POST /api/claimLead (Phase 5.5).
 //
 // This is the endpoint Phase 6 has to rewrite and the one where a silent
 // regression is most expensive: it runs a transaction, takes a FOR UPDATE row
@@ -28,7 +28,7 @@ vi.mock('$lib/in/sendEmail', () => ({
 	sendTemplatedEmail: vi.fn(async () => ({ success: true }))
 }));
 
-const { POST } = await import('../../src/routes/in/api/claimLead/+server');
+const { POST } = await import('../../src/routes/api/claimLead/+server');
 
 interface ClaimResponse {
 	success: boolean;

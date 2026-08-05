@@ -123,9 +123,14 @@ export async function mintPasswordResetToken(
 	return raw;
 }
 
-/** The reset link a minted token belongs in. */
-export function resetPasswordUrl(country: AuthCountry, slug: string, rawToken: string): string {
-	return `https://business.solarvipani.com/${country}/${slug}/reset-password/${rawToken}`;
+/**
+ * The reset link a minted token belongs in.
+ *
+ * business-app's own URLs carry no country segment — the slug already implies
+ * one. Cross-app links into main-app still do; see mainAppUrls.ts.
+ */
+export function resetPasswordUrl(slug: string, rawToken: string): string {
+	return `https://business.solarvipani.com/${slug}/reset-password/${rawToken}`;
 }
 
 /** Subject + HTML body for the reset email. */

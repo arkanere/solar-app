@@ -23,7 +23,7 @@ export type ApiResponse<T> = {
  */
 export async function updateLeadAPI(params: UpdateLeadParams): Promise<ApiResponse<any>> {
 	try {
-		const response = await fetch('/in/api/updateLeadByBusiness', {
+		const response = await fetch('/api/updateLeadByBusiness', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
@@ -52,7 +52,7 @@ export async function updateLeadAPI(params: UpdateLeadParams): Promise<ApiRespon
  */
 export async function deleteLeadAPI(leadId: number): Promise<ApiResponse<any>> {
 	try {
-		const response = await fetch('/in/api/deleteLeadByBusiness', {
+		const response = await fetch('/api/deleteLeadByBusiness', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'

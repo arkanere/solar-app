@@ -131,7 +131,7 @@
 				notes: formData.additionalNotes
 			};
 
-			const response = await fetch('/in/api/saveProposal', {
+			const response = await fetch('/api/saveProposal', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(proposalData)

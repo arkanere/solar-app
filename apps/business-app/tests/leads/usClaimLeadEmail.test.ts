@@ -15,10 +15,10 @@
 //     tables under a country_code discriminator and the handler now writes it;
 //   - mintBusinessTokenById took the literal 'businesses_1'. FIXED: it takes a
 //     country;
-//   - both email URLs hardcoded /in/. The cross-app profile link is FIXED (it
-//     interpolates the resolved country, and points at main-app's canonical
-//     /installer/ path); business-app's own signin-link URL is step C and is
-//     the one thing still outstanding.
+//   - both email URLs hardcoded /in/. FIXED: the cross-app profile link
+//     interpolates the resolved country and points at main-app's canonical
+//     /installer/ path, and step C dropped the country segment from
+//     business-app's own signin-link URL.
 //
 // Only outbound mail is mocked; the transaction and the sv_sync_* projections
 // run for real.
@@ -45,7 +45,7 @@ vi.mock('$lib/in/sendEmail', () => ({
 	sendTemplatedEmail: vi.fn(async () => ({ success: true }))
 }));
 
-const { POST } = await import('../../src/routes/in/api/claimLead/+server');
+const { POST } = await import('../../src/routes/api/claimLead/+server');
 
 async function claim(
 	session: { id: number; slug: string; businessname: string },
@@ -80,17 +80,12 @@ function recipientsOf(callIndex: number): string[] {
 	return sendEmail.mock.calls[callIndex]?.[0] as unknown as string[];
 }
 
-// STEP A HAS LANDED. Verified by unskipping this file: 5 of these 6 tests now
-// pass — the US claim writes the united tables, mints a token on the US row,
+// STEPS A, B AND C HAVE LANDED, so this runs. It is the acceptance test for the
+// phase: the US claim writes the united tables, mints a token on the US row,
 // projects it into business_accounts, and sends both mails with the right
-// recipients and a country-correct main-app profile link.
-//
-// One assertion still fails, and it is step C's, not step A's: business-app's
-// own signin-link URL. Its routes live under src/routes/in/ until step B moves
-// them, so the handler correctly emits /in/<slug>/signin-link/ today and the
-// assertion below expects the post-C form. Unskip when step C lands — that
-// single line is all that is left.
-describe.skip('POST /api/claimLead — a US business — emails', () => {
+// recipients, a country-correct main-app profile link, and a country-less
+// business-app signin-link URL.
+describe('POST /api/claimLead — a US business — emails', () => {
 	let businessId: number;
 	let leadId: number;
 	const slug = 'oakland-solar';
@@ -174,10 +169,9 @@ describe.skip('POST /api/claimLead — a US business — emails', () => {
 		);
 		expect(projected.rows[0].magic_link_token).toBe(rows[0].magic_link_token);
 
-		// business-app's own URL: the country segment is gone in Phase 7. THIS IS
-		// THE ONE ASSERTION STILL WAITING ON STEP C — the routes live under
-		// src/routes/in/ until step B moves them, so the handler correctly emits
-		// /in/<slug>/signin-link/ today. It is why this file is still skipped.
+		// business-app's own URL: the country segment is gone in Phase 7. Unlike
+		// the profile link above, this one is *not* country-branched — the slug
+		// already implies the country within this app.
 		const allotment = callTo(loginEmail);
 		expect(allotment?.body).toContain(`https://business.solarvipani.com/${slug}/signin-link/`);
 	});

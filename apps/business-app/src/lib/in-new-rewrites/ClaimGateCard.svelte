@@ -28,21 +28,21 @@
 			label: 'Update your leads',
 			detail: `${claimGate.staleLeadsCount} of ${claimGate.totalClaimedLeads} stuck at "Claimed"`,
 			met: claimGate.staleLeadsPercent <= 50,
-			action: `/in/${businessSlug}/crm`,
+			action: `/${businessSlug}/crm`,
 			actionLabel: 'Open CRM'
 		},
 		{
 			label: 'Post 6+ projects',
 			detail: `${claimGate.projectsCount}/6 posted`,
 			met: claimGate.projectsCount >= 6,
-			action: `/in/${businessSlug}/recent-projects`,
+			action: `/${businessSlug}/recent-projects`,
 			actionLabel: 'Add Project'
 		},
 		{
 			label: 'Recent project (last 60 days)',
 			detail: claimGate.recentProjectExists ? 'Done' : 'No recent project',
 			met: claimGate.recentProjectExists,
-			action: `/in/${businessSlug}/recent-projects`,
+			action: `/${businessSlug}/recent-projects`,
 			actionLabel: 'Add Project'
 		},
 		{

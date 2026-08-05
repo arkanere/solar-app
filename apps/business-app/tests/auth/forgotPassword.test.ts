@@ -1,4 +1,4 @@
-// Tests for POST /in/api/forgotPassword — the entry point the reset flow was
+// Tests for POST /api/forgotPassword — the entry point the reset flow was
 // missing. Nothing in the app ever wrote `reset_token`, so `resetPassword`
 // worked but could not be reached by a user; these cover the new endpoint and,
 // most importantly, that the token it mints is one resetPassword accepts.
@@ -20,8 +20,8 @@ vi.mock('$lib/in/sendEmail', () => ({
 	sendTemplatedEmail: vi.fn(async () => ({ success: true }))
 }));
 
-const { POST: forgotPassword } = await import('../../src/routes/in/api/forgotPassword/+server');
-const { POST: resetPassword } = await import('../../src/routes/in/api/resetPassword/+server');
+const { POST: forgotPassword } = await import('../../src/routes/api/forgotPassword/+server');
+const { POST: resetPassword } = await import('../../src/routes/api/resetPassword/+server');
 
 let clientIp = '198.51.100.1';
 
@@ -64,7 +64,7 @@ async function storedReset(businessId: number) {
 
 const STRONG_PASSWORD = 'Str0ng!Passw0rd';
 
-describe('POST /in/api/forgotPassword', () => {
+describe('POST /api/forgotPassword', () => {
 	let businessId: number;
 	const loginEmail = 'owner@pune-solar.test';
 

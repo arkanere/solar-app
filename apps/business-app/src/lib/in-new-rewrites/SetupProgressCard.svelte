@@ -84,7 +84,7 @@
 			title: 'Claim Your First Lead',
 			description: '',
 			completed: claimedLeadsCount > 0,
-			action: `/in/${businessSlug}/crm`,
+			action: `/${businessSlug}/crm`,
 			actionLabel: 'Go to CRM',
 			priority: 6
 		},
@@ -93,7 +93,7 @@
 			title: 'Post Your First Project',
 			description: 'Showcase your work to attract customers',
 			completed: projectsCount > 0,
-			action: `/in/${businessSlug}/recent-projects`,
+			action: `/${businessSlug}/recent-projects`,
 			actionLabel: 'Add Project',
 			priority: 5
 		}

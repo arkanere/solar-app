@@ -103,7 +103,7 @@ Eg. I want 3kW system for my Home or I want to install solar at my factory`;
 			submitMessage = '';
 
 			try {
-				const response = await fetch('/in/api/submitLead', {
+				const response = await fetch('/api/submitLead', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({

@@ -47,7 +47,7 @@
 
 	async function updateDistricts(selectedState: string) {
 		try {
-			const res = await fetch('/in/api/getDistricts', {
+			const res = await fetch('/api/getDistricts', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ state: selectedState })
@@ -64,7 +64,7 @@
 
 	async function updateCities(selectedDistrict: string) {
 		try {
-			const res = await fetch('/in/api/getCities', {
+			const res = await fetch('/api/getCities', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ district: selectedDistrict })
@@ -90,7 +90,7 @@
 		isSubmitting = true;
 
 		try {
-			const response = await fetch('/in/api/addBranch', {
+			const response = await fetch('/api/addBranch', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ businessId, state, district, city })

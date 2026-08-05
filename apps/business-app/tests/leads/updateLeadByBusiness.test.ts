@@ -1,4 +1,4 @@
-// Characterization tests for POST /in/api/updateLeadByBusiness (Phase 5.5).
+// Characterization tests for POST /api/updateLeadByBusiness (Phase 5.5).
 //
 // The two things most at risk in a rewrite:
 //  - the update is a *dynamically built* partial UPDATE. Only the fields the
@@ -15,7 +15,7 @@ import { pool } from '../setup/testDb';
 import { createBranch, createBusiness, createLead, resetDatabase } from '../helpers/fixtures';
 import { createCookies, createSessionCookies, jsonRequest } from '../helpers/request';
 
-const { POST } = await import('../../src/routes/in/api/updateLeadByBusiness/+server');
+const { POST } = await import('../../src/routes/api/updateLeadByBusiness/+server');
 
 interface UpdateResponse {
 	success: boolean;
