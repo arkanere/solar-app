@@ -1,52 +1,91 @@
 # Next Steps
 
-> This file tracks **open work only**. The chronological record of the Drizzle migration, the
-> TypeScript conversion and the follow-up list was removed on 2026-08-05 once every phase was done;
-> it is in git history if you need it.
+> This file tracks **open work only**. Finished work is deleted, not archived here — the Drizzle
+> migration, the TypeScript conversion and Phase 7's business-app route consolidation all came out
+> once they were done. Git history has the full record.
 
-> ## 054 + 055 both applied to live (2026-08-05). Deploy the app to match.
->
-> **Both migrations are applied.** `sv_sync_business/_account/_lead` read the united tables for
-> every country; nothing in the sync path reads `us_*` any more.
->
-> **The matching code is merged on `main` (`694faea`) — make sure it is deployed.** Until it is,
-> the deployed app writes `us_*` while the DB syncs from `businesses_1`/`leaddata`, so US writes do
-> not reach the unified tables. Low volume (12 businesses, 4 leads) but it is a real gap; it is the
-> same inconsistency that forced the first 055 rollback, in the opposite direction.
->
-> 055 was applied once before this, found to be broken, and rolled back — because at the time
-> **`us_*` still had five live writers** that Phase 7 planning missed. They are the reason the code
-> and the migration have to move together, and they are now all repointed:
->
-> | writer | writes | effect after 055 |
-> | --- | --- | --- |
-> | writer | was | now |
-> | --- | --- | --- |
-> | `main-app` `submitBusiness/+server.ts` | insert `us_businesses` | writes `businesses_1` + `in_business_profiles` with `country_code`; `insertUsBusiness()` deleted |
-> | `main-app` `leads.ts` | insert `us_leaddata` | one insert into `leaddata` with `country_code` |
-> | `business-app` `passwordReset.ts` | update `us_businesses` | `businesses_1` + `country_code` filter |
-> | `business-app` `magicLink.ts` | update `us_businesses` | takes a country, not a table name |
-> | `business-app` `LoginTracker.ts` | update `us_businesses` | `businesses_1` + `country_code` filter |
->
-> **No data was corrupted in that window.** 054 had copied `us_*` verbatim, so both sides were still
-> identical, and the break would only have triggered on the next US write. None occurred.
->
-> **`us_*` now has no writer and no reader in the sync path.** Dropping those tables is its own
-> later migration, once main-app's remaining direct reads (`business-listing`, the thank-you page)
-> and the external admin-app are confirmed off them.
->
-> **Lesson for the next migration of this shape.** The 055 dry run proved the collapsed functions
-> reproduce the projection for existing rows, which is necessary but not sufficient. A migration
-> that changes *where a sync reads from* must also enumerate every writer of the old location —
-> and that is a code grep, not a SQL check, so a rolled-back transaction can never surface it.
+## Open
 
-## Where things stand — 2026-08-05
+1. **Confirm `694faea` is deployed.** Migrations 054 and 055 are applied to live, so the DB syncs
+   `businesses`/`leads`/`business_accounts` from `businesses_1`/`leaddata` for **both** countries.
+   `694faea` is the app half — it repoints business-app's and main-app's `us_*` writers at the
+   united tables. Until it ships, the deployed app writes `us_*` while the DB reads the united
+   tables, and US writes never reach unified. Low volume (12 businesses, 4 leads), but real: it is
+   the same code/DB inconsistency that forced 055's first rollback, in the opposite direction.
 
-**The Drizzle migration is finished and so is every follow-up it generated.** All three apps
-(`main-app`, `business-app`, `user-app`) are TypeScript, on Svelte 5 runes, and query exclusively
-through Drizzle. No app exports a raw `pool`, and no hand-written SQL exists anywhere outside
-`apps/business-app/tests`. Conventions and the recurring `drizzle-kit pull` gotchas live in
-**CLAUDE.md** — read that before touching queries or the schema.
+2. **Phase 7 smoke test.** The phase is code-complete; only the manual pass is left, and it needs a
+   running app. Check that `/` renders the landing page; that an **IN** login and a **US** login both
+   land on `/[slug]`; that a bogus slug 404s without rendering an IN-shaped shell; and that a
+   forgot-password round trip for one business of each country produces
+   `business.solarvipani.com/[slug]/reset-password/[token]` with no country segment.
+
+3. **Country-resolution gaps.** Collectively the largest remaining IN-hardcoding in business-app,
+   all cheap:
+   - `api/forgotPassword/+server.ts` still has `const COUNTRY = 'in'` — the one endpoint the
+     resolution sweep missed, because it takes an email rather than a slug. Wiring
+     `countryForLoginEmail` into it also gives that function its **first caller**; it has had zero
+     since it was written in `978d6b1`.
+   - `api/sendLeadClaimNotificationToCustomer/+server.ts` hardcodes `'in'` in both queries *and* its
+     profile link. Internally consistent, so not broken — just IN-only.
+   - `branch/+page.server.ts` and `referral/+page.server.ts` still filter `countryCode = 'in'`, so a
+     US business cannot load either page. Their *links* are country-correct; their *reads* are not.
+
+4. **Drop the `us_*` tables.** They now have no writer and no reader in the sync path, but the drop
+   is its own migration and is gated on confirming main-app's remaining direct reads
+   (`business-listing`, the thank-you page) and the **external admin-app** are off them.
+
+5. **The referral page's referrer link points at a route that does not exist.**
+   `referral/+page.svelte` emits `…/solar-panel-installer/{slug}/referrer/{ref}`, and main-app has no
+   `/referrer/` route in either country and no rewrite that produces one. Phase 7 made its country
+   segment dynamic and deliberately left the shape alone rather than guessing. Note also that
+   `/{country}/installer/{slug}` is the canonical profile URL for both countries —
+   `/us/solar-panel-installer/{slug}` is only a legacy 301, and there is no `/in` equivalent at all.
+
+6. **4 dependabot advisories** (3 high, 1 moderate) that GitHub reports on every push.
+
+7. **Duplicate `businesses.slug` values in live IN data.** `spectrum-solar-power-kasaragod` ×5,
+   `spectrum-solar-power-kannur` ×4, `spectrum-solar-power-kozhikode` ×3 and ~22 more ×2. The
+   `/[business_slug]` lookup does `.limit(1)`, so those businesses render a **non-deterministic**
+   dashboard — whichever row Postgres returns first. Fixing means de-duplicating live rows, which is
+   its own task. It is also why `businesses` cannot take a `UNIQUE (slug)` constraint.
+
+8. **Drift between `leaddata` and unified `leads`.** **3** `leaddata` rows have no unified row at all
+   (a `sv_sync_lead` call that never happened), and **156** unified `leads` have no surviving
+   `leaddata` source (the sync never deletes, so removing a source row orphans its projection).
+   `businesses` is clean — 0 in either direction. Consequence: a full resync *raises* the unified
+   lead count, so "counts unmoved" only holds for a **targeted** resync. Reconciling these is its own
+   task; `apps/main-app/src/lib/server/migrations/check-unified-drift.sql` is the existing tool.
+
+---
+
+## Standing constraints
+
+**Unified tables are a projection, not a store.** `sv_sync_business` is
+`INSERT INTO businesses ... SELECT FROM in_business_profiles ... ON CONFLICT DO UPDATE`. Anything
+written directly to `businesses`/`leads`/`business_accounts` is clobbered by the next sync — which
+is why main-app has **zero** unified writes anywhere. The rule is: **read unified** (filtered by the
+resolved country), **write the legacy table** (one set for every country since 054, discriminated by
+`country_code`), then call `sync*ToUnified`.
+
+**`SessionManager` is country-free.** `validateSession`, `isAuthenticated` and `logout` all delegate
+to it, so an endpoint doing only those needs no country-bound `BusinessAuthService`. Only `login`
+and `signin-link` genuinely need one.
+
+**business-app URLs carry no country; main-app URLs still do.** A business belongs to exactly one
+country, so `[business_slug]` implies it and business-app's own paths are country-less. main-app is
+still under `[country=country]`, so every link leaving business-app needs the **resolved** country —
+use `$lib/mainAppUrls.ts`, and take the country from `[business_slug]/+layout.server.ts`'s data
+rather than from a literal.
+
+**A migration that changes where a sync reads from must enumerate every writer of the old location.**
+055's dry run proved the collapsed functions reproduce the projection for existing rows, which is
+necessary but not sufficient — it was still rolled back once, because `us_*` had five live writers
+that the planning missed. Finding them is a **code grep, not a SQL check**, so a rolled-back
+transaction can never surface it.
+
+---
+
+## Reference
 
 ### Baselines
 
@@ -56,16 +95,18 @@ through Drizzle. No app exports a raw `pool`, and no hand-written SQL exists any
 | app | errors | warnings | notes |
 | --- | --- | --- | --- |
 | main-app | 10 | 1 | pre-existing, UI components |
-| business-app | 33 | 0 | was 9 over 44 files; now 5268 since `--no-tsconfig` was dropped |
+| business-app | 33 | 0 | over 5268 files; 14 of the 33 are in `src/lib/components/ui` |
 | user-app | 0 | 2 | clean; warnings are a11y + unused CSS |
 
-`npm test -w solarvipani-business` — **green: 123 passed, 0 skipped**. Step E repointed the two files
-that still imported deleted `/us` route modules; step C unskipped `usClaimLeadEmail.test.ts`, which
-was the acceptance check for A+C and now passes in full.
+business-app's check covers `.ts` as well as `.svelte`, so no separate
+`npx tsc --noEmit -p apps/business-app/tsconfig.json` pass is needed.
 
-**Also run `npm run build -w <app>`** when you touch imports. `check` cannot see server code
-reaching a browser bundle, and that is a hard build failure — it left business-app undeployable for
-an unknown stretch before it was caught on 2026-08-05.
+`npm test -w solarvipani-business` — **green: 123 passed, 0 skipped.**
+
+**Also run `npm run build -w <app>`** when you touch imports. `check` cannot see server code reaching
+a browser bundle, and that is a hard build failure — it left business-app undeployable for an unknown
+stretch before it was caught. business-app's `$lib/server/resolveCountry` is the current live example:
+server-only, and must never reach a component.
 
 ### Running the tests
 
@@ -92,238 +133,4 @@ the EDB install, which has no `solar` role — do not point the suite at it.
 `npm run pull -w @solar/db`. **Never pull from a test cluster** — its baseline omits three
 `loc_key(...)` expression indexes, so a pull from there silently drops them.
 
-All migrations through **055** are applied to live. Confirm `694faea` is deployed — see the note at
-the top of this file.
-
-
-### What is actually open
-
-1. **Phase 7 — business-app route consolidation.** **Code-complete** — steps A–E all landed
-   2026-08-05. Only the manual smoke test is outstanding. Full detail below.
-2. **`business-app`'s `check` covers far less than it looks.** Its script is
-   `svelte-check --no-tsconfig --ignore "src/lib/components/ui"`, so **none of its `.ts` files are
-   type-checked** — only `.svelte`. Long-standing (present since at least Phase 5.5). Run
-   `npx tsc --noEmit -p apps/business-app/tsconfig.json` to see what it hides: **20 errors** as of
-   2026-08-05 (TokenManager nullability ×3, `ui/*/index.ts` svelte re-exports, one `claimLead`
-   `NewLeadRow` mismatch; 2 of the 20 are in the skipped `usClaimLeadEmail.test.ts` and go away when
-   it is unskipped). All pre-existing.
-
-   **DONE 2026-08-05.** Both flags dropped (`--ignore` is only valid alongside `--no-tsconfig`, so
-   they come as a pair). 44 files → **5269**, 9 errors → **35**, all pre-existing and none
-   introduced: 14 in `src/lib/components/ui`, 9 in `.svelte`, 12 in `.ts`. Done ahead of the `us_*`
-   writer work because 3 of the newly visible errors are in `claimLead/+server.ts` and 3 in
-   `TokenManager.ts` — both files that work has to touch.
-3. **4 dependabot advisories** (3 high, 1 moderate) that GitHub reports on every push.
-4. **Duplicate `businesses.slug` values in live IN data.** `spectrum-solar-power-kasaragod` ×5,
-   `spectrum-solar-power-kannur` ×4, `spectrum-solar-power-kozhikode` ×3 and ~22 more ×2. The
-   `/[business_slug]` lookup does `.limit(1)`, so those businesses render a **non-deterministic**
-   dashboard — whichever row Postgres returns first. Found during the Phase 7 pre-check
-   (2026-08-05); predates it and is not caused by it. Fixing means de-duplicating live rows, which
-   is its own task. It is also why `businesses` cannot take a `UNIQUE (slug)` constraint.
-5. **Pre-existing drift between `leaddata` and unified `leads`.** Found during the 055 dry run
-   (2026-08-05), predates Phase 7 and is unrelated to 054/055: **3** `leaddata` rows have no unified
-   row at all (a `sv_sync_lead` call that never happened), and **156** unified `leads` have no
-   surviving `leaddata` source (the sync never deletes, so removing a source row orphans its
-   projection). `businesses` is clean — 0 in either direction. Consequence: a full resync *raises*
-   the unified lead count, so "counts unmoved" only holds for a **targeted** resync. Reconciling
-   these is its own task; `apps/main-app/src/lib/server/migrations/check-unified-drift.sql` is the
-   existing tool for it.
-
-The pre-existing UI-component errors that make up the three baselines are known and untouched.
-
----
-
-## Phase 7 — business-app route consolidation (code-complete; smoke test outstanding)
-
-**Goal.** Every meaningful business-app URL is already scoped by `[business_slug]`, and a business
-belongs to exactly one country, so the `/in` and `/us` prefixes carry no information the slug does
-not already imply. Target is `/[business_slug]/crm`, not `/in/[business_slug]/crm`. Unlike
-`main-app`, business-app gets **no** `[country]` segment — country is data, resolved from the DB.
-
-### Done
-
-- **`/us` deleted** (`ca676e7`) — `routes/us`, `$lib/us-new-rewrites`, `$lib/us`. It was an older,
-  thinner fork; exactly one file was byte-identical between the trees. This also closed the old
-  "/us resolves US zipcodes against the Indian `pincode_mapping`" item.
-- **Country resolution wired** (`978d6b1`) — `$lib/server/resolveCountry.ts`
-  (`countryForSlug`, `countryForLoginEmail`) and `$lib/server/writeTargets.ts`, threaded through
-  `[business_slug]/+layout.server.ts` and all 18 API endpoints that had `'in'` hardcoded.
-- **Migration 054 written** (`9998a92`) and **APPLIED to live 2026-08-05.** Verified: 12 businesses,
-  4 leads, 1 branch, 0 projects copied; 12 US `in_business_profiles` rows generated; zero id
-  collisions; all renames landed (`ein`→`gstn`, `county`→`district`, `zipcode`→`pincode`/`pin_code`);
-  unified counts unmoved at 6707 / 1220; sequences ahead of `max(id)`.
-
-  *Pre-flight finding, benign:* `us_businesses.slug` collides with `businesses_1.slug` 124 times, but
-  **every** collision is the single `'incorrect'` sentinel, and the US row has `isvisible = false`.
-  No real business slug spans both countries, so slug→country resolution stays unambiguous.
-
-  *One divergence from 054's own comment:* the copied US leads did **not** land with
-  `reference_uuid` NULL — the column defaults to `gen_random_uuid()`, so all 4 got one. Harmless,
-  but it is why 055 changes those 4 unified rows (see below).
-
-- **Migration 055 written, applied, rolled back** — repoints the `sv_sync_*` `'us'` arms at the
-  united tables. Its *projection* is correct: dry-run validated against live inside a rolled-back
-  transaction, a full resync of all 6707 businesses / 6707 accounts / 1205 leaddata rows produced
-  **zero** column differences on `businesses` and `business_accounts`, and exactly the 4 expected
-  `leads.reference_uuid` changes. What it is missing is the app half — the five `us_*` writers in
-  the table at the top of this file. **Do not re-apply it alone.**
-
-### Pick up here
-
-1. **Confirm `694faea` is deployed.** 055 is applied; the app code that matches it is merged. Until
-   it ships, US writes go to `us_*` and never reach unified.
-2. **Phase 7 is code-complete — A through E are all done.** What remains is the manual smoke test
-   under "Verifying Phase 7" below, which needs a running app.
-3. **Country-resolution gaps the sweep still misses**, all cheap and collectively the largest
-   remaining IN-hardcoding in the app:
-   - `api/forgotPassword/+server.ts` still has `const COUNTRY = 'in'`. Wiring `countryForLoginEmail`
-     into it also gives that function its first caller — it has had **zero** since `978d6b1`.
-   - `api/sendLeadClaimNotificationToCustomer/+server.ts` hardcodes `'in'` in both queries *and* its
-     profile link. Consistent as it stands, so it is not broken — just IN-only.
-   - `branch/+page.server.ts` and `referral/+page.server.ts` still filter `countryCode = 'in'`, so a
-     US business cannot load either page. Their *links* are country-correct now; their *reads* are
-     not.
-
-### Two facts that constrain everything left
-
-**Unified tables are a projection, not a store.** `sv_sync_business` is
-`INSERT INTO businesses ... SELECT FROM in_business_profiles ... ON CONFLICT DO UPDATE`. Anything
-written directly to `businesses`/`leads`/`business_accounts` is clobbered by the next sync — which
-is why main-app has **zero** unified writes anywhere. The rule is: **read unified** (filtered by the
-resolved country), **write the per-country legacy table**, then call `sync*ToUnified`.
-
-**`SessionManager` is country-free.** `validateSession`, `isAuthenticated` and `logout` all delegate
-to it, so an endpoint doing only those needs no country-bound `BusinessAuthService`. Only `login`
-and `signin-link` genuinely need one.
-
-### Remaining steps
-
-**A. Unite the legacy tables on the IN structure. — DONE 2026-08-05** (code merged; 055 still to be
-applied, see the top of this file). Supersedes the earlier per-country-table-pair
-approach, and dissolves the three divergences that blocked it (`business_notes` missing from
-`us_leaddata`, `in_business_profiles` having no US counterpart, `brands` being IN-only) — under one
-set of tables those columns simply exist for every country, NULL where a country does not populate
-them. That is already how the unified read layer behaves: `sv_sync_lead('us')` leaves
-`business_notes`, `reference_uuid`, `qualification_score` and `bill_*` NULL, so the IN shape is
-*already* the platform-wide shape and this only makes the write layer agree.
-
-Two migrations, **written but NOT applied to live**:
-
-  - **054-unite-country-legacy-tables.sql** (+ `.rollback.sql`) — adds a `country_code` discriminator
-    to `businesses_1`, `in_business_profiles` and `leaddata` (defaulting existing rows to `'in'`),
-    copies the US rows in with the renames applied (`ein`→`gstn`, `county`→`district`,
-    `zipcode`→`pincode`/`pin_code`), generates US `in_business_profiles` rows, and bumps the
-    sequences. Purely additive: `us_*` are left in place and the `sv_sync_*` `'us'` arms still read
-    them, so it can be verified before anything switches over.
-  - **055** (not yet written) — repoint the `sv_sync_business` / `_account` / `_lead` `'us'` arms at
-    the united tables, replacing the source-table branch with a `country_code` filter. Only after
-    this can the app code change.
-
-  *Why the copy is safe with no id remapping* — verified on live 2026-08-05: `us_businesses.id` and
-  `us_leaddata.id` were allocated from the IN sequences (neither has a sequence of its own), and
-  there are **zero** id collisions against the IN tables. Ids therefore do not change, so every
-  unified `(country_code, source_id)` pair stays valid and **no resync is needed**. Volume is 12
-  businesses, 4 leads, 1 branch, 0 projects; no US lead has a `business_id`, so there is no claim
-  linkage to preserve.
-
-  *Then the code:* collapse `$lib/server/writeTargets.ts` from table pairs to one table set plus a
-  `country_code` value, and add `country_code` to the write sites. Most are already mechanical —
-  `deleteAccount`, `deleteBranch`, `fixClaimedLead` and `deleteLeadByBusiness` touch only shared
-  columns.
-
-  *Platform-wide caveat:* `us_*` are read by main-app and the external admin-app too. 054 does not
-  drop them, and dropping them should be its own later migration once every writer is confirmed off.
-
-**B. Move `/in` to the root. — DONE 2026-08-05.** `git mv` of all 58 route files (git records every
-one as a rename, so history follows them); `routes/in/+layout.svelte` → `routes/+layout.svelte`,
-`routes/in/(layout-1)` → `routes/(layout-1)`, `routes/in/api` → `routes/api`. The 0-byte root
-`+page.svelte` was deleted so IN's landing page could answer at `/`. Only content edit was the two
-relative `app.css` imports, whose depth changed.
-
-*The "keep `api/` out of the HTML shell" worry was a non-issue* — SvelteKit layouts do not apply to
-`+server.ts`, so the root `+layout.svelte` never wraps an endpoint.
-
-**C. Strip the `/in` prefix from every path literal. — DONE 2026-08-05.** Done as a quote-anchored
-rewrite (`'/in/` → `'/`, and the `"` / backtick forms), which by construction cannot touch
-`$lib/in/…` module specifiers or `solarvipani.com/in/…` absolute URLs — both are preceded by a
-letter, not a quote. 30 files: `Sidebar.svelte` (11 sites), `$lib/in/actions/lead-api.ts`, the
-`fetch('/in/api/…')` components, and the four `url.pathname` guards in
-`[business_slug]/+layout.server.ts`. `resetPasswordUrl()` lost its `country` parameter outright
-rather than keeping an unused one.
-
-**The trap, and how it was closed.** Cross-app links point at `main-app`, which still *has*
-`[country]` — `installer`, `business-form` and `solar-panel-installer` are all absent from
-`MOVED_TO_ROOT`, so they still carry the prefix. Those links now branch on the *resolved* country
-via **`$lib/mainAppUrls.ts`** (`installerProfileUrl`), fed by a new `country` field on
-`[business_slug]/+layout.server.ts`'s returned data — the layout already resolved it, it just was
-not being handed down. business-app's own absolute URLs (reset, signin-link) dropped the segment.
-
-*Two findings while doing it, both pre-existing and left alone:*
-  - `/{country}/installer/{slug}` is the canonical profile URL for **both** countries.
-    `/us/solar-panel-installer/{slug}` is only a legacy 301 in main-app's `hooks.server.ts`, and
-    there is **no matching `/in` rule** — so the `/in/solar-panel-installer/…` links this replaced
-    were 404ing, not merely burning a hop.
-  - `referral/+page.svelte`'s referrer link (`…/solar-panel-installer/{slug}/referrer/{ref}`) points
-    at a route main-app does not have, in either country, and no rewrite produces one. Only its
-    country segment was made dynamic; the shape was left as found. **Its own task.**
-
-**D. Rename `$lib/in-new-rewrites` → `$lib/components`. — DONE 2026-08-05**, mirroring main-app's
-`f656c6a`. Pure rename plus import rewrite: 20 files moved, 11 specifiers rewritten.
-
-Like `f656c6a` this is a **merge into an existing `$lib/components`**, not a directory rename — it
-already held `PasswordStrengthIndicator.svelte` and `ui/`. No name collided. Sibling-relative
-imports inside the moved set (`./LeadTile.svelte` and four others) still resolve because the whole
-set moved together, and nothing outside `src`/`tests` referenced the old path — no config, no
-Tailwind content glob.
-
-`$lib/in` survives as the last country-named directory: `sendEmail`, `ownsBusinessSlug`,
-`sidebarStore`, `SponsorRibbon`, `actions/`, `utils/`, `auth/business/`. Same call as main-app made
-— those are modules rather than components, so 15b/D does not scope them.
-
-**E. Tests — DONE, suite green.** Both files that imported deleted `/us` route modules are
-**repointed, not deleted**, keeping CLAUDE.md's "both countries" rule:
-
-  - `tests/routing/resolveCountry.test.ts` — **new, 11 tests.** Covers `countryForSlug` and
-    `countryForLoginEmail` over one IN and one US fixture each, null for unknown/empty, and the
-    `isvisible` filter that disambiguates the `'incorrect'` / `''` sentinels spanning both countries.
-  - `forgotPassword.test.ts` — the "other country" test no longer calls the deleted `/us` endpoint.
-    It asserts the isolation one level down: a real **US** login email resolves to `'us'` via
-    `countryForLoginEmail`, yet the (IN-bound) endpoint mints nothing for it and stays
-    enumeration-silent.
-  - `usClaimLeadEmail.test.ts` — repointed at the unified endpoint with a US fixture and written
-    against the intended post-A/C behaviour, but **`describe.skip`**, because the endpoint cannot
-    serve a US business yet (see the blocker below). Unskipping it is the acceptance check for
-    steps A and C, and it doubles as the "US write" coverage step A needs.
-
-**The blocker E uncovered — read before starting A.** `src/routes/in/api/claimLead/+server.ts`
-resolves `country` and uses it for the compliance gate and the `sv_sync_*` calls, but **every read
-and write still goes to `leaddata` / `businesses_1` / `in_business_profiles` unconditionally**, and
-it does not import `writeTargets.ts` at all — nothing does, except
-`[business_slug]/+layout.server.ts`. Since `us_leaddata` draws its ids from `leaddata_id_seq`, a US
-lead id matches no row and the claim dies at `"Lead not found"` (verified: 500, 2026-08-05).
-`mintBusinessTokenById` is likewise called with the literal `'businesses_1'`, and both email URLs
-hardcode `/in/`. So **there is no US write path in the app today** — which is why the US-write test
-had to be written failing-first rather than passing.
-
-Two smaller gaps found at the same time, both cheap:
-  - **`countryForLoginEmail` has zero callers.** It was written in `978d6b1` but never wired in.
-  - **`forgotPassword/+server.ts` still hardcodes `const COUNTRY = 'in'`** (line 22) — the one API
-    endpoint the country-resolution sweep missed, because it takes an email rather than a slug.
-    Wiring `countryForLoginEmail` into it fixes both at once.
-  - `resetPasswordUrl()` still emits `/${country}/` in the link — step C's job, noted here so the
-    Phase 7 smoke test's "no country segment" expectation is not a surprise.
-
-### Verifying Phase 7
-
-`npm run check -w solarvipani-business` is **33 errors / 0 warnings** and must not rise. (This file
-said 35 in two places; 33 is the real number and the one CLAUDE.md carries. File count is 5268, one
-below the 5269 recorded on 2026-08-05, because B deleted the 0-byte root `+page.svelte`.) Since
-`--no-tsconfig` was dropped it now covers `.ts` too, so the separate
-`npx tsc --noEmit -p apps/business-app/tsconfig.json` pass is no longer needed. Still run
-`npm run build -w solarvipani-business`, which is mandatory: `resolveCountry` is server-only and
-must never reach a component.
-
-Then smoke it: `/` renders the landing page; an **IN** login and a **US** login both land on
-`/[slug]`; a bogus slug 404s without rendering an IN-shaped shell; and a forgot-password round trip
-for one business of each country produces `business.solarvipani.com/[slug]/reset-password/[token]`
-with no country segment.
+All migrations through **055** are applied to live.
