@@ -7,3 +7,7 @@
 
 export * from './schema';
 export * from './relations';
+
+// Hand-maintained, NOT generated: the `embeddings` Postgres schema is outside
+// drizzle.config.ts's `schemaFilter: ['public']`, so pull never emits it.
+export * from './embeddings';

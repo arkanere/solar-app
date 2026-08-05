@@ -3,9 +3,20 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "scripts": {
+    "sync": "tsx --env-file=../../.env.local sync-embedding-index.ts",
+    "embed": "tsx --env-file=../../.env.local embed-city-pages.ts",
+    "check": "tsc --noEmit"
+  },
   "dependencies": {
     "@langchain/openai": "^0.5.11",
     "@pinecone-database/pinecone": "^5.1.2",
-    "@vercel/postgres": "^0.10.0"
+    "@solar/db": "*",
+    "@vercel/postgres": "^0.10.0",
+    "drizzle-orm": "^0.45.2"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "typescript": "^5.0.0"
   }
 }

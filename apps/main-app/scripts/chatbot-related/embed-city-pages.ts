@@ -18,15 +18,17 @@
 // Postgres owns freshness: a page is stamped last_embedding_update only after its
 // chunks land in Pinecone.
 //
-// Run:  node --env-file=../../.env.local embed-city-pages.js [--limit N] [--dry-run] [--base URL]
+// Run:  npx tsx --env-file=../../.env.local embed-city-pages.ts [--limit N] [--dry-run] [--base URL]
 //   --limit N   process at most N pending pages (handy for a test batch)
 //   --dry-run   fetch + extract + log, but never embed, upsert, or stamp
 //   --base URL  fetch from this origin instead of the page's (e.g. http://localhost:7123).
 //               source_url metadata always stays the canonical page_link.
 
 import { createPool } from '@vercel/postgres';
+import { createDb, schema } from '@solar/db';
+import { and, asc, inArray, isNull, lt, or, sql } from 'drizzle-orm';
 import { OpenAIEmbeddings } from '@langchain/openai';
-import { Pinecone } from '@pinecone-database/pinecone';
+import { Pinecone, type Index } from '@pinecone-database/pinecone';
 
 const USER_AGENT = process.env.USER_AGENT;
 const INDEX_NAME = 'solar-vipani-knowledge';
@@ -38,9 +40,18 @@ const FETCH_CONCURRENCY = 8;
 
 // --- Extract -----------------------------------------------------------------
 
+/** The JSON-LD shapes this script reads. Everything else on the page is ignored. */
+interface JsonLdBlock {
+	'@type'?: string;
+	name?: string;
+	telephone?: string;
+	address?: { streetAddress?: string };
+	itemListElement?: Array<{ position: number; name: string }>;
+}
+
 // Parse every <script type="application/ld+json"> block from the page.
-function parseJsonLd(html) {
-	const out = [];
+function parseJsonLd(html: string): JsonLdBlock[] {
+	const out: JsonLdBlock[] = [];
 	for (const m of html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)) {
 		try {
 			out.push(JSON.parse(m[1]));
@@ -51,16 +62,26 @@ function parseJsonLd(html) {
 	return out;
 }
 
+interface CityChunk {
+	text: string;
+	title: string;
+	city: string;
+	district: string;
+	state: string;
+}
+
 // Build one chunk (or none) from a city page's HTML. Returns null when the page
 // has no usable installer data, so the caller skips it without stamping.
-function extractCityChunk(html) {
+function extractCityChunk(html: string): CityChunk | null {
 	const blocks = parseJsonLd(html);
 	const crumb = blocks.find((b) => b['@type'] === 'BreadcrumbList');
 	const businesses = blocks.filter((b) => b['@type'] === 'LocalBusiness');
 	if (!crumb || businesses.length === 0) return null;
 
 	// Breadcrumb positions: 3=state, 4=district, 5=city (after Home, Solar).
-	const byPos = Object.fromEntries((crumb.itemListElement ?? []).map((it) => [it.position, it.name]));
+	const byPos: Record<number, string> = Object.fromEntries(
+		(crumb.itemListElement ?? []).map((it) => [it.position, it.name])
+	);
 	const state = byPos[3];
 	const district = byPos[4];
 	const city = byPos[5];
@@ -85,15 +106,15 @@ function extractCityChunk(html) {
 
 // --- Fetch -------------------------------------------------------------------
 
-async function fetchHtml(url) {
-	const res = await fetch(url, { headers: { 'user-agent': USER_AGENT } });
+async function fetchHtml(url: string): Promise<string> {
+	const res = await fetch(url, { headers: { 'user-agent': USER_AGENT as string } });
 	if (!res.ok) throw new Error(`HTTP ${res.status}`);
 	return res.text();
 }
 
 // Resolve the URL we actually fetch: honor --base by swapping the origin, while
 // keeping the canonical page_link for source_url metadata.
-function fetchUrlFor(pageLink, base) {
+function fetchUrlFor(pageLink: string, base: string | null): string {
 	if (!base) return pageLink;
 	const u = new URL(pageLink);
 	const b = new URL(base);
@@ -102,8 +123,12 @@ function fetchUrlFor(pageLink, base) {
 	return u.toString();
 }
 
-async function mapPool(items, concurrency, fn) {
-	const results = new Array(items.length);
+async function mapPool<T, R>(
+	items: T[],
+	concurrency: number,
+	fn: (item: T) => Promise<R>
+): Promise<R[]> {
+	const results = new Array<R>(items.length);
 	let next = 0;
 	async function worker() {
 		while (next < items.length) {
@@ -118,12 +143,12 @@ async function mapPool(items, concurrency, fn) {
 // --- Pinecone ----------------------------------------------------------------
 
 // List + delete every vector whose ID starts with `prefix` (a page's chunks).
-async function deleteByPrefix(index, prefix) {
-	const ids = [];
-	let paginationToken;
+async function deleteByPrefix(index: Index, prefix: string): Promise<void> {
+	const ids: string[] = [];
+	let paginationToken: string | undefined;
 	do {
 		const res = await index.listPaginated({ prefix, paginationToken });
-		for (const v of res.vectors ?? []) ids.push(v.id);
+		for (const v of res.vectors ?? []) if (v.id) ids.push(v.id);
 		paginationToken = res.pagination?.next;
 	} while (paginationToken);
 	if (ids.length) await index.deleteMany(ids);
@@ -131,8 +156,14 @@ async function deleteByPrefix(index, prefix) {
 
 // --- Main --------------------------------------------------------------------
 
-function parseArgs(argv) {
-	const args = { limit: null, dryRun: false, base: null };
+interface Args {
+	limit: number | null;
+	dryRun: boolean;
+	base: string | null;
+}
+
+function parseArgs(argv: string[]): Args {
+	const args: Args = { limit: null, dryRun: false, base: null };
 	for (let i = 0; i < argv.length; i++) {
 		if (argv[i] === '--limit') args.limit = parseInt(argv[++i], 10);
 		else if (argv[i] === '--dry-run') args.dryRun = true;
@@ -141,25 +172,40 @@ function parseArgs(argv) {
 	return args;
 }
 
-async function main() {
+interface PendingRow {
+	id: number;
+	pageLink: string;
+}
+
+async function main(): Promise<void> {
 	const args = parseArgs(process.argv.slice(2));
 
-	if (!process.env.POSTGRES_URL) throw new Error('POSTGRES_URL not set (use --env-file=../../.env.local).');
+	if (!process.env.POSTGRES_URL)
+		throw new Error('POSTGRES_URL not set (use --env-file=../../.env.local).');
 	if (!process.env.OPENAI_API_KEY) throw new Error('OPENAI_API_KEY not set.');
 	if (!process.env.PINECONE_API_KEY) throw new Error('PINECONE_API_KEY not set.');
 	if (!USER_AGENT) throw new Error('USER_AGENT not set (use --env-file=../../.env.local).');
 
 	const pool = createPool({ connectionString: process.env.POSTGRES_URL });
+	const db = createDb(pool);
 
-	const { rows: pending } = await pool.query(
-		`SELECT id, page_link
-		   FROM embeddings.in_embedding_index
-		  WHERE chunking_strategy = $1
-		    AND (last_embedding_update IS NULL OR last_embedding_update < last_update)
-		  ORDER BY id
-		  ${args.limit ? `LIMIT ${args.limit}` : ''}`,
-		[STRATEGY]
-	);
+	const table = schema.inEmbeddingIndex;
+	// The `--limit` value used to be interpolated straight into the SQL string.
+	// `.limit()` binds it, and Drizzle drops the clause entirely when it is not set.
+	const pendingQuery = db
+		.select({ id: table.id, pageLink: table.pageLink })
+		.from(table)
+		.where(
+			and(
+				sql`${table.chunkingStrategy} = ${STRATEGY}`,
+				or(isNull(table.lastEmbeddingUpdate), lt(table.lastEmbeddingUpdate, table.lastUpdate))
+			)
+		)
+		.orderBy(asc(table.id));
+
+	const pending: PendingRow[] = args.limit
+		? await pendingQuery.limit(args.limit)
+		: await pendingQuery;
 
 	console.log(
 		`${pending.length} pending city page(s)` +
@@ -188,16 +234,16 @@ async function main() {
 		//    content) | undefined (fetch/extract failed — retry on a later run).
 		const extracted = await mapPool(batch, FETCH_CONCURRENCY, async (row) => {
 			try {
-				const html = await fetchHtml(fetchUrlFor(row.page_link, args.base));
+				const html = await fetchHtml(fetchUrlFor(row.pageLink, args.base));
 				return { row, chunk: extractCityChunk(html) };
 			} catch (err) {
-				console.warn(`  ! ${row.page_link} — ${err.message}`);
+				console.warn(`  ! ${row.pageLink} — ${err instanceof Error ? err.message : String(err)}`);
 				return { row, chunk: undefined };
 			}
 		});
 
 		// 2. Keep pages that produced a chunk.
-		const records = [];
+		const records: Array<{ row: PendingRow; chunk: CityChunk }> = [];
 		for (const { row, chunk } of extracted) {
 			if (chunk === undefined) failed++;
 			else if (chunk === null) skipped++;
@@ -207,7 +253,7 @@ async function main() {
 
 		if (args.dryRun) {
 			for (const { row, chunk } of records.slice(0, 3)) {
-				console.log(`\n--- ${row.id}#0 (${row.page_link}) ---\n${chunk.text}`);
+				console.log(`\n--- ${row.id}#0 (${row.pageLink}) ---\n${chunk.text}`);
 			}
 			embedded += records.length;
 			continue;
@@ -222,7 +268,7 @@ async function main() {
 			values: vectors[i],
 			metadata: {
 				text: chunk.text,
-				source_url: row.page_link,
+				source_url: row.pageLink,
 				title: chunk.title,
 				content_type: STRATEGY,
 				index_id: Number(row.id),
@@ -241,10 +287,10 @@ async function main() {
 		await index.upsert(upserts);
 
 		// 6. Stamp freshness for pages that successfully landed.
-		await pool.query(
-			`UPDATE embeddings.in_embedding_index SET last_embedding_update = now() WHERE id = ANY($1)`,
-			[ids]
-		);
+		await db
+			.update(table)
+			.set({ lastEmbeddingUpdate: sql`now()` })
+			.where(inArray(table.id, ids));
 
 		embedded += records.length;
 		console.log(`  batch ${start / BATCH_SIZE + 1}: embedded ${records.length} page(s)`);
