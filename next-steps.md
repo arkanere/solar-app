@@ -4,14 +4,15 @@
 > TypeScript conversion and the follow-up list was removed on 2026-08-05 once every phase was done;
 > it is in git history if you need it.
 
-> ## ⚠️ LIVE NEEDS ACTION — 055 is applied and should be rolled back
+> ## 055 — applied, broken, rolled back (2026-08-05). Do not re-apply yet.
 >
-> **055 was applied to live on 2026-08-05 and is still applied.** It must be rolled back, or the
-> `us_*` writers below must be repointed, before any US write happens.
+> **Live is correct.** 055 was applied, found to be broken, and rolled back the same day; the
+> sync functions are back to their two-arm form reading `us_*`. 054 stays applied — it is purely
+> additive and verified.
 >
-> **The bug.** 055 repoints `sv_sync_*('us', …)` at `businesses_1` / `leaddata` /
-> `in_business_profiles` filtered by `country_code = 'us'`. But **`us_*` still has live writers**,
-> which 054/055 planning missed:
+> **Why 055 cannot ship as written.** It repoints `sv_sync_*('us', …)` at `businesses_1` /
+> `leaddata` / `in_business_profiles` filtered by `country_code = 'us'`. But **`us_*` still has five
+> live writers**, which the Phase 7 planning missed:
 >
 > | writer | writes | effect after 055 |
 > | --- | --- | --- |
@@ -21,19 +22,22 @@
 > | `business-app/src/lib/server/magicLink.ts` | magic-link token → `us_businesses` | same staleness |
 > | `business-app/src/lib/auth/business/LoginTracker.ts:23` | `last_login` → `us_businesses` | never reaches unified |
 >
-> **No data is corrupt yet.** 054 copied `us_*` verbatim, so the two sides are still identical; the
-> break triggers on the *next* US write of any kind. US volume is small (12 businesses, 4 leads),
-> so the window is real but narrow.
+> **No data was corrupted.** 054 had copied `us_*` verbatim, so both sides were still identical, and
+> the break would only have triggered on the *next* US write. None occurred in the window.
 >
-> **Fix:** `psql "$POSTGRES_URL_NON_POOLING" < apps/main-app/src/lib/server/migrations/055-repoint-sync-fns-to-united-tables.rollback.sql`
+> **Known harmless residue:** the 4 US `leads.reference_uuid` values that 055 populated are still
+> set — the restored `'us'` arm simply stops maintaining the column rather than clearing it. Clear
+> only if an exact pre-055 projection matters:
+> `UPDATE leads SET reference_uuid = NULL WHERE country_code = 'us';`
 >
-> That restores the verbatim pre-055 two-arm functions, which read `us_*` — exactly what those
-> writers still update. It does **not** reset `leads.reference_uuid` for the 4 US rows (the restored
-> `'us'` arm simply stops maintaining the column); clear by hand if an exact pre-055 projection
-> matters: `UPDATE leads SET reference_uuid = NULL WHERE country_code = 'us';`
+> **Re-applying 055 is gated on repointing all five writers above at the united tables** — the app
+> half of step A. It is a hard prerequisite, not a follow-up: the migration and the code must land
+> together, since each is broken without the other.
 >
-> **055 cannot be re-applied until every `us_*` writer above is repointed at the united tables.**
-> That is the app half of step A, and it is now a hard prerequisite rather than a follow-up.
+> **Lesson for the next migration of this shape.** The dry run proved the collapsed functions
+> reproduce the projection for existing rows, which is necessary but not sufficient. A migration
+> that changes *where a sync reads from* must also enumerate every writer of the old location —
+> and that is a code grep, not a SQL check, so a rolled-back transaction can never surface it.
 
 ## Where things stand — 2026-08-05
 
@@ -87,8 +91,8 @@ the EDB install, which has no `solar` role — do not point the suite at it.
 `npm run pull -w @solar/db`. **Never pull from a test cluster** — its baseline omits three
 `loc_key(...)` expression indexes, so a pull from there silently drops them.
 
-All migrations through **055** are applied to live (both applied 2026-08-05). **055 needs rolling
-back** — see the warning at the top of this file.
+All migrations through **054** are applied to live. **055 was applied and rolled back the same day**
+and must not be re-applied on its own — see the note at the top of this file.
 
 
 ### What is actually open
@@ -152,21 +156,32 @@ not already imply. Target is `/[business_slug]/crm`, not `/in/[business_slug]/cr
   `reference_uuid` NULL — the column defaults to `gen_random_uuid()`, so all 4 got one. Harmless,
   but it is why 055 changes those 4 unified rows (see below).
 
-- **Migration 055 written** — repoints the `sv_sync_*` `'us'` arms at the united tables.
-  **Not applied to live.** Dry-run validated against live inside a rolled-back transaction: full
-  resync of all 6707 businesses / 6707 accounts / 1205 leaddata rows produced **zero** column
-  differences on `businesses` and `business_accounts`, and exactly the 4 expected
-  `leads.reference_uuid` changes. Rollback script restores the verbatim pre-055 two-arm bodies.
+- **Migration 055 written, applied, rolled back** — repoints the `sv_sync_*` `'us'` arms at the
+  united tables. Its *projection* is correct: dry-run validated against live inside a rolled-back
+  transaction, a full resync of all 6707 businesses / 6707 accounts / 1205 leaddata rows produced
+  **zero** column differences on `businesses` and `business_accounts`, and exactly the 4 expected
+  `leads.reference_uuid` changes. What it is missing is the app half — the five `us_*` writers in
+  the table at the top of this file. **Do not re-apply it alone.**
 
 ### Pick up here
 
-1. Apply **055** (`psql "$POSTGRES_URL_NON_POOLING" < 055-repoint-sync-fns-to-united-tables.sql`),
-   then resync the US rows per the note at the foot of that file. Expect unified counts to hold at
-   6707 / 1220 and the 4 US `reference_uuid` values to flip NULL → UUID.
-2. Then the app code: collapse `writeTargets.ts` to one table set plus a `country_code`, and add
-   `country_code` to the write sites — including `claimLead`, which does not use `writeTargets` at
-   all yet (see the blocker under step E).
-3. Steps B–D below (route move, path literals, rename) are independent of 054/055 and can proceed in
+1. **Repoint the five `us_*` writers at the united tables** — the app half of step A, now a
+   prerequisite for 055 rather than a follow-up:
+   - `main-app` `submitBusiness/+server.ts` — must write `businesses_1` + `in_business_profiles`
+     with `country_code='us'` instead of `us_businesses`. This is the big one: it is the only place
+     that *creates* a US business, and under the united tables it has to write the IN pair rather
+     than one table.
+   - `main-app` `leads.ts` — write `leaddata` with `country_code='us'`.
+   - `business-app` `passwordReset.ts`, `magicLink.ts`, `LoginTracker.ts` — all three currently pick
+     `usBusinesses` vs `businesses1` by country; they collapse to `businesses_1` + a `country_code`
+     filter.
+   - `claimLead/+server.ts` — still entirely IN-bound and does not use `writeTargets` at all
+     (see the blocker under step E).
+   Collapse `writeTargets.ts` to one table set plus a `country_code` value as part of this.
+2. **Then apply 055 and the code together**, and resync the US rows per the note at the foot of the
+   migration. Expect unified counts to hold at 6707 / 1220.
+3. Unskipping `usClaimLeadEmail.test.ts` is the acceptance check for 1–2 plus step C.
+4. Steps B–D below (route move, path literals, rename) are independent of 054/055 and can proceed in
    parallel. **E is done** — the suite is green again.
 
    E also established that the claimLead write path is still entirely IN-bound, so step A is larger
