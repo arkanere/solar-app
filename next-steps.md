@@ -1,5 +1,92 @@
 # Next Steps
 
+> **Read this section first.** Everything below it is a chronological record, oldest at the top,
+> and several early sections describe plans that have since been carried out or corrected. Nothing
+> below is a to-do unless this section says so.
+
+## Where things stand — 2026-08-05
+
+**The Drizzle migration is finished and so is every follow-up it generated.** All three apps
+(`main-app`, `business-app`, `user-app`) are TypeScript, on Svelte 5 runes, and query exclusively
+through Drizzle. No app exports a raw `pool`, and no hand-written SQL exists anywhere outside
+`apps/business-app/tests`. Conventions and the recurring `drizzle-kit pull` gotchas live in
+**CLAUDE.md** — read that before touching queries or the schema.
+
+### Baselines
+
+`npm run check` is on svelte-check v4, which prints **machine format** to a non-TTY: grep
+`COMPLETED n FILES x ERRORS`, *not* `found x errors`. A change passes if the count does not rise.
+
+| app | errors | warnings | notes |
+| --- | --- | --- | --- |
+| main-app | 10 | 1 | pre-existing, UI components |
+| business-app | 61 | 0 | `.svelte` only — see the caveat below |
+| user-app | 0 | 2 | clean; warnings are a11y + unused CSS |
+
+`npm test -w solarvipani-business` — **111 tests**, all passing.
+
+**Also run `npm run build -w <app>`** when you touch imports. `check` cannot see server code
+reaching a browser bundle, and that is a hard build failure — it left business-app undeployable for
+an unknown stretch before it was caught on 2026-08-05.
+
+### Running the tests
+
+**Docker is not installed on this machine**, so `docker compose -f docker-compose.test.yml up -d`
+does not work. Build a throwaway cluster from the EDB binaries instead:
+
+```sh
+export PATH=/System/Volumes/Data/Library/PostgreSQL/16/bin:$PATH
+initdb -D pgdata -U solar --auth=trust
+pg_ctl -D pgdata -o "-p 5544 -k /tmp" -l pg.log start
+psql -h localhost -p 5544 -U solar -d postgres \
+  -c "create database solar_test;" -c "alter role solar with password 'solar' superuser;"
+
+export TEST_POSTGRES_URL="postgres://solar:solar@localhost:5544/solar_test"
+npm test -w solarvipani-business
+```
+
+The suite rebuilds its schema per run, so a fresh empty database is fine. Port 5433 answers but is
+the EDB install, which has no `solar` role — do not point the suite at it.
+
+### Live database
+
+`apps/main-app/.env.local` holds the credentials. Use **`POSTGRES_URL_NON_POOLING`** for DDL and for
+`npm run pull -w @solar/db`. **Never pull from a test cluster** — its baseline omits three
+`loc_key(...)` expression indexes, so a pull from there silently drops them.
+
+All migrations through **053** are applied to live.
+
+### What is actually open
+
+Only two things, neither urgent:
+
+1. **`business-app`'s `check` covers far less than it looks.** Its script is
+   `svelte-check --no-tsconfig --ignore "src/lib/components/ui"`, so **none of its `.ts` files are
+   type-checked** — only `.svelte`. Verified by planting a deliberate type error in
+   `lib/server/passwordReset.ts` and watching it pass. Long-standing (present since at least
+   Phase 5.5), and it is why 61 is not comparable to main-app's 10. Worth dropping the flag, but it
+   will raise the count, so give it its own commit.
+2. **4 dependabot advisories** (3 high, 1 moderate) that GitHub reports on every push.
+
+Everything else on every previous "still open" list has been done. The pre-existing UI-component
+errors that make up the three baselines are known and untouched.
+
+### Landmines worth knowing before you start
+
+- **`packages/db/src/schema/schema.ts` and `relations.ts` are generated** by
+  `npm run pull -w @solar/db`. Do not hand-edit them. `index.ts` and `embeddings.ts` in the same
+  directory **are** hand-maintained — `embeddings.ts` exists because `schemaFilter: ['public']`
+  hides that Postgres schema from introspection.
+- **`postpull.mjs` corrects two things drizzle-kit gets wrong**, including composite foreign keys,
+  whose two sides come out mis-paired and produce DDL Postgres rejects. Add an entry there for any
+  new composite FK.
+- **Check `withTimezone` before writing a timestamp.** A plain `timestamp` column is read back in
+  the process's local zone, so writing `.toISOString()` shifts it by the UTC offset.
+- **Every bug fixed gets a test that reproduces it first.** That rule caught a dead `/us` endpoint
+  and a timezone bug on 2026-08-05 alone.
+
+---
+
 ## ✅ DONE 2026-08-04 — Connection pooling: `business-app` creates a new Postgres pool per-request in most handlers
 
 **Found:** 2026-08-04, while walking through architecture terms against the codebase.
@@ -56,19 +143,19 @@ Original plan: Add `@solar/db` as a dependency of business-app; extend `apps/bus
 export `db = createDb(pool)` (same pattern as main-app, shared pool). Add the convention line to CLAUDE.md.
 Run `drizzle-kit check` to confirm schema is current against the live DB.
 
-### Phase 1 — pilot: simple lookup reads (business-app, ~9 files)
+### ✅ Phase 1 — pilot: simple lookup reads (business-app, ~9 files) — DONE 2026-08-04
 `getCities`, `getDistricts`, `getDistrictByPincode` (both `/us` and `/in`), `getCounties`,
 `getCountyByZipcode`. Single-table selects, no auth, no writes. Purpose: establish what converted code
 looks like; stop and review before continuing.
 
-### Phase 2 — auth lib (business-app, 4 files)
+### ✅ Phase 2 — auth lib (business-app, 4 files) — DONE 2026-08-04
 `lib/auth/business/`: `RateLimiter`, `TokenManager`, `LoginTracker`, `PasswordManager`. Small, self-contained,
 well-understood queries; RateLimiter's upsert exercises `onConflictDoUpdate`.
 
-### Phase 3 — `/in` page loads (business-app, ~9 files)
+### ✅ Phase 3 — `/in` page loads (business-app, ~9 files) — DONE 2026-08-04
 The `(layout-1)/[business_slug]/**` `+layout.server.ts` / `+page.server.ts` files. Read-only joins.
 
-### Phase 4 — `/us` page loads (business-app, ~5 files)
+### ✅ Phase 4 — `/us` page loads (business-app, ~5 files) — DONE 2026-08-04
 `us/[business_slug]/**` page loads. Same shape as Phase 3.
 
 ### ✅ Phase 5 — simple mutations (business-app, 22 files) — DONE 2026-08-04
@@ -278,9 +365,9 @@ Baselines held throughout: main-app `npm run check` 13 errors, business-app 84 e
   `reset_token` / `reset_token_expires`. The "already used" branch is gone — a successful reset
   clears the token, so reuse reports the generic invalid/expired error.
 
-**Still open, found in passing (no action taken):**
-- Nothing in the app issues a password reset token, so `resetPassword` is unreachable end to end
-  even now that it works. Either add a forgot-password endpoint or delete the flow and its pages.
+**Found in passing at the time — all three have since been resolved (2026-08-05):**
+- ~~Nothing in the app issues a password reset token, so `resetPassword` is unreachable end to end.~~
+  A forgot-password endpoint now exists for both countries.
 - **`faq` is nullable but typed non-null (Phase 7a).** Every `faq` jsonb column is nullable in the
   DB, and the raw driver's `any` hid that. `PillarPage.svelte` and the seven pillar `+page.svelte`
   files all declare it non-null; the component guards with `?? []`, but the pages do
@@ -442,11 +529,10 @@ main-app (13) and business-app (84) baselines — so it wants its own commit, ex
 bury it. The 2 warnings are pre-existing and untouched (a `radiogroup` missing `tabindex`, an unused
 `h3` selector).
 
-**Still open — `svelte-check` is still pinned at `^3.6.0`** across all three apps, which predates
-Svelte 5. Upgrading to v4 was in scope for this phase and was **not** done, for the reason the plan
-itself gives: it will move all three error baselines and that movement should be isolated and
-attributable. Do it as its own commit across all three apps, together with (or right after) the Vite
-dedupe above — they are the same kind of change.
+**Deferred at the time — `svelte-check` was still pinned at `^3.6.0`**, which predates Svelte 5.
+Upgrading was in scope for this phase and deliberately not done, because it moves all three error
+baselines and that movement wanted to be isolated and attributable. **It landed on 2026-08-05** as
+its own commit — see the final section, which also corrects the Vite-dedupe diagnosis given above.
 
 ### Six defects the conversion surfaced
 
@@ -678,13 +764,11 @@ nullability item under Phase 7a.
 
 ### What is actually left in the monorepo
 
-Everything below the first item was cleared on 2026-08-05 — see the follow-up section
-at the end of this file.
+**Nothing on this list is open any more** — all five were cleared on 2026-08-05. See the top of
+this file for the current position.
 
-- **`svelte-check` is still pinned at `^3.6.0`** across all three apps, and the Vite-types dedupe is
-  still undone. Both are described under the TypeScript phase above; they are the same kind of
-  change and want one commit across all three apps, because they will move the main-app (13) and
-  business-app (84) baselines. **This is the only thing on the original list still open.**
+- ~~`svelte-check` pinned at `^3.6.0` / the Vite-types dedupe~~ — done; the diagnosis recorded here
+  was wrong, see the final section.
 - ~~The two `chatbot-related/*.js` offline scripts~~ — converted to TypeScript + Drizzle.
 - ~~Deletion candidates (`main-app/lib/server/magicLink.ts`, `createUserAuthService()`)~~ — deleted.
 - ~~`resetPassword` unreachable~~ — the forgot-password endpoint now exists.
@@ -838,11 +922,10 @@ importers anywhere in the monorepo.
   `resetPassword`), single use, re-minting, enumeration-safety, rate limiting.
 - New fixtures: `createUsBusiness`, `createUsLead`, and a `country` option on `seedLeadDataPolicy`.
 
-### Still open
+### Still open at the time (all since done)
 
-**Only the `svelte-check` v4 upgrade + Vite-types dedupe.** One commit across all three apps,
-because it moves every baseline. Current baselines: main-app **13 errors + 1 warning**,
-business-app **84 errors + 111 tests**, user-app **1 error + 2 warnings**.
+The `svelte-check` v4 upgrade + Vite-types dedupe, which landed later the same day — and moved the
+baselines quoted here. **Current numbers are at the top of this file; these are historical.**
 
 **No Docker on this machine**, so the suite ran against a throwaway cluster built from the EDB
 binaries — the recipe under Phase 6 still works, on port 5544.
@@ -881,11 +964,10 @@ The generated baseline now contains `CREATE SCHEMA "embeddings"`, which is not i
 *second* consecutive run of the suite failed. `tests/setup/globalSetup.ts` now drops that schema
 alongside `public`. Two back-to-back runs verified.
 
-### Still open
+### Still open at the time (since done)
 
-**Only the `svelte-check` v4 upgrade + Vite-types dedupe** — one commit across all three apps,
-because it moves every baseline. Current: main-app **13 errors + 1 warning**, business-app
-**84 errors + 111 tests**, user-app **1 error + 2 warnings**.
+The `svelte-check` v4 upgrade + Vite-types dedupe, which is the section immediately below. The
+baselines quoted here are pre-upgrade and **superseded by the table at the top of this file**.
 
 ---
 
