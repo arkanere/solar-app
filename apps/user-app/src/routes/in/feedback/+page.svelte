@@ -1,17 +1,39 @@
-<script>
+<script lang="ts">
 	import { enhance } from '$app/forms';
+	import type { PageData, ActionData } from './$types';
 
-	/** @type {{ data: import('./$types').PageData, form: import('./$types').ActionData }} */
-	let { data, form } = $props();
+	let { data, form }: { data: PageData; form: ActionData } = $props();
 
-	let gotCallback = $state(data.feedback ? (data.feedback.gotCallback ? 'yes' : 'no') : '');
-	let gotQuotation = $state(data.feedback ? (data.feedback.gotQuotation ? 'yes' : 'no') : '');
+	/** Radio groups are '' when there is no saved answer yet. */
+	function toYesNo(value: boolean | null | undefined): string {
+		return value == null ? '' : value ? 'yes' : 'no';
+	}
+
+	// These four are editable form fields seeded from the server, so they cannot
+	// be `$derived` — a derived value cannot be assigned. Seeding them in
+	// `$state` keeps the SSR'd HTML showing the saved feedback; the `$effect`
+	// below re-seeds them when `data.feedback` changes, which is what the plain
+	// initializers did not do (they captured only the first value).
+	// svelte-ignore state_referenced_locally
+	let gotCallback = $state(toYesNo(data.feedback?.gotCallback));
+	// svelte-ignore state_referenced_locally
+	let gotQuotation = $state(toYesNo(data.feedback?.gotQuotation));
+	// svelte-ignore state_referenced_locally
 	let rating = $state(data.feedback?.recommendationRating || 0);
 	let hoverRating = $state(0);
+	// svelte-ignore state_referenced_locally
 	let suggestions = $state(data.feedback?.suggestions || '');
 	let submitting = $state(false);
 
-	const ratingLabels = {
+	$effect(() => {
+		const feedback = data.feedback;
+		gotCallback = toYesNo(feedback?.gotCallback);
+		gotQuotation = toYesNo(feedback?.gotQuotation);
+		rating = feedback?.recommendationRating || 0;
+		suggestions = feedback?.suggestions || '';
+	});
+
+	const ratingLabels: Record<number, string> = {
 		1: 'Not at all',
 		2: 'Unlikely',
 		3: 'Maybe',

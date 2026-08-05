@@ -1,14 +1,21 @@
-<script>
+<script lang="ts">
 	/**
 	 * Electricity bill upload, reusable on the thank-you page (pass `leadRef`)
 	 * and the logged-in dashboard (pass `leadId`).
 	 */
+	interface Props {
+		leadRef?: string;
+		leadId?: number | null;
+		billUrl?: string | null;
+		billFormat?: string | null;
+	}
+
 	let {
 		leadRef = '',
 		leadId = null,
 		billUrl = $bindable(null),
 		billFormat = $bindable(null)
-	} = $props();
+	}: Props = $props();
 
 	const allowedFileTypes = [
 		'image/jpeg',
@@ -22,36 +29,37 @@
 	];
 	const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
-	let fileInput = $state();
-	let selectedFile = $state(null);
-	let imagePreview = $state(null);
+	let fileInput = $state<HTMLInputElement | undefined>();
+	let selectedFile = $state<File | null>(null);
+	let imagePreview = $state<string | null>(null);
 	let isUploading = $state(false);
 	let errorMessage = $state('');
 	let successMessage = $state('');
 
 	const hasBill = $derived(!!billUrl);
 	const billIsPdf = $derived(
-		billFormat === 'pdf' || (billUrl && billUrl.toLowerCase().endsWith('.pdf'))
+		billFormat === 'pdf' || !!billUrl?.toLowerCase().endsWith('.pdf')
 	);
 
-	function handleFileChange(event) {
+	function handleFileChange(event: Event) {
+		const input = event.currentTarget as HTMLInputElement;
 		errorMessage = '';
 		successMessage = '';
 		selectedFile = null;
 		imagePreview = null;
 
-		const file = event.target.files && event.target.files[0];
+		const file = input.files && input.files[0];
 		if (!file) return;
 
 		if (!allowedFileTypes.includes(file.type)) {
 			errorMessage = 'Please upload an image (JPG, PNG, WebP) or PDF file';
-			event.target.value = '';
+			input.value = '';
 			return;
 		}
 
 		if (file.size > MAX_FILE_SIZE) {
 			errorMessage = 'File size must be less than 10MB';
-			event.target.value = '';
+			input.value = '';
 			return;
 		}
 
@@ -59,8 +67,10 @@
 
 		if (file.type.startsWith('image/')) {
 			const reader = new FileReader();
-			reader.onload = (e) => {
-				imagePreview = e.target?.result;
+			reader.onload = () => {
+				// FileReader.result is `string | ArrayBuffer | null`; readAsDataURL
+				// always yields the string form.
+				imagePreview = typeof reader.result === 'string' ? reader.result : null;
 			};
 			reader.readAsDataURL(file);
 		}
@@ -79,7 +89,7 @@
 			if (leadRef) {
 				formData.append('ref', leadRef);
 			} else if (leadId) {
-				formData.append('leadId', leadId);
+				formData.append('leadId', String(leadId));
 			}
 
 			const response = await fetch('/in/api/uploadBill', {

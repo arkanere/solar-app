@@ -1,15 +1,14 @@
-<script>
+<script lang="ts">
 	import BillUpload from '$lib/components/BillUpload.svelte';
+	import type { PageData } from './$types';
 
-	/** @type {{ data: import('./$types').PageData }} */
-	let { data } = $props();
+	let { data }: { data: PageData } = $props();
 
 	const customerDetails = $derived(data?.customerDetails || null);
-	const error = $derived(data?.error || null);
 	const installers = $derived(data?.installers || []);
 	const referenceUuid = $derived(data?.referenceUuid || '');
 
-	function formatDate(dateString) {
+	function formatDate(dateString: Date | string | null) {
 		if (!dateString) return '';
 		const date = new Date(dateString);
 		return date.toLocaleString('en-IN', {
@@ -61,81 +60,76 @@
 </svelte:head>
 
 <main>
-	{#if error}
-		<h1>Details not found</h1>
-		<p>The requested information could not be found.</p>
-	{:else}
-		<h1>Thank you! We've received your details.</h1>
+	<h1>Thank you! We've received your details.</h1>
 
-		{#if customerDetails}
-			<div class="details-card">
-				<div class="detail-row">
-					<span class="label">Name:</span>
-					<span class="value">{customerDetails.name}</span>
-				</div>
-				<div class="detail-row">
-					<span class="label">Phone:</span>
-					<span class="value">{customerDetails.phone}</span>
-				</div>
-				<div class="detail-row">
-					<span class="label">Email:</span>
-					<span class="value">{customerDetails.email || 'Not provided'}</span>
-				</div>
-				<div class="detail-row">
-					<span class="label">Location:</span>
-					<span class="value"
-						>{customerDetails.pinCode}{customerDetails.district
-							? `, ${customerDetails.district}`
-							: ''}</span
-					>
-				</div>
-				<div class="detail-row">
-					<span class="label">Installation Type:</span>
-					<span class="value">{customerDetails.type}</span>
-				</div>
-				<div class="detail-row">
-					<span class="label">Requirements:</span>
-					<span class="value">{customerDetails.comment}</span>
-				</div>
-				<div class="detail-row">
-					<span class="label">Submitted:</span>
-					<span class="value">{formatDate(customerDetails.submittedAt)}</span>
-				</div>
+	{#if customerDetails}
+		<div class="details-card">
+			<div class="detail-row">
+				<span class="label">Name:</span>
+				<span class="value">{customerDetails.name}</span>
 			</div>
-
-			<BillUpload
-				leadRef={referenceUuid}
-				billUrl={customerDetails.billUrl}
-				billFormat={customerDetails.billFormat}
-			/>
-		{/if}
-
-		{#if installers.length > 0}
-			<h2>{customerDetails?.isExclusiveLead ? 'Your Solar Installer' : 'Top Solar Installers in Your Area'}</h2>
-			<div class="installers-list">
-				{#each installers as installer}
-					<div class="installer-card">
-						<strong>{installer.businessname}</strong>
-						{#if installer.address}
-							<span class="installer-address">{installer.address}</span>
-						{/if}
-						{#if installer.phonenumber}
-							<a href="tel:{installer.phonenumber}" class="installer-phone">{installer.phonenumber}</a>
-						{/if}
-					</div>
-				{/each}
+			<div class="detail-row">
+				<span class="label">Phone:</span>
+				<span class="value">{customerDetails.phone}</span>
 			</div>
-		{/if}
+			<div class="detail-row">
+				<span class="label">Email:</span>
+				<span class="value">{customerDetails.email || 'Not provided'}</span>
+			</div>
+			<div class="detail-row">
+				<span class="label">Location:</span>
+				<span class="value"
+					>{customerDetails.pinCode}{customerDetails.district
+						? `, ${customerDetails.district}`
+						: ''}</span
+				>
+			</div>
+			<div class="detail-row">
+				<span class="label">Installation Type:</span>
+				<span class="value">{customerDetails.type}</span>
+			</div>
+			<div class="detail-row">
+				<span class="label">Requirements:</span>
+				<span class="value">{customerDetails.comment}</span>
+			</div>
+			<div class="detail-row">
+				<span class="label">Submitted:</span>
+				<span class="value">{formatDate(customerDetails.submittedAt)}</span>
+			</div>
+		</div>
 
-		<h2>Next Steps</h2>
-
-		{#if installers.length > 0}
-			<p>One of our verified solar installers in your area will reach out to you shortly. If you'd like to talk to someone right away, you can directly call the installers using the above contact details.</p>
-		{:else}
-			<p>We're currently expanding to your area and will connect you with a verified installer as soon as one is available.</p>
-		{/if}
-
+		<BillUpload
+			leadRef={referenceUuid}
+			billUrl={customerDetails.billUrl}
+			billFormat={customerDetails.billFormat}
+		/>
 	{/if}
+
+	{#if installers.length > 0}
+		<h2>{customerDetails?.isExclusiveLead ? 'Your Solar Installer' : 'Top Solar Installers in Your Area'}</h2>
+		<div class="installers-list">
+			{#each installers as installer}
+				<div class="installer-card">
+					<strong>{installer.businessname}</strong>
+					{#if installer.address}
+						<span class="installer-address">{installer.address}</span>
+					{/if}
+					{#if installer.phonenumber}
+						<a href="tel:{installer.phonenumber}" class="installer-phone">{installer.phonenumber}</a>
+					{/if}
+				</div>
+			{/each}
+		</div>
+	{/if}
+
+	<h2>Next Steps</h2>
+
+	{#if installers.length > 0}
+		<p>One of our verified solar installers in your area will reach out to you shortly. If you'd like to talk to someone right away, you can directly call the installers using the above contact details.</p>
+	{:else}
+		<p>We're currently expanding to your area and will connect you with a verified installer as soon as one is available.</p>
+	{/if}
+
 </main>
 
 <style>

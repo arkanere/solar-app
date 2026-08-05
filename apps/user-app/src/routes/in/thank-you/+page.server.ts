@@ -17,7 +17,15 @@ interface CustomerDetails {
 	submittedAt: Date | null;
 	billUrl: string | null;
 	billFormat: string | null;
+	/**
+	 * True when the inquiry came in from an installer's own page, so exactly one
+	 * installer is shown. Derived the same way sendLeadSubmissionConfirmation
+	 * derives it for the confirmation email — keep the two in step.
+	 */
+	isExclusiveLead: boolean;
 }
+
+const EXCLUSIVE_LEAD_URL = /\/(?:solar-panel-installer|installer)\//;
 
 /** The installer columns the page's card list renders. */
 interface Installer {
@@ -59,7 +67,8 @@ export const load: PageServerLoad = async ({ url }) => {
 					district: lead.district,
 					submittedAt: lead.created_at,
 					billUrl: getSignedBillUrl(lead.bill_cloudinary_public_id, lead.bill_format),
-					billFormat: lead.bill_format
+					billFormat: lead.bill_format,
+					isExclusiveLead: EXCLUSIVE_LEAD_URL.test(lead.urlparams ?? '')
 				};
 			}
 		} catch (err) {

@@ -1,10 +1,12 @@
-<script>
+<script lang="ts">
 	import BillUpload from '$lib/components/BillUpload.svelte';
+	import type { PageData } from './$types';
 
-	/** @type {{ data: import('./$types').PageData }} */
-	let { data } = $props();
+	let { data }: { data: PageData } = $props();
 
-	function formatDate(dateString) {
+	type ClaimedBusiness = PageData['claimedBusinesses'][number];
+
+	function formatDate(dateString: Date | string | null) {
 		if (!dateString) return '';
 		const date = new Date(dateString);
 		return date.toLocaleString('en-IN', {
@@ -16,22 +18,22 @@
 		});
 	}
 
-	function getStageLabel(stage) {
-		const stages = {
+	function getStageLabel(stage: string | null) {
+		const stages: Record<string, string> = {
 			0: 'New Inquiry',
 			1: 'Qualified',
 			2: 'Proposal Sent',
 			3: 'Won'
 		};
-		return stages[stage] || 'Under Review';
+		return (stage != null && stages[stage]) || 'Under Review';
 	}
 
-	function groupClaimsByLead(claimedBusinesses) {
-		const grouped = new Map();
+	function groupClaimsByLead(claimedBusinesses: ClaimedBusiness[]) {
+		const grouped = new Map<number, ClaimedBusiness[]>();
 		claimedBusinesses.forEach((claim) => {
 			const key = claim.originalLeadId;
 			if (!grouped.has(key)) grouped.set(key, []);
-			grouped.get(key).push(claim);
+			grouped.get(key)!.push(claim);
 		});
 		return grouped;
 	}

@@ -7,9 +7,9 @@ import type { PageServerLoad, Actions } from './$types';
 
 /** The saved feedback row, in the camelCase shape the page renders. */
 interface Feedback {
-	gotCallback: boolean | null;
-	gotQuotation: boolean | null;
-	recommendationRating: number | null;
+	gotCallback: boolean;
+	gotQuotation: boolean;
+	recommendationRating: number;
 	suggestions: string | null;
 }
 
