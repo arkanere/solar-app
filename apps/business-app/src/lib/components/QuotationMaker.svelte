@@ -22,7 +22,7 @@
 		formatINR,
 		formatRs,
 		type LineItem
-	} from '$lib/in-new-rewrites/quotation';
+	} from '$lib/components/quotation';
 
 	type QuotationMakerProps = {
 		business?: Record<string, any>;

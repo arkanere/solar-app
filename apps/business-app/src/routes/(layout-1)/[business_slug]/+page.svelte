@@ -2,7 +2,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
-	import CustomerInquiry from '$lib/in-new-rewrites/CustomerInquiry.svelte';
+	import CustomerInquiry from '$lib/components/CustomerInquiry.svelte';
 
 	let businessSlug = $derived($page.params.business_slug);
 	let business = $derived($page.data.business);

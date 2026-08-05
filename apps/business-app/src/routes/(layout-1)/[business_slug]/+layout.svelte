@@ -1,16 +1,16 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { isSidebarExpanded, isMobileMenuOpen } from '$lib/in/sidebarStore.svelte';
-	import Sidebar from '$lib/in-new-rewrites/Sidebar.svelte';
-	import SetupProgressCard from '$lib/in-new-rewrites/SetupProgressCard.svelte';
-	import ClaimGateCard from '$lib/in-new-rewrites/ClaimGateCard.svelte';
-	import ShowEditProfile from '$lib/in-new-rewrites/ShowEditProfile.svelte';
-	import PostRecentProject from '$lib/in-new-rewrites/PostRecentProject.svelte';
-	import AddBranch from '$lib/in-new-rewrites/AddBranch.svelte';
-	import ShowSupport from '$lib/in-new-rewrites/ShowSupport.svelte';
-	import ShowDeleteAccount from '$lib/in-new-rewrites/ShowDeleteAccount.svelte';
-	import ShowRankingPolicy from '$lib/in-new-rewrites/ShowRankingPolicy.svelte';
-	import LeadFormModalBusiness from '$lib/in-new-rewrites/LeadFormModalBusiness.svelte';
+	import Sidebar from '$lib/components/Sidebar.svelte';
+	import SetupProgressCard from '$lib/components/SetupProgressCard.svelte';
+	import ClaimGateCard from '$lib/components/ClaimGateCard.svelte';
+	import ShowEditProfile from '$lib/components/ShowEditProfile.svelte';
+	import PostRecentProject from '$lib/components/PostRecentProject.svelte';
+	import AddBranch from '$lib/components/AddBranch.svelte';
+	import ShowSupport from '$lib/components/ShowSupport.svelte';
+	import ShowDeleteAccount from '$lib/components/ShowDeleteAccount.svelte';
+	import ShowRankingPolicy from '$lib/components/ShowRankingPolicy.svelte';
+	import LeadFormModalBusiness from '$lib/components/LeadFormModalBusiness.svelte';
 	import type { Snippet } from 'svelte';
 
 	export type LayoutProps = {

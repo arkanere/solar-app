@@ -5,7 +5,7 @@
 
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
-	import PublicNavbar from '$lib/in-new-rewrites/PublicNavbar.svelte';
+	import PublicNavbar from '$lib/components/PublicNavbar.svelte';
 
 	const benefits = [
 		{

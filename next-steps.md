@@ -56,7 +56,7 @@ through Drizzle. No app exports a raw `pool`, and no hand-written SQL exists any
 | app | errors | warnings | notes |
 | --- | --- | --- | --- |
 | main-app | 10 | 1 | pre-existing, UI components |
-| business-app | 33 | 0 | was 9 over 44 files; now 5269 files since `--no-tsconfig` was dropped |
+| business-app | 33 | 0 | was 9 over 44 files; now 5268 since `--no-tsconfig` was dropped |
 | user-app | 0 | 2 | clean; warnings are a11y + unused CSS |
 
 `npm test -w solarvipani-business` — **green: 123 passed, 0 skipped**. Step E repointed the two files
@@ -98,8 +98,8 @@ the top of this file.
 
 ### What is actually open
 
-1. **Phase 7 — business-app route consolidation.** In progress; steps 1–3 landed, steps 4–7 open.
-   Full remaining detail below.
+1. **Phase 7 — business-app route consolidation.** **Code-complete** — steps A–E all landed
+   2026-08-05. Only the manual smoke test is outstanding. Full detail below.
 2. **`business-app`'s `check` covers far less than it looks.** Its script is
    `svelte-check --no-tsconfig --ignore "src/lib/components/ui"`, so **none of its `.ts` files are
    type-checked** — only `.svelte`. Long-standing (present since at least Phase 5.5). Run
@@ -133,7 +133,7 @@ The pre-existing UI-component errors that make up the three baselines are known 
 
 ---
 
-## Phase 7 — business-app route consolidation (in progress)
+## Phase 7 — business-app route consolidation (code-complete; smoke test outstanding)
 
 **Goal.** Every meaningful business-app URL is already scoped by `[business_slug]`, and a business
 belongs to exactly one country, so the `/in` and `/us` prefixes carry no information the slug does
@@ -172,9 +172,9 @@ not already imply. Target is `/[business_slug]/crm`, not `/in/[business_slug]/cr
 
 1. **Confirm `694faea` is deployed.** 055 is applied; the app code that matches it is merged. Until
    it ships, US writes go to `us_*` and never reach unified.
-2. **Step D** is all that is left of Phase 7 — the `$lib/in-new-rewrites` → `$lib/components`
-   rename. **A, B, C and E are done.**
-3. **Two country-resolution gaps the sweep still misses**, both cheap and both now the largest
+2. **Phase 7 is code-complete — A through E are all done.** What remains is the manual smoke test
+   under "Verifying Phase 7" below, which needs a running app.
+3. **Country-resolution gaps the sweep still misses**, all cheap and collectively the largest
    remaining IN-hardcoding in the app:
    - `api/forgotPassword/+server.ts` still has `const COUNTRY = 'in'`. Wiring `countryForLoginEmail`
      into it also gives that function its first caller — it has had **zero** since `978d6b1`.
@@ -267,8 +267,18 @@ not being handed down. business-app's own absolute URLs (reset, signin-link) dro
     at a route main-app does not have, in either country, and no rewrite produces one. Only its
     country segment was made dynamic; the shape was left as found. **Its own task.**
 
-**D. Rename `$lib/in-new-rewrites` → `$lib/components`**, mirroring main-app's `f656c6a`. Separate
-commit — pure rename plus import rewrite.
+**D. Rename `$lib/in-new-rewrites` → `$lib/components`. — DONE 2026-08-05**, mirroring main-app's
+`f656c6a`. Pure rename plus import rewrite: 20 files moved, 11 specifiers rewritten.
+
+Like `f656c6a` this is a **merge into an existing `$lib/components`**, not a directory rename — it
+already held `PasswordStrengthIndicator.svelte` and `ui/`. No name collided. Sibling-relative
+imports inside the moved set (`./LeadTile.svelte` and four others) still resolve because the whole
+set moved together, and nothing outside `src`/`tests` referenced the old path — no config, no
+Tailwind content glob.
+
+`$lib/in` survives as the last country-named directory: `sendEmail`, `ownsBusinessSlug`,
+`sidebarStore`, `SponsorRibbon`, `actions/`, `utils/`, `auth/business/`. Same call as main-app made
+— those are modules rather than components, so 15b/D does not scope them.
 
 **E. Tests — DONE, suite green.** Both files that imported deleted `/us` route modules are
 **repointed, not deleted**, keeping CLAUDE.md's "both countries" rule:

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { toast } from 'svelte-sonner';
-	import CustomerInquiry from '$lib/in-new-rewrites/CustomerInquiry.svelte';
+	import CustomerInquiry from '$lib/components/CustomerInquiry.svelte';
 
 	// Destructure page data
 	let business = $derived($page.data.business);

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import ShowEditProfile from '$lib/in-new-rewrites/ShowEditProfile.svelte';
-	import AddBranch from '$lib/in-new-rewrites/AddBranch.svelte';
+	import ShowEditProfile from '$lib/components/ShowEditProfile.svelte';
+	import AddBranch from '$lib/components/AddBranch.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
 	import * as Dialog from '$lib/components/ui/dialog';

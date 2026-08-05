@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import QuotationMaker from '$lib/in-new-rewrites/QuotationMaker.svelte';
+	import QuotationMaker from '$lib/components/QuotationMaker.svelte';
 
 	let business = $derived($page.data.business ?? {});
 </script>

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import ProposalFormModal from '$lib/in-new-rewrites/ProposalFormModal.svelte';
+	import ProposalFormModal from '$lib/components/ProposalFormModal.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from '$lib/components/ui/table';
 	import { toast } from 'svelte-sonner';
