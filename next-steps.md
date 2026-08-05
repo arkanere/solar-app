@@ -66,21 +66,11 @@
    lead count, so "counts unmoved" only holds for a **targeted** resync. Reconciling these is its own
    task; `apps/main-app/src/lib/server/migrations/check-unified-drift.sql` is the existing tool.
 
-9. **`api/resetPassword` never syncs the new password to unified.** It writes `login_password` to
-   `businesses_1` and stops. `PasswordManager` reads `business_accounts.login_password`
-   (`PasswordManager.ts:25`), and nothing else calls `sv_sync_account` on that path — `forgotPassword`
-   syncs when it *mints* the token, not when the password changes. So a completed reset appears to
-   succeed while login keeps checking the old password, until some other write happens to resync the
-   account. Not country-specific; found while doing 3a, and out of its scope. The round-trip test
-   passes because it asserts on `businesses_1`, not on a subsequent login — a fix should add that
-   login step.
-
-10. **Delete `api/sendLeadClaimNotificationToCustomer`.** It has **zero callers** anywhere in the
-    repo, and `claimLead` already sends the identical email inline and country-correctly
-    (`claimLead/+server.ts:485`). It is also **unauthenticated** — anyone who can guess a lead id and
-    business id can make it send mail and mint a magic-link token — whereas claimLead's copy sits
-    behind a session check. `87ddc19` made it country-correct rather than deleting it, because
-    deleting a public endpoint was not in that task's scope.
+9. **`api/resetPassword` looks up its business by slug with no `country_code` filter.** It does
+   `.limit(1)` on the slug alone, unlike `mintPasswordResetToken`, which filters. Combined with 7's
+   duplicate slugs that means a reset can land on a different row than the one the token was minted
+   against — the token compare would fail, so the effect is a valid link reporting
+   "invalid or expired", not a cross-account write. Noticed while fixing the sync half (`53db9e6`).
 
 ---
 
@@ -127,7 +117,7 @@ transaction can never surface it.
 business-app's check covers `.ts` as well as `.svelte`, so no separate
 `npx tsc --noEmit -p apps/business-app/tsconfig.json` pass is needed.
 
-`npm test -w solarvipani-business` — **green: 131 passed, 0 skipped.**
+`npm test -w solarvipani-business` — **green: 153 passed, 0 skipped.**
 
 **Also run `npm run build -w <app>`** when you touch imports. `check` cannot see server code reaching
 a browser bundle, and that is a hard build failure — it left business-app undeployable for an unknown
