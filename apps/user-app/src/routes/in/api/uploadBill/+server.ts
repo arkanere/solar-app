@@ -4,6 +4,7 @@ import { POSTGRES_URL } from '$env/static/private';
 import { UserAuthService } from '$lib/auth/user';
 import { uploadBill, getSignedBillUrl, deleteBill } from '$lib/server/billStorage';
 import { syncLeadToUnified } from '$lib/server/unifiedSync';
+import type { RequestHandler } from './$types';
 
 const pool = createPool({ connectionString: POSTGRES_URL });
 
@@ -20,8 +21,13 @@ const allowedFileTypes = [
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
-/** @type {import('./$types').RequestHandler} */
-export async function POST({ request, cookies }) {
+/** The `leads` projection row both lookup branches below select. */
+interface LeadRow {
+	id: number;
+	bill_cloudinary_public_id: string | null;
+}
+
+export const POST: RequestHandler = async ({ request, cookies }) => {
 	try {
 		const contentType = request.headers.get('content-type') || '';
 		if (!contentType.includes('multipart/form-data')) {
@@ -50,7 +56,7 @@ export async function POST({ request, cookies }) {
 
 		// Locate the lead: either via reference uuid (thank-you page)
 		// or via lead id + authenticated session (dashboard)
-		let lead = null;
+		let lead: LeadRow | null = null;
 
 		if (ref) {
 			const result = await pool.query(
@@ -112,4 +118,4 @@ export async function POST({ request, cookies }) {
 		console.error('Error uploading electricity bill:', error);
 		return json({ success: false, error: 'Failed to upload bill. Please try again.' }, { status: 500 });
 	}
-}
+};

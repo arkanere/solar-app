@@ -2,17 +2,17 @@ import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
 import { syncLeadToUnified } from '$lib/server/unifiedSync';
+import type { RequestHandler } from './$types';
 
-/** @type {import('./$types').RequestHandler} */
-export async function POST({ request, fetch }) {
+export const POST: RequestHandler = async ({ request, fetch }) => {
 	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	try {
 		const { name, phone, pinCode, type, comment, urlParam, email, marketing_consent } =
 			await request.json();
 
-		let district = null;
-		let state = null;
+		let district: string | null = null;
+		let state: string | null = null;
 		if (pinCode) {
 			try {
 				const districtResult = await pool.query(
@@ -51,4 +51,4 @@ export async function POST({ request, fetch }) {
 		console.error('Error inserting lead data:', error);
 		return json({ success: false, error: 'Failed to submit lead' }, { status: 500 });
 	}
-}
+};

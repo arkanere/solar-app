@@ -4,14 +4,14 @@ import { POSTGRES_URL } from '$env/static/private';
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
 import { hasInternalSecret } from '$lib/server/internalAuth';
+import type { RequestHandler } from './$types';
 
 const pool = createPool({ connectionString: POSTGRES_URL });
 
 // Magic links expire 15 days after creation.
 const TOKEN_TTL_MS = 15 * 24 * 60 * 60 * 1000;
 
-/** @type {import('./$types').RequestHandler} */
-export async function POST({ request }) {
+export const POST: RequestHandler = async ({ request }) => {
 	if (!hasInternalSecret(request)) {
 		return json({ error: 'Unauthorized' }, { status: 401 });
 	}
@@ -51,4 +51,4 @@ export async function POST({ request }) {
 		console.error('Error generating user magic link:', error);
 		return json({ error: 'Internal server error' }, { status: 500 });
 	}
-}
+};

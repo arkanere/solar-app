@@ -3,9 +3,16 @@ import { sendEmail } from '$lib/sendEmail';
 import { internalSecretHeaders } from '$lib/server/internalAuth';
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
+import type { RequestHandler } from './$types';
 
-/** @type {import('./$types').RequestHandler} */
-export async function POST({ request, fetch }) {
+/** The installer columns the email template below renders. */
+interface InstallerRow {
+	businessname: string;
+	address: string | null;
+	phonenumber: string | null;
+}
+
+export const POST: RequestHandler = async ({ request, fetch }) => {
 	try {
 		const { name, phone, pinCode, comment, urlParam, email, district, state } = await request.json();
 
@@ -33,7 +40,7 @@ export async function POST({ request, fetch }) {
 			}
 		}
 
-		let installers = [];
+		let installers: InstallerRow[] = [];
 		try {
 			const pool = createPool({ connectionString: POSTGRES_URL });
 			if (isExclusiveLead) {
@@ -67,7 +74,7 @@ export async function POST({ request, fetch }) {
 		const installersHtml = installers.length > 0 ? `
 			<p><strong>${installersHeading}</strong></p>
 			<table style="width:100%; border-collapse:collapse; margin-bottom:16px;">
-				${installers.map(b => `
+				${installers.map((b) => `
 				<tr style="border-bottom:1px solid #eee;">
 					<td style="padding:8px 4px;">
 						<strong>${b.businessname}</strong>
@@ -81,7 +88,7 @@ export async function POST({ request, fetch }) {
 		const adminEmail = 'admin@solarvipani.com';
 		const subject = 'Thank You for Your Inquiry - Solar Vipani';
 
-		let message;
+		let message: string;
 		if (isExclusiveLead) {
 			message = `
 				<p>Dear ${name},</p>
@@ -133,4 +140,4 @@ export async function POST({ request, fetch }) {
 		console.error('Error sending lead submission confirmation:', error);
 		return json({ success: false, error: 'Failed to send confirmation email' }, { status: 500 });
 	}
-}
+};
