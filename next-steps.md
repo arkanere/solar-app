@@ -55,7 +55,7 @@ through Drizzle. No app exports a raw `pool`, and no hand-written SQL exists any
 | app | errors | warnings | notes |
 | --- | --- | --- | --- |
 | main-app | 10 | 1 | pre-existing, UI components |
-| business-app | 9 | 0 | was 61; `/us` deletion removed most. `.svelte` only — see the caveat below |
+| business-app | 35 | 0 | was 9 over 44 files; now 5269 files since `--no-tsconfig` was dropped |
 | user-app | 0 | 2 | clean; warnings are a11y + unused CSS |
 
 `npm test -w solarvipani-business` — **green: 117 passed, 6 skipped**. Step E repointed the two files
@@ -105,9 +105,13 @@ and must not be re-applied on its own — see the note at the top of this file.
    `npx tsc --noEmit -p apps/business-app/tsconfig.json` to see what it hides: **20 errors** as of
    2026-08-05 (TokenManager nullability ×3, `ui/*/index.ts` svelte re-exports, one `claimLead`
    `NewLeadRow` mismatch; 2 of the 20 are in the skipped `usClaimLeadEmail.test.ts` and go away when
-   it is unskipped). All pre-existing. Worth dropping the flag, but it will raise the count,
-   so give it its own commit. **Phase 7 makes this urgent** — nearly all of that migration's risk
-   lives in `.ts`, where `check` is blind.
+   it is unskipped). All pre-existing.
+
+   **DONE 2026-08-05.** Both flags dropped (`--ignore` is only valid alongside `--no-tsconfig`, so
+   they come as a pair). 44 files → **5269**, 9 errors → **35**, all pre-existing and none
+   introduced: 14 in `src/lib/components/ui`, 9 in `.svelte`, 12 in `.ts`. Done ahead of the `us_*`
+   writer work because 3 of the newly visible errors are in `claimLead/+server.ts` and 3 in
+   `TokenManager.ts` — both files that work has to touch.
 3. **4 dependabot advisories** (3 high, 1 moderate) that GitHub reports on every push.
 4. **Duplicate `businesses.slug` values in live IN data.** `spectrum-solar-power-kasaragod` ×5,
    `spectrum-solar-power-kannur` ×4, `spectrum-solar-power-kozhikode` ×3 and ~22 more ×2. The
@@ -287,11 +291,11 @@ Two smaller gaps found at the same time, both cheap:
 
 ### Verifying Phase 7
 
-`npm run check -w solarvipani-business` is **9 errors / 0 warnings** since the `/us` deletion (the
-61 baseline was mostly `us-new-rewrites`); it must not rise. Because `check` cannot see `.ts`, also
-run `npx tsc --noEmit -p apps/business-app/tsconfig.json` (22 pre-existing errors — the count must
-not rise) and `npm run build -w solarvipani-business`, which is mandatory: `resolveCountry` is
-server-only and must never reach a component.
+`npm run check -w solarvipani-business` is **35 errors / 0 warnings** and must not rise. Since
+`--no-tsconfig` was dropped it now covers `.ts` too, so the separate
+`npx tsc --noEmit -p apps/business-app/tsconfig.json` pass is no longer needed. Still run
+`npm run build -w solarvipani-business`, which is mandatory: `resolveCountry` is server-only and
+must never reach a component.
 
 Then smoke it: `/` renders the landing page; an **IN** login and a **US** login both land on
 `/[slug]`; a bogus slug 404s without rendering an IN-shaped shell; and a forgot-password round trip

@@ -63,13 +63,17 @@ grep `COMPLETED n FILES x ERRORS`, not `found x errors`. A change passes if the 
 | app | errors | warnings |
 | --- | --- | --- |
 | main-app | 10 | 1 |
-| business-app | 61 | 0 |
+| business-app | 35 | 0 |
 | user-app | 0 | 2 |
 
-**business-app's check runs with `--no-tsconfig`**, so it only covers `.svelte` files — none of its
-`.ts` is type-checked, and `src/lib/components/ui` is ignored outright. That is long-standing, not
-deliberate as far as anyone recorded; the 61 errors are all `.svelte`. Dropping the flag is worth
-doing but will raise the number, so give it its own commit.
+**business-app's check now covers everything.** `--no-tsconfig --ignore "src/lib/components/ui"` was
+dropped on 2026-08-05, so its `.ts` files are type-checked for the first time and the run went from
+44 files to 5269. The 35 errors are all pre-existing, just newly visible: 14 in
+`src/lib/components/ui`, 9 in `.svelte` (the old baseline), 12 in `.ts`.
+
+Note `--ignore` is only valid alongside `--no-tsconfig`, so the two flags come as a pair. Moving the
+ignore into `tsconfig.json`'s `exclude` does not work either — `exclude` only filters `include`, and
+files reached through imports stay in the program and are still checked.
 
 Run `npm run build -w <app>` too when touching imports: `check` will not catch server code reaching
 a component, which is a hard build failure (see the `$lib/compliance` barrel, fixed 2026-08-05).
