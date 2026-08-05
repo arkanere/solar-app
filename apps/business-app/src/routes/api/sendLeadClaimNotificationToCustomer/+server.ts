@@ -5,6 +5,7 @@ import { mintUserToken } from '$lib/server/magicLink';
 import type { RequestHandler } from './$types';
 import { businesses, leads } from '@solar/db/schema';
 import { and, eq } from 'drizzle-orm';
+import { installerProfileUrl } from '$lib/mainAppUrls';
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
@@ -14,16 +15,33 @@ export const POST: RequestHandler = async ({ request }) => {
 			return json({ success: false, error: 'Lead ID and Business ID are required' }, { status: 400 });
 		}
 
+		// This endpoint is given ids, not a slug or an email, so there is nothing
+		// to resolve a country *from* — it read `country_code = 'in'` on both
+		// queries instead, which was internally consistent but made it IN-only.
+		//
+		// Since 054 leaddata and businesses_1 are one table per entity for every
+		// country, each with a single id sequence, so a source id identifies a row
+		// on its own. Take the country off the lead row and require the business
+		// to agree, which keeps the cross-check the paired 'in' filters used to
+		// give for free.
 		const leadResult = await db
-			.select({ name: leads.name, email: leads.email })
+			.select({ name: leads.name, email: leads.email, countryCode: leads.countryCode })
 			.from(leads)
-			.where(and(eq(leads.countryCode, 'in'), eq(leads.sourceId, lead_id)));
+			.where(eq(leads.sourceId, lead_id));
 
 		if (leadResult.length === 0) {
 			return json({ success: false, error: 'Lead not found' }, { status: 404 });
 		}
 
 		const lead = leadResult[0];
+
+		// country_code is char(2) and arrives space-padded from some drivers, so
+		// normalise before it reaches a URL. Comparing it back to another char(2)
+		// column is safe either way — Postgres blank-pads char comparisons.
+		const country = lead.countryCode?.trim().toLowerCase();
+		if (country !== 'in' && country !== 'us') {
+			return json({ success: false, error: 'Lead not found' }, { status: 404 });
+		}
 
 		if (!lead.email) {
 			return json({ success: true, skipped: true, reason: 'No customer email' });
@@ -37,14 +55,16 @@ export const POST: RequestHandler = async ({ request }) => {
 				slug: businesses.slug
 			})
 			.from(businesses)
-			.where(and(eq(businesses.countryCode, 'in'), eq(businesses.sourceId, business_id)));
+			.where(and(eq(businesses.countryCode, country), eq(businesses.sourceId, business_id)));
 
 		if (businessResult.length === 0) {
 			return json({ success: false, error: 'Business not found' }, { status: 404 });
 		}
 
 		const business = businessResult[0];
-		const profileLink = `https://solarvipani.com/in/installer/${business.slug}`;
+		// `/in/installer/...` hardcoded here sent every US customer to an India
+		// profile URL. installerProfileUrl builds the canonical form for either.
+		const profileLink = installerProfileUrl(country, business.slug ?? '');
 		const adminEmail = 'admin@solarvipani.com';
 
 		// Mint a fresh user token (stored hashed, upserts the in_user row);
