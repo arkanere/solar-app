@@ -5,19 +5,57 @@ import { SessionManager } from '$lib/auth/user/SessionManager';
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { getSignedBillUrl } from '$lib/server/billStorage';
+import type { PageServerLoad, Actions } from './$types';
 
-/** @type {import('./$types').PageServerLoad} */
-export async function load({ cookies }) {
+/** A user's own inquiry, in the camelCase shape the dashboard renders. */
+interface Lead {
+	id: number;
+	name: string | null;
+	phone: string | null;
+	pinCode: string | null;
+	type: string | null;
+	comment: string | null;
+	email: string | null;
+	district: string | null;
+	submittedAt: Date | null;
+	billUrl: string | null;
+	billFormat: string | null;
+}
+
+/** An installer's claim on one of those inquiries. */
+interface ClaimedBusiness {
+	claimId: number;
+	claimDate: Date | null;
+	stage: string | null;
+	status: string | null;
+	originalLeadId: number;
+	leadName: string | null;
+	leadPhone: string | null;
+	leadPinCode: string | null;
+	leadType: string | null;
+	leadCreatedAt: Date | null;
+	businessId: number | null;
+	businessName: string | null;
+	businessSlug: string | null;
+	businessDistrict: string | null;
+	businessState: string | null;
+	businessPhone: string | null;
+	interestReceivedAt: Date | null;
+	isAllotted: boolean | null;
+	isResolved: boolean | null;
+}
+
+export const load: PageServerLoad = async ({ cookies }) => {
 	const authService = new UserAuthService();
 	const sessionResult = authService.validateSession(cookies);
 
 	if (!sessionResult.success) {
-		return { user: null, leads: [], claimedBusinesses: [] };
+		return { user: null, leads: [] as Lead[], claimedBusinesses: [] as ClaimedBusiness[] };
 	}
 
 	const pool = createPool({ connectionString: POSTGRES_URL });
-	let leads = [];
-	let claimedBusinesses = [];
+	let leads: Lead[] = [];
+	let claimedBusinesses: ClaimedBusiness[] = [];
 
 	try {
 		const result = await pool.query(
@@ -109,10 +147,9 @@ export async function load({ cookies }) {
 	}
 
 	return { user: sessionResult.user, leads, claimedBusinesses };
-}
+};
 
-/** @type {import('./$types').Actions} */
-export const actions = {
+export const actions: Actions = {
 	logout: async ({ cookies }) => {
 		SessionManager.clearSession(cookies);
 		throw redirect(302, '/in');

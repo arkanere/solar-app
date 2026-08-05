@@ -1,9 +1,9 @@
 export const prerender = false;
-import { redirect } from '@sveltejs/kit';
+import { redirect, isRedirect } from '@sveltejs/kit';
 import { UserAuthService } from '$lib/auth/user';
+import type { PageServerLoad } from './$types';
 
-/** @type {import('./$types').PageServerLoad} */
-export async function load({ params, cookies }) {
+export const load: PageServerLoad = async ({ params, cookies }) => {
 	const { token } = params;
 	const authService = new UserAuthService();
 
@@ -20,7 +20,7 @@ export async function load({ params, cookies }) {
 			};
 		}
 	} catch (error) {
-		if (error.status === 302) {
+		if (isRedirect(error)) {
 			// This is a redirect, let it through
 			throw error;
 		}
@@ -29,4 +29,4 @@ export async function load({ params, cookies }) {
 			error: 'An error occurred during authentication. Please try again.'
 		};
 	}
-}
+};

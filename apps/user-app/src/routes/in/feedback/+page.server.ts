@@ -3,18 +3,26 @@ import { fail } from '@sveltejs/kit';
 import { UserAuthService } from '$lib/auth/user';
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
+import type { PageServerLoad, Actions } from './$types';
 
-/** @type {import('./$types').PageServerLoad} */
-export async function load({ cookies }) {
+/** The saved feedback row, in the camelCase shape the page renders. */
+interface Feedback {
+	gotCallback: boolean | null;
+	gotQuotation: boolean | null;
+	recommendationRating: number | null;
+	suggestions: string | null;
+}
+
+export const load: PageServerLoad = async ({ cookies }) => {
 	const authService = new UserAuthService();
 	const sessionResult = authService.validateSession(cookies);
 
 	if (!sessionResult.success) {
-		return { user: null, feedback: null };
+		return { user: null, feedback: null as Feedback | null };
 	}
 
 	const pool = createPool({ connectionString: POSTGRES_URL });
-	let feedback = null;
+	let feedback: Feedback | null = null;
 
 	try {
 		const result = await pool.query(
@@ -37,10 +45,9 @@ export async function load({ cookies }) {
 	}
 
 	return { user: sessionResult.user, feedback };
-}
+};
 
-/** @type {import('./$types').Actions} */
-export const actions = {
+export const actions: Actions = {
 	default: async ({ request, cookies }) => {
 		const authService = new UserAuthService();
 		const sessionResult = authService.validateSession(cookies);
@@ -52,7 +59,7 @@ export const actions = {
 		const formData = await request.formData();
 		const gotCallback = formData.get('gotCallback');
 		const gotQuotation = formData.get('gotQuotation');
-		const rating = parseInt(formData.get('rating'), 10);
+		const rating = parseInt(String(formData.get('rating') ?? ''), 10);
 		const suggestions = (formData.get('suggestions') || '').toString().trim().slice(0, 2000);
 
 		if (gotCallback !== 'yes' && gotCallback !== 'no') {

@@ -2,16 +2,38 @@ export const prerender = false;
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { getSignedBillUrl } from '$lib/server/billStorage';
+import type { PageServerLoad } from './$types';
 
-/** @type {import('./$types').PageServerLoad} */
-export async function load({ url }) {
+/** The lead, in the camelCase shape the page renders. */
+interface CustomerDetails {
+	id: number;
+	name: string | null;
+	phone: string | null;
+	pinCode: string | null;
+	type: string | null;
+	comment: string | null;
+	email: string | null;
+	district: string | null;
+	submittedAt: Date | null;
+	billUrl: string | null;
+	billFormat: string | null;
+}
+
+/** The installer columns the page's card list renders. */
+interface Installer {
+	businessname: string;
+	address: string | null;
+	phonenumber: string | null;
+}
+
+export const load: PageServerLoad = async ({ url }) => {
 	const pincode = url.searchParams.get('pincode');
 	const referenceUuid = url.searchParams.get('ref');
 
 	const pool = createPool({ connectionString: POSTGRES_URL });
 
-	let customerDetails = null;
-	let installers = [];
+	let customerDetails: CustomerDetails | null = null;
+	let installers: Installer[] = [];
 
 	// Look up lead details if ref is provided
 	if (referenceUuid) {
@@ -73,4 +95,4 @@ export async function load({ url }) {
 	}
 
 	return { customerDetails, installers, referenceUuid };
-}
+};
