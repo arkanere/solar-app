@@ -129,9 +129,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	console.log('Received project submission request');
 
 	try {
-		const { BusinessAuthService } = await import('$lib/in/auth/business');
-		const authService = new BusinessAuthService();
-		const sessionResult = authService.validateSession(cookies);
+		const { SessionManager } = await import('$lib/auth/business');
+		const sessionResult = SessionManager.validateSession(cookies);
 
 		if (!sessionResult.success) {
 			return json({ success: false, error: 'Unauthorized - Please login' }, { status: 401 });

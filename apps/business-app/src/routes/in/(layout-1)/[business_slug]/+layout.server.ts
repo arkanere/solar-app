@@ -1,10 +1,12 @@
-import { redirect } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { branches, businesses, leads, projects } from '@solar/db/schema';
+import { businesses, leads } from '@solar/db/schema';
 import { and, count, eq, gt, inArray, sql } from 'drizzle-orm';
 import type { LayoutServerLoad } from './$types';
 import type { SessionData } from '$lib/types/auth';
-import { SessionManager } from '$lib/in/auth/business';
+import { SessionManager } from '$lib/auth/business';
+import { countryForSlug } from '$lib/server/resolveCountry';
+import { branchTable, projectTable } from '$lib/server/writeTargets';
 
 interface BusinessRow {
 	id: number | null;
@@ -71,6 +73,16 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 				throw redirect(302, `/in/${sessionData.businessSlug}`);
 			}
 
+			// The route no longer carries an /in or /us segment, so the country comes
+			// from the business itself. The reads below are unified and filtered by
+			// it; only branches/projects are still per-country legacy tables.
+			const country = await countryForSlug(business_slug);
+			if (!country) {
+				throw error(404, 'Business not found');
+			}
+			const branches = branchTable(country);
+			const projects = projectTable(country);
+
 			// Load basic business info for sidebar
 			try {
 				const businessRows = await db
@@ -85,7 +97,7 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 						brands: businesses.brands
 					})
 					.from(businesses)
-					.where(and(eq(businesses.countryCode, 'in'), eq(businesses.slug, business_slug)))
+					.where(and(eq(businesses.countryCode, country), eq(businesses.slug, business_slug)))
 					.limit(1);
 
 				if (businessRows.length > 0) {
@@ -100,7 +112,7 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 					const allBusinessIds = [businessId, ...branchRows.map((r) => r.branch_id)];
 
 					const claimedLeadWhere = and(
-						eq(leads.countryCode, 'in'),
+						eq(leads.countryCode, country),
 						inArray(leads.businessId, allBusinessIds),
 						eq(leads.category, 2),
 						eq(leads.isvisible, true)

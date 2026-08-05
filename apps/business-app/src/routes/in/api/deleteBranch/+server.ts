@@ -1,22 +1,29 @@
 import { db } from '$lib/server/db';
+import { countryForSlug } from '$lib/server/resolveCountry';
 import { branches, businesses1 } from '@solar/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
-import { BusinessAuthService } from '$lib/in/auth/business';
+import { SessionManager } from '$lib/auth/business';
 import { syncBusinessToUnified, syncAccountToUnified, syncInSplitTables } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
 
 	try {
-		const authService = new BusinessAuthService();
-		const sessionResult = authService.validateSession(cookies);
+		const sessionResult = SessionManager.validateSession(cookies);
 
 		if (!sessionResult.success) {
 			return json(
 				{ success: false, error: 'Unauthorized - Please login' },
 				{ status: 401 }
 			);
+		}
+
+		// URLs no longer carry the country, so it comes from the acting
+		// business. Writes below target that country's legacy tables.
+		const country = await countryForSlug(sessionResult.session.businessSlug);
+		if (!country) {
+			return json({ success: false, error: 'Business not found' }, { status: 404 });
 		}
 
 		const { branchId } = await request.json();
@@ -61,8 +68,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		await db.update(businesses1).set({ isvisible: false }).where(eq(businesses1.id, branchId));
 
 		await syncInSplitTables(db, branchId);
-		await syncBusinessToUnified(db, 'in', branchId);
-		await syncAccountToUnified(db, 'in', branchId);
+		await syncBusinessToUnified(db, country, branchId);
+		await syncAccountToUnified(db, country, branchId);
 
 		return json({ success: true, message: 'Branch deleted successfully' });
 	} catch (error) {

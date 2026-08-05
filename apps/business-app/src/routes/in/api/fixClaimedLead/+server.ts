@@ -1,6 +1,7 @@
 import { db } from '$lib/server/db';
+import { countryForSlug } from '$lib/server/resolveCountry';
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { BusinessAuthService } from '$lib/in/auth/business';
+import { SessionManager } from '$lib/auth/business';
 import { syncLeadToUnified } from '$lib/server/unifiedSync';
 import { leaddata } from '@solar/db/schema';
 import { and, eq } from 'drizzle-orm';
@@ -9,11 +10,17 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 	try {
 		// Validate session
-		const authService = new BusinessAuthService();
-		const sessionResult = authService.validateSession(cookies);
+		const sessionResult = SessionManager.validateSession(cookies);
 
 		if (!sessionResult.success) {
 			return json({ success: false, error: 'Unauthorized' }, { status: 401 });
+		}
+
+		// URLs no longer carry the country, so it comes from the acting
+		// business. Writes below target that country's legacy tables.
+		const country = await countryForSlug(sessionResult.session.businessSlug);
+		if (!country) {
+			return json({ success: false, error: 'Business not found' }, { status: 404 });
 		}
 
 		const { lead_id, business_id } = await request.json();
@@ -41,7 +48,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		for (const row of result) {
-			await syncLeadToUnified(db, 'in', row.id);
+			await syncLeadToUnified(db, country, row.id);
 		}
 
 		return json({

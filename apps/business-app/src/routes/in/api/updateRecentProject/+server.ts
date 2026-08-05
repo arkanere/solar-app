@@ -104,9 +104,8 @@ async function deleteFromCloudinary(publicId: string): Promise<void> {
 }
 
 export const PUT: RequestHandler = async ({ request, cookies }) => {
-const { BusinessAuthService } = await import('$lib/in/auth/business');
-		const authService = new BusinessAuthService();
-		const sessionResult = authService.validateSession(cookies);
+const { SessionManager } = await import('$lib/auth/business');
+		const sessionResult = SessionManager.validateSession(cookies);
 
 		if (!sessionResult.success) {
 			return json({ success: false, error: 'Unauthorized - Please login' }, { status: 401 });
@@ -332,9 +331,8 @@ export const DELETE: RequestHandler = async ({ request, cookies }) => {
 	console.log('Received project delete request');
 
 	try {
-		const { BusinessAuthService } = await import('$lib/in/auth/business');
-		const authService = new BusinessAuthService();
-		const sessionResult = authService.validateSession(cookies);
+		const { SessionManager } = await import('$lib/auth/business');
+		const sessionResult = SessionManager.validateSession(cookies);
 
 		if (!sessionResult.success) {
 			return json({ success: false, error: 'Unauthorized - Please login' }, { status: 401 });

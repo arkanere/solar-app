@@ -3,7 +3,7 @@ import { inProposals } from '@solar/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { BusinessAuthService } from '$lib/in/auth/business';
+import { SessionManager } from '$lib/auth/business';
 
 interface DeleteProposalRequest {
 	proposalId: number;
@@ -14,8 +14,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 	try {
 		// Validate session and authorization
-		const authService = new BusinessAuthService();
-		const sessionResult = authService.validateSession(cookies);
+		const sessionResult = SessionManager.validateSession(cookies);
 
 		if (!sessionResult.success) {
 			return json(

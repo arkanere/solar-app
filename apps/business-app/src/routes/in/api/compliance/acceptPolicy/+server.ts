@@ -1,13 +1,20 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { BusinessAuthService } from '$lib/in/auth/business';
+import { countryForSlug } from '$lib/server/resolveCountry';
+import { SessionManager } from '$lib/auth/business';
 import { recordLeadDataAcceptance } from '$lib/compliance';
 
 export const POST: RequestHandler = async ({ cookies, getClientAddress }) => {
-	const authService = new BusinessAuthService();
-	const sessionResult = authService.validateSession(cookies);
+	const sessionResult = SessionManager.validateSession(cookies);
 
 	if (!sessionResult.success) {
 		return json({ success: false, error: 'Unauthorized - Please login' }, { status: 401 });
+	}
+
+	// URLs no longer carry the country, so it comes from the acting
+	// business. Writes below target that country's legacy tables.
+	const country = await countryForSlug(sessionResult.session.businessSlug);
+	if (!country) {
+		return json({ success: false, error: 'Business not found' }, { status: 404 });
 	}
 
 	const businessId = sessionResult.session.businessId;
@@ -20,7 +27,7 @@ export const POST: RequestHandler = async ({ cookies, getClientAddress }) => {
 			ip = null;
 		}
 
-		const policy = await recordLeadDataAcceptance(businessId, 'in', ip);
+		const policy = await recordLeadDataAcceptance(businessId, country, ip);
 		if (!policy) {
 			return json(
 				{ success: false, error: 'No active policy configured' },

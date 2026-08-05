@@ -2,7 +2,7 @@ import { db } from '$lib/server/db';
 import { inReferrers } from '@solar/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
-import { BusinessAuthService } from '$lib/in/auth/business';
+import { SessionManager } from '$lib/auth/business';
 import type { RequestHandler } from './$types';
 
 interface DeleteReferrerRequest {
@@ -14,8 +14,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 	try {
 		// Validate session and authorization
-		const authService = new BusinessAuthService();
-		const sessionResult = authService.validateSession(cookies);
+		const sessionResult = SessionManager.validateSession(cookies);
 
 		if (!sessionResult.success) {
 			return json({ success: false, error: 'Unauthorized - Please login' }, { status: 401 });

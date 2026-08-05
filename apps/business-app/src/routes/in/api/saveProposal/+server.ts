@@ -4,7 +4,7 @@ import { inProposals } from '@solar/db/schema';
 import { and, eq, sql } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { parseBody, saveProposalSchema } from '@solar/validation';
-import { BusinessAuthService } from '$lib/in/auth/business';
+import { SessionManager } from '$lib/auth/business';
 import { ownsBusinessSlug } from '$lib/in/ownsBusinessSlug';
 import type { RequestHandler } from './$types';
 
@@ -12,8 +12,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 	try {
 		// Validate session before any proposal mutation
-		const authService = new BusinessAuthService();
-		const sessionResult = authService.validateSession(cookies);
+		const sessionResult = SessionManager.validateSession(cookies);
 
 		if (!sessionResult.success) {
 			return json({ success: false, error: 'Unauthorized - Please login' }, { status: 401 });

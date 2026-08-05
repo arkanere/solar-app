@@ -1,7 +1,8 @@
 // api/updateLeadByBusiness/server.ts
 import { db } from '$lib/server/db';
+import { countryForSlug } from '$lib/server/resolveCountry';
 import { json } from '@sveltejs/kit';
-import { BusinessAuthService } from '$lib/in/auth/business';
+import { SessionManager } from '$lib/auth/business';
 import type { RequestHandler } from './$types';
 import type { LeadUpdatePayload } from '$lib/types/lead';
 import { syncLeadToUnified } from '$lib/server/unifiedSync';
@@ -19,14 +20,20 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 	try {
 		// Validate session and authorization
-		const authService = new BusinessAuthService();
-		const sessionResult = authService.validateSession(cookies);
+		const sessionResult = SessionManager.validateSession(cookies);
 
 		if (!sessionResult.success) {
 			return json(
 				{ success: false, error: 'Unauthorized - Please login' },
 				{ status: 401 }
 			);
+		}
+
+		// URLs no longer carry the country, so it comes from the acting
+		// business. Writes below target that country's legacy tables.
+		const country = await countryForSlug(sessionResult.session.businessSlug);
+		if (!country) {
+			return json({ success: false, error: 'Business not found' }, { status: 404 });
 		}
 
 		const { id, stage, status, business_notes } = (await request.json()) as LeadUpdatePayload;
@@ -96,7 +103,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		const updatedLead = result[0];
-		await syncLeadToUnified(db, 'in', id);
+		await syncLeadToUnified(db, country, id);
 
 		// ✅ If lead is marked as "Won" (stage 3), automatically create a project in project management
 		if (stage === 3) {

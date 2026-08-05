@@ -1,6 +1,7 @@
 import { db } from '$lib/server/db';
+import { countryForSlug } from '$lib/server/resolveCountry';
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { BusinessAuthService } from '$lib/in/auth/business';
+import { SessionManager } from '$lib/auth/business';
 import { sendEmail } from '$lib/in/sendEmail';
 import { mintBusinessTokenById, mintUserToken } from '$lib/server/magicLink';
 import { checkLeadDataPolicy } from '$lib/compliance';
@@ -36,14 +37,20 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 	try {
 		// Validate session and authorization
-		const authService = new BusinessAuthService();
-		const sessionResult = authService.validateSession(cookies);
+		const sessionResult = SessionManager.validateSession(cookies);
 
 		if (!sessionResult.success) {
 			return json(
 				{ success: false, error: 'Unauthorized - Please login' },
 				{ status: 401 }
 			);
+		}
+
+		// URLs no longer carry the country, so it comes from the acting
+		// business. Writes below target that country's legacy tables.
+		const country = await countryForSlug(sessionResult.session.businessSlug);
+		if (!country) {
+			return json({ success: false, error: 'Business not found' }, { status: 404 });
 		}
 
 		const { lead_id, business_id, confirm_branch_creation } = (await request.json()) as ClaimRequestPayload;
@@ -64,7 +71,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		// Data-handling policy gate: require a valid acceptance within 90 days
-		const compliance = await checkLeadDataPolicy(business_id, 'in');
+		const compliance = await checkLeadDataPolicy(business_id, country);
 		if (!compliance.compliant) {
 			return json({ success: false, error: 'compliance_required' }, { status: 403 });
 		}
@@ -375,11 +382,11 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			// Project the rows written above into the unified tables (covers the
 			// auto-created branch, the claim-count bump and the claimed copy).
 				await syncInSplitTables(tx, effectiveBusinessId);
-				await syncBusinessToUnified(tx, 'in', effectiveBusinessId);
-				await syncAccountToUnified(tx, 'in', effectiveBusinessId);
-				await syncLeadToUnified(tx, 'in', lead_id);
+				await syncBusinessToUnified(tx, country, effectiveBusinessId);
+				await syncAccountToUnified(tx, country, effectiveBusinessId);
+				await syncLeadToUnified(tx, country, lead_id);
 				if (newLead) {
-					await syncLeadToUnified(tx, 'in', newLead.id);
+					await syncLeadToUnified(tx, country, newLead.id);
 				}
 			});
 		} catch (error) {

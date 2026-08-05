@@ -1,9 +1,10 @@
 import { db } from '$lib/server/db';
+import { countryForSlug } from '$lib/server/resolveCountry';
 import { branches, businesses1, inBusinessProfiles } from '@solar/db/schema';
 import { and, eq, sql } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { parseBody, updateBusinessDetailsSchema } from '@solar/validation';
-import { BusinessAuthService } from '$lib/in/auth/business';
+import { SessionManager } from '$lib/auth/business';
 import { syncBusinessToUnified } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
 
@@ -11,11 +12,17 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 	try {
 		// Validate session and authorization
-		const authService = new BusinessAuthService();
-		const sessionResult = authService.validateSession(cookies);
+		const sessionResult = SessionManager.validateSession(cookies);
 
 		if (!sessionResult.success) {
 			return json({ success: false, error: 'Unauthorized - Please login' }, { status: 401 });
+		}
+
+		// URLs no longer carry the country, so it comes from the acting
+		// business. Writes below target that country's legacy tables.
+		const country = await countryForSlug(sessionResult.session.businessSlug);
+		if (!country) {
+			return json({ success: false, error: 'Business not found' }, { status: 404 });
 		}
 
 		const parsed = await parseBody(request, updateBusinessDetailsSchema);
@@ -103,7 +110,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		await db.update(businesses1).set(values).where(eq(businesses1.slug, business_slug));
 
 		if (updated) {
-			await syncBusinessToUnified(db, 'in', updated.id);
+			await syncBusinessToUnified(db, country, updated.id);
 			return json({
 				success: true,
 				id: updated.id
