@@ -406,7 +406,102 @@ or accept raw SQL as the standard and demote `@solar/db` to schema/type-referenc
 
 ---
 
-## ← NEXT PHASE — Convert `user-app` to TypeScript (and finish Svelte 5)
+## ✅ DONE 2026-08-05 — Convert `user-app` to TypeScript (and finish Svelte 5)
+
+**Done in 6 commits (batches A–F).** `apps/user-app/src` now has **zero `.js` files** and all 7
+`.svelte` components declare `lang="ts"`. `npm run build -w user-app` passes at every batch.
+
+**Error count, batch by batch:** 0 (unchecked) → **73** (A, checkJs on) → 29 (B) → 25 (C) → 25 (D)
+→ 19 (E) → **1** (F). Warnings 8 → 2.
+
+| Batch | What | Errors after |
+| --- | --- | --- |
+| ✅ A | Flip `checkJs: true` — one line, no code changes | 73 |
+| ✅ B | `lib/auth/user/` (6 files) | 29 |
+| ✅ C | `sendEmail`, `server/billStorage`, `server/internalAuth`, `server/unifiedSync`, `hooks.server` | 25 |
+| ✅ D | the 4 `routes/in/api/**/+server` endpoints | 25 |
+| ✅ E | the 4 `+page.server` loads/actions | 19 |
+| ✅ F | `lang="ts"` on all 7 components | 1 |
+
+**Sequencing decision (owner: Ani, 2026-08-05).** The plan's batch A said "fix what falls out
+*before* renaming anything." That was changed: nearly all 73 errors were the exact type debt the
+`.ts` conversion clears (implicit-any params, `@returns {Object}`, `unknown` in catch), so fixing
+them in JSDoc first would have authored every shape twice and made A the largest commit in the
+phase. Instead A is the one-line flip and the rule for B–F became **"must decrease, never
+increase,"** verified per batch. Batch D was flat at 25 rather than decreasing — confirmed by
+re-running `check` against the stashed tree, because those four endpoints were already clean.
+
+**The current baseline is 1 error / 2 warnings, and the 1 error is not user-app's code.**
+`vite.config.js:5` fails because two copies of Vite's types are in play: main-app's stale
+`@sveltejs/kit@2.70.1` (via `@sveltejs/vite-plugin-svelte@3`) drags `vite@5.4.21` into the hoisted
+root `node_modules`, while user-app resolves its own `vite@7.3.6`, so `sveltekit()` returns v5
+`Plugin`s into a v7 `defineConfig`. **All three apps have this clash**; user-app is only the one with
+`checkJs` on to see it. Fixing it means bumping main-app's kit/vite-plugin-svelte, which moves the
+main-app (13) and business-app (84) baselines — so it wants its own commit, exactly like the
+`svelte-check` v4 upgrade below. `checkJs` was deliberately left **on** rather than switched off to
+bury it. The 2 warnings are pre-existing and untouched (a `radiogroup` missing `tabindex`, an unused
+`h3` selector).
+
+**Still open — `svelte-check` is still pinned at `^3.6.0`** across all three apps, which predates
+Svelte 5. Upgrading to v4 was in scope for this phase and was **not** done, for the reason the plan
+itself gives: it will move all three error baselines and that movement should be isolated and
+attributable. Do it as its own commit across all three apps, together with (or right after) the Vite
+dedupe above — they are the same kind of change.
+
+### Six defects the conversion surfaced
+
+Four fixed, two noted. This is the payoff the phase was argued for.
+
+- **`createUserAuthService()` would have thrown `ReferenceError`** (batch B).
+  `export { UserAuthService } from './UserAuthService.js'` re-exports without binding the name
+  locally, so the function body referenced an undefined identifier. **Fixed** by adding the import.
+  It has no callers anywhere in the monorepo — a deletion candidate, same as
+  `main-app/src/lib/server/magicLink.ts`.
+- **`refreshSession` did arithmetic on two `Date`s** (`(now - lastActivity)`, batch B). Worked via
+  `valueOf`, but was untypeable. **Fixed** — `.getTime()` on both.
+- **`billStorage.uploadBill` could resolve `undefined`** (batch C) when Cloudinary's callback yielded
+  neither error nor result, then throw on the `.public_id` read a line later. **Fixed** — rejects.
+- **`/in/thank-you` never rendered its exclusive-lead heading** (batch F). The template reads
+  `customerDetails.isExclusiveLead`; the load has never selected it, so the page always showed "Top
+  Solar Installers in Your Area." **Fixed** (owner's call): the load now derives it from `urlparams`
+  using the same regex `sendLeadSubmissionConfirmation` uses for the email. **Keep those two in
+  step.** Note this is a visible change to a live page — same family as the Phase 7f author-avatar
+  bug.
+- **`/in/thank-you`'s `{#if error}` branch was unreachable** (batch F) — the load has never returned
+  `error`. **Deleted**; the missing-lead case is already covered by `customerDetails` being null.
+- **The feedback form did not re-seed on navigation** (batch F) — the 6 `state_referenced_locally`
+  warnings. next-steps.md called for `$derived`, which **would have made the form read-only** (a
+  derived value cannot be assigned; the star rating, both radio groups and the textarea all write
+  back). Resolution: `$state` seeding stays so SSR still renders saved feedback, plus an `$effect`
+  that re-seeds when `data.feedback` changes. The initializers still read `data` at the top level, so
+  the now-inaccurate warning is suppressed per-line with `svelte-ignore`.
+
+### Carry into the follow-on Drizzle phase
+
+- **`lib/server/unifiedSync.ts` is the seam, and it is ready.** Its `db` parameter is now a named
+  exported `Queryable` interface instead of an inline shape. main-app and business-app's copies take
+  `Pick<Database, 'execute'>`; **swapping that one type for the `@solar/db` import is the whole
+  change here** — nothing else in the module moves. Do it early, the way business-app's Phase 6a did,
+  because callers pass it through.
+- **The per-handler `createPool` is still there and was deliberately left.** `submitLead`,
+  `sendLeadSubmissionConfirmation`, `in/+page.server`, `in/feedback/+page.server` and
+  `in/thank-you/+page.server` all still call `createPool` inside the handler — the pattern the
+  2026-08-04 pooling fix removed from business-app. It gets fixed by the Phase 0-style plumbing step
+  (add `@solar/db`, create `db.ts` with a module-private pool), so fixing it now would have meant
+  touching those files twice.
+- **The load return types are declared interfaces now** (`Lead`, `ClaimedBusiness`, `Feedback`,
+  `CustomerDetails`, `Installer`), with `as Lead[]`-style casts on the logged-out early returns.
+  Those casts are load-bearing: three loads return a different object shape when logged out, and
+  without the annotation the inferred `PageData` unions a real row type with `never[]`. When the
+  queries convert, keep the interfaces rather than letting Drizzle's inference widen them — the
+  nullability in them was checked against `schema.ts`, not guessed.
+- **One nullability correction already had to be made** — `in_user_feedback.got_callback`,
+  `got_quotation` and `recommendation_rating` are `NOT NULL`; batch E widened them and batch F put
+  them back. Check `schema.ts` rather than the SELECT list.
+
+---
+
+## Original plan for the TypeScript phase (kept for reference)
 
 **Decision taken 2026-08-05 (owner: Ani):** option 1 from the section below — convert `user-app` to
 TypeScript *first*, then migrate its queries to Drizzle as a follow-on phase. This is the option that
@@ -524,3 +619,43 @@ lower stakes either way, but they belong with whichever decision is taken.
 **Also noted:** `apps/main-app/src/lib/server/magicLink.ts` has no importers anywhere in the
 monorepo (business-app has its own). It was converted in Phase 8a so the Phase 10 grep would come
 back clean; it is a deletion candidate.
+
+---
+
+## ← NEXT PHASE — Migrate `user-app`'s queries to Drizzle
+
+The TypeScript conversion above is done, which was its stated prerequisite ("the type-checker is the
+reviewer"). This is the last raw-SQL surface in the request path, and finishing it is what lets
+CLAUDE.md drop the `user-app` carve-out.
+
+**Scope: 12 files, 31 call sites** (the table in the section below is still accurate — the file
+extensions are now `.ts`, and `TokenManager`/`LoginTracker` live under `lib/auth/user/`).
+
+**Baseline to hold: `npm run check -w user-app` is 1 error and 2 warnings.** The 1 error is the
+vite.config.js duplicate-Vite-types artifact described above, not user-app code — a converted batch
+passes if the count stays at 1. There is **no test suite for user-app**, so `check` is the only
+automated signal, same situation as main-app in Phases 7–9.
+
+**Phase 0 (plumbing) first, and it is not optional here.** `user-app` has no `@solar/db` dependency
+and no `lib/server/db.ts`. Add the dep, create `db.ts` with a **module-private** pool feeding
+`createDb` (both other apps un-exported their raw pool in Phase 10 — do not re-introduce the
+export), then convert queries. This step also fixes the five per-handler `createPool` call sites
+listed above; that is why they were left alone during the TypeScript conversion.
+
+**Then `unifiedSync.ts`, before anything that calls it** — the business-app 6a / main-app 9 lesson.
+It is a one-type change: `Queryable` → `Pick<Database, 'execute'>`. `submitLead` and `uploadBill`
+both call it.
+
+Everything else is the established pattern; nothing in `user-app` is as hairy as `claimLead`. Expect
+the friction to be nullability and `mode: 'string'` timestamps rather than SQL — the loads' declared
+interfaces (see "Carry into the follow-on Drizzle phase" above) are the contract to restate, and they
+were checked against `schema.ts`.
+
+Two `sql` escape hatches are already visible in the current SQL and should be noted in the commit
+message when they land: `LOWER(level2) = LOWER($1)` (thank-you and sendLeadSubmissionConfirmation)
+and the `INTERVAL '${throttleHours} hours'` in `LoginTracker` — note that one interpolates a
+**number the caller controls**, so parameterise or clamp it rather than porting it across verbatim.
+
+**Also still unassigned:** the two `apps/main-app/scripts/chatbot-related/*.js` offline scripts
+(5 raw-SQL call sites). Not `user-app` and not request handlers; they just have nowhere else to be
+tracked.

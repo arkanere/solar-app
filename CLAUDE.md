@@ -25,10 +25,13 @@ The `sql` template escape hatch is allowed for genuinely awkward queries (`LOWER
 window functions, `NOW() - INTERVAL`, the `sv_sync_*` functions); note each use in the commit
 message. It still parameterises — never interpolate a value into a query string.
 
-`user-app` is the exception, temporarily: it is plain JavaScript and still on raw `pool.query`
-throughout. It was outside the migration's scope. The decision (2026-08-05) is to convert it to
-TypeScript first and migrate its queries after — that is the next phase in next-steps.md. Read that
-before touching it, and note it is already on Svelte 5 runes despite the `.js` extensions.
+`user-app` is the exception, temporarily: it is still on raw `pool.query` throughout, and still
+creates pools inside handlers. It was outside the migration's scope. It **is** now TypeScript and
+Svelte 5 runes (converted 2026-08-05), which was the agreed prerequisite; migrating its queries is
+the next phase in next-steps.md. Read that before touching it. Note it has no `@solar/db` dependency
+and no `lib/server/db.ts` yet, so it needs a plumbing step before any query converts — and its
+`check` baseline is 1 error, from a duplicate-Vite-types clash in `vite.config.js`, not from app
+code.
 
 Two things `drizzle-kit pull` does that regularly bite:
 - `jsonb` columns are typed `unknown` and timestamps `mode: 'string'`. Restate a shape with
