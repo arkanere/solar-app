@@ -106,6 +106,11 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		const [insertedBranch] = await db
 			.insert(businesses1)
 			.values({
+				// businesses_1 holds both countries since 054 and country_code
+				// defaults to 'in'. Without this a US business's branch was written
+				// IN-tagged, so the sv_sync_business('us', ...) below matched nothing
+				// and returned silently — success reported, branch never projected.
+				countryCode: country,
 				rscore: mainBusiness.rscore,
 				isvisible: mainBusiness.isvisible,
 				pluscode: mainBusiness.pluscode,
