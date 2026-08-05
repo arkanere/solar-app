@@ -55,7 +55,8 @@ the EDB install, which has no `solar` role — do not point the suite at it.
 `npm run pull -w @solar/db`. **Never pull from a test cluster** — its baseline omits three
 `loc_key(...)` expression indexes, so a pull from there silently drops them.
 
-All migrations through **053** are applied to live.
+All migrations through **053** are applied to live. **054 is written but NOT applied** — see Phase 7
+step A; it needs a decision before it touches live data.
 
 
 ### What is actually open
@@ -112,19 +113,40 @@ and `signin-link` genuinely need one.
 
 ### Remaining steps
 
-**A. Per-country write targets.** `$lib/server/writeTargets.ts` already holds the table pairs and
-the three renamed columns (`gstn`/`ein`, `district`/`county`, `pincode`/`zipcode`). Most sites are
-mechanical: `branches`/`us_branches` are column-identical, and the `deleteAccount`, `deleteBranch`,
-`fixClaimedLead`, `deleteLeadByBusiness` writes touch only shared columns. Three do **not** reduce
-to a table swap:
+**A. Unite the legacy tables on the IN structure.** Supersedes the earlier per-country-table-pair
+approach, and dissolves the three divergences that blocked it (`business_notes` missing from
+`us_leaddata`, `in_business_profiles` having no US counterpart, `brands` being IN-only) — under one
+set of tables those columns simply exist for every country, NULL where a country does not populate
+them. That is already how the unified read layer behaves: `sv_sync_lead('us')` leaves
+`business_notes`, `reference_uuid`, `qualification_score` and `bill_*` NULL, so the IN shape is
+*already* the platform-wide shape and this only makes the write layer agree.
 
-  1. `updateLeadByBusiness` writes `business_notes` — **not a column on `us_leaddata`**. Decide
-     whether to drop the field for US or reject the request.
-  2. `updateBusinessDetails` writes `in_business_profiles` — **no US counterpart**; `us_businesses`
-     is flat and already holds those fields. For US, write `us_businesses` once and skip
-     `syncInSplitTables`, which is IN-only by construction.
-  3. `addBranch` / `claimLead` insert `businesses_1` with `brands` — **IN-only column**; US branches
-     would be created without it.
+Two migrations, **written but NOT applied to live**:
+
+  - **054-unite-country-legacy-tables.sql** (+ `.rollback.sql`) — adds a `country_code` discriminator
+    to `businesses_1`, `in_business_profiles` and `leaddata` (defaulting existing rows to `'in'`),
+    copies the US rows in with the renames applied (`ein`→`gstn`, `county`→`district`,
+    `zipcode`→`pincode`/`pin_code`), generates US `in_business_profiles` rows, and bumps the
+    sequences. Purely additive: `us_*` are left in place and the `sv_sync_*` `'us'` arms still read
+    them, so it can be verified before anything switches over.
+  - **055** (not yet written) — repoint the `sv_sync_business` / `_account` / `_lead` `'us'` arms at
+    the united tables, replacing the source-table branch with a `country_code` filter. Only after
+    this can the app code change.
+
+  *Why the copy is safe with no id remapping* — verified on live 2026-08-05: `us_businesses.id` and
+  `us_leaddata.id` were allocated from the IN sequences (neither has a sequence of its own), and
+  there are **zero** id collisions against the IN tables. Ids therefore do not change, so every
+  unified `(country_code, source_id)` pair stays valid and **no resync is needed**. Volume is 12
+  businesses, 4 leads, 1 branch, 0 projects; no US lead has a `business_id`, so there is no claim
+  linkage to preserve.
+
+  *Then the code:* collapse `$lib/server/writeTargets.ts` from table pairs to one table set plus a
+  `country_code` value, and add `country_code` to the write sites. Most are already mechanical —
+  `deleteAccount`, `deleteBranch`, `fixClaimedLead` and `deleteLeadByBusiness` touch only shared
+  columns.
+
+  *Platform-wide caveat:* `us_*` are read by main-app and the external admin-app too. 054 does not
+  drop them, and dropping them should be its own later migration once every writer is confirmed off.
 
 **B. Move `/in` to the root.** `git mv` only, no content edits, so history follows the files. The
 current root `+page.svelte` is a **0-byte file** replaced by IN's landing page. Keep `api/` out of
