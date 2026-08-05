@@ -47,6 +47,14 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		throw error(403, 'Not authorized');
 	}
 
+	// The country comes from the layout, which resolved it from the slug. The
+	// business lookup used to filter on a literal 'in', so a US business was told
+	// its own profile did not exist. Not defaulted to 'in' when absent: the
+	// layout omits it only on its DB-error fallback.
+	const { country } = parentData;
+	if (!country) {
+		return { errorMessage: 'Business not found', projects: [] };
+	}
 
 	try {
 		// First, get the main business profile using the slug
@@ -77,7 +85,7 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 				isvisible: businesses.isvisible
 			})
 			.from(businesses)
-			.where(and(eq(businesses.countryCode, 'in'), eq(businesses.slug, businessSlug)));
+			.where(and(eq(businesses.countryCode, country), eq(businesses.slug, businessSlug)));
 
 		if (mainBusinessRows.length === 0) {
 			return {

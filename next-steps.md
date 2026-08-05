@@ -19,34 +19,26 @@
    forgot-password round trip for one business of each country produces
    `business.solarvipani.com/[slug]/reset-password/[token]` with no country segment.
 
-3. **Country-resolution gaps: the rest of the page loads.** The three sites this item originally
-   named are done (`f8eaa73`, `86bec48`, `87ddc19`), as are the **dashboard** (3d) — the one gating
-   item 2's smoke test — and **`/crm`** (3e). **Four** page loads still carry the literal
-   `countryCode = 'in'`:
-   - `project-management/+page.server.ts` (41, 67),
-     `recent-projects/+page.server.ts` (80), `proposal/+page.server.ts` (43),
-     `compliance/+page.server.ts` (47, and **57/58**, where `'in'` is passed to
-     `checkLeadDataPolicy` and `getAcceptanceHistory` — the original sweep listed only line 47).
+3. **Country-resolution leftovers.** The sweep itself is **done** — no `[business_slug]` page load
+   filters on a literal `countryCode = 'in'` any more (`f8eaa73`, `86bec48`, `87ddc19`, `bc24d16`,
+   `5c9881b`, and the last four in one commit). `tests/routing/pageCountry.test.ts` covers all nine
+   loads, 25 cases, each verified red against its literal first. Three things it left behind:
 
-   All four sit under `[business_slug]`, whose layout already resolves `country` and puts it in page
-   data, so the fix is the same one-line substitution as `86bec48` — take `country` from `parent()`
-   and **do not** default it to `'in'` when absent. `tests/routing/pageCountry.test.ts` is the
-   pattern for testing a page load directly; verify any new case fails against the literal first.
+   **Loads are still IN-shaped.** The dashboard, `/crm` and `/recent-projects` select
+   `IN_BUSINESS_SELECTION` / `IN_LEAD_SELECTION` unconditionally, so a US business's rows come back
+   under India's legacy column names (`district`, `pincode`/`pin_code` rather than `county`,
+   `zipcode`). The values are right — the aliases differ only in name, and since 054 the legacy
+   tables are on the IN structure — but the UI labels a US county "District". Switching to the `US_*`
+   selections changes the shape the `.svelte` components read, so it is its own task.
 
-   Note `project-management` also reads `leads` with a literal, so it needs the same treatment on
-   both tables.
-
-   **The category-1 (non-exclusive) lead read is untested on the US side** in both the dashboard and
+   **The category-1 (non-exclusive) lead read is untested on the US side**, in both the dashboard and
    `/crm`. It filters `leads.level1 IN (uniqueStates)`, and `createUsLead()` has no `state` option,
-   so a US fixture lead can never match. Covering it means adding one — worth doing when a US
-   business first needs to see non-exclusive leads.
+   so a US fixture lead can never match. Covering it means adding one.
 
-   **Still IN-shaped after the country fix:** these loads select `IN_BUSINESS_SELECTION` /
-   `IN_LEAD_SELECTION` unconditionally, so a US business's rows come back under India's legacy
-   column names (`district`, `pincode`/`pin_code` rather than `county`, `zipcode`). The values are
-   right — the aliases differ only in name, and since 054 the legacy tables are on the IN structure
-   — but the UI labels a US county "District". Switching to the `US_*` selections would change the
-   shape the `.svelte` components read, so it is its own task, not part of the country fix.
+   **`/proposal` and `/project-management` swallow their own 404s.** Both throw `error(404)` for a
+   missing business from inside a `try` whose `catch` rethrows everything as `error(500)`, so the
+   404 never reaches the client. Pre-existing; the country checks were hoisted above the `try`
+   rather than adding to it, but the existing throws are still inside.
 
 4. **Drop the `us_*` tables.** They now have no writer and no reader in the sync path, but the drop
    is its own migration and is gated on confirming main-app's remaining direct reads

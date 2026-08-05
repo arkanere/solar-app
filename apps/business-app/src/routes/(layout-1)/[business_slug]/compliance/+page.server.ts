@@ -39,12 +39,21 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		throw error(403, 'Not authorized');
 	}
 
+	// The country comes from the layout, which resolved it from the slug. It
+	// feeds three call sites here, not just the business lookup —
+	// checkLeadDataPolicy and getAcceptanceHistory both take it too, and a
+	// literal 'in' there would have read another country's acceptance record.
+	// Not defaulted to 'in' when absent.
+	const { country } = parentData;
+	if (!country) {
+		return { errorMessage: 'Business not found', history: [] };
+	}
 
 	try {
 		const businessRows = await db
 			.select({ id: businesses.sourceId })
 			.from(businesses)
-			.where(and(eq(businesses.countryCode, 'in'), eq(businesses.slug, businessSlug)));
+			.where(and(eq(businesses.countryCode, country), eq(businesses.slug, businessSlug)));
 
 		if (businessRows.length === 0) {
 			return { errorMessage: 'Business not found', history: [] };
@@ -54,8 +63,8 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 
 		const [policy, acceptance, history] = await Promise.all([
 			getActiveLeadDataPolicy(),
-			checkLeadDataPolicy(businessId, 'in'),
-			getAcceptanceHistory(businessId, 'in')
+			checkLeadDataPolicy(businessId, country),
+			getAcceptanceHistory(businessId, country)
 		]);
 
 		const expiresAt = acceptance.acceptedAt

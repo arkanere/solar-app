@@ -30,15 +30,28 @@ interface PageData {
 	projects?: ProjectManagement[];
 }
 
-export const load: PageServerLoad<PageData> = async ({ params }) => {
+export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 	const businessSlug = params.business_slug;
+
+	// The country comes from the layout, which resolved it from the slug. Both
+	// reads below used to filter on a literal 'in', so a US business's project
+	// pipeline 404'd. Not defaulted to 'in' when absent: the layout omits it only
+	// on its DB-error fallback, and guessing there would show a US business an
+	// India-shaped pipeline.
+	//
+	// Hoisted above the try because the catch below turns everything it sees into
+	// a 500, this 404 included.
+	const { country } = await parent();
+	if (!country) {
+		throw error(404, 'Business not found');
+	}
 
 	try {
 		// First get the business information from slug
 		const businessRows = await db
 			.select({ id: businesses.sourceId, businessname: businesses.businessname })
 			.from(businesses)
-			.where(and(eq(businesses.countryCode, 'in'), eq(businesses.slug, businessSlug)));
+			.where(and(eq(businesses.countryCode, country), eq(businesses.slug, businessSlug)));
 
 		if (businessRows.length === 0) {
 			throw error(404, 'Business not found');
@@ -64,7 +77,7 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 			.from(projectManagement)
 			.innerJoin(
 				leads,
-				and(eq(leads.countryCode, 'in'), eq(projectManagement.leadId, leads.sourceId))
+				and(eq(leads.countryCode, country), eq(projectManagement.leadId, leads.sourceId))
 			)
 			.where(eq(leads.businessId, businessId))
 			.orderBy(desc(projectManagement.lastUpdated));

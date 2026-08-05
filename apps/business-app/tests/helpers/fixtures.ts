@@ -301,6 +301,17 @@ export async function createProject(
 }
 
 /**
+ * Put a lead into the project-management pipeline. `leadId` is the leaddata id
+ * the create* helpers return, which is what project_management.lead_id keys on.
+ */
+export async function createProjectManagement(leadId: number, stage = 1): Promise<void> {
+	await pool.query('INSERT INTO project_management (lead_id, stage) VALUES ($1, $2)', [
+		leadId,
+		stage
+	]);
+}
+
+/**
  * Seed the lead-data-handling policy and, unless told otherwise, an acceptance
  * for `businessId`. claimLead refuses to run without a current acceptance, so
  * most lead-pipeline tests need this.

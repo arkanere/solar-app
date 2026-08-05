@@ -32,15 +32,27 @@ interface PageData {
 	proposals?: Proposal[];
 }
 
-export const load: PageServerLoad<PageData> = async ({ params }) => {
+export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 	const businessSlug = params.business_slug;
+
+	// The country comes from the layout, which resolved it from the slug — not a
+	// literal, and not defaulted to 'in' when absent. Hoisted above the try
+	// because the catch below turns everything it sees into a 500.
+	//
+	// The proposals themselves stay IN-shaped: `in_proposals` has no US
+	// counterpart, so a US business gets an empty list, which is the correct
+	// answer rather than a gap.
+	const { country } = await parent();
+	if (!country) {
+		throw error(404, 'Business not found');
+	}
 
 	try {
 		// First get the business information from slug
 		const businessRows = await db
 			.select({ id: businesses.sourceId, businessname: businesses.businessname, slug: businesses.slug })
 			.from(businesses)
-			.where(and(eq(businesses.countryCode, 'in'), eq(businesses.slug, businessSlug)));
+			.where(and(eq(businesses.countryCode, country), eq(businesses.slug, businessSlug)));
 
 		if (businessRows.length === 0) {
 			throw error(404, 'Business not found');

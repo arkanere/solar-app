@@ -12,9 +12,12 @@ import {
 	createBranch,
 	createBusiness,
 	createLead,
+	createProject,
+	createProjectManagement,
 	createUsBusiness,
 	createUsLead,
-	resetDatabase
+	resetDatabase,
+	seedLeadDataPolicy
 } from '../helpers/fixtures';
 
 const { load: branchLoad } = await import(
@@ -28,6 +31,18 @@ const { load: dashboardLoad } = await import(
 );
 const { load: crmLoad } = await import(
 	'../../src/routes/(layout-1)/[business_slug]/crm/+page.server'
+);
+const { load: projectManagementLoad } = await import(
+	'../../src/routes/(layout-1)/[business_slug]/project-management/+page.server'
+);
+const { load: proposalLoad } = await import(
+	'../../src/routes/(layout-1)/[business_slug]/proposal/+page.server'
+);
+const { load: recentProjectsLoad } = await import(
+	'../../src/routes/(layout-1)/[business_slug]/recent-projects/+page.server'
+);
+const { load: complianceLoad } = await import(
+	'../../src/routes/(layout-1)/[business_slug]/compliance/+page.server'
 );
 
 /** Stands in for the layout, which resolves country from the slug. */
@@ -236,5 +251,127 @@ describe('country resolution in the /crm load', () => {
 
 		expect(data.errorMessage).toBe('Business not found');
 		expect(data.business).toBeUndefined();
+	});
+});
+
+// /project-management filtered a literal 'in' on two tables: the business
+// lookup and the join that attaches each pipeline row to its lead. Unlike the
+// loads above it signals failure by throwing, not by returning errorMessage.
+describe('country resolution in the /project-management load', () => {
+	beforeEach(async () => {
+		await resetDatabase();
+	});
+
+	it('loads a US business and its pipeline rows', async () => {
+		const mainId = await createUsBusiness({ slug: 'oakland-solar' });
+		const leadId = await createUsLead({ businessId: mainId, category: 2 });
+		await createProjectManagement(leadId);
+
+		const data = await projectManagementLoad(context('oakland-solar', 'us'));
+
+		expect(data.business?.id).toBe(mainId);
+		// Guards the lead join specifically: with the literal left on it the
+		// business loads but the pipeline comes back empty.
+		expect(data.projects).toHaveLength(1);
+		expect(data.projects?.[0].lead_id).toBe(leadId);
+	});
+
+	it('still loads an IN business and its pipeline rows', async () => {
+		const mainId = await createBusiness({ slug: 'pune-solar' });
+		const leadId = await createLead({ businessId: mainId, category: 2 });
+		await createProjectManagement(leadId);
+
+		const data = await projectManagementLoad(context('pune-solar', 'in'));
+
+		expect(data.business?.id).toBe(mainId);
+		expect(data.projects).toHaveLength(1);
+	});
+
+	it('does not return the other country’s business for a matching slug', async () => {
+		const inId = await createBusiness({ slug: 'shared-slug' });
+		const usId = await createUsBusiness({ slug: 'shared-slug' });
+
+		const asUs = await projectManagementLoad(context('shared-slug', 'us'));
+		const asIn = await projectManagementLoad(context('shared-slug', 'in'));
+
+		expect(asUs.business?.id).toBe(usId);
+		expect(asIn.business?.id).toBe(inId);
+	});
+
+	it('404s rather than guessing when the layout has no country', async () => {
+		await createBusiness({ slug: 'pune-solar' });
+
+		await expect(projectManagementLoad(context('pune-solar', undefined))).rejects.toMatchObject({
+			status: 404
+		});
+	});
+});
+
+// The last three loads each filter the literal on a single business lookup, so
+// one US case and one absent-country case cover each. /compliance is the
+// exception: it passes the country to checkLeadDataPolicy and
+// getAcceptanceHistory as well, which read a per-country acceptance record.
+describe('country resolution in the remaining [business_slug] loads', () => {
+	beforeEach(async () => {
+		await resetDatabase();
+	});
+
+	it('loads /proposal for a US business, with no proposals', async () => {
+		const mainId = await createUsBusiness({ slug: 'oakland-solar' });
+
+		const data = await proposalLoad(context('oakland-solar', 'us'));
+
+		// `in_proposals` has no US counterpart, so empty is the right answer.
+		expect(data.business?.id).toBe(mainId);
+		expect(data.proposals).toEqual([]);
+	});
+
+	it('404s /proposal rather than guessing when the layout has no country', async () => {
+		await createBusiness({ slug: 'pune-solar' });
+
+		await expect(proposalLoad(context('pune-solar', undefined))).rejects.toMatchObject({
+			status: 404
+		});
+	});
+
+	it('loads /recent-projects for a US business and its projects', async () => {
+		const mainId = await createUsBusiness({ slug: 'oakland-solar' });
+		await createProject('oakland-solar');
+
+		const data = await recentProjectsLoad(context('oakland-solar', 'us'));
+
+		expect(data.errorMessage).toBeUndefined();
+		expect(data.mainBusiness?.id).toBe(mainId);
+		expect(data.projects).toHaveLength(1);
+	});
+
+	it('reports not-found on /recent-projects when the layout has no country', async () => {
+		await createBusiness({ slug: 'pune-solar' });
+
+		const data = await recentProjectsLoad(context('pune-solar', undefined));
+
+		expect(data.errorMessage).toBe('Business not found');
+	});
+
+	it('loads /compliance for a US business, including its US acceptance', async () => {
+		const mainId = await createUsBusiness({ slug: 'oakland-solar' });
+		await seedLeadDataPolicy(mainId, { country: 'us' });
+
+		const data = await complianceLoad(context('oakland-solar', 'us'));
+
+		expect(data.errorMessage).toBeUndefined();
+		// The acceptance row carries country_code = 'us'. With the literal left on
+		// checkLeadDataPolicy/getAcceptanceHistory the business resolves but its
+		// acceptance does not, so this reads as never-accepted.
+		expect(data.status?.acceptedAt).not.toBeNull();
+		expect(data.history).toHaveLength(1);
+	});
+
+	it('reports not-found on /compliance when the layout has no country', async () => {
+		await createBusiness({ slug: 'pune-solar' });
+
+		const data = await complianceLoad(context('pune-solar', undefined));
+
+		expect(data.errorMessage).toBe('Business not found');
 	});
 });
