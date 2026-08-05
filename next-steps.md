@@ -19,16 +19,23 @@
    forgot-password round trip for one business of each country produces
    `business.solarvipani.com/[slug]/reset-password/[token]` with no country segment.
 
-3. **Country-resolution gaps.** Collectively the largest remaining IN-hardcoding in business-app,
-   all cheap:
-   - `api/forgotPassword/+server.ts` still has `const COUNTRY = 'in'` — the one endpoint the
-     resolution sweep missed, because it takes an email rather than a slug. Wiring
-     `countryForLoginEmail` into it also gives that function its **first caller**; it has had zero
-     since it was written in `978d6b1`.
-   - `api/sendLeadClaimNotificationToCustomer/+server.ts` hardcodes `'in'` in both queries *and* its
-     profile link. Internally consistent, so not broken — just IN-only.
-   - `branch/+page.server.ts` and `referral/+page.server.ts` still filter `countryCode = 'in'`, so a
-     US business cannot load either page. Their *links* are country-correct; their *reads* are not.
+3. **Country-resolution gaps: the rest of the page loads.** The three sites this item originally
+   named are done (`f8eaa73`, `86bec48`, `87ddc19`). Fixing them turned up **six more** page loads
+   with the same literal `countryCode = 'in'`, which the original sweep did not list:
+   - `[business_slug]/+page.server.ts` — the **dashboard itself**, at lines 58, 79, 97, 124, 144.
+     This is the one that matters: it is where a US login lands, so item 2's smoke test should be
+     expected to fail on it as things stand.
+   - `crm/+page.server.ts` (63, 84, 102, 129, 149), `project-management/+page.server.ts` (41, 67),
+     `recent-projects/+page.server.ts` (80), `proposal/+page.server.ts` (43),
+     `compliance/+page.server.ts` (47).
+
+   All six sit under `[business_slug]`, whose layout already resolves `country` and puts it in page
+   data, so the fix is the same one-line substitution as `86bec48` — take `country` from `parent()`
+   and **do not** default it to `'in'` when absent. `tests/routing/pageCountry.test.ts` is the
+   pattern for testing a page load directly; verify any new case fails against the literal first.
+
+   Note `project-management` and `crm` also read `leads` with a literal — those need the same
+   treatment, and `crm` reads both `businesses` and `leads`.
 
 4. **Drop the `us_*` tables.** They now have no writer and no reader in the sync path, but the drop
    is its own migration and is gated on confirming main-app's remaining direct reads
@@ -55,6 +62,22 @@
    `businesses` is clean — 0 in either direction. Consequence: a full resync *raises* the unified
    lead count, so "counts unmoved" only holds for a **targeted** resync. Reconciling these is its own
    task; `apps/main-app/src/lib/server/migrations/check-unified-drift.sql` is the existing tool.
+
+9. **`api/resetPassword` never syncs the new password to unified.** It writes `login_password` to
+   `businesses_1` and stops. `PasswordManager` reads `business_accounts.login_password`
+   (`PasswordManager.ts:25`), and nothing else calls `sv_sync_account` on that path — `forgotPassword`
+   syncs when it *mints* the token, not when the password changes. So a completed reset appears to
+   succeed while login keeps checking the old password, until some other write happens to resync the
+   account. Not country-specific; found while doing 3a, and out of its scope. The round-trip test
+   passes because it asserts on `businesses_1`, not on a subsequent login — a fix should add that
+   login step.
+
+10. **Delete `api/sendLeadClaimNotificationToCustomer`.** It has **zero callers** anywhere in the
+    repo, and `claimLead` already sends the identical email inline and country-correctly
+    (`claimLead/+server.ts:485`). It is also **unauthenticated** — anyone who can guess a lead id and
+    business id can make it send mail and mint a magic-link token — whereas claimLead's copy sits
+    behind a session check. `87ddc19` made it country-correct rather than deleting it, because
+    deleting a public endpoint was not in that task's scope.
 
 ---
 
@@ -95,13 +118,13 @@ transaction can never surface it.
 | app | errors | warnings | notes |
 | --- | --- | --- | --- |
 | main-app | 10 | 1 | pre-existing, UI components |
-| business-app | 33 | 0 | over 5268 files; 14 of the 33 are in `src/lib/components/ui` |
+| business-app | 32 | 0 | over 5269 files; 14 of the 32 are in `src/lib/components/ui` |
 | user-app | 0 | 2 | clean; warnings are a11y + unused CSS |
 
 business-app's check covers `.ts` as well as `.svelte`, so no separate
 `npx tsc --noEmit -p apps/business-app/tsconfig.json` pass is needed.
 
-`npm test -w solarvipani-business` — **green: 123 passed, 0 skipped.**
+`npm test -w solarvipani-business` — **green: 131 passed, 0 skipped.**
 
 **Also run `npm run build -w <app>`** when you touch imports. `check` cannot see server code reaching
 a browser bundle, and that is a hard build failure — it left business-app undeployable for an unknown
