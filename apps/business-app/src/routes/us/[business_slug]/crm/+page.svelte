@@ -2,7 +2,7 @@
 	import { page } from '$app/stores';
 	import { toast } from 'svelte-sonner';
 	import CustomerInquiry from '$lib/us-new-rewrites/CustomerInquiry.svelte';
-	import { PolicyAcceptanceModal } from '$lib/compliance';
+	import PolicyAcceptanceModal from '$lib/compliance/PolicyAcceptanceModal.svelte';
 
 	let business = $derived($page.data.business);
 	let leads = $state($page.data.leads || []);

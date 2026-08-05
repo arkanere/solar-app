@@ -2,7 +2,7 @@
 	import { page } from '$app/stores';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
-	import { PolicyAcceptanceModal } from '$lib/compliance';
+	import PolicyAcceptanceModal from '$lib/compliance/PolicyAcceptanceModal.svelte';
 
 	let policy = $derived($page.data.policy);
 	let status = $derived($page.data.status);

@@ -38,7 +38,7 @@
 	import * as Alert from '$lib/components/ui/alert';
 	import { cn } from '$lib/utils';
 	import { deleteLeadAPI } from '$lib/in/actions/lead-api';
-	import { PolicyAcceptanceModal } from '$lib/compliance';
+	import PolicyAcceptanceModal from '$lib/compliance/PolicyAcceptanceModal.svelte';
 
 	let {
 		leads = $bindable([]),

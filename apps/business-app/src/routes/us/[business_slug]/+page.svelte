@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 	import CustomerInquiryDashboardHome from '$lib/us-new-rewrites/CustomerInquiryDashboardHome.svelte';
-	import { PolicyAcceptanceModal } from '$lib/compliance';
+	import PolicyAcceptanceModal from '$lib/compliance/PolicyAcceptanceModal.svelte';
 
 	const businessSlug = $page.params.business_slug;
 	let business = $derived($page.data.business);
