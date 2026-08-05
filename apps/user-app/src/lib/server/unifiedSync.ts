@@ -4,25 +4,23 @@
 // same function, so the explicit call is idempotent — but it keeps user-app
 // correct on its own once that trigger is dropped (phase 2.4).
 
-/**
- * The seam to the Drizzle phase. main-app and business-app's copies of this
- * module take `Pick<Database, 'execute'>`, which both `db` and a
- * `db.transaction()` handle satisfy, so a caller inside a transaction projects
- * on the same connection. user-app has no `@solar/db` dependency yet, so this
- * still names the raw-pool shape — replacing this one type with that import is
- * what the Drizzle phase does here.
- */
-export interface Queryable {
-	query(text: string, params?: unknown[]): Promise<unknown>;
-}
+import { sql } from 'drizzle-orm';
+import type { Database } from '@solar/db';
+
+// Accepts the module-scoped `db` or a transaction handle from `db.transaction()`
+// — both expose `execute`, so a caller inside a transaction still projects its
+// rows on the same connection. sv_sync_lead has no query-builder equivalent, so
+// the call is a deliberate `sql` escape hatch. Same shape as main-app's and
+// business-app's copies (its Phase 6a).
+type SyncExecutor = Pick<Database, 'execute'>;
 
 /**
- * @param sourceId legacy-table id (leaddata.id / us_leaddata.id)
+ * @param sourceId legacy-table id (leaddata.id)
  */
 export async function syncLeadToUnified(
-	db: Queryable,
+	db: SyncExecutor,
 	country: 'in' | 'us',
 	sourceId: number
 ): Promise<void> {
-	await db.query('SELECT sv_sync_lead($1, $2)', [country, sourceId]);
+	await db.execute(sql`SELECT sv_sync_lead(${country}, ${sourceId})`);
 }

@@ -1,12 +1,11 @@
 import { json } from '@sveltejs/kit';
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { and, eq, sql } from 'drizzle-orm';
+import { schema } from '@solar/db';
+import { db } from '$lib/server/db';
 import { UserAuthService } from '$lib/auth/user';
 import { uploadBill, getSignedBillUrl, deleteBill } from '$lib/server/billStorage';
 import { syncLeadToUnified } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
-
-const pool = createPool({ connectionString: POSTGRES_URL });
 
 const allowedFileTypes = [
 	'image/jpeg',
@@ -26,6 +25,15 @@ interface LeadRow {
 	id: number;
 	bill_cloudinary_public_id: string | null;
 }
+
+// `leads.source_id` is nullable in the schema, but every row this app can reach
+// is projected from leaddata by sv_sync_lead and therefore always has one. The
+// raw driver's `any` made that implicit; restate it rather than widen LeadRow
+// and the `lead.id` uses below. Renders as the bare column — same SQL.
+const LEAD_SELECTION = {
+	id: sql<number>`${schema.leads.sourceId}`,
+	bill_cloudinary_public_id: schema.leads.billCloudinaryPublicId
+};
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
 	try {
@@ -59,13 +67,18 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		let lead: LeadRow | null = null;
 
 		if (ref) {
-			const result = await pool.query(
-				`SELECT source_id AS id, bill_cloudinary_public_id FROM leads
-				WHERE country_code = 'in' AND reference_uuid = $1 AND isvisible = true
-				LIMIT 1`,
-				[ref]
-			);
-			lead = result.rows[0] || null;
+			const rows = await db
+				.select(LEAD_SELECTION)
+				.from(schema.leads)
+				.where(
+					and(
+						eq(schema.leads.countryCode, 'in'),
+						eq(schema.leads.referenceUuid, String(ref)),
+						eq(schema.leads.isvisible, true)
+					)
+				)
+				.limit(1);
+			lead = rows[0] || null;
 		} else if (leadId) {
 			const authService = new UserAuthService();
 			const sessionResult = authService.validateSession(cookies);
@@ -74,13 +87,19 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				return json({ success: false, error: 'Unauthorized - Please sign in' }, { status: 401 });
 			}
 
-			const result = await pool.query(
-				`SELECT source_id AS id, bill_cloudinary_public_id FROM leads
-				WHERE country_code = 'in' AND source_id = $1 AND email = $2 AND isvisible = true
-				LIMIT 1`,
-				[leadId, sessionResult.user.email]
-			);
-			lead = result.rows[0] || null;
+			const rows = await db
+				.select(LEAD_SELECTION)
+				.from(schema.leads)
+				.where(
+					and(
+						eq(schema.leads.countryCode, 'in'),
+						eq(schema.leads.sourceId, Number(leadId)),
+						eq(schema.leads.email, sessionResult.user.email),
+						eq(schema.leads.isvisible, true)
+					)
+				)
+				.limit(1);
+			lead = rows[0] || null;
 		} else {
 			return json({ success: false, error: 'Lead reference is required' }, { status: 400 });
 		}
@@ -101,13 +120,18 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		// the public id when a bill is read back.
 		const signedUrl = getSignedBillUrl(billData.publicId, billData.format);
 
-		await pool.query(
-			`UPDATE LeadData
-			SET bill_url = $1, bill_cloudinary_public_id = $2, bill_format = $3, bill_uploaded_at = NOW()
-			WHERE id = $4`,
-			[signedUrl, billData.publicId, billData.format, lead.id]
-		);
-		await syncLeadToUnified(pool, 'in', lead.id);
+		await db
+			.update(schema.leaddata)
+			.set({
+				billUrl: signedUrl,
+				billCloudinaryPublicId: billData.publicId,
+				billFormat: billData.format,
+				// `sql` escape hatch: bill_uploaded_at is a mode:'string' timestamp,
+				// and NOW() keeps the clock on the database as the raw SQL did.
+				billUploadedAt: sql`NOW()`
+			})
+			.where(eq(schema.leaddata.id, lead.id));
+		await syncLeadToUnified(db, 'in', lead.id);
 
 		return json({
 			success: true,

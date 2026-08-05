@@ -1,12 +1,11 @@
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
+import { eq } from 'drizzle-orm';
+import { schema } from '@solar/db';
+import { db } from '$lib/server/db';
 import { syncLeadToUnified } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request, fetch }) => {
-	const pool = createPool({ connectionString: POSTGRES_URL });
-
 	try {
 		const { name, phone, pinCode, type, comment, urlParam, email, marketing_consent } =
 			await request.json();
@@ -15,30 +14,46 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 		let state: string | null = null;
 		if (pinCode) {
 			try {
-				const districtResult = await pool.query(
-					'SELECT district, state FROM pincode_mapping WHERE pincode = $1 LIMIT 1',
-					[pinCode]
-				);
-				if (districtResult.rows.length > 0) {
-					district = districtResult.rows[0].district;
-					state = districtResult.rows[0].state;
+				const districtRows = await db
+					.select({
+						district: schema.pincodeMapping.district,
+						state: schema.pincodeMapping.state
+					})
+					.from(schema.pincodeMapping)
+					.where(eq(schema.pincodeMapping.pincode, pinCode))
+					.limit(1);
+				if (districtRows.length > 0) {
+					district = districtRows[0].district;
+					state = districtRows[0].state;
 				}
 			} catch (districtError) {
 				console.log('District lookup failed for pincode:', pinCode, districtError);
 			}
 		}
 
-		const result = await pool.query(
-			`INSERT INTO LeadData (name, phone, pin_code, type, comment, urlparams, email, district, state, marketing_consent)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-			RETURNING id, reference_uuid`,
-			[name, phone, pinCode, type, comment, urlParam, email || null, district, state, marketing_consent === true]
-		);
+		const [inserted] = await db
+			.insert(schema.leaddata)
+			.values({
+				name,
+				phone,
+				pinCode,
+				type,
+				comment,
+				urlparams: urlParam,
+				email: email || null,
+				district,
+				state,
+				marketingConsent: marketing_consent === true
+			})
+			.returning({
+				id: schema.leaddata.id,
+				referenceUuid: schema.leaddata.referenceUuid
+			});
 
-		const leadId = result.rows[0].id;
-		const referenceUuid = result.rows[0].reference_uuid;
+		const leadId = inserted.id;
+		const referenceUuid = inserted.referenceUuid;
 
-		await syncLeadToUnified(pool, 'in', leadId);
+		await syncLeadToUnified(db, 'in', leadId);
 
 		await fetch('/in/api/sendLeadSubmissionConfirmation', {
 			method: 'POST',
