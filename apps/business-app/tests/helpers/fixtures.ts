@@ -166,6 +166,8 @@ export interface UsLeadOptions {
 	category?: number | null;
 	isvisible?: boolean;
 	claimCount?: number;
+	businessId?: number | null;
+	urlparams?: string | null;
 }
 
 /**
@@ -184,15 +186,18 @@ export async function createUsLead(options: UsLeadOptions = {}): Promise<number>
 		county = 'Alameda',
 		category = null,
 		isvisible = true,
-		claimCount = 0
+		claimCount = 0,
+		businessId = null,
+		urlparams = null
 	} = options;
 
 	const { rows } = await pool.query<{ id: number }>(
 		`INSERT INTO leaddata
-		   (country_code, name, phone, email, pin_code, district, category, isvisible, claim_count)
-		 VALUES ('us',$1,$2,$3,$4,$5,$6,$7,$8)
+		   (country_code, name, phone, email, pin_code, district, category, isvisible,
+		    claim_count, business_id, urlparams)
+		 VALUES ('us',$1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
 		 RETURNING id`,
-		[name, phone, email, zipcode, county, category, isvisible, claimCount]
+		[name, phone, email, zipcode, county, category, isvisible, claimCount, businessId, urlparams]
 	);
 	const id = rows[0].id;
 	await pool.query('SELECT sv_sync_lead($1, $2)', ['us', id]);

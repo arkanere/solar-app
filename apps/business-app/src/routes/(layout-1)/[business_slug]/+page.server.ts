@@ -45,8 +45,19 @@ interface PageData {
 	errorMessage?: string;
 }
 
-export const load: PageServerLoad<PageData> = async ({ params }) => {
+export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 	const { business_slug } = params;
+
+	// The country comes from the layout, which resolved it from the slug. Every
+	// read below used to filter on a literal 'in', so a US login landed on its
+	// own dashboard and was told the business did not exist. Not defaulted to
+	// 'in' when absent: the layout omits it only on its DB-error fallback, and
+	// guessing there is how a US business ends up looking at an India-shaped
+	// dashboard.
+	const { country } = await parent();
+	if (!country) {
+		return { errorMessage: 'Business not found' };
+	}
 
 	try {
 		// Query the profile from the unified businesses table (never the account
@@ -55,7 +66,7 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 		const businessRows = await db
 			.select(IN_BUSINESS_SELECTION)
 			.from(businesses)
-			.where(and(eq(businesses.countryCode, 'in'), eq(businesses.slug, business_slug)))
+			.where(and(eq(businesses.countryCode, country), eq(businesses.slug, business_slug)))
 			.limit(1);
 
 		if (businessRows.length === 0) {
@@ -76,7 +87,7 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 			.from(branches)
 			.innerJoin(
 				businesses,
-				and(eq(businesses.countryCode, 'in'), eq(branches.branchId, businesses.sourceId))
+				and(eq(businesses.countryCode, country), eq(branches.branchId, businesses.sourceId))
 			)
 			.where(and(eq(branches.mainId, businessId), eq(branches.isactive, true)))) as unknown as Branch[];
 
@@ -94,7 +105,7 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 				.from(leads)
 				.where(
 					and(
-						eq(leads.countryCode, 'in'),
+						eq(leads.countryCode, country),
 						eq(leads.isvisible, true),
 						or(
 							...allSlugs.flatMap((slug) => [
@@ -121,7 +132,7 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 			.from(leads)
 			.where(
 				and(
-					eq(leads.countryCode, 'in'),
+					eq(leads.countryCode, country),
 					eq(leads.category, 2),
 					inArray(leads.businessId, allBusinessIds),
 					eq(leads.isvisible, true)
@@ -141,7 +152,7 @@ export const load: PageServerLoad<PageData> = async ({ params }) => {
 				.from(leads)
 				.where(
 					and(
-						eq(leads.countryCode, 'in'),
+						eq(leads.countryCode, country),
 						eq(leads.category, 1),
 						inArray(leads.level1, uniqueStates as string[]),
 						eq(leads.isvisible, true),
