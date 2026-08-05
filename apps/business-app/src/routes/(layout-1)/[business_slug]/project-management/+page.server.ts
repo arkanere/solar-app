@@ -2,7 +2,7 @@ import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
 import { businesses, leads, projectManagement } from '@solar/db/schema';
 import { and, desc, eq } from 'drizzle-orm';
-import { error } from '@sveltejs/kit';
+import { error, isHttpError } from '@sveltejs/kit';
 
 export const prerender = false;
 
@@ -90,6 +90,10 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 			projects
 		};
 	} catch (err) {
+		// The 404 above is thrown from inside this try, so without the rethrow the
+		// catch reported a missing business as a server error. Only genuine
+		// failures below become a 500.
+		if (isHttpError(err)) throw err;
 		console.error('❌ Error loading projects:', err);
 		throw error(500, 'Failed to load projects');
 	}

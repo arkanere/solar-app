@@ -22,7 +22,7 @@
 3. **Country-resolution leftovers.** The sweep itself is **done** — no `[business_slug]` page load
    filters on a literal `countryCode = 'in'` any more (`f8eaa73`, `86bec48`, `87ddc19`, `bc24d16`,
    `5c9881b`, and the last four in one commit). `tests/routing/pageCountry.test.ts` covers all nine
-   loads, 25 cases, each verified red against its literal first. Three things it left behind:
+   loads, 27 cases, each verified red against its literal first. Two things it left behind:
 
    **Loads are still IN-shaped.** The dashboard, `/crm` and `/recent-projects` select
    `IN_BUSINESS_SELECTION` / `IN_LEAD_SELECTION` unconditionally, so a US business's rows come back
@@ -34,11 +34,6 @@
    **The category-1 (non-exclusive) lead read is untested on the US side**, in both the dashboard and
    `/crm`. It filters `leads.level1 IN (uniqueStates)`, and `createUsLead()` has no `state` option,
    so a US fixture lead can never match. Covering it means adding one.
-
-   **`/proposal` and `/project-management` swallow their own 404s.** Both throw `error(404)` for a
-   missing business from inside a `try` whose `catch` rethrows everything as `error(500)`, so the
-   404 never reaches the client. Pre-existing; the country checks were hoisted above the `try`
-   rather than adding to it, but the existing throws are still inside.
 
 4. **Drop the `us_*` tables.** They now have no writer and no reader in the sync path, but the drop
    is its own migration and is gated on confirming main-app's remaining direct reads
@@ -57,7 +52,9 @@
    `spectrum-solar-power-kannur` ×4, `spectrum-solar-power-kozhikode` ×3 and ~22 more ×2. The
    `/[business_slug]` lookup does `.limit(1)`, so those businesses render a **non-deterministic**
    dashboard — whichever row Postgres returns first. Fixing means de-duplicating live rows, which is
-   its own task. It is also why `businesses` cannot take a `UNIQUE (slug)` constraint.
+   its own task. It is also why `businesses` cannot take a `UNIQUE (slug)` constraint, and why
+   `api/resetPassword` matches on the token hash rather than on the slug alone (`cdeff73`) — any new
+   slug lookup has to assume duplicates.
 
 8. **Drift between `leaddata` and unified `leads`.** **3** `leaddata` rows have no unified row at all
    (a `sv_sync_lead` call that never happened), and **156** unified `leads` have no surviving
@@ -65,12 +62,6 @@
    `businesses` is clean — 0 in either direction. Consequence: a full resync *raises* the unified
    lead count, so "counts unmoved" only holds for a **targeted** resync. Reconciling these is its own
    task; `apps/main-app/src/lib/server/migrations/check-unified-drift.sql` is the existing tool.
-
-9. **`api/resetPassword` looks up its business by slug with no `country_code` filter.** It does
-   `.limit(1)` on the slug alone, unlike `mintPasswordResetToken`, which filters. Combined with 7's
-   duplicate slugs that means a reset can land on a different row than the one the token was minted
-   against — the token compare would fail, so the effect is a valid link reporting
-   "invalid or expired", not a cross-account write. Noticed while fixing the sync half (`53db9e6`).
 
 ---
 
@@ -117,7 +108,7 @@ transaction can never surface it.
 business-app's check covers `.ts` as well as `.svelte`, so no separate
 `npx tsc --noEmit -p apps/business-app/tsconfig.json` pass is needed.
 
-`npm test -w solarvipani-business` — **green: 153 passed, 0 skipped.**
+`npm test -w solarvipani-business` — **green: 157 passed, 0 skipped.**
 
 **Also run `npm run build -w <app>`** when you touch imports. `check` cannot see server code reaching
 a browser bundle, and that is a hard build failure — it left business-app undeployable for an unknown

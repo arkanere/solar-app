@@ -305,6 +305,16 @@ describe('country resolution in the /project-management load', () => {
 			status: 404
 		});
 	});
+
+	// The absent-country 404 above was hoisted above the try when the country
+	// checks went in; this one is thrown from inside it, and the catch turned it
+	// into a 500 — so a bogus slug reported a server error rather than "not
+	// found". Pre-existing, and the same shape in /proposal below.
+	it('404s a slug that does not exist, rather than 500ing', async () => {
+		await expect(projectManagementLoad(context('no-such-business', 'in'))).rejects.toMatchObject({
+			status: 404
+		});
+	});
 });
 
 // The last three loads each filter the literal on a single business lookup, so
@@ -330,6 +340,12 @@ describe('country resolution in the remaining [business_slug] loads', () => {
 		await createBusiness({ slug: 'pune-solar' });
 
 		await expect(proposalLoad(context('pune-solar', undefined))).rejects.toMatchObject({
+			status: 404
+		});
+	});
+
+	it('404s /proposal for a slug that does not exist, rather than 500ing', async () => {
+		await expect(proposalLoad(context('no-such-business', 'in'))).rejects.toMatchObject({
 			status: 404
 		});
 	});
