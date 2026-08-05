@@ -490,7 +490,8 @@ CREATE TABLE "legal_acceptances" (
 	"business_id" integer NOT NULL,
 	"policy_id" integer NOT NULL,
 	"accepted_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"ip_address" varchar(45)
+	"ip_address" varchar(45),
+	"country_code" char(2) NOT NULL
 );
 
 CREATE TABLE "legal_policies" (
@@ -835,7 +836,8 @@ ALTER TABLE "in_proposals" ADD CONSTRAINT "proposals_lead_id_fkey" FOREIGN KEY (
 ALTER TABLE "in_referrers" ADD CONSTRAINT "fk_business" FOREIGN KEY ("business_id") REFERENCES "public"."businesses_1"("id") ON DELETE cascade ON UPDATE no action;
 ALTER TABLE "in_user_feedback" ADD CONSTRAINT "in_user_feedback_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."in_user"("id") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "leads" ADD CONSTRAINT "leads_country_code_fkey" FOREIGN KEY ("country_code") REFERENCES "public"."countries"("code") ON DELETE no action ON UPDATE no action;
-ALTER TABLE "legal_acceptances" ADD CONSTRAINT "legal_acceptances_business_id_fkey" FOREIGN KEY ("business_id") REFERENCES "public"."businesses_1"("id") ON DELETE no action ON UPDATE no action;
+ALTER TABLE "legal_acceptances" ADD CONSTRAINT "legal_acceptances_business_fkey" FOREIGN KEY ("business_id","country_code") REFERENCES "public"."business_accounts"("source_id","country_code") ON DELETE no action ON UPDATE no action;
+ALTER TABLE "legal_acceptances" ADD CONSTRAINT "legal_acceptances_country_code_fkey" FOREIGN KEY ("country_code") REFERENCES "public"."countries"("code") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "legal_acceptances" ADD CONSTRAINT "legal_acceptances_policy_id_fkey" FOREIGN KEY ("policy_id") REFERENCES "public"."legal_policies"("id") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "project_management" ADD CONSTRAINT "projectmanagement_lead_id_fkey" FOREIGN KEY ("lead_id") REFERENCES "public"."leaddata"("id") ON DELETE cascade ON UPDATE no action;
 ALTER TABLE "solar_products" ADD CONSTRAINT "solar_products_brand_slug_fkey" FOREIGN KEY ("brand_slug") REFERENCES "public"."solar_brands"("slug") ON DELETE no action ON UPDATE no action;
@@ -856,7 +858,7 @@ CREATE INDEX "idx_referrers_in_business_id" ON "in_referrers" USING btree ("busi
 CREATE INDEX "idx_referrers_in_phone" ON "in_referrers" USING btree ("phone");
 CREATE INDEX "idx_referrers_slug" ON "in_referrers" USING btree ("business_id","slug");
 CREATE INDEX "leads_created_idx" ON "leads" USING btree ("country_code","created_at");
-CREATE INDEX "legal_acceptances_business_policy_idx" ON "legal_acceptances" USING btree ("business_id","policy_id","accepted_at");
+CREATE INDEX "legal_acceptances_business_policy_idx" ON "legal_acceptances" USING btree ("country_code","business_id","policy_id","accepted_at");
 CREATE INDEX "idx_earlier_to_earlier_date" ON "masterlist_indian_businesses" USING btree ("earlier_to_earlier_date");
 CREATE INDEX "idx_empanelled_vendor" ON "masterlist_indian_businesses" USING btree ("empanelled_vendor");
 CREATE UNIQUE INDEX "idx_masterlist_vendor_id" ON "masterlist_indian_businesses" USING btree ("vendor_id") WHERE (vendor_id IS NOT NULL);

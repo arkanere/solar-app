@@ -54,8 +54,8 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 
 		const [policy, acceptance, history] = await Promise.all([
 			getActiveLeadDataPolicy(),
-			checkLeadDataPolicy(businessId),
-			getAcceptanceHistory(businessId)
+			checkLeadDataPolicy(businessId, 'in'),
+			getAcceptanceHistory(businessId, 'in')
 		]);
 
 		const expiresAt = acceptance.acceptedAt

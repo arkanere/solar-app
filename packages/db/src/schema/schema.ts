@@ -652,12 +652,18 @@ export const legalAcceptances = pgTable("legal_acceptances", {
 	policyId: integer("policy_id").notNull(),
 	acceptedAt: timestamp("accepted_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	ipAddress: varchar("ip_address", { length: 45 }),
+	countryCode: char("country_code", { length: 2 }).notNull(),
 }, (table) => [
-	index("legal_acceptances_business_policy_idx").using("btree", table.businessId.asc().nullsLast().op("timestamptz_ops"), table.policyId.asc().nullsLast().op("int4_ops"), table.acceptedAt.desc().nullsFirst().op("int4_ops")),
+	index("legal_acceptances_business_policy_idx").using("btree", table.countryCode.asc().nullsLast().op("bpchar_ops"), table.businessId.asc().nullsLast().op("int4_ops"), table.policyId.asc().nullsLast().op("int4_ops"), table.acceptedAt.desc().nullsFirst().op("timestamptz_ops")),
 	foreignKey({
-			columns: [table.businessId],
-			foreignColumns: [businesses1.id],
-			name: "legal_acceptances_business_id_fkey"
+			columns: [table.businessId, table.countryCode],
+			foreignColumns: [businessAccounts.sourceId, businessAccounts.countryCode],
+			name: "legal_acceptances_business_fkey"
+		}),
+	foreignKey({
+			columns: [table.countryCode],
+			foreignColumns: [countries.code],
+			name: "legal_acceptances_country_code_fkey"
 		}),
 	foreignKey({
 			columns: [table.policyId],

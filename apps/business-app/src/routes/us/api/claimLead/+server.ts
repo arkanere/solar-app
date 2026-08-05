@@ -6,7 +6,12 @@ import { mintBusinessTokenById } from '$lib/server/magicLink';
 import { checkLeadDataPolicy } from '$lib/compliance';
 import type { ClaimRequestPayload } from '$lib/types/lead';
 import { syncLeadToUnified } from '$lib/server/unifiedSync';
-import { businesses1, usLeaddata, usLeaddataClaimrequests } from '@solar/db/schema';
+import {
+	businessAccounts,
+	businesses,
+	usLeaddata,
+	usLeaddataClaimrequests
+} from '@solar/db/schema';
 import { and, eq, sql } from 'drizzle-orm';
 
 interface EmailData {
@@ -46,7 +51,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		// Data-handling policy gate: require a valid acceptance within 90 days
-		const compliance = await checkLeadDataPolicy(business_id);
+		const compliance = await checkLeadDataPolicy(business_id, 'us');
 		if (!compliance.compliant) {
 			return json({ success: false, error: 'compliance_required' }, { status: 403 });
 		}
@@ -189,16 +194,31 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		// Send email AFTER transaction commits (outside transaction for better performance)
 		if (emailData) {
 			try {
-				// NOTE: reads businesses_1, the IN table, for a /us business id.
-				// Preserved verbatim from the raw SQL — see next-steps.md.
+				// Reads the country-agnostic unified tables, keyed the way every
+				// other unified read is: (country_code, source_id). `businesses`
+				// carries the profile, `business_accounts` the login email — the
+				// same join TokenManager uses. This previously read businesses_1
+				// (the IN table) for a /us id and always came back empty.
 				const bizResult = await db
 					.select({
-						businessname: businesses1.businessname,
-						loginEmail: businesses1.loginEmail,
-						slug: businesses1.slug
+						businessname: businesses.businessname,
+						loginEmail: businessAccounts.loginEmail,
+						slug: businesses.slug
 					})
-					.from(businesses1)
-					.where(eq(businesses1.id, emailData.business_id))
+					.from(businesses)
+					.innerJoin(
+						businessAccounts,
+						and(
+							eq(businessAccounts.countryCode, businesses.countryCode),
+							eq(businessAccounts.sourceId, businesses.sourceId)
+						)
+					)
+					.where(
+						and(
+							eq(businesses.countryCode, 'us'),
+							eq(businesses.sourceId, emailData.business_id)
+						)
+					)
 					.limit(1);
 
 				if (bizResult.length === 0) {
@@ -207,7 +227,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 					const { businessname, loginEmail, slug } = bizResult[0];
 					const adminEmail = 'admin@solarvipani.com';
 					// Mint a fresh token (stored hashed); email the raw token.
-					const rawToken = await mintBusinessTokenById('businesses_1', emailData.business_id);
+					// The token WRITE stays on the per-country legacy table: that is
+					// the write side, and mintBusinessTokenById projects it into
+					// business_accounts itself. Only the table argument was wrong.
+					const rawToken = await mintBusinessTokenById('us_businesses', emailData.business_id);
 					const magicLink = `https://business.solarvipani.com/us/${slug}/signin-link/${rawToken}`;
 
 					const subject = 'New Lead Allotted - Solar Vipani';
@@ -253,16 +276,23 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				if (!lead?.email) {
 					// No customer email on file — nothing to notify
 				} else {
-					// NOTE: also reads businesses_1 for a /us business id — see above.
+					// Unified `businesses`, same keying as the allotment lookup above.
+					// No account join here — the customer mail shows only public
+					// contact details.
 					const bizResult = await db
 						.select({
-							businessname: businesses1.businessname,
-							phonenumber: businesses1.phonenumber,
-							email: businesses1.email,
-							slug: businesses1.slug
+							businessname: businesses.businessname,
+							phonenumber: businesses.phonenumber,
+							email: businesses.email,
+							slug: businesses.slug
 						})
-						.from(businesses1)
-						.where(eq(businesses1.id, customerEmailData.business_id));
+						.from(businesses)
+						.where(
+							and(
+								eq(businesses.countryCode, 'us'),
+								eq(businesses.sourceId, customerEmailData.business_id)
+							)
+						);
 
 					if (bizResult.length === 0) {
 						console.error(

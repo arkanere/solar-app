@@ -20,7 +20,7 @@ export const POST: RequestHandler = async ({ cookies, getClientAddress }) => {
 			ip = null;
 		}
 
-		const policy = await recordLeadDataAcceptance(businessId, ip);
+		const policy = await recordLeadDataAcceptance(businessId, 'in', ip);
 		if (!policy) {
 			return json(
 				{ success: false, error: 'No active policy configured' },

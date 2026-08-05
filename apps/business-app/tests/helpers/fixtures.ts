@@ -19,7 +19,9 @@ export async function resetDatabase(): Promise<void> {
 	await pool.query(`
 		TRUNCATE TABLE
 			leaddata_claimrequests, leaddata, leads,
+			us_leaddata_claimrequests, us_leaddata,
 			branches, businesses_1, in_business_profiles, in_business_accounts,
+			us_businesses,
 			businesses, business_accounts,
 			legal_acceptances, legal_policies,
 			projects, project_management, pincode_mapping,
@@ -96,6 +98,93 @@ export async function createBusiness(options: BusinessOptions = {}): Promise<num
 	await pool.query('SELECT sv_sync_business($1, $2)', ['in', id]);
 	await pool.query('SELECT sv_sync_account($1, $2)', ['in', id]);
 
+	return id;
+}
+
+export interface UsBusinessOptions {
+	businessname?: string;
+	slug?: string;
+	loginEmail?: string;
+	email?: string | null;
+	phonenumber?: string | null;
+	state?: string | null;
+	county?: string | null;
+	city?: string | null;
+	isvisible?: boolean;
+}
+
+/**
+ * Insert a us_businesses row and project it into the unified tables, the same
+ * way createBusiness() does for the IN side.
+ *
+ * Note us_businesses shares businesses_1's id sequence (`nextval(
+ * 'businesses_1_id_seq')`), so a US id can never collide into a real IN row —
+ * which is exactly why the /us/api/claimLead table mix-up failed silently
+ * rather than emailing the wrong business.
+ */
+export async function createUsBusiness(options: UsBusinessOptions = {}): Promise<number> {
+	businessSeq += 1;
+	const slug = options.slug ?? `test-us-business-${businessSeq}`;
+	const {
+		businessname = `Test US Business ${businessSeq}`,
+		loginEmail = `${slug}@example.test`,
+		email = `contact-${slug}@example.test`,
+		phonenumber = '+1-555-0100',
+		state = 'California',
+		county = 'Alameda',
+		city = 'Oakland',
+		isvisible = true
+	} = options;
+
+	const { rows } = await pool.query<{ id: number }>(
+		`INSERT INTO us_businesses
+		   (businessname, slug, login_email, email, phonenumber, state, county, city, isvisible)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+		 RETURNING id`,
+		[businessname, slug, loginEmail, email, phonenumber, state, county, city, isvisible]
+	);
+	const id = rows[0].id;
+
+	await pool.query('SELECT sv_sync_business($1, $2)', ['us', id]);
+	await pool.query('SELECT sv_sync_account($1, $2)', ['us', id]);
+
+	return id;
+}
+
+export interface UsLeadOptions {
+	name?: string;
+	phone?: string;
+	email?: string | null;
+	zipcode?: string;
+	county?: string | null;
+	category?: number | null;
+	isvisible?: boolean;
+	claimCount?: number;
+}
+
+/** Insert a us_leaddata row and sync it to `leads`. Returns the us_leaddata id. */
+export async function createUsLead(options: UsLeadOptions = {}): Promise<number> {
+	leadSeq += 1;
+	const {
+		name = `Test US Customer ${leadSeq}`,
+		phone = `20255500${String(leadSeq).padStart(2, '0')}`,
+		email = `us-customer${leadSeq}@example.test`,
+		zipcode = '94601',
+		county = 'Alameda',
+		category = null,
+		isvisible = true,
+		claimCount = 0
+	} = options;
+
+	const { rows } = await pool.query<{ id: number }>(
+		`INSERT INTO us_leaddata
+		   (name, phone, email, zipcode, county, category, isvisible, claim_count)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+		 RETURNING id`,
+		[name, phone, email, zipcode, county, category, isvisible, claimCount]
+	);
+	const id = rows[0].id;
+	await pool.query('SELECT sv_sync_lead($1, $2)', ['us', id]);
 	return id;
 }
 
@@ -202,7 +291,7 @@ export async function createProject(
  */
 export async function seedLeadDataPolicy(
 	businessId: number | null,
-	options: { acceptedAt?: string; skipAcceptance?: boolean } = {}
+	options: { acceptedAt?: string; skipAcceptance?: boolean; country?: 'in' | 'us' } = {}
 ): Promise<number> {
 	const { rows } = await pool.query<{ id: number }>(
 		`INSERT INTO legal_policies (type, version, summary, effective_at)
@@ -214,9 +303,9 @@ export async function seedLeadDataPolicy(
 
 	if (businessId !== null && !options.skipAcceptance) {
 		await pool.query(
-			`INSERT INTO legal_acceptances (business_id, policy_id, accepted_at)
-			 VALUES ($1, $2, COALESCE($3::timestamptz, NOW()))`,
-			[businessId, policyId, options.acceptedAt ?? null]
+			`INSERT INTO legal_acceptances (business_id, country_code, policy_id, accepted_at)
+			 VALUES ($1, $2, $3, COALESCE($4::timestamptz, NOW()))`,
+			[businessId, options.country ?? 'in', policyId, options.acceptedAt ?? null]
 		);
 	}
 

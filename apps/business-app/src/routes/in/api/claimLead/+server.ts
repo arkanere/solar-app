@@ -64,7 +64,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		// Data-handling policy gate: require a valid acceptance within 90 days
-		const compliance = await checkLeadDataPolicy(business_id);
+		const compliance = await checkLeadDataPolicy(business_id, 'in');
 		if (!compliance.compliant) {
 			return json({ success: false, error: 'compliance_required' }, { status: 403 });
 		}

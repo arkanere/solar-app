@@ -3,6 +3,7 @@
 import { db } from '$lib/server/db';
 import { legalAcceptances, legalPolicies } from '@solar/db/schema';
 import { and, desc, eq, lte, max, sql } from 'drizzle-orm';
+import type { AuthCountry } from '$lib/auth/business/countryTables';
 import {
 	ACCEPTANCE_VALIDITY_DAYS,
 	EXPIRY_WARNING_DAYS,
@@ -41,7 +42,10 @@ export async function getActiveLeadDataPolicy(): Promise<ActivePolicy | null> {
  * Returns compliant:false when no policy is seeded, when there is no acceptance,
  * or when the latest acceptance has expired.
  */
-export async function checkLeadDataPolicy(businessId: number): Promise<AcceptanceStatus> {
+export async function checkLeadDataPolicy(
+	businessId: number,
+	country: AuthCountry
+): Promise<AcceptanceStatus> {
 	const policy = await getActiveLeadDataPolicy();
 	if (!policy) return { compliant: false, acceptedAt: null };
 
@@ -50,6 +54,7 @@ export async function checkLeadDataPolicy(businessId: number): Promise<Acceptanc
 		.from(legalAcceptances)
 		.where(
 			and(
+				eq(legalAcceptances.countryCode, country),
 				eq(legalAcceptances.businessId, businessId),
 				eq(legalAcceptances.policyId, policy.id)
 			)
@@ -69,6 +74,7 @@ export async function checkLeadDataPolicy(businessId: number): Promise<Acceptanc
  */
 export async function recordLeadDataAcceptance(
 	businessId: number,
+	country: AuthCountry,
 	ipAddress: string | null
 ): Promise<ActivePolicy | null> {
 	const policy = await getActiveLeadDataPolicy();
@@ -76,7 +82,7 @@ export async function recordLeadDataAcceptance(
 
 	await db
 		.insert(legalAcceptances)
-		.values({ businessId, policyId: policy.id, ipAddress });
+		.values({ businessId, countryCode: country, policyId: policy.id, ipAddress });
 
 	return policy;
 }
@@ -85,7 +91,10 @@ export async function recordLeadDataAcceptance(
  * All lead-data-handling acceptances by this business, newest first, joined
  * with the policy version each acceptance covered.
  */
-export async function getAcceptanceHistory(businessId: number): Promise<AcceptanceRecord[]> {
+export async function getAcceptanceHistory(
+	businessId: number,
+	country: AuthCountry
+): Promise<AcceptanceRecord[]> {
 	const rows = await db
 		.select({
 			id: legalAcceptances.id,
@@ -95,7 +104,13 @@ export async function getAcceptanceHistory(businessId: number): Promise<Acceptan
 		})
 		.from(legalAcceptances)
 		.innerJoin(legalPolicies, eq(legalPolicies.id, legalAcceptances.policyId))
-		.where(and(eq(legalAcceptances.businessId, businessId), eq(legalPolicies.type, POLICY_TYPE)))
+		.where(
+			and(
+				eq(legalAcceptances.countryCode, country),
+				eq(legalAcceptances.businessId, businessId),
+				eq(legalPolicies.type, POLICY_TYPE)
+			)
+		)
 		.orderBy(desc(legalAcceptances.acceptedAt))
 		.limit(50);
 

@@ -14,7 +14,7 @@ export const GET: RequestHandler = async ({ cookies }) => {
 
 	try {
 		const [status, policy] = await Promise.all([
-			checkLeadDataPolicy(businessId),
+			checkLeadDataPolicy(businessId, 'us'),
 			getActiveLeadDataPolicy()
 		]);
 
