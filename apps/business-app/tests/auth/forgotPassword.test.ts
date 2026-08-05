@@ -7,10 +7,13 @@
 // unregistered address must produce byte-identical responses.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import bcrypt from 'bcrypt';
 import { pool } from '../setup/testDb';
 import { createBusiness, createUsBusiness, resetDatabase } from '../helpers/fixtures';
 import { jsonRequest } from '../helpers/request';
 import { countryForLoginEmail } from '$lib/server/resolveCountry';
+import { PasswordManager } from '$lib/auth/business/PasswordManager';
+import type { Business } from '$lib/types/auth';
 
 // Parameters are named so `sendEmail.mock.calls[i][n]` type-checks; a bare
 // `vi.fn(async () => …)` types every call's args as the empty tuple, which makes
@@ -265,5 +268,94 @@ describe('POST /api/forgotPassword', () => {
 		const sixth = await forgot({ email: loginEmail });
 		expect(sixth.status).toBe(429);
 		expect(sixth.body.success).toBe(false);
+	});
+});
+
+// The round-trip tests above assert on businesses_1, which is why they passed
+// while a completed reset did not actually change what login accepts.
+// PasswordManager reads business_accounts.login_password — a projection — so
+// resetPassword has to resync the account, exactly as mintPasswordResetToken
+// does. These assert on the login that follows, not on the legacy write.
+describe('a completed reset changes what login accepts', () => {
+	const OLD_PASSWORD = '0ld!Passw0rd';
+
+	function businessRecord(id: number, slug: string, loginEmail: string): Business {
+		return {
+			id,
+			slug,
+			businessname: 'Test Business',
+			login_email: loginEmail,
+			isvisible: true
+		} as Business;
+	}
+
+	beforeEach(async () => {
+		await resetDatabase();
+		sendEmail.mockClear();
+		clientIp = `198.51.100.${Math.floor(Math.random() * 200) + 1}`;
+	});
+
+	it('the new password authenticates and the old one stops working (IN)', async () => {
+		const loginEmail = 'owner@pune-solar.test';
+		const businessId = await createBusiness({
+			slug: 'pune-solar',
+			loginEmail,
+			loginPassword: await bcrypt.hash(OLD_PASSWORD, 4)
+		});
+		const business = businessRecord(businessId, 'pune-solar', loginEmail);
+		const manager = new PasswordManager('in');
+
+		await forgot({ email: loginEmail });
+		const { status } = await reset({
+			business_slug: 'pune-solar',
+			token: tokenFromEmail(),
+			newPassword: STRONG_PASSWORD
+		});
+		expect(status).toBe(200);
+
+		expect((await manager.validatePassword(loginEmail, STRONG_PASSWORD, business)).success).toBe(
+			true
+		);
+		expect((await manager.validatePassword(loginEmail, OLD_PASSWORD, business)).success).toBe(false);
+	});
+
+	it('projects the new hash into business_accounts (IN)', async () => {
+		const loginEmail = 'owner@pune-solar.test';
+		const businessId = await createBusiness({ slug: 'pune-solar', loginEmail });
+
+		await forgot({ email: loginEmail });
+		await reset({
+			business_slug: 'pune-solar',
+			token: tokenFromEmail(),
+			newPassword: STRONG_PASSWORD
+		});
+
+		const { rows } = await pool.query<{ login_password: string | null }>(
+			"SELECT login_password FROM business_accounts WHERE country_code = 'in' AND source_id = $1",
+			[businessId]
+		);
+		expect(rows[0].login_password).toBeTruthy();
+		expect(await bcrypt.compare(STRONG_PASSWORD, rows[0].login_password!)).toBe(true);
+	});
+
+	it('the new password authenticates on the US side too', async () => {
+		const loginEmail = 'owner@oakland-solar.test';
+		const businessId = await createUsBusiness({ slug: 'oakland-solar', loginEmail });
+		const business = businessRecord(businessId, 'oakland-solar', loginEmail);
+
+		await forgot({ email: loginEmail });
+		const { status } = await reset({
+			business_slug: 'oakland-solar',
+			token: tokenFromEmail(),
+			newPassword: STRONG_PASSWORD
+		});
+		expect(status).toBe(200);
+
+		const result = await new PasswordManager('us').validatePassword(
+			loginEmail,
+			STRONG_PASSWORD,
+			business
+		);
+		expect(result.success).toBe(true);
 	});
 });

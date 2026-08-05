@@ -7,6 +7,7 @@ import bcrypt from 'bcrypt';
 import { TokenSecurity } from '$lib/auth/business';
 import { passwordResetLimiter } from '$lib/auth/business';
 import { parseBody, resetPasswordSchema } from '@solar/validation';
+import { syncAccountToUnified } from '$lib/server/unifiedSync';
 
 export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 	// Generic error message to prevent account enumeration
@@ -68,6 +69,7 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 		const [business] = await db
 			.select({
 				id: businesses1.id,
+				countryCode: businesses1.countryCode,
 				resetToken: businesses1.resetToken,
 				resetTokenExpires: businesses1.resetTokenExpires
 			})
@@ -105,7 +107,18 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 			})
 			.where(eq(businesses1.id, business.id));
 
-		// 9. Reset rate limit on successful password reset
+		// 9. Project the new password onto the account. Login reads
+		// business_accounts.login_password (PasswordManager.ts:25), not
+		// businesses_1, so without this the reset reports success while login
+		// keeps accepting the old password until some unrelated write resyncs.
+		// sv_sync_account sources login_password and reset_token from
+		// businesses_1 directly, so the account sync alone covers both halves of
+		// the update above — in_business_profiles holds neither column, which is
+		// why mintPasswordResetToken's extra syncInSplitTables call is not needed
+		// here.
+		await syncAccountToUnified(db, business.countryCode === 'us' ? 'us' : 'in', business.id);
+
+		// 10. Reset rate limit on successful password reset
 		await passwordResetLimiter.reset(rateLimitKey);
 
 		return json({
