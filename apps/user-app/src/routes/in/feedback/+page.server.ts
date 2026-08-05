@@ -1,8 +1,9 @@
 export const prerender = false;
 import { fail } from '@sveltejs/kit';
 import { UserAuthService } from '$lib/auth/user';
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { eq, sql } from 'drizzle-orm';
+import { schema } from '@solar/db';
+import { db } from '$lib/server/db';
 import type { PageServerLoad, Actions } from './$types';
 
 /** The saved feedback row, in the camelCase shape the page renders. */
@@ -21,24 +22,20 @@ export const load: PageServerLoad = async ({ cookies }) => {
 		return { user: null, feedback: null as Feedback | null };
 	}
 
-	const pool = createPool({ connectionString: POSTGRES_URL });
 	let feedback: Feedback | null = null;
 
 	try {
-		const result = await pool.query(
-			`SELECT got_callback, got_quotation, recommendation_rating, suggestions
-			FROM in_user_feedback
-			WHERE user_id = $1`,
-			[sessionResult.user.id]
-		);
-		if (result.rows.length > 0) {
-			const row = result.rows[0];
-			feedback = {
-				gotCallback: row.got_callback,
-				gotQuotation: row.got_quotation,
-				recommendationRating: row.recommendation_rating,
-				suggestions: row.suggestions
-			};
+		const rows = await db
+			.select({
+				gotCallback: schema.inUserFeedback.gotCallback,
+				gotQuotation: schema.inUserFeedback.gotQuotation,
+				recommendationRating: schema.inUserFeedback.recommendationRating,
+				suggestions: schema.inUserFeedback.suggestions
+			})
+			.from(schema.inUserFeedback)
+			.where(eq(schema.inUserFeedback.userId, sessionResult.user.id));
+		if (rows.length > 0) {
+			feedback = rows[0];
 		}
 	} catch (err) {
 		console.error('Error fetching user feedback:', err);
@@ -72,26 +69,30 @@ export const actions: Actions = {
 			return fail(400, { error: 'Please select a star rating between 1 and 5.' });
 		}
 
-		const pool = createPool({ connectionString: POSTGRES_URL });
+		const values = {
+			userId: sessionResult.user.id,
+			gotCallback: gotCallback === 'yes',
+			gotQuotation: gotQuotation === 'yes',
+			recommendationRating: rating,
+			suggestions: suggestions || null
+		};
 
 		try {
-			await pool.query(
-				`INSERT INTO in_user_feedback (user_id, got_callback, got_quotation, recommendation_rating, suggestions)
-				VALUES ($1, $2, $3, $4, $5)
-				ON CONFLICT (user_id) DO UPDATE SET
-					got_callback = EXCLUDED.got_callback,
-					got_quotation = EXCLUDED.got_quotation,
-					recommendation_rating = EXCLUDED.recommendation_rating,
-					suggestions = EXCLUDED.suggestions,
-					updated_at = CURRENT_TIMESTAMP`,
-				[
-					sessionResult.user.id,
-					gotCallback === 'yes',
-					gotQuotation === 'yes',
-					rating,
-					suggestions || null
-				]
-			);
+			await db
+				.insert(schema.inUserFeedback)
+				.values(values)
+				.onConflictDoUpdate({
+					target: schema.inUserFeedback.userId,
+					set: {
+						gotCallback: values.gotCallback,
+						gotQuotation: values.gotQuotation,
+						recommendationRating: values.recommendationRating,
+						suggestions: values.suggestions,
+						// `sql` escape hatch: keeps the updated_at clock on the database,
+						// as the raw ON CONFLICT clause did.
+						updatedAt: sql`CURRENT_TIMESTAMP`
+					}
+				});
 		} catch (err) {
 			console.error('Error saving user feedback:', err);
 			return fail(500, { error: 'Something went wrong while saving your feedback. Please try again.' });

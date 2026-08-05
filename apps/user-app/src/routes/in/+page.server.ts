@@ -2,8 +2,9 @@ export const prerender = false;
 import { redirect } from '@sveltejs/kit';
 import { UserAuthService } from '$lib/auth/user';
 import { SessionManager } from '$lib/auth/user/SessionManager';
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { aliasedTable, and, desc, eq, isNotNull, isNull, or, sql } from 'drizzle-orm';
+import { schema } from '@solar/db';
+import { db } from '$lib/server/db';
 import { getSignedBillUrl } from '$lib/server/billStorage';
 import type { PageServerLoad, Actions } from './$types';
 
@@ -45,6 +46,13 @@ interface ClaimedBusiness {
 	isResolved: boolean | null;
 }
 
+// `leads.source_id` is nullable in the schema but always set on rows projected
+// from leaddata, and `created_at` is a `mode: 'string'` timestamp the driver
+// returns as a Date. Both restate the contracts Lead/ClaimedBusiness already
+// declare; they render as the bare columns, so the SQL is unchanged.
+const LEAD_SOURCE_ID = sql<number>`${schema.leads.sourceId}`;
+const LEAD_CREATED_AT = sql<Date | null>`${schema.leads.createdAt}`;
+
 export const load: PageServerLoad = async ({ cookies }) => {
 	const authService = new UserAuthService();
 	const sessionResult = authService.validateSession(cookies);
@@ -53,19 +61,38 @@ export const load: PageServerLoad = async ({ cookies }) => {
 		return { user: null, leads: [] as Lead[], claimedBusinesses: [] as ClaimedBusiness[] };
 	}
 
-	const pool = createPool({ connectionString: POSTGRES_URL });
 	let leads: Lead[] = [];
 	let claimedBusinesses: ClaimedBusiness[] = [];
 
-	try {
-		const result = await pool.query(
-			`SELECT source_id AS id, name, phone, postal_code AS pin_code, type, comment, email, level2 AS district, created_at, bill_cloudinary_public_id, bill_format
-			FROM leads
-			WHERE country_code = 'in' AND email = $1 AND isvisible = true AND (category IS NULL OR category = 1)
-			ORDER BY created_at DESC`,
-			[sessionResult.user.email]
+	// The user's own inquiries: category NULL or 1. Repeated for both queries.
+	const isOriginalLead = (t: typeof schema.leads) =>
+		and(
+			eq(t.countryCode, 'in'),
+			eq(t.email, sessionResult.user.email),
+			eq(t.isvisible, true),
+			or(isNull(t.category), eq(t.category, 1))
 		);
-		leads = result.rows.map((lead) => ({
+
+	try {
+		const leadRows = await db
+			.select({
+				id: LEAD_SOURCE_ID,
+				name: schema.leads.name,
+				phone: schema.leads.phone,
+				pin_code: schema.leads.postalCode,
+				type: schema.leads.type,
+				comment: schema.leads.comment,
+				email: schema.leads.email,
+				district: schema.leads.level2,
+				created_at: LEAD_CREATED_AT,
+				bill_cloudinary_public_id: schema.leads.billCloudinaryPublicId,
+				bill_format: schema.leads.billFormat
+			})
+			.from(schema.leads)
+			.where(isOriginalLead(schema.leads))
+			.orderBy(desc(schema.leads.createdAt));
+
+		leads = leadRows.map((lead) => ({
 			id: lead.id,
 			name: lead.name,
 			phone: lead.phone,
@@ -80,47 +107,66 @@ export const load: PageServerLoad = async ({ cookies }) => {
 		}));
 
 		if (leads.length > 0) {
-			const claimedResult = await pool.query(
-				`SELECT DISTINCT
-					l_claimed.source_id as claim_id,
-					l_claimed.created_at as claim_date,
-					l_claimed.stage,
-					l_claimed.status,
-					l_original.source_id as original_lead_id,
-					l_original.name as lead_name,
-					l_original.phone as lead_phone,
-					l_original.postal_code as lead_pin_code,
-					l_original.type as lead_type,
-					l_original.created_at as lead_created_at,
-					b.source_id as business_id,
-					b.businessname,
-					b.slug as business_slug,
-					b.level2 as business_district,
-					b.level1 as business_state,
-					b.phonenumber as business_phone,
-					lcr.created_at as interest_received_at,
-					lcr.isallotted,
-					lcr.isresolved
-				FROM leads l_original
-				INNER JOIN leads l_claimed ON (
-					l_claimed.country_code = 'in'
-					AND l_claimed.name = l_original.name
-					AND l_claimed.phone = l_original.phone
-					AND l_claimed.postal_code = l_original.postal_code
-					AND l_claimed.category = 2
-					AND l_claimed.isvisible = true
-					AND l_claimed.business_id IS NOT NULL
+			// `leads` self-joins to itself, so the claimed side needs an alias —
+			// same `aliasedTable` pattern business-app's Phase 5 introduced.
+			const original = aliasedTable(schema.leads, 'l_original');
+			const claimed = aliasedTable(schema.leads, 'l_claimed');
+
+			const claimRows = await db
+				.selectDistinct({
+					claim_id: sql<number>`${claimed.sourceId}`,
+					claim_date: sql<Date | null>`${claimed.createdAt}`,
+					// `stage` is smallint and `status` boolean in the schema, but
+					// ClaimedBusiness has always declared them `string | null` and the
+					// page's getStageLabel() indexes a Record<string, string> with the
+					// value. Restating keeps the pre-conversion contract exactly; see
+					// next-steps.md for the mismatch itself.
+					stage: sql<string | null>`${claimed.stage}`,
+					status: sql<string | null>`${claimed.status}`,
+					original_lead_id: sql<number>`${original.sourceId}`,
+					lead_name: original.name,
+					lead_phone: original.phone,
+					lead_pin_code: original.postalCode,
+					lead_type: original.type,
+					lead_created_at: sql<Date | null>`${original.createdAt}`,
+					business_id: schema.businesses.sourceId,
+					businessname: schema.businesses.businessname,
+					business_slug: schema.businesses.slug,
+					business_district: schema.businesses.level2,
+					business_state: schema.businesses.level1,
+					business_phone: schema.businesses.phonenumber,
+					interest_received_at: sql<Date | null>`${schema.leaddataClaimrequests.createdAt}`,
+					isallotted: schema.leaddataClaimrequests.isallotted,
+					isresolved: schema.leaddataClaimrequests.isresolved
+				})
+				.from(original)
+				.innerJoin(
+					claimed,
+					and(
+						eq(claimed.countryCode, 'in'),
+						eq(claimed.name, original.name),
+						eq(claimed.phone, original.phone),
+						eq(claimed.postalCode, original.postalCode),
+						eq(claimed.category, 2),
+						eq(claimed.isvisible, true),
+						isNotNull(claimed.businessId)
+					)
 				)
-				LEFT JOIN businesses b ON b.country_code = 'in' AND b.source_id = l_claimed.business_id
-				LEFT JOIN leaddata_claimrequests lcr ON l_claimed.source_id = lcr.claim_id
-				WHERE l_original.country_code = 'in'
-				AND l_original.email = $1
-				AND l_original.isvisible = true
-				AND (l_original.category IS NULL OR l_original.category = 1)
-				ORDER BY l_claimed.created_at DESC`,
-				[sessionResult.user.email]
-			);
-			claimedBusinesses = claimedResult.rows.map((claim) => ({
+				.leftJoin(
+					schema.businesses,
+					and(
+						eq(schema.businesses.countryCode, 'in'),
+						eq(schema.businesses.sourceId, claimed.businessId)
+					)
+				)
+				.leftJoin(
+					schema.leaddataClaimrequests,
+					eq(claimed.sourceId, schema.leaddataClaimrequests.claimId)
+				)
+				.where(isOriginalLead(original))
+				.orderBy(desc(claimed.createdAt));
+
+			claimedBusinesses = claimRows.map((claim) => ({
 				claimId: claim.claim_id,
 				claimDate: claim.claim_date,
 				stage: claim.stage,

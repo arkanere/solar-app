@@ -1,6 +1,7 @@
 export const prerender = false;
-import { createPool } from '@vercel/postgres';
-import { POSTGRES_URL } from '$env/static/private';
+import { and, eq, sql } from 'drizzle-orm';
+import { schema } from '@solar/db';
+import { db } from '$lib/server/db';
 import { getSignedBillUrl } from '$lib/server/billStorage';
 import type { PageServerLoad } from './$types';
 
@@ -34,11 +35,37 @@ interface Installer {
 	phonenumber: string | null;
 }
 
+// `leads.source_id` is nullable in the schema but always set on rows projected
+// from leaddata, and `created_at` is a `mode: 'string'` timestamp the driver
+// returns as a Date. Both restate the contracts CustomerDetails already
+// declares; they render as the bare columns, so the SQL is unchanged.
+const LEAD_SELECTION = {
+	id: sql<number>`${schema.leads.sourceId}`,
+	name: schema.leads.name,
+	phone: schema.leads.phone,
+	pin_code: schema.leads.postalCode,
+	type: schema.leads.type,
+	comment: schema.leads.comment,
+	email: schema.leads.email,
+	district: schema.leads.level2,
+	urlparams: schema.leads.urlparams,
+	created_at: sql<Date | null>`${schema.leads.createdAt}`,
+	isvisible: schema.leads.isvisible,
+	bill_cloudinary_public_id: schema.leads.billCloudinaryPublicId,
+	bill_format: schema.leads.billFormat
+};
+
+// Same reasoning as sendLeadSubmissionConfirmation's copy: `businessname` is
+// nullable, but Installer declares it non-null and the page renders it unguarded.
+const INSTALLER_SELECTION = {
+	businessname: sql<string>`${schema.businesses.businessname}`,
+	address: schema.businesses.address,
+	phonenumber: schema.businesses.phonenumber
+};
+
 export const load: PageServerLoad = async ({ url }) => {
 	const pincode = url.searchParams.get('pincode');
 	const referenceUuid = url.searchParams.get('ref');
-
-	const pool = createPool({ connectionString: POSTGRES_URL });
 
 	let customerDetails: CustomerDetails | null = null;
 	let installers: Installer[] = [];
@@ -46,16 +73,19 @@ export const load: PageServerLoad = async ({ url }) => {
 	// Look up lead details if ref is provided
 	if (referenceUuid) {
 		try {
-			const result = await pool.query(
-				`SELECT source_id AS id, name, phone, postal_code AS pin_code, type, comment, email, level2 AS district, level1 AS state, urlparams, created_at, isvisible, bill_cloudinary_public_id, bill_format
-				FROM leads
-				WHERE country_code = 'in' AND reference_uuid = $1
-				LIMIT 1`,
-				[referenceUuid]
-			);
+			const rows = await db
+				.select(LEAD_SELECTION)
+				.from(schema.leads)
+				.where(
+					and(
+						eq(schema.leads.countryCode, 'in'),
+						eq(schema.leads.referenceUuid, referenceUuid)
+					)
+				)
+				.limit(1);
 
-			if (result.rows.length > 0 && result.rows[0].isvisible) {
-				const lead = result.rows[0];
+			if (rows.length > 0 && rows[0].isvisible) {
+				const lead = rows[0];
 				customerDetails = {
 					id: lead.id,
 					name: lead.name,
@@ -81,22 +111,28 @@ export const load: PageServerLoad = async ({ url }) => {
 
 	if (lookupPincode) {
 		try {
-			const districtResult = await pool.query(
-				'SELECT district FROM pincode_mapping WHERE pincode = $1 LIMIT 1',
-				[lookupPincode]
-			);
+			const districtRows = await db
+				.select({ district: schema.pincodeMapping.district })
+				.from(schema.pincodeMapping)
+				.where(eq(schema.pincodeMapping.pincode, lookupPincode))
+				.limit(1);
 
-			if (districtResult.rows.length > 0) {
-				const district = districtResult.rows[0].district;
-				const bizResult = await pool.query(
-					`SELECT businessname, address, phonenumber
-					 FROM businesses
-					 WHERE country_code = 'in' AND LOWER(level2) = LOWER($1) AND isvisible = true
-					 ORDER BY rscore DESC NULLS LAST
-					 LIMIT 5`,
-					[district]
-				);
-				installers = bizResult.rows;
+			if (districtRows.length > 0) {
+				const district = districtRows[0].district;
+				installers = await db
+					.select(INSTALLER_SELECTION)
+					.from(schema.businesses)
+					.where(
+						and(
+							eq(schema.businesses.countryCode, 'in'),
+							// `sql` escape hatches: case-insensitive district compare, and
+							// DESC NULLS LAST (Postgres defaults DESC to NULLS FIRST).
+							sql`LOWER(${schema.businesses.level2}) = LOWER(${district})`,
+							eq(schema.businesses.isvisible, true)
+						)
+					)
+					.orderBy(sql`${schema.businesses.rscore} DESC NULLS LAST`)
+					.limit(5);
 			}
 		} catch {
 			// ignore
