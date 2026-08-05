@@ -271,6 +271,78 @@ describe('POST /api/forgotPassword', () => {
 	});
 });
 
+// Live IN data has duplicate `businesses.slug` values (~25 of them, one slug ×5),
+// and businesses_1 has no unique constraint on slug — only a plain index — so it
+// can never be assumed unique. resetPassword took the slug alone with `.limit(1)`,
+// which meant a valid link could land on a *different* row than the one its token
+// was minted against and report "invalid or expired". The token hash is what
+// actually identifies the account, so the lookup matches on it.
+//
+// The country_code filter mintPasswordResetToken uses is not available here:
+// business-app URLs carry no country segment, so the endpoint only ever sees the
+// slug. Matching on the token instead is country-free and fixes the duplicate
+// case outright.
+describe('a reset link works when its slug is not unique', () => {
+	const slug = 'spectrum-solar-power-kasaragod';
+	const firstEmail = 'first@spectrum.test';
+	const secondEmail = 'second@spectrum.test';
+
+	beforeEach(async () => {
+		await resetDatabase();
+		sendEmail.mockClear();
+		clientIp = `198.51.100.${Math.floor(Math.random() * 200) + 1}`;
+	});
+
+	it('resets the row the token was minted against, not the first row with that slug', async () => {
+		// Inserted first, so a bare `WHERE slug = $1 LIMIT 1` returns this one.
+		const firstId = await createBusiness({ slug, loginEmail: firstEmail });
+		const secondId = await createBusiness({ slug, loginEmail: secondEmail });
+
+		await forgot({ email: secondEmail });
+		const rawToken = tokenFromEmail();
+
+		const { status, body } = await reset({
+			business_slug: slug,
+			token: rawToken,
+			newPassword: STRONG_PASSWORD
+		});
+
+		expect(status).toBe(200);
+		expect(body.success).toBe(true);
+
+		const second = await storedReset(secondId);
+		expect(second.login_password).toBeTruthy();
+		expect(await bcrypt.compare(STRONG_PASSWORD, second.login_password!)).toBe(true);
+		expect(second.reset_token).toBeNull();
+
+		// The namesake is untouched — the fix must not widen the write either.
+		const first = await storedReset(firstId);
+		expect(first.login_password).toBeNull();
+	});
+
+	it('still rejects a token that belongs to no row with that slug', async () => {
+		await createBusiness({ slug, loginEmail: firstEmail });
+		const otherId = await createBusiness({ slug: 'other-solar', loginEmail: 'other@solar.test' });
+
+		// A genuine, unexpired token — but minted against a different slug.
+		await forgot({ email: 'other@solar.test' });
+		const rawToken = tokenFromEmail();
+
+		const { status, body } = await reset({
+			business_slug: slug,
+			token: rawToken,
+			newPassword: STRONG_PASSWORD
+		});
+
+		expect(status).toBe(400);
+		expect(body.success).toBe(false);
+
+		// Unconsumed: the mismatch must not clear the other business's token.
+		const other = await storedReset(otherId);
+		expect(other.reset_token).toBeTruthy();
+	});
+});
+
 // The round-trip tests above assert on businesses_1, which is why they passed
 // while a completed reset did not actually change what login accepts.
 // PasswordManager reads business_accounts.login_password — a projection — so

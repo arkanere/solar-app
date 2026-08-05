@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db';
 import { businesses1 } from '@solar/db/schema';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import bcrypt from 'bcrypt';
@@ -66,36 +66,43 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 		// 4. Verify the token. Reset tokens are stored hashed in `reset_token`, the
 		// same way magic-link tokens are; the columns this handler used to read
 		// (reset_token_hash, reset_token_used) do not exist on businesses_1.
+		//
+		// The token hash is half the lookup, not a comparison made afterwards.
+		// `slug` is not unique — live IN data has ~25 duplicated slugs, businesses_1
+		// has only a plain index on the column, and item 7 explains why it cannot
+		// take a constraint — so `WHERE slug = $1 LIMIT 1` could return a namesake
+		// of the row the token was minted against and report the generic error for
+		// a perfectly valid link. mintPasswordResetToken disambiguates with
+		// country_code; that is not available here, because business-app URLs carry
+		// no country segment and this handler only ever sees the slug. Matching on
+		// the hash instead is country-free and unique in practice.
+		//
+		// Enumeration is unaffected: a missing business and a wrong token were
+		// already answered identically, and now they are the same branch.
 		const [business] = await db
 			.select({
 				id: businesses1.id,
 				countryCode: businesses1.countryCode,
-				resetToken: businesses1.resetToken,
 				resetTokenExpires: businesses1.resetTokenExpires
 			})
 			.from(businesses1)
-			.where(eq(businesses1.slug, business_slug))
+			.where(and(eq(businesses1.slug, business_slug), eq(businesses1.resetToken, hashedToken)))
 			.limit(1);
 
 		if (!business) {
-			// Business doesn't exist, but don't reveal that
+			// No such business, or no business under that slug holding this token.
 			return json({ success: false, error: genericError }, { status: 400 });
 		}
 
-		// 5. Check if token matches (compare hashes)
-		if (business.resetToken !== hashedToken) {
-			return json({ success: false, error: genericError }, { status: 400 });
-		}
-
-		// 6. Check if token has expired
+		// 5. Check if token has expired
 		if (TokenSecurity.isTokenExpired(business.resetTokenExpires)) {
 			return json({ success: false, error: genericError }, { status: 400 });
 		}
 
-		// 7. Hash the new password
+		// 6. Hash the new password
 		const hashedPassword = await bcrypt.hash(newPassword, 12);
 
-		// 8. Update password and consume the token. Clearing it is what makes a
+		// 7. Update password and consume the token. Clearing it is what makes a
 		// second use fail — there is no separate "already used" flag, so a reused
 		// link reports the generic invalid/expired error.
 		await db
@@ -107,7 +114,7 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 			})
 			.where(eq(businesses1.id, business.id));
 
-		// 9. Project the new password onto the account. Login reads
+		// 8. Project the new password onto the account. Login reads
 		// business_accounts.login_password (PasswordManager.ts:25), not
 		// businesses_1, so without this the reset reports success while login
 		// keeps accepting the old password until some unrelated write resyncs.
@@ -118,7 +125,7 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 		// here.
 		await syncAccountToUnified(db, business.countryCode === 'us' ? 'us' : 'in', business.id);
 
-		// 10. Reset rate limit on successful password reset
+		// 9. Reset rate limit on successful password reset
 		await passwordResetLimiter.reset(rateLimitKey);
 
 		return json({
