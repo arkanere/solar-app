@@ -29,8 +29,13 @@ commit message. It still parameterises — never interpolate a value into a quer
 same day. Its `check` baseline is 1 error, from a duplicate-Vite-types clash in `vite.config.js`, not
 from app code — a converted change passes if the count stays at 1. It has no test suite.
 
-The only raw SQL left in the monorepo is the two `apps/main-app/scripts/chatbot-related/*.js` offline
-scripts (5 call sites) — not request handlers, and still unassigned.
+There is **no hand-written SQL left anywhere outside tests**, including the two
+`apps/main-app/scripts/chatbot-related/*` offline scripts (converted 2026-08-05; they run via `tsx`,
+because `@solar/db`'s extensionless internal imports do not resolve under bare Node ESM).
+
+Two schema files are **hand-maintained and not generated**, so `pull` will not touch them:
+`packages/db/src/schema/index.ts` (the barrel) and `packages/db/src/schema/embeddings.ts` (the
+`embeddings` Postgres schema, which `schemaFilter: ['public']` excludes from introspection).
 
 Two things `drizzle-kit pull` does that regularly bite:
 - `jsonb` columns are typed `unknown` and timestamps `mode: 'string'`. Restate a shape with
@@ -39,6 +44,12 @@ Two things `drizzle-kit pull` does that regularly bite:
 - Nullability is real. Many components declare columns non-null that the schema allows to be NULL —
   the old driver's `any` hid it. Prefer restating the existing contract over widening components.
 
+A third thing that has now bitten twice, and is not a `pull` artifact:
+- **Check `withTimezone` before writing a timestamp.** `timestamptz` columns take
+  `date.toISOString()`; a plain `timestamp` column does not — node-postgres reads a naive column
+  back in the process's local zone, so an ISO (UTC) string comes back shifted by the offset. Write
+  those local-naive. This silently expired every password-reset link before a test caught it.
+
 ## Tests
 
 Integration tests live in `apps/business-app/tests/` and run against real Postgres, never a mocked
@@ -46,8 +57,24 @@ pool. Start it with `docker compose -f docker-compose.test.yml up -d`, then
 `npm test -w solarvipani-business`. See `tests/README.md` — in particular the reason the test schema
 needs a generated baseline, and the fact that it must be regenerated after any schema change.
 
-Coverage is deliberately narrow: the lead pipeline and auth. Don't add tests for trivial lookups or
-UI components. Every bug fixed from now on gets a test that reproduces it first.
+Coverage is deliberately narrow: the lead pipeline, auth (including the forgot-password /
+reset-password round trip) and the compliance gate, on both countries. Don't add tests for trivial
+lookups or UI components. Every bug fixed from now on gets a test that reproduces it first — that
+rule has now paid for itself twice in one session, catching a dead /us endpoint and a timezone bug
+that would have expired every password-reset link.
+
+**No Docker on the current dev machine.** The suite runs against a throwaway cluster built from the
+EDB binaries instead; the recipe is in next-steps.md under Phase 6 (port 5544, then export
+`TEST_POSTGRES_URL`).
+
+## Pending migration
+
+**`053-legal-acceptances-country.sql` has not been applied to live.** It makes `legal_acceptances`
+country-aware, which is what unblocks the whole /us compliance and claimLead path. `schema.ts`'s
+entry for that table is hand-updated to match; after applying 053, run `npm run pull -w @solar/db`
+and the result should be identical. Do **not** regenerate the schema by pulling from a test cluster
+— the baseline does not create three `loc_key(...)` expression indexes, so a pull from there
+silently drops them.
 
 ## About Solar-app
 

@@ -678,18 +678,17 @@ nullability item under Phase 7a.
 
 ### What is actually left in the monorepo
 
-- **The two `apps/main-app/scripts/chatbot-related/*.js` offline scripts** (5 raw-SQL call sites).
-  Still unassigned, still not request handlers. They are now the *only* raw SQL anywhere.
+Everything below the first item was cleared on 2026-08-05 — see the follow-up section
+at the end of this file.
+
 - **`svelte-check` is still pinned at `^3.6.0`** across all three apps, and the Vite-types dedupe is
   still undone. Both are described under the TypeScript phase above; they are the same kind of
   change and want one commit across all three apps, because they will move the main-app (13) and
-  business-app (84) baselines.
-- **Deletion candidates**, both confirmed to have no importers anywhere:
-  `apps/main-app/src/lib/server/magicLink.ts` and `user-app`'s `createUserAuthService()`.
-- **`resetPassword` is still unreachable end to end** — nothing in the app issues a reset token.
-  Either add a forgot-password endpoint or delete the flow and its pages.
-- **`/us/api/claimLead` still never sends its emails** (the Phase 6 bug, left pending a decision
-  because fixing it *starts* sending mail to real installers and customers). See that section.
+  business-app (84) baselines. **This is the only thing on the original list still open.**
+- ~~The two `chatbot-related/*.js` offline scripts~~ — converted to TypeScript + Drizzle.
+- ~~Deletion candidates (`main-app/lib/server/magicLink.ts`, `createUserAuthService()`)~~ — deleted.
+- ~~`resetPassword` unreachable~~ — the forgot-password endpoint now exists.
+- ~~`/us/api/claimLead` never sends its emails~~ — fixed, along with the larger bug underneath it.
 
 ---
 
@@ -726,3 +725,124 @@ and the `INTERVAL '${throttleHours} hours'` in `LoginTracker` — note that one 
 **Also still unassigned:** the two `apps/main-app/scripts/chatbot-related/*.js` offline scripts
 (5 raw-SQL call sites). Not `user-app` and not request handlers; they just have nowhere else to be
 tracked.
+
+---
+
+## ✅ DONE 2026-08-05 — clearing the follow-up list (decisions by Ani)
+
+Five items, all agreed up front. The first one grew: what was filed as an email bug turned out
+to be the visible symptom of a dead endpoint.
+
+### 1. `/us/api/claimLead` — the email bug was downstream of a much bigger one
+
+**Found while writing the reproducing test the CLAUDE.md rule requires.** `seedLeadDataPolicy`
+failed with a foreign-key violation the moment it was pointed at a US business, which exposed the
+real defect:
+
+**`legal_acceptances.business_id` referenced `businesses_1(id)` — the IN table.** So:
+
+- `/us/api/compliance/acceptPolicy` failed with a FK violation for any US business. No US business
+  could ever record a policy acceptance.
+- `checkLeadDataPolicy()` therefore always returned `compliant: false`, and
+- `/us/api/claimLead` returned **403 `compliance_required` on every request** — never reaching the
+  email code the item was originally about. The endpoint was not "sending no emails"; it was not
+  working at all.
+
+**Fix (migration `053-legal-acceptances-country.sql`):** acceptances are now keyed
+`(country_code, business_id)` against `business_accounts` — the country-agnostic table the auth
+layer already reads — with `country_code` backfilled to `'in'` (a US row was impossible, so the
+backfill is unambiguous). `checkLeadDataPolicy`, `recordLeadDataAcceptance` and
+`getAcceptanceHistory` take a country; all 7 call sites pass theirs.
+
+**Then the emails.** Ani's steer to prefer the country-agnostic table was right, and initially I
+reported it couldn't work because unified `businesses` has no `login_email`. That was wrong — I had
+not looked at **`business_accounts`**, which is exactly that table. Both lookups now read unified
+`businesses` joined to `business_accounts` on `(country_code, source_id)`, the same join
+`TokenManager` uses. `mintBusinessTokenById` keeps writing the per-country legacy table — that is
+still the write side and it projects to `business_accounts` itself — so only its table *argument*
+was wrong (`'businesses_1'` → `'us_businesses'`).
+
+**Decision recorded:** /us has no real users, so enabling the mail carried no risk to real people.
+
+**Note for whoever applies this:** the migration has **not** been run against live — this session
+had no credentials. `schema.ts`'s `legal_acceptances` entry is hand-updated to match; running
+`npm run pull -w @solar/db` after applying 053 should produce an identical result. Do **not** pull
+from a test cluster to regenerate: the baseline does not create three `loc_key(...)` expression
+indexes, so a pull from there silently drops them (tried, reverted).
+
+### 2. Forgot-password — built
+
+`POST /{in,us}/api/forgotPassword` plus request pages at `/{in,us}/forgot-password`, linked from
+both login pages. Email-only, mirroring the login form, which already resolves the slug from the
+address. `$lib/server/passwordReset.ts` is the counterpart to `magicLink.ts` and follows the same
+rules (hashed at rest, raw emailed, minting invalidates the previous link, resetPassword consumes
+it by clearing it).
+
+Anti-enumeration is the design constraint: every outcome that depends on whether the address is
+registered returns the same 200 and the same body. Only a malformed email (400) and the rate limit
+(429; 5 per 15 min, keyed on **IP alone** — keying on email would let an attacker probe addresses
+without ever tripping it) differ.
+
+**A bug the tests caught before it shipped, worth remembering:** `reset_token_expires` is
+`timestamp` **without** time zone, while `magic_link_token_expires_at` is timestamptz. Writing
+`.toISOString()` to the naive column — copied from the magic-link path — shifts the expiry by the
+local UTC offset when node-postgres reads it back, expiring every link on creation anywhere east
+of UTC. It is written local-naive now. **Check `withTimezone` before reusing a timestamp write.**
+
+### 3. Chatbot scripts — TypeScript + Drizzle
+
+Both `apps/main-app/scripts/chatbot-related/*` are `.ts` and on Drizzle, so the monorepo has no
+hand-built SQL left outside tests.
+
+`embeddings.in_embedding_index` is **not** in the generated schema: `drizzle.config.ts` sets
+`schemaFilter: ['public']`, and widening it would pull the whole `embeddings` schema into the file
+every app compiles against. It is declared by hand in **`packages/db/src/schema/embeddings.ts`**
+(a `pgSchema` table, re-exported from the barrel), scoped to the five columns these scripts use.
+That file is **not generated and pull will not touch it** — if a script starts using another
+column, add it there against the live table.
+
+Two improvements beyond the query layer: `--limit N` was interpolated into the SQL string (now
+bound via `.limit()`, and the clause is dropped when unset), and the multi-row `VALUES`
+placeholders were hand-numbered `$1..$3n` (Drizzle builds them). `excluded.*` in the `DO UPDATE` is
+a `sql` escape hatch — there is no builder form.
+
+Running them needs **tsx** (added to their `package.json`, along with a tsconfig and
+`npm run sync` / `embed` / `check`): `@solar/db` uses extensionless internal imports that bare Node
+ESM will not resolve, even though Node 24 strips the types fine.
+
+Verified against a real local Postgres using the node-postgres driver — `@vercel/postgres` only
+speaks to Neon over a WebSocket, the same constraint the test suite works around.
+
+### 4. Dead modules — deleted
+
+`apps/main-app/src/lib/server/magicLink.ts` and `user-app`'s `createUserAuthService()`. Both had no
+importers anywhere in the monorepo.
+
+### 5. Honest types — fixed
+
+- **`faq`** (deferred since Phase 7a): `seo.ts` says `FaqItem[] | null`, `PillarPage`/`ClusterPage`
+  widened to match (the other four seo components already declared it nullable, and all six already
+  guarded with `?? []`). The nine pages doing `data.X.faq?.length > 0 ? faqLD(data.X.faq)` now
+  derive `faqItems = data.X.faq ?? []`, which both narrows for `faqLD` and matches the pattern
+  `solar/[state]/+page.svelte` already used.
+- **`ClaimedBusiness.stage`/`.status`** (deferred from the user-app conversion): now
+  `number | null` / `boolean | null`, matching the smallint and boolean columns.
+
+### Test suite
+
+**92 → 111 tests**, and it now covers /us and compliance, not just /in:
+
+- `tests/leads/usClaimLeadEmail.test.ts` (5) — both mails, the minted token and its projection.
+- `tests/compliance/leadDataPolicy.test.ts` (5) — the FK fix, both countries, cross-country isolation.
+- `tests/auth/forgotPassword.test.ts` (9) — end-to-end (the emailed token is accepted by
+  `resetPassword`), single use, re-minting, enumeration-safety, rate limiting.
+- New fixtures: `createUsBusiness`, `createUsLead`, and a `country` option on `seedLeadDataPolicy`.
+
+### Still open
+
+**Only the `svelte-check` v4 upgrade + Vite-types dedupe.** One commit across all three apps,
+because it moves every baseline. Current baselines: main-app **13 errors + 1 warning**,
+business-app **84 errors + 111 tests**, user-app **1 error + 2 warnings**.
+
+**No Docker on this machine**, so the suite ran against a throwaway cluster built from the EDB
+binaries — the recipe under Phase 6 still works, on port 5544.
