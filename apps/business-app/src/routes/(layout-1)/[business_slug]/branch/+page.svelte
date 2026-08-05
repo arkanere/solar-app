@@ -244,6 +244,7 @@
 		bind:show={showAddBranch}
 		businessId={mainBusiness.id}
 		{businessSlug}
+		{country}
 		onClose={() => (showAddBranch = false)}
 		onBranchAdded={handleBranchAdded}
 	/>

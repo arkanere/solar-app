@@ -89,19 +89,27 @@
    postal-code-to-state source — `pincode_mapping` is IN-only — which is a data question, not a code
    one. Whoever fixes it should flip those two tests rather than delete them.
 
-10. **Two business-app write forms are hard-coded India-shaped, and US businesses now reach them.**
-    Found while checking item 3's read-side claim, which turned out to be the wrong place to look.
+10. **India-shaped write forms that US businesses now reach.** Found while checking item 3's
+    read-side claim, which turned out to be the wrong place to look.
 
-    - `AddBranch.svelte:161` labels its middle field **"District"** and drives a cascading State →
-      District → City picker off `/api/getDistricts` (reads `locations`) and `/api/getCities`, neither
-      of which takes a country. `/branch` has loaded for US businesses since the country sweep, so a
-      US business gets an India label over dropdowns that are almost certainly empty for it.
-    - `PostRecentProject.svelte:395-419` labels its fields **"Pincode:"** and **"District
-      (Auto-filled):"**, auto-filled from `/api/getDistrictByPincode`, which queries `pincode_mapping`
-      — IN-only, the same table behind item 9.
+    **The branch form is done** (`d418a08`, `<addbranch-ui>`). It was broken three ways, not one: the
+    State dropdown offered `INDIAN_STATES` only, so the cascade could never start; `/api/getDistricts`
+    and `/api/getCities` read `locations`, which is India-only; and `api/addBranch` never set
+    `country_code` on its `businesses_1` insert, which defaults to `'in'` — so even a completed US
+    submission would have been written IN-tagged and its `sv_sync_business('us', …)` would have been a
+    silent no-op. The dropdowns now read **`geo_locations`**, which is populated for both countries
+    (31,253 US rows / 52 states / 1,910 counties; 8,392 IN) and is the same table main-app's `geo.ts`
+    already uses. `getCities` now requires the state as well as the county, because US county names
+    repeat across states — "Washington" is in 31 of them.
 
-    Labels are the easy half; the hard half is that neither dropdown has a US data source. Likely
-    blocked on the same missing US location data as item 9, and worth solving once for both.
+    **`PostRecentProject.svelte:395-419` is still open**, and is the harder half: it labels its fields
+    **"Pincode:"** and **"District (Auto-filled):"** and auto-fills from `/api/getDistrictByPincode`,
+    which queries `pincode_mapping`. That is the one lookup `geo_locations` cannot replace — it has no
+    postal-code column, and a live schema sweep found no US zip source anywhere. So this is blocked on
+    the same missing data as item 9, and the two should be solved together.
+
+    Note `locations` and `us_locations` now have no reader in business-app; main-app's own geo code
+    was already on `geo_locations`. Worth folding into item 4's drop if a sweep confirms it.
 
 ---
 
@@ -148,7 +156,7 @@ transaction can never surface it.
 business-app's check covers `.ts` as well as `.svelte`, so no separate
 `npx tsc --noEmit -p apps/business-app/tsconfig.json` pass is needed.
 
-`npm test -w solarvipani-business` — **green: 162 passed, 0 skipped.**
+`npm test -w solarvipani-business` — **green: 174 passed, 0 skipped.**
 
 **Also run `npm run build -w <app>`** when you touch imports. `check` cannot see server code reaching
 a browser bundle, and that is a hard build failure — it left business-app undeployable for an unknown

@@ -5,22 +5,32 @@
 	import * as Alert from '$lib/components/ui/alert';
 	import { Button } from '$lib/components/ui/button';
 	import { Label } from '$lib/components/ui/label';
-	import { INDIAN_STATES } from '$lib/constants/locations';
+	import { INDIAN_STATES, US_STATES } from '$lib/constants/locations';
 	import { CircleAlert } from '@lucide/svelte';
 
 	let {
 		show = $bindable(false),
 		businessId,
 		businessSlug,
+		country = 'in',
 		onClose = () => {},
 		onBranchAdded = () => {}
 	}: {
 		show: boolean;
 		businessId: string;
 		businessSlug: string;
+		country?: 'in' | 'us';
 		onClose: () => void;
 		onBranchAdded: (branch: any) => void;
 	} = $props();
+
+	// A business belongs to exactly one country, so the form is wholly one shape
+	// or the other. The middle level is a district in India and a county in the
+	// US; the write side stores both in businesses_1.district either way, which
+	// has held the platform-wide (IN-named) column set since 054.
+	let isUs = $derived(country === 'us');
+	let states = $derived(isUs ? US_STATES : INDIAN_STATES);
+	let level2Label = $derived(isUs ? 'County' : 'District');
 
 	let state: string = $state('');
 	let district: string = $state('');
@@ -50,7 +60,7 @@
 			const res = await fetch('/api/getDistricts', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ state: selectedState })
+				body: JSON.stringify({ state: selectedState, country })
 			});
 			const data = await res.json();
 			districts = data.districts || [];
@@ -64,10 +74,12 @@
 
 	async function updateCities(selectedDistrict: string) {
 		try {
+			// The state goes too: US county names repeat across states, so a
+			// county-only lookup would offer cities from every state that has one.
 			const res = await fetch('/api/getCities', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ district: selectedDistrict })
+				body: JSON.stringify({ district: selectedDistrict, state, country })
 			});
 			const data = await res.json();
 			cities = data.cities || [];
@@ -83,7 +95,7 @@
 		successMessage = '';
 
 		if (!state || !district || !city) {
-			errorMessage = 'Please select state, district and city';
+			errorMessage = `Please select state, ${level2Label.toLowerCase()} and city`;
 			return;
 		}
 
@@ -149,19 +161,19 @@
 							{state || 'Select a state'}
 						</Select.Trigger>
 						<Select.Content>
-							{#each INDIAN_STATES as s}
+							{#each states as s}
 								<Select.Item value={s}>{s}</Select.Item>
 							{/each}
 						</Select.Content>
 					</Select.Root>
 				</div>
 
-				<!-- District Select -->
+				<!-- District (IN) / County (US) Select -->
 				<div class="space-y-2">
-					<Label for="district">District</Label>
+					<Label for="district">{level2Label}</Label>
 					<Select.Root type="single" bind:value={district} disabled={!state || districts.length === 0}>
 						<Select.Trigger id="district" class="w-full">
-							{district || 'Select a district'}
+							{district || `Select a ${level2Label.toLowerCase()}`}
 						</Select.Trigger>
 						<Select.Content>
 							{#each districts as d}

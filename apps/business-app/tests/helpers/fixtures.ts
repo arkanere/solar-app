@@ -25,9 +25,35 @@ export async function resetDatabase(): Promise<void> {
 			businesses, business_accounts,
 			legal_acceptances, legal_policies,
 			projects, project_management, pincode_mapping,
-			rate_limits, in_user
+			rate_limits, in_user, geo_locations
 		RESTART IDENTITY CASCADE
 	`);
+}
+
+/**
+ * Insert a geo_locations row — the country-scalable location reference the
+ * branch form's district/city dropdowns read. `countries` is seeded by the
+ * baseline, so the country_code FK is already satisfied for 'in' and 'us'.
+ */
+export async function createGeoLocation(
+	countryCode: 'in' | 'us',
+	level1: string,
+	level2: string,
+	city: string
+): Promise<void> {
+	const slug = (value: string) =>
+		value
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, '-')
+			.replace(/^-|-$/g, '');
+
+	await pool.query(
+		`INSERT INTO geo_locations
+		   (country_code, level1, level2, city, level1_slug, level2_slug, city_slug)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7)
+		 ON CONFLICT DO NOTHING`,
+		[countryCode, level1, level2, city, slug(level1), slug(level2), slug(city)]
+	);
 }
 
 export interface BusinessOptions {
