@@ -228,6 +228,19 @@ export const resetPasswordSchema = z.object({
 	newPassword: z.string({ error: 'New password is required' }).min(1, 'New password is required')
 });
 
+/* -------------------------------------------------------------------------
+ * business-app /in/api/forgotPassword and /us/api/forgotPassword
+ *
+ * Email only, matching the login form: login resolves the business slug from
+ * the address rather than asking for it, and so does this. The endpoint's
+ * response is deliberately identical whether or not the address is known, so
+ * a rejection here must not be able to say more than "that is not an email".
+ * ---------------------------------------------------------------------- */
+
+export const forgotPasswordSchema = z.object({
+	email
+});
+
 export type LeadInput = z.output<ReturnType<typeof leadSchema>>;
 export type AddReferrerInput = z.output<typeof addReferrerSchema>;
 export type SaveProposalInput = z.output<typeof saveProposalSchema>;
@@ -236,3 +249,4 @@ export type UsUpdateBusinessDetailsInput = z.output<typeof usUpdateBusinessDetai
 export type SubmitBusinessInput = z.output<ReturnType<typeof submitBusinessSchema>>;
 export type DataRequestInput = z.output<typeof dataRequestSchema>;
 export type ResetPasswordInput = z.output<typeof resetPasswordSchema>;
+export type ForgotPasswordInput = z.output<typeof forgotPasswordSchema>;

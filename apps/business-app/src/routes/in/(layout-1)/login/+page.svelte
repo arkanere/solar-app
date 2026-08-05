@@ -32,5 +32,7 @@
 		{/if}
 
 		<Button type="submit">Login</Button>
+
+		<a href="/in/forgot-password" class="text-sm text-center mt-4 underline">Forgot your password?</a>
 	</form>
 </main>
