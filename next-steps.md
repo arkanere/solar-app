@@ -406,6 +406,81 @@ or accept raw SQL as the standard and demote `@solar/db` to schema/type-referenc
 
 ---
 
+## ← NEXT PHASE — Convert `user-app` to TypeScript (and finish Svelte 5)
+
+**Decision taken 2026-08-05 (owner: Ani):** option 1 from the section below — convert `user-app` to
+TypeScript *first*, then migrate its queries to Drizzle as a follow-on phase. This is the option that
+restores the plan's original rationale ("solo maintainer — the type-checker is the reviewer"), which
+a JavaScript app cannot deliver.
+
+**Do this before the Drizzle conversion of `user-app`, not after.** Converting the queries first
+would mean touching all 12 DB files twice and would forfeit the compile-time check on the conversion
+itself — which is precisely the safety net that made Phases 1–10 tractable.
+
+### Check the scope claim before planning — Svelte 5 is mostly already done
+
+Verified 2026-08-05, and it contradicts the obvious assumption:
+
+- `user-app` is **already on Svelte 5** — `svelte ^5.46.1`, and **6 of its 7 components already use
+  runes** (`$props`, `$state`, `$derived`).
+- `grep -rln 'export let |on:click|on:submit|on:change|\$: ' src/` returns **nothing**. There are no
+  Svelte 4 idioms left to migrate.
+- The only component with no runes is `src/routes/+page.svelte`, and that is because it has no
+  reactive state at all — a static region picker. Nothing to convert.
+
+So "convert to Svelte 5" is effectively complete. Do not go looking for migration work that isn't
+there. What genuinely remains under that heading is small:
+
+- No `.svelte` file declares `lang="ts"` (0 of 7), so component scripts are unchecked.
+- `svelte-check` is pinned at `^3.6.0` across all three apps, which predates Svelte 5. Worth
+  upgrading to v4 as part of this — but **do it as its own commit across all three apps**, because
+  it will move the main-app (13) and business-app (84) error baselines and you want that movement
+  isolated and attributable.
+
+### The actual work: TypeScript
+
+**19 `.js` files, 0 `.ts` files.** `tsconfig.json` already extends the base config but sets
+`allowJs: true, checkJs: false` — so today nothing in this app is type-checked at all.
+
+**Baseline before starting: `npm run check -w user-app` reports 0 errors and 8 warnings in 2 files.**
+This is a *clean* baseline, unlike main-app (13) and business-app (84) — the one app where the
+conversion can be held to zero new errors with no pre-existing noise to see past. Keep it at 0.
+
+The 8 warnings are all the same Svelte 5 issue in `routes/in/feedback/+page.svelte` (lines 7–11):
+*"This reference only captures the initial value of `data`. Did you mean to reference it inside a
+derived instead?"* — destructuring `data` at the top of `<script>` instead of wrapping in `$derived`.
+That is a real reactivity bug (the page will not update on client-side navigation), not noise. Fix it
+while you are in the file, with a note in the commit.
+
+**Suggested batches**, smallest-blast-radius first, same one-batch-per-commit rule as Phases 1–10:
+
+| Batch | Files |
+| --- | --- |
+| A | Flip `checkJs: true` and fix what falls out *before* renaming anything — this surfaces the real type debt while the diff is still one line and revertible |
+| B | `lib/auth/user/` (6): `AuthTypes`, `SessionManager`, `TokenManager`, `LoginTracker`, `UserAuthService`, `index` — self-contained, and `AuthTypes.js` is presumably JSDoc types that become real interfaces |
+| C | `lib/` leaf helpers (5): `sendEmail`, `server/billStorage`, `server/internalAuth`, `server/unifiedSync`, plus `hooks.server.js` |
+| D | The 4 `+server.js` endpoints under `routes/in/api/` |
+| E | The 4 `+page.server.js` loads and `routes/signin-link/[token]/+page.server.js` |
+| F | Add `lang="ts"` to the 7 components; fix the feedback-page `$derived` warnings |
+
+Two things carry over from this session and will save time:
+
+- **`lib/server/unifiedSync.js` is the seam to the Drizzle phase.** Both other apps' copies now take
+  `Pick<Database, 'execute'>`; converting this one to match is what will let `user-app`'s Drizzle
+  phase reuse the pattern instead of inventing a third. Type it in batch C with that end state in
+  mind, even though it still wraps a raw pool at that point.
+- **`user-app` has no `@solar/db` dependency and no `lib/server/db.js`.** Both apps' `db.ts` no
+  longer export a raw `pool` (Phase 10), so the follow-on Drizzle phase starts with a Phase 0-style
+  plumbing step: add the dep, create `db.ts` with a module-private pool, and only then convert
+  queries. `user-app` also still creates pools inside handlers — the pattern the 2026-08-04 pooling
+  fix removed from business-app — so that gets fixed by the same move.
+
+Also in scope for whoever picks this up, or explicitly deferred: the two
+`apps/main-app/scripts/chatbot-related/*.js` offline scripts (5 raw-SQL call sites). They are not
+`user-app` and not request handlers; they just have nowhere else to be tracked.
+
+---
+
 ## Found 2026-08-05 during Phase 10: `user-app` was never in the migration's scope
 
 The Phase 10 grep across the whole monorepo turned up a **third app the Drizzle plan never counted**.
@@ -422,6 +497,9 @@ is absent from it, and the "1 file in packages" turned out to be a false positiv
 | 3 | `main-app/scripts/chatbot-related/sync-embedding-index.js` |
 | 2 | `main-app/scripts/chatbot-related/embed-city-pages.js` |
 
+**Decided 2026-08-05: option 1.** See the "NEXT PHASE" section immediately above for the plan.
+The reasoning is recorded below as it stood when the options were open.
+
 **This is a decision, not a leftover batch.** The whole rationale in the plan's header is "solo
 maintainer — the type-checker is the reviewer." `user-app` is **plain JavaScript**, not TypeScript:
 there is no `npm run check` type-checking to catch a schema change, so converting it buys the
@@ -431,8 +509,9 @@ Phase 0-style plumbing step first — and it still creates pools per handler, th
 2026-08-04 pooling fix removed from business-app.
 
 Three options, roughly in order of cost:
-1. **Convert `user-app` to TypeScript first, then migrate it.** Highest cost, but the only one that
-   delivers the reason the migration was worth doing. The app is small (12 files touch the DB).
+1. **✅ CHOSEN — Convert `user-app` to TypeScript first, then migrate it.** Highest cost, but the
+   only one that delivers the reason the migration was worth doing. The app is small (12 files touch
+   the DB, 19 files total).
 2. **Migrate it as JavaScript.** Cheap, gets one query style across the monorepo and fixes the
    per-handler pooling, but no type-checking payoff.
 3. **Leave it and say so.** Then CLAUDE.md's "all queries use Drizzle" needs to keep its `user-app`

@@ -25,8 +25,10 @@ The `sql` template escape hatch is allowed for genuinely awkward queries (`LOWER
 window functions, `NOW() - INTERVAL`, the `sv_sync_*` functions); note each use in the commit
 message. It still parameterises — never interpolate a value into a query string.
 
-`user-app` is the exception: it is plain JavaScript and still on raw `pool.query` throughout. It was
-outside the migration's scope; see next-steps.md before touching it.
+`user-app` is the exception, temporarily: it is plain JavaScript and still on raw `pool.query`
+throughout. It was outside the migration's scope. The decision (2026-08-05) is to convert it to
+TypeScript first and migrate its queries after — that is the next phase in next-steps.md. Read that
+before touching it, and note it is already on Svelte 5 runes despite the `.js` extensions.
 
 Two things `drizzle-kit pull` does that regularly bite:
 - `jsonb` columns are typed `unknown` and timestamps `mode: 'string'`. Restate a shape with
