@@ -167,6 +167,46 @@ describe('country resolution in the dashboard load', () => {
 		expect(data.leads).toHaveLength(1);
 	});
 
+	// The third lead read — category 1, matched by state rather than by
+	// business_id or urlparams. It was the one read no US case reached, because
+	// createUsLead had no way to set a state.
+	it('finds a US business’s non-exclusive leads by state, masked', async () => {
+		await createUsBusiness({ slug: 'oakland-solar', state: 'California' });
+		await createUsLead({ category: 1, state: 'California' });
+
+		const data = await dashboardLoad(context('oakland-solar', 'us'));
+
+		expect(data.leads).toHaveLength(1);
+		// Masking is what distinguishes this read from the other two: only the
+		// non-exclusive list gets it, so an unmasked address would mean the lead
+		// arrived by some other branch.
+		expect(data.leads?.[0].email).toContain('*');
+		expect(data.leads?.[0].phone).toContain('*');
+	});
+
+	it('does not match a US lead from another state', async () => {
+		await createUsBusiness({ slug: 'oakland-solar', state: 'California' });
+		await createUsLead({ category: 1, state: 'Texas' });
+
+		const data = await dashboardLoad(context('oakland-solar', 'us'));
+
+		expect(data.leads).toEqual([]);
+	});
+
+	// Documents the production gap rather than hiding it: no US write path sets
+	// leaddata.state (pincode_mapping is IN-only), so every live US lead has a
+	// null level1 and this read returns nothing for any US business. The test
+	// above passes only because its fixture sets a state by hand. See
+	// next-steps.md — closing the gap needs a US postal-code-to-state source.
+	it('matches no US lead when state is null, as every live US lead is', async () => {
+		await createUsBusiness({ slug: 'oakland-solar', state: 'California' });
+		await createUsLead({ category: 1 });
+
+		const data = await dashboardLoad(context('oakland-solar', 'us'));
+
+		expect(data.leads).toEqual([]);
+	});
+
 	it('still loads an IN business and its claimed leads', async () => {
 		const mainId = await createBusiness({ slug: 'pune-solar' });
 		await createLead({ businessId: mainId, category: 2 });
@@ -222,6 +262,27 @@ describe('country resolution in the /crm load', () => {
 		expect(data.business?.id).toBe(mainId);
 		expect(data.branches?.map((b) => b.slug)).toEqual(['oakland-solar-berkeley']);
 		expect(data.leads).toHaveLength(2);
+	});
+
+	// /crm's category-1 read is the dashboard's verbatim, down to the 15-day
+	// window, so it carried the same untested US path.
+	it('finds a US business’s non-exclusive leads by state, masked', async () => {
+		await createUsBusiness({ slug: 'oakland-solar', state: 'California' });
+		await createUsLead({ category: 1, state: 'California' });
+
+		const data = await crmLoad(context('oakland-solar', 'us'));
+
+		expect(data.leads).toHaveLength(1);
+		expect(data.leads?.[0].email).toContain('*');
+	});
+
+	it('matches no US lead when state is null, as every live US lead is', async () => {
+		await createUsBusiness({ slug: 'oakland-solar', state: 'California' });
+		await createUsLead({ category: 1 });
+
+		const data = await crmLoad(context('oakland-solar', 'us'));
+
+		expect(data.leads).toEqual([]);
 	});
 
 	it('still loads an IN business and its claimed leads', async () => {

@@ -31,9 +31,9 @@
    tables are on the IN structure — but the UI labels a US county "District". Switching to the `US_*`
    selections changes the shape the `.svelte` components read, so it is its own task.
 
-   **The category-1 (non-exclusive) lead read is untested on the US side**, in both the dashboard and
-   `/crm`. It filters `leads.level1 IN (uniqueStates)`, and `createUsLead()` has no `state` option,
-   so a US fixture lead can never match. Covering it means adding one.
+   **The category-1 (non-exclusive) lead read is now tested on the US side** — `createUsLead()` took a
+   `state` option and both loads got a positive case, a wrong-state case and a null-state case, all
+   three verified red against a restored literal. That surfaced item 9, which is the real problem.
 
 4. **Drop the `us_*` tables.** They now have no writer and no reader in the sync path, but the drop
    is its own migration and is gated on confirming main-app's remaining direct reads
@@ -62,6 +62,18 @@
    `businesses` is clean — 0 in either direction. Consequence: a full resync *raises* the unified
    lead count, so "counts unmoved" only holds for a **targeted** resync. Reconciling these is its own
    task; `apps/main-app/src/lib/server/migrations/check-unified-drift.sql` is the existing tool.
+
+9. **No US lead ever gets a `state`, so the US non-exclusive lead pool is permanently empty.** The
+   dashboard's and `/crm`'s category-1 read matches `leads.level1 IN (business states)`, but every
+   writer of a US lead leaves `leaddata.state` null: `insertLead()` resolves level1/level2 from
+   `pincode_mapping` behind a `country === 'in'` guard (`apps/main-app/src/lib/server/leads.ts:44`),
+   `business-app/api/submitLead` sets `district` alone, and `claimLead:358` copies `district` from
+   the original lead. 055's header records the same on live data ("For US rows state … are NULL").
+   So a US business sees its exclusive and claimed leads but never a non-exclusive one. Two tests in
+   `pageCountry.test.ts` pin the current behaviour ("matches no US lead when state is null"), and the
+   positive cases only pass because their fixture sets a state by hand. Closing it needs a US
+   postal-code-to-state source — `pincode_mapping` is IN-only — which is a data question, not a code
+   one. Whoever fixes it should flip those two tests rather than delete them.
 
 ---
 
@@ -108,7 +120,7 @@ transaction can never surface it.
 business-app's check covers `.ts` as well as `.svelte`, so no separate
 `npx tsc --noEmit -p apps/business-app/tsconfig.json` pass is needed.
 
-`npm test -w solarvipani-business` — **green: 157 passed, 0 skipped.**
+`npm test -w solarvipani-business` — **green: 162 passed, 0 skipped.**
 
 **Also run `npm run build -w <app>`** when you touch imports. `check` cannot see server code reaching
 a browser bundle, and that is a hard build failure — it left business-app undeployable for an unknown

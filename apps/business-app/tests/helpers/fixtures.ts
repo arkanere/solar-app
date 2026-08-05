@@ -163,6 +163,8 @@ export interface UsLeadOptions {
 	email?: string | null;
 	zipcode?: string;
 	county?: string | null;
+	/** Maps to `leaddata.state`, which sv_sync_lead projects to `leads.level1`. */
+	state?: string | null;
 	category?: number | null;
 	isvisible?: boolean;
 	claimCount?: number;
@@ -175,6 +177,13 @@ export interface UsLeadOptions {
  *
  * Writes `leaddata` with country_code = 'us' since 054; `zipcode`/`county`
  * options map to the IN columns `pin_code`/`district`.
+ *
+ * `state` defaults to null because that is what every US write path produces:
+ * level1/level2 are resolved from `pincode_mapping`, which is IN-only, so
+ * insertLead() skips the lookup for US and both other leaddata writers set
+ * `district` alone. 055's header records the same for live data. Pass it
+ * explicitly to reach the category-1 read, which filters on level1 — and see
+ * the note in next-steps.md, because no live US lead can match that filter.
  */
 export async function createUsLead(options: UsLeadOptions = {}): Promise<number> {
 	leadSeq += 1;
@@ -184,6 +193,7 @@ export async function createUsLead(options: UsLeadOptions = {}): Promise<number>
 		email = `us-customer${leadSeq}@example.test`,
 		zipcode = '94601',
 		county = 'Alameda',
+		state = null,
 		category = null,
 		isvisible = true,
 		claimCount = 0,
@@ -193,11 +203,23 @@ export async function createUsLead(options: UsLeadOptions = {}): Promise<number>
 
 	const { rows } = await pool.query<{ id: number }>(
 		`INSERT INTO leaddata
-		   (country_code, name, phone, email, pin_code, district, category, isvisible,
-		    claim_count, business_id, urlparams)
-		 VALUES ('us',$1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+		   (country_code, name, phone, email, pin_code, district, state, category,
+		    isvisible, claim_count, business_id, urlparams)
+		 VALUES ('us',$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
 		 RETURNING id`,
-		[name, phone, email, zipcode, county, category, isvisible, claimCount, businessId, urlparams]
+		[
+			name,
+			phone,
+			email,
+			zipcode,
+			county,
+			state,
+			category,
+			isvisible,
+			claimCount,
+			businessId,
+			urlparams
+		]
 	);
 	const id = rows[0].id;
 	await pool.query('SELECT sv_sync_lead($1, $2)', ['us', id]);
