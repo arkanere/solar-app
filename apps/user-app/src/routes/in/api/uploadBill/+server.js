@@ -2,8 +2,8 @@ import { json } from '@sveltejs/kit';
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { UserAuthService } from '$lib/auth/user';
-import { uploadBill, getSignedBillUrl, deleteBill } from '$lib/server/billStorage.js';
-import { syncLeadToUnified } from '$lib/server/unifiedSync.js';
+import { uploadBill, getSignedBillUrl, deleteBill } from '$lib/server/billStorage';
+import { syncLeadToUnified } from '$lib/server/unifiedSync';
 
 const pool = createPool({ connectionString: POSTGRES_URL });
 

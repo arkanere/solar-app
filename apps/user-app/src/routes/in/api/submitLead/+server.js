@@ -1,7 +1,7 @@
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { json } from '@sveltejs/kit';
-import { syncLeadToUnified } from '$lib/server/unifiedSync.js';
+import { syncLeadToUnified } from '$lib/server/unifiedSync';
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request, fetch }) {

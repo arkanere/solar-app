@@ -1,4 +1,4 @@
-import { v2 as cloudinary } from 'cloudinary';
+import { v2 as cloudinary, type UploadApiResponse } from 'cloudinary';
 import { CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } from '$env/static/private';
 import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
 
@@ -17,14 +17,12 @@ const SIGNED_URL_TTL_SECONDS = 60 * 60; // 1 hour
 
 /**
  * Upload an electricity bill as a private (authenticated) Cloudinary asset.
- * @param {File} file
- * @returns {Promise<{ publicId: string, format: string }>}
  */
-export async function uploadBill(file) {
+export async function uploadBill(file: File): Promise<{ publicId: string; format: string }> {
 	const buffer = Buffer.from(await file.arrayBuffer());
 	const dataURI = `data:${file.type};base64,${buffer.toString('base64')}`;
 
-	const result = await new Promise((resolve, reject) => {
+	const result = await new Promise<UploadApiResponse>((resolve, reject) => {
 		cloudinary.uploader.upload(
 			dataURI,
 			{
@@ -34,6 +32,10 @@ export async function uploadBill(file) {
 			},
 			(error, uploadResult) => {
 				if (error) reject(error);
+				// The callback types the result as optional. It is only absent when
+				// `error` is set, but reject rather than resolve undefined and fail
+				// on the property read below.
+				else if (!uploadResult) reject(new Error('Cloudinary upload returned no result'));
 				else resolve(uploadResult);
 			}
 		);
@@ -49,11 +51,11 @@ export async function uploadBill(file) {
  * Generate a signed, time-limited delivery URL for a private bill asset.
  * Returns null when there is no stored bill. The URL expires after 1 hour;
  * accessing the asset without a valid signature returns 401 from Cloudinary.
- * @param {string | null | undefined} publicId
- * @param {string | null | undefined} [format]
- * @returns {string | null}
  */
-export function getSignedBillUrl(publicId, format) {
+export function getSignedBillUrl(
+	publicId: string | null | undefined,
+	format?: string | null
+): string | null {
 	if (!publicId) return null;
 
 	return cloudinary.url(publicId, {
@@ -68,9 +70,8 @@ export function getSignedBillUrl(publicId, format) {
 
 /**
  * Delete a private bill asset from Cloudinary. Best-effort; never throws.
- * @param {string | null | undefined} publicId
  */
-export async function deleteBill(publicId) {
+export async function deleteBill(publicId: string | null | undefined): Promise<void> {
 	if (!publicId) return;
 	try {
 		await cloudinary.uploader.destroy(publicId, { type: 'authenticated', resource_type: 'image' });

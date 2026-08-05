@@ -1,7 +1,7 @@
 export const prerender = false;
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
-import { getSignedBillUrl } from '$lib/server/billStorage.js';
+import { getSignedBillUrl } from '$lib/server/billStorage';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ url }) {

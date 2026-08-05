@@ -1,7 +1,8 @@
+import type { Handle } from '@sveltejs/kit';
+
 const ALLOWED_ORIGINS = ['https://solarvipani.com', 'https://www.solarvipani.com'];
 
-/** @type {import('@sveltejs/kit').Handle} */
-export async function handle({ event, resolve }) {
+export const handle: Handle = async ({ event, resolve }) => {
 	const origin = event.request.headers.get('origin');
 
 	if (event.request.method === 'OPTIONS' && origin && ALLOWED_ORIGINS.includes(origin)) {
@@ -22,4 +23,4 @@ export async function handle({ event, resolve }) {
 	}
 
 	return response;
-}
+};

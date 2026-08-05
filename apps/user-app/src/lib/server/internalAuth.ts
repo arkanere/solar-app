@@ -12,14 +12,14 @@ import { env } from '$env/dynamic/private';
 
 export const INTERNAL_SECRET_HEADER = 'x-internal-secret';
 
-function safeEqual(a, b) {
+function safeEqual(a: string, b: string): boolean {
 	const ab = Buffer.from(a);
 	const bb = Buffer.from(b);
 	return ab.length === bb.length && timingSafeEqual(ab, bb);
 }
 
 /** True when the request carries the correct internal secret. */
-export function hasInternalSecret(request) {
+export function hasInternalSecret(request: Request): boolean {
 	const secret = env.INTERNAL_API_SECRET;
 	if (!secret) return false; // misconfigured → fail closed
 	const provided = request.headers.get(INTERNAL_SECRET_HEADER);
@@ -27,6 +27,6 @@ export function hasInternalSecret(request) {
 }
 
 /** Header object for internal callers to attach to their fetch. */
-export function internalSecretHeaders() {
+export function internalSecretHeaders(): Record<string, string> {
 	return { [INTERNAL_SECRET_HEADER]: env.INTERNAL_API_SECRET ?? '' };
 }

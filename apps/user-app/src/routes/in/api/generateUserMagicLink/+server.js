@@ -3,7 +3,7 @@ import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
-import { hasInternalSecret } from '$lib/server/internalAuth.js';
+import { hasInternalSecret } from '$lib/server/internalAuth';
 
 const pool = createPool({ connectionString: POSTGRES_URL });
 

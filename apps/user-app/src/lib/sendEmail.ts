@@ -2,13 +2,22 @@ import { BREVO_API_KEY } from '$env/static/private';
 
 const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 
-/**
- * @param {string | string[]} recipients
- * @param {string} subject
- * @param {string} message
- * @param {{ isHtml?: boolean, senderName?: string, senderEmail?: string }} options
- */
-export async function sendEmail(recipients, subject, message, options = {}) {
+export interface SendEmailOptions {
+	isHtml?: boolean;
+	senderName?: string;
+	senderEmail?: string;
+}
+
+export type SendEmailResult =
+	| { success: true; messageId: string; recipients: string[] }
+	| { success: false; error: string };
+
+export async function sendEmail(
+	recipients: string | string[],
+	subject: string,
+	message: string,
+	options: SendEmailOptions = {}
+): Promise<SendEmailResult> {
 	const {
 		isHtml = false,
 		senderName = 'Solar Vipani',
@@ -52,6 +61,9 @@ export async function sendEmail(recipients, subject, message, options = {}) {
 		}
 	} catch (error) {
 		console.error('Error sending email via Brevo:', error);
-		return { success: false, error: error.message || 'Network error' };
+		return {
+			success: false,
+			error: (error instanceof Error ? error.message : '') || 'Network error'
+		};
 	}
 }

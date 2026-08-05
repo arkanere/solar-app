@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
-import { sendEmail } from '$lib/sendEmail.js';
-import { internalSecretHeaders } from '$lib/server/internalAuth.js';
+import { sendEmail } from '$lib/sendEmail';
+import { internalSecretHeaders } from '$lib/server/internalAuth';
 import { createPool } from '@vercel/postgres';
 import { POSTGRES_URL } from '$env/static/private';
 
