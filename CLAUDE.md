@@ -44,6 +44,12 @@ Two things `drizzle-kit pull` does that regularly bite:
 - Nullability is real. Many components declare columns non-null that the schema allows to be NULL —
   the old driver's `any` hid it. Prefer restating the existing contract over widening components.
 
+- **Composite foreign keys come out mis-paired.** `columns` is emitted in the local table's column
+  order but `foreignColumns` in the referenced table's, and `foreignKey()` pairs them positionally.
+  `postpull.mjs` corrects this, keyed by constraint name — if you add a composite FK, add it there
+  too, checking `pg_get_constraintdef` for the real order. Left alone it emits DDL Postgres
+  rejects, which breaks the test baseline rather than failing quietly.
+
 A third thing that has now bitten twice, and is not a `pull` artifact:
 - **Check `withTimezone` before writing a timestamp.** `timestamptz` columns take
   `date.toISOString()`; a plain `timestamp` column does not — node-postgres reads a naive column
@@ -67,14 +73,9 @@ that would have expired every password-reset link.
 EDB binaries instead; the recipe is in next-steps.md under Phase 6 (port 5544, then export
 `TEST_POSTGRES_URL`).
 
-## Pending migration
-
-**`053-legal-acceptances-country.sql` has not been applied to live.** It makes `legal_acceptances`
-country-aware, which is what unblocks the whole /us compliance and claimLead path. `schema.ts`'s
-entry for that table is hand-updated to match; after applying 053, run `npm run pull -w @solar/db`
-and the result should be identical. Do **not** regenerate the schema by pulling from a test cluster
-— the baseline does not create three `loc_key(...)` expression indexes, so a pull from there
-silently drops them.
+**Never regenerate the schema by pulling from a test cluster** — the baseline does not create three
+`loc_key(...)` expression indexes, so a pull from there silently drops them. Pull from live only
+(`apps/main-app/.env.local` has `POSTGRES_URL_NON_POOLING`, which is the one to use for DDL).
 
 ## About Solar-app
 

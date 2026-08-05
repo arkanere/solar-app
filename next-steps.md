@@ -846,3 +846,43 @@ business-app **84 errors + 111 tests**, user-app **1 error + 2 warnings**.
 
 **No Docker on this machine**, so the suite ran against a throwaway cluster built from the EDB
 binaries — the recipe under Phase 6 still works, on port 5544.
+
+---
+
+## ✅ DONE 2026-08-05 — migration 053 applied to live
+
+Ran against production with explicit permission, after read-only checks confirmed 0 rows would
+violate the new FK and that the `UNIQUE (country_code, source_id)` key it targets exists. 37 rows
+backfilled to `'in'`, all 37 present afterwards. **/us compliance and claimLead are now genuinely
+unblocked** — until this ran, the code on `main` expected a `country_code` column live did not have.
+
+A rollback script sits beside it (`053-...rollback.sql`). It deliberately fails rather than
+succeeding if any `/us` acceptance exists, since those rows have no home in the old IN-only shape.
+
+### The pull afterwards found a drizzle-kit bug worth knowing about
+
+`npm run pull -w @solar/db` is supposed to confirm the hand-edited `schema.ts` matched live. It did
+— but it also introduced a **wrong composite foreign key**: drizzle-kit lists `columns` in the local
+table's column order and `foreignColumns` in the referenced table's, and `foreignKey()` pairs them
+positionally. It emitted `business_id -> country_code` (integer -> char(2)).
+
+**This is not cosmetic.** `generate-test-baseline.mjs` reads the Drizzle schema, so the baseline
+started emitting DDL Postgres rejects, and the integration suite could not build its schema at all.
+
+Fixed in `packages/db/scripts/postpull.mjs` — the right home, because hand-editing the generated
+`schema.ts` would be reverted by the next pull. It is keyed by constraint name (the correct pairing
+lives in the database, not the file), only ever reorders, and throws if the columns are not a
+permutation of what it expects, so a genuine schema change fails loudly instead of being silently
+"corrected". **Add an entry there for any new composite FK.**
+
+### And one consequence of `embeddings` joining the schema barrel
+
+The generated baseline now contains `CREATE SCHEMA "embeddings"`, which is not idempotent, so the
+*second* consecutive run of the suite failed. `tests/setup/globalSetup.ts` now drops that schema
+alongside `public`. Two back-to-back runs verified.
+
+### Still open
+
+**Only the `svelte-check` v4 upgrade + Vite-types dedupe** — one commit across all three apps,
+because it moves every baseline. Current: main-app **13 errors + 1 warning**, business-app
+**84 errors + 111 tests**, user-app **1 error + 2 warnings**.
