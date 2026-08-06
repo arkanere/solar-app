@@ -60,7 +60,21 @@
    `/{country}/installer/{slug}` is the canonical profile URL for both countries —
    `/us/solar-panel-installer/{slug}` is only a legacy 301, and there is no `/in` equivalent at all.
 
-6. **4 dependabot advisories** (3 high, 1 moderate) that GitHub reports on every push.
+6. **1 dependabot advisory left** (moderate). The **3 high ones are closed** (`162a0cb`): they were a
+   single chain — `bcrypt@5.1.1` → `@mapbox/node-pre-gyp <=1.0.11` → vulnerable `node-tar`. Bumping
+   to `bcrypt@6.0.0` (node-pre-gyp 2.0.3 / tar 7.5.22) cleared all three; `npm audit` no longer names
+   tar, node-pre-gyp or bcrypt. Only `hash` and `compare` are used and neither changed signature, so
+   no call site moved. Hashes written under 5.1.1 (cost 10 and 12, incl. non-ASCII) were checked to
+   still verify under 6.0.0 — the format is unchanged `$2b`, and a break would have locked every
+   business out.
+
+   What remains is **`uuid <11.1.1`** (moderate, `GHSA-w5hq-g745-h8pq`, missing buffer bounds check in
+   v3/v5/v6 when `buf` is passed), reachable only through langchain transitives
+   (`@langchain/core`, `@langchain/pinecone`, `langchain`, `langsmith`). The fix is a **langchain
+   major**, so it is its own task and not obviously worth it — no first-party code passes `buf`.
+
+   Separately, `npm audit` reports more than dependabot does: jsPDF (several), `langsmith <=0.5.26`
+   (high) and one critical. Those are pre-existing and were never part of this item.
 
 7. **Duplicate `businesses.slug` values in live IN data.** `spectrum-solar-power-kasaragod` ×5,
    `spectrum-solar-power-kannur` ×4, `spectrum-solar-power-kozhikode` ×3 and ~22 more ×2. The
