@@ -60,21 +60,33 @@
    `/{country}/installer/{slug}` is the canonical profile URL for both countries —
    `/us/solar-panel-installer/{slug}` is only a legacy 301, and there is no `/in` equivalent at all.
 
-6. **1 dependabot advisory left** (moderate). The **3 high ones are closed** (`162a0cb`): they were a
-   single chain — `bcrypt@5.1.1` → `@mapbox/node-pre-gyp <=1.0.11` → vulnerable `node-tar`. Bumping
-   to `bcrypt@6.0.0` (node-pre-gyp 2.0.3 / tar 7.5.22) cleared all three; `npm audit` no longer names
-   tar, node-pre-gyp or bcrypt. Only `hash` and `compare` are used and neither changed signature, so
-   no call site moved. Hashes written under 5.1.1 (cost 10 and 12, incl. non-ASCII) were checked to
-   still verify under 6.0.0 — the format is unchanged `$2b`, and a break would have locked every
-   business out.
+6. **4 dependabot advisories** (3 high, 1 moderate) that GitHub reports on every push — **all four are
+   already fixed in the lockfile.** The alerts are *stale*, not outstanding work. Checked 2026-08-06:
 
-   What remains is **`uuid <11.1.1`** (moderate, `GHSA-w5hq-g745-h8pq`, missing buffer bounds check in
-   v3/v5/v6 when `buf` is passed), reachable only through langchain transitives
-   (`@langchain/core`, `@langchain/pinecone`, `langchain`, `langsmith`). The fix is a **langchain
-   major**, so it is its own task and not obviously worth it — no first-party code passes `buf`.
+   | GHSA | package | vulnerable | patched | on `main` |
+   | --- | --- | --- | --- | --- |
+   | `GHSA-3jxr-9vmj-r5cp` (high) | brace-expansion | `< 1.1.16` | 1.1.16 | 1.1.18 / 5.0.9 |
+   | `GHSA-6g55-p6wh-862q` (high) | postcss | `<= 8.5.11` | 8.5.12 | 8.5.25 |
+   | `GHSA-r28c-9q8g-f849` (high) | postcss | `<= 8.5.17` | 8.5.18 | 8.5.25 |
+   | `GHSA-866w-xmhq-wj7x` (moderate) | @sveltejs/kit | `<= 2.69.0` | 2.69.1 | 2.70.2 |
 
-   Separately, `npm audit` reports more than dependabot does: jsPDF (several), `langsmith <=0.5.26`
-   (high) and one critical. Those are pre-existing and were never part of this item.
+   `cc8862b`'s dependency-tree dedupe (2026-08-05) carried all of them past their patched versions,
+   and a scan of every `packages` entry in the lockfile finds **no** copy left in any vulnerable
+   range. The alerts were created 2026-07-27…07-31 and their `updated_at` has never moved, so
+   dependabot has not re-evaluated them — pushing a lockfile change (`162a0cb`) did not wake it
+   either. So the task is **dismiss the four alerts, or force a rescan** — there is nothing to
+   upgrade. Verify with
+   `gh api repos/arkanere/solar-app/dependabot/alerts -q '.[]|select(.state=="open")'` before
+   touching any dependency.
+
+   **Don't read `npm audit` as this item.** It reports a wider and completely different set (jsPDF,
+   `langsmith`, `uuid <11.1.1` via langchain transitives, and one critical) — none of which are the
+   four above. That confusion is what led `162a0cb` to upgrade bcrypt believing it addressed this
+   item; the upgrade was worth doing on its own merits but closed **none** of these four.
+
+   `uuid <11.1.1` is the one npm-audit entry worth a look eventually (`GHSA-w5hq-g745-h8pq`, missing
+   buffer bounds check in v3/v5/v6 when `buf` is passed). It needs a langchain major and no
+   first-party code passes `buf`, so it is low priority and its own task.
 
 7. **Duplicate `businesses.slug` values in live IN data.** `spectrum-solar-power-kasaragod` ×5,
    `spectrum-solar-power-kannur` ×4, `spectrum-solar-power-kozhikode` ×3 and ~22 more ×2. The
