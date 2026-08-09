@@ -6,13 +6,7 @@
 
 ## Open
 
-1. **Phase 7 smoke test.** The phase is code-complete; only the manual pass is left, and it needs a
-   running app. Check that `/` renders the landing page; that an **IN** login and a **US** login both
-   land on `/[slug]`; that a bogus slug 404s without rendering an IN-shaped shell; and that a
-   forgot-password round trip for one business of each country produces
-   `business.solarvipani.com/[slug]/reset-password/[token]` with no country segment.
-
-2. **Country-resolution leftovers.** The sweep itself is **done** — no `[business_slug]` page load
+1. **Country-resolution leftovers.** The sweep itself is **done** — no `[business_slug]` page load
    filters on a literal `countryCode = 'in'` any more (`f8eaa73`, `86bec48`, `87ddc19`, `bc24d16`,
    `5c9881b`, and the last four in one commit). `tests/routing/pageCountry.test.ts` covers all nine
    loads, 32 cases, each verified red against its literal first. Both of the things it left behind are
@@ -36,26 +30,26 @@
      buys nothing.
 
    The real IN-only leakage is in the **write forms**, which is a different task and a live US bug —
-   see item 8.
+   see item 7.
 
    **The category-1 (non-exclusive) lead read is now tested on the US side** — `createUsLead()` took a
    `state` option and both loads got a positive case, a wrong-state case and a null-state case, all
-   three verified red against a restored literal. That surfaced item 7, which is the real problem.
+   three verified red against a restored literal. That surfaced item 6, which is the real problem.
 
-3. **Drop the `us_*` tables.** They have no writer and no reader in the sync path, in the deployed
+2. **Drop the `us_*` tables.** They have no writer and no reader in the sync path, in the deployed
    app as well as on `main` — `694faea` (the commit repointing business-app's and main-app's `us_*`
    writers at the united tables) shipped on 2026-08-09, so code and DB now agree for both countries.
    The drop is still its own migration, and is still gated on confirming main-app's remaining direct
    reads (`business-listing`, the thank-you page) and the **external admin-app** are off them.
 
-4. **The referral page's referrer link points at a route that does not exist.**
+3. **The referral page's referrer link points at a route that does not exist.**
    `referral/+page.svelte` emits `…/solar-panel-installer/{slug}/referrer/{ref}`, and main-app has no
    `/referrer/` route in either country and no rewrite that produces one. Phase 7 made its country
    segment dynamic and deliberately left the shape alone rather than guessing. Note also that
    `/{country}/installer/{slug}` is the canonical profile URL for both countries —
    `/us/solar-panel-installer/{slug}` is only a legacy 301, and there is no `/in` equivalent at all.
 
-5. **Duplicate `businesses.slug` values in live IN data.** `spectrum-solar-power-kasaragod` ×5,
+4. **Duplicate `businesses.slug` values in live IN data.** `spectrum-solar-power-kasaragod` ×5,
    `spectrum-solar-power-kannur` ×4, `spectrum-solar-power-kozhikode` ×3 and ~22 more ×2. The
    `/[business_slug]` lookup does `.limit(1)`, so those businesses render a **non-deterministic**
    dashboard — whichever row Postgres returns first. Fixing means de-duplicating live rows, which is
@@ -63,14 +57,14 @@
    `api/resetPassword` matches on the token hash rather than on the slug alone (`cdeff73`) — any new
    slug lookup has to assume duplicates.
 
-6. **Drift between `leaddata` and unified `leads`.** **3** `leaddata` rows have no unified row at all
+5. **Drift between `leaddata` and unified `leads`.** **3** `leaddata` rows have no unified row at all
    (a `sv_sync_lead` call that never happened), and **156** unified `leads` have no surviving
    `leaddata` source (the sync never deletes, so removing a source row orphans its projection).
    `businesses` is clean — 0 in either direction. Consequence: a full resync *raises* the unified
    lead count, so "counts unmoved" only holds for a **targeted** resync. Reconciling these is its own
    task; `apps/main-app/src/lib/server/migrations/check-unified-drift.sql` is the existing tool.
 
-7. **No US lead ever gets a `state`, so the US non-exclusive lead pool is permanently empty.** The
+6. **No US lead ever gets a `state`, so the US non-exclusive lead pool is permanently empty.** The
    dashboard's and `/crm`'s category-1 read matches `leads.level1 IN (business states)`, but every
    writer of a US lead leaves `leaddata.state` null: `insertLead()` resolves level1/level2 from
    `pincode_mapping` behind a `country === 'in'` guard (`apps/main-app/src/lib/server/leads.ts:44`),
@@ -82,7 +76,7 @@
    postal-code-to-state source — `pincode_mapping` is IN-only — which is a data question, not a code
    one. Whoever fixes it should flip those two tests rather than delete them.
 
-8. **India-shaped write forms that US businesses now reach.** Found while checking item 2's
+7. **India-shaped write forms that US businesses now reach.** Found while checking item 1's
     read-side claim, which turned out to be the wrong place to look.
 
     **The branch form is done** (`d418a08`, `0a8351a`). It was broken three ways, not one: the
@@ -99,10 +93,10 @@
     **"Pincode:"** and **"District (Auto-filled):"** and auto-fills from `/api/getDistrictByPincode`,
     which queries `pincode_mapping`. That is the one lookup `geo_locations` cannot replace — it has no
     postal-code column, and a live schema sweep found no US zip source anywhere. So this is blocked on
-    the same missing data as item 7, and the two should be solved together.
+    the same missing data as item 6, and the two should be solved together.
 
     Note `locations` and `us_locations` now have no reader in business-app; main-app's own geo code
-    was already on `geo_locations`. Worth folding into item 3's drop if a sweep confirms it.
+    was already on `geo_locations`. Worth folding into item 2's drop if a sweep confirms it.
 
 ---
 
