@@ -100,3 +100,6 @@ apps/*/.output
 
 # Local archive of dead CSV data dumps moved out of served static/ folders
 data-archive
+# Throwaway Postgres test cluster (see next-steps.md, "Running the tests")
+pgdata/
+pg.log

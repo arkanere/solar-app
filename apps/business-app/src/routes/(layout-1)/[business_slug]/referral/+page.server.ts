@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { businesses, inReferrers } from '@solar/db/schema';
+import { businesses, svReferrers } from '@solar/db/schema';
 import { and, desc, eq } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 
@@ -34,7 +34,7 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 	const businessSlug = params.business_slug;
 
 	// Get the parent layout data which contains authentication info. Hoisted out
-	// of the try because the `in_referrers` fallback in the catch needs `country`
+	// of the try because the `sv_referrers` fallback in the catch needs `country`
 	// too; parent()'s own redirect/403 still propagates, as the catch re-throws
 	// anything carrying a status.
 	const parentData = await parent();
@@ -49,10 +49,12 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 	// Absent only on the layout's DB-error fallback, and a fallback to 'in' would
 	// be a wrong answer rather than no answer.
 	//
-	// Note the referrers below stay IN-shaped — `in_referrers` has no US
-	// counterpart, so a US business correctly gets an empty list rather than
-	// another country's rows. Business ids are globally unique across
-	// businesses_1 since 054, so there is no cross-country collision here.
+	// The referrer read below is country-agnostic (057 renamed in_referrers ->
+	// sv_referrers): it filters on business_id alone, which is globally unique
+	// across businesses_1 since 054, so a business of either country sees its own
+	// referrers and there is no cross-country collision. `country` is still
+	// needed here — it scopes the *business* lookup, which is keyed by
+	// (country_code, slug) and where duplicate slugs are a live problem.
 	const { country } = parentData;
 	if (!country) {
 		throw error(404, 'Business not found');
@@ -71,22 +73,22 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 
 		const business = businessRows[0] as unknown as Business;
 
-		// Get all referrers for this business from in_referrers table
+		// Get all referrers for this business from the sv_referrers table
 		const referrerRows = await db
 			.select({
-				id: inReferrers.id,
-				business_id: inReferrers.businessId,
-				name: inReferrers.name,
-				slug: inReferrers.slug,
-				phone: inReferrers.phone,
-				email: inReferrers.email,
-				notes: inReferrers.notes,
-				created_at: inReferrers.createdAt,
-				updated_at: inReferrers.updatedAt
+				id: svReferrers.id,
+				business_id: svReferrers.businessId,
+				name: svReferrers.name,
+				slug: svReferrers.slug,
+				phone: svReferrers.phone,
+				email: svReferrers.email,
+				notes: svReferrers.notes,
+				created_at: svReferrers.createdAt,
+				updated_at: svReferrers.updatedAt
 			})
-			.from(inReferrers)
-			.where(eq(inReferrers.businessId, business.id))
-			.orderBy(desc(inReferrers.createdAt));
+			.from(svReferrers)
+			.where(eq(svReferrers.businessId, business.id))
+			.orderBy(desc(svReferrers.createdAt));
 
 		const referrers = (referrerRows || []) as unknown as Referrer[];
 
@@ -96,7 +98,7 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		};
 	} catch (err) {
 		// If table doesn't exist yet, return empty referrers with a warning
-		if (err instanceof Error && err.message.includes('relation "in_referrers" does not exist')) {
+		if (err instanceof Error && err.message.includes('relation "sv_referrers" does not exist')) {
 			console.warn('Referrers table does not exist yet. Please run the SQL schema.');
 
 			// Still try to get business info

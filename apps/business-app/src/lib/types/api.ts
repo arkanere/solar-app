@@ -58,8 +58,12 @@ export interface LocationLookupResponse {
 // ===== REFERRER TYPES =====
 
 /**
- * Referrer entity from in_referrers/us_referrers tables
- * Represents a business partner who refers leads
+ * Referrer entity from the `sv_referrers` table.
+ * Represents a business partner who refers leads.
+ *
+ * Country-agnostic: the table is keyed by business_id, which is globally unique
+ * across countries, so a referrer's country comes from its business. There was
+ * never a us_referrers table, despite what this comment used to claim.
  */
 export interface Referrer {
 	id: number;

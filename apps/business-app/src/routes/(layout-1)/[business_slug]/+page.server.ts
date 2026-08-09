@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
 import { IN_BUSINESS_SELECTION, IN_LEAD_SELECTION } from '$lib/server/unifiedRead';
-import { branches, businesses, inProposals, inReferrers, leaddataClaimrequests, leads, projects } from '@solar/db/schema';
+import { branches, businesses, inProposals, leaddataClaimrequests, leads, projects, svReferrers } from '@solar/db/schema';
 import { and, count, desc, eq, gte, inArray, like, not, or, sql } from 'drizzle-orm';
 
 export const prerender = false;
@@ -193,7 +193,7 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 				.select({ count: count() })
 				.from(projects)
 				.where(and(eq(projects.businessSlug, business_slug), eq(projects.isvisible, true))),
-			db.select({ count: count() }).from(inReferrers).where(eq(inReferrers.businessId, businessId)),
+			db.select({ count: count() }).from(svReferrers).where(eq(svReferrers.businessId, businessId)),
 			db.select({ count: count() }).from(inProposals).where(eq(inProposals.businessSlug, business_slug))
 		]);
 

@@ -323,29 +323,6 @@ export const masterlistUsaBusinesses = pgTable("masterlist_usa_businesses", {
 	check("check_unsubscribe_usa", sql`unsubscribe = ANY (ARRAY[0, 1])`),
 ]);
 
-export const inReferrers = pgTable("in_referrers", {
-	id: serial().primaryKey().notNull(),
-	businessId: integer("business_id").notNull(),
-	name: varchar({ length: 255 }).notNull(),
-	phone: varchar({ length: 20 }).notNull(),
-	email: varchar({ length: 255 }),
-	notes: text(),
-	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-	updatedAt: timestamp("updated_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
-	slug: varchar({ length: 255 }).notNull(),
-}, (table) => [
-	index("idx_referrers_in_business_id").using("btree", table.businessId.asc().nullsLast().op("int4_ops")),
-	index("idx_referrers_in_phone").using("btree", table.phone.asc().nullsLast().op("text_ops")),
-	index("idx_referrers_slug").using("btree", table.businessId.asc().nullsLast().op("text_ops"), table.slug.asc().nullsLast().op("text_ops")),
-	foreignKey({
-			columns: [table.businessId],
-			foreignColumns: [businesses1.id],
-			name: "fk_business"
-		}).onDelete("cascade"),
-	unique("unique_business_slug").on(table.businessId, table.slug),
-	unique("referrers_in_slug_key").on(table.slug),
-]);
-
 export const callsafeUnsubscribe = pgTable("callsafe_unsubscribe", {
 	id: serial().primaryKey().notNull(),
 	email: varchar({ length: 255 }).notNull(),
@@ -374,6 +351,29 @@ export const seoPages = pgTable("seo_pages", {
 	index("idx_seo_pages_pillar").using("btree", table.pillarSlug.asc().nullsLast().op("text_ops")),
 	index("idx_seo_pages_type").using("btree", table.pageType.asc().nullsLast().op("text_ops")),
 	unique("seo_pages_slug_pillar_unique").on(table.slug, table.pillarSlug),
+]);
+
+export const svReferrers = pgTable("sv_referrers", {
+	id: serial().primaryKey().notNull(),
+	businessId: integer("business_id").notNull(),
+	name: varchar({ length: 255 }).notNull(),
+	phone: varchar({ length: 20 }).notNull(),
+	email: varchar({ length: 255 }),
+	notes: text(),
+	createdAt: timestamp("created_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	updatedAt: timestamp("updated_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
+	slug: varchar({ length: 255 }).notNull(),
+}, (table) => [
+	index("sv_referrers_business_id_idx").using("btree", table.businessId.asc().nullsLast().op("int4_ops")),
+	index("sv_referrers_business_id_slug_idx").using("btree", table.businessId.asc().nullsLast().op("text_ops"), table.slug.asc().nullsLast().op("int4_ops")),
+	index("sv_referrers_phone_idx").using("btree", table.phone.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.businessId],
+			foreignColumns: [businesses1.id],
+			name: "sv_referrers_business_id_fkey"
+		}).onDelete("cascade"),
+	unique("sv_referrers_business_id_slug_key").on(table.businessId, table.slug),
+	unique("sv_referrers_slug_key").on(table.slug),
 ]);
 
 export const solarBrands = pgTable("solar_brands", {

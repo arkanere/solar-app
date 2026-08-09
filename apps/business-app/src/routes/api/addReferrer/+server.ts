@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { inReferrers } from '@solar/db/schema';
+import { svReferrers } from '@solar/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { addReferrerSchema, parseBody } from '@solar/validation';
@@ -32,9 +32,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		// Check if referrer with same phone already exists for this business
 		const phoneMatches = await db
-			.select({ id: inReferrers.id })
-			.from(inReferrers)
-			.where(and(eq(inReferrers.businessId, businessId), eq(inReferrers.phone, phone)));
+			.select({ id: svReferrers.id })
+			.from(svReferrers)
+			.where(and(eq(svReferrers.businessId, businessId), eq(svReferrers.phone, phone)));
 
 		if (phoneMatches.length > 0) {
 			return json(
@@ -45,9 +45,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		// Check if referrer with same slug already exists for this business
 		const slugMatches = await db
-			.select({ id: inReferrers.id })
-			.from(inReferrers)
-			.where(and(eq(inReferrers.businessId, businessId), eq(inReferrers.slug, slug)));
+			.select({ id: svReferrers.id })
+			.from(svReferrers)
+			.where(and(eq(svReferrers.businessId, businessId), eq(svReferrers.slug, slug)));
 
 		if (slugMatches.length > 0) {
 			return json(
@@ -62,18 +62,18 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		// Insert referrer into database. Keys are aliased back to snake_case so the
 		// JSON response shape stays identical to the raw-SQL version.
 		const [newReferrer] = await db
-			.insert(inReferrers)
+			.insert(svReferrers)
 			.values({ businessId, name, slug, phone, email, notes })
 			.returning({
-				id: inReferrers.id,
-				business_id: inReferrers.businessId,
-				name: inReferrers.name,
-				slug: inReferrers.slug,
-				phone: inReferrers.phone,
-				email: inReferrers.email,
-				notes: inReferrers.notes,
-				created_at: inReferrers.createdAt,
-				updated_at: inReferrers.updatedAt
+				id: svReferrers.id,
+				business_id: svReferrers.businessId,
+				name: svReferrers.name,
+				slug: svReferrers.slug,
+				phone: svReferrers.phone,
+				email: svReferrers.email,
+				notes: svReferrers.notes,
+				created_at: svReferrers.createdAt,
+				updated_at: svReferrers.updatedAt
 			});
 
 		return json({
@@ -87,7 +87,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		// Handle specific database errors
 		if (
 			error instanceof Error &&
-			error.message.includes('relation "in_referrers" does not exist')
+			error.message.includes('relation "sv_referrers" does not exist')
 		) {
 			return json(
 				{ success: false, error: 'Referrers table not found. Please contact administrator.' },

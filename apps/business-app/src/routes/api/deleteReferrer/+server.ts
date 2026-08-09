@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { inReferrers } from '@solar/db/schema';
+import { svReferrers } from '@solar/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { SessionManager } from '$lib/auth/business';
@@ -41,9 +41,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		// Check if referrer exists and belongs to this business
 		const existing = await db
-			.select({ id: inReferrers.id, name: inReferrers.name })
-			.from(inReferrers)
-			.where(and(eq(inReferrers.id, referrerId), eq(inReferrers.businessId, businessId)));
+			.select({ id: svReferrers.id, name: svReferrers.name })
+			.from(svReferrers)
+			.where(and(eq(svReferrers.id, referrerId), eq(svReferrers.businessId, businessId)));
 
 		if (existing.length === 0) {
 			return json(
@@ -54,9 +54,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		// Delete the referrer
 		const [deletedReferrer] = await db
-			.delete(inReferrers)
-			.where(and(eq(inReferrers.id, referrerId), eq(inReferrers.businessId, businessId)))
-			.returning({ id: inReferrers.id, name: inReferrers.name });
+			.delete(svReferrers)
+			.where(and(eq(svReferrers.id, referrerId), eq(svReferrers.businessId, businessId)))
+			.returning({ id: svReferrers.id, name: svReferrers.name });
 
 		return json({
 			success: true,
@@ -67,7 +67,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		console.error('Error deleting referrer:', error);
 
 		// Handle specific database errors
-		if (error instanceof Error && error.message.includes('relation "in_referrers" does not exist')) {
+		if (error instanceof Error && error.message.includes('relation "sv_referrers" does not exist')) {
 			return json(
 				{ success: false, error: 'Referrers table not found. Please contact administrator.' },
 				{ status: 500 }

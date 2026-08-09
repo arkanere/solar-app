@@ -8,10 +8,19 @@
 
 1. **Drop the IN-only `locations` table.** Its US twin went with migration 056; `locations` itself
    (8,395 rows) survived because that sweep only covered `us_*`. business-app's dropdowns moved to
-   `geo_locations` with the branch-form fix, and main-app's geo code was already there, so it is
-   likely readerless — but `locations_id_seq` was shared with the dropped `us_locations` and is
-   `OWNED BY locations.id`, and `geo_locations` holds 8,392 IN rows against its 8,395, so confirm
-   both the sweep and where those 3 rows went before dropping.
+   `geo_locations` with the branch-form fix.
+
+   **It is not readerless — that claim was wrong and was corrected 2026-08-09.** main-app still has
+   four live readers, so this is a port, not a drop:
+   - `src/lib/server/queries.ts:29` and `:72-84` (two queries)
+   - `routes/[country=country]/(layout-1)/partners/+page.server.ts:17` — `countDistinct(city)`
+   - `routes/[country=country]/(layout-1)/partners/join/[district_slug]/+page.server.ts` — the load
+   - `routes/[country=country]/(layout-1)/district/[district_slug]/+page.server.ts:29`
+
+   Move those to `geo_locations` first, including the `LOWER(REPLACE(district,' ','-'))` slug
+   matching. Only then reconcile: `locations_id_seq` was shared with the dropped `us_locations` and
+   is `OWNED BY locations.id`, and `geo_locations` holds 8,392 IN rows against its 8,395, so confirm
+   where those 3 rows went before dropping.
 
 2. **The referral page's referrer link points at a route that does not exist.**
    `referral/+page.svelte` emits `…/solar-panel-installer/{slug}/referrer/{ref}`, and main-app has no
@@ -19,6 +28,14 @@
    segment dynamic and deliberately left the shape alone rather than guessing. Note also that
    `/{country}/installer/{slug}` is the canonical profile URL for both countries —
    `/us/solar-panel-installer/{slug}` is only a legacy 301, and there is no `/in` equivalent at all.
+
+   This is now a **both-country** bug: 057 made referrers country-agnostic, so a US business can have
+   referrers and gets the same dead link. The attribution plumbing already exists —
+   `LeadForm.svelte:51` records `$page.url.pathname` into `leads.urlparams`, which the dashboard
+   already prefix-matches at `[business_slug]/+page.server.ts:112` — but nothing reads a referrer
+   back out of it yet, so fixing the URL is only half the job. Decide the shape first: a `?ref=`
+   query param on the canonical profile route (needs `LeadForm` to capture `search` too, since it
+   only stores `pathname` today) or a real `/referrer/{ref}` sub-route.
 
 3. **Duplicate `businesses.slug` values in live IN data.** `spectrum-solar-power-kasaragod` ×5,
    `spectrum-solar-power-kannur` ×4, `spectrum-solar-power-kozhikode` ×3 and ~22 more ×2. The
@@ -56,6 +73,19 @@
    The sibling branch form was the same bug and is fixed (`d418a08`, `0a8351a`) — its dropdowns now
    read `geo_locations`, which is populated for both countries. Use it as the model, but note
    `getCities` there needs state *and* county, because US county names repeat across states.
+
+7. **`sv_referrers_slug_key` is UNIQUE on `slug` alone, globally across all businesses.** So two
+   businesses cannot both have a referrer slugged `ravi` — the second one fails. `api/addReferrer`
+   only checks for a *per-business* duplicate slug, so a cross-business collision escapes its
+   validation and surfaces as a raw 500 with "Failed to add referrer" rather than the endpoint's own
+   "please choose a different slug" message. Pre-existing; 057 renamed the constraint but
+   deliberately did not change its shape. The fix is to drop it and keep only
+   `sv_referrers_business_id_slug_key`, but check first whether the referrer URL shape settled on in
+   item 2 needs a globally unique slug — a bare `/referrer/{ref}` route would.
+
+   While there: `sv_referrers_business_id_slug_idx` is a plain index on `(business_id, slug)`, the
+   exact columns of the unique constraint next to it, which already provides an index. It is dead
+   weight on every write and can go in the same migration.
 
 ---
 
@@ -143,7 +173,7 @@ Before touching any dependency on advisory grounds, check what is actually open:
 business-app's check covers `.ts` as well as `.svelte`, so no separate
 `npx tsc --noEmit -p apps/business-app/tsconfig.json` pass is needed.
 
-`npm test -w solarvipani-business` — **green: 174 passed, 0 skipped.**
+`npm test -w solarvipani-business` — **green: 176 passed, 0 skipped.**
 
 **Also run `npm run build -w <app>`** when you touch imports. `check` cannot see server code reaching
 a browser bundle, and that is a hard build failure — it left business-app undeployable for an unknown
@@ -175,4 +205,4 @@ the EDB install, which has no `solar` role — do not point the suite at it.
 `npm run pull -w @solar/db`. **Never pull from a test cluster** — its baseline omits three
 `loc_key(...)` expression indexes, so a pull from there silently drops them.
 
-All migrations through **056** are applied to live.
+All migrations through **057** are applied to live.

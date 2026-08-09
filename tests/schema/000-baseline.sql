@@ -358,20 +358,6 @@ CREATE TABLE "in_proposals" (
 	"business_slug" varchar(255) NOT NULL
 );
 
-CREATE TABLE "in_referrers" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"business_id" integer NOT NULL,
-	"name" varchar(255) NOT NULL,
-	"phone" varchar(20) NOT NULL,
-	"email" varchar(255),
-	"notes" text,
-	"created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
-	"updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,
-	"slug" varchar(255) NOT NULL,
-	CONSTRAINT "unique_business_slug" UNIQUE("business_id","slug"),
-	CONSTRAINT "referrers_in_slug_key" UNIQUE("slug")
-);
-
 CREATE TABLE "in_user" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"email" varchar(255) NOT NULL,
@@ -718,6 +704,20 @@ CREATE TABLE "state_subsidies" (
 	CONSTRAINT "state_subsidies_state_slug_key" UNIQUE("state_slug")
 );
 
+CREATE TABLE "sv_referrers" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"business_id" integer NOT NULL,
+	"name" varchar(255) NOT NULL,
+	"phone" varchar(20) NOT NULL,
+	"email" varchar(255),
+	"notes" text,
+	"created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
+	"updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,
+	"slug" varchar(255) NOT NULL,
+	CONSTRAINT "sv_referrers_business_id_slug_key" UNIQUE("business_id","slug"),
+	CONSTRAINT "sv_referrers_slug_key" UNIQUE("slug")
+);
+
 CREATE TABLE "unsubscribe" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"email" varchar(255) NOT NULL,
@@ -739,7 +739,6 @@ ALTER TABLE "discoms" ADD CONSTRAINT "discoms_state_slug_fkey" FOREIGN KEY ("sta
 ALTER TABLE "geo_locations" ADD CONSTRAINT "geo_locations_country_code_fkey" FOREIGN KEY ("country_code") REFERENCES "public"."countries"("code") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "in_blog_posts" ADD CONSTRAINT "in_blog_posts_author_slug_fkey" FOREIGN KEY ("author_slug") REFERENCES "public"."authors"("slug") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "in_proposals" ADD CONSTRAINT "proposals_lead_id_fkey" FOREIGN KEY ("lead_id") REFERENCES "public"."leaddata"("id") ON DELETE cascade ON UPDATE no action;
-ALTER TABLE "in_referrers" ADD CONSTRAINT "fk_business" FOREIGN KEY ("business_id") REFERENCES "public"."businesses_1"("id") ON DELETE cascade ON UPDATE no action;
 ALTER TABLE "in_user_feedback" ADD CONSTRAINT "in_user_feedback_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."in_user"("id") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "leads" ADD CONSTRAINT "leads_country_code_fkey" FOREIGN KEY ("country_code") REFERENCES "public"."countries"("code") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "legal_acceptances" ADD CONSTRAINT "legal_acceptances_policy_id_fkey" FOREIGN KEY ("policy_id") REFERENCES "public"."legal_policies"("id") ON DELETE no action ON UPDATE no action;
@@ -747,6 +746,7 @@ ALTER TABLE "legal_acceptances" ADD CONSTRAINT "legal_acceptances_country_code_f
 ALTER TABLE "legal_acceptances" ADD CONSTRAINT "legal_acceptances_business_fkey" FOREIGN KEY ("country_code","business_id") REFERENCES "public"."business_accounts"("country_code","source_id") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "project_management" ADD CONSTRAINT "projectmanagement_lead_id_fkey" FOREIGN KEY ("lead_id") REFERENCES "public"."leaddata"("id") ON DELETE cascade ON UPDATE no action;
 ALTER TABLE "solar_products" ADD CONSTRAINT "solar_products_brand_slug_fkey" FOREIGN KEY ("brand_slug") REFERENCES "public"."solar_brands"("slug") ON DELETE no action ON UPDATE no action;
+ALTER TABLE "sv_referrers" ADD CONSTRAINT "sv_referrers_business_id_fkey" FOREIGN KEY ("business_id") REFERENCES "public"."businesses_1"("id") ON DELETE cascade ON UPDATE no action;
 CREATE INDEX "business_accounts_login_email_idx" ON "business_accounts" USING btree ("country_code","login_email");
 CREATE INDEX "business_accounts_magic_token_idx" ON "business_accounts" USING btree ("country_code","magic_link_token");
 CREATE INDEX "businesses_geo_idx" ON "businesses" USING btree ("country_code","level2","isvisible");
@@ -762,9 +762,6 @@ CREATE INDEX "in_business_accounts_login_email_idx" ON "in_business_accounts" US
 CREATE INDEX "in_business_accounts_magic_token_idx" ON "in_business_accounts" USING btree ("magic_link_token");
 CREATE INDEX "in_business_profiles_country_idx" ON "in_business_profiles" USING btree ("country_code");
 CREATE INDEX "in_business_profiles_slug_idx" ON "in_business_profiles" USING btree ("slug");
-CREATE INDEX "idx_referrers_in_business_id" ON "in_referrers" USING btree ("business_id");
-CREATE INDEX "idx_referrers_in_phone" ON "in_referrers" USING btree ("phone");
-CREATE INDEX "idx_referrers_slug" ON "in_referrers" USING btree ("business_id","slug");
 CREATE INDEX "leaddata_country_idx" ON "leaddata" USING btree ("country_code");
 CREATE INDEX "leads_created_idx" ON "leads" USING btree ("country_code","created_at");
 CREATE INDEX "legal_acceptances_business_policy_idx" ON "legal_acceptances" USING btree ("country_code","business_id","policy_id","accepted_at");
@@ -786,3 +783,6 @@ CREATE INDEX "idx_verified_usa" ON "masterlist_usa_businesses" USING btree ("ver
 CREATE INDEX "rate_limits_reset_time_idx" ON "rate_limits" USING btree ("reset_time");
 CREATE INDEX "idx_seo_pages_pillar" ON "seo_pages" USING btree ("pillar_slug");
 CREATE INDEX "idx_seo_pages_type" ON "seo_pages" USING btree ("page_type");
+CREATE INDEX "sv_referrers_business_id_idx" ON "sv_referrers" USING btree ("business_id");
+CREATE INDEX "sv_referrers_business_id_slug_idx" ON "sv_referrers" USING btree ("business_id","slug");
+CREATE INDEX "sv_referrers_phone_idx" ON "sv_referrers" USING btree ("phone");

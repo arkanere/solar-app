@@ -23,7 +23,7 @@ export async function resetDatabase(): Promise<void> {
 			businesses, business_accounts,
 			legal_acceptances, legal_policies,
 			projects, project_management, pincode_mapping,
-			rate_limits, in_user, geo_locations
+			rate_limits, in_user, geo_locations, sv_referrers
 		RESTART IDENTITY CASCADE
 	`);
 }
@@ -256,6 +256,36 @@ export async function createBranch(mainId: number, branchId: number, isactive = 
 		branchId,
 		isactive
 	]);
+}
+
+let referrerSeq = 0;
+
+/**
+ * Insert an `sv_referrers` row for a business. Returns the referrer id.
+ *
+ * Country-agnostic by construction — the table has no country_code, so this
+ * takes only a business id, which is globally unique across businesses_1. Pass
+ * an id from either createBusiness or createUsBusiness.
+ *
+ * `slug` is unique across all businesses, not per business (sv_referrers_slug_key),
+ * so the default is sequenced rather than derived from the name.
+ */
+export async function createReferrer(
+	businessId: number,
+	options: { name?: string; slug?: string; phone?: string } = {}
+): Promise<number> {
+	referrerSeq += 1;
+	const {
+		name = `Test Referrer ${referrerSeq}`,
+		slug = `test-referrer-${referrerSeq}`,
+		phone = `80000000${String(referrerSeq).padStart(2, '0')}`
+	} = options;
+
+	const { rows } = await pool.query(
+		'INSERT INTO sv_referrers (business_id, name, slug, phone) VALUES ($1, $2, $3, $4) RETURNING id',
+		[businessId, name, slug, phone]
+	);
+	return rows[0].id;
 }
 
 export interface LeadOptions {
