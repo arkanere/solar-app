@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { geoLocations, inBusinessProfiles, leaddata, projects } from '@solar/db/schema';
+import { geoLocations, businessProfiles, leaddata, projects } from '@solar/db/schema';
 import { and, count, countDistinct, desc, eq } from 'drizzle-orm';
 
 export const config = {
@@ -11,8 +11,8 @@ export const load: PageServerLoad = async () => {
 	const [installerRows, projectRows, cityRows, leadRows, recentBusinesses] = await Promise.all([
 		db
 			.select({ count: count() })
-			.from(inBusinessProfiles)
-			.where(eq(inBusinessProfiles.isvisible, true)),
+			.from(businessProfiles)
+			.where(eq(businessProfiles.isvisible, true)),
 		db.select({ count: count() }).from(projects).where(eq(projects.isvisible, true)),
 		db
 			.select({ count: countDistinct(geoLocations.city) })
@@ -21,18 +21,18 @@ export const load: PageServerLoad = async () => {
 		db.select({ count: count() }).from(leaddata),
 		db
 			.select({
-				id: inBusinessProfiles.businessId,
-				businessname: inBusinessProfiles.businessname,
-				phonenumber: inBusinessProfiles.phonenumber,
-				city: inBusinessProfiles.city,
-				state: inBusinessProfiles.state,
-				slug: inBusinessProfiles.slug
+				id: businessProfiles.businessId,
+				businessname: businessProfiles.businessname,
+				phonenumber: businessProfiles.phonenumber,
+				city: businessProfiles.city,
+				state: businessProfiles.state,
+				slug: businessProfiles.slug
 			})
-			.from(inBusinessProfiles)
+			.from(businessProfiles)
 			.where(
-				and(eq(inBusinessProfiles.isvisible, true), eq(inBusinessProfiles.businessfilled, true))
+				and(eq(businessProfiles.isvisible, true), eq(businessProfiles.businessfilled, true))
 			)
-			.orderBy(desc(inBusinessProfiles.businessId))
+			.orderBy(desc(businessProfiles.businessId))
 			.limit(9)
 	]);
 

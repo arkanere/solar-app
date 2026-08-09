@@ -5,7 +5,7 @@
 //   1. tests/schema/000-baseline.sql — every table, constraint and index,
 //      generated from packages/db/src/schema (see scripts/generate-test-baseline.mjs).
 //      A baseline is unavoidable: 36 of the 55 tables, including leaddata,
-//      businesses_1, branches, in_business_profiles and leaddata_claimrequests,
+//      businesses_1, branches, business_profiles and leaddata_claimrequests,
 //      predate the migrations convention and have no CREATE TABLE anywhere in
 //      the repo.
 //
@@ -16,9 +16,11 @@
 // Why not simply replay all the numbered migrations on top of the baseline:
 // they encode *history*, while the baseline is the *final state*. 039 creates
 // business_profiles and 040 renames it to in_business_profiles — against a
-// baseline that already has in_business_profiles, the rename fails. The same
-// applies to every ALTER/DROP that assumes an earlier shape. Only files that are
-// pure final-state declarations can be replayed, which is what the list below is.
+// baseline that has the table under whichever name it currently carries, one of
+// those two steps always fails. The same applies to every ALTER/DROP that
+// assumes an earlier shape. Only files that are pure final-state declarations
+// can be replayed, which is what the list below is — plus 061, which is there
+// for the specific reason spelled out at REWIND_TO_PRE_061.
 //
 // Each file is sent as a single simple-protocol query, which is what lets the
 // BEGIN/COMMIT the files already contain work as written.
@@ -59,8 +61,32 @@ const POST_BASELINE_MIGRATIONS = [
 	// applied for the suite to mirror production: the app writes businesses_1 /
 	// leaddata with a country_code, and 047's two-arm functions still read us_*
 	// for the 'us' arm, so without this every US fixture syncs nothing.
-	'055-repoint-sync-fns-to-united-tables.sql'
+	'055-repoint-sync-fns-to-united-tables.sql',
+	// in_business_profiles -> business_profiles. Renames the table back to the
+	// name the baseline already uses (see REWIND below) and puts the three
+	// function bodies that name it onto the new one.
+	'061-rename-in-business-profiles.sql'
 ];
+
+// 061 renamed in_business_profiles to business_profiles, so the generated
+// baseline creates the new name — but the three files above are *history* and
+// predate that rename, and 054 does a bare `ALTER TABLE in_business_profiles`
+// and `CREATE INDEX ... ON in_business_profiles` that would fail outright
+// against it. A to_regclass(...) guard is no help here: the table exists, under
+// a different name.
+//
+// So wind the names back to what the history expects, replay it unedited, and
+// let 061 — the real migration, appended to the list above — rename them
+// forward again exactly as it does on live. The index and constraint names have
+// to move too, or 054's `CREATE INDEX IF NOT EXISTS in_business_profiles_country_idx`
+// finds no such name and creates a second index that 061 then collides with.
+const REWIND_TO_PRE_061 = `
+	ALTER TABLE business_profiles RENAME TO in_business_profiles;
+	ALTER INDEX business_profiles_slug_idx RENAME TO in_business_profiles_slug_idx;
+	ALTER INDEX business_profiles_country_idx RENAME TO in_business_profiles_country_idx;
+	ALTER TABLE in_business_profiles
+	  RENAME CONSTRAINT business_profiles_business_id_key TO in_business_profiles_business_id_key;
+`;
 
 // The trigger-installing migrations (043/045/046) are deliberately not applied:
 // 049 and 051 drop every one of those triggers again, so the production end
@@ -82,12 +108,13 @@ export async function applyMigrations(connectionString, { log = () => {} } = {})
 		};
 
 		await apply('tests/schema/000-baseline.sql', await readFile(BASELINE, 'utf8'));
+		await apply('rewind business_profiles -> in_business_profiles', REWIND_TO_PRE_061);
 
 		for (const file of POST_BASELINE_MIGRATIONS) {
 			await apply(file, await readFile(join(MIGRATIONS_DIR, file), 'utf8'));
 		}
 
-		return POST_BASELINE_MIGRATIONS.length + 1;
+		return POST_BASELINE_MIGRATIONS.length + 2;
 	} finally {
 		await client.end();
 	}

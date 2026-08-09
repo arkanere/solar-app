@@ -67,7 +67,7 @@
 
 <main class="min-h-screen pt-2 flex flex-col items-center justify-start text-center transition-colors duration-[theme(--transition-default)] bg-background text-foreground">
 	<!-- The lead-detail body below is IN-only: its loader reads LeadData and
-	     in_business_profiles, both IN-only tables, and US leads live in
+	     business_profiles, both IN-only tables, and US leads live in
 	     us_leaddata. The /us page has only ever shown this headline, and this
 	     preserves that exactly. Giving /us a real lead-detail page means
 	     reading us_leaddata — a behaviour addition, deliberately not done here

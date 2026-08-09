@@ -36,26 +36,38 @@ setup refuses to touch any database whose name does not contain `test`.
 
 ## How the schema is built
 
-Two steps, both in `scripts/apply-test-migrations.mjs`:
+Three steps, all in `scripts/apply-test-migrations.mjs`:
 
 1. **`tests/schema/000-baseline.sql`** — every table, constraint and index.
    Generated from `packages/db/src/schema`, which `drizzle-kit pull` produces
    from the live database, so it traces back to production rather than to a
    hand-written guess.
 
-2. **Three migration files** — `042-countries-and-geo.sql`,
-   `047-unified-sync-functions.sql`, `050-split-sync-functions.sql`. These add
-   what an introspected schema cannot express: the `sv_sync_*` stored functions
-   the write endpoints call through `$lib/server/unifiedSync`, and the
-   `countries` seed rows that `businesses`, `business_accounts` and `leads` have
-   foreign keys to.
+2. **A rewind of the `business_profiles` names** — `061` renamed
+   `in_business_profiles` to `business_profiles`, so the baseline creates the new
+   name, but the migration files replayed next are history and predate it. `054`
+   in particular does a bare `ALTER TABLE in_business_profiles`, which would fail
+   outright. The script therefore renames the table, its two indexes and its
+   unique constraint back to the old names, replays the history unedited, and
+   lets `061` rename them forward again. A `to_regclass(...)` guard is no help
+   for this class of problem: the table exists, under a different name.
+
+3. **Six migration files** — `042-countries-and-geo.sql`,
+   `047-unified-sync-functions.sql`, `050-split-sync-functions.sql`,
+   `054-unite-country-legacy-tables.sql`,
+   `055-repoint-sync-fns-to-united-tables.sql`, then
+   `061-rename-in-business-profiles.sql`. These add what an introspected schema
+   cannot express: the `sv_sync_*` stored functions the write endpoints call
+   through `$lib/server/unifiedSync`, and the `countries` seed rows that
+   `businesses`, `business_accounts` and `leads` have foreign keys to. Each is
+   annotated in the script with why it is on the list.
 
 ### Why a baseline, and why not just replay all the migrations
 
 Two reasons, and both are worth knowing before changing any of this.
 
 **A baseline is unavoidable.** 36 of the 55 tables — including `leaddata`,
-`businesses_1`, `branches`, `in_business_profiles` and `leaddata_claimrequests` —
+`businesses_1`, `branches`, `business_profiles` and `leaddata_claimrequests` —
 have no `CREATE TABLE` anywhere in the repository. They predate the migrations
 convention. Replaying the numbered migrations against an empty database fails at
 `034-magic-link-token-expiry.sql` with `relation "businesses_1" does not exist`.
@@ -63,9 +75,11 @@ convention. Replaying the numbered migrations against an empty database fails at
 **Only final-state migrations can replay on top of it.** The numbered migrations
 encode _history_; the baseline is the _end state_. `039` creates
 `business_profiles` and `040` renames it to `in_business_profiles` — against a
-baseline that already has `in_business_profiles`, that rename fails outright. The
-same goes for every `ALTER`/`DROP` that assumes an earlier shape. The three files
-listed above are the only ones that are pure idempotent declarations.
+baseline that has the table under whichever name it currently carries, one of
+those two steps always fails. The same goes for every `ALTER`/`DROP` that assumes
+an earlier shape. The files listed above are the only ones that are pure
+idempotent declarations, plus `061`, which is there for the narrow reason given
+in step 2.
 
 The trigger-installing migrations (`043`, `045`, `046`) are deliberately skipped:
 `049` and `051` drop every one of those triggers again, so production has none,

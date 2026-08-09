@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db';
 import { countryForSlug } from '$lib/server/resolveCountry';
-import { branches, businesses1, inBusinessProfiles } from '@solar/db/schema';
+import { branches, businesses1, businessProfiles } from '@solar/db/schema';
 import { and, eq, sql } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { parseBody, updateBusinessDetailsSchema } from '@solar/validation';
@@ -51,9 +51,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		} else {
 			// Check if the business_slug belongs to a branch of the logged-in business
 			const [mainBusiness] = await db
-				.select({ id: inBusinessProfiles.businessId })
-				.from(inBusinessProfiles)
-				.where(eq(inBusinessProfiles.slug, sessionResult.session.businessSlug))
+				.select({ id: businessProfiles.businessId })
+				.from(businessProfiles)
+				.where(eq(businessProfiles.slug, sessionResult.session.businessSlug))
 				.limit(1);
 
 			if (!mainBusiness) {
@@ -64,11 +64,11 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			const branchCheck = await db
 				.select({ branchId: branches.branchId })
 				.from(branches)
-				.innerJoin(inBusinessProfiles, eq(branches.branchId, inBusinessProfiles.businessId))
+				.innerJoin(businessProfiles, eq(branches.branchId, businessProfiles.businessId))
 				.where(
 					and(
 						eq(branches.mainId, mainBusiness.id),
-						eq(inBusinessProfiles.slug, business_slug),
+						eq(businessProfiles.slug, business_slug),
 						eq(branches.isactive, true)
 					)
 				);
@@ -98,14 +98,14 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			brands
 		};
 
-		// in_business_profiles is the source of truth for profile data
+		// business_profiles is the source of truth for profile data
 		const [updated] = await db
-			.update(inBusinessProfiles)
+			.update(businessProfiles)
 			.set({ ...values, updatedAt: sql`NOW()` })
-			.where(eq(inBusinessProfiles.slug, business_slug))
-			.returning({ id: inBusinessProfiles.businessId });
+			.where(eq(businessProfiles.slug, business_slug))
+			.returning({ id: businessProfiles.businessId });
 
-		// TODO(remove after main-app/admin-app migrate to in_business_profiles):
+		// TODO(remove after main-app/admin-app migrate to business_profiles):
 		// dual-write so the marketplace and admin views stay fresh
 		await db.update(businesses1).set(values).where(eq(businesses1.slug, business_slug));
 

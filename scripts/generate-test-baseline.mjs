@@ -4,7 +4,7 @@
 // Why a baseline exists at all: the numbered SQL migrations in
 // apps/main-app/src/lib/server/migrations/ only go back as far as the migrations
 // convention does. 36 of the 55 tables — including leaddata, businesses_1,
-// branches, in_business_profiles and leaddata_claimrequests — were created
+// branches, business_profiles and leaddata_claimrequests — were created
 // before that and have no CREATE TABLE anywhere in the repo. Replaying the
 // migrations against an empty database therefore fails at 034.
 //

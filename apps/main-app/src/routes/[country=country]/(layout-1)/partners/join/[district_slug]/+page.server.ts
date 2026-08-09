@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { geoLocations, inBusinessProfiles, leaddata } from '@solar/db/schema';
+import { geoLocations, businessProfiles, leaddata } from '@solar/db/schema';
 import { and, asc, count, countDistinct, eq, sql } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 
@@ -28,11 +28,11 @@ export const load: PageServerLoad = async ({ params }) => {
 	const [installerRows, leadRows, cityRows, nearbyRows] = await Promise.all([
 		db
 			.select({ count: count() })
-			.from(inBusinessProfiles)
+			.from(businessProfiles)
 			.where(
 				and(
-					sql`LOWER(${inBusinessProfiles.district}) = LOWER(${district})`,
-					eq(inBusinessProfiles.isvisible, true)
+					sql`LOWER(${businessProfiles.district}) = LOWER(${district})`,
+					eq(businessProfiles.isvisible, true)
 				)
 			),
 		db
@@ -57,7 +57,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			.selectDistinct({
 				district: geoLocations.level2,
 				slug: geoLocations.level2Slug,
-				installer_count: sql<string>`(SELECT COUNT(*) FROM in_business_profiles b
+				installer_count: sql<string>`(SELECT COUNT(*) FROM business_profiles b
 				        WHERE LOWER(b.district) = LOWER(${geoLocations.level2}) AND b.isvisible = true)`
 			})
 			.from(geoLocations)

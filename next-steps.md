@@ -6,13 +6,43 @@
 
 ## Open
 
-1. **Duplicate `businesses.slug` values in live IN data.** `spectrum-solar-power-kasaragod` ×5,
-   `spectrum-solar-power-kannur` ×4, `spectrum-solar-power-kozhikode` ×3 and ~22 more ×2. The
-   `/[business_slug]` lookup does `.limit(1)`, so those businesses render a **non-deterministic**
-   dashboard — whichever row Postgres returns first. Fixing means de-duplicating live rows, which is
-   its own task. It is also why `businesses` cannot take a `UNIQUE (slug)` constraint, and why
+1. **Duplicate `businesses.slug` values in live IN data.** Surveyed 2026-08-09; the picture is worse
+   and more specific than this item used to say.
+
+   **6708 profiles, 6518 distinct slugs, 36 NULL.** Unified `businesses` mirrors it exactly.
+
+   **The largest offender is not a duplicate at all.** The literal slug `incorrect` is on **125
+   rows** spanning 117 distinct business names and 90 cities — a sentinel, not a collision. 124 of
+   the 125 are `isvisible = f`. Those businesses have no usable URL, which is arguably a bigger gap
+   than the collisions. Nobody has traced which writer produces it; do that before fixing, or it
+   comes back.
+
+   **The genuine collisions are 24 slugs / 54 rows**, and they have a consistent shape: in every
+   group **at most one row is `isvisible = t AND businessfilled = t`**. Eight groups have exactly one
+   live row plus invisible twins; sixteen are entirely invisible. The Spectrum groups (×5, ×4, ×3)
+   are identical in name, city and phone — true duplicate records. Every one of the 54 has an account
+   row with a password set, but only **5 have ever logged in**, all of them the visible row.
+
+   **The code bug is more specific than "`.limit(1)` is non-deterministic".** `SessionData` carries
+   an authoritative `businessId` (`lib/types/auth.ts:83`) set at login, and **no route uses it** —
+   all eight page loads under `[business_slug]` re-derive the id from the slug, with no `isvisible`
+   filter and no ordering (`+layout.server.ts:108`, `+page.server.ts:68`, `crm:73`,
+   `project-management`, `branch`, `proposal`, `recent-projects`, `compliance`). So a logged-in
+   business can be served its twin's `businessId`, and lead counts, CRM and the claim gate are then
+   computed for the wrong row; layout and page issue separate queries, so nothing guarantees they
+   even agree within one request. `api/updateBusinessDetails` is worse — it updates
+   `business_profiles` *and* `businesses_1` by slug with no id filter, so one business saving its
+   profile overwrites its twin's row in both tables, then syncs an arbitrary one of the returned ids.
+
+   **Recommended order:** repoint those loads (and `updateBusinessDetails`) at `session.businessId`
+   first — code-only, reversible, testable, and it removes the wrong-tenant risk without deciding
+   anything about live rows. Then de-duplicate, then `UNIQUE (slug)`. Open question before
+   de-duplicating: whether `isvisible = f` is a soft-delete you intend to keep, which decides whether
+   the losing rows get deleted or re-slugged.
+
+   The duplicates are also why `businesses` cannot take a `UNIQUE (slug)` constraint, and why
    `api/resetPassword` matches on the token hash rather than on the slug alone (`cdeff73`) — any new
-   slug lookup has to assume duplicates.
+   slug lookup has to assume duplicates until this is closed.
 
 2. **Drift between `leaddata` and unified `leads`.** **3** `leaddata` rows have no unified row at all
    (a `sv_sync_lead` call that never happened), and **156** unified `leads` have no surviving
@@ -37,18 +67,31 @@
    fields **"Pincode:"** and **"District (Auto-filled):"** and auto-fills from
    `/api/getDistrictByPincode`, which queries `pincode_mapping`. That is the one lookup
    `geo_locations` cannot replace — it has no postal-code column, and a live schema sweep found no US
-   zip source anywhere. Blocked on the same missing data as item 4; solve the two together.
+   zip source anywhere. Blocked on the same missing data as item 3; solve the two together.
 
    The sibling branch form was the same bug and is fixed (`d418a08`, `0a8351a`) — its dropdowns now
    read `geo_locations`, which is populated for both countries. Use it as the model, but note
    `getCities` there needs state *and* county, because US county names repeat across states.
+
+5. **Leftovers from the 060/061 cleanup, none urgent.**
+   - `sv_sync_in_business_profile` has been an orphan since 054 inlined the profile upsert into
+     `sv_sync_in_split` — nothing calls it in the database or in any app. 061 recreated it against
+     the renamed table rather than dropping it, to keep the rename a rename. Dropping it is a
+     one-liner whenever someone wants it gone.
+   - `sv_sync_in_split` is now a misnomer for the same reason the table was: it has written both
+     countries since 054. Renaming it is a code change too (three call sites via
+     `syncInSplitTables`), so it did not belong in 061.
+   - **`check-unified-drift.sql` is already broken and was before 060.** Its `leads_us`,
+     `businesses_us` and `accounts_us` scopes read `us_leaddata` and `us_businesses`, which 056
+     dropped, so the file errors partway through as written. Fixing it means deciding what a US
+     drift check even means now that both countries share one set of legacy tables.
 
 ---
 
 ## Standing constraints
 
 **Unified tables are a projection, not a store.** `sv_sync_business` is
-`INSERT INTO businesses ... SELECT FROM in_business_profiles ... ON CONFLICT DO UPDATE`. Anything
+`INSERT INTO businesses ... SELECT FROM business_profiles ... ON CONFLICT DO UPDATE`. Anything
 written directly to `businesses`/`leads`/`business_accounts` is clobbered by the next sync — which
 is why main-app has **zero** unified writes anywhere. The rule is: **read unified** (filtered by the
 resolved country), **write the legacy table** (one set for every country since 054, discriminated by
@@ -75,7 +118,7 @@ lose its name and `check` would not catch it; and it omits `business_notes`, `qu
 `reference_uuid` and the four `bill_*` columns, two of which `CustomerInquiry.svelte` declares on its
 `Lead` type. That selection was shaped for the narrow legacy `us_leaddata` table; since 054, unified
 `leads` carries these for both countries, so narrowing buys nothing. The real IN-only leakage is in
-the write forms — items 4 and 5.
+the write forms — items 3 and 4.
 
 **Dropping a table breaks the test harness before it breaks anything else.** The suite replays a few
 migrations on top of the generated baseline (`scripts/apply-test-migrations.mjs`), and those files
@@ -171,4 +214,4 @@ the EDB install, which has no `solar` role — do not point the suite at it.
 `npm run pull -w @solar/db`. **Never pull from a test cluster** — its baseline omits three
 `loc_key(...)` expression indexes, so a pull from there silently drops them.
 
-All migrations through **058** are applied to live.
+All migrations through **061** are applied to live.

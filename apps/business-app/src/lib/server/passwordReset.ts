@@ -114,7 +114,7 @@ export async function mintPasswordResetToken(
 
 	if (updated.length === 0) return null;
 
-	// Both countries now have in_business_profiles rows, so the split sync is no
+	// Both countries now have business_profiles rows, so the split sync is no
 	// longer IN-only. sv_sync_account reads businesses_1 directly, but keeping
 	// the profile row fresh matters for sv_sync_business.
 	await syncInSplitTables(db, businessId);

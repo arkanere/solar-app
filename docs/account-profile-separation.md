@@ -1,6 +1,17 @@
 # Account / Profile Separation — Status & Next Steps
 
-_Last updated: 2026-07-11_
+_Last updated: 2026-07-11. **Partly superseded — read this note first (2026-08-09).**_
+
+> Two table names below are gone. `in_business_accounts` was **dropped** by
+> migration 060: 054 removed its arm from `sv_sync_in_split` and unified
+> `business_accounts` (fed from `businesses_1` by `sv_sync_account`) took over
+> the role, leaving it a write-only table with no reader. `in_business_profiles`
+> was **renamed to `business_profiles`** by 061 — 054 united both countries onto
+> it and 056 dropped the `us_*` tables, so the `in_` prefix had been wrong for
+> two migrations.
+>
+> The rest of this document is the 2026-07 plan as written and is kept for the
+> reasoning, not as a description of the current schema.
 
 ## Why
 

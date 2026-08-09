@@ -120,7 +120,7 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 		// keeps accepting the old password until some unrelated write resyncs.
 		// sv_sync_account sources login_password and reset_token from
 		// businesses_1 directly, so the account sync alone covers both halves of
-		// the update above — in_business_profiles holds neither column, which is
+		// the update above — business_profiles holds neither column, which is
 		// why mintPasswordResetToken's extra syncInSplitTables call is not needed
 		// here.
 		await syncAccountToUnified(db, business.countryCode === 'us' ? 'us' : 'in', business.id);

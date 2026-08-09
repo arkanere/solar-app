@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { businesses1, inBusinessProfiles } from '@solar/db/schema';
+import { businesses1, businessProfiles } from '@solar/db/schema';
 import { and, eq, sql } from 'drizzle-orm';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { parseBody, submitBusinessSchema } from '@solar/validation';
@@ -67,16 +67,16 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 
 		// Check for duplicate GSTN. IN-only: US does not collect a tax id on
 		// signup, so every US row would collide on an empty value. Now that both
-		// countries share in_business_profiles this also has to be scoped by
+		// countries share business_profiles this also has to be scoped by
 		// country, or an IN signup could collide with a US row's NULL/empty gstn.
 		if (country === 'in') {
 			const duplicates = await db
-				.select({ business_id: inBusinessProfiles.businessId })
-				.from(inBusinessProfiles)
+				.select({ business_id: businessProfiles.businessId })
+				.from(businessProfiles)
 				.where(
 					and(
-						eq(inBusinessProfiles.countryCode, country),
-						eq(inBusinessProfiles.gstn, gstn as string)
+						eq(businessProfiles.countryCode, country),
+						eq(businessProfiles.gstn, gstn as string)
 					)
 				);
 
@@ -106,7 +106,7 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 		const businessfilled = country === 'in';
 
 		// TODO(remove after admin-app migrates; needs id-minting moved to
-		// in_business_profiles): businesses_1 still mints the business id and keeps
+		// business_profiles): businesses_1 still mints the business id and keeps
 		// the legacy table fresh for admin-app. The explicit upserts below are the
 		// forward-facing writes; the sync triggers on businesses_1 upsert the same
 		// values, so both paths are idempotent.
@@ -163,10 +163,10 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 		};
 
 		await db
-			.insert(inBusinessProfiles)
+			.insert(businessProfiles)
 			.values(profileValues)
 			.onConflictDoUpdate({
-				target: inBusinessProfiles.businessId,
+				target: businessProfiles.businessId,
 				set: { ...profileValues, updatedAt: sql`NOW()` }
 			});
 
@@ -175,7 +175,7 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 		// sv_sync_account projects login_email into unified business_accounts from
 		// businesses_1, which the insert above already wrote.
 
-		// Idempotent with the businesses_1/in_business_profiles sync triggers;
+		// Idempotent with the businesses_1/business_profiles sync triggers;
 		// keeps the unified tables fresh once those triggers drop (phase 2.4).
 		//
 		// This now passes the request's country rather than the literal 'in'. The

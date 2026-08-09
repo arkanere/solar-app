@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { inBusinessProfiles, projects } from '@solar/db/schema';
+import { businessProfiles, projects } from '@solar/db/schema';
 import { and, eq, sql } from 'drizzle-orm';
 import { getCountry } from '$lib/countries';
 import { error } from '@sveltejs/kit';
@@ -34,20 +34,20 @@ export const load: PageServerLoad = async ({ params }) => {
 			cloudinary_public_id: sql<string>`${projects.cloudinaryPublicId}`,
 			image_url: sql<string>`${projects.imageUrl}`,
 			project_slug: sql<string>`${projects.projectSlug}`,
-			businessname: sql<string>`${inBusinessProfiles.businessname}`,
-			business_slug: sql<string>`${inBusinessProfiles.slug}`,
-			business_city: sql<string>`${inBusinessProfiles.city}`,
-			business_district: sql<string>`${inBusinessProfiles.district}`,
-			business_state: sql<string>`${inBusinessProfiles.state}`,
-			phonenumber: sql<string>`${inBusinessProfiles.phonenumber}`
+			businessname: sql<string>`${businessProfiles.businessname}`,
+			business_slug: sql<string>`${businessProfiles.slug}`,
+			business_city: sql<string>`${businessProfiles.city}`,
+			business_district: sql<string>`${businessProfiles.district}`,
+			business_state: sql<string>`${businessProfiles.state}`,
+			phonenumber: sql<string>`${businessProfiles.phonenumber}`
 		})
 		.from(projects)
-		.innerJoin(inBusinessProfiles, eq(projects.businessSlug, inBusinessProfiles.slug))
+		.innerJoin(businessProfiles, eq(projects.businessSlug, businessProfiles.slug))
 		.where(
 			and(
 				eq(projects.projectSlug, projectSlug),
 				eq(projects.isvisible, true),
-				eq(inBusinessProfiles.isvisible, true)
+				eq(businessProfiles.isvisible, true)
 			)
 		);
 

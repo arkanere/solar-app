@@ -1,10 +1,10 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { inBusinessProfiles, leaddata } from '@solar/db/schema';
+import { businessProfiles, leaddata } from '@solar/db/schema';
 import { and, count, eq } from 'drizzle-orm';
 
 export const load: PageServerLoad = async ({ url, params }) => {
-	// IN-only: every query below reads LeadData / in_business_profiles, and US
+	// IN-only: every query below reads LeadData / business_profiles, and US
 	// leads live in us_leaddata. The page renders a plain confirmation without
 	// customerDetails, which is what /us has always shown.
 	if (params.country !== 'in') {
@@ -50,11 +50,11 @@ export const load: PageServerLoad = async ({ url, params }) => {
 			try {
 				const businessRows = await db
 					.select({ business_count: count() })
-					.from(inBusinessProfiles)
+					.from(businessProfiles)
 					.where(
 						and(
-							eq(inBusinessProfiles.district, lead.district),
-							eq(inBusinessProfiles.isvisible, true)
+							eq(businessProfiles.district, lead.district),
+							eq(businessProfiles.isvisible, true)
 						)
 					);
 				hasVerifiedBusinessInDistrict = businessRows[0].business_count > 0;

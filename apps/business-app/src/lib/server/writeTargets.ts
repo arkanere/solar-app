@@ -2,7 +2,7 @@
 //
 // Unified `businesses`/`leads`/`business_accounts` are a *projection*, not a
 // store: sv_sync_* does `INSERT INTO businesses ... SELECT FROM
-// in_business_profiles ... ON CONFLICT DO UPDATE`, so anything written straight
+// business_profiles ... ON CONFLICT DO UPDATE`, so anything written straight
 // to a unified table is clobbered by the next sync. main-app has no unified
 // writes anywhere for the same reason. Reads should come from unified; writes
 // go to the legacy table and are then projected with the matching
@@ -11,7 +11,7 @@
 // Since migration 054 there is **one** set of legacy tables for every country,
 // on the IN structure, discriminated by `country_code`:
 //
-//   businesses_1 + in_business_profiles   country_code
+//   businesses_1 + business_profiles   country_code
 //   leaddata                              country_code
 //   branches, projects                    keyed by business id, which is
 //                                         globally unique, so no discriminator
@@ -30,7 +30,7 @@
 import {
 	branches,
 	businesses1,
-	inBusinessProfiles,
+	businessProfiles,
 	leaddata,
 	projects
 } from '@solar/db/schema';
@@ -38,7 +38,7 @@ import { eq } from 'drizzle-orm';
 import type { AuthCountry } from '$lib/auth/business/countryTables';
 
 export const businessTable = businesses1;
-export const businessProfileTable = inBusinessProfiles;
+export const businessProfileTable = businessProfiles;
 export const leadTable = leaddata;
 export const branchTable = branches;
 export const projectTable = projects;

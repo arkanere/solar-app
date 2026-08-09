@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { businesses, inBusinessProfiles } from '@solar/db/schema';
+import { businesses, businessProfiles } from '@solar/db/schema';
 import { and, desc, eq } from 'drizzle-orm';
 
 export const config = {
@@ -54,16 +54,16 @@ function latestBusinesses(country: string) {
 
 	return db
 		.select({
-			id: inBusinessProfiles.businessId,
-			businessname: inBusinessProfiles.businessname,
-			phonenumber: inBusinessProfiles.phonenumber,
-			city: inBusinessProfiles.city,
-			state: inBusinessProfiles.state,
-			slug: inBusinessProfiles.slug
+			id: businessProfiles.businessId,
+			businessname: businessProfiles.businessname,
+			phonenumber: businessProfiles.phonenumber,
+			city: businessProfiles.city,
+			state: businessProfiles.state,
+			slug: businessProfiles.slug
 		})
-		.from(inBusinessProfiles)
-		.where(and(eq(inBusinessProfiles.isvisible, true), eq(inBusinessProfiles.businessfilled, true)))
-		.orderBy(desc(inBusinessProfiles.businessId))
+		.from(businessProfiles)
+		.where(and(eq(businessProfiles.isvisible, true), eq(businessProfiles.businessfilled, true)))
+		.orderBy(desc(businessProfiles.businessId))
 		.limit(10);
 }
 

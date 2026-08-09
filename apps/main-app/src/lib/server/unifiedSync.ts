@@ -1,6 +1,6 @@
 // App-level dual-write half of the phase-2 cutover (migration 047): after a
 // write endpoint touches a legacy table (leaddata/us_leaddata, businesses_1/
-// us_businesses, in_business_profiles), it calls the matching sv_sync_*
+// us_businesses, business_profiles), it calls the matching sv_sync_*
 // SQL function to project the row into the unified table. The 043/045/046
 // triggers currently run the same functions, so the explicit call is
 // idempotent — but it keeps main-app correct on its own once those

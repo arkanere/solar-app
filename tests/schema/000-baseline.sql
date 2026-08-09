@@ -48,6 +48,39 @@ CREATE TABLE "business_accounts" (
 	CONSTRAINT "business_accounts_country_code_source_id_key" UNIQUE("country_code","source_id")
 );
 
+CREATE TABLE "business_profiles" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"business_id" integer NOT NULL,
+	"slug" varchar(255),
+	"businessname" varchar(255),
+	"email" varchar(255),
+	"phonenumber" varchar(20),
+	"whatsapp" varchar(20),
+	"description" varchar(256),
+	"website" varchar(255),
+	"instagram_id" varchar(255),
+	"google_maps_link" varchar(255),
+	"address" text,
+	"pluscode" varchar(255),
+	"services" integer[],
+	"brands" integer[],
+	"gstn" varchar(50),
+	"state" varchar(100),
+	"district" varchar(100),
+	"city" varchar(100),
+	"pincode" char(6),
+	"rscore" integer,
+	"tag" varchar(255),
+	"notes" text,
+	"businessfilled" boolean,
+	"tier3" boolean,
+	"isvisible" boolean,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"country_code" char(2) DEFAULT 'in' NOT NULL,
+	CONSTRAINT "business_profiles_business_id_key" UNIQUE("business_id")
+);
+
 CREATE TABLE "businesses" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"country_code" char(2) NOT NULL,
@@ -290,39 +323,6 @@ CREATE TABLE "in_blog_posts" (
 	"updated_at" timestamp with time zone DEFAULT now(),
 	"status" varchar(20) DEFAULT 'draft',
 	CONSTRAINT "in_blog_posts_slug_key" UNIQUE("slug")
-);
-
-CREATE TABLE "in_business_profiles" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"business_id" integer NOT NULL,
-	"slug" varchar(255),
-	"businessname" varchar(255),
-	"email" varchar(255),
-	"phonenumber" varchar(20),
-	"whatsapp" varchar(20),
-	"description" varchar(256),
-	"website" varchar(255),
-	"instagram_id" varchar(255),
-	"google_maps_link" varchar(255),
-	"address" text,
-	"pluscode" varchar(255),
-	"services" integer[],
-	"brands" integer[],
-	"gstn" varchar(50),
-	"state" varchar(100),
-	"district" varchar(100),
-	"city" varchar(100),
-	"pincode" char(6),
-	"rscore" integer,
-	"tag" varchar(255),
-	"notes" text,
-	"businessfilled" boolean,
-	"tier3" boolean,
-	"isvisible" boolean,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"country_code" char(2) DEFAULT 'in' NOT NULL,
-	CONSTRAINT "in_business_profiles_business_id_key" UNIQUE("business_id")
 );
 
 CREATE TABLE "in_proposals" (
@@ -710,6 +710,8 @@ ALTER TABLE "project_management" ADD CONSTRAINT "projectmanagement_lead_id_fkey"
 ALTER TABLE "solar_products" ADD CONSTRAINT "solar_products_brand_slug_fkey" FOREIGN KEY ("brand_slug") REFERENCES "public"."solar_brands"("slug") ON DELETE no action ON UPDATE no action;
 CREATE INDEX "business_accounts_login_email_idx" ON "business_accounts" USING btree ("country_code","login_email");
 CREATE INDEX "business_accounts_magic_token_idx" ON "business_accounts" USING btree ("country_code","magic_link_token");
+CREATE INDEX "business_profiles_country_idx" ON "business_profiles" USING btree ("country_code");
+CREATE INDEX "business_profiles_slug_idx" ON "business_profiles" USING btree ("slug");
 CREATE INDEX "businesses_geo_idx" ON "businesses" USING btree ("country_code","level2","isvisible");
 CREATE INDEX "businesses_slug_idx" ON "businesses" USING btree ("country_code","slug");
 CREATE INDEX "businesses_1_country_slug_idx" ON "businesses_1" USING btree ("country_code","slug");
@@ -719,8 +721,6 @@ CREATE UNIQUE INDEX "callsafe_unsubscribe_email_idx" ON "callsafe_unsubscribe" U
 CREATE INDEX "chatbotmessagesstore_session_idx" ON "chatbotmessagesstore" USING btree ("session_id","timestamp");
 CREATE INDEX "data_access_requests_status_idx" ON "data_access_requests" USING btree ("status");
 CREATE INDEX "geo_locations_level2_idx" ON "geo_locations" USING btree ("country_code","level1_slug","level2_slug");
-CREATE INDEX "in_business_profiles_country_idx" ON "in_business_profiles" USING btree ("country_code");
-CREATE INDEX "in_business_profiles_slug_idx" ON "in_business_profiles" USING btree ("slug");
 CREATE INDEX "leaddata_country_idx" ON "leaddata" USING btree ("country_code");
 CREATE INDEX "leads_created_idx" ON "leads" USING btree ("country_code","created_at");
 CREATE INDEX "legal_acceptances_business_policy_idx" ON "legal_acceptances" USING btree ("country_code","business_id","policy_id","accepted_at");

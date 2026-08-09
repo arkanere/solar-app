@@ -1,7 +1,7 @@
 // src/routes/api/addBranch/+server.ts
 import { db } from '$lib/server/db';
 import { countryForSlug } from '$lib/server/resolveCountry';
-import { branches, businesses1, inBusinessProfiles } from '@solar/db/schema';
+import { branches, businesses1, businessProfiles } from '@solar/db/schema';
 import { and, eq, sql } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { randomBytes } from 'crypto';
@@ -80,14 +80,14 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		// 2.2 Next, check if any existing branches are in the same city
 		// `sql` escape hatch: case-insensitive city compare (LOWER() = LOWER()).
 		const existingBranches = await db
-			.select({ id: inBusinessProfiles.businessId })
-			.from(inBusinessProfiles)
-			.innerJoin(branches, eq(inBusinessProfiles.businessId, branches.branchId))
+			.select({ id: businessProfiles.businessId })
+			.from(businessProfiles)
+			.innerJoin(branches, eq(businessProfiles.businessId, branches.branchId))
 			.where(
 				and(
 					eq(branches.mainId, businessId),
-					sql`LOWER(${inBusinessProfiles.city}) = LOWER(${city})`,
-					eq(inBusinessProfiles.isvisible, true)
+					sql`LOWER(${businessProfiles.city}) = LOWER(${city})`,
+					eq(businessProfiles.isvisible, true)
 				)
 			);
 

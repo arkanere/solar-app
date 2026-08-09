@@ -10,7 +10,7 @@
 export type BusinessRegion = 'in' | 'us';
 
 /**
- * Complete business profile from the in_business_profiles table.
+ * Complete business profile from the business_profiles table.
  * Pure listing/profile data — credentials and auth state live on the
  * account side (businesses_1) and must never appear on this type.
  */

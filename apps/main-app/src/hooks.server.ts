@@ -39,7 +39,7 @@ function legacyRedirect(pathname: string): string | null {
 
 	// Marketplace routes that moved from /in into the shared [country] tree
 	// (stage 11 of docs/migration-plan-in-country.md) but whose loaders still read
-	// the IN-only legacy tables (in_business_profiles, locations, LeadData).
+	// the IN-only legacy tables (business_profiles, locations, LeadData).
 	// Without these rules /us/partners and /us/get-quotes would answer with Indian
 	// data at a US URL.
 	//

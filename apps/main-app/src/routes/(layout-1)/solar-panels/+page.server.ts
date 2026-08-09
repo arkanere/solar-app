@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { seoPages, inBusinessProfiles } from '@solar/db/schema';
+import { seoPages, businessProfiles } from '@solar/db/schema';
 import { and, asc, count, eq } from 'drizzle-orm';
 import { SEO_PILLAR_SELECTION, SEO_CLUSTER_LINK_SELECTION } from '$lib/server/seo';
 
@@ -29,8 +29,8 @@ export const load: PageServerLoad = async () => {
 			.orderBy(asc(seoPages.slug)),
 		db
 			.select({ total: count() })
-			.from(inBusinessProfiles)
-			.where(eq(inBusinessProfiles.isvisible, true))
+			.from(businessProfiles)
+			.where(eq(businessProfiles.isvisible, true))
 	]);
 
 	const pillarData = pillarRows[0] ?? {

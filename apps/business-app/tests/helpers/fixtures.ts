@@ -19,7 +19,7 @@ export async function resetDatabase(): Promise<void> {
 	await pool.query(`
 		TRUNCATE TABLE
 			leaddata_claimrequests, leaddata, leads,
-			branches, businesses_1, in_business_profiles,
+			branches, businesses_1, business_profiles,
 			businesses, business_accounts,
 			legal_acceptances, legal_policies,
 			projects, project_management, pincode_mapping,
@@ -116,7 +116,7 @@ export async function createBusiness(options: BusinessOptions = {}): Promise<num
 	const id = rows[0].id;
 
 	// Mirror the app's post-write sync so business_accounts / businesses /
-	// in_business_profiles are populated — the auth code reads those, not
+	// business_profiles are populated — the auth code reads those, not
 	// businesses_1.
 	await pool.query('SELECT sv_sync_in_split($1)', [id]);
 	await pool.query('SELECT sv_sync_business($1, $2)', ['in', id]);
@@ -147,7 +147,7 @@ export interface UsBusinessOptions {
  * the US callers say, but they map to the IN columns (`district`, `pincode`).
  *
  * The sv_sync_in_split call is new for US and is not optional: 055's
- * sv_sync_business reads in_business_profiles for every country, so without a
+ * sv_sync_business reads business_profiles for every country, so without a
  * profile row the projection is a silent no-op.
  */
 export async function createUsBusiness(options: UsBusinessOptions = {}): Promise<number> {

@@ -1,5 +1,5 @@
 import { db } from './db';
-import { geoLocations, inBusinessProfiles } from '@solar/db/schema';
+import { geoLocations, businessProfiles } from '@solar/db/schema';
 import { and, asc, count, countDistinct, desc, eq, sql } from 'drizzle-orm';
 
 export type TopDistrict = {
@@ -37,13 +37,13 @@ export async function getDistrictsWithInstallerCounts(): Promise<DistrictWithIns
 			.orderBy(asc(geoLocations.level1), asc(geoLocations.level2)),
 		db
 			.select({
-				state: sql<string>`LOWER(${inBusinessProfiles.state})`,
-				district: sql<string>`LOWER(${inBusinessProfiles.district})`,
+				state: sql<string>`LOWER(${businessProfiles.state})`,
+				district: sql<string>`LOWER(${businessProfiles.district})`,
 				cnt: count()
 			})
-			.from(inBusinessProfiles)
-			.where(eq(inBusinessProfiles.isvisible, true))
-			.groupBy(sql`LOWER(${inBusinessProfiles.state})`, sql`LOWER(${inBusinessProfiles.district})`)
+			.from(businessProfiles)
+			.where(eq(businessProfiles.isvisible, true))
+			.groupBy(sql`LOWER(${businessProfiles.state})`, sql`LOWER(${businessProfiles.district})`)
 	]);
 
 	const countMap = new Map<string, number>();
@@ -66,13 +66,13 @@ export async function getDistrictsWithInstallerCounts(): Promise<DistrictWithIns
 export async function getVisibleInstallerCount(): Promise<number> {
 	const rows = await db
 		.select({ total: count() })
-		.from(inBusinessProfiles)
-		.where(eq(inBusinessProfiles.isvisible, true));
+		.from(businessProfiles)
+		.where(eq(businessProfiles.isvisible, true));
 	return rows[0]?.total ?? 0;
 }
 
 export async function getTopDistricts(limit = 5): Promise<TopDistrict[]> {
-	const installerCount = countDistinct(inBusinessProfiles.businessId);
+	const installerCount = countDistinct(businessProfiles.businessId);
 
 	const rows = await db
 		.select({
@@ -84,10 +84,10 @@ export async function getTopDistricts(limit = 5): Promise<TopDistrict[]> {
 		})
 		.from(geoLocations)
 		.innerJoin(
-			inBusinessProfiles,
+			businessProfiles,
 			and(
-				sql`lower(${inBusinessProfiles.district}) = lower(${geoLocations.level2})`,
-				eq(inBusinessProfiles.isvisible, true)
+				sql`lower(${businessProfiles.district}) = lower(${geoLocations.level2})`,
+				eq(businessProfiles.isvisible, true)
 			)
 		)
 		.where(eq(geoLocations.countryCode, 'in'))

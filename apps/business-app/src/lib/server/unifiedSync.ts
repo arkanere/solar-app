@@ -1,6 +1,6 @@
 // App-level dual-write half of the phase-2 cutover (migration 047): after a
 // write endpoint touches a legacy table (leaddata/us_leaddata, businesses_1/
-// us_businesses, in_business_profiles), it calls the matching sv_sync_*
+// us_businesses, business_profiles), it calls the matching sv_sync_*
 // SQL function to project the row into the unified table. The 043/045/046
 // triggers currently run the same functions, so the explicit call is
 // idempotent — but it keeps business-app correct on its own once those
@@ -41,11 +41,11 @@ export async function syncAccountToUnified(
 	await db.execute(sql`SELECT sv_sync_account(${country}, ${sourceId})`);
 }
 
-// businesses_1 -> in_business_profiles (migration 050, rewritten by 054). The
+// businesses_1 -> business_profiles (migration 050, rewritten by 054). The
 // in_business_accounts arm 050 gave this function was dropped by 054 and the
 // table itself by 060; sv_sync_account reads businesses_1 directly.
 // Call after a businesses_1 write, BEFORE syncBusinessToUnified —
-// sv_sync_business('in') sources from in_business_profiles. Idempotent with
+// sv_sync_business('in') sources from business_profiles. Idempotent with
 // the 039/040 triggers; keeps the split tables fresh once those drop.
 export async function syncInSplitTables(db: SyncExecutor, sourceId: number): Promise<void> {
 	await db.execute(sql`SELECT sv_sync_in_split(${sourceId})`);

@@ -25,7 +25,7 @@ export const US_LEAD_COLUMNS = `
 	level2 AS county, stage, status, claim_count, original_id, business_id,
 	email_invite_count, sv_comment_for_businesses, marketing_consent`;
 
-// businesses -> in_business_profiles legacy names.
+// businesses -> business_profiles legacy names.
 export const IN_BUSINESS_COLUMNS = `
 	source_id AS id, slug, businessname, email, phonenumber, whatsapp,
 	description, website, instagram_id, google_maps_link, address, pluscode,

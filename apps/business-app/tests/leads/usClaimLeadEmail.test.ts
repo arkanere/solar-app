@@ -10,7 +10,7 @@
 // For the record, they were:
 //
 //   - every read and write went to `leaddata` / `businesses_1` /
-//     `in_business_profiles` unconditionally, so a US lead id matched no row and
+//     `business_profiles` unconditionally, so a US lead id matched no row and
 //     the claim died at "Lead not found". FIXED: migration 054 united those
 //     tables under a country_code discriminator and the handler now writes it;
 //   - mintBusinessTokenById took the literal 'businesses_1'. FIXED: it takes a

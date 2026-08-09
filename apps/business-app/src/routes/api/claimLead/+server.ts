@@ -16,7 +16,7 @@ import {
 import {
 	branches,
 	businesses1,
-	inBusinessProfiles,
+	businessProfiles,
 	leaddata,
 	leaddataClaimrequests,
 	projects
@@ -124,12 +124,12 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				),
 			db
 				.select({
-					description: inBusinessProfiles.description,
-					brands: inBusinessProfiles.brands,
-					googleMapsLink: inBusinessProfiles.googleMapsLink
+					description: businessProfiles.description,
+					brands: businessProfiles.brands,
+					googleMapsLink: businessProfiles.googleMapsLink
 				})
-				.from(inBusinessProfiles)
-				.where(eq(inBusinessProfiles.businessId, business_id))
+				.from(businessProfiles)
+				.where(eq(businessProfiles.businessId, business_id))
 		]);
 
 		const gateTotalClaimed = gateClaimedRes[0]?.count ?? 0;
@@ -226,19 +226,19 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 					// Check if main or any branch already serves the lead's district
 					const presenceResult = await tx
-						.select({ id: inBusinessProfiles.businessId })
-						.from(inBusinessProfiles)
+						.select({ id: businessProfiles.businessId })
+						.from(businessProfiles)
 						.where(
 							and(
 								// district is not id-scoped, so without the country filter a US
 								// lead's district could match an IN business's and suppress the
 								// branch creation. Every other lookup here is by a globally
 								// unique id, which is why this is the only one that needs it.
-								eq(inBusinessProfiles.countryCode, country),
-								eq(inBusinessProfiles.district, leadDistrict),
-								sql`(${inBusinessProfiles.businessId} = ${mainBusinessId} OR EXISTS (
+								eq(businessProfiles.countryCode, country),
+								eq(businessProfiles.district, leadDistrict),
+								sql`(${businessProfiles.businessId} = ${mainBusinessId} OR EXISTS (
 								     SELECT 1 FROM ${branches} WHERE ${branches.mainId} = ${mainBusinessId}
-								     AND ${branches.branchId} = ${inBusinessProfiles.businessId}
+								     AND ${branches.branchId} = ${businessProfiles.businessId}
 								     AND ${branches.isactive} = true
 								 ))`
 							)
@@ -466,13 +466,13 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			try {
 				const bizResult = await db
 					.select({
-						businessname: inBusinessProfiles.businessname,
-						phonenumber: inBusinessProfiles.phonenumber,
-						email: inBusinessProfiles.email,
-						slug: inBusinessProfiles.slug
+						businessname: businessProfiles.businessname,
+						phonenumber: businessProfiles.phonenumber,
+						email: businessProfiles.email,
+						slug: businessProfiles.slug
 					})
-					.from(inBusinessProfiles)
-					.where(eq(inBusinessProfiles.businessId, customerBusinessId));
+					.from(businessProfiles)
+					.where(eq(businessProfiles.businessId, customerBusinessId));
 				if (bizResult.length === 0) {
 					console.error('❌ Customer email skipped: business not found', customerBusinessId);
 					return;
