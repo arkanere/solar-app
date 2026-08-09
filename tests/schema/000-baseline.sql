@@ -494,14 +494,6 @@ CREATE TABLE "legal_policies" (
 	CONSTRAINT "legal_policies_type_version_key" UNIQUE("type","version")
 );
 
-CREATE TABLE "locations" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"state" varchar(255),
-	"district" varchar(255),
-	"city" varchar(255),
-	"source" smallint
-);
-
 CREATE TABLE "masterlist_indian_businesses" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"state" varchar(100),

@@ -6,23 +6,7 @@
 
 ## Open
 
-1. **Drop the IN-only `locations` table.** Its US twin went with migration 056; `locations` itself
-   (8,395 rows) survived because that sweep only covered `us_*`. business-app's dropdowns moved to
-   `geo_locations` with the branch-form fix.
-
-   **It is not readerless — that claim was wrong and was corrected 2026-08-09.** main-app still has
-   four live readers, so this is a port, not a drop:
-   - `src/lib/server/queries.ts:29` and `:72-84` (two queries)
-   - `routes/[country=country]/(layout-1)/partners/+page.server.ts:17` — `countDistinct(city)`
-   - `routes/[country=country]/(layout-1)/partners/join/[district_slug]/+page.server.ts` — the load
-   - `routes/[country=country]/(layout-1)/district/[district_slug]/+page.server.ts:29`
-
-   Move those to `geo_locations` first, including the `LOWER(REPLACE(district,' ','-'))` slug
-   matching. Only then reconcile: `locations_id_seq` was shared with the dropped `us_locations` and
-   is `OWNED BY locations.id`, and `geo_locations` holds 8,392 IN rows against its 8,395, so confirm
-   where those 3 rows went before dropping.
-
-2. **The referral page's referrer link points at a route that does not exist.**
+1. **The referral page's referrer link points at a route that does not exist.**
    `referral/+page.svelte` emits `…/solar-panel-installer/{slug}/referrer/{ref}`, and main-app has no
    `/referrer/` route in either country and no rewrite that produces one. Phase 7 made its country
    segment dynamic and deliberately left the shape alone rather than guessing. Note also that
@@ -37,7 +21,7 @@
    query param on the canonical profile route (needs `LeadForm` to capture `search` too, since it
    only stores `pathname` today) or a real `/referrer/{ref}` sub-route.
 
-3. **Duplicate `businesses.slug` values in live IN data.** `spectrum-solar-power-kasaragod` ×5,
+2. **Duplicate `businesses.slug` values in live IN data.** `spectrum-solar-power-kasaragod` ×5,
    `spectrum-solar-power-kannur` ×4, `spectrum-solar-power-kozhikode` ×3 and ~22 more ×2. The
    `/[business_slug]` lookup does `.limit(1)`, so those businesses render a **non-deterministic**
    dashboard — whichever row Postgres returns first. Fixing means de-duplicating live rows, which is
@@ -45,14 +29,14 @@
    `api/resetPassword` matches on the token hash rather than on the slug alone (`cdeff73`) — any new
    slug lookup has to assume duplicates.
 
-4. **Drift between `leaddata` and unified `leads`.** **3** `leaddata` rows have no unified row at all
+3. **Drift between `leaddata` and unified `leads`.** **3** `leaddata` rows have no unified row at all
    (a `sv_sync_lead` call that never happened), and **156** unified `leads` have no surviving
    `leaddata` source (the sync never deletes, so removing a source row orphans its projection).
    `businesses` is clean — 0 in either direction. Consequence: a full resync *raises* the unified
    lead count, so "counts unmoved" only holds for a **targeted** resync. Reconciling these is its own
    task; `apps/main-app/src/lib/server/migrations/check-unified-drift.sql` is the existing tool.
 
-5. **No US lead ever gets a `state`, so the US non-exclusive lead pool is permanently empty.** The
+4. **No US lead ever gets a `state`, so the US non-exclusive lead pool is permanently empty.** The
    dashboard's and `/crm`'s category-1 read matches `leads.level1 IN (business states)`, but every
    writer of a US lead leaves `leaddata.state` null: `insertLead()` resolves level1/level2 from
    `pincode_mapping` behind a `country === 'in'` guard (`apps/main-app/src/lib/server/leads.ts:44`),
@@ -64,24 +48,24 @@
    postal-code-to-state source — `pincode_mapping` is IN-only — which is a data question, not a code
    one. Whoever fixes it should flip those two tests rather than delete them.
 
-6. **`PostRecentProject.svelte:395-419` is India-shaped and US businesses reach it.** It labels its
+5. **`PostRecentProject.svelte:395-419` is India-shaped and US businesses reach it.** It labels its
    fields **"Pincode:"** and **"District (Auto-filled):"** and auto-fills from
    `/api/getDistrictByPincode`, which queries `pincode_mapping`. That is the one lookup
    `geo_locations` cannot replace — it has no postal-code column, and a live schema sweep found no US
-   zip source anywhere. Blocked on the same missing data as item 5; solve the two together.
+   zip source anywhere. Blocked on the same missing data as item 4; solve the two together.
 
    The sibling branch form was the same bug and is fixed (`d418a08`, `0a8351a`) — its dropdowns now
    read `geo_locations`, which is populated for both countries. Use it as the model, but note
    `getCities` there needs state *and* county, because US county names repeat across states.
 
-7. **`sv_referrers_slug_key` is UNIQUE on `slug` alone, globally across all businesses.** So two
+6. **`sv_referrers_slug_key` is UNIQUE on `slug` alone, globally across all businesses.** So two
    businesses cannot both have a referrer slugged `ravi` — the second one fails. `api/addReferrer`
    only checks for a *per-business* duplicate slug, so a cross-business collision escapes its
    validation and surfaces as a raw 500 with "Failed to add referrer" rather than the endpoint's own
    "please choose a different slug" message. Pre-existing; 057 renamed the constraint but
    deliberately did not change its shape. The fix is to drop it and keep only
    `sv_referrers_business_id_slug_key`, but check first whether the referrer URL shape settled on in
-   item 2 needs a globally unique slug — a bare `/referrer/{ref}` route would.
+   item 1 needs a globally unique slug — a bare `/referrer/{ref}` route would.
 
    While there: `sv_referrers_business_id_slug_idx` is a plain index on `(business_id, slug)`, the
    exact columns of the unique constraint next to it, which already provides an index. It is dead
@@ -119,16 +103,21 @@ lose its name and `check` would not catch it; and it omits `business_notes`, `qu
 `reference_uuid` and the four `bill_*` columns, two of which `CustomerInquiry.svelte` declares on its
 `Lead` type. That selection was shaped for the narrow legacy `us_leaddata` table; since 054, unified
 `leads` carries these for both countries, so narrowing buys nothing. The real IN-only leakage is in
-the write forms — items 5 and 6.
+the write forms — items 4 and 5.
 
 **Dropping a table breaks the test harness before it breaks anything else.** The suite replays a few
 migrations on top of the generated baseline (`scripts/apply-test-migrations.mjs`), and those files
-are *history* — 042 and 054 both copy rows out of the `us_*` tables. Once the baseline stops creating
-those tables, the copy is an unresolvable reference and **every** test fails in global setup, not in
-an assertion. Both are now wrapped in a `to_regclass(...) IS NOT NULL` guard, which is a no-op on
-live and self-skipping in tests; do the same for the next drop. Check three places a code grep of
-`src/` will miss: the replayed migrations, `tests/helpers/fixtures.ts`'s `TRUNCATE` list, and any
-function body (Postgres does not resolve table names in a function until it runs).
+are *history* — 042 copies rows out of both `locations` and `us_locations`, and 054 out of the `us_*`
+tables. Once the baseline stops creating those tables, the copy is an unresolvable reference and
+**every** test fails in global setup, not in an assertion. All three are now wrapped in a
+`to_regclass(...) IS NOT NULL` guard, which is a no-op on live and self-skipping in tests; do the
+same for the next drop. Check three places a code grep of `src/` will miss: the replayed migrations,
+`tests/helpers/fixtures.ts`'s `TRUNCATE` list, and any function body (Postgres does not resolve table
+names in a function until it runs).
+
+This has now been exercised twice, and the second time (058, `locations`) the guard was the only
+thing standing between a regenerated baseline and 176 failing tests — worth writing the guard in the
+same commit as the drop, not after the baseline is regenerated.
 
 **A migration that changes where a sync reads from must enumerate every writer of the old location.**
 055's dry run proved the collapsed functions reproduce the projection for existing rows, which is
@@ -205,4 +194,4 @@ the EDB install, which has no `solar` role — do not point the suite at it.
 `npm run pull -w @solar/db`. **Never pull from a test cluster** — its baseline omits three
 `loc_key(...)` expression indexes, so a pull from there silently drops them.
 
-All migrations through **057** are applied to live.
+All migrations through **058** are applied to live.

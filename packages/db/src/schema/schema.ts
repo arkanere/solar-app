@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, text, timestamp, char, boolean, smallint, integer, doublePrecision, index, check, uuid, date, unique, foreignKey, numeric, uniqueIndex, jsonb, primaryKey, pgSequence } from "drizzle-orm/pg-core"
+import { pgTable, serial, varchar, text, timestamp, char, boolean, integer, doublePrecision, index, check, smallint, uuid, date, unique, foreignKey, numeric, uniqueIndex, jsonb, primaryKey, pgSequence } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 
@@ -19,14 +19,6 @@ export const ideaPot = pgTable("idea_pot", {
 	notes: char({ length: 255 }),
 	isvisible: boolean().default(true),
 	category: varchar({ length: 255 }).default(sql`NULL`),
-});
-
-export const locations = pgTable("locations", {
-	id: serial().primaryKey().notNull(),
-	state: varchar({ length: 255 }),
-	district: varchar({ length: 255 }),
-	city: varchar({ length: 255 }),
-	source: smallint(),
 });
 
 export const queries = pgTable("queries", {
