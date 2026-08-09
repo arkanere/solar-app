@@ -67,16 +67,6 @@ export const phone = z
 	.trim()
 	.regex(/^\+?\d{10,16}$/, 'Phone number must be 10 to 16 digits, optionally starting with +');
 
-/**
- * Indian mobile, matching `/^[6-9]\d{9}$/`. Stricter than `phone` and NOT
- * interchangeable with it — used where that rule is already enforced
- * (referrers).
- */
-export const inMobile = z
-	.string({ error: 'Phone number is required' })
-	.trim()
-	.regex(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit phone number');
-
 export const optionalPhone = blankToNull(phone);
 
 /** Indian PIN code — 6 digits. */

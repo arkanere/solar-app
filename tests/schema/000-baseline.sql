@@ -696,20 +696,6 @@ CREATE TABLE "state_subsidies" (
 	CONSTRAINT "state_subsidies_state_slug_key" UNIQUE("state_slug")
 );
 
-CREATE TABLE "sv_referrers" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"business_id" integer NOT NULL,
-	"name" varchar(255) NOT NULL,
-	"phone" varchar(20) NOT NULL,
-	"email" varchar(255),
-	"notes" text,
-	"created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
-	"updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,
-	"slug" varchar(255) NOT NULL,
-	CONSTRAINT "sv_referrers_business_id_slug_key" UNIQUE("business_id","slug"),
-	CONSTRAINT "sv_referrers_slug_key" UNIQUE("slug")
-);
-
 CREATE TABLE "unsubscribe" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"email" varchar(255) NOT NULL,
@@ -738,7 +724,6 @@ ALTER TABLE "legal_acceptances" ADD CONSTRAINT "legal_acceptances_country_code_f
 ALTER TABLE "legal_acceptances" ADD CONSTRAINT "legal_acceptances_business_fkey" FOREIGN KEY ("country_code","business_id") REFERENCES "public"."business_accounts"("country_code","source_id") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "project_management" ADD CONSTRAINT "projectmanagement_lead_id_fkey" FOREIGN KEY ("lead_id") REFERENCES "public"."leaddata"("id") ON DELETE cascade ON UPDATE no action;
 ALTER TABLE "solar_products" ADD CONSTRAINT "solar_products_brand_slug_fkey" FOREIGN KEY ("brand_slug") REFERENCES "public"."solar_brands"("slug") ON DELETE no action ON UPDATE no action;
-ALTER TABLE "sv_referrers" ADD CONSTRAINT "sv_referrers_business_id_fkey" FOREIGN KEY ("business_id") REFERENCES "public"."businesses_1"("id") ON DELETE cascade ON UPDATE no action;
 CREATE INDEX "business_accounts_login_email_idx" ON "business_accounts" USING btree ("country_code","login_email");
 CREATE INDEX "business_accounts_magic_token_idx" ON "business_accounts" USING btree ("country_code","magic_link_token");
 CREATE INDEX "businesses_geo_idx" ON "businesses" USING btree ("country_code","level2","isvisible");
@@ -775,6 +760,3 @@ CREATE INDEX "idx_verified_usa" ON "masterlist_usa_businesses" USING btree ("ver
 CREATE INDEX "rate_limits_reset_time_idx" ON "rate_limits" USING btree ("reset_time");
 CREATE INDEX "idx_seo_pages_pillar" ON "seo_pages" USING btree ("pillar_slug");
 CREATE INDEX "idx_seo_pages_type" ON "seo_pages" USING btree ("page_type");
-CREATE INDEX "sv_referrers_business_id_idx" ON "sv_referrers" USING btree ("business_id");
-CREATE INDEX "sv_referrers_business_id_slug_idx" ON "sv_referrers" USING btree ("business_id","slug");
-CREATE INDEX "sv_referrers_phone_idx" ON "sv_referrers" USING btree ("phone");

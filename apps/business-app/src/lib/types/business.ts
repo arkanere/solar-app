@@ -146,6 +146,5 @@ export interface BusinessApiResponse {
  */
 export interface SetupProgress {
 	projectsCount: number;
-	referrersCount: number;
 	proposalsCount: number;
 }

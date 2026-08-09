@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { callsafeusers, callsafehandles, leaddata, inProposals, projectManagement, businesses1, svReferrers, solarBrands, solarProducts, stateSubsidies, discoms, authors, inBlogPosts, inUser, inUserFeedback, legalPolicies, legalAcceptances, countries, businessAccounts, geoLocations, businesses, leads } from "./schema";
+import { callsafeusers, callsafehandles, leaddata, inProposals, projectManagement, solarBrands, solarProducts, stateSubsidies, discoms, authors, inBlogPosts, inUser, inUserFeedback, legalPolicies, legalAcceptances, countries, businessAccounts, geoLocations, businesses, leads } from "./schema";
 
 export const callsafehandlesRelations = relations(callsafehandles, ({one}) => ({
 	callsafeuser: one(callsafeusers, {
@@ -29,17 +29,6 @@ export const projectManagementRelations = relations(projectManagement, ({one}) =
 		fields: [projectManagement.leadId],
 		references: [leaddata.id]
 	}),
-}));
-
-export const svReferrersRelations = relations(svReferrers, ({one}) => ({
-	businesses1: one(businesses1, {
-		fields: [svReferrers.businessId],
-		references: [businesses1.id]
-	}),
-}));
-
-export const businesses1Relations = relations(businesses1, ({many}) => ({
-	svReferrers: many(svReferrers),
 }));
 
 export const solarProductsRelations = relations(solarProducts, ({one}) => ({

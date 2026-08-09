@@ -1,7 +1,9 @@
-// The /branch and /referral page loads used to filter on a literal
-// `country_code = 'in'`, so a US business could not load either page — it was
-// told its own profile did not exist. Their *links* were country-correct since
-// Phase 7; only their reads were not.
+// The /branch page load used to filter on a literal `country_code = 'in'`, so a
+// US business could not load it — it was told its own profile did not exist.
+// Its *links* were country-correct since Phase 7; only its reads were not.
+//
+// /referral had the same bug and the same fix, and was covered here too until
+// the referrer feature was deleted outright (059).
 //
 // These call the loads directly, the same way the API tests call handlers. The
 // `parent()` stub stands in for [business_slug]/+layout.server.ts, which is what
@@ -14,7 +16,6 @@ import {
 	createLead,
 	createProject,
 	createProjectManagement,
-	createReferrer,
 	createUsBusiness,
 	createUsLead,
 	resetDatabase,
@@ -23,9 +24,6 @@ import {
 
 const { load: branchLoad } = await import(
 	'../../src/routes/(layout-1)/[business_slug]/branch/+page.server'
-);
-const { load: referralLoad } = await import(
-	'../../src/routes/(layout-1)/[business_slug]/referral/+page.server'
 );
 const { load: dashboardLoad } = await import(
 	'../../src/routes/(layout-1)/[business_slug]/+page.server'
@@ -58,7 +56,7 @@ function context(business_slug: string, country: 'in' | 'us' | undefined) {
 	} as any;
 }
 
-describe('country resolution in the /branch and /referral loads', () => {
+describe('country resolution in the /branch load', () => {
 	beforeEach(async () => {
 		await resetDatabase();
 	});
@@ -111,59 +109,6 @@ describe('country resolution in the /branch and /referral loads', () => {
 		expect(data.mainBusiness).toBeUndefined();
 	});
 
-	it('loads the referral page for a US business, with no referrers', async () => {
-		await createUsBusiness({ slug: 'oakland-solar' });
-
-		const data = await referralLoad(context('oakland-solar', 'us'));
-
-		// Loads at all — it used to throw 404.
-		expect(data.business?.slug).toBe('oakland-solar');
-		expect(data.referrers).toEqual([]);
-	});
-
-	it('still loads the referral page for an IN business', async () => {
-		await createBusiness({ slug: 'pune-solar' });
-
-		const data = await referralLoad(context('pune-solar', 'in'));
-
-		expect(data.business?.slug).toBe('pune-solar');
-		expect(data.referrers).toEqual([]);
-	});
-
-	// 057 renamed in_referrers -> sv_referrers and dropped the IN-only framing.
-	// Before it, the two tests above asserted an empty list for US and that was
-	// the whole story — "a US business correctly gets an empty list" was the
-	// documented behaviour. The table never had a country column, so US
-	// referrers always *would* have worked; nothing had ever checked. This pins
-	// that they do, so the empty list above means "none created", not "US
-	// unsupported".
-	it('returns a US business’s own referrers', async () => {
-		const usId = await createUsBusiness({ slug: 'oakland-solar' });
-		await createReferrer(usId, { name: 'Dana Reyes', slug: 'dana-reyes' });
-
-		const data = await referralLoad(context('oakland-solar', 'us'));
-
-		expect(data.referrers).toHaveLength(1);
-		expect(data.referrers?.[0].name).toBe('Dana Reyes');
-		expect(data.referrers?.[0].business_id).toBe(usId);
-	});
-
-	// The read filters on business_id alone, with no country predicate. That is
-	// only safe because businesses_1 ids are globally unique across countries
-	// since 054 — this is the test that would fail if that ever stopped holding,
-	// or if someone added a country filter that the fixture's ids disagreed with.
-	it('does not leak referrers across businesses of different countries', async () => {
-		const inId = await createBusiness({ slug: 'pune-solar' });
-		const usId = await createUsBusiness({ slug: 'oakland-solar' });
-		await createReferrer(inId, { name: 'Ravi Kumar', slug: 'ravi-kumar' });
-		await createReferrer(usId, { name: 'Dana Reyes', slug: 'dana-reyes' });
-
-		const inData = await referralLoad(context('pune-solar', 'in'));
-		const usData = await referralLoad(context('oakland-solar', 'us'));
-
-		expect(inData.referrers?.map((r) => r.name)).toEqual(['Ravi Kumar']);
-		expect(usData.referrers?.map((r) => r.name)).toEqual(['Dana Reyes']);
-	});
 });
 
 // The dashboard is the page a login actually lands on, and it carried the same

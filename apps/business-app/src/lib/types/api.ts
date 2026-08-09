@@ -55,47 +55,6 @@ export interface LocationLookupResponse {
 	error?: string;
 }
 
-// ===== REFERRER TYPES =====
-
-/**
- * Referrer entity from the `sv_referrers` table.
- * Represents a business partner who refers leads.
- *
- * Country-agnostic: the table is keyed by business_id, which is globally unique
- * across countries, so a referrer's country comes from its business. There was
- * never a us_referrers table, despite what this comment used to claim.
- */
-export interface Referrer {
-	id: number;
-	business_id: number;
-	name: string;
-	slug: string;
-	phone: string;
-	email: string | null;
-	notes: string | null;
-	created_at: Date | string;
-	updated_at: Date | string;
-}
-
-/**
- * Request payload for adding a referrer
- */
-export interface AddReferrerRequest {
-	businessId: number;
-	name: string;
-	slug: string;
-	phone: string;
-	email?: string | null;
-	notes?: string | null;
-}
-
-/**
- * API response for referrer operations
- */
-export type ReferrerApiResponse =
-	| (ApiSuccessResponse<{ referrer: Referrer }> & { referrer: Referrer })
-	| ApiErrorResponse;
-
 // ===== RECENT PROJECT TYPES =====
 
 /**

@@ -13,7 +13,6 @@
 		Users,
 		UserPlus,
 		Building2,
-		Handshake,
 		FolderKanban,
 		FileText,
 		Settings,
@@ -108,8 +107,7 @@
 			title: 'Branches',
 			icon: Building2,
 			items: [
-				{ label: 'Manage Branches', icon: Building2, href: `/${businessSlug}/branch`, type: 'link' },
-				{ label: 'Referrers', icon: Handshake, href: `/${businessSlug}/referral`, type: 'link' }
+				{ label: 'Manage Branches', icon: Building2, href: `/${businessSlug}/branch`, type: 'link' }
 			]
 		},
 		{

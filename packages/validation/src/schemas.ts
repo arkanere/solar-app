@@ -10,8 +10,6 @@ import {
 	blankToNull,
 	decimal,
 	email,
-	id,
-	inMobile,
 	inPincode,
 	optionalEmail,
 	optionalId,
@@ -63,22 +61,6 @@ export const leadSchema = (country: 'in' | 'us') =>
 				});
 			}
 		});
-
-/* -------------------------------------------------------------------------
- * business-app /in/api/addReferrer
- *
- * Replaces the hand-rolled required/slug/phone/email checks in the handler.
- * Same rules, same messages.
- * ---------------------------------------------------------------------- */
-
-export const addReferrerSchema = z.object({
-	businessId: id,
-	name: requiredText('Name'),
-	slug,
-	phone: inMobile,
-	email: optionalEmail,
-	notes: optionalText()
-});
 
 /* -------------------------------------------------------------------------
  * business-app /in/api/saveProposal
@@ -242,7 +224,6 @@ export const forgotPasswordSchema = z.object({
 });
 
 export type LeadInput = z.output<ReturnType<typeof leadSchema>>;
-export type AddReferrerInput = z.output<typeof addReferrerSchema>;
 export type SaveProposalInput = z.output<typeof saveProposalSchema>;
 export type UpdateBusinessDetailsInput = z.output<typeof updateBusinessDetailsSchema>;
 export type UsUpdateBusinessDetailsInput = z.output<typeof usUpdateBusinessDetailsSchema>;

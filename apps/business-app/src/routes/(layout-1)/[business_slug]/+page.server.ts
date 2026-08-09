@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
 import { IN_BUSINESS_SELECTION, IN_LEAD_SELECTION } from '$lib/server/unifiedRead';
-import { branches, businesses, inProposals, leaddataClaimrequests, leads, projects, svReferrers } from '@solar/db/schema';
+import { branches, businesses, inProposals, leaddataClaimrequests, leads, projects } from '@solar/db/schema';
 import { and, count, desc, eq, gte, inArray, like, not, or, sql } from 'drizzle-orm';
 
 export const prerender = false;
@@ -40,7 +40,6 @@ interface PageData {
 	leads?: Lead[];
 	leadClaims?: number[];
 	projectsCount?: number;
-	referrersCount?: number;
 	proposalsCount?: number;
 	errorMessage?: string;
 }
@@ -62,7 +61,7 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 	try {
 		// Query the profile from the unified businesses table (never the account
 		// tables — credentials must not reach page data). source_id AS id keeps
-		// the businesses_1 id that branch/lead/referrer queries expect.
+		// the businesses_1 id that branch and lead queries expect.
 		const businessRows = await db
 			.select(IN_BUSINESS_SELECTION)
 			.from(businesses)
@@ -187,13 +186,12 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 			return dateB.getTime() - dateA.getTime();
 		});
 
-		// ✅ Query setup-progress counts (projects, referrers, proposals)
-		const [projectsRes, referrersRes, proposalsRes] = await Promise.all([
+		// ✅ Query setup-progress counts (projects, proposals)
+		const [projectsRes, proposalsRes] = await Promise.all([
 			db
 				.select({ count: count() })
 				.from(projects)
 				.where(and(eq(projects.businessSlug, business_slug), eq(projects.isvisible, true))),
-			db.select({ count: count() }).from(svReferrers).where(eq(svReferrers.businessId, businessId)),
 			db.select({ count: count() }).from(inProposals).where(eq(inProposals.businessSlug, business_slug))
 		]);
 
@@ -203,7 +201,6 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 			leads: allLeads.length > 0 ? allLeads : [],
 			leadClaims: Array.from(claimedLeadIds), // ✅ Export leadClaims as an array of claimed lead IDs
 			projectsCount: projectsRes[0]?.count ?? 0,
-			referrersCount: referrersRes[0]?.count ?? 0,
 			proposalsCount: proposalsRes[0]?.count ?? 0
 		};
 	} catch (error) {

@@ -6,22 +6,7 @@
 
 ## Open
 
-1. **The referral page's referrer link points at a route that does not exist.**
-   `referral/+page.svelte` emits `…/solar-panel-installer/{slug}/referrer/{ref}`, and main-app has no
-   `/referrer/` route in either country and no rewrite that produces one. Phase 7 made its country
-   segment dynamic and deliberately left the shape alone rather than guessing. Note also that
-   `/{country}/installer/{slug}` is the canonical profile URL for both countries —
-   `/us/solar-panel-installer/{slug}` is only a legacy 301, and there is no `/in` equivalent at all.
-
-   This is now a **both-country** bug: 057 made referrers country-agnostic, so a US business can have
-   referrers and gets the same dead link. The attribution plumbing already exists —
-   `LeadForm.svelte:51` records `$page.url.pathname` into `leads.urlparams`, which the dashboard
-   already prefix-matches at `[business_slug]/+page.server.ts:112` — but nothing reads a referrer
-   back out of it yet, so fixing the URL is only half the job. Decide the shape first: a `?ref=`
-   query param on the canonical profile route (needs `LeadForm` to capture `search` too, since it
-   only stores `pathname` today) or a real `/referrer/{ref}` sub-route.
-
-2. **Duplicate `businesses.slug` values in live IN data.** `spectrum-solar-power-kasaragod` ×5,
+1. **Duplicate `businesses.slug` values in live IN data.** `spectrum-solar-power-kasaragod` ×5,
    `spectrum-solar-power-kannur` ×4, `spectrum-solar-power-kozhikode` ×3 and ~22 more ×2. The
    `/[business_slug]` lookup does `.limit(1)`, so those businesses render a **non-deterministic**
    dashboard — whichever row Postgres returns first. Fixing means de-duplicating live rows, which is
@@ -29,14 +14,14 @@
    `api/resetPassword` matches on the token hash rather than on the slug alone (`cdeff73`) — any new
    slug lookup has to assume duplicates.
 
-3. **Drift between `leaddata` and unified `leads`.** **3** `leaddata` rows have no unified row at all
+2. **Drift between `leaddata` and unified `leads`.** **3** `leaddata` rows have no unified row at all
    (a `sv_sync_lead` call that never happened), and **156** unified `leads` have no surviving
    `leaddata` source (the sync never deletes, so removing a source row orphans its projection).
    `businesses` is clean — 0 in either direction. Consequence: a full resync *raises* the unified
    lead count, so "counts unmoved" only holds for a **targeted** resync. Reconciling these is its own
    task; `apps/main-app/src/lib/server/migrations/check-unified-drift.sql` is the existing tool.
 
-4. **No US lead ever gets a `state`, so the US non-exclusive lead pool is permanently empty.** The
+3. **No US lead ever gets a `state`, so the US non-exclusive lead pool is permanently empty.** The
    dashboard's and `/crm`'s category-1 read matches `leads.level1 IN (business states)`, but every
    writer of a US lead leaves `leaddata.state` null: `insertLead()` resolves level1/level2 from
    `pincode_mapping` behind a `country === 'in'` guard (`apps/main-app/src/lib/server/leads.ts:44`),
@@ -48,7 +33,7 @@
    postal-code-to-state source — `pincode_mapping` is IN-only — which is a data question, not a code
    one. Whoever fixes it should flip those two tests rather than delete them.
 
-5. **`PostRecentProject.svelte:395-419` is India-shaped and US businesses reach it.** It labels its
+4. **`PostRecentProject.svelte:395-419` is India-shaped and US businesses reach it.** It labels its
    fields **"Pincode:"** and **"District (Auto-filled):"** and auto-fills from
    `/api/getDistrictByPincode`, which queries `pincode_mapping`. That is the one lookup
    `geo_locations` cannot replace — it has no postal-code column, and a live schema sweep found no US
@@ -57,19 +42,6 @@
    The sibling branch form was the same bug and is fixed (`d418a08`, `0a8351a`) — its dropdowns now
    read `geo_locations`, which is populated for both countries. Use it as the model, but note
    `getCities` there needs state *and* county, because US county names repeat across states.
-
-6. **`sv_referrers_slug_key` is UNIQUE on `slug` alone, globally across all businesses.** So two
-   businesses cannot both have a referrer slugged `ravi` — the second one fails. `api/addReferrer`
-   only checks for a *per-business* duplicate slug, so a cross-business collision escapes its
-   validation and surfaces as a raw 500 with "Failed to add referrer" rather than the endpoint's own
-   "please choose a different slug" message. Pre-existing; 057 renamed the constraint but
-   deliberately did not change its shape. The fix is to drop it and keep only
-   `sv_referrers_business_id_slug_key`, but check first whether the referrer URL shape settled on in
-   item 1 needs a globally unique slug — a bare `/referrer/{ref}` route would.
-
-   While there: `sv_referrers_business_id_slug_idx` is a plain index on `(business_id, slug)`, the
-   exact columns of the unique constraint next to it, which already provides an index. It is dead
-   weight on every write and can go in the same migration.
 
 ---
 
@@ -119,6 +91,10 @@ This has now been exercised twice, and the second time (058, `locations`) the gu
 thing standing between a regenerated baseline and 176 failing tests — worth writing the guard in the
 same commit as the drop, not after the baseline is regenerated.
 
+059 (`sv_referrers`) is the counter-example that shows the check is what matters, not the guard: no
+replayed migration and no function body mentioned the table, so it needed no guard at all. The three
+places still have to be checked; sometimes the answer is that there is nothing to do.
+
 **A migration that changes where a sync reads from must enumerate every writer of the old location.**
 055's dry run proved the collapsed functions reproduce the projection for existing rows, which is
 necessary but not sufficient — it was still rolled back once, because `us_*` had five live writers
@@ -162,7 +138,8 @@ Before touching any dependency on advisory grounds, check what is actually open:
 business-app's check covers `.ts` as well as `.svelte`, so no separate
 `npx tsc --noEmit -p apps/business-app/tsconfig.json` pass is needed.
 
-`npm test -w solarvipani-business` — **green: 176 passed, 0 skipped.**
+`npm test -w solarvipani-business` — **green: 172 passed, 0 skipped.** Was 176 until 059 deleted the
+referrer feature and the four `/referral` cases in `pageCountry.test.ts` with it.
 
 **Also run `npm run build -w <app>`** when you touch imports. `check` cannot see server code reaching
 a browser bundle, and that is a hard build failure — it left business-app undeployable for an unknown
