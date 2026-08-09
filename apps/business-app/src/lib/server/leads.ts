@@ -1,4 +1,4 @@
-import { leaddata, usLeaddata } from '@solar/db/schema';
+import { leaddata } from '@solar/db/schema';
 
 // Column projection for WRITING to the legacy IN lead table (`leaddata`),
 // aliased back to the snake_case column names.
@@ -38,31 +38,4 @@ export const IN_LEAD_RETURNING = {
 	bill_format: leaddata.billFormat,
 	bill_uploaded_at: leaddata.billUploadedAt,
 	marketing_consent: leaddata.marketingConsent
-} as const;
-
-// Same idea for the US lead table (`us_leaddata`), which has its own column
-// set — `zipcode`/`county` where the IN table has `pin_code`/`district`, and
-// no reference_uuid, business_notes, state, qualification_score or bill_*.
-export const US_LEAD_RETURNING = {
-	id: usLeaddata.id,
-	name: usLeaddata.name,
-	phone: usLeaddata.phone,
-	zipcode: usLeaddata.zipcode,
-	type: usLeaddata.type,
-	comment: usLeaddata.comment,
-	created_at: usLeaddata.createdAt,
-	svnotes: usLeaddata.svnotes,
-	urlparams: usLeaddata.urlparams,
-	isvisible: usLeaddata.isvisible,
-	email: usLeaddata.email,
-	category: usLeaddata.category,
-	county: usLeaddata.county,
-	stage: usLeaddata.stage,
-	status: usLeaddata.status,
-	claim_count: usLeaddata.claimCount,
-	original_id: usLeaddata.originalId,
-	business_id: usLeaddata.businessId,
-	email_invite_count: usLeaddata.emailInviteCount,
-	sv_comment_for_businesses: usLeaddata.svCommentForBusinesses,
-	marketing_consent: usLeaddata.marketingConsent
 } as const;

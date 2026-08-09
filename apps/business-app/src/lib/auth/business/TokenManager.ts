@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { branches, businessAccounts, businesses, usBranches } from '@solar/db/schema';
+import { branches, businessAccounts, businesses } from '@solar/db/schema';
 import { and, eq, isNotNull, notExists } from 'drizzle-orm';
 import { AUTH_ERRORS, SUCCESS_RESPONSE, ERROR_RESPONSE } from './AuthTypes';
 import { TokenSecurity } from './TokenSecurity';
@@ -81,7 +81,10 @@ export class TokenManager {
 
 	async getBusinessByEmail(email: string): Promise<BusinessLookupSuccess | AuthErrorResponse> {
 		try {
-			const branchesTable = this.country === 'in' ? branches : usBranches;
+			// `branches` covers both countries: it keys on businesses_1 ids, which
+			// are global since 054, and it already held the single US row that
+			// `us_branches` had. There is no unified branches table, so this stays
+			// on the legacy one.
 			const rows = await db
 				.select({
 					id: businessAccounts.sourceId,
@@ -105,12 +108,12 @@ export class TokenManager {
 						eq(businessAccounts.isvisible, true),
 						notExists(
 							db
-								.select({ one: branchesTable.id })
-								.from(branchesTable)
+								.select({ one: branches.id })
+								.from(branches)
 								.where(
 									and(
-										eq(branchesTable.branchId, businessAccounts.sourceId),
-										eq(branchesTable.isactive, true)
+										eq(branches.branchId, businessAccounts.sourceId),
+										eq(branches.isactive, true)
 									)
 								)
 						)

@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { inBusinessProfiles, usBusinesses } from '@solar/db/schema';
+import { businesses, inBusinessProfiles } from '@solar/db/schema';
 import { and, desc, eq } from 'drizzle-orm';
 
 export const config = {
@@ -22,20 +22,33 @@ export const config = {
 // The two table-name-keyed SQL strings became two Drizzle queries, continuing
 // the per-country-tables approach from Phases 2 and 5. The IN table keys the
 // business on `business_id`, the US one on `id`; both are aliased to `id`.
+//
+// The US branch reads the **unified** `businesses` table filtered to
+// country_code='us', replacing the dropped `us_businesses`. Per the read
+// unified / write legacy rule, a page load reads unified. The unified column
+// names are country-neutral, so `state` comes from `level1` and the legacy row
+// id from `source_id`; all 12 US rows matched `us_businesses` field-for-field
+// on every column selected here, and the query returns an identical result set.
 function latestBusinesses(country: string) {
 	if (country === 'us') {
 		return db
 			.select({
-				id: usBusinesses.id,
-				businessname: usBusinesses.businessname,
-				phonenumber: usBusinesses.phonenumber,
-				city: usBusinesses.city,
-				state: usBusinesses.state,
-				slug: usBusinesses.slug
+				id: businesses.sourceId,
+				businessname: businesses.businessname,
+				phonenumber: businesses.phonenumber,
+				city: businesses.city,
+				state: businesses.level1,
+				slug: businesses.slug
 			})
-			.from(usBusinesses)
-			.where(and(eq(usBusinesses.isvisible, true), eq(usBusinesses.businessfilled, true)))
-			.orderBy(desc(usBusinesses.id))
+			.from(businesses)
+			.where(
+				and(
+					eq(businesses.countryCode, 'us'),
+					eq(businesses.isvisible, true),
+					eq(businesses.businessfilled, true)
+				)
+			)
+			.orderBy(desc(businesses.sourceId))
 			.limit(10);
 	}
 
