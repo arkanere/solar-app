@@ -1,8 +1,8 @@
 import type { PageServerLoad } from './$types';
 import { error, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { locations } from '@solar/db/schema';
-import { sql } from 'drizzle-orm';
+import { geoLocations } from '@solar/db/schema';
+import { and, eq } from 'drizzle-orm';
 import { geoUrl } from '$lib/countries/urls';
 
 export const config = {
@@ -10,10 +10,10 @@ export const config = {
 };
 
 export const load: PageServerLoad = async ({ params }) => {
-	// This shim resolves legacy /district/{slug} URLs against the IN-only
-	// `locations` table, so it only means anything for IN. Gate before the
-	// lookup: without this, /us/district/{slug} would resolve a US slug against
-	// Indian rows. (svelte-check cannot catch a missing gate — hazard 7.)
+	// This shim resolves legacy /district/{slug} URLs against IN geography, so
+	// it only means anything for IN. Gate before the lookup: without this,
+	// /us/district/{slug} would resolve a US slug against Indian rows.
+	// (svelte-check cannot catch a missing gate — hazard 7.)
 	if (params.country !== 'in') {
 		error(404, 'Not found');
 	}
@@ -24,20 +24,17 @@ export const load: PageServerLoad = async ({ params }) => {
 		error(404, 'Invalid district URL');
 	}
 
-	// LOWER(REPLACE(...)) has no query builder equivalent — sql escape hatch.
+	// geo_locations carries the precomputed slugs, so this is an exact indexed
+	// lookup rather than the LOWER(REPLACE(...)) scan it replaces.
 	const rows = await db
-		.selectDistinct({ state: locations.state, district: locations.district })
-		.from(locations)
-		.where(sql`LOWER(REPLACE(${locations.district}, ' ', '-')) = ${districtSlug}`)
+		.selectDistinct({ stateSlug: geoLocations.level1Slug, districtSlug: geoLocations.level2Slug })
+		.from(geoLocations)
+		.where(and(eq(geoLocations.countryCode, 'in'), eq(geoLocations.level2Slug, districtSlug)))
 		.limit(1);
 
 	if (rows.length === 0) {
 		error(404, { message: `No district found for "${districtSlug}"` });
 	}
 
-	const { state, district } = rows[0];
-	const stateSlug = (state as string).toLowerCase().replace(/\s+/g, '-');
-	const newDistrictSlug = (district as string).toLowerCase().replace(/\s+/g, '-');
-
-	redirect(301, geoUrl(params.country, stateSlug, newDistrictSlug));
+	redirect(301, geoUrl(params.country, rows[0].stateSlug, rows[0].districtSlug));
 };

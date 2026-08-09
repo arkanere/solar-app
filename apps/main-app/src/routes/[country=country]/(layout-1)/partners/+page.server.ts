@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { inBusinessProfiles, leaddata, locations, projects } from '@solar/db/schema';
+import { geoLocations, inBusinessProfiles, leaddata, projects } from '@solar/db/schema';
 import { and, count, countDistinct, desc, eq } from 'drizzle-orm';
 
 export const config = {
@@ -14,7 +14,10 @@ export const load: PageServerLoad = async () => {
 			.from(inBusinessProfiles)
 			.where(eq(inBusinessProfiles.isvisible, true)),
 		db.select({ count: count() }).from(projects).where(eq(projects.isvisible, true)),
-		db.select({ count: countDistinct(locations.city) }).from(locations),
+		db
+			.select({ count: countDistinct(geoLocations.city) })
+			.from(geoLocations)
+			.where(eq(geoLocations.countryCode, 'in')),
 		db.select({ count: count() }).from(leaddata),
 		db
 			.select({

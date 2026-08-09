@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { inBusinessProfiles, leaddata, locations } from '@solar/db/schema';
+import { geoLocations, inBusinessProfiles, leaddata } from '@solar/db/schema';
 import { and, asc, count, countDistinct, eq, sql } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 
@@ -11,15 +11,12 @@ export const config = {
 export const load: PageServerLoad = async ({ params }) => {
 	const districtSlug = params.district_slug.toLowerCase();
 
-	// state/district are nullable columns the page uses as required strings —
-	// restated non-null, matching the raw driver's `any`.
+	// geo_locations carries the precomputed slugs, so this is an exact indexed
+	// lookup rather than the LOWER(REPLACE(...)) scan it replaces.
 	const locationRows = await db
-		.selectDistinct({
-			state: sql<string>`${locations.state}`,
-			district: sql<string>`${locations.district}`
-		})
-		.from(locations)
-		.where(sql`LOWER(REPLACE(${locations.district}, ' ', '-')) = ${districtSlug}`)
+		.selectDistinct({ state: geoLocations.level1, district: geoLocations.level2 })
+		.from(geoLocations)
+		.where(and(eq(geoLocations.countryCode, 'in'), eq(geoLocations.level2Slug, districtSlug)))
 		.limit(1);
 
 	if (locationRows.length === 0) {
@@ -48,24 +45,30 @@ export const load: PageServerLoad = async ({ params }) => {
 				)
 			),
 		db
-			.select({ count: countDistinct(locations.city) })
-			.from(locations)
-			.where(sql`LOWER(${locations.district}) = LOWER(${district})`),
-		db
-			.selectDistinct({
-				district: sql<string>`${locations.district}`,
-				slug: sql<string>`LOWER(REPLACE(${locations.district}, ' ', '-'))`,
-				installer_count: sql<string>`(SELECT COUNT(*) FROM in_business_profiles b
-				        WHERE LOWER(b.district) = LOWER(${locations.district}) AND b.isvisible = true)`
-			})
-			.from(locations)
+			.select({ count: countDistinct(geoLocations.city) })
+			.from(geoLocations)
 			.where(
 				and(
-					sql`LOWER(${locations.state}) = LOWER(${state})`,
-					sql`LOWER(${locations.district}) != LOWER(${district})`
+					eq(geoLocations.countryCode, 'in'),
+					sql`LOWER(${geoLocations.level2}) = LOWER(${district})`
+				)
+			),
+		db
+			.selectDistinct({
+				district: geoLocations.level2,
+				slug: geoLocations.level2Slug,
+				installer_count: sql<string>`(SELECT COUNT(*) FROM in_business_profiles b
+				        WHERE LOWER(b.district) = LOWER(${geoLocations.level2}) AND b.isvisible = true)`
+			})
+			.from(geoLocations)
+			.where(
+				and(
+					eq(geoLocations.countryCode, 'in'),
+					sql`LOWER(${geoLocations.level1}) = LOWER(${state})`,
+					sql`LOWER(${geoLocations.level2}) != LOWER(${district})`
 				)
 			)
-			.orderBy(asc(locations.district))
+			.orderBy(asc(geoLocations.level2))
 			.limit(6)
 	]);
 

@@ -58,14 +58,23 @@ CREATE TABLE IF NOT EXISTS geo_locations (
 CREATE INDEX IF NOT EXISTS geo_locations_level2_idx
   ON geo_locations (country_code, level1_slug, level2_slug);
 
-INSERT INTO geo_locations (
-  country_code, level1, level2, city, level1_slug, level2_slug, city_slug
-)
-SELECT
-  'in', l.state, l.district, l.city,
-  sv_slugify(l.state), sv_slugify(l.district), sv_slugify(l.city)
-FROM locations l
-ON CONFLICT (country_code, level1_slug, level2_slug, city_slug) DO NOTHING;
+-- Guarded because 058 dropped locations, for the same reason the us_locations
+-- copy below is guarded: replayed against the test baseline this is now an
+-- unresolvable reference, and on live the copy already ran.
+DO $do$
+BEGIN
+  IF to_regclass('public.locations') IS NOT NULL THEN
+    INSERT INTO geo_locations (
+      country_code, level1, level2, city, level1_slug, level2_slug, city_slug
+    )
+    SELECT
+      'in', l.state, l.district, l.city,
+      sv_slugify(l.state), sv_slugify(l.district), sv_slugify(l.city)
+    FROM locations l
+    ON CONFLICT (country_code, level1_slug, level2_slug, city_slug) DO NOTHING;
+  END IF;
+END
+$do$;
 
 -- Guarded because 056 dropped us_locations. This file is replayed against the
 -- test baseline (scripts/apply-test-migrations.mjs), where the copy was always
