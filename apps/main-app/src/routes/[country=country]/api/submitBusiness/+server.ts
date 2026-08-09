@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { businesses1, inBusinessAccounts, inBusinessProfiles } from '@solar/db/schema';
+import { businesses1, inBusinessProfiles } from '@solar/db/schema';
 import { and, eq, sql } from 'drizzle-orm';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { parseBody, submitBusinessSchema } from '@solar/validation';
@@ -170,21 +170,10 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 				set: { ...profileValues, updatedAt: sql`NOW()` }
 			});
 
-		// in_business_accounts stays IN-only. 054 gave it no country_code and
-		// generated no US rows, and sv_sync_account reads businesses_1 rather than
-		// this table, so the unified projection does not depend on it. Writing US
-		// rows here would be a new behaviour, not a consolidation.
-		if (country === 'in') {
-			const accountValues = { businessId, loginEmail: login_email || null, isvisible };
-
-			await db
-				.insert(inBusinessAccounts)
-				.values(accountValues)
-				.onConflictDoUpdate({
-					target: inBusinessAccounts.businessId,
-					set: { ...accountValues, updatedAt: sql`NOW()` }
-				});
-		}
+		// The in_business_accounts insert that used to sit here is gone with the
+		// table (060). It was the only writer anywhere, and nothing read it back:
+		// sv_sync_account projects login_email into unified business_accounts from
+		// businesses_1, which the insert above already wrote.
 
 		// Idempotent with the businesses_1/in_business_profiles sync triggers;
 		// keeps the unified tables fresh once those triggers drop (phase 2.4).

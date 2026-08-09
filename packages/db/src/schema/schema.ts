@@ -620,25 +620,6 @@ export const masterlistIndianBusinesses = pgTable("masterlist_indian_businesses"
 	check("check_empanelled", sql`empanelled_vendor = ANY (ARRAY[0, 1])`),
 ]);
 
-export const inBusinessAccounts = pgTable("in_business_accounts", {
-	id: serial().primaryKey().notNull(),
-	businessId: integer("business_id").notNull(),
-	loginEmail: varchar("login_email", { length: 255 }),
-	loginPassword: varchar("login_password", { length: 255 }),
-	magicLinkToken: text("magic_link_token"),
-	magicLinkTokenExpiresAt: timestamp("magic_link_token_expires_at", { withTimezone: true, mode: 'string' }),
-	resetToken: varchar("reset_token", { length: 255 }),
-	resetTokenExpires: timestamp("reset_token_expires", { mode: 'string' }),
-	isvisible: boolean(),
-	lastLogin: timestamp("last_login", { mode: 'string' }),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("in_business_accounts_login_email_idx").using("btree", table.loginEmail.asc().nullsLast().op("text_ops")),
-	index("in_business_accounts_magic_token_idx").using("btree", table.magicLinkToken.asc().nullsLast().op("text_ops")),
-	unique("in_business_accounts_business_id_key").on(table.businessId),
-]);
-
 export const inBusinessProfiles = pgTable("in_business_profiles", {
 	id: serial().primaryKey().notNull(),
 	businessId: integer("business_id").notNull(),

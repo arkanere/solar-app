@@ -65,12 +65,6 @@ SELECT 'accounts_us', count(*) FROM (
   FROM business_accounts WHERE country_code = 'us'
 ) d;
 
--- 039/040 split-table freshness (these triggers stay until business-app IN
--- writes are repointed; drift here means the 040 chain itself broke)
-SELECT 'split_accounts_in', count(*) FROM (
-  SELECT id, login_email, magic_link_token, reset_token, last_login
-  FROM businesses_1
-  EXCEPT
-  SELECT business_id, login_email, magic_link_token, reset_token, last_login
-  FROM in_business_accounts
-) d;
+-- The split_accounts_in scope that stood here diffed businesses_1 against
+-- in_business_accounts. Both it and the table are gone with 060: nothing read
+-- the table, so there was no projection left to keep honest.

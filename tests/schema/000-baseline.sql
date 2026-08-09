@@ -292,22 +292,6 @@ CREATE TABLE "in_blog_posts" (
 	CONSTRAINT "in_blog_posts_slug_key" UNIQUE("slug")
 );
 
-CREATE TABLE "in_business_accounts" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"business_id" integer NOT NULL,
-	"login_email" varchar(255),
-	"login_password" varchar(255),
-	"magic_link_token" text,
-	"magic_link_token_expires_at" timestamp with time zone,
-	"reset_token" varchar(255),
-	"reset_token_expires" timestamp,
-	"isvisible" boolean,
-	"last_login" timestamp,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "in_business_accounts_business_id_key" UNIQUE("business_id")
-);
-
 CREATE TABLE "in_business_profiles" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"business_id" integer NOT NULL,
@@ -735,8 +719,6 @@ CREATE UNIQUE INDEX "callsafe_unsubscribe_email_idx" ON "callsafe_unsubscribe" U
 CREATE INDEX "chatbotmessagesstore_session_idx" ON "chatbotmessagesstore" USING btree ("session_id","timestamp");
 CREATE INDEX "data_access_requests_status_idx" ON "data_access_requests" USING btree ("status");
 CREATE INDEX "geo_locations_level2_idx" ON "geo_locations" USING btree ("country_code","level1_slug","level2_slug");
-CREATE INDEX "in_business_accounts_login_email_idx" ON "in_business_accounts" USING btree ("login_email");
-CREATE INDEX "in_business_accounts_magic_token_idx" ON "in_business_accounts" USING btree ("magic_link_token");
 CREATE INDEX "in_business_profiles_country_idx" ON "in_business_profiles" USING btree ("country_code");
 CREATE INDEX "in_business_profiles_slug_idx" ON "in_business_profiles" USING btree ("slug");
 CREATE INDEX "leaddata_country_idx" ON "leaddata" USING btree ("country_code");
