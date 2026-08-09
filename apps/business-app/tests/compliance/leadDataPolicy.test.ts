@@ -52,9 +52,9 @@ describe('lead-data policy acceptance is country-scoped', () => {
 	});
 
 	it('does not let one country see the other country acceptance', async () => {
-		// us_businesses and businesses_1 share an id sequence, so these two ids
-		// are always distinct — but the point stands regardless: an acceptance is
-		// scoped to the country it was recorded under.
+		// Both countries now come out of businesses_1's single id sequence, so
+		// these two ids are always distinct — but the point stands regardless: an
+		// acceptance is scoped to the country it was recorded under.
 		const usId = await createUsBusiness();
 		await seedLeadDataPolicy(null);
 		await recordLeadDataAcceptance(usId, 'us', null);

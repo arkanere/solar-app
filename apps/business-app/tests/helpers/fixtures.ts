@@ -19,9 +19,7 @@ export async function resetDatabase(): Promise<void> {
 	await pool.query(`
 		TRUNCATE TABLE
 			leaddata_claimrequests, leaddata, leads,
-			us_leaddata_claimrequests, us_leaddata,
 			branches, businesses_1, in_business_profiles, in_business_accounts,
-			us_businesses,
 			businesses, business_accounts,
 			legal_acceptances, legal_policies,
 			projects, project_management, pincode_mapping,

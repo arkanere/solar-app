@@ -61,6 +61,18 @@ CREATE INDEX IF NOT EXISTS in_business_profiles_country_idx
 
 -- --------------------------------------------------------- copy US rows ----
 
+-- Guarded because 056 dropped all four source tables. This file is replayed
+-- against the test baseline (scripts/apply-test-migrations.mjs) for its
+-- CREATE OR REPLACE of sv_sync_in_split; these copies were always no-ops there
+-- — the tables existed but were empty — and are now unresolvable references.
+-- On live the copy already ran, so skipping it changes nothing. The four went
+-- in one migration, so one guard covers them.
+DO $do$
+BEGIN
+IF to_regclass('public.us_businesses') IS NULL THEN
+  RAISE NOTICE 'us_* tables dropped by 056; skipping the US row copy';
+ELSE
+
 INSERT INTO businesses_1 (
   id, country_code, businessname, address, pluscode, phonenumber, email,
   website, gstn, state, district, tag, slug, notes, city, rscore, isvisible,
@@ -109,6 +121,10 @@ SELECT
   u.image_format, u.business_slug, u.isvisible, u.project_slug, u.county, u.city
 FROM us_projects u
 ON CONFLICT (id) DO NOTHING;
+
+END IF;
+END
+$do$;
 
 -- Keep the sequences ahead of the copied ids so the next INSERT does not
 -- collide with a row that came from the US side.

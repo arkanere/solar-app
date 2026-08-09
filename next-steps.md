@@ -6,15 +6,12 @@
 
 ## Open
 
-1. **Drop the `us_*` tables.** They have no writer and no reader in the sync path, in the deployed
-   app as well as on `main` — `694faea` (the commit repointing business-app's and main-app's `us_*`
-   writers at the united tables) shipped on 2026-08-09, so code and DB now agree for both countries.
-   The drop is its own migration, and is gated on confirming main-app's remaining direct reads
-   (`business-listing`, the thank-you page) and the **external admin-app** are off them.
-
-   `locations` and `us_locations` are candidates for the same migration: neither has a reader in
-   business-app any more, and main-app's geo code was already on `geo_locations`. Confirm with a
-   sweep before including them.
+1. **Drop the IN-only `locations` table.** Its US twin went with migration 056; `locations` itself
+   (8,395 rows) survived because that sweep only covered `us_*`. business-app's dropdowns moved to
+   `geo_locations` with the branch-form fix, and main-app's geo code was already there, so it is
+   likely readerless — but `locations_id_seq` was shared with the dropped `us_locations` and is
+   `OWNED BY locations.id`, and `geo_locations` holds 8,392 IN rows against its 8,395, so confirm
+   both the sweep and where those 3 rows went before dropping.
 
 2. **The referral page's referrer link points at a route that does not exist.**
    `referral/+page.svelte` emits `…/solar-panel-installer/{slug}/referrer/{ref}`, and main-app has no
@@ -94,6 +91,15 @@ lose its name and `check` would not catch it; and it omits `business_notes`, `qu
 `leads` carries these for both countries, so narrowing buys nothing. The real IN-only leakage is in
 the write forms — items 5 and 6.
 
+**Dropping a table breaks the test harness before it breaks anything else.** The suite replays a few
+migrations on top of the generated baseline (`scripts/apply-test-migrations.mjs`), and those files
+are *history* — 042 and 054 both copy rows out of the `us_*` tables. Once the baseline stops creating
+those tables, the copy is an unresolvable reference and **every** test fails in global setup, not in
+an assertion. Both are now wrapped in a `to_regclass(...) IS NOT NULL` guard, which is a no-op on
+live and self-skipping in tests; do the same for the next drop. Check three places a code grep of
+`src/` will miss: the replayed migrations, `tests/helpers/fixtures.ts`'s `TRUNCATE` list, and any
+function body (Postgres does not resolve table names in a function until it runs).
+
 **A migration that changes where a sync reads from must enumerate every writer of the old location.**
 055's dry run proved the collapsed functions reproduce the projection for existing rows, which is
 necessary but not sufficient — it was still rolled back once, because `us_*` had five live writers
@@ -169,4 +175,4 @@ the EDB install, which has no `solar` role — do not point the suite at it.
 `npm run pull -w @solar/db`. **Never pull from a test cluster** — its baseline omits three
 `loc_key(...)` expression indexes, so a pull from there silently drops them.
 
-All migrations through **055** are applied to live.
+All migrations through **056** are applied to live.

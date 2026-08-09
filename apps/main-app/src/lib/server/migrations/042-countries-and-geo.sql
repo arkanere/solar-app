@@ -67,15 +67,25 @@ SELECT
 FROM locations l
 ON CONFLICT (country_code, level1_slug, level2_slug, city_slug) DO NOTHING;
 
-INSERT INTO geo_locations (
-  country_code, level1, level2, city, level1_slug, level2_slug, city_slug
-)
-SELECT
-  'us', u.state, u.county, u.city,
-  sv_slugify(u.state), sv_slugify(u.county),
-  sv_slugify(COALESCE(NULLIF(u.city_ascii, ''), u.city))
-FROM us_locations u
-ON CONFLICT (country_code, level1_slug, level2_slug, city_slug) DO NOTHING;
+-- Guarded because 056 dropped us_locations. This file is replayed against the
+-- test baseline (scripts/apply-test-migrations.mjs), where the copy was always
+-- a no-op — the table existed but was empty — and is now an unresolvable
+-- reference. On live the copy already ran, so skipping it changes nothing.
+DO $do$
+BEGIN
+  IF to_regclass('public.us_locations') IS NOT NULL THEN
+    INSERT INTO geo_locations (
+      country_code, level1, level2, city, level1_slug, level2_slug, city_slug
+    )
+    SELECT
+      'us', u.state, u.county, u.city,
+      sv_slugify(u.state), sv_slugify(u.county),
+      sv_slugify(COALESCE(NULLIF(u.city_ascii, ''), u.city))
+    FROM us_locations u
+    ON CONFLICT (country_code, level1_slug, level2_slug, city_slug) DO NOTHING;
+  END IF;
+END
+$do$;
 
 COMMIT;
 
