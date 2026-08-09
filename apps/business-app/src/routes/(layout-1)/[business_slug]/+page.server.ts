@@ -53,8 +53,8 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 	// 'in' when absent: the layout omits it only on its DB-error fallback, and
 	// guessing there is how a US business ends up looking at an India-shaped
 	// dashboard.
-	const { country } = await parent();
-	if (!country) {
+	const { business_session, country } = await parent();
+	if (!country || !business_session) {
 		return { errorMessage: 'Business not found' };
 	}
 
@@ -62,10 +62,16 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		// Query the profile from the unified businesses table (never the account
 		// tables — credentials must not reach page data). source_id AS id keeps
 		// the businesses_1 id that branch and lead queries expect.
+		//
+		// Resolved by the session's businessId, not by the slug: slugs are not
+		// unique (next-steps.md item 1), so a slug lookup here could return a
+		// different row than the layout's and render another company's leads.
 		const businessRows = await db
 			.select(IN_BUSINESS_SELECTION)
 			.from(businesses)
-			.where(and(eq(businesses.countryCode, country), eq(businesses.slug, business_slug)))
+			.where(
+				and(eq(businesses.countryCode, country), eq(businesses.sourceId, business_session.businessId))
+			)
 			.limit(1);
 
 		if (businessRows.length === 0) {

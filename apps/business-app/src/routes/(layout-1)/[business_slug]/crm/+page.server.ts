@@ -50,13 +50,15 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 	// was told its own profile did not exist. Not defaulted to 'in' when absent:
 	// the layout omits it only on its DB-error fallback, and guessing there
 	// would show a US business an India-shaped lead list.
-	const { country } = await parent();
-	if (!country) {
+	const { business_session, country } = await parent();
+	if (!country || !business_session) {
 		return { errorMessage: 'Business not found' };
 	}
 
 	try {
-		// Query business details
+		// Query business details, by the session's businessId rather than the slug
+		// — slugs are not unique (next-steps.md item 1), and this list is the lead
+		// data of whichever business the lookup lands on.
 		const businessRows = await db
 			.select({
 				id: businesses.sourceId,
@@ -70,7 +72,9 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 				state: businesses.level1
 			})
 			.from(businesses)
-			.where(and(eq(businesses.countryCode, country), eq(businesses.slug, business_slug)))
+			.where(
+				and(eq(businesses.countryCode, country), eq(businesses.sourceId, business_session.businessId))
+			)
 			.limit(1);
 
 		if (businessRows.length === 0) {

@@ -91,7 +91,14 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 			const branches = branchTable;
 			const projects = projectTable;
 
-			// Load basic business info for sidebar
+			// Load basic business info for sidebar.
+			//
+			// Resolved by the session's businessId, never by the slug in the URL.
+			// `businesses.slug` is not unique and cannot be made unique — see
+			// next-steps.md item 1 — so a slug lookup returns an arbitrary row from
+			// a duplicate group, and every count below would then be computed for
+			// another company. The id came from the account's login email at login,
+			// which is the only identifier here that is actually unique.
 			try {
 				const businessRows = await db
 					.select({
@@ -105,7 +112,12 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 						brands: businesses.brands
 					})
 					.from(businesses)
-					.where(and(eq(businesses.countryCode, country), eq(businesses.slug, business_slug)))
+					.where(
+						and(
+							eq(businesses.countryCode, country),
+							eq(businesses.sourceId, sessionData.businessId)
+						)
+					)
 					.limit(1);
 
 				if (businessRows.length > 0) {

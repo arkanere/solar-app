@@ -57,7 +57,8 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 	}
 
 	try {
-		// First, get the main business profile using the slug
+		// The main business comes from the session's businessId, not from the slug:
+		// slugs are not unique (next-steps.md item 1).
 		const mainBusinessRows = await db
 			.select({
 				id: businesses.sourceId,
@@ -85,7 +86,12 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 				isvisible: businesses.isvisible
 			})
 			.from(businesses)
-			.where(and(eq(businesses.countryCode, country), eq(businesses.slug, businessSlug)));
+			.where(
+				and(
+					eq(businesses.countryCode, country),
+					eq(businesses.sourceId, parentData.business_session.businessId)
+				)
+			);
 
 		if (mainBusinessRows.length === 0) {
 			return {

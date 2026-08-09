@@ -30,9 +30,9 @@ interface PageData {
 	projects?: ProjectManagement[];
 }
 
-export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
-	const businessSlug = params.business_slug;
-
+// Nothing here reads the slug any more — the business comes from the session's
+// businessId, and the pipeline rows are keyed by that id.
+export const load: PageServerLoad<PageData> = async ({ parent }) => {
 	// The country comes from the layout, which resolved it from the slug. Both
 	// reads below used to filter on a literal 'in', so a US business's project
 	// pipeline 404'd. Not defaulted to 'in' when absent: the layout omits it only
@@ -41,17 +41,21 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 	//
 	// Hoisted above the try because the catch below turns everything it sees into
 	// a 500, this 404 included.
-	const { country } = await parent();
-	if (!country) {
+	const { business_session, country } = await parent();
+	if (!country || !business_session) {
 		throw error(404, 'Business not found');
 	}
 
 	try {
-		// First get the business information from slug
+		// The business comes from the session's businessId, not from the slug:
+		// slugs are not unique (next-steps.md item 1), and businessId keys every
+		// project read below.
 		const businessRows = await db
 			.select({ id: businesses.sourceId, businessname: businesses.businessname })
 			.from(businesses)
-			.where(and(eq(businesses.countryCode, country), eq(businesses.slug, businessSlug)));
+			.where(
+				and(eq(businesses.countryCode, country), eq(businesses.sourceId, business_session.businessId))
+			);
 
 		if (businessRows.length === 0) {
 			throw error(404, 'Business not found');

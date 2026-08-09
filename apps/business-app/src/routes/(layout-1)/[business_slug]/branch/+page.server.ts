@@ -71,11 +71,18 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 	}
 
 	try {
-		// First, get the main business profile using the slug
+		// The main business comes from the session's businessId, not from the slug:
+		// slugs are not unique (next-steps.md item 1), and the branch list below is
+		// keyed by this id, so landing on a twin lists another company's branches.
 		const mainBusinessRows = await db
 			.select(BRANCH_BUSINESS_SELECTION)
 			.from(businesses)
-			.where(and(eq(businesses.countryCode, country), eq(businesses.slug, businessSlug)));
+			.where(
+				and(
+					eq(businesses.countryCode, country),
+					eq(businesses.sourceId, parentData.business_session.businessId)
+				)
+			);
 
 		if (mainBusinessRows.length === 0) {
 			return {

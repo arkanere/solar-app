@@ -23,22 +23,20 @@
    are identical in name, city and phone — true duplicate records. Every one of the 54 has an account
    row with a password set, but only **5 have ever logged in**, all of them the visible row.
 
-   **The code bug is more specific than "`.limit(1)` is non-deterministic".** `SessionData` carries
-   an authoritative `businessId` (`lib/types/auth.ts:83`) set at login, and **no route uses it** —
-   all eight page loads under `[business_slug]` re-derive the id from the slug, with no `isvisible`
-   filter and no ordering (`+layout.server.ts:108`, `+page.server.ts:68`, `crm:73`,
-   `project-management`, `branch`, `proposal`, `recent-projects`, `compliance`). So a logged-in
-   business can be served its twin's `businessId`, and lead counts, CRM and the claim gate are then
-   computed for the wrong row; layout and page issue separate queries, so nothing guarantees they
-   even agree within one request. `api/updateBusinessDetails` is worse — it updates
+   **The read side is fixed.** All eight page loads under `[business_slug]` used to re-derive the
+   business id from the slug, ignoring the authoritative `businessId` that `SessionData` carries
+   (`lib/types/auth.ts:83`). They now select on `business_session.businessId` beside the country
+   predicate, so a logged-in business can no longer be served its twin's row.
+   `tests/routing/duplicateSlug.test.ts` pins all eight against a slug shared by two businesses.
+
+   **`api/updateBusinessDetails` is still wrong, and is the remaining wrong-tenant path.** It updates
    `business_profiles` *and* `businesses_1` by slug with no id filter, so one business saving its
    profile overwrites its twin's row in both tables, then syncs an arbitrary one of the returned ids.
+   Same fix as the loads — it has the session in scope already.
 
-   **Recommended order:** repoint those loads (and `updateBusinessDetails`) at `session.businessId`
-   first — code-only, reversible, testable, and it removes the wrong-tenant risk without deciding
-   anything about live rows. Then de-duplicate, then `UNIQUE (slug)`. Open question before
-   de-duplicating: whether `isvisible = f` is a soft-delete you intend to keep, which decides whether
-   the losing rows get deleted or re-slugged.
+   **Recommended order:** finish `updateBusinessDetails`, then de-duplicate, then `UNIQUE (slug)`.
+   Open question before de-duplicating: whether `isvisible = f` is a soft-delete you intend to keep,
+   which decides whether the losing rows get deleted or re-slugged.
 
    The duplicates are also why `businesses` cannot take a `UNIQUE (slug)` constraint, and why
    `api/resetPassword` matches on the token hash rather than on the slug alone (`cdeff73`) — any new
@@ -81,6 +79,12 @@
    - `sv_sync_in_split` is now a misnomer for the same reason the table was: it has written both
      countries since 054. Renaming it is a code change too (three call sites via
      `syncInSplitTables`), so it did not belong in 061.
+   - **`rateLimiter.test.ts:79` has the fragile pattern that just cost four tests.** It drops
+     `rate_limits` to exercise the fail-open branch and recreates it by hand in a `finally`. That
+     stub currently matches the real schema exactly, so nothing is broken — but the identical
+     pattern in `updateLeadByBusiness.test.ts` recreated a three-column `project_management` against
+     a five-column table, and stayed invisible until a new test file reordered the suite. Switching
+     it to the `ALTER TABLE ... RENAME` aside-and-back that file now uses would close it for good.
    - **`check-unified-drift.sql` is already broken and was before 060.** Its `leads_us`,
      `businesses_us` and `accounts_us` scopes read `us_leaddata` and `us_businesses`, which 056
      dropped, so the file errors partway through as written. Fixing it means deciding what a US

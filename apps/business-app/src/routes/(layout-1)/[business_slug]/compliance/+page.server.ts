@@ -30,9 +30,9 @@ interface PageData {
 	errorMessage?: string;
 }
 
-export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
-	const businessSlug = params.business_slug;
-
+// Nothing here reads the slug any more — the business comes from the session's
+// businessId, and the acceptance record is keyed by that id and the country.
+export const load: PageServerLoad<PageData> = async ({ parent }) => {
 	// The parent layout already handles authentication and redirects
 	const parentData = await parent();
 	if (!parentData.business_session) {
@@ -50,10 +50,19 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 	}
 
 	try {
+		// Resolved by the session's businessId, not by the slug: slugs are not
+		// unique (next-steps.md item 1), and this id is what the acceptance lookup
+		// and the history below are keyed by — landing on a twin would report
+		// another company's acceptance as this one's.
 		const businessRows = await db
 			.select({ id: businesses.sourceId })
 			.from(businesses)
-			.where(and(eq(businesses.countryCode, country), eq(businesses.slug, businessSlug)));
+			.where(
+				and(
+					eq(businesses.countryCode, country),
+					eq(businesses.sourceId, parentData.business_session.businessId)
+				)
+			);
 
 		if (businessRows.length === 0) {
 			return { errorMessage: 'Business not found', history: [] };

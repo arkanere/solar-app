@@ -44,17 +44,26 @@ const { load: complianceLoad } = await import(
 	'../../src/routes/(layout-1)/[business_slug]/compliance/+page.server'
 );
 
-/** Stands in for the layout, which resolves country from the slug. */
-function context(business_slug: string, country: 'in' | 'us' | undefined) {
+/**
+ * Stands in for the layout, which resolves country from the slug.
+ *
+ * `businessId` is what the loads actually select on — slugs are not unique, so
+ * the session's id is the only safe identifier (see duplicateSlug.test.ts). The
+ * slug is still passed because the projects and proposals reads key off it.
+ */
+function context(business_slug: string, country: 'in' | 'us' | undefined, businessId: number) {
 	return {
 		params: { business_slug },
 		parent: async () => ({
-			business_session: { businessSlug: business_slug },
+			business_session: { businessSlug: business_slug, businessId },
 			country
 		})
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} as any;
 }
+
+/** No business has this id, for the not-found cases. */
+const MISSING_ID = 999_999;
 
 describe('country resolution in the /branch load', () => {
 	beforeEach(async () => {
@@ -66,7 +75,7 @@ describe('country resolution in the /branch load', () => {
 		const branchId = await createUsBusiness({ slug: 'oakland-solar-berkeley' });
 		await createBranch(mainId, branchId);
 
-		const data = await branchLoad(context('oakland-solar', 'us'));
+		const data = await branchLoad(context('oakland-solar', 'us', mainId));
 
 		// Before the fix this was 'Business not found' — the literal 'in' filter
 		// matched no row for a US slug.
@@ -80,30 +89,34 @@ describe('country resolution in the /branch load', () => {
 		const branchId = await createBusiness({ slug: 'pune-solar-kothrud' });
 		await createBranch(mainId, branchId);
 
-		const data = await branchLoad(context('pune-solar', 'in'));
+		const data = await branchLoad(context('pune-solar', 'in', mainId));
 
 		expect(data.mainBusiness?.slug).toBe('pune-solar');
 		expect(data.branches?.map((b) => b.slug)).toEqual(['pune-solar-kothrud']);
 	});
 
-	it('does not return the other country’s business for a matching slug', async () => {
-		// businesses_1 holds both countries since 054, so the country filter is the
-		// only thing separating two rows that share a slug.
-		await createBusiness({ slug: 'shared-slug' });
-		await createUsBusiness({ slug: 'shared-slug' });
+	it('keeps the country filter beside the id, for a slug in both countries', async () => {
+		// businesses_1 holds both countries since 054. The id now separates these
+		// two rows on its own, so what this pins is that the country predicate is
+		// still there beside it: an id from the wrong country must not resolve.
+		const inId = await createBusiness({ slug: 'shared-slug' });
+		const usId = await createUsBusiness({ slug: 'shared-slug' });
 
-		const asUs = await branchLoad(context('shared-slug', 'us'));
-		const asIn = await branchLoad(context('shared-slug', 'in'));
+		const asUs = await branchLoad(context('shared-slug', 'us', usId));
+		const asIn = await branchLoad(context('shared-slug', 'in', inId));
+		const mismatched = await branchLoad(context('shared-slug', 'in', usId));
 
-		expect(asUs.mainBusiness?.id).not.toBe(asIn.mainBusiness?.id);
+		expect(asUs.mainBusiness?.id).toBe(usId);
+		expect(asIn.mainBusiness?.id).toBe(inId);
+		expect(mismatched.errorMessage).toBe('Business not found');
 	});
 
 	it('reports not-found rather than guessing when the layout has no country', async () => {
-		await createBusiness({ slug: 'pune-solar' });
+		const mainId = await createBusiness({ slug: 'pune-solar' });
 
 		// The layout omits country only on its DB-error fallback. Falling back to
 		// 'in' there would render an India-shaped page for a US business.
-		const data = await branchLoad(context('pune-solar', undefined));
+		const data = await branchLoad(context('pune-solar', undefined, mainId));
 
 		expect(data.errorMessage).toBe('Business not found');
 		expect(data.mainBusiness).toBeUndefined();
@@ -126,7 +139,7 @@ describe('country resolution in the dashboard load', () => {
 		await createBranch(mainId, branchId);
 		await createUsLead({ businessId: mainId, category: 2 });
 
-		const data = await dashboardLoad(context('oakland-solar', 'us'));
+		const data = await dashboardLoad(context('oakland-solar', 'us', mainId));
 
 		// Before the fix: 'Business not found'.
 		expect(data.errorMessage).toBeUndefined();
@@ -141,7 +154,7 @@ describe('country resolution in the dashboard load', () => {
 		const mainId = await createUsBusiness({ slug: 'oakland-solar' });
 		await createUsLead({ urlparams: '/us/installer/oakland-solar?utm_source=test' });
 
-		const data = await dashboardLoad(context('oakland-solar', 'us'));
+		const data = await dashboardLoad(context('oakland-solar', 'us', mainId));
 
 		expect(mainId).toBeGreaterThan(0);
 		expect(data.leads).toHaveLength(1);
@@ -151,10 +164,10 @@ describe('country resolution in the dashboard load', () => {
 	// business_id or urlparams. It was the one read no US case reached, because
 	// createUsLead had no way to set a state.
 	it('finds a US business’s non-exclusive leads by state, masked', async () => {
-		await createUsBusiness({ slug: 'oakland-solar', state: 'California' });
+		const mainId = await createUsBusiness({ slug: 'oakland-solar', state: 'California' });
 		await createUsLead({ category: 1, state: 'California' });
 
-		const data = await dashboardLoad(context('oakland-solar', 'us'));
+		const data = await dashboardLoad(context('oakland-solar', 'us', mainId));
 
 		expect(data.leads).toHaveLength(1);
 		// Masking is what distinguishes this read from the other two: only the
@@ -165,10 +178,10 @@ describe('country resolution in the dashboard load', () => {
 	});
 
 	it('does not match a US lead from another state', async () => {
-		await createUsBusiness({ slug: 'oakland-solar', state: 'California' });
+		const mainId = await createUsBusiness({ slug: 'oakland-solar', state: 'California' });
 		await createUsLead({ category: 1, state: 'Texas' });
 
-		const data = await dashboardLoad(context('oakland-solar', 'us'));
+		const data = await dashboardLoad(context('oakland-solar', 'us', mainId));
 
 		expect(data.leads).toEqual([]);
 	});
@@ -179,10 +192,10 @@ describe('country resolution in the dashboard load', () => {
 	// above passes only because its fixture sets a state by hand. See
 	// next-steps.md — closing the gap needs a US postal-code-to-state source.
 	it('matches no US lead when state is null, as every live US lead is', async () => {
-		await createUsBusiness({ slug: 'oakland-solar', state: 'California' });
+		const mainId = await createUsBusiness({ slug: 'oakland-solar', state: 'California' });
 		await createUsLead({ category: 1 });
 
-		const data = await dashboardLoad(context('oakland-solar', 'us'));
+		const data = await dashboardLoad(context('oakland-solar', 'us', mainId));
 
 		expect(data.leads).toEqual([]);
 	});
@@ -191,26 +204,29 @@ describe('country resolution in the dashboard load', () => {
 		const mainId = await createBusiness({ slug: 'pune-solar' });
 		await createLead({ businessId: mainId, category: 2 });
 
-		const data = await dashboardLoad(context('pune-solar', 'in'));
+		const data = await dashboardLoad(context('pune-solar', 'in', mainId));
 
 		expect(data.business?.slug).toBe('pune-solar');
 		expect(data.leads).toHaveLength(1);
 	});
 
-	it('does not return the other country’s business for a matching slug', async () => {
-		await createBusiness({ slug: 'shared-slug' });
-		await createUsBusiness({ slug: 'shared-slug' });
+	it('keeps the country filter beside the id, for a slug in both countries', async () => {
+		const inId = await createBusiness({ slug: 'shared-slug' });
+		const usId = await createUsBusiness({ slug: 'shared-slug' });
 
-		const asUs = await dashboardLoad(context('shared-slug', 'us'));
-		const asIn = await dashboardLoad(context('shared-slug', 'in'));
+		const asUs = await dashboardLoad(context('shared-slug', 'us', usId));
+		const asIn = await dashboardLoad(context('shared-slug', 'in', inId));
+		const mismatched = await dashboardLoad(context('shared-slug', 'in', usId));
 
-		expect(asUs.business?.id).not.toBe(asIn.business?.id);
+		expect(asUs.business?.id).toBe(usId);
+		expect(asIn.business?.id).toBe(inId);
+		expect(mismatched.errorMessage).toBe('Business not found');
 	});
 
 	it('reports not-found rather than guessing when the layout has no country', async () => {
-		await createBusiness({ slug: 'pune-solar' });
+		const mainId = await createBusiness({ slug: 'pune-solar' });
 
-		const data = await dashboardLoad(context('pune-solar', undefined));
+		const data = await dashboardLoad(context('pune-solar', undefined, mainId));
 
 		expect(data.errorMessage).toBe('Business not found');
 		expect(data.business).toBeUndefined();
@@ -234,7 +250,7 @@ describe('country resolution in the /crm load', () => {
 		await createUsLead({ businessId: mainId, category: 2 });
 		await createUsLead({ urlparams: '/us/installer/oakland-solar?utm_source=test' });
 
-		const data = await crmLoad(context('oakland-solar', 'us'));
+		const data = await crmLoad(context('oakland-solar', 'us', mainId));
 
 		// This load's business selection has no `slug` column, unlike the
 		// dashboard's — assert on the id the fixture returned instead.
@@ -247,20 +263,20 @@ describe('country resolution in the /crm load', () => {
 	// /crm's category-1 read is the dashboard's verbatim, down to the 15-day
 	// window, so it carried the same untested US path.
 	it('finds a US business’s non-exclusive leads by state, masked', async () => {
-		await createUsBusiness({ slug: 'oakland-solar', state: 'California' });
+		const mainId = await createUsBusiness({ slug: 'oakland-solar', state: 'California' });
 		await createUsLead({ category: 1, state: 'California' });
 
-		const data = await crmLoad(context('oakland-solar', 'us'));
+		const data = await crmLoad(context('oakland-solar', 'us', mainId));
 
 		expect(data.leads).toHaveLength(1);
 		expect(data.leads?.[0].email).toContain('*');
 	});
 
 	it('matches no US lead when state is null, as every live US lead is', async () => {
-		await createUsBusiness({ slug: 'oakland-solar', state: 'California' });
+		const mainId = await createUsBusiness({ slug: 'oakland-solar', state: 'California' });
 		await createUsLead({ category: 1 });
 
-		const data = await crmLoad(context('oakland-solar', 'us'));
+		const data = await crmLoad(context('oakland-solar', 'us', mainId));
 
 		expect(data.leads).toEqual([]);
 	});
@@ -269,26 +285,29 @@ describe('country resolution in the /crm load', () => {
 		const mainId = await createBusiness({ slug: 'pune-solar' });
 		await createLead({ businessId: mainId, category: 2 });
 
-		const data = await crmLoad(context('pune-solar', 'in'));
+		const data = await crmLoad(context('pune-solar', 'in', mainId));
 
 		expect(data.business?.id).toBe(mainId);
 		expect(data.leads).toHaveLength(1);
 	});
 
-	it('does not return the other country’s business for a matching slug', async () => {
-		await createBusiness({ slug: 'shared-slug' });
-		await createUsBusiness({ slug: 'shared-slug' });
+	it('keeps the country filter beside the id, for a slug in both countries', async () => {
+		const inId = await createBusiness({ slug: 'shared-slug' });
+		const usId = await createUsBusiness({ slug: 'shared-slug' });
 
-		const asUs = await crmLoad(context('shared-slug', 'us'));
-		const asIn = await crmLoad(context('shared-slug', 'in'));
+		const asUs = await crmLoad(context('shared-slug', 'us', usId));
+		const asIn = await crmLoad(context('shared-slug', 'in', inId));
+		const mismatched = await crmLoad(context('shared-slug', 'in', usId));
 
-		expect(asUs.business?.id).not.toBe(asIn.business?.id);
+		expect(asUs.business?.id).toBe(usId);
+		expect(asIn.business?.id).toBe(inId);
+		expect(mismatched.errorMessage).toBe('Business not found');
 	});
 
 	it('reports not-found rather than guessing when the layout has no country', async () => {
-		await createBusiness({ slug: 'pune-solar' });
+		const mainId = await createBusiness({ slug: 'pune-solar' });
 
-		const data = await crmLoad(context('pune-solar', undefined));
+		const data = await crmLoad(context('pune-solar', undefined, mainId));
 
 		expect(data.errorMessage).toBe('Business not found');
 		expect(data.business).toBeUndefined();
@@ -308,7 +327,7 @@ describe('country resolution in the /project-management load', () => {
 		const leadId = await createUsLead({ businessId: mainId, category: 2 });
 		await createProjectManagement(leadId);
 
-		const data = await projectManagementLoad(context('oakland-solar', 'us'));
+		const data = await projectManagementLoad(context('oakland-solar', 'us', mainId));
 
 		expect(data.business?.id).toBe(mainId);
 		// Guards the lead join specifically: with the literal left on it the
@@ -322,27 +341,31 @@ describe('country resolution in the /project-management load', () => {
 		const leadId = await createLead({ businessId: mainId, category: 2 });
 		await createProjectManagement(leadId);
 
-		const data = await projectManagementLoad(context('pune-solar', 'in'));
+		const data = await projectManagementLoad(context('pune-solar', 'in', mainId));
 
 		expect(data.business?.id).toBe(mainId);
 		expect(data.projects).toHaveLength(1);
 	});
 
-	it('does not return the other country’s business for a matching slug', async () => {
+	it('keeps the country filter beside the id, for a slug in both countries', async () => {
 		const inId = await createBusiness({ slug: 'shared-slug' });
 		const usId = await createUsBusiness({ slug: 'shared-slug' });
 
-		const asUs = await projectManagementLoad(context('shared-slug', 'us'));
-		const asIn = await projectManagementLoad(context('shared-slug', 'in'));
+		const asUs = await projectManagementLoad(context('shared-slug', 'us', usId));
+		const asIn = await projectManagementLoad(context('shared-slug', 'in', inId));
 
 		expect(asUs.business?.id).toBe(usId);
 		expect(asIn.business?.id).toBe(inId);
+		// This load signals failure by throwing rather than by errorMessage.
+		await expect(
+			projectManagementLoad(context('shared-slug', 'in', usId))
+		).rejects.toMatchObject({ status: 404 });
 	});
 
 	it('404s rather than guessing when the layout has no country', async () => {
-		await createBusiness({ slug: 'pune-solar' });
+		const mainId = await createBusiness({ slug: 'pune-solar' });
 
-		await expect(projectManagementLoad(context('pune-solar', undefined))).rejects.toMatchObject({
+		await expect(projectManagementLoad(context('pune-solar', undefined, mainId))).rejects.toMatchObject({
 			status: 404
 		});
 	});
@@ -352,7 +375,7 @@ describe('country resolution in the /project-management load', () => {
 	// into a 500 — so a bogus slug reported a server error rather than "not
 	// found". Pre-existing, and the same shape in /proposal below.
 	it('404s a slug that does not exist, rather than 500ing', async () => {
-		await expect(projectManagementLoad(context('no-such-business', 'in'))).rejects.toMatchObject({
+		await expect(projectManagementLoad(context('no-such-business', 'in', MISSING_ID))).rejects.toMatchObject({
 			status: 404
 		});
 	});
@@ -370,7 +393,7 @@ describe('country resolution in the remaining [business_slug] loads', () => {
 	it('loads /proposal for a US business, with no proposals', async () => {
 		const mainId = await createUsBusiness({ slug: 'oakland-solar' });
 
-		const data = await proposalLoad(context('oakland-solar', 'us'));
+		const data = await proposalLoad(context('oakland-solar', 'us', mainId));
 
 		// `in_proposals` has no US counterpart, so empty is the right answer.
 		expect(data.business?.id).toBe(mainId);
@@ -378,15 +401,15 @@ describe('country resolution in the remaining [business_slug] loads', () => {
 	});
 
 	it('404s /proposal rather than guessing when the layout has no country', async () => {
-		await createBusiness({ slug: 'pune-solar' });
+		const mainId = await createBusiness({ slug: 'pune-solar' });
 
-		await expect(proposalLoad(context('pune-solar', undefined))).rejects.toMatchObject({
+		await expect(proposalLoad(context('pune-solar', undefined, mainId))).rejects.toMatchObject({
 			status: 404
 		});
 	});
 
 	it('404s /proposal for a slug that does not exist, rather than 500ing', async () => {
-		await expect(proposalLoad(context('no-such-business', 'in'))).rejects.toMatchObject({
+		await expect(proposalLoad(context('no-such-business', 'in', MISSING_ID))).rejects.toMatchObject({
 			status: 404
 		});
 	});
@@ -395,7 +418,7 @@ describe('country resolution in the remaining [business_slug] loads', () => {
 		const mainId = await createUsBusiness({ slug: 'oakland-solar' });
 		await createProject('oakland-solar');
 
-		const data = await recentProjectsLoad(context('oakland-solar', 'us'));
+		const data = await recentProjectsLoad(context('oakland-solar', 'us', mainId));
 
 		expect(data.errorMessage).toBeUndefined();
 		expect(data.mainBusiness?.id).toBe(mainId);
@@ -403,9 +426,9 @@ describe('country resolution in the remaining [business_slug] loads', () => {
 	});
 
 	it('reports not-found on /recent-projects when the layout has no country', async () => {
-		await createBusiness({ slug: 'pune-solar' });
+		const mainId = await createBusiness({ slug: 'pune-solar' });
 
-		const data = await recentProjectsLoad(context('pune-solar', undefined));
+		const data = await recentProjectsLoad(context('pune-solar', undefined, mainId));
 
 		expect(data.errorMessage).toBe('Business not found');
 	});
@@ -414,7 +437,7 @@ describe('country resolution in the remaining [business_slug] loads', () => {
 		const mainId = await createUsBusiness({ slug: 'oakland-solar' });
 		await seedLeadDataPolicy(mainId, { country: 'us' });
 
-		const data = await complianceLoad(context('oakland-solar', 'us'));
+		const data = await complianceLoad(context('oakland-solar', 'us', mainId));
 
 		expect(data.errorMessage).toBeUndefined();
 		// The acceptance row carries country_code = 'us'. With the literal left on
@@ -425,9 +448,9 @@ describe('country resolution in the remaining [business_slug] loads', () => {
 	});
 
 	it('reports not-found on /compliance when the layout has no country', async () => {
-		await createBusiness({ slug: 'pune-solar' });
+		const mainId = await createBusiness({ slug: 'pune-solar' });
 
-		const data = await complianceLoad(context('pune-solar', undefined));
+		const data = await complianceLoad(context('pune-solar', undefined, mainId));
 
 		expect(data.errorMessage).toBe('Business not found');
 	});

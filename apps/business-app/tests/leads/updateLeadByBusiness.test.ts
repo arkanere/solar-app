@@ -262,7 +262,14 @@ describe('stage 3 (Won) creates a project', () => {
 		const businessId = await createBusiness({ slug: 'acme-solar' });
 		const leadId = await createLead({ businessId, category: 2 });
 		const session = { id: businessId, slug: 'acme-solar', businessname: 'Test' };
-		await pool.query('DROP TABLE project_management');
+
+		// Renamed aside rather than dropped, so the real table comes back byte for
+		// byte. This used to DROP and then CREATE a three-column stub, which is
+		// missing created_at and last_updated — every later test that reads the
+		// full table 500'd, and the suite only stayed green because no such test
+		// happened to run after this file. Adding one test file was enough to
+		// reorder them and break four.
+		await pool.query('ALTER TABLE project_management RENAME TO project_management_hidden');
 
 		try {
 			const { body } = await update(session, { id: leadId, stage: 3 });
@@ -271,13 +278,7 @@ describe('stage 3 (Won) creates a project', () => {
 			expect(body.success).toBe(true);
 			expect((await leadRow(leadId)).stage).toBe(3);
 		} finally {
-			await pool.query(`
-				CREATE TABLE project_management (
-					id serial PRIMARY KEY NOT NULL,
-					lead_id integer,
-					stage smallint
-				)
-			`);
+			await pool.query('ALTER TABLE project_management_hidden RENAME TO project_management');
 		}
 	});
 });

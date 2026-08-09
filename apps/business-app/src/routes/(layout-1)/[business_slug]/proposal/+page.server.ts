@@ -42,17 +42,20 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 	// The proposals themselves stay IN-shaped: `in_proposals` has no US
 	// counterpart, so a US business gets an empty list, which is the correct
 	// answer rather than a gap.
-	const { country } = await parent();
-	if (!country) {
+	const { business_session, country } = await parent();
+	if (!country || !business_session) {
 		throw error(404, 'Business not found');
 	}
 
 	try {
-		// First get the business information from slug
+		// Resolved by the session's businessId, not by the slug — slugs are not
+		// unique (next-steps.md item 1).
 		const businessRows = await db
 			.select({ id: businesses.sourceId, businessname: businesses.businessname, slug: businesses.slug })
 			.from(businesses)
-			.where(and(eq(businesses.countryCode, country), eq(businesses.slug, businessSlug)));
+			.where(
+				and(eq(businesses.countryCode, country), eq(businesses.sourceId, business_session.businessId))
+			);
 
 		if (businessRows.length === 0) {
 			throw error(404, 'Business not found');
