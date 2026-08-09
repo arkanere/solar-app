@@ -6,50 +6,24 @@
 
 ## Open
 
-1. **Country-resolution leftovers.** The sweep itself is **done** — no `[business_slug]` page load
-   filters on a literal `countryCode = 'in'` any more (`f8eaa73`, `86bec48`, `87ddc19`, `bc24d16`,
-   `5c9881b`, and the last four in one commit). `tests/routing/pageCountry.test.ts` covers all nine
-   loads, 32 cases, each verified red against its literal first. Both of the things it left behind are
-   now closed:
-
-   **Do not switch the loads to the `US_*` selections.** This was filed as an open task on the theory
-   that the dashboard, `/crm` and `/recent-projects` selecting `IN_*` unconditionally makes the UI
-   label a US county "District". Checked against the components on 2026-08-06: it does not. The lead
-   list's only location line is `LeadTile.svelte:179`, labelled **"Location"**, rendering
-   `{lead.pin_code} ({lead.district})` — a US business already sees `94601 (Alameda)`, which is right.
-   No component reads `businessInfo.district`, `.pincode` or `.gstn`; the only `gstn` reader is
-   `api/addBranch/+server.ts:116`, server-side. The swap would be a **regression**, twice over:
-
-   - `US_LEAD_SELECTION` aliases `level2` to `county`, but `LeadTile` reads `lead.district` and types
-     `lead` as `any` — so the location line would silently render `94601` with no name, and `check`
-     would not catch it.
-   - `US_LEAD_SELECTION` omits `business_notes`, `qualification_score`, `reference_uuid` and the four
-     `bill_*` columns. `CustomerInquiry.svelte` declares `business_notes` and `qualification_score` on
-     its `Lead` type (lines 11, 16). That selection was shaped to mimic the narrow legacy
-     `us_leaddata` table; since 054 unified `leads` carries these for both countries, so narrowing
-     buys nothing.
-
-   The real IN-only leakage is in the **write forms**, which is a different task and a live US bug —
-   see item 7.
-
-   **The category-1 (non-exclusive) lead read is now tested on the US side** — `createUsLead()` took a
-   `state` option and both loads got a positive case, a wrong-state case and a null-state case, all
-   three verified red against a restored literal. That surfaced item 6, which is the real problem.
-
-2. **Drop the `us_*` tables.** They have no writer and no reader in the sync path, in the deployed
+1. **Drop the `us_*` tables.** They have no writer and no reader in the sync path, in the deployed
    app as well as on `main` — `694faea` (the commit repointing business-app's and main-app's `us_*`
    writers at the united tables) shipped on 2026-08-09, so code and DB now agree for both countries.
-   The drop is still its own migration, and is still gated on confirming main-app's remaining direct
-   reads (`business-listing`, the thank-you page) and the **external admin-app** are off them.
+   The drop is its own migration, and is gated on confirming main-app's remaining direct reads
+   (`business-listing`, the thank-you page) and the **external admin-app** are off them.
 
-3. **The referral page's referrer link points at a route that does not exist.**
+   `locations` and `us_locations` are candidates for the same migration: neither has a reader in
+   business-app any more, and main-app's geo code was already on `geo_locations`. Confirm with a
+   sweep before including them.
+
+2. **The referral page's referrer link points at a route that does not exist.**
    `referral/+page.svelte` emits `…/solar-panel-installer/{slug}/referrer/{ref}`, and main-app has no
    `/referrer/` route in either country and no rewrite that produces one. Phase 7 made its country
    segment dynamic and deliberately left the shape alone rather than guessing. Note also that
    `/{country}/installer/{slug}` is the canonical profile URL for both countries —
    `/us/solar-panel-installer/{slug}` is only a legacy 301, and there is no `/in` equivalent at all.
 
-4. **Duplicate `businesses.slug` values in live IN data.** `spectrum-solar-power-kasaragod` ×5,
+3. **Duplicate `businesses.slug` values in live IN data.** `spectrum-solar-power-kasaragod` ×5,
    `spectrum-solar-power-kannur` ×4, `spectrum-solar-power-kozhikode` ×3 and ~22 more ×2. The
    `/[business_slug]` lookup does `.limit(1)`, so those businesses render a **non-deterministic**
    dashboard — whichever row Postgres returns first. Fixing means de-duplicating live rows, which is
@@ -57,14 +31,14 @@
    `api/resetPassword` matches on the token hash rather than on the slug alone (`cdeff73`) — any new
    slug lookup has to assume duplicates.
 
-5. **Drift between `leaddata` and unified `leads`.** **3** `leaddata` rows have no unified row at all
+4. **Drift between `leaddata` and unified `leads`.** **3** `leaddata` rows have no unified row at all
    (a `sv_sync_lead` call that never happened), and **156** unified `leads` have no surviving
    `leaddata` source (the sync never deletes, so removing a source row orphans its projection).
    `businesses` is clean — 0 in either direction. Consequence: a full resync *raises* the unified
    lead count, so "counts unmoved" only holds for a **targeted** resync. Reconciling these is its own
    task; `apps/main-app/src/lib/server/migrations/check-unified-drift.sql` is the existing tool.
 
-6. **No US lead ever gets a `state`, so the US non-exclusive lead pool is permanently empty.** The
+5. **No US lead ever gets a `state`, so the US non-exclusive lead pool is permanently empty.** The
    dashboard's and `/crm`'s category-1 read matches `leads.level1 IN (business states)`, but every
    writer of a US lead leaves `leaddata.state` null: `insertLead()` resolves level1/level2 from
    `pincode_mapping` behind a `country === 'in'` guard (`apps/main-app/src/lib/server/leads.ts:44`),
@@ -76,27 +50,15 @@
    postal-code-to-state source — `pincode_mapping` is IN-only — which is a data question, not a code
    one. Whoever fixes it should flip those two tests rather than delete them.
 
-7. **India-shaped write forms that US businesses now reach.** Found while checking item 1's
-    read-side claim, which turned out to be the wrong place to look.
+6. **`PostRecentProject.svelte:395-419` is India-shaped and US businesses reach it.** It labels its
+   fields **"Pincode:"** and **"District (Auto-filled):"** and auto-fills from
+   `/api/getDistrictByPincode`, which queries `pincode_mapping`. That is the one lookup
+   `geo_locations` cannot replace — it has no postal-code column, and a live schema sweep found no US
+   zip source anywhere. Blocked on the same missing data as item 5; solve the two together.
 
-    **The branch form is done** (`d418a08`, `0a8351a`). It was broken three ways, not one: the
-    State dropdown offered `INDIAN_STATES` only, so the cascade could never start; `/api/getDistricts`
-    and `/api/getCities` read `locations`, which is India-only; and `api/addBranch` never set
-    `country_code` on its `businesses_1` insert, which defaults to `'in'` — so even a completed US
-    submission would have been written IN-tagged and its `sv_sync_business('us', …)` would have been a
-    silent no-op. The dropdowns now read **`geo_locations`**, which is populated for both countries
-    (31,253 US rows / 52 states / 1,910 counties; 8,392 IN) and is the same table main-app's `geo.ts`
-    already uses. `getCities` now requires the state as well as the county, because US county names
-    repeat across states — "Washington" is in 31 of them.
-
-    **`PostRecentProject.svelte:395-419` is still open**, and is the harder half: it labels its fields
-    **"Pincode:"** and **"District (Auto-filled):"** and auto-fills from `/api/getDistrictByPincode`,
-    which queries `pincode_mapping`. That is the one lookup `geo_locations` cannot replace — it has no
-    postal-code column, and a live schema sweep found no US zip source anywhere. So this is blocked on
-    the same missing data as item 6, and the two should be solved together.
-
-    Note `locations` and `us_locations` now have no reader in business-app; main-app's own geo code
-    was already on `geo_locations`. Worth folding into item 2's drop if a sweep confirms it.
+   The sibling branch form was the same bug and is fixed (`d418a08`, `0a8351a`) — its dropdowns now
+   read `geo_locations`, which is populated for both countries. Use it as the model, but note
+   `getCities` there needs state *and* county, because US county names repeat across states.
 
 ---
 
@@ -118,6 +80,19 @@ country, so `[business_slug]` implies it and business-app's own paths are countr
 still under `[country=country]`, so every link leaving business-app needs the **resolved** country —
 use `$lib/mainAppUrls.ts`, and take the country from `[business_slug]/+layout.server.ts`'s data
 rather than from a literal.
+
+**Do not switch the `[business_slug]` page loads to the `US_*` selections.** The dashboard, `/crm`
+and `/recent-projects` select `IN_*` unconditionally, which looks like it would label a US county
+"District". Checked against the components on 2026-08-06: it does not. The lead list's only location
+line is `LeadTile.svelte:179`, labelled "Location", rendering `{lead.pin_code} ({lead.district})` — a
+US business already sees `94601 (Alameda)`. No component reads `businessInfo.district`, `.pincode` or
+`.gstn`. The swap would be a regression twice over: `US_LEAD_SELECTION` aliases `level2` to `county`
+while `LeadTile` reads `lead.district` and types `lead` as `any`, so the location line would silently
+lose its name and `check` would not catch it; and it omits `business_notes`, `qualification_score`,
+`reference_uuid` and the four `bill_*` columns, two of which `CustomerInquiry.svelte` declares on its
+`Lead` type. That selection was shaped for the narrow legacy `us_leaddata` table; since 054, unified
+`leads` carries these for both countries, so narrowing buys nothing. The real IN-only leakage is in
+the write forms — items 5 and 6.
 
 **A migration that changes where a sync reads from must enumerate every writer of the old location.**
 055's dry run proved the collapsed functions reproduce the projection for existing rows, which is
