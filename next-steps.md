@@ -43,11 +43,11 @@
      buys nothing.
 
    The real IN-only leakage is in the **write forms**, which is a different task and a live US bug —
-   see item 10.
+   see item 9.
 
    **The category-1 (non-exclusive) lead read is now tested on the US side** — `createUsLead()` took a
    `state` option and both loads got a positive case, a wrong-state case and a null-state case, all
-   three verified red against a restored literal. That surfaced item 9, which is the real problem.
+   three verified red against a restored literal. That surfaced item 8, which is the real problem.
 
 4. **Drop the `us_*` tables.** They now have no writer and no reader in the sync path, but the drop
    is its own migration and is gated on confirming main-app's remaining direct reads
@@ -60,35 +60,7 @@
    `/{country}/installer/{slug}` is the canonical profile URL for both countries —
    `/us/solar-panel-installer/{slug}` is only a legacy 301, and there is no `/in` equivalent at all.
 
-6. **4 dependabot advisories** (3 high, 1 moderate) that GitHub reports on every push — **all four are
-   already fixed in the lockfile.** The alerts are *stale*, not outstanding work. Checked 2026-08-06:
-
-   | GHSA | package | vulnerable | patched | on `main` |
-   | --- | --- | --- | --- | --- |
-   | `GHSA-3jxr-9vmj-r5cp` (high) | brace-expansion | `< 1.1.16` | 1.1.16 | 1.1.18 / 5.0.9 |
-   | `GHSA-6g55-p6wh-862q` (high) | postcss | `<= 8.5.11` | 8.5.12 | 8.5.25 |
-   | `GHSA-r28c-9q8g-f849` (high) | postcss | `<= 8.5.17` | 8.5.18 | 8.5.25 |
-   | `GHSA-866w-xmhq-wj7x` (moderate) | @sveltejs/kit | `<= 2.69.0` | 2.69.1 | 2.70.2 |
-
-   `cc8862b`'s dependency-tree dedupe (2026-08-05) carried all of them past their patched versions,
-   and a scan of every `packages` entry in the lockfile finds **no** copy left in any vulnerable
-   range. The alerts were created 2026-07-27…07-31 and their `updated_at` has never moved, so
-   dependabot has not re-evaluated them — pushing a lockfile change (`162a0cb`) did not wake it
-   either. So the task is **dismiss the four alerts, or force a rescan** — there is nothing to
-   upgrade. Verify with
-   `gh api repos/arkanere/solar-app/dependabot/alerts -q '.[]|select(.state=="open")'` before
-   touching any dependency.
-
-   **Don't read `npm audit` as this item.** It reports a wider and completely different set (jsPDF,
-   `langsmith`, `uuid <11.1.1` via langchain transitives, and one critical) — none of which are the
-   four above. That confusion is what led `162a0cb` to upgrade bcrypt believing it addressed this
-   item; the upgrade was worth doing on its own merits but closed **none** of these four.
-
-   `uuid <11.1.1` is the one npm-audit entry worth a look eventually (`GHSA-w5hq-g745-h8pq`, missing
-   buffer bounds check in v3/v5/v6 when `buf` is passed). It needs a langchain major and no
-   first-party code passes `buf`, so it is low priority and its own task.
-
-7. **Duplicate `businesses.slug` values in live IN data.** `spectrum-solar-power-kasaragod` ×5,
+6. **Duplicate `businesses.slug` values in live IN data.** `spectrum-solar-power-kasaragod` ×5,
    `spectrum-solar-power-kannur` ×4, `spectrum-solar-power-kozhikode` ×3 and ~22 more ×2. The
    `/[business_slug]` lookup does `.limit(1)`, so those businesses render a **non-deterministic**
    dashboard — whichever row Postgres returns first. Fixing means de-duplicating live rows, which is
@@ -96,14 +68,14 @@
    `api/resetPassword` matches on the token hash rather than on the slug alone (`cdeff73`) — any new
    slug lookup has to assume duplicates.
 
-8. **Drift between `leaddata` and unified `leads`.** **3** `leaddata` rows have no unified row at all
+7. **Drift between `leaddata` and unified `leads`.** **3** `leaddata` rows have no unified row at all
    (a `sv_sync_lead` call that never happened), and **156** unified `leads` have no surviving
    `leaddata` source (the sync never deletes, so removing a source row orphans its projection).
    `businesses` is clean — 0 in either direction. Consequence: a full resync *raises* the unified
    lead count, so "counts unmoved" only holds for a **targeted** resync. Reconciling these is its own
    task; `apps/main-app/src/lib/server/migrations/check-unified-drift.sql` is the existing tool.
 
-9. **No US lead ever gets a `state`, so the US non-exclusive lead pool is permanently empty.** The
+8. **No US lead ever gets a `state`, so the US non-exclusive lead pool is permanently empty.** The
    dashboard's and `/crm`'s category-1 read matches `leads.level1 IN (business states)`, but every
    writer of a US lead leaves `leaddata.state` null: `insertLead()` resolves level1/level2 from
    `pincode_mapping` behind a `country === 'in'` guard (`apps/main-app/src/lib/server/leads.ts:44`),
@@ -115,7 +87,7 @@
    postal-code-to-state source — `pincode_mapping` is IN-only — which is a data question, not a code
    one. Whoever fixes it should flip those two tests rather than delete them.
 
-10. **India-shaped write forms that US businesses now reach.** Found while checking item 3's
+9. **India-shaped write forms that US businesses now reach.** Found while checking item 3's
     read-side claim, which turned out to be the wrong place to look.
 
     **The branch form is done** (`d418a08`, `0a8351a`). It was broken three ways, not one: the
@@ -132,7 +104,7 @@
     **"Pincode:"** and **"District (Auto-filled):"** and auto-fills from `/api/getDistrictByPincode`,
     which queries `pincode_mapping`. That is the one lookup `geo_locations` cannot replace — it has no
     postal-code column, and a live schema sweep found no US zip source anywhere. So this is blocked on
-    the same missing data as item 9, and the two should be solved together.
+    the same missing data as item 8, and the two should be solved together.
 
     Note `locations` and `us_locations` now have no reader in business-app; main-app's own geo code
     was already on `geo_locations`. Worth folding into item 4's drop if a sweep confirms it.
@@ -167,6 +139,25 @@ transaction can never surface it.
 ---
 
 ## Reference
+
+### Dependency advisories — not tracked here
+
+**The 4 dependabot alerts GitHub reports on every push are stale, and are deliberately not an open
+item.** Checked 2026-08-06: `cc8862b`'s dependency-tree dedupe (2026-08-05) carried brace-expansion,
+both postcss advisories and `@sveltejs/kit` past their patched versions, and a scan of every
+`packages` entry in the lockfile found no copy left in any vulnerable range. The alerts were created
+2026-07-27…07-31 and their `updated_at` has never moved, so dependabot has not re-evaluated them;
+pushing a lockfile change (`162a0cb`) did not wake it. There is nothing to upgrade.
+
+**`npm audit` is a different, wider set** — jsPDF, `langsmith`, `uuid <11.1.1` via langchain
+transitives, and one critical. None of them are the four dependabot alerts. That confusion is what
+led `162a0cb` to upgrade bcrypt believing it addressed them; the upgrade stood on its own merits but
+closed none of the four. `uuid <11.1.1` (`GHSA-w5hq-g745-h8pq`, missing buffer bounds check in
+v3/v5/v6 when `buf` is passed) is the one entry worth a look eventually — it needs a langchain major
+and no first-party code passes `buf`.
+
+Before touching any dependency on advisory grounds, check what is actually open:
+`gh api repos/arkanere/solar-app/dependabot/alerts -q '.[]|select(.state=="open")'`.
 
 ### Baselines
 
