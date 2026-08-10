@@ -22,10 +22,9 @@
    are identical in name, city and phone — true duplicate records. Every one of the 54 has an account
    row with a password set, but only **5 have ever logged in**, all of them the visible row.
 
-   **The code is done; what remains is the data.** Both the read paths (the eight `[business_slug]`
-   page loads) and the write path (`api/updateBusinessDetails`) resolve the business by the session's
-   authoritative `businessId` rather than by the slug in the URL, so there is no known wrong-tenant
-   path left. `tests/routing/duplicateSlug.test.ts` pins both sides against a shared slug.
+   **This is a data task only — the code half is done and is not a security bug.** Every read and
+   write resolves the business by the session's `businessId`, never by the URL slug, and
+   `tests/routing/duplicateSlug.test.ts` holds that line.
 
    **Remaining: de-duplicate, then `UNIQUE (slug)`.** The open question is now answered:
    **`isvisible = f` is a soft-delete and the rows are kept.** So the losing rows get **re-slugged,
