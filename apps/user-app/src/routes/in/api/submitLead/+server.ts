@@ -36,13 +36,13 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 			.values({
 				name,
 				phone,
-				pinCode,
+				postalCode: pinCode,
 				type,
 				comment,
 				urlparams: urlParam,
 				email: email || null,
-				district,
-				state,
+				level2: district,
+				level1: state,
 				marketingConsent: marketing_consent === true
 			})
 			.returning({

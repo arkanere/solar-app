@@ -23,11 +23,11 @@ export const load: PageServerLoad = async ({ url, params }) => {
 				id: leaddata.id,
 				name: leaddata.name,
 				phone: leaddata.phone,
-				pinCode: leaddata.pinCode,
+				pinCode: leaddata.postalCode,
 				type: leaddata.type,
 				comment: leaddata.comment,
 				email: leaddata.email,
-				district: leaddata.district,
+				district: leaddata.level2,
 				createdAt: leaddata.createdAt,
 				isvisible: leaddata.isvisible
 			})

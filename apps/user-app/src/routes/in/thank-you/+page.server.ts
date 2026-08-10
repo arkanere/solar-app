@@ -35,24 +35,25 @@ interface Installer {
 	phonenumber: string | null;
 }
 
-// `leads.source_id` is nullable in the schema but always set on rows projected
-// from leaddata, and `created_at` is a `mode: 'string'` timestamp the driver
-// returns as a Date. Both restate the contracts CustomerDetails already
-// declares; they render as the bare columns, so the SQL is unchanged.
+// `created_at` is a `mode: 'string'` timestamp the driver returns as a Date;
+// restating that is what keeps CustomerDetails' contract honest. It renders as
+// the bare column, so the SQL is unchanged. The id needs no restatement since
+// 066 — this reads leaddata.id, which is the primary key and NOT NULL, where
+// leads.source_id was nullable in the schema.
 const LEAD_SELECTION = {
-	id: sql<number>`${schema.leads.sourceId}`,
-	name: schema.leads.name,
-	phone: schema.leads.phone,
-	pin_code: schema.leads.postalCode,
-	type: schema.leads.type,
-	comment: schema.leads.comment,
-	email: schema.leads.email,
-	district: schema.leads.level2,
-	urlparams: schema.leads.urlparams,
-	created_at: sql<Date | null>`${schema.leads.createdAt}`,
-	isvisible: schema.leads.isvisible,
-	bill_cloudinary_public_id: schema.leads.billCloudinaryPublicId,
-	bill_format: schema.leads.billFormat
+	id: schema.leaddata.id,
+	name: schema.leaddata.name,
+	phone: schema.leaddata.phone,
+	pin_code: schema.leaddata.postalCode,
+	type: schema.leaddata.type,
+	comment: schema.leaddata.comment,
+	email: schema.leaddata.email,
+	district: schema.leaddata.level2,
+	urlparams: schema.leaddata.urlparams,
+	created_at: sql<Date | null>`${schema.leaddata.createdAt}`,
+	isvisible: schema.leaddata.isvisible,
+	bill_cloudinary_public_id: schema.leaddata.billCloudinaryPublicId,
+	bill_format: schema.leaddata.billFormat
 };
 
 // Same reasoning as sendLeadSubmissionConfirmation's copy: `businessname` is
@@ -75,11 +76,11 @@ export const load: PageServerLoad = async ({ url }) => {
 		try {
 			const rows = await db
 				.select(LEAD_SELECTION)
-				.from(schema.leads)
+				.from(schema.leaddata)
 				.where(
 					and(
-						eq(schema.leads.countryCode, 'in'),
-						eq(schema.leads.referenceUuid, referenceUuid)
+						eq(schema.leaddata.countryCode, 'in'),
+						eq(schema.leaddata.referenceUuid, referenceUuid)
 					)
 				)
 				.limit(1);

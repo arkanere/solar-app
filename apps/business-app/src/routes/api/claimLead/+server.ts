@@ -204,7 +204,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				let mainBusinessId = business_id;
 
 				const leadLocationResult = await tx
-					.select({ district: leaddata.district, state: leaddata.state })
+					.select({ district: leaddata.level2, state: leaddata.level1 })
 					.from(leaddata)
 					.where(eq(leaddata.id, lead_id));
 				const leadDistrict = leadLocationResult[0]?.district ?? null;
@@ -373,7 +373,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 							name: originalLead.name,
 							phone: originalLead.phone,
 							email: originalLead.email,
-							pinCode: originalLead.pinCode,
+							postalCode: originalLead.postalCode,
 							type: originalLead.type,
 							comment: originalLead.comment,
 							// `sql` escape hatch: NOW() for created_at, as the raw INSERT had.
@@ -383,7 +383,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 							urlparams: originalLead.urlparams,
 							isvisible: true,
 							category: 2,
-							district: originalLead.district,
+							level2: originalLead.level2,
 							stage: 0,
 							status: true,
 							claimCount: 0,

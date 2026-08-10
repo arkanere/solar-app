@@ -189,15 +189,15 @@ describe('a successful claim', () => {
 		const { body } = await claim(session, { lead_id: leadId, business_id: businessId });
 
 		const { rows } = await pool.query(
-			'SELECT name, phone, email, pin_code, district, stage, status, claim_count FROM leaddata WHERE id = $1',
+			'SELECT name, phone, email, postal_code, level2, stage, status, claim_count FROM leaddata WHERE id = $1',
 			[body.newLead!.id]
 		);
 		expect(rows[0]).toMatchObject({
 			name: 'Priya Sharma',
 			phone: '9876543210',
 			email: 'priya@example.test',
-			pin_code: '411001',
-			district: 'Pune',
+			postal_code: '411001',
+			level2: 'Pune',
 			stage: 0,
 			status: true,
 			claim_count: 0

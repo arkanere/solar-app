@@ -26,13 +26,12 @@ interface LeadRow {
 	bill_cloudinary_public_id: string | null;
 }
 
-// `leads.source_id` is nullable in the schema, but every row this app can reach
-// is projected from leaddata by sv_sync_lead and therefore always has one. The
-// raw driver's `any` made that implicit; restate it rather than widen LeadRow
-// and the `lead.id` uses below. Renders as the bare column — same SQL.
+// Since 066 this reads leaddata.id directly, which is the primary key and NOT
+// NULL, so the `sql<number>` restatement that used to sit here for the nullable
+// leads.source_id is gone.
 const LEAD_SELECTION = {
-	id: sql<number>`${schema.leads.sourceId}`,
-	bill_cloudinary_public_id: schema.leads.billCloudinaryPublicId
+	id: schema.leaddata.id,
+	bill_cloudinary_public_id: schema.leaddata.billCloudinaryPublicId
 };
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
@@ -69,12 +68,12 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		if (ref) {
 			const rows = await db
 				.select(LEAD_SELECTION)
-				.from(schema.leads)
+				.from(schema.leaddata)
 				.where(
 					and(
-						eq(schema.leads.countryCode, 'in'),
-						eq(schema.leads.referenceUuid, String(ref)),
-						eq(schema.leads.isvisible, true)
+						eq(schema.leaddata.countryCode, 'in'),
+						eq(schema.leaddata.referenceUuid, String(ref)),
+						eq(schema.leaddata.isvisible, true)
 					)
 				)
 				.limit(1);
@@ -89,13 +88,13 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 			const rows = await db
 				.select(LEAD_SELECTION)
-				.from(schema.leads)
+				.from(schema.leaddata)
 				.where(
 					and(
-						eq(schema.leads.countryCode, 'in'),
-						eq(schema.leads.sourceId, Number(leadId)),
-						eq(schema.leads.email, sessionResult.user.email),
-						eq(schema.leads.isvisible, true)
+						eq(schema.leaddata.countryCode, 'in'),
+						eq(schema.leaddata.id, Number(leadId)),
+						eq(schema.leaddata.email, sessionResult.user.email),
+						eq(schema.leaddata.isvisible, true)
 					)
 				)
 				.limit(1);

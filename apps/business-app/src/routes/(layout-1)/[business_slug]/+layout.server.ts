@@ -1,6 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { businessProfiles, leads } from '@solar/db/schema';
+import { businessProfiles, leaddata } from '@solar/db/schema';
 import { and, count, eq, gt, inArray, sql } from 'drizzle-orm';
 import type { LayoutServerLoad } from './$types';
 import type { SessionData } from '$lib/types/auth';
@@ -132,18 +132,18 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 					const allBusinessIds = [businessId, ...branchRows.map((r) => r.branch_id)];
 
 					const claimedLeadWhere = and(
-						eq(leads.countryCode, country),
-						inArray(leads.businessId, allBusinessIds),
-						eq(leads.category, 2),
-						eq(leads.isvisible, true)
+						eq(leaddata.countryCode, country),
+						inArray(leaddata.businessId, allBusinessIds),
+						eq(leaddata.category, 2),
+						eq(leaddata.isvisible, true)
 					);
 
 					const [claimedRes, staleRes, projectsRes, recentProjectRes] = await Promise.all([
-						db.select({ count: count() }).from(leads).where(claimedLeadWhere),
+						db.select({ count: count() }).from(leaddata).where(claimedLeadWhere),
 						db
 							.select({ count: count() })
-							.from(leads)
-							.where(and(claimedLeadWhere, eq(leads.stage, 0), eq(leads.status, true))),
+							.from(leaddata)
+							.where(and(claimedLeadWhere, eq(leaddata.stage, 0), eq(leaddata.status, true))),
 						db
 							.select({ count: count() })
 							.from(projects)

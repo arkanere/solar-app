@@ -47,12 +47,12 @@ interface ClaimedBusiness {
 	isResolved: boolean | null;
 }
 
-// `leads.source_id` is nullable in the schema but always set on rows projected
-// from leaddata, and `created_at` is a `mode: 'string'` timestamp the driver
-// returns as a Date. Both restate the contracts Lead/ClaimedBusiness already
-// declare; they render as the bare columns, so the SQL is unchanged.
-const LEAD_SOURCE_ID = sql<number>`${schema.leads.sourceId}`;
-const LEAD_CREATED_AT = sql<Date | null>`${schema.leads.createdAt}`;
+// `created_at` is a `mode: 'string'` timestamp the driver returns as a Date;
+// restating that keeps Lead/ClaimedBusiness' contract honest, and it renders as
+// the bare column so the SQL is unchanged. The ids need no restatement since
+// 066 — these read leaddata.id, the primary key, where leads.source_id was
+// nullable in the schema.
+const LEAD_CREATED_AT = sql<Date | null>`${schema.leaddata.createdAt}`;
 
 export const load: PageServerLoad = async ({ cookies }) => {
 	const authService = new UserAuthService();
@@ -66,7 +66,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 	let claimedBusinesses: ClaimedBusiness[] = [];
 
 	// The user's own inquiries: category NULL or 1. Repeated for both queries.
-	const isOriginalLead = (t: typeof schema.leads) =>
+	const isOriginalLead = (t: typeof schema.leaddata) =>
 		and(
 			eq(t.countryCode, 'in'),
 			eq(t.email, sessionResult.user.email),
@@ -77,21 +77,21 @@ export const load: PageServerLoad = async ({ cookies }) => {
 	try {
 		const leadRows = await db
 			.select({
-				id: LEAD_SOURCE_ID,
-				name: schema.leads.name,
-				phone: schema.leads.phone,
-				pin_code: schema.leads.postalCode,
-				type: schema.leads.type,
-				comment: schema.leads.comment,
-				email: schema.leads.email,
-				district: schema.leads.level2,
+				id: schema.leaddata.id,
+				name: schema.leaddata.name,
+				phone: schema.leaddata.phone,
+				pin_code: schema.leaddata.postalCode,
+				type: schema.leaddata.type,
+				comment: schema.leaddata.comment,
+				email: schema.leaddata.email,
+				district: schema.leaddata.level2,
 				created_at: LEAD_CREATED_AT,
-				bill_cloudinary_public_id: schema.leads.billCloudinaryPublicId,
-				bill_format: schema.leads.billFormat
+				bill_cloudinary_public_id: schema.leaddata.billCloudinaryPublicId,
+				bill_format: schema.leaddata.billFormat
 			})
-			.from(schema.leads)
-			.where(isOriginalLead(schema.leads))
-			.orderBy(desc(schema.leads.createdAt));
+			.from(schema.leaddata)
+			.where(isOriginalLead(schema.leaddata))
+			.orderBy(desc(schema.leaddata.createdAt));
 
 		leads = leadRows.map((lead) => ({
 			id: lead.id,
@@ -108,18 +108,18 @@ export const load: PageServerLoad = async ({ cookies }) => {
 		}));
 
 		if (leads.length > 0) {
-			// `leads` self-joins to itself, so the claimed side needs an alias —
+			// `leaddata` self-joins to itself, so the claimed side needs an alias —
 			// same `aliasedTable` pattern business-app's Phase 5 introduced.
-			const original = aliasedTable(schema.leads, 'l_original');
-			const claimed = aliasedTable(schema.leads, 'l_claimed');
+			const original = aliasedTable(schema.leaddata, 'l_original');
+			const claimed = aliasedTable(schema.leaddata, 'l_claimed');
 
 			const claimRows = await db
 				.selectDistinct({
-					claim_id: sql<number>`${claimed.sourceId}`,
+					claim_id: claimed.id,
 					claim_date: sql<Date | null>`${claimed.createdAt}`,
 					stage: claimed.stage,
 					status: claimed.status,
-					original_lead_id: sql<number>`${original.sourceId}`,
+					original_lead_id: original.id,
 					lead_name: original.name,
 					lead_phone: original.phone,
 					lead_pin_code: original.postalCode,
@@ -157,7 +157,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 				)
 				.leftJoin(
 					schema.leaddataClaimrequests,
-					eq(claimed.sourceId, schema.leaddataClaimrequests.claimId)
+					eq(claimed.id, schema.leaddataClaimrequests.claimId)
 				)
 				.where(isOriginalLead(original))
 				.orderBy(desc(claimed.createdAt));

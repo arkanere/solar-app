@@ -1,17 +1,17 @@
-// Unified lead insertion during the coexistence window.
+// Lead insertion. `leaddata` is the lead table for every country, discriminated
+// by country_code, and since 066 it carries the country-neutral column names.
 //
-// The old country table (leaddata / us_leaddata) is written because
-// business-app still reads leads from it; migration 045's sync triggers
-// mirror the row into the unified leads table synchronously in the same
-// transaction, so the leads row is read back immediately after the insert.
-// When business-app migrates to leads, this switches to a direct insert
-// and the triggers are dropped.
+// The sv_sync_lead() projection into `leads` is still driven here through the
+// 066 deploy so that table stays correct while it is on its way out; 067 drops
+// it and this call goes with it. Nothing reads `leads` here any more — the
+// read-back that used to follow the sync existed only to fill an `id` field on
+// InsertedLead that no caller ever read.
 
 import { db } from './db';
 import { syncLeadToUnified } from './unifiedSync';
 import type { CountryCode } from '$lib/countries';
-import { leaddata, leads, pincodeMapping } from '@solar/db/schema';
-import { and, eq } from 'drizzle-orm';
+import { leaddata, pincodeMapping } from '@solar/db/schema';
+import { eq } from 'drizzle-orm';
 
 export interface LeadPayload {
 	name: string;
@@ -25,8 +25,7 @@ export interface LeadPayload {
 }
 
 export interface InsertedLead {
-	id: number; // leads.id
-	sourceId: number; // old-table id (what confirmation emails reference)
+	sourceId: number; // leaddata.id (what confirmation emails reference)
 	referenceUuid: string | null; // IN-only, from old leaddata
 	level1: string | null;
 	level2: string | null;
@@ -57,32 +56,31 @@ export async function insertLead(
 		}
 	}
 
-	// One transaction for the legacy insert, the sv_sync_lead() projection and
-	// the read-back of the unified row. syncLeadToUnified takes the same tx
-	// handle, so the projection runs on this connection rather than a second
-	// one — that is what the hand-rolled BEGIN/COMMIT on a checked-out client
-	// was doing before.
+	// One transaction for the insert and the sv_sync_lead() projection.
+	// syncLeadToUnified takes the same tx handle, so the projection runs on this
+	// connection rather than a second one — that is what the hand-rolled
+	// BEGIN/COMMIT on a checked-out client was doing before.
 	return db.transaction(async (tx) => {
 		let sourceId: number;
 		let referenceUuid: string | null = null;
 
-		// Since migration 054 both countries write `leaddata`, discriminated by
-		// country_code. level1/level2 are resolved from pincode_mapping, which is
-		// IN-only, so they are already null for US — the same values the separate
-		// us_leaddata insert produced.
+		// Both countries write `leaddata`, discriminated by country_code (054).
+		// level1/level2 are resolved from pincode_mapping, which is IN-only, so
+		// they are already null for US — the same values the separate us_leaddata
+		// insert produced, and next-steps.md item 3 is what that costs.
 		const [inserted] = await tx
 			.insert(leaddata)
 			.values({
 				countryCode: country,
 				name,
 				phone,
-				pinCode: postalCode,
+				postalCode,
 				type: type ?? null,
 				comment: comment ?? null,
 				urlparams: urlParams ?? null,
 				email: email || null,
-				district: level2,
-				state: level1,
+				level2,
+				level1,
 				marketingConsent: marketingConsent === true
 			})
 			.returning({ id: leaddata.id, referenceUuid: leaddata.referenceUuid });
@@ -96,17 +94,9 @@ export async function insertLead(
 			referenceUuid = inserted.referenceUuid;
 		}
 
-		// Idempotent with migration 045's sync trigger; keeps this write
-		// self-sufficient once the triggers drop (phase 2.4).
 		await syncLeadToUnified(tx, country, sourceId);
 
-		const [unified] = await tx
-			.select({ id: leads.id })
-			.from(leads)
-			.where(and(eq(leads.countryCode, country), eq(leads.sourceId, sourceId)));
-
 		return {
-			id: unified?.id ?? sourceId,
 			sourceId,
 			referenceUuid,
 			level1,

@@ -13,9 +13,10 @@ import { pool } from '../setup/testDb';
 
 export async function resetDatabase(): Promise<void> {
 	// TRUNCATE ... CASCADE over the tables the suite writes. Faster than
-	// re-running migrations per test, and RESTART IDENTITY keeps ids small —
-	// leaddata.business_id and leaddata_claimrequests.business_id are smallint,
-	// so a long-running sequence would eventually overflow them.
+	// re-running migrations per test, and RESTART IDENTITY keeps ids small.
+	// leaddata.business_id stopped being smallint with 066, but
+	// leaddata_claimrequests.business_id still is, so a long-running sequence
+	// would eventually overflow it.
 	// businesses_1 left this list with 062 and `businesses` with 064 — the first
 	// is an archive nothing writes, the second is gone. RESTART IDENTITY still
 	// has to reach business_profiles.business_id, which inherited
@@ -187,7 +188,7 @@ export interface UsLeadOptions {
 	email?: string | null;
 	zipcode?: string;
 	county?: string | null;
-	/** Maps to `leaddata.state`, which sv_sync_lead projects to `leads.level1`. */
+	/** Maps to `leaddata.level1` — named `state` since 054, renamed by 066. */
 	state?: string | null;
 	category?: number | null;
 	isvisible?: boolean;
@@ -199,13 +200,13 @@ export interface UsLeadOptions {
 /**
  * Insert a US lead and sync it to `leads`. Returns the leaddata id.
  *
- * Writes `leaddata` with country_code = 'us' since 054; `zipcode`/`county`
- * options map to the IN columns `pin_code`/`district`.
+ * Writes `leaddata` with country_code = 'us' since 054; the `zipcode`/`county`
+ * options map to the country-neutral columns `postal_code`/`level2` (066).
  *
  * `state` defaults to null because that is what every US write path produces:
  * level1/level2 are resolved from `pincode_mapping`, which is IN-only, so
  * insertLead() skips the lookup for US and both other leaddata writers set
- * `district` alone. 055's header records the same for live data. Pass it
+ * `level2` alone. 055's header records the same for live data. Pass it
  * explicitly to reach the category-1 read, which filters on level1 — and see
  * the note in next-steps.md, because no live US lead can match that filter.
  */
@@ -227,7 +228,7 @@ export async function createUsLead(options: UsLeadOptions = {}): Promise<number>
 
 	const { rows } = await pool.query<{ id: number }>(
 		`INSERT INTO leaddata
-		   (country_code, name, phone, email, pin_code, district, state, category,
+		   (country_code, name, phone, email, postal_code, level2, level1, category,
 		    isvisible, claim_count, business_id, urlparams)
 		 VALUES ('us',$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
 		 RETURNING id`,
@@ -297,9 +298,9 @@ export async function createLead(options: LeadOptions = {}): Promise<number> {
 
 	const { rows } = await pool.query<{ id: number }>(
 		`INSERT INTO leaddata
-		   (name, phone, email, pin_code, district, state, category, stage, status,
+		   (name, phone, email, postal_code, level2, level1, category, stage, status,
 		    isvisible, claim_count, business_id, created_at)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12, COALESCE($13::timestamp, NOW()))
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12, COALESCE($13::timestamptz, NOW()))
 		 RETURNING id`,
 		[
 			name,

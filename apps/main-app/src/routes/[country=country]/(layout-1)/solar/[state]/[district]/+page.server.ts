@@ -2,7 +2,7 @@ import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
 import {
 	businessProfiles as businessesTable,
-	leads,
+	leaddata,
 	pincodeMapping,
 	projects,
 	stateSubsidies
@@ -85,9 +85,9 @@ export const load: PageServerLoad = async ({ params }) => {
 			: Promise.resolve([]),
 		db
 			.select({ count: count() })
-			.from(leads)
+			.from(leaddata)
 			.where(
-				and(eq(leads.countryCode, country.code), sql`LOWER(${leads.level2}) = LOWER(${level2})`)
+				and(eq(leaddata.countryCode, country.code), sql`LOWER(${leaddata.level2}) = LOWER(${level2})`)
 			)
 	]);
 

@@ -1,29 +1,19 @@
-// Column projections for READING the unified country-scalable tables
-// (`businesses`, `leads`, `business_accounts` — migrations 043/044/046)
-// during the phase-2 transition, aliased back to the legacy per-country
-// column names so page loads and components are a drop-in switch.
+// Column projections for READING the two country-neutral stores — `leaddata`
+// (a lead) and `business_profiles` (a business) — aliased back to the legacy
+// per-country column names the page loads and components still speak.
 //
-// Writes still go to the old tables (businesses_1/us_businesses,
-// leaddata/us_leaddata) and reach the unified tables via sync triggers;
-// `source_id AS id` therefore preserves the old-table ids that branches,
-// claim requests and the write endpoints key on. These aliases (and this
-// module) disappear at the write cutover, when the legacy names go away.
-
-// leads -> leaddata (IN) legacy names.
-export const IN_LEAD_COLUMNS = `
-	source_id AS id, name, phone, postal_code AS pin_code, type, comment,
-	created_at, svnotes, urlparams, isvisible, email, category,
-	level2 AS district, stage, status, claim_count, original_id, business_id,
-	email_invite_count, sv_comment_for_businesses, reference_uuid,
-	business_notes, level1 AS state, qualification_score, bill_url,
-	bill_cloudinary_public_id, bill_format, bill_uploaded_at, marketing_consent`;
-
-// leads -> us_leaddata (US) legacy names.
-export const US_LEAD_COLUMNS = `
-	source_id AS id, name, phone, postal_code AS zipcode, type, comment,
-	created_at, svnotes, urlparams, isvisible, email, category,
-	level2 AS county, stage, status, claim_count, original_id, business_id,
-	email_invite_count, sv_comment_for_businesses, marketing_consent`;
+// Neither selection reads a projection any more: 064 dropped `businesses`, and
+// since 066 the lead selections read `leaddata` directly. `leads` is still
+// projected by sv_sync_lead through the 066 deploy, but nothing reads it — that
+// is the gate 067 checks before dropping it.
+//
+// The aliasing is all that remains of the transition, and it is one-way:
+// level1 -> state, level2 -> district/county, postal_code -> pin_code/zipcode.
+// Renaming the consumer sites instead is what would let this module go.
+//
+// Both LEAD selections key on `leaddata.id`, which is the platform's lead id:
+// project_management.lead_id and in_proposals.lead_id are foreign keys to it.
+// Before 066 this read `leads.source_id`, which held the same value.
 
 // businesses -> business_profiles legacy names.
 export const IN_BUSINESS_COLUMNS = `
@@ -44,65 +34,65 @@ export const US_BUSINESS_COLUMNS = `
 
 // ── Drizzle equivalents ─────────────────────────────────────────────────────
 // Typed selection maps mirroring the string projections above, for converted
-// queries: db.select(IN_LEAD_SELECTION).from(leads)... Same legacy-name
+// queries: db.select(IN_LEAD_SELECTION).from(leaddata)... Same legacy-name
 // aliasing; both forms coexist until the raw-SQL call sites finish migrating.
 
-import { businessProfiles, leads } from '@solar/db/schema';
+import { businessProfiles, leaddata } from '@solar/db/schema';
 
 export const IN_LEAD_SELECTION = {
-	id: leads.sourceId,
-	name: leads.name,
-	phone: leads.phone,
-	pin_code: leads.postalCode,
-	type: leads.type,
-	comment: leads.comment,
-	created_at: leads.createdAt,
-	svnotes: leads.svnotes,
-	urlparams: leads.urlparams,
-	isvisible: leads.isvisible,
-	email: leads.email,
-	category: leads.category,
-	district: leads.level2,
-	stage: leads.stage,
-	status: leads.status,
-	claim_count: leads.claimCount,
-	original_id: leads.originalId,
-	business_id: leads.businessId,
-	email_invite_count: leads.emailInviteCount,
-	sv_comment_for_businesses: leads.svCommentForBusinesses,
-	reference_uuid: leads.referenceUuid,
-	business_notes: leads.businessNotes,
-	state: leads.level1,
-	qualification_score: leads.qualificationScore,
-	bill_url: leads.billUrl,
-	bill_cloudinary_public_id: leads.billCloudinaryPublicId,
-	bill_format: leads.billFormat,
-	bill_uploaded_at: leads.billUploadedAt,
-	marketing_consent: leads.marketingConsent
+	id: leaddata.id,
+	name: leaddata.name,
+	phone: leaddata.phone,
+	pin_code: leaddata.postalCode,
+	type: leaddata.type,
+	comment: leaddata.comment,
+	created_at: leaddata.createdAt,
+	svnotes: leaddata.svnotes,
+	urlparams: leaddata.urlparams,
+	isvisible: leaddata.isvisible,
+	email: leaddata.email,
+	category: leaddata.category,
+	district: leaddata.level2,
+	stage: leaddata.stage,
+	status: leaddata.status,
+	claim_count: leaddata.claimCount,
+	original_id: leaddata.originalId,
+	business_id: leaddata.businessId,
+	email_invite_count: leaddata.emailInviteCount,
+	sv_comment_for_businesses: leaddata.svCommentForBusinesses,
+	reference_uuid: leaddata.referenceUuid,
+	business_notes: leaddata.businessNotes,
+	state: leaddata.level1,
+	qualification_score: leaddata.qualificationScore,
+	bill_url: leaddata.billUrl,
+	bill_cloudinary_public_id: leaddata.billCloudinaryPublicId,
+	bill_format: leaddata.billFormat,
+	bill_uploaded_at: leaddata.billUploadedAt,
+	marketing_consent: leaddata.marketingConsent
 };
 
 export const US_LEAD_SELECTION = {
-	id: leads.sourceId,
-	name: leads.name,
-	phone: leads.phone,
-	zipcode: leads.postalCode,
-	type: leads.type,
-	comment: leads.comment,
-	created_at: leads.createdAt,
-	svnotes: leads.svnotes,
-	urlparams: leads.urlparams,
-	isvisible: leads.isvisible,
-	email: leads.email,
-	category: leads.category,
-	county: leads.level2,
-	stage: leads.stage,
-	status: leads.status,
-	claim_count: leads.claimCount,
-	original_id: leads.originalId,
-	business_id: leads.businessId,
-	email_invite_count: leads.emailInviteCount,
-	sv_comment_for_businesses: leads.svCommentForBusinesses,
-	marketing_consent: leads.marketingConsent
+	id: leaddata.id,
+	name: leaddata.name,
+	phone: leaddata.phone,
+	zipcode: leaddata.postalCode,
+	type: leaddata.type,
+	comment: leaddata.comment,
+	created_at: leaddata.createdAt,
+	svnotes: leaddata.svnotes,
+	urlparams: leaddata.urlparams,
+	isvisible: leaddata.isvisible,
+	email: leaddata.email,
+	category: leaddata.category,
+	county: leaddata.level2,
+	stage: leaddata.stage,
+	status: leaddata.status,
+	claim_count: leaddata.claimCount,
+	original_id: leaddata.originalId,
+	business_id: leaddata.businessId,
+	email_invite_count: leaddata.emailInviteCount,
+	sv_comment_for_businesses: leaddata.svCommentForBusinesses,
+	marketing_consent: leaddata.marketingConsent
 };
 
 export const IN_BUSINESS_SELECTION = {

@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
 import { IN_BUSINESS_SELECTION, IN_LEAD_SELECTION } from '$lib/server/unifiedRead';
-import { branches, businessProfiles, inProposals, leaddataClaimrequests, leads, projects } from '@solar/db/schema';
+import { branches, businessProfiles, inProposals, leaddata, leaddataClaimrequests, projects } from '@solar/db/schema';
 import { and, count, desc, eq, gte, inArray, like, not, or, sql } from 'drizzle-orm';
 
 export const prerender = false;
@@ -65,7 +65,7 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		//
 		// Resolved by the session's businessId, not by the slug: slugs are not
 		// unique (next-steps.md item 1), so a slug lookup here could return a
-		// different row than the layout's and render another company's leads.
+		// different row than the layout's and render another company's leaddata.
 		const businessRows = await db
 			.select(IN_BUSINESS_SELECTION)
 			.from(businessProfiles)
@@ -107,20 +107,20 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		if (allSlugs.length > 0) {
 			exclusiveLeads = (await db
 				.select(IN_LEAD_SELECTION)
-				.from(leads)
+				.from(leaddata)
 				.where(
 					and(
-						eq(leads.countryCode, country),
-						eq(leads.isvisible, true),
+						eq(leaddata.countryCode, country),
+						eq(leaddata.isvisible, true),
 						or(
 							...allSlugs.flatMap((slug) => [
-								like(leads.urlparams, `/solar-panel-installer/${slug}%`),
-								like(leads.urlparams, `%/installer/${slug}%`)
+								like(leaddata.urlparams, `/solar-panel-installer/${slug}%`),
+								like(leaddata.urlparams, `%/installer/${slug}%`)
 							])
 						)
 					)
 				)
-				.orderBy(desc(leads.id))) as unknown as Lead[];
+				.orderBy(desc(leaddata.id))) as unknown as Lead[];
 		}
 
 		// ✅ Fetch claimed leads from `leaddata_claimrequests` for main business and all branches
@@ -134,16 +134,16 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		// ✅ Fetch non-exclusive claimed leads for main business and all branches
 		const nonExclusiveClaimedLeads = (await db
 			.select(IN_LEAD_SELECTION)
-			.from(leads)
+			.from(leaddata)
 			.where(
 				and(
-					eq(leads.countryCode, country),
-					eq(leads.category, 2),
-					inArray(leads.businessId, allBusinessIds),
-					eq(leads.isvisible, true)
+					eq(leaddata.countryCode, country),
+					eq(leaddata.category, 2),
+					inArray(leaddata.businessId, allBusinessIds),
+					eq(leaddata.isvisible, true)
 				)
 			)
-			.orderBy(desc(leads.id))) as unknown as Lead[];
+			.orderBy(desc(leaddata.id))) as unknown as Lead[];
 
 		// ✅ Extract original_id of claimed leads (i.e., leads that were originally non-exclusive)
 		const claimedOriginalIds = new Set(nonExclusiveClaimedLeads.map((lead) => lead.original_id));
@@ -153,19 +153,19 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		let nonExclusiveLeads: Lead[] = [];
 		if (uniqueStates.length > 0) {
 			nonExclusiveLeads = (await db
-				.select({ ...IN_LEAD_SELECTION, claim_count: sql<number>`COALESCE(${leads.claimCount}, 0)` })
-				.from(leads)
+				.select({ ...IN_LEAD_SELECTION, claim_count: sql<number>`COALESCE(${leaddata.claimCount}, 0)` })
+				.from(leaddata)
 				.where(
 					and(
-						eq(leads.countryCode, country),
-						eq(leads.category, 1),
-						inArray(leads.level1, uniqueStates as string[]),
-						eq(leads.isvisible, true),
-						gte(leads.createdAt, sql`NOW() - INTERVAL '15 days'`),
-						not(sql`COALESCE(${leads.claimCount}, 0) > 4`)
+						eq(leaddata.countryCode, country),
+						eq(leaddata.category, 1),
+						inArray(leaddata.level1, uniqueStates as string[]),
+						eq(leaddata.isvisible, true),
+						gte(leaddata.createdAt, sql`NOW() - INTERVAL '15 days'`),
+						not(sql`COALESCE(${leaddata.claimCount}, 0) > 4`)
 					)
 				)
-				.orderBy(desc(leads.id))) as unknown as Lead[];
+				.orderBy(desc(leaddata.id))) as unknown as Lead[];
 		}
 
 		// ✅ Remove non-exclusive leads that have been claimed

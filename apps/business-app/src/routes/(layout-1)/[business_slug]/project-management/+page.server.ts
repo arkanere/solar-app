@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { businessProfiles, leads, projectManagement } from '@solar/db/schema';
+import { businessProfiles, leaddata, projectManagement } from '@solar/db/schema';
 import { and, desc, eq } from 'drizzle-orm';
 import { error, isHttpError } from '@sveltejs/kit';
 
@@ -72,18 +72,18 @@ export const load: PageServerLoad<PageData> = async ({ parent }) => {
 				stage: projectManagement.stage,
 				created_at: projectManagement.createdAt,
 				last_updated: projectManagement.lastUpdated,
-				customer_name: leads.name,
-				email: leads.email,
-				phone: leads.phone,
-				district: leads.level2,
-				pin_code: leads.postalCode
+				customer_name: leaddata.name,
+				email: leaddata.email,
+				phone: leaddata.phone,
+				district: leaddata.level2,
+				pin_code: leaddata.postalCode
 			})
 			.from(projectManagement)
 			.innerJoin(
-				leads,
-				and(eq(leads.countryCode, country), eq(projectManagement.leadId, leads.sourceId))
+				leaddata,
+				and(eq(leaddata.countryCode, country), eq(projectManagement.leadId, leaddata.id))
 			)
-			.where(eq(leads.businessId, businessId))
+			.where(eq(leaddata.businessId, businessId))
 			.orderBy(desc(projectManagement.lastUpdated));
 
 		const projects = projectRows as unknown as ProjectManagement[];

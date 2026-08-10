@@ -44,12 +44,12 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 			.values({
 				name,
 				phone,
-				pinCode,
+				postalCode: pinCode,
 				type,
 				comment,
 				urlparams: urlParam,
 				email: email || null,
-				district
+				level2: district
 			})
 			.returning({ id: leaddata.id, referenceUuid: leaddata.referenceUuid });
 

@@ -54,18 +54,18 @@ describe('POST /api/submitLead', () => {
 		expect(body.reference_uuid).toMatch(/^[0-9a-f-]{36}$/);
 
 		const { rows } = await pool.query(
-			'SELECT name, phone, pin_code, type, comment, urlparams, email, district FROM leaddata'
+			'SELECT name, phone, postal_code, type, comment, urlparams, email, level2 FROM leaddata'
 		);
 		expect(rows).toHaveLength(1);
 		expect(rows[0]).toMatchObject({
 			name: 'Priya Sharma',
 			phone: '9876543210',
-			pin_code: '411001',
+			postal_code: '411001',
 			type: 'Residential',
 			comment: 'Interested in a 3kW system',
 			urlparams: 'utm_source=google',
 			email: null,
-			district: 'Pune'
+			level2: 'Pune'
 		});
 	});
 
@@ -74,8 +74,8 @@ describe('POST /api/submitLead', () => {
 
 		await submit({ ...VALID, pinCode: '422001' });
 
-		const { rows } = await pool.query<{ district: string }>('SELECT district FROM leaddata');
-		expect(rows[0].district).toBe('Nashik');
+		const { rows } = await pool.query<{ level2: string }>('SELECT level2 FROM leaddata');
+		expect(rows[0].level2).toBe('Nashik');
 	});
 
 	it('still creates the lead with a null district when the pincode is unmapped', async () => {
@@ -84,8 +84,8 @@ describe('POST /api/submitLead', () => {
 		const { body } = await submit({ ...VALID, pinCode: '999999' });
 
 		expect(body.success).toBe(true);
-		const { rows } = await pool.query<{ district: string | null }>('SELECT district FROM leaddata');
-		expect(rows[0].district).toBeNull();
+		const { rows } = await pool.query<{ level2: string | null }>('SELECT level2 FROM leaddata');
+		expect(rows[0].level2).toBeNull();
 	});
 
 	it('stores the email when given, and null when omitted', async () => {

@@ -40,7 +40,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			.from(leaddata)
 			.where(
 				and(
-					sql`LOWER(${leaddata.district}) = LOWER(${district})`,
+					sql`LOWER(${leaddata.level2}) = LOWER(${district})`,
 					sql`${leaddata.createdAt} > NOW() - INTERVAL '30 days'`
 				)
 			),

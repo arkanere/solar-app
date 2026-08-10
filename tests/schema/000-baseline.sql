@@ -313,26 +313,26 @@ CREATE TABLE "leaddata" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"name" varchar(255) NOT NULL,
 	"phone" varchar(16) NOT NULL,
-	"pin_code" varchar(6) NOT NULL,
+	"postal_code" varchar(10) NOT NULL,
 	"type" varchar(510),
 	"comment" text,
-	"created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
+	"created_at" timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
 	"svnotes" text,
 	"urlparams" varchar(255) DEFAULT NULL,
 	"isvisible" boolean DEFAULT true,
 	"email" varchar(255),
 	"category" smallint,
-	"district" varchar(255),
+	"level2" varchar(255),
 	"stage" smallint DEFAULT 0,
 	"status" boolean DEFAULT true,
 	"claim_count" smallint DEFAULT 0,
-	"original_id" smallint,
-	"business_id" smallint,
-	"email_invite_count" smallint DEFAULT 0,
+	"original_id" integer,
+	"business_id" integer,
+	"email_invite_count" integer DEFAULT 0,
 	"sv_comment_for_businesses" text,
 	"reference_uuid" uuid DEFAULT gen_random_uuid(),
 	"business_notes" text,
-	"state" varchar(100),
+	"level1" varchar(100),
 	"qualification_score" integer,
 	"bill_url" text,
 	"bill_cloudinary_public_id" text,
@@ -632,6 +632,7 @@ ALTER TABLE "geo_locations" ADD CONSTRAINT "geo_locations_country_code_fkey" FOR
 ALTER TABLE "in_blog_posts" ADD CONSTRAINT "in_blog_posts_author_slug_fkey" FOREIGN KEY ("author_slug") REFERENCES "public"."authors"("slug") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "in_proposals" ADD CONSTRAINT "proposals_lead_id_fkey" FOREIGN KEY ("lead_id") REFERENCES "public"."leaddata"("id") ON DELETE cascade ON UPDATE no action;
 ALTER TABLE "in_user_feedback" ADD CONSTRAINT "in_user_feedback_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."in_user"("id") ON DELETE no action ON UPDATE no action;
+ALTER TABLE "leaddata" ADD CONSTRAINT "leaddata_country_code_fkey" FOREIGN KEY ("country_code") REFERENCES "public"."countries"("code") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "leads" ADD CONSTRAINT "leads_country_code_fkey" FOREIGN KEY ("country_code") REFERENCES "public"."countries"("code") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "legal_acceptances" ADD CONSTRAINT "legal_acceptances_policy_id_fkey" FOREIGN KEY ("policy_id") REFERENCES "public"."legal_policies"("id") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "legal_acceptances" ADD CONSTRAINT "legal_acceptances_country_code_fkey" FOREIGN KEY ("country_code") REFERENCES "public"."countries"("code") ON DELETE no action ON UPDATE no action;
@@ -646,7 +647,7 @@ CREATE UNIQUE INDEX "callsafe_unsubscribe_email_idx" ON "callsafe_unsubscribe" U
 CREATE INDEX "chatbotmessagesstore_session_idx" ON "chatbotmessagesstore" USING btree ("session_id","timestamp");
 CREATE INDEX "data_access_requests_status_idx" ON "data_access_requests" USING btree ("status");
 CREATE INDEX "geo_locations_level2_idx" ON "geo_locations" USING btree ("country_code","level1_slug","level2_slug");
-CREATE INDEX "leaddata_country_idx" ON "leaddata" USING btree ("country_code");
+CREATE INDEX "leaddata_country_created_idx" ON "leaddata" USING btree ("country_code","created_at");
 CREATE INDEX "leads_created_idx" ON "leads" USING btree ("country_code","created_at");
 CREATE INDEX "legal_acceptances_business_policy_idx" ON "legal_acceptances" USING btree ("country_code","business_id","policy_id","accepted_at");
 CREATE INDEX "idx_earlier_to_earlier_date" ON "masterlist_indian_businesses" USING btree ("earlier_to_earlier_date");
