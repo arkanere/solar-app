@@ -74,21 +74,22 @@ describe('RateLimiter.checkLimit', () => {
 	});
 
 	it('fails OPEN when the store is unreachable', async () => {
-		// Drop the table out from under it: any store error must allow the
+		// Take the table out from under it: any store error must allow the
 		// request through rather than block a login on a database hiccup.
-		await pool.query('DROP TABLE rate_limits');
+		//
+		// Renamed aside rather than dropped, so the real table comes back byte for
+		// byte. This used to DROP and then CREATE the table by hand — a stub that
+		// happened to match, but only until someone alters the real schema and
+		// forgets this file. That is exactly how the same pattern in
+		// updateLeadByBusiness.test.ts recreated a three-column
+		// project_management against a five-column table and broke four tests, and
+		// it stayed invisible until a new test file reordered the suite.
+		await pool.query('ALTER TABLE rate_limits RENAME TO rate_limits_hidden');
 		try {
 			const result = await limiter.checkLimit('user@example.test', 5);
 			expect(result).toEqual({ allowed: true, retryAfter: 0 });
 		} finally {
-			// resetDatabase() truncates this table, so put it back for later tests.
-			await pool.query(`
-				CREATE TABLE rate_limits (
-					identifier text PRIMARY KEY NOT NULL,
-					count integer DEFAULT 0 NOT NULL,
-					reset_time timestamptz NOT NULL
-				)
-			`);
+			await pool.query('ALTER TABLE rate_limits_hidden RENAME TO rate_limits');
 		}
 	});
 });

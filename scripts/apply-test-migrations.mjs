@@ -104,7 +104,13 @@ const POST_BASELINE_MIGRATIONS = [
 	// because 047 and 055 above both recreate sv_sync_lead; without this the test
 	// database keeps a function production no longer has, writing a table it no
 	// longer has either. Exactly 064's situation.
-	'067-drop-leads.sql'
+	'067-drop-leads.sql',
+	// Drops the last four sync_unified_* trigger functions. Not a no-op here:
+	// 047 above CREATE OR REPLACEs all six, and 062 removes only the account
+	// pair, so without this the test database keeps four functions production
+	// does not have. No rewind and no guard — DROP FUNCTION IF EXISTS is already
+	// self-skipping and nothing in the file is a rename.
+	'068-drop-sync-unified-orphans.sql'
 ];
 
 // The baseline is the *end state*; the files above are *history*. Where a

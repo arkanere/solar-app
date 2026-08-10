@@ -27,9 +27,15 @@
    authoritative `businessId` rather than by the slug in the URL, so there is no known wrong-tenant
    path left. `tests/routing/duplicateSlug.test.ts` pins both sides against a shared slug.
 
-   **Remaining: de-duplicate, then `UNIQUE (slug)`.** Open question before de-duplicating: whether
-   `isvisible = f` is a soft-delete you intend to keep, which decides whether the losing rows get
-   deleted or re-slugged.
+   **Remaining: de-duplicate, then `UNIQUE (slug)`.** The open question is now answered:
+   **`isvisible = f` is a soft-delete and the rows are kept.** So the losing rows get **re-slugged,
+   not deleted** — every one of the 54 stays, and the 46 invisible ones need a new slug rather than a
+   `DELETE`. That also means `UNIQUE (slug)` has to hold across soft-deleted rows, so it is a plain
+   unique constraint and not a partial index on `isvisible = t`.
+
+   **The `incorrect` sentinel stays as it is** (decided 2026-08-10) — those 125 rows are not part of
+   the de-duplication. Tracing which writer produces it is still worth doing before any future fix,
+   but it is not blocking the collision work.
 
    The duplicates are also why `business_profiles` cannot take a `UNIQUE (slug)` constraint, and why
    `api/resetPassword` matches on the token hash rather than on the slug alone (`cdeff73`) — any new
@@ -47,6 +53,10 @@
    postal-code-to-state source — `pincode_mapping` is IN-only — which is a data question, not a code
    one. Whoever fixes it should flip those two tests rather than delete them.
 
+   **Decided 2026-08-10: the US postal-code data is going to be added**, in a later session. So this
+   is waiting on that import rather than on a decision — when the source lands, items 2 and 3 close
+   together.
+
 3. **`PostRecentProject.svelte:395-419` is India-shaped and US businesses reach it.** It labels its
    fields **"Pincode:"** and **"District (Auto-filled):"** and auto-fills from
    `/api/getDistrictByPincode`, which queries `pincode_mapping`. That is the one lookup
@@ -56,23 +66,6 @@
    The sibling branch form was the same bug and is fixed (`d418a08`, `0a8351a`) — its dropdowns now
    read `geo_locations`, which is populated for both countries. Use it as the model, but note
    `getCities` there needs state *and* county, because US county names repeat across states.
-
-4. **Leftovers from the 060/061 cleanup, none urgent.**
-   - **Four `sync_unified_*` orphans remain** (`business_in/us`, `lead_in/us`). Their triggers went
-     with 051 and nothing can reach them; 062 dropped the two `account_*` siblings only because
-     their bodies called a function it was removing. Dropping the rest is a one-liner.
-   - **`rateLimiter.test.ts:79` has the fragile pattern that cost four tests once already.** It drops
-     `rate_limits` to exercise the fail-open branch and recreates it by hand in a `finally`. That
-     stub currently matches the real schema exactly, so nothing is broken — but the identical
-     pattern in `updateLeadByBusiness.test.ts` recreated a three-column `project_management` against
-     a five-column table, and stayed invisible until a new test file reordered the suite. Switching
-     it to the `ALTER TABLE ... RENAME` aside-and-back that file now uses would close it for good.
-   - **`check-unified-drift.sql` is now entirely dead and should just be deleted.** It was already
-     broken before 060 — its `leads_us`, `businesses_us` and `accounts_us` scopes read `us_leaddata`
-     and `us_businesses`, dropped by 056 — and then 062/064 killed the `accounts_*` and
-     `businesses_*` scopes, leaving only the two `leads_*` ones describing anything real. 067 dropped
-     `leads`, so all six scopes now name tables that do not exist. There are no projections left to
-     drift, which is the whole point; nothing replaces it.
 
 ---
 
@@ -305,8 +298,10 @@ the EDB install, which has no `solar` role — do not point the suite at it.
 `npm run pull -w @solar/db`. **Never pull from a test cluster** — its baseline omits three
 `loc_key(...)` expression indexes, so a pull from there silently drops them.
 
-All migrations through **067** are applied to live, verified 2026-08-10 by introspection. 066 and
-067 were run by hand around their deploys, each gated as its header describes.
+All migrations through **068** are applied to live, verified 2026-08-10 by introspection. 066 and
+067 were run by hand around their deploys, each gated as its header describes. 068 is pure
+housekeeping — four unreachable trigger functions — and needed no deploy gating and no baseline
+regeneration (the baseline declares tables only, which is why 047 is replayed on top of it).
 
 **There is no migration-tracking table** — nothing records what has run, so this line is
 hand-maintained and will go stale again. It is cheap to re-derive from the schema itself; each
@@ -323,9 +318,10 @@ SELECT attname FROM pg_attribute WHERE attrelid = 'public.business_profiles'::re
 SELECT attname FROM pg_attribute WHERE attrelid = 'public.leaddata'::regclass AND attnum > 0;
 -- 067: `leads` is gone and no sv_sync_* function is left at all.
 SELECT to_regclass('public.leads');
+-- 068: and no sync_unified_* orphan either. Both queries below return 0 rows;
+-- the only function left in public is sv_slugify().
 SELECT proname FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
- WHERE n.nspname = 'public' AND proname LIKE 'sv_sync%';
+ WHERE n.nspname = 'public' AND (proname LIKE 'sv_sync%' OR proname LIKE 'sync_unified%');
 ```
 
-The same sweep confirms the four `sync_unified_*` orphans in item 4 are still on live, and that
-`us_*`, `locations` and `sv_referrers` are gone (056, 058, 059).
+The same sweep confirms `us_*`, `locations` and `sv_referrers` are gone (056, 058, 059).
