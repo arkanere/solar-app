@@ -43,24 +43,29 @@ Three steps, all in `scripts/apply-test-migrations.mjs`:
    from the live database, so it traces back to production rather than to a
    hand-written guess.
 
-2. **A rewind of the `business_profiles` names** — `061` renamed
-   `in_business_profiles` to `business_profiles`, so the baseline creates the new
-   name, but the migration files replayed next are history and predate it. `054`
-   in particular does a bare `ALTER TABLE in_business_profiles`, which would fail
-   outright. The script therefore renames the table, its two indexes and its
-   unique constraint back to the old names, replays the history unedited, and
-   lets `061` rename them forward again. A `to_regclass(...)` guard is no help
-   for this class of problem: the table exists, under a different name.
+2. **A rewind of three renames** — `061` renamed `in_business_profiles` to
+   `business_profiles`, `062` gave `business_profiles.business_id` its sequence
+   DEFAULT, and `063` renamed four of its columns and replaced two indexes. The
+   baseline creates the end state, but the files replayed next are history and
+   address the old names. The script winds all three back, replays the history
+   unedited, and lets the real migrations rename them forward again.
 
-3. **Six migration files** — `042-countries-and-geo.sql`,
-   `047-unified-sync-functions.sql`, `050-split-sync-functions.sql`,
-   `054-unite-country-legacy-tables.sql`,
-   `055-repoint-sync-fns-to-united-tables.sql`, then
-   `061-rename-in-business-profiles.sql`. These add what an introspected schema
-   cannot express: the `sv_sync_*` stored functions the write endpoints call
-   through `$lib/server/unifiedSync`, and the `countries` seed rows that
-   `businesses`, `business_accounts` and `leads` have foreign keys to. Each is
-   annotated in the script with why it is on the list.
+   **A `to_regclass(...)` guard is no help for a rename** — the object exists,
+   under a different name. Guards are for *drops*, and both appear here: `062`'s
+   table rename became a drop's problem once `065` removed the archive, so that
+   one statement is guarded inside the migration itself.
+
+3. **Eight migration files** — `042`, `047`, `050`, `055`, `061`, `062`, `063`,
+   `064`, `065`. These add what an introspected schema cannot express: the
+   `sv_sync_*` stored functions the write endpoints call through
+   `$lib/server/unifiedSync`, and the `countries` seed rows that
+   `business_accounts` and `leads` have foreign keys to. The later ones are there
+   to *undo* things the earlier ones declare, so the replay ends where production
+   does. Each is annotated in the script with why it is on the list.
+
+   `054` used to be here and was removed with `065`: the only thing it
+   contributed was a function `062` drops, and keeping it meant carrying four
+   executable statements against a table that no longer exists.
 
 ### Why a baseline, and why not just replay all the migrations
 
@@ -84,8 +89,8 @@ encode _history_; the baseline is the _end state_. `039` creates
 baseline that has the table under whichever name it currently carries, one of
 those two steps always fails. The same goes for every `ALTER`/`DROP` that assumes
 an earlier shape. The files listed above are the only ones that are pure
-idempotent declarations, plus `061`, which is there for the narrow reason given
-in step 2.
+idempotent declarations, plus the renames and drops (`061`-`065`) that are there
+for the reasons given in step 2.
 
 The trigger-installing migrations (`043`, `045`, `046`) are deliberately skipped:
 `049` and `051` drop every one of those triggers again, so production has none,
