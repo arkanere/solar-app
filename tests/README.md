@@ -66,11 +66,11 @@ Three steps, all in `scripts/apply-test-migrations.mjs`:
 
 Two reasons, and both are worth knowing before changing any of this.
 
-**A baseline is unavoidable.** 36 of the 55 tables — including `leaddata`,
+**A baseline is unavoidable.** Most of the tables — including `leaddata`,
 `branches`, `business_profiles` and `leaddata_claimrequests` — have no
 `CREATE TABLE` anywhere in the repository. They predate the migrations
-convention. Replaying the numbered migrations against an empty database fails at
-`034-magic-link-token-expiry.sql` with `relation "businesses_1" does not exist`.
+convention. Replaying the numbered migrations against an empty database fails
+early, at `034-magic-link-token-expiry.sql`, on a table nothing ever created.
 
 **And a baseline is not sufficient by itself.** It can emit a column default
 that names a sequence it never creates, which fails inside the baseline's own

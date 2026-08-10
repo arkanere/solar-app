@@ -6,10 +6,10 @@
 
 ## Open
 
-1. **Duplicate `businesses.slug` values in live IN data.** Surveyed 2026-08-09; the picture is worse
+1. **Duplicate `business_profiles.slug` values in live IN data.** Surveyed 2026-08-09; the picture is worse
    and more specific than this item used to say.
 
-   **6708 profiles, 6518 distinct slugs, 36 NULL.** Unified `businesses` mirrors it exactly.
+   **6708 profiles, 6518 distinct slugs, 36 NULL.**
 
    **The largest offender is not a duplicate at all.** The literal slug `incorrect` is on **125
    rows** spanning 117 distinct business names and 90 cities — a sentinel, not a collision. 124 of
@@ -31,24 +31,25 @@
 
    **`api/updateBusinessDetails` is still wrong, and is the remaining wrong-tenant path.** It updates
    `business_profiles` by slug with no id filter, so one business saving its profile overwrites its
-   twin's row, then syncs an arbitrary one of the returned ids. Same fix as the loads — it has the
-   session in scope already. (062 deleted the second, `businesses_1` half of that dual-write, which
-   halves the blast radius and changes nothing else.)
+   twin's row. Same fix as the loads — it has the session in scope already. (062 deleted the second,
+   `businesses_1` half of that dual-write and 064 the sync that followed it, so this is now a single
+   mis-scoped UPDATE and nothing more.)
 
    **Recommended order:** finish `updateBusinessDetails`, then de-duplicate, then `UNIQUE (slug)`.
    Open question before de-duplicating: whether `isvisible = f` is a soft-delete you intend to keep,
    which decides whether the losing rows get deleted or re-slugged.
 
-   The duplicates are also why `businesses` cannot take a `UNIQUE (slug)` constraint, and why
+   The duplicates are also why `business_profiles` cannot take a `UNIQUE (slug)` constraint, and why
    `api/resetPassword` matches on the token hash rather than on the slug alone (`cdeff73`) — any new
    slug lookup has to assume duplicates until this is closed.
 
 2. **Drift between `leaddata` and unified `leads`.** **3** `leaddata` rows have no unified row at all
    (a `sv_sync_lead` call that never happened), and **156** unified `leads` have no surviving
    `leaddata` source (the sync never deletes, so removing a source row orphans its projection).
-   `businesses` is clean — 0 in either direction. Consequence: a full resync *raises* the unified
-   lead count, so "counts unmoved" only holds for a **targeted** resync. Reconciling these is its own
-   task; `apps/main-app/src/lib/server/migrations/check-unified-drift.sql` is the existing tool.
+   `businesses` was clean at 0 in either direction, which is part of why it was safe to collapse.
+   Consequence: a full resync *raises* the `leads` count, so "counts unmoved" only holds for a
+   **targeted** resync. Reconciling these is its own task, and item 6 wants it done first;
+   `apps/main-app/src/lib/server/migrations/check-unified-drift.sql` is the existing tool.
 
 3. **No US lead ever gets a `state`, so the US non-exclusive lead pool is permanently empty.** The
    dashboard's and `/crm`'s category-1 read matches `leads.level1 IN (business states)`, but every
@@ -86,9 +87,9 @@
    - **`check-unified-drift.sql` is already broken and was before 060.** Its `leads_us`,
      `businesses_us` and `accounts_us` scopes read `us_leaddata` and `us_businesses`, which 056
      dropped, so the file errors partway through as written. Its `accounts_*` scopes are now dead
-     for a second reason: 062 made `business_accounts` a store, so there is nothing left to drift
-     *from*. Fixing it means deciding what a US drift check even means now that both countries share
-     one set of tables and only `businesses`/`leads` are still projections.
+     for a second reason: 062 made `business_accounts` a store and 064 dropped `businesses`, so of
+     its six scopes only the two `leads_*` ones still describe anything real. It is arguably now a
+     `leads`-only drift check with a misleading name.
 
 6. **Collapse `leads` into `leaddata` the way `businesses` went.** The table collapse is otherwise
    **done** — 062 archived `businesses_1`, 063 gave `business_profiles` the country-neutral names,
@@ -108,12 +109,10 @@
    Reconcile the 159 drifted rows before step 1, not after: once the projection is the only copy,
    whichever side you kept is the answer, and right now it is not obvious which that should be.
 
-7. **Drop `businesses_1_archive` after a quiet period.** 062 renamed rather than dropped so a missed
-   writer fails loudly. Nothing in any repo references it now (the last, `solar-app-internal`'s
-   campaign script, was repointed in the same change and verified to return an identical 537-address
-   set). Backup at `~/businesses_1-archive-2026-08-09.sql`. When it goes, note that
-   `businesses_1_id_seq` must **survive** — it mints every business id and 062 already reassigned
-   its ownership to `business_profiles.business_id` so the drop cannot take it.
+7. ~~Drop `businesses_1_archive`~~ — **done (065).** Nothing had touched it: its
+   `pg_stat_user_tables` counters were identical across readings. `businesses_1_id_seq` survived as
+   designed and was proved to still mint (6984, in a rolled-back transaction). Backup at
+   `~/businesses_1-archive-2026-08-09.sql`.
 
 ---
 
@@ -138,7 +137,7 @@ business write, and adding one back would mean reintroducing a duplicate.
 **The new hazard that replaces the old one:** a business is two rows, and nothing projects the
 second any more. Every id-minting site (`submitBusiness`, `addBranch`, `claimLead`'s auto-branch)
 must insert `business_profiles` **and** `business_accounts`. Miss the account row and the business
-looks perfectly healthy — it is in `businesses`, it lists, it has a slug — and simply cannot log in,
+looks perfectly healthy — it lists on the public site, it has a slug — and simply cannot log in,
 be sent a magic link, or reset its password. `tests/auth/accountsAreAStore.test.ts` pins the
 invariant table-wide rather than per endpoint, so a fourth minting site is covered without being
 named. `isvisible` is carried by **both** halves and both must be written when hiding a business.

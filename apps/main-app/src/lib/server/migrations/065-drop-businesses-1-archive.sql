@@ -1,0 +1,83 @@
+-- Drop businesses_1_archive (2026-08-10).
+--
+-- The last of the collapse. 062 renamed businesses_1 to this rather than
+-- dropping it, so that any writer the planning missed would fail loudly instead
+-- of silently not projecting — next-steps.md is explicit that stray writers are
+-- found by code grep, not by a SQL check, and one of them was in another repo
+-- entirely. Nothing failed. The table has been inert since, and this removes it.
+--
+-- Verified on live before writing this migration:
+--   - pg_stat_user_tables for businesses_1_archive is FLAT across readings —
+--     seq_scan 955310, idx_scan 54743, n_tup_ins 32, n_tup_upd 712, identical
+--     at 06:0x and 06:14. Those are lifetime counters from its years as
+--     businesses_1, which is exactly why the delta is what matters and the
+--     absolute values are not evidence of anything;
+--   - no inbound foreign keys, no function body, no view mentions it;
+--   - 6708 rows, matching business_profiles and business_accounts exactly, with
+--     0 drift confirmed when 062 was written.
+--
+-- ** businesses_1_id_seq MUST SURVIVE, and does. ** It mints every business id
+-- and is at 6983, matching max(business_profiles.business_id). 062 already
+-- reassigned its ownership from businesses_1.id to business_profiles.business_id
+-- precisely so this drop cannot take it — confirmed again just now:
+--
+--   seq owned by: business_profiles.business_id
+--
+-- If that had still read `businesses_1_archive.id`, DROP TABLE would have taken
+-- the sequence with it and the next signup would have failed on a missing
+-- relation. That is the trap 060 documented for in_business_accounts_id_seq,
+-- where taking the sequence was the desired outcome; here it is the opposite.
+--
+-- Code side: nothing. No app in either repo has referenced businesses_1 since
+-- 062, and solar-app-internal's campaign script moved to
+-- business_accounts + business_profiles in the same change.
+--
+-- The three places a code grep of src/ misses (see next-steps.md), and this one
+-- is almost entirely a test-harness change:
+--   - replayed migrations: TWO files address businesses_1 in executable DDL.
+--     054 is REMOVED from the replay list rather than guarded — its only stated
+--     purpose there was its CREATE OR REPLACE of sv_sync_in_split, and 062 drops
+--     that function, so it now contributes nothing to the final state (its
+--     ALTERs are IF NOT EXISTS against columns the baseline already has, its
+--     US-row copies were guarded no-ops, and its setvals are no-ops on empty
+--     sequences). 062's own `ALTER TABLE businesses_1 RENAME TO
+--     businesses_1_archive` is guarded with to_regclass instead, since the rest
+--     of that file — the sequence reassignment, the DEFAULT, the three DROP
+--     FUNCTIONs — is still needed. The rewind loses its rename line with it.
+--   - fixtures.ts: nothing. businesses_1 left the TRUNCATE list at 062.
+--   - function bodies: none, confirmed on live.
+--
+-- PRE_BASELINE_SEQUENCES in apply-test-migrations.mjs stays, for a NEW reason.
+-- It existed because businesses_1_archive.id carried a bare
+-- `DEFAULT nextval('businesses_1_id_seq')` that nothing declared. With the table
+-- gone that default goes too — but 062, still replayed, does
+-- `ALTER SEQUENCE businesses_1_id_seq OWNED BY ...` and sets the same default on
+-- business_profiles.business_id, so the sequence must still exist before it
+-- runs. Same line, different justification; the comment there is updated.
+--
+-- DESTRUCTIVE and irreversible. The archive is a frozen copy of data that lives
+-- in business_profiles + business_accounts, so there is no rollback script:
+-- recovery is `psql < businesses_1-archive-2026-08-09.sql`, taken when 062 ran
+-- and kept at ~/businesses_1-archive-2026-08-09.sql (2.8M).
+--
+-- Regenerate the baseline after applying:
+--   npm run pull -w @solar/db && node scripts/generate-test-baseline.mjs
+--
+-- Run manually: psql "$POSTGRES_URL_NON_POOLING" < 065-drop-businesses-1-archive.sql
+
+BEGIN;
+
+DROP TABLE IF EXISTS businesses_1_archive;
+
+COMMIT;
+
+-- After committing, the sequence is the thing to check — not the table:
+--
+--   SELECT to_regclass('businesses_1_archive');        -- NULL
+--   SELECT last_value FROM businesses_1_id_seq;        -- 6983, still here
+--   \d business_profiles                                -- business_id DEFAULT intact
+--
+-- and the only real proof, which is worth doing on a throwaway row:
+--   INSERT INTO business_profiles (businessname, country_code) VALUES ('seq check', 'in')
+--     RETURNING business_id;                            -- 6984
+--   DELETE FROM business_profiles WHERE businessname = 'seq check';

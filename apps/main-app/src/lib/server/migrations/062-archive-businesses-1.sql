@@ -176,8 +176,22 @@ DROP FUNCTION IF EXISTS sync_unified_account_in();
 DROP FUNCTION IF EXISTS sync_unified_account_us();
 
 -- ------------------------------------------------------------- the table ----
+--
+-- Guarded as of 065, which drops the archive: the regenerated baseline stops
+-- creating either name, and this file is still replayed by
+-- apply-test-migrations.mjs for everything above — the sequence reassignment,
+-- the DEFAULT, and the three DROP FUNCTIONs. On live the rename already ran, so
+-- the guard is a no-op there; in the test database it self-skips.
 
-ALTER TABLE businesses_1 RENAME TO businesses_1_archive;
+DO $do$
+BEGIN
+IF to_regclass('public.businesses_1') IS NULL THEN
+  RAISE NOTICE 'businesses_1 already renamed or dropped (065); skipping';
+ELSE
+  ALTER TABLE businesses_1 RENAME TO businesses_1_archive;
+END IF;
+END
+$do$;
 
 COMMIT;
 

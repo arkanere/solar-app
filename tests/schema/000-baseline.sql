@@ -81,43 +81,6 @@ CREATE TABLE "business_profiles" (
 	CONSTRAINT "business_profiles_business_id_key" UNIQUE("business_id")
 );
 
-CREATE TABLE "businesses_1_archive" (
-	"id" integer PRIMARY KEY DEFAULT nextval('businesses_1_id_seq'::regclass) NOT NULL,
-	"businessname" varchar(255) NOT NULL,
-	"address" text,
-	"pluscode" varchar(255),
-	"phonenumber" varchar(20),
-	"email" varchar(255),
-	"website" varchar(255),
-	"gstn" varchar(50),
-	"state" varchar(100),
-	"district" varchar(100),
-	"tag" varchar(255),
-	"slug" varchar(255),
-	"notes" text,
-	"city" varchar(100),
-	"rscore" integer DEFAULT 0,
-	"isvisible" boolean DEFAULT false,
-	"login_email" varchar(255) NOT NULL,
-	"login_password" varchar(255),
-	"businessfilled" boolean DEFAULT true,
-	"reset_token" varchar(255),
-	"reset_token_expires" timestamp,
-	"tier3" boolean DEFAULT false,
-	"pincode" char(6),
-	"magic_link_token" text,
-	"description" varchar(256) DEFAULT 'Solar panel installer',
-	"services" integer[],
-	"whatsapp" varchar(20),
-	"instagram_id" varchar(255),
-	"google_maps_link" varchar(255),
-	"last_login" timestamp,
-	"created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
-	"brands" integer[],
-	"magic_link_token_expires_at" timestamp with time zone,
-	"country_code" char(2) DEFAULT 'in' NOT NULL
-);
-
 CREATE TABLE "callsafe_email_campaign_log" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"business_id" integer,
@@ -679,9 +642,6 @@ CREATE INDEX "business_accounts_login_email_idx" ON "business_accounts" USING bt
 CREATE INDEX "business_accounts_magic_token_idx" ON "business_accounts" USING btree ("country_code","magic_link_token");
 CREATE INDEX "business_profiles_country_slug_idx" ON "business_profiles" USING btree ("country_code","slug");
 CREATE INDEX "business_profiles_geo_idx" ON "business_profiles" USING btree ("country_code","level2","isvisible");
-CREATE INDEX "businesses_1_country_slug_idx" ON "businesses_1_archive" USING btree ("country_code","slug");
-CREATE INDEX "idx_businesses_city" ON "businesses_1_archive" USING btree ("city");
-CREATE INDEX "idx_businesses_slug" ON "businesses_1_archive" USING btree ("slug");
 CREATE UNIQUE INDEX "callsafe_unsubscribe_email_idx" ON "callsafe_unsubscribe" USING btree ("email");
 CREATE INDEX "chatbotmessagesstore_session_idx" ON "chatbotmessagesstore" USING btree ("session_id","timestamp");
 CREATE INDEX "data_access_requests_status_idx" ON "data_access_requests" USING btree ("status");
