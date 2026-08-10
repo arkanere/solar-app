@@ -6,29 +6,7 @@
 
 ## Open
 
-1. **admin-app is repointed and deployed — this entry is kept for the two things worth
-   remembering, not for outstanding work.** solar-app-internal `9bb1279` moved admin-app off all
-   three dropped tables — `businesses` → `business_profiles` (064), `locations` → `geo_locations`
-   (058), `leads` → `leaddata` (067). The first two had been 500ing on live since those migrations
-   ran and nothing had flagged them.
-
-   The id vocabulary is the part to remember: the dropped tables were keyed by
-   `(country_code, source_id)`, unique only as a pair, and the survivors mint a globally unique id
-   (`leaddata.id`, `business_profiles.business_id`). **`business_accounts` kept `source_id`**, so a
-   join between it and `business_profiles` is asymmetric — `b.business_id = a.source_id`.
-
-   Verified by extracting all 99 `pool.query` statements and running them through
-   `EXPLAIN (GENERIC_PLAN)` against live in a read-only rolled-back transaction: 91 analysed clean,
-   0 schema errors, the other 8 unreachable because they build their `WHERE` dynamically and only
-   touch `masterlist_*`. **That technique is the answer to admin-app having no tests and no
-   typecheck**, and is worth reusing on any `.js` app whose SQL a build cannot see.
-
-   A bug died with the projection, worth not reintroducing: `api/updateLead` wrote `leads`
-   directly, and `sv_sync_lead` overwrote `leads` from `leaddata` on the next sync of that row — so
-   admin lead edits were silently reverted whenever the customer or business side touched the same
-   lead.
-
-2. **Duplicate `business_profiles.slug` values in live IN data.** Surveyed 2026-08-09.
+1. **Duplicate `business_profiles.slug` values in live IN data.** Surveyed 2026-08-09.
 
    **6708 profiles, 6518 distinct slugs, 36 NULL.**
 
@@ -57,7 +35,7 @@
    `api/resetPassword` matches on the token hash rather than on the slug alone (`cdeff73`) — any new
    slug lookup has to assume duplicates until this is closed.
 
-3. **No US lead ever gets a `state`, so the US non-exclusive lead pool is permanently empty.** The
+2. **No US lead ever gets a `state`, so the US non-exclusive lead pool is permanently empty.** The
    dashboard's and `/crm`'s category-1 read matches `leaddata.level1 IN (business states)`, but
    every writer of a US lead leaves `leaddata.level1` null: `insertLead()` resolves level1/level2
    from `pincode_mapping` behind a `country === 'in'` guard (`apps/main-app/src/lib/server/leads.ts`),
@@ -69,21 +47,21 @@
    postal-code-to-state source — `pincode_mapping` is IN-only — which is a data question, not a code
    one. Whoever fixes it should flip those two tests rather than delete them.
 
-4. **`PostRecentProject.svelte:395-419` is India-shaped and US businesses reach it.** It labels its
+3. **`PostRecentProject.svelte:395-419` is India-shaped and US businesses reach it.** It labels its
    fields **"Pincode:"** and **"District (Auto-filled):"** and auto-fills from
    `/api/getDistrictByPincode`, which queries `pincode_mapping`. That is the one lookup
    `geo_locations` cannot replace — it has no postal-code column, and a live schema sweep found no US
-   zip source anywhere. Blocked on the same missing data as item 3; solve the two together.
+   zip source anywhere. Blocked on the same missing data as item 2; solve the two together.
 
    The sibling branch form was the same bug and is fixed (`d418a08`, `0a8351a`) — its dropdowns now
    read `geo_locations`, which is populated for both countries. Use it as the model, but note
    `getCities` there needs state *and* county, because US county names repeat across states.
 
-5. **Leftovers from the 060/061 cleanup, none urgent.**
+4. **Leftovers from the 060/061 cleanup, none urgent.**
    - **Four `sync_unified_*` orphans remain** (`business_in/us`, `lead_in/us`). Their triggers went
      with 051 and nothing can reach them; 062 dropped the two `account_*` siblings only because
      their bodies called a function it was removing. Dropping the rest is a one-liner.
-   - **`rateLimiter.test.ts:79` has the fragile pattern that just cost four tests.** It drops
+   - **`rateLimiter.test.ts:79` has the fragile pattern that cost four tests once already.** It drops
      `rate_limits` to exercise the fail-open branch and recreates it by hand in a `finally`. That
      stub currently matches the real schema exactly, so nothing is broken — but the identical
      pattern in `updateLeadByBusiness.test.ts` recreated a three-column `project_management` against
@@ -150,7 +128,7 @@ lose its name and `check` would not catch it; and it omits `business_notes`, `qu
 `reference_uuid` and the four `bill_*` columns, two of which `CustomerInquiry.svelte` declares on its
 `Lead` type. That selection was shaped for the narrow legacy `us_leaddata` table; since 054 the surviving
 lead table carries these for both countries, so narrowing buys nothing. The real IN-only leakage is in
-the write forms — items 3 and 4.
+the write forms — items 2 and 3.
 
 **There is a FOURTH place, and it is not in this repo.** `solar-app-internal` — admin-app and
 `automation-scripts` — runs against the same production database. 060, 061, 062 and 065 all checked
@@ -160,13 +138,34 @@ and its route code is `.js` rather than `.ts`, so an `--include="*.ts"` filter s
 of it. **Check `~/Developer/svelte/solar-app-internal` before every schema change, with no language
 filter.** The three places below are necessary and were never sufficient.
 
+Checking it that once also turned up two breakages *older* than the change that prompted the check —
+admin-app had been 500ing on `businesses` since 064 and on `locations` since 058, and nothing in
+either repo had noticed. That is the argument for making the check routine rather than occasional.
+
+**Verifying that repo needs a different tool, because it has no tests and no typecheck.** A `.js`
+app's `npm run build` cannot see inside a SQL string, so it proves nothing about a schema change.
+What works: extract every `pool.query` string, resolve the column-list constants, and run each one
+through `EXPLAIN (GENERIC_PLAN)` against live inside a read-only, rolled-back transaction. That
+parses *and analyses* each statement — catching every missing table and column — without executing
+anything, and it handles `$1` placeholders, which is why `PREPARE` is the worse choice. On the
+2026-08-10 pass that was 91 of 99 statements clean; the other 8 build their `WHERE` dynamically and
+cannot be reassembled, so they still need reading by eye.
+
+**admin-app's id vocabulary is not this repo's.** It reads the same two stores, but the tables it
+used to read were keyed by `(country_code, source_id)` — unique only as a pair — while the survivors
+mint a globally unique id. `leads.source_id` became `leaddata.id` and `businesses.source_id` became
+`business_profiles.business_id`. **`business_accounts` kept `source_id`**, because it was never
+renamed and holds a `business_profiles.business_id` under the old name, so a join between the two is
+asymmetric: `b.business_id = a.source_id`. That asymmetry is the one thing a find-and-replace across
+that repo gets wrong, and it appears in nine files.
+
 **Dropping a table breaks the test harness before it breaks anything else.** The suite replays a few
 migrations on top of the generated baseline (`scripts/apply-test-migrations.mjs`), and those files
-are *history* — 042 copies rows out of both `locations` and `us_locations`, and 054 out of the `us_*`
-tables. Once the baseline stops creating those tables, the copy is an unresolvable reference and
-**every** test fails in global setup, not in an assertion. All three are now wrapped in a
-`to_regclass(...) IS NOT NULL` guard, which is a no-op on live and self-skipping in tests; do the
-same for the next drop. Check three more places a code grep of `src/` will miss: the replayed migrations,
+are *history* — 042 copies rows out of both `locations` and `us_locations`. Once the baseline stops
+creating those tables, the copy is an unresolvable reference and **every** test fails in global
+setup, not in an assertion. Both are wrapped in a `to_regclass(...) IS NOT NULL` guard, which is a
+no-op on live and self-skipping in tests; do the same for the next drop. (054 had a third such copy
+and is no longer replayed at all — see below.) Check three more places a code grep of `src/` will miss: the replayed migrations,
 `tests/helpers/fixtures.ts`'s `TRUNCATE` list, and any function body (Postgres does not resolve table
 names in a function until it runs).
 
@@ -328,5 +327,5 @@ SELECT proname FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
  WHERE n.nspname = 'public' AND proname LIKE 'sv_sync%';
 ```
 
-The same sweep confirms the four `sync_unified_*` orphans in item 5 are still on live, and that
+The same sweep confirms the four `sync_unified_*` orphans in item 4 are still on live, and that
 `us_*`, `locations` and `sv_referrers` are gone (056, 058, 059).
