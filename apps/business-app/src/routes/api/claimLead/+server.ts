@@ -7,7 +7,7 @@ import { mintBusinessTokenById, mintUserToken } from '$lib/server/magicLink';
 import { checkLeadDataPolicy } from '$lib/compliance';
 import type { ClaimRequestPayload } from '$lib/types/lead';
 import { IN_LEAD_RETURNING } from '$lib/server/leads';
-import { syncLeadToUnified, syncBusinessToUnified } from '$lib/server/unifiedSync';
+import { syncLeadToUnified } from '$lib/server/unifiedSync';
 import {
 	branches,
 	businessAccounts,
@@ -402,7 +402,6 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			// auto-created branch, the claim-count bump and the claimed copy).
 			// business_accounts is a store since 062, so only `businesses` and
 			// `leads` still need driving.
-				await syncBusinessToUnified(tx, country, effectiveBusinessId);
 				await syncLeadToUnified(tx, country, lead_id);
 				if (newLead) {
 					await syncLeadToUnified(tx, country, newLead.id);

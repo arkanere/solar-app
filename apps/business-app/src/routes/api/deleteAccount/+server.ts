@@ -2,7 +2,6 @@ import { db } from '$lib/server/db';
 import { countryForSlug } from '$lib/server/resolveCountry';
 import { json } from '@sveltejs/kit';
 import { SessionManager } from '$lib/auth/business';
-import { syncBusinessToUnified } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
 import { branches, businessAccounts, businessProfiles } from '@solar/db/schema';
 import { and, eq, inArray } from 'drizzle-orm';
@@ -60,11 +59,10 @@ export const POST: RequestHandler = async ({ cookies }) => {
 			.from(branches)
 			.where(eq(branches.mainId, businessId));
 
-		const hiddenBranches = await db
+		await db
 			.update(businessProfiles)
 			.set({ isvisible: false })
-			.where(inArray(businessProfiles.businessId, branchIds))
-			.returning({ id: businessProfiles.businessId });
+			.where(inArray(businessProfiles.businessId, branchIds));
 
 		await db
 			.update(businessAccounts)
@@ -76,11 +74,10 @@ export const POST: RequestHandler = async ({ cookies }) => {
 				)
 			);
 
-		// business_accounts is a store now, so only the `businesses` projection
-		// still needs driving. It sources from business_profiles, written above.
-		for (const row of [{ id: businessId }, ...hiddenBranches]) {
-			await syncBusinessToUnified(db, country, row.id);
-		}
+		// No sync loop here any more. Both halves are stores since 062/064, so the
+		// four updates above are the entire soft-delete; the loop existed only to
+		// drive sv_sync_business over the business and each of its branches, and
+		// `hiddenBranches` existed only to feed it.
 
 		// End the session
 		SessionManager.clearSession(cookies);

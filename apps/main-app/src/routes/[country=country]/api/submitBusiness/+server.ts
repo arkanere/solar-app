@@ -3,7 +3,6 @@ import { businessAccounts, businessProfiles } from '@solar/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { parseBody, submitBusinessSchema } from '@solar/validation';
-import { syncBusinessToUnified } from '$lib/server/unifiedSync';
 import { isCountry } from '$lib/countries';
 
 // Since migration 054 both countries write the same legacy tables, keyed by
@@ -154,17 +153,10 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 			isvisible
 		});
 
-		// `businesses` is still a projection (063 drops it), and it sources from
-		// business_profiles, written above. The account sync that stood beside
-		// this call is gone — business_accounts is a store now.
+		// The two inserts above are the whole write. There is no sync call left
+		// here: 062 made business_accounts a store and 064 dropped `businesses`
+		// along with sv_sync_business, so a business is exactly these two rows.
 		//
-		// This passes the request's country rather than the literal 'in'. The old
-		// comment here said it must NOT — correct at the time, because every
-		// INSERT on this path hit the IN-only tables and a US request returned
-		// earlier. Since 054 those same tables hold both countries and the rows
-		// written above carry country_code, so the sync must match them.
-		await syncBusinessToUnified(db, country, businessId);
-
 		// The confirmation body keys level2 by the country's own noun, mirroring
 		// the form: the US path sent `county` and the IN path `district`. The
 		// table consolidation does not change what the email template reads.

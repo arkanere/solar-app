@@ -4,7 +4,6 @@ import { branches, businessAccounts, businessProfiles } from '@solar/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { SessionManager } from '$lib/auth/business';
-import { syncBusinessToUnified } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
@@ -82,7 +81,6 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				and(eq(businessAccounts.sourceId, branchId), eq(businessAccounts.countryCode, country))
 			);
 
-		await syncBusinessToUnified(db, country, branchId);
 
 		return json({ success: true, message: 'Branch deleted successfully' });
 	} catch (error) {

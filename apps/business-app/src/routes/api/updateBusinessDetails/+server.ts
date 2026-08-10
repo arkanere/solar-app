@@ -5,7 +5,6 @@ import { and, eq, sql } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { parseBody, updateBusinessDetailsSchema } from '@solar/validation';
 import { SessionManager } from '$lib/auth/business';
-import { syncBusinessToUnified } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
@@ -114,7 +113,6 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			.returning({ id: businessProfiles.businessId });
 
 		if (updated) {
-			await syncBusinessToUnified(db, country, updated.id);
 			return json({
 				success: true,
 				id: updated.id

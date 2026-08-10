@@ -6,7 +6,6 @@ import { and, eq, sql } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { randomBytes } from 'crypto';
 import { SessionManager } from '$lib/auth/business';
-import { syncBusinessToUnified } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
 import type { AddBranchRequest } from '$lib/types/business';
 
@@ -180,7 +179,6 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			isactive: true // Set as active by default
 		});
 
-		await syncBusinessToUnified(db, country, branchId);
 
 		return json({
 			success: true,
