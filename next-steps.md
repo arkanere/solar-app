@@ -29,15 +29,19 @@
    predicate, so a logged-in business can no longer be served its twin's row.
    `tests/routing/duplicateSlug.test.ts` pins all eight against a slug shared by two businesses.
 
-   **`api/updateBusinessDetails` is still wrong, and is the remaining wrong-tenant path.** It updates
-   `business_profiles` by slug with no id filter, so one business saving its profile overwrites its
-   twin's row. Same fix as the loads — it has the session in scope already. (062 deleted the second,
-   `businesses_1` half of that dual-write and 064 the sync that followed it, so this is now a single
-   mis-scoped UPDATE and nothing more.)
+   **The write side is fixed too, so there is no known wrong-tenant path left.**
+   `api/updateBusinessDetails` used to UPDATE `business_profiles` by slug with no id filter — one
+   business saving its profile overwrote every row on the slug, its twin's included. It now resolves
+   a single `targetBusinessId` in both authorization arms (the session's `businessId` when a business
+   updates itself, the joined `branches.branchId` when it updates a branch) and matches the UPDATE on
+   the primary key. Its ownership check no longer re-derives the main business from
+   `session.businessSlug` either, which was the same slug-lookup bug one layer up. Four tests in
+   `tests/routing/duplicateSlug.test.ts` pin it: two reproduce the overwrite (both fail against the
+   old query), two hold the 403 arms in place.
 
-   **Recommended order:** finish `updateBusinessDetails`, then de-duplicate, then `UNIQUE (slug)`.
-   Open question before de-duplicating: whether `isvisible = f` is a soft-delete you intend to keep,
-   which decides whether the losing rows get deleted or re-slugged.
+   **Recommended order:** de-duplicate, then `UNIQUE (slug)`. Open question before de-duplicating:
+   whether `isvisible = f` is a soft-delete you intend to keep, which decides whether the losing rows
+   get deleted or re-slugged.
 
    The duplicates are also why `business_profiles` cannot take a `UNIQUE (slug)` constraint, and why
    `api/resetPassword` matches on the token hash rather than on the slug alone (`cdeff73`) — any new
@@ -252,9 +256,10 @@ Before touching any dependency on advisory grounds, check what is actually open:
 business-app's check covers `.ts` as well as `.svelte`, so no separate
 `npx tsc --noEmit -p apps/business-app/tsconfig.json` pass is needed.
 
-`npm test -w solarvipani-business` — **green: 184 passed, 0 skipped**, in 16 files. This line said
-172 for a while and was simply stale: a measured run on the commit before 062 gave **180**, and 062
-added the four in `tests/auth/accountsAreAStore.test.ts`. Measure before trusting it.
+`npm test -w solarvipani-business` — **green: 188 passed, 0 skipped**, in 16 files. This line said
+172 for a while and was simply stale: a measured run on the commit before 062 gave **180**, 062
+added the four in `tests/auth/accountsAreAStore.test.ts`, and the `updateBusinessDetails` fix added
+four more to `tests/routing/duplicateSlug.test.ts`. Measure before trusting it.
 
 **Workspace names are not the directory names.** `npm run check -w <app>` takes `main-app`,
 `user-app` and `solarvipani-business` — the first two are unprefixed and the third is not

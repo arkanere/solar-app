@@ -1,5 +1,4 @@
 import { db } from '$lib/server/db';
-import { countryForSlug } from '$lib/server/resolveCountry';
 import { branches, businessProfiles } from '@solar/db/schema';
 import { and, eq, sql } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
@@ -15,13 +14,6 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		if (!sessionResult.success) {
 			return json({ success: false, error: 'Unauthorized - Please login' }, { status: 401 });
-		}
-
-		// URLs no longer carry the country, so it comes from the acting
-		// business. Writes below target that country's legacy tables.
-		const country = await countryForSlug(sessionResult.session.businessSlug);
-		if (!country) {
-			return json({ success: false, error: 'Business not found' }, { status: 404 });
 		}
 
 		const parsed = await parseBody(request, updateBusinessDetailsSchema);
@@ -43,36 +35,35 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			business_slug // identifies the business to update
 		} = parsed.data;
 
-		// Verify the logged-in business owns the resource
-		// Check if it's the main business being updated
+		// Verify the logged-in business owns the resource, and resolve *which row*
+		// the write targets. `slug` is not unique (next-steps.md item 1), so the
+		// authorization branch has to hand down an id — matching the UPDATE on the
+		// slug alone would write every row in a duplicate group.
+		let targetBusinessId: number;
+
 		if (sessionResult.session.businessSlug === business_slug) {
-			// Main business updating itself - allowed
+			// Main business updating itself. The session's businessId is
+			// authoritative — login resolved it from the account's email, not from
+			// the slug — so no lookup is needed or wanted here.
+			targetBusinessId = sessionResult.session.businessId;
 		} else {
-			// Check if the business_slug belongs to a branch of the logged-in business
-			const [mainBusiness] = await db
-				.select({ id: businessProfiles.businessId })
-				.from(businessProfiles)
-				.where(eq(businessProfiles.slug, sessionResult.session.businessSlug))
-				.limit(1);
-
-			if (!mainBusiness) {
-				return json({ success: false, error: 'Main business not found' }, { status: 404 });
-			}
-
-			// Check if business_slug is a branch of this main business
-			const branchCheck = await db
+			// Check if business_slug is an active branch of the logged-in business.
+			// The join is what disambiguates a duplicated branch slug: only a row
+			// that is genuinely this business's branch can match.
+			const [branchCheck] = await db
 				.select({ branchId: branches.branchId })
 				.from(branches)
 				.innerJoin(businessProfiles, eq(branches.branchId, businessProfiles.businessId))
 				.where(
 					and(
-						eq(branches.mainId, mainBusiness.id),
+						eq(branches.mainId, sessionResult.session.businessId),
 						eq(businessProfiles.slug, business_slug),
 						eq(branches.isactive, true)
 					)
-				);
+				)
+				.limit(1);
 
-			if (branchCheck.length === 0) {
+			if (!branchCheck) {
 				return json(
 					{
 						success: false,
@@ -81,6 +72,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 					{ status: 403 }
 				);
 			}
+
+			targetBusinessId = branchCheck.branchId;
 		}
 
 		const values = {
@@ -101,15 +94,13 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		// businesses_1 dual-write that stood below this went with migration 062 —
 		// it was TODO-tagged for "after main-app/admin-app migrate", and both have.
 		//
-		// NOTE: this still updates by slug with no id filter, which is the
-		// remaining wrong-tenant path in next-steps.md item 1 — one business
-		// saving its profile overwrites a slug-twin's row. Dropping the second
-		// write halves the blast radius but does not fix it; the session carries
-		// the authoritative businessId and this should select on it.
+		// Matched on the resolved business_id, never on the slug: business_id is
+		// the primary key, so this writes exactly one row even while duplicate
+		// slugs exist in live data.
 		const [updated] = await db
 			.update(businessProfiles)
 			.set({ ...values, updatedAt: sql`NOW()` })
-			.where(eq(businessProfiles.slug, business_slug))
+			.where(eq(businessProfiles.businessId, targetBusinessId))
 			.returning({ id: businessProfiles.businessId });
 
 		if (updated) {
