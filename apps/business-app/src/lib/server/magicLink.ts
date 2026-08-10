@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { db } from '$lib/server/db';
 import { businessAccounts, inUser } from '@solar/db/schema';
 import { and, eq, sql } from 'drizzle-orm';
-import { type SyncCountry } from '$lib/server/unifiedSync';
+import type { AuthCountry } from '$lib/auth/business/countryTables';
 
 // Magic-link tokens are stored hashed at rest and expire after 15 days.
 // Emitters mint a fresh token, persist its hash, and email/return the raw token.
@@ -23,7 +23,7 @@ export function newMagicToken() {
 // from when these were raw SQL strings; since 054 united those tables there is
 // only one to name, and what actually varies is the country_code filter.
 export async function mintBusinessTokenById(
-	country: SyncCountry,
+	country: AuthCountry,
 	businessId: number
 ): Promise<string | null> {
 	const { raw, hash, expiresAt } = newMagicToken();

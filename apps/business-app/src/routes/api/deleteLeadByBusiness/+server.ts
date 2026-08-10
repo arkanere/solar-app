@@ -2,7 +2,6 @@ import { db } from '$lib/server/db';
 import { countryForSlug } from '$lib/server/resolveCountry';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { SessionManager } from '$lib/auth/business';
-import { syncLeadToUnified } from '$lib/server/unifiedSync';
 import { IN_LEAD_RETURNING } from '$lib/server/leads';
 import { branches, leaddata } from '@solar/db/schema';
 import { and, eq } from 'drizzle-orm';
@@ -20,10 +19,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			);
 		}
 
-		// URLs no longer carry the country, so it comes from the acting
-		// business. Writes below target that country's legacy tables.
-		const country = await countryForSlug(sessionResult.session.businessSlug);
-		if (!country) {
+		// URLs no longer carry the country. Nothing below needs it now that the
+		// write projects nowhere (067), but the lookup stays as the guard it also
+		// was: a session whose slug resolves to no business is a 404.
+		if (!(await countryForSlug(sessionResult.session.businessSlug))) {
 			return json({ success: false, error: 'Business not found' }, { status: 404 });
 		}
 
@@ -80,7 +79,6 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			);
 		}
 
-		await syncLeadToUnified(db, country, id);
 
 		return json({ success: true, lead: result[0] });
 	} catch (error) {

@@ -55,17 +55,19 @@ Three steps, all in `scripts/apply-test-migrations.mjs`:
    table rename became a drop's problem once `065` removed the archive, so that
    one statement is guarded inside the migration itself.
 
-3. **Eight migration files** — `042`, `047`, `050`, `055`, `061`, `062`, `063`,
-   `064`, `065`. These add what an introspected schema cannot express: the
-   `sv_sync_*` stored functions the write endpoints call through
-   `$lib/server/unifiedSync`, and the `countries` seed rows that
-   `business_accounts` and `leads` have foreign keys to. The later ones are there
-   to *undo* things the earlier ones declare, so the replay ends where production
-   does. Each is annotated in the script with why it is on the list.
+3. **Nine migration files** — `042`, `047`, `050`, `055`, `061`, `062`, `063`,
+   `064`, `065`, `067`. These add what an introspected schema cannot express: the
+   `countries` seed rows that `business_accounts` and `leaddata` have foreign keys
+   to, and the `sv_sync_*` stored functions — which now exist on the list only so
+   that the later files can drop them again, so the replay ends where production
+   does with none left. Each is annotated in the script with why it is on the list.
 
    `054` used to be here and was removed with `065`: the only thing it
    contributed was a function `062` drops, and keeping it meant carrying four
-   executable statements against a table that no longer exists.
+   executable statements against a table that no longer exists. `066` was on the
+   list for exactly one commit, for the same kind of reason and with the same
+   ending — it put `sv_sync_lead` back onto leaddata's renamed columns, and `067`
+   drops the function, so it came off again and took its rewind with it.
 
 ### Why a baseline, and why not just replay all the migrations
 
@@ -89,13 +91,14 @@ encode _history_; the baseline is the _end state_. `039` creates
 baseline that has the table under whichever name it currently carries, one of
 those two steps always fails. The same goes for every `ALTER`/`DROP` that assumes
 an earlier shape. The files listed above are the only ones that are pure
-idempotent declarations, plus the renames and drops (`061`-`065`) that are there
+idempotent declarations, plus the renames and drops (`061`-`067`) that are there
 for the reasons given in step 2.
 
 The trigger-installing migrations (`043`, `045`, `046`) are deliberately skipped:
 `049` and `051` drop every one of those triggers again, so production has none,
-and the app does its projection with explicit `sv_sync_*` calls. Installing them
-here would double-write and diverge from production.
+and the app made its projections with explicit `sv_sync_*` calls until `067`
+removed the last one. Installing the triggers here would resurrect a projection
+production does not have.
 
 ### After a schema change
 
@@ -121,7 +124,7 @@ Note that `tests/` lives inside `apps/business-app/`, apart from the shared
 Mocked: outbound email only.
 
 Real: the database, the transactions, the `FOR UPDATE` locks, the compliance
-gate, the `sv_sync_*` projections, and session cookies — which are produced by
+gate, and session cookies — which are produced by
 the actual `SessionManager` rather than by stubbing out `BusinessAuthService`, so
 the 401/403 branches in each handler stay under test.
 

@@ -4,7 +4,6 @@ import { schema } from '@solar/db';
 import { db } from '$lib/server/db';
 import { UserAuthService } from '$lib/auth/user';
 import { uploadBill, getSignedBillUrl, deleteBill } from '$lib/server/billStorage';
-import { syncLeadToUnified } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
 
 const allowedFileTypes = [
@@ -130,7 +129,6 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				billUploadedAt: sql`NOW()`
 			})
 			.where(eq(schema.leaddata.id, lead.id));
-		await syncLeadToUnified(db, 'in', lead.id);
 
 		return json({
 			success: true,

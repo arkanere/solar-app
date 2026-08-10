@@ -187,7 +187,7 @@ describe('country resolution in the dashboard load', () => {
 	});
 
 	// Documents the production gap rather than hiding it: no US write path sets
-	// leaddata.state (pincode_mapping is IN-only), so every live US lead has a
+	// leaddata.level1 (pincode_mapping is IN-only), so every live US lead has a
 	// null level1 and this read returns nothing for any US business. The test
 	// above passes only because its fixture sets a state by hand. See
 	// next-steps.md — closing the gap needs a US postal-code-to-state source.

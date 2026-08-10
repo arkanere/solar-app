@@ -19,7 +19,7 @@
 // those two steps always fails. The same applies to every ALTER/DROP that
 // assumes an earlier shape. Only files that are pure final-state declarations
 // can be replayed, which is what the list below is — plus the renames and drops
-// (061-066) that are there for the reasons spelled out at REWIND.
+// (061-067) that are there for the reasons spelled out at REWIND.
 //
 // Each file is sent as a single simple-protocol query, which is what lets the
 // BEGIN/COMMIT the files already contain work as written.
@@ -80,15 +80,11 @@ const POST_BASELINE_MIGRATIONS = [
 	// (055 and 061's sv_sync_business bodies), because this is what renames them
 	// forward, exactly as on live.
 	'063-country-neutral-profile-columns.sql',
-	// The country-neutral column names on leaddata, plus the composite index and
-	// the countries FK. Replayed for one reason only: 047 and 055 above both
-	// CREATE OR REPLACE sv_sync_lead against l.state/l.district/l.pin_code, and
-	// this is what puts the function back onto the renamed columns. A plpgsql
-	// body is not resolved until it runs, so those two create happily and then
-	// fail inside the first fixture that calls sv_sync_lead. Its ALTERs are
-	// no-ops here (the baseline already has the final types) and its renames are
-	// what the rewind below exists for.
-	'066-country-neutral-leaddata-columns.sql',
+	// 066 sat here for exactly one commit. Its only contribution was putting
+	// sv_sync_lead back onto leaddata's renamed columns, and 067 below drops that
+	// function outright — so like 054 before it, it now contributes nothing to
+	// the final state and carrying it would mean replaying renames that need a
+	// rewind for no gain. Its rewind went with it.
 	// Drops `businesses` and sv_sync_business. Last, and unlike 061/062/063 it
 	// needs no rewind: nothing here is a rename, so the baseline simply stops
 	// creating the table once regenerated. It still has to be replayed rather
@@ -100,7 +96,15 @@ const POST_BASELINE_MIGRATIONS = [
 	// a rename — and it is a no-op here because the regenerated baseline already
 	// stops creating the table. It stays on the list so the replay ends exactly
 	// where production does rather than relying on that.
-	'065-drop-businesses-1-archive.sql'
+	'065-drop-businesses-1-archive.sql',
+	// Drops `leads` and sv_sync_lead, the last projection and the last sv_sync_*
+	// function. Like 064 it needs no rewind — nothing in it is a rename — and the
+	// DROP TABLE is a no-op here because the regenerated baseline already stops
+	// creating `leads`. It has to be replayed rather than left to the baseline
+	// because 047 and 055 above both recreate sv_sync_lead; without this the test
+	// database keeps a function production no longer has, writing a table it no
+	// longer has either. Exactly 064's situation.
+	'067-drop-leads.sql'
 ];
 
 // The baseline is the *end state*; the files above are *history*. Where a
@@ -114,15 +118,7 @@ const POST_BASELINE_MIGRATIONS = [
 //                on live and self-skipping here. See 062's table rename, which
 //                became a drop's problem once 065 removed the archive.
 //
-// Four renames need winding back, and the order matters:
-//
-//   066  renamed leaddata's three India-shaped columns, replaced its flat
-//        country index with a composite and added the countries FK. Independent
-//        of the other three — nothing below touches leaddata — so it goes first
-//        purely to keep it in one block. Only the rename half has to be wound
-//        back; 066's ALTER COLUMN TYPEs are no-ops against a baseline that
-//        already has varchar(10)/timestamptz/integer, the same way 063's
-//        postal_code widening is.
+// Three renames need winding back, and the order matters:
 //
 //   063  renamed business_profiles' four India-shaped columns and replaced its
 //        two bare indexes with composites. Undone FIRST — the index renames for
@@ -138,14 +134,7 @@ const POST_BASELINE_MIGRATIONS = [
 //
 // postal_code's type is deliberately not wound back to char(6): nothing here
 // reads the type, and 063's widening is a no-op against varchar(10).
-const REWIND_TO_PRE_061_062_063_066 = `
-	ALTER TABLE leaddata RENAME COLUMN level1      TO state;
-	ALTER TABLE leaddata RENAME COLUMN level2      TO district;
-	ALTER TABLE leaddata RENAME COLUMN postal_code TO pin_code;
-	ALTER TABLE leaddata DROP CONSTRAINT leaddata_country_code_fkey;
-	DROP INDEX leaddata_country_created_idx;
-	CREATE INDEX leaddata_country_idx ON leaddata USING btree (country_code);
-
+const REWIND_TO_PRE_061_062_063 = `
 	ALTER TABLE business_profiles RENAME COLUMN tax_id      TO gstn;
 	ALTER TABLE business_profiles RENAME COLUMN level1      TO state;
 	ALTER TABLE business_profiles RENAME COLUMN level2      TO district;
@@ -208,7 +197,7 @@ export async function applyMigrations(connectionString, { log = () => {} } = {})
 
 		await apply('pre-baseline sequences', PRE_BASELINE_SEQUENCES);
 		await apply('tests/schema/000-baseline.sql', await readFile(BASELINE, 'utf8'));
-		await apply('rewind to pre-061/062/063/066 names', REWIND_TO_PRE_061_062_063_066);
+		await apply('rewind to pre-061/062/063 names', REWIND_TO_PRE_061_062_063);
 
 		for (const file of POST_BASELINE_MIGRATIONS) {
 			await apply(file, await readFile(join(MIGRATIONS_DIR, file), 'utf8'));

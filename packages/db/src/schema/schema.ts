@@ -675,49 +675,6 @@ export const businessAccounts = pgTable("business_accounts", {
 	unique("business_accounts_country_code_source_id_key").on(table.countryCode, table.sourceId),
 ]);
 
-export const leads = pgTable("leads", {
-	id: serial().primaryKey().notNull(),
-	countryCode: char("country_code", { length: 2 }).notNull(),
-	sourceId: integer("source_id"),
-	name: varchar({ length: 255 }).notNull(),
-	phone: varchar({ length: 16 }).notNull(),
-	email: varchar({ length: 255 }),
-	postalCode: varchar("postal_code", { length: 10 }),
-	type: varchar({ length: 510 }),
-	comment: text(),
-	urlparams: varchar({ length: 255 }),
-	level1: varchar({ length: 100 }),
-	level2: varchar({ length: 255 }),
-	category: smallint(),
-	stage: smallint().default(0),
-	status: boolean().default(true),
-	claimCount: smallint("claim_count").default(0),
-	originalId: smallint("original_id"),
-	businessId: smallint("business_id"),
-	emailInviteCount: integer("email_invite_count").default(0),
-	svCommentForBusinesses: text("sv_comment_for_businesses"),
-	svnotes: text(),
-	businessNotes: text("business_notes"),
-	marketingConsent: boolean("marketing_consent").default(false).notNull(),
-	referenceUuid: uuid("reference_uuid").defaultRandom(),
-	qualificationScore: integer("qualification_score"),
-	billUrl: text("bill_url"),
-	billCloudinaryPublicId: text("bill_cloudinary_public_id"),
-	billFormat: text("bill_format"),
-	billUploadedAt: timestamp("bill_uploaded_at", { withTimezone: true, mode: 'string' }),
-	isvisible: boolean().default(true),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("leads_created_idx").using("btree", table.countryCode.asc().nullsLast().op("bpchar_ops"), table.createdAt.desc().nullsFirst().op("bpchar_ops")),
-	foreignKey({
-			columns: [table.countryCode],
-			foreignColumns: [countries.code],
-			name: "leads_country_code_fkey"
-		}),
-	unique("leads_country_code_source_id_key").on(table.countryCode, table.sourceId),
-	check("leads_claim_count_check", sql`(claim_count >= 0) AND (claim_count <= 5)`),
-]);
-
 export const chatbotmessagesstore = pgTable("chatbotmessagesstore", {
 	id: serial().primaryKey().notNull(),
 	ip: varchar({ length: 45 }).notNull(),

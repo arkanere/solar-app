@@ -2,7 +2,6 @@ import { json } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
 import { schema } from '@solar/db';
 import { db } from '$lib/server/db';
-import { syncLeadToUnified } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request, fetch }) => {
@@ -53,7 +52,6 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 		const leadId = inserted.id;
 		const referenceUuid = inserted.referenceUuid;
 
-		await syncLeadToUnified(db, 'in', leadId);
 
 		await fetch('/in/api/sendLeadSubmissionConfirmation', {
 			method: 'POST',

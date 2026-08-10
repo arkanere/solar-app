@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { callsafeusers, callsafehandles, leaddata, inProposals, projectManagement, solarBrands, solarProducts, stateSubsidies, discoms, authors, inBlogPosts, inUser, inUserFeedback, legalPolicies, legalAcceptances, countries, businessAccounts, businessProfiles, geoLocations, leads } from "./schema";
+import { callsafeusers, callsafehandles, leaddata, inProposals, projectManagement, solarBrands, solarProducts, stateSubsidies, discoms, authors, inBlogPosts, inUser, inUserFeedback, legalPolicies, legalAcceptances, countries, businessAccounts, businessProfiles, geoLocations } from "./schema";
 
 export const callsafehandlesRelations = relations(callsafehandles, ({one}) => ({
 	callsafeuser: one(callsafeusers, {
@@ -19,7 +19,11 @@ export const inProposalsRelations = relations(inProposals, ({one}) => ({
 	}),
 }));
 
-export const leaddataRelations = relations(leaddata, ({many}) => ({
+export const leaddataRelations = relations(leaddata, ({one, many}) => ({
+	country: one(countries, {
+		fields: [leaddata.countryCode],
+		references: [countries.code]
+	}),
 	inProposals: many(inProposals),
 	projectManagements: many(projectManagement),
 }));
@@ -99,7 +103,7 @@ export const countriesRelations = relations(countries, ({many}) => ({
 	businessProfiles: many(businessProfiles),
 	geoLocations: many(geoLocations),
 	businessAccounts: many(businessAccounts),
-	leads: many(leads),
+	leaddata: many(leaddata),
 }));
 
 export const businessAccountsRelations = relations(businessAccounts, ({one, many}) => ({
@@ -124,9 +128,3 @@ export const geoLocationsRelations = relations(geoLocations, ({one}) => ({
 	}),
 }));
 
-export const leadsRelations = relations(leads, ({one}) => ({
-	country: one(countries, {
-		fields: [leads.countryCode],
-		references: [countries.code]
-	}),
-}));

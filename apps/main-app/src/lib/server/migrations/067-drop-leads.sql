@@ -1,0 +1,142 @@
+-- Drop the `leads` projection (2026-08-10).
+--
+-- ** NOT YET APPLIED. ** Step 2 and the end of the collapse, next-steps.md
+-- item 6. Run this only after the commit that removes syncLeadToUnified has
+-- deployed — see the gate below, which is not the one 064 used. Once it runs there are no projections left anywhere in the
+-- schema: `leaddata` is a lead, `business_profiles` + `business_accounts` are a
+-- business, and no sv_sync_* function exists.
+--
+-- 066 gave leaddata the country-neutral column names and moved every read of
+-- `leads` onto it, which is what makes this a drop of something unread rather
+-- than a drop of the table every business dashboard depends on. Splitting the
+-- two is the entire reason there is a 067: 066 is reversible from its rollback
+-- script, a dropped table is not reversible by reverting code.
+--
+-- ** THIS BREAKS admin-app, DELIBERATELY. ** solar-app-internal's admin-app runs
+-- against this same database and reads/writes `leads` in **18 server files, 38
+-- call sites** — /leaddata, /leaddata-nonexclusive, control-tower, the
+-- leads-not-claimed and spread analytics, and the api/updateLead,
+-- api/updateLeadClaim, api/addPincodeMapping and four shareLead* endpoints.
+-- Every one of them 500s after this runs. That is an accepted cost, decided
+-- 2026-08-10: sole user, no external consumer. Fixing it is a separate task in
+-- next-steps.md — the sites move to `leaddata` with `source_id` -> `id` and no
+-- other column change, since admin-app already speaks level1/level2/postal_code.
+--
+-- A `leads` VIEW over leaddata was considered and rejected in favour of the
+-- clean drop. It would have worked — every column admin-app touches exists on
+-- leaddata, and a single-table view is auto-updatable so its eight UPDATEs would
+-- have kept working — but it reintroduces a compatibility shim, and only
+-- api/updateLeadClaim's `INSERT INTO leads` with an explicit source_id genuinely
+-- needed rewriting. Recorded here because it stays available if the breakage
+-- turns out to bite.
+--
+-- ** THE GATE, AND WHY IT IS NOT THE ONE 064 USED. ** 064 could wait for
+-- `businesses` to go flat in pg_stat_user_tables. That test is USELESS here:
+-- admin-app reads `leads` continuously and its traffic is indistinguishable from
+-- solar-app's in the same counters, so `leads` will never go flat and a reading
+-- that looks like a live reader may be nothing but the admin UI. Do not use it.
+--
+-- What actually has to hold is narrower and is about the WRITE side: no
+-- solar-app instance may still be calling sv_sync_lead when this drops it, or
+-- every lead write 500s. That is guaranteed by ordering alone — deploy the
+-- commit that removes syncLeadToUnified, then run this. There is no counter to
+-- watch, only a deploy to confirm.
+--
+-- To confirm the 067 code is actually live, the usable signal is the reverse of
+-- a drop: 066 created `leaddata_country_created_idx`, an index no pre-066 code
+-- and no admin-app query can touch. Its idx_scan advancing means solar-app is on
+-- the new schema:
+--
+--   SELECT indexrelname, idx_scan FROM pg_stat_user_indexes
+--    WHERE indexrelname = 'leaddata_country_created_idx';
+--
+-- ** Take the counts before AND after — they will not match, and that is the
+-- point. ** Unlike 064, where `businesses` was 1:1 with business_profiles at 0
+-- drift, `leads` genuinely holds rows leaddata does not:
+--
+--   leaddata  1216      leads  1231
+--   orphaned leads rows (no leaddata source)   18
+--   unprojected leaddata rows (no leads row)    3
+--
+-- All 18 orphans are category = 1, business_id NULL, created Jan-Feb 2026 —
+-- purge-old-leads deleted their source and nothing deletes the projection, so
+-- each monthly run strands a batch. They are rows that were supposed to be
+-- gone; taking them with the table is the intended outcome. This is what closes
+-- next-steps.md item 2, and it is worth spot-checking the list is still that
+-- shape before dropping, because a row that is NOT a purge leftover would mean
+-- something else deletes leaddata rows:
+--
+--   SELECT l.id, l.source_id, l.category, l.business_id, l.created_at
+--     FROM leads l LEFT JOIN leaddata d
+--       ON d.id = l.source_id AND d.country_code = l.country_code
+--    WHERE d.id IS NULL ORDER BY l.created_at DESC;
+--
+-- If you want them kept, resurrecting them into leaddata is a separate decision
+-- to take BEFORE this file, not after.
+--
+-- Verified on live as of 066:
+--   - no inbound foreign keys:
+--       SELECT conname FROM pg_constraint WHERE confrelid = 'leads'::regclass;  -- 0 rows
+--   - no triggers, no views (information_schema.triggers / pg_views: 0 rows);
+--   - no inbound dependency from any OTHER repo except admin-app, above;
+--   - leads_id_seq is OWNED BY leads.id and is genuinely disposable — nothing
+--     mints from it, exactly as with businesses_id_seq in 064. leads.id was a
+--     second surrogate key no code ever read; every read aliased
+--     `source_id AS id`. DROP TABLE takes the sequence, which is correct.
+--   - sv_sync_lead is the last sv_sync_* function on live and its only writer.
+--
+-- ** ORDER: THE CODE SHIPS FIRST, THEN THIS FILE. ** The deployed 066 code
+-- still calls syncLeadToUnified, so dropping sv_sync_lead ahead of the deploy
+-- 500s every lead write until it lands. Reversed, there is no window for
+-- solar-app: removing the calls only makes `leads` stale, and no solar-app code
+-- reads it since 066 — so the drop lands on a table this repo neither reads nor
+-- writes. admin-app is the exception, and breaks by choice.
+--
+-- Code side, shipped in the commit BEFORE applying this:
+--   business-app  lib/server/unifiedSync.ts   deleted outright — syncLeadToUnified
+--                                             was the last thing in it
+--                 api/claimLead, api/updateLeadByBusiness,
+--                 api/deleteLeadByBusiness, api/fixClaimedLead   calls removed
+--   main-app      lib/server/unifiedSync.ts   deleted outright
+--                 lib/server/leads.ts         insertLead returns leaddata's own
+--                                             id instead of reading `leads` back
+--   user-app      lib/server/unifiedSync.ts   deleted outright
+--                 in/api/submitLead, in/api/uploadBill           calls removed
+--   tests         helpers/fixtures.ts         sv_sync_lead calls and the `leads`
+--                                             TRUNCATE removed
+--
+-- ** Test harness — the FOUR places a code grep of src/ misses. ** Checked. The
+-- standing rule in next-steps.md said three; 066/067 is what proved it is four,
+-- because the fourth is the one this file breaks:
+--   1. replayed migrations: 047 and 055 both CREATE OR REPLACE sv_sync_lead, and
+--      that keeps working — a plpgsql body is not resolved until it runs, so
+--      `leads` being gone does not break the CREATE. This file is added to
+--      POST_BASELINE_MIGRATIONS last so the replay ends where production does,
+--      the same way 064 handles sv_sync_business. No to_regclass guard is needed
+--      on the DROP TABLE: nothing is renamed and the regenerated baseline simply
+--      stops creating `leads`, so IF EXISTS carries it.
+--   2. fixtures.ts TRUNCATE list: `leads` removed in the same commit.
+--   3. function bodies: sv_sync_lead only, dropped below.
+--   4. **solar-app-internal.** Not a grep of this repo at all. admin-app has 38
+--      call sites on `leads` and every one breaks — see the top of this file.
+--      060, 061, 062 and 065 all checked that repo; 066/067's planning did not,
+--      and found it only after 066 was already applied to live.
+--
+-- No rollback file. A dropped table is not reversible from one, and there is
+-- nothing to restore it from — `leaddata` holds every surviving lead by
+-- construction. If this turns out to be wrong, the recovery is a database
+-- restore — or, for the admin-app half specifically, the `leads` view described
+-- at the top of this file, which can be created after the fact.
+--
+-- Verify after applying:
+--   SELECT to_regclass('public.leads');                          -- NULL
+--   SELECT proname FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+--    WHERE n.nspname = 'public' AND proname LIKE 'sv_sync%';     -- 0 rows
+--   SELECT count(*) FROM leaddata;                               -- 1216, unmoved
+
+BEGIN;
+
+DROP FUNCTION IF EXISTS sv_sync_lead(character, integer);
+DROP TABLE IF EXISTS leads;
+
+COMMIT;

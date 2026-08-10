@@ -17,13 +17,13 @@ export async function resetDatabase(): Promise<void> {
 	// leaddata.business_id stopped being smallint with 066, but
 	// leaddata_claimrequests.business_id still is, so a long-running sequence
 	// would eventually overflow it.
-	// businesses_1 left this list with 062 and `businesses` with 064 — the first
-	// is an archive nothing writes, the second is gone. RESTART IDENTITY still
+	// businesses_1 left this list with 062, `businesses` with 064 and `leads`
+	// with 067 — the first is an archive nothing writes, the other two are gone. RESTART IDENTITY still
 	// has to reach business_profiles.business_id, which inherited
 	// businesses_1_id_seq and is where every business id now comes from.
 	await pool.query(`
 		TRUNCATE TABLE
-			leaddata_claimrequests, leaddata, leads,
+			leaddata_claimrequests, leaddata,
 			branches, business_profiles, business_accounts,
 			legal_acceptances, legal_policies,
 			projects, project_management, pincode_mapping,
@@ -198,7 +198,7 @@ export interface UsLeadOptions {
 }
 
 /**
- * Insert a US lead and sync it to `leads`. Returns the leaddata id.
+ * Insert a US lead. Returns its leaddata id.
  *
  * Writes `leaddata` with country_code = 'us' since 054; the `zipcode`/`county`
  * options map to the country-neutral columns `postal_code`/`level2` (066).
@@ -246,9 +246,7 @@ export async function createUsLead(options: UsLeadOptions = {}): Promise<number>
 			urlparams
 		]
 	);
-	const id = rows[0].id;
-	await pool.query('SELECT sv_sync_lead($1, $2)', ['us', id]);
-	return id;
+	return rows[0].id;
 }
 
 export async function createBranch(mainId: number, branchId: number, isactive = true): Promise<void> {
@@ -277,7 +275,7 @@ export interface LeadOptions {
 
 let leadSeq = 0;
 
-/** Insert a leaddata row and sync it to `leads`. Returns the leaddata id. */
+/** Insert a leaddata row. Returns its id. */
 export async function createLead(options: LeadOptions = {}): Promise<number> {
 	leadSeq += 1;
 	const {
@@ -318,9 +316,7 @@ export async function createLead(options: LeadOptions = {}): Promise<number> {
 			createdAt
 		]
 	);
-	const id = rows[0].id;
-	await pool.query('SELECT sv_sync_lead($1, $2)', ['in', id]);
-	return id;
+	return rows[0].id;
 }
 
 export async function createPincodeMapping(

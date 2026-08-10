@@ -204,20 +204,22 @@ describe('a successful claim', () => {
 		});
 	});
 
-	it('projects both the original and the allocated lead into the unified leads table', async () => {
+	it('bumps the original’s claim_count and writes the allocated copy', async () => {
 		const { session, businessId, leadId } = await arrangeClaimable();
 
 		const { body } = await claim(session, { lead_id: leadId, business_id: businessId });
 
-		// syncLeadToUnified is called for the original (its claim_count changed)
-		// and for the new copy. Losing either call is a silent data-drift bug.
-		const { rows } = await pool.query<{ source_id: number; claim_count: number }>(
-			'SELECT source_id, claim_count FROM leads WHERE country_code = $1 ORDER BY source_id',
+		// A claim touches two rows: the original's claim_count and a category-2
+		// copy for the claiming business. Before 067 this read the `leads`
+		// projection and was really checking that both sv_sync_lead calls fired;
+		// with one table left, it checks the writes themselves.
+		const { rows } = await pool.query<{ id: number; claim_count: number }>(
+			'SELECT id, claim_count FROM leaddata WHERE country_code = $1 ORDER BY id',
 			['in']
 		);
-		const bySource = new Map(rows.map((r) => [r.source_id, r]));
-		expect(bySource.get(leadId)?.claim_count).toBe(1);
-		expect(bySource.has(body.newLead!.id)).toBe(true);
+		const byId = new Map(rows.map((r) => [r.id, r]));
+		expect(byId.get(leadId)?.claim_count).toBe(1);
+		expect(byId.has(body.newLead!.id)).toBe(true);
 	});
 });
 

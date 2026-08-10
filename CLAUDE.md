@@ -22,7 +22,7 @@ unless I ask for one — solo maintainer, no review step to wait on.
 All queries use Drizzle (`db` from `$lib/server/db`). **All three apps are fully migrated** — none of
 them exports a raw `pool` any more, so there is no way to write `pool.query` in app code. The `sql`
 template escape hatch is allowed for genuinely awkward queries (`LOWER(a) = LOWER(b)`, window
-functions, `NOW() - INTERVAL`, `DESC NULLS LAST`, the `sv_sync_*` functions); note each use in the
+functions, `NOW() - INTERVAL`, `DESC NULLS LAST`); note each use in the
 commit message. It still parameterises — never interpolate a value into a query string.
 
 `user-app` was the last holdout and converted 2026-08-05, after its TypeScript conversion earlier the

@@ -6,7 +6,30 @@
 
 ## Open
 
-1. **Duplicate `business_profiles.slug` values in live IN data.** Surveyed 2026-08-09.
+1. **admin-app is broken and it was deliberate.** 067 dropped `leads`; solar-app-internal's
+   admin-app reads and writes it in **18 server files, 38 call sites** — `/leaddata`,
+   `/leaddata-nonexclusive`, control-tower's eligible-leads and eligible-businesses, the
+   leads-not-claimed and spread analytics, and `api/updateLead`, `api/updateLeadClaim`,
+   `api/addPincodeMapping` and the four `shareLead*`/`sendLeadDetails` endpoints. All of them 500.
+   Accepted 2026-08-10 on the grounds of sole user, no external consumer.
+
+   **The fix is mechanical and small.** admin-app already speaks `level1`/`level2`/`postal_code`, so
+   the sites change table name and `source_id` → `id`, nothing else. Two exceptions:
+   `api/updateLeadClaim` does `INSERT INTO leads` with an explicit `source_id`, which becomes an
+   insert into `leaddata` and must let the sequence mint the id; and the `country_code = 'in' AND
+   source_id = $1` pairs collapse to `id = $1`, since leaddata ids are globally unique.
+
+   **A `leads` view over `leaddata` is the cheap alternative** and stays available — every column
+   admin-app touches exists on leaddata, and a single-table view is auto-updatable, so its eight
+   `UPDATE leads` sites would work untouched. Only the `updateLeadClaim` INSERT genuinely needs
+   rewriting either way. Rejected at the time for being a shim, not because it would not work.
+
+   Worth fixing on the way past: `api/updateLead` wrote `leads` **directly**, which `sv_sync_lead`
+   overwrote from `leaddata` on the next sync of that row — so admin lead edits were being silently
+   reverted whenever the customer or business side touched the same lead. That bug dies with the
+   projection; do not reintroduce it by pointing the endpoint anywhere but `leaddata`.
+
+2. **Duplicate `business_profiles.slug` values in live IN data.** Surveyed 2026-08-09.
 
    **6708 profiles, 6518 distinct slugs, 36 NULL.**
 
@@ -35,20 +58,12 @@
    `api/resetPassword` matches on the token hash rather than on the slug alone (`cdeff73`) — any new
    slug lookup has to assume duplicates until this is closed.
 
-2. **Drift between `leaddata` and unified `leads`.** **3** `leaddata` rows have no unified row at all
-   (a `sv_sync_lead` call that never happened), and **156** unified `leads` have no surviving
-   `leaddata` source (the sync never deletes, so removing a source row orphans its projection).
-   `businesses` was clean at 0 in either direction, which is part of why it was safe to collapse.
-   Consequence: a full resync *raises* the `leads` count, so "counts unmoved" only holds for a
-   **targeted** resync. Reconciling these is its own task, and item 6 wants it done first;
-   `apps/main-app/src/lib/server/migrations/check-unified-drift.sql` is the existing tool.
-
 3. **No US lead ever gets a `state`, so the US non-exclusive lead pool is permanently empty.** The
-   dashboard's and `/crm`'s category-1 read matches `leads.level1 IN (business states)`, but every
-   writer of a US lead leaves `leaddata.state` null: `insertLead()` resolves level1/level2 from
-   `pincode_mapping` behind a `country === 'in'` guard (`apps/main-app/src/lib/server/leads.ts:44`),
-   `business-app/api/submitLead` sets `district` alone, and `claimLead:358` copies `district` from
-   the original lead. 055's header records the same on live data ("For US rows state … are NULL").
+   dashboard's and `/crm`'s category-1 read matches `leaddata.level1 IN (business states)`, but
+   every writer of a US lead leaves `leaddata.level1` null: `insertLead()` resolves level1/level2
+   from `pincode_mapping` behind a `country === 'in'` guard (`apps/main-app/src/lib/server/leads.ts`),
+   `business-app/api/submitLead` sets `level2` alone, and `claimLead` copies `level2` from the
+   original lead without ever copying `level1`. 055's header records the same on live data ("For US rows state … are NULL").
    So a US business sees its exclusive and claimed leads but never a non-exclusive one. Two tests in
    `pageCountry.test.ts` pin the current behaviour ("matches no US lead when state is null"), and the
    positive cases only pass because their fixture sets a state by hand. Closing it needs a US
@@ -75,50 +90,37 @@
      pattern in `updateLeadByBusiness.test.ts` recreated a three-column `project_management` against
      a five-column table, and stayed invisible until a new test file reordered the suite. Switching
      it to the `ALTER TABLE ... RENAME` aside-and-back that file now uses would close it for good.
-   - **`check-unified-drift.sql` is already broken and was before 060.** Its `leads_us`,
-     `businesses_us` and `accounts_us` scopes read `us_leaddata` and `us_businesses`, which 056
-     dropped, so the file errors partway through as written. Its `accounts_*` scopes are now dead
-     for a second reason: 062 made `business_accounts` a store and 064 dropped `businesses`, so of
-     its six scopes only the two `leads_*` ones still describe anything real. It is arguably now a
-     `leads`-only drift check with a misleading name.
-
-6. **Collapse `leads` into `leaddata` the way `businesses` went.** `leads` is the last projection —
-   the business side of the collapse is done (062-065), and a business is now two rows written
-   directly.
-
-   `leads` is the same shape `businesses` was: a rename-projection of `leaddata` driven only by
-   explicit app calls, and item 2 is what that costs — 3 `leaddata` rows with no projection and 156
-   projected rows with no source. The playbook is proven and worth reusing in the same order:
-
-   1. rename `leaddata`'s columns to the neutral names `leads` already uses (`state`→`level1`,
-      `district`→`level2`, `pin_code`→`postal_code`), rewriting `sv_sync_lead` in the same
-      transaction, and move every read across — the equivalent of 063;
-   2. deploy, confirm `pg_stat_user_tables` for `leads` goes flat;
-   3. drop the sync calls, deploy;
-   4. drop `leads` and `sv_sync_lead` — the equivalent of 064.
-
-   Reconcile the 159 drifted rows before step 1, not after: once the projection is the only copy,
-   whichever side you kept is the answer, and right now it is not obvious which that should be.
+   - **`check-unified-drift.sql` is now entirely dead and should just be deleted.** It was already
+     broken before 060 — its `leads_us`, `businesses_us` and `accounts_us` scopes read `us_leaddata`
+     and `us_businesses`, dropped by 056 — and then 062/064 killed the `accounts_*` and
+     `businesses_*` scopes, leaving only the two `leads_*` ones describing anything real. 067 dropped
+     `leads`, so all six scopes now name tables that do not exist. There are no projections left to
+     drift, which is the whole point; nothing replaces it.
 
 ---
 
 ## Standing constraints
 
-**Column vocabulary is country-neutral since 063.** `business_profiles` carries `tax_id`, `level1`,
-`level2` and `postal_code` — not `gstn`/`state`/`district`/`pincode`, which is what every migration
-and comment numbered below 063 refers to. `leaddata` still uses `state`/`district`/`pin_code`; it is
-`leads` that has the neutral names. Do not assume a column name from a sibling table.
+**Column vocabulary is country-neutral everywhere.** `business_profiles` carries `tax_id`, `level1`,
+`level2` and `postal_code` since 063; `leaddata` carries `level1`, `level2` and `postal_code` since
+066. Neither has `gstn`/`state`/`district`/`pincode`/`pin_code` any more, which is what every
+migration and comment numbered below 063 (business) or 066 (lead) refers to.
 
-**`leads` is the only projection left.** `sv_sync_lead` is `INSERT INTO leads ... SELECT FROM
-leaddata ... ON CONFLICT DO UPDATE`, so anything written directly to `leads` is clobbered by the next
-sync. The rule for it is unchanged: **read `leads`** (filtered by the resolved country), **write
-`leaddata`**, then call `syncLeadToUnified`.
+The one place the India-shaped names survive is *aliasing*: `unifiedRead.ts`'s four selections and
+`leads.ts`'s `IN_LEAD_RETURNING` map the neutral columns back to `state`/`district`/`pin_code` for
+the components and wire payloads that still speak them. Read those before assuming a key in a page
+load's `data` matches a column.
 
-**Everything about a business is a store now — write it directly and call nothing.**
-`business_profiles` (profile) and `business_accounts` (auth) are the whole picture, and both are
-written first-class. The three sync helpers that used to sit around them are gone: `sv_sync_in_split`
-and `sv_sync_account` with 062, `sv_sync_business` with 064. There is no function to call after a
-business write, and adding one back would mean reintroducing a duplicate.
+**There are no projections left.** The four sync helpers went with the tables they fed:
+`sv_sync_in_split` and `sv_sync_account` with 062, `sv_sync_business` with 064, and `sv_sync_lead`
+with 067 — the last of them. A lead is one row in `leaddata`,
+a business is two rows in `business_profiles` + `business_accounts`, and all three are written
+first-class. **There is nothing to call after a write.** The `unifiedSync.ts` module is gone from all
+three apps.
+
+The class of bug this removes is worth remembering, because it is what justified the churn: the
+purge cron deleted `leaddata` rows and nothing deleted their `leads` rows, so every monthly run
+stranded a batch — 18 of them by the time 067 ran.
 
 **The new hazard that replaces the old one:** a business is two rows, and nothing projects the
 second any more. Every id-minting site (`submitBusiness`, `addBranch`, `claimLead`'s auto-branch)
@@ -147,9 +149,17 @@ US business already sees `94601 (Alameda)`. No component reads `businessInfo.dis
 while `LeadTile` reads `lead.district` and types `lead` as `any`, so the location line would silently
 lose its name and `check` would not catch it; and it omits `business_notes`, `qualification_score`,
 `reference_uuid` and the four `bill_*` columns, two of which `CustomerInquiry.svelte` declares on its
-`Lead` type. That selection was shaped for the narrow legacy `us_leaddata` table; since 054, unified
-`leads` carries these for both countries, so narrowing buys nothing. The real IN-only leakage is in
+`Lead` type. That selection was shaped for the narrow legacy `us_leaddata` table; since 054 the surviving
+lead table carries these for both countries, so narrowing buys nothing. The real IN-only leakage is in
 the write forms — items 3 and 4.
+
+**There is a FOURTH place, and it is not in this repo.** `solar-app-internal` — admin-app and
+`automation-scripts` — runs against the same production database. 060, 061, 062 and 065 all checked
+it; 066/067's planning did not, and found admin-app's 38 `leads` call sites only *after* 066 was
+already applied to live. It is not reachable by any grep of this repo, it has no test suite here,
+and its route code is `.js` rather than `.ts`, so an `--include="*.ts"` filter silently misses all
+of it. **Check `~/Developer/svelte/solar-app-internal` before every schema change, with no language
+filter.** The three places below are necessary and were never sufficient.
 
 **Dropping a table breaks the test harness before it breaks anything else.** The suite replays a few
 migrations on top of the generated baseline (`scripts/apply-test-migrations.mjs`), and those files
@@ -157,7 +167,7 @@ are *history* — 042 copies rows out of both `locations` and `us_locations`, an
 tables. Once the baseline stops creating those tables, the copy is an unresolvable reference and
 **every** test fails in global setup, not in an assertion. All three are now wrapped in a
 `to_regclass(...) IS NOT NULL` guard, which is a no-op on live and self-skipping in tests; do the
-same for the next drop. Check three places a code grep of `src/` will miss: the replayed migrations,
+same for the next drop. Check three more places a code grep of `src/` will miss: the replayed migrations,
 `tests/helpers/fixtures.ts`'s `TRUNCATE` list, and any function body (Postgres does not resolve table
 names in a function until it runs).
 
@@ -185,6 +195,13 @@ name existed in the baseline and it became a guard problem.
 only contribution was a `CREATE OR REPLACE` of `sv_sync_in_split`, which 062 drops, so it was
 carrying four executable statements against a vanished table for no gain. Check what a replayed file
 still contributes before writing a guard for it.
+
+066 is the sharpest version of that: it was on the list for exactly one commit. It went on because
+047 and 055 both `CREATE OR REPLACE sv_sync_lead` against leaddata's *old* column names, and a
+plpgsql body is not resolved until it runs — so both create happily and then fail inside the first
+fixture that calls the function. 066 was the only thing putting it back onto the renamed columns.
+067 then dropped the function outright, and 066 came straight off again, taking its rewind with it.
+**A file can be load-bearing for one commit and dead the next; re-check the list every time.**
 
 **062 also found a fourth place, which no amount of code grepping reaches: the baseline can emit a
 default referencing a sequence it never creates.** `businesses_1.id` was a `serial`, which
@@ -290,8 +307,11 @@ the EDB install, which has no `solar` role — do not point the suite at it.
 `npm run pull -w @solar/db`. **Never pull from a test cluster** — its baseline omits three
 `loc_key(...)` expression indexes, so a pull from there silently drops them.
 
-All migrations through **065** are applied to live. Verified 2026-08-10 by introspection, after this
-line sat at 061 while 062-065 were described as done everywhere else in this file.
+All migrations through **065** are applied to live, verified 2026-08-10 by introspection.
+
+**066 and 067 are committed but NOT applied.** Each has to be run by hand immediately before its own
+deploy, and in that order — see the headers, which spell out the gate between them (`leads` must go
+flat in `pg_stat_user_tables` before 067). Move this line to 067 once both have run.
 
 **There is no migration-tracking table** — nothing records what has run, so this line is
 hand-maintained and will go stale again. It is cheap to re-derive from the schema itself; each
@@ -304,7 +324,10 @@ SELECT relname FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
    ('businesses','businesses_1','businesses_1_archive','in_business_profiles','in_business_accounts');
 -- 063: business_profiles carries tax_id/level1/level2/postal_code, not gstn/state/district/pincode.
 SELECT attname FROM pg_attribute WHERE attrelid = 'public.business_profiles'::regclass AND attnum > 0;
--- 062/064: sv_sync_lead is the only sv_sync_* left.
+-- 066: leaddata carries level1/level2/postal_code, not state/district/pin_code.
+SELECT attname FROM pg_attribute WHERE attrelid = 'public.leaddata'::regclass AND attnum > 0;
+-- 067: `leads` is gone and no sv_sync_* function is left at all.
+SELECT to_regclass('public.leads');
 SELECT proname FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
  WHERE n.nspname = 'public' AND proname LIKE 'sv_sync%';
 ```

@@ -203,8 +203,10 @@ describe('partial updates', () => {
 	});
 });
 
-describe('unified sync', () => {
-	it('projects the update into the leads table', async () => {
+// Was 'unified sync' and read the `leads` projection. 067 dropped it, so the
+// same assertion now reads the row the endpoint writes.
+describe('persistence', () => {
+	it('persists the stage change to leaddata', async () => {
 		const businessId = await createBusiness({ slug: 'acme-solar' });
 		const leadId = await createLead({ businessId, category: 2, stage: 0 });
 		const session = { id: businessId, slug: 'acme-solar', businessname: 'Test' };
@@ -212,7 +214,7 @@ describe('unified sync', () => {
 		await update(session, { id: leadId, stage: 2 });
 
 		const { rows } = await pool.query<{ stage: number }>(
-			'SELECT stage FROM leads WHERE country_code = $1 AND source_id = $2',
+			'SELECT stage FROM leaddata WHERE country_code = $1 AND id = $2',
 			['in', leadId]
 		);
 		expect(rows[0].stage).toBe(2);
