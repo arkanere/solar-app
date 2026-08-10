@@ -90,32 +90,26 @@
      *from*. Fixing it means deciding what a US drift check even means now that both countries share
      one set of tables and only `businesses`/`leads` are still projections.
 
-6. **Finish the table collapse: 063 drops `businesses`.** 062 archived `businesses_1`; step 2 folds
-   the unified `businesses` table into `business_profiles`, leaving exactly two tables —
-   `business_profiles` (profile) and `business_accounts` (auth). `businesses` is a pure duplicate:
-   verified on live at 6708 rows each, 1:1 on `source_id`, **0 value drift**, and no inbound FK. The
-   only real difference is the column vocabulary, and the decision taken is that the country-neutral
-   names win:
+6. **Finish the table collapse: 064 drops `businesses`.** 062 archived `businesses_1` and 063 (both
+   applied) gave `business_profiles` the country-neutral names and moved all ~329 reads onto it.
+   What is left is the drop itself, and it is small:
 
-   | `business_profiles` | becomes |
-   | --- | --- |
-   | `gstn` | `tax_id` |
-   | `state` | `level1` |
-   | `district` | `level2` |
-   | `pincode` (**char(6)**) | `postal_code` (**varchar(10)**) |
+   - `DROP FUNCTION sv_sync_business` and `DROP TABLE businesses`;
+   - delete `syncBusinessToUnified` from both apps' `unifiedSync.ts` and its call sites
+     (`submitBusiness`, `updateBusinessDetails`, `addBranch`, `deleteBranch`, `deleteAccount`,
+     `claimLead`);
+   - `writeTargets.ts` loses its reason to exist as a "projection vs store" explainer — after this
+     there are no projections left for businesses, only `leads`.
 
-   Renaming rather than the reverse is what keeps the ~434 sites that read `businesses` changing
-   only their table reference and `source_id` → `business_id`, not their column names; the ~114
-   `business_profiles` sites take the rename. **These could not go in 062**: `sv_sync_business` still
-   runs until 063 and its body selects `p.gstn, p.state, p.district, p.pincode`, so renaming under
-   it fails the projection on the next write.
+   **Do not run it until 063 is deployed and quiet.** That is the whole reason the two were split:
+   `businesses` is the table every public installer page reads, and unlike a rename the drop cannot
+   be undone by reverting code. Confirm nothing is reading it first — on live,
+   `pg_stat_user_tables.seq_scan + idx_scan` for `businesses` should stop advancing once the deploy
+   is out.
 
-   063 also has to carry over what `businesses` has and `business_profiles` does not — the composite
-   `(country_code, level2, isvisible)` geo index main-app's directory pages filter on (today
-   `business_profiles` has only bare `country_code` and `slug` indexes, so those reads would hit a
-   seq scan over 6,708 rows), and the `countries` FK on `country_code`. Widening `pincode` fixes a
-   live US bug of the same family as items 3 and 4: `char(6)` space-pads, breaking equality, and a
-   ZIP+4 does not fit at all.
+   `leads` is then the only remaining projection, and item 2's drift is the argument for collapsing
+   it the same way — `leaddata` → `leads` is the identical shape, and 3 missing plus 156 orphaned
+   rows is exactly what a projection nobody drives reliably looks like.
 
 7. **Drop `businesses_1_archive` after a quiet period.** 062 renamed rather than dropped so a missed
    writer fails loudly. Nothing in any repo references it now (the last, `solar-app-internal`'s
@@ -127,6 +121,11 @@
 ---
 
 ## Standing constraints
+
+**Column vocabulary is country-neutral since 063.** `business_profiles` carries `tax_id`, `level1`,
+`level2` and `postal_code` — not `gstn`/`state`/`district`/`pincode`, which is what every migration
+and comment numbered below 063 refers to. `leaddata` still uses `state`/`district`/`pin_code`; it is
+`leads` that has the neutral names. Do not assume a column name from a sibling table.
 
 **`businesses` and `leads` are a projection, not a store — `business_accounts` no longer is.**
 `sv_sync_business` is `INSERT INTO businesses ... SELECT FROM business_profiles ... ON CONFLICT DO
