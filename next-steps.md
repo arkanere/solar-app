@@ -6,11 +6,11 @@
 
 ## Open
 
-1. **admin-app's queries are repointed but NOT deployed.** solar-app-internal `9bb1279` moves
-   admin-app off all three dropped tables — `businesses` → `business_profiles` (dropped by 064),
-   `locations` → `geo_locations` (058), `leads` → `leaddata` (067) — so it must ship before, or
-   close behind, 067 being applied. Until it deploys, the pages that read the first two are still
-   500ing on live, as they have been since those migrations ran.
+1. **admin-app is repointed and deployed — this entry is kept for the two things worth
+   remembering, not for outstanding work.** solar-app-internal `9bb1279` moved admin-app off all
+   three dropped tables — `businesses` → `business_profiles` (064), `locations` → `geo_locations`
+   (058), `leads` → `leaddata` (067). The first two had been 500ing on live since those migrations
+   ran and nothing had flagged them.
 
    The id vocabulary is the part to remember: the dropped tables were keyed by
    `(country_code, source_id)`, unique only as a pair, and the survivors mint a globally unique id
@@ -306,11 +306,8 @@ the EDB install, which has no `solar` role — do not point the suite at it.
 `npm run pull -w @solar/db`. **Never pull from a test cluster** — its baseline omits three
 `loc_key(...)` expression indexes, so a pull from there silently drops them.
 
-All migrations through **065** are applied to live, verified 2026-08-10 by introspection.
-
-**066 and 067 are committed but NOT applied.** Each has to be run by hand immediately before its own
-deploy, and in that order — see the headers, which spell out the gate between them (`leads` must go
-flat in `pg_stat_user_tables` before 067). Move this line to 067 once both have run.
+All migrations through **067** are applied to live, verified 2026-08-10 by introspection. 066 and
+067 were run by hand around their deploys, each gated as its header describes.
 
 **There is no migration-tracking table** — nothing records what has run, so this line is
 hand-maintained and will go stale again. It is cheap to re-derive from the schema itself; each
