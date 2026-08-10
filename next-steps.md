@@ -302,4 +302,24 @@ the EDB install, which has no `solar` role — do not point the suite at it.
 `npm run pull -w @solar/db`. **Never pull from a test cluster** — its baseline omits three
 `loc_key(...)` expression indexes, so a pull from there silently drops them.
 
-All migrations through **061** are applied to live.
+All migrations through **065** are applied to live. Verified 2026-08-10 by introspection, after this
+line sat at 061 while 062-065 were described as done everywhere else in this file.
+
+**There is no migration-tracking table** — nothing records what has run, so this line is
+hand-maintained and will go stale again. It is cheap to re-derive from the schema itself; each
+migration has a fingerprint:
+
+```sql
+-- 060/061: in_business_* gone. 062/064/065: businesses, businesses_1, businesses_1_archive gone.
+SELECT relname FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+ WHERE n.nspname = 'public' AND c.relkind = 'r' AND relname IN
+   ('businesses','businesses_1','businesses_1_archive','in_business_profiles','in_business_accounts');
+-- 063: business_profiles carries tax_id/level1/level2/postal_code, not gstn/state/district/pincode.
+SELECT attname FROM pg_attribute WHERE attrelid = 'public.business_profiles'::regclass AND attnum > 0;
+-- 062/064: sv_sync_lead is the only sv_sync_* left.
+SELECT proname FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+ WHERE n.nspname = 'public' AND proname LIKE 'sv_sync%';
+```
+
+The same sweep confirms the four `sync_unified_*` orphans in item 5 are still on live, and that
+`us_*`, `locations` and `sv_referrers` are gone (056, 058, 059).
