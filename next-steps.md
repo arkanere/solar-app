@@ -6,8 +6,7 @@
 
 ## Open
 
-1. **Duplicate `business_profiles.slug` values in live IN data.** Surveyed 2026-08-09; the picture is worse
-   and more specific than this item used to say.
+1. **Duplicate `business_profiles.slug` values in live IN data.** Surveyed 2026-08-09.
 
    **6708 profiles, 6518 distinct slugs, 36 NULL.**
 
@@ -23,25 +22,14 @@
    are identical in name, city and phone — true duplicate records. Every one of the 54 has an account
    row with a password set, but only **5 have ever logged in**, all of them the visible row.
 
-   **The read side is fixed.** All eight page loads under `[business_slug]` used to re-derive the
-   business id from the slug, ignoring the authoritative `businessId` that `SessionData` carries
-   (`lib/types/auth.ts:83`). They now select on `business_session.businessId` beside the country
-   predicate, so a logged-in business can no longer be served its twin's row.
-   `tests/routing/duplicateSlug.test.ts` pins all eight against a slug shared by two businesses.
+   **The code is done; what remains is the data.** Both the read paths (the eight `[business_slug]`
+   page loads) and the write path (`api/updateBusinessDetails`) resolve the business by the session's
+   authoritative `businessId` rather than by the slug in the URL, so there is no known wrong-tenant
+   path left. `tests/routing/duplicateSlug.test.ts` pins both sides against a shared slug.
 
-   **The write side is fixed too, so there is no known wrong-tenant path left.**
-   `api/updateBusinessDetails` used to UPDATE `business_profiles` by slug with no id filter — one
-   business saving its profile overwrote every row on the slug, its twin's included. It now resolves
-   a single `targetBusinessId` in both authorization arms (the session's `businessId` when a business
-   updates itself, the joined `branches.branchId` when it updates a branch) and matches the UPDATE on
-   the primary key. Its ownership check no longer re-derives the main business from
-   `session.businessSlug` either, which was the same slug-lookup bug one layer up. Four tests in
-   `tests/routing/duplicateSlug.test.ts` pin it: two reproduce the overwrite (both fail against the
-   old query), two hold the 403 arms in place.
-
-   **Recommended order:** de-duplicate, then `UNIQUE (slug)`. Open question before de-duplicating:
-   whether `isvisible = f` is a soft-delete you intend to keep, which decides whether the losing rows
-   get deleted or re-slugged.
+   **Remaining: de-duplicate, then `UNIQUE (slug)`.** Open question before de-duplicating: whether
+   `isvisible = f` is a soft-delete you intend to keep, which decides whether the losing rows get
+   deleted or re-slugged.
 
    The duplicates are also why `business_profiles` cannot take a `UNIQUE (slug)` constraint, and why
    `api/resetPassword` matches on the token hash rather than on the slug alone (`cdeff73`) — any new
@@ -94,13 +82,13 @@
      its six scopes only the two `leads_*` ones still describe anything real. It is arguably now a
      `leads`-only drift check with a misleading name.
 
-6. **Collapse `leads` into `leaddata` the way `businesses` went.** The table collapse is otherwise
-   **done** — 062 archived `businesses_1`, 063 gave `business_profiles` the country-neutral names,
-   064 dropped `businesses`. A business is two rows written directly, with no projection.
+6. **Collapse `leads` into `leaddata` the way `businesses` went.** `leads` is the last projection —
+   the business side of the collapse is done (062-065), and a business is now two rows written
+   directly.
 
    `leads` is the same shape `businesses` was: a rename-projection of `leaddata` driven only by
    explicit app calls, and item 2 is what that costs — 3 `leaddata` rows with no projection and 156
-   projected rows with no source. The playbook is now proven and worth reusing in the same order:
+   projected rows with no source. The playbook is proven and worth reusing in the same order:
 
    1. rename `leaddata`'s columns to the neutral names `leads` already uses (`state`→`level1`,
       `district`→`level2`, `pin_code`→`postal_code`), rewriting `sv_sync_lead` in the same
