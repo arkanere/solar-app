@@ -12,23 +12,22 @@
 -- two is the entire reason there is a 067: 066 is reversible from its rollback
 -- script, a dropped table is not reversible by reverting code.
 --
--- ** THIS BREAKS admin-app, DELIBERATELY. ** solar-app-internal's admin-app runs
--- against this same database and reads/writes `leads` in **18 server files, 38
--- call sites** — /leaddata, /leaddata-nonexclusive, control-tower, the
--- leads-not-claimed and spread analytics, and the api/updateLead,
--- api/updateLeadClaim, api/addPincodeMapping and four shareLead* endpoints.
--- Every one of them 500s after this runs. That is an accepted cost, decided
--- 2026-08-10: sole user, no external consumer. Fixing it is a separate task in
--- next-steps.md — the sites move to `leaddata` with `source_id` -> `id` and no
--- other column change, since admin-app already speaks level1/level2/postal_code.
+-- ** admin-app IS FIXED — check it deployed before running this. ** The plan
+-- here was to break it and repair later; that was reversed once the work turned
+-- out to be mechanical. solar-app-internal `9bb1279` moves admin-app's 38
+-- `leads` call sites onto `leaddata` (source_id -> id), and while in there also
+-- fixes two breakages that predate this collapse and were already live: 064's
+-- `businesses` -> business_profiles and 058's `locations` -> geo_locations.
 --
--- A `leads` VIEW over leaddata was considered and rejected in favour of the
--- clean drop. It would have worked — every column admin-app touches exists on
--- leaddata, and a single-table view is auto-updatable so its eight UPDATEs would
--- have kept working — but it reintroduces a compatibility shim, and only
--- api/updateLeadClaim's `INSERT INTO leads` with an explicit source_id genuinely
--- needed rewriting. Recorded here because it stays available if the breakage
--- turns out to bite.
+-- So the requirement is a deploy, not an outage: if `9bb1279` is live, nothing
+-- breaks when this runs. If it is not, admin-app's lead pages, control-tower and
+-- analytics 500 until it is — which is survivable (sole user, no external
+-- consumer) but pointless when the fix is already written.
+--
+-- A `leads` VIEW over leaddata was the other option and is no longer needed. It
+-- would have worked — every column admin-app touches exists on leaddata, and a
+-- single-table view is auto-updatable — but repointing the queries beats keeping
+-- a shim, and only api/updateLeadClaim's INSERT genuinely needed a rewrite.
 --
 -- ** THE GATE, AND WHY IT IS NOT THE ONE 064 USED. ** 064 could wait for
 -- `businesses` to go flat in pg_stat_user_tables. That test is USELESS here:
@@ -117,10 +116,12 @@
 --      stops creating `leads`, so IF EXISTS carries it.
 --   2. fixtures.ts TRUNCATE list: `leads` removed in the same commit.
 --   3. function bodies: sv_sync_lead only, dropped below.
---   4. **solar-app-internal.** Not a grep of this repo at all. admin-app has 38
---      call sites on `leads` and every one breaks — see the top of this file.
+--   4. **solar-app-internal.** Not a grep of this repo at all. admin-app had 38
+--      call sites on `leads`, repointed in `9bb1279` — see the top of this file.
 --      060, 061, 062 and 065 all checked that repo; 066/067's planning did not,
---      and found it only after 066 was already applied to live.
+--      and found it only after 066 was already applied to live. Checking it also
+--      turned up two older breakages nobody had noticed, from 058 and 064, which
+--      is the argument for making the check routine rather than occasional.
 --
 -- No rollback file. A dropped table is not reversible from one, and there is
 -- nothing to restore it from — `leaddata` holds every surviving lead by

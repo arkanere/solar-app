@@ -6,28 +6,27 @@
 
 ## Open
 
-1. **admin-app is broken and it was deliberate.** 067 dropped `leads`; solar-app-internal's
-   admin-app reads and writes it in **18 server files, 38 call sites** — `/leaddata`,
-   `/leaddata-nonexclusive`, control-tower's eligible-leads and eligible-businesses, the
-   leads-not-claimed and spread analytics, and `api/updateLead`, `api/updateLeadClaim`,
-   `api/addPincodeMapping` and the four `shareLead*`/`sendLeadDetails` endpoints. All of them 500.
-   Accepted 2026-08-10 on the grounds of sole user, no external consumer.
+1. **admin-app's queries are repointed but NOT deployed.** solar-app-internal `9bb1279` moves
+   admin-app off all three dropped tables — `businesses` → `business_profiles` (dropped by 064),
+   `locations` → `geo_locations` (058), `leads` → `leaddata` (067) — so it must ship before, or
+   close behind, 067 being applied. Until it deploys, the pages that read the first two are still
+   500ing on live, as they have been since those migrations ran.
 
-   **The fix is mechanical and small.** admin-app already speaks `level1`/`level2`/`postal_code`, so
-   the sites change table name and `source_id` → `id`, nothing else. Two exceptions:
-   `api/updateLeadClaim` does `INSERT INTO leads` with an explicit `source_id`, which becomes an
-   insert into `leaddata` and must let the sequence mint the id; and the `country_code = 'in' AND
-   source_id = $1` pairs collapse to `id = $1`, since leaddata ids are globally unique.
+   The id vocabulary is the part to remember: the dropped tables were keyed by
+   `(country_code, source_id)`, unique only as a pair, and the survivors mint a globally unique id
+   (`leaddata.id`, `business_profiles.business_id`). **`business_accounts` kept `source_id`**, so a
+   join between it and `business_profiles` is asymmetric — `b.business_id = a.source_id`.
 
-   **A `leads` view over `leaddata` is the cheap alternative** and stays available — every column
-   admin-app touches exists on leaddata, and a single-table view is auto-updatable, so its eight
-   `UPDATE leads` sites would work untouched. Only the `updateLeadClaim` INSERT genuinely needs
-   rewriting either way. Rejected at the time for being a shim, not because it would not work.
+   Verified by extracting all 99 `pool.query` statements and running them through
+   `EXPLAIN (GENERIC_PLAN)` against live in a read-only rolled-back transaction: 91 analysed clean,
+   0 schema errors, the other 8 unreachable because they build their `WHERE` dynamically and only
+   touch `masterlist_*`. **That technique is the answer to admin-app having no tests and no
+   typecheck**, and is worth reusing on any `.js` app whose SQL a build cannot see.
 
-   Worth fixing on the way past: `api/updateLead` wrote `leads` **directly**, which `sv_sync_lead`
-   overwrote from `leaddata` on the next sync of that row — so admin lead edits were being silently
-   reverted whenever the customer or business side touched the same lead. That bug dies with the
-   projection; do not reintroduce it by pointing the endpoint anywhere but `leaddata`.
+   A bug died with the projection, worth not reintroducing: `api/updateLead` wrote `leads`
+   directly, and `sv_sync_lead` overwrote `leads` from `leaddata` on the next sync of that row — so
+   admin lead edits were silently reverted whenever the customer or business side touched the same
+   lead.
 
 2. **Duplicate `business_profiles.slug` values in live IN data.** Surveyed 2026-08-09.
 
