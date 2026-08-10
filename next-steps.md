@@ -66,27 +66,6 @@
    read `geo_locations`, which is populated for both countries. Use it as the model, but note
    `getCities` there needs state *and* county, because US county names repeat across states.
 
-4. **069 and 070 are written and committed but NOT APPLIED to live.** Written 2026-08-10. 069 renames
-   `in_user` → `sv_user`, `in_user_feedback` → `sv_user_feedback`, `in_proposals` → `sv_proposals`;
-   070 drops `in_blog_posts`. Both repos are already on the new names, so **the current `main` of
-   both repos is broken against the current live schema** — this is the one item that must not sit.
-
-   **Deploy order: solar-app-internal, then solar-app, then run 069 and 070.** The gate is written
-   into 069's header. The renames are reversible (`069-...rollback.sql`); the drop is not, but the
-   table is empty and always has been.
-
-   Verification already done, so it does not need repeating: all three apps build, `check` is
-   unchanged at 10/32/0, the suite is green at 188, and admin-app's six rewritten raw statements were
-   put through `EXPLAIN (GENERIC_PLAN)` against live inside a transaction that applied the renames
-   and then rolled back — which is the only way to check that repo's SQL against a schema that does
-   not exist yet.
-
-   Why the `in_` prefix went: same argument as 061 — it was minted for a per-country pair that no
-   longer exists. Unlike 061 these three are genuinely IN-only *features*, so `sv_` rather than a
-   bare name. Constraints, indexes and sequences were deliberately left alone; they already carry
-   mismatched legacy names (`users_pkey` on `in_user`, `proposals_id_seq` on `in_proposals`) and have
-   for their whole life without consequence.
-
 ---
 
 ## Standing constraints
@@ -318,9 +297,10 @@ the EDB install, which has no `solar` role — do not point the suite at it.
 `npm run pull -w @solar/db`. **Never pull from a test cluster** — its baseline omits three
 `loc_key(...)` expression indexes, so a pull from there silently drops them.
 
-All migrations through **068** are applied to live, verified 2026-08-10 by introspection. **069 and
-070 are written but NOT applied — see open item 4**, which is also why both repos' `main` currently
-expects a schema live does not have. 066 and
+All migrations through **070** are applied to live, verified 2026-08-10 by introspection. 069 (the
+in_* -> sv_* renames) and 070 (drop in_blog_posts) were applied by hand right after both repos
+deployed, in the lockstep order 069's header describes; row counts came through unchanged at
+341/2/2 and admin-app's two rewritten reads were re-run against live afterwards. 066 and
 067 were run by hand around their deploys, each gated as its header describes. 068 is pure
 housekeeping — four unreachable trigger functions — and needed no deploy gating and no baseline
 regeneration (the baseline declares tables only, which is why 047 is replayed on top of it).
