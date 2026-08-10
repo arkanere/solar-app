@@ -74,10 +74,9 @@
    `getCities` there needs state *and* county, because US county names repeat across states.
 
 5. **Leftovers from the 060/061 cleanup, none urgent.**
-   - ~~`sv_sync_in_business_profile` orphan~~ and ~~`sv_sync_in_split` misnomer~~ — both dropped by
-     062, along with `sv_sync_account` and the two dead `sync_unified_account_*` trigger functions.
-     Four `sync_unified_*` orphans remain (`business_in/us`, `lead_in/us`); their triggers went with
-     051 and nothing can reach them. Dropping them is a one-liner whenever someone wants it gone.
+   - **Four `sync_unified_*` orphans remain** (`business_in/us`, `lead_in/us`). Their triggers went
+     with 051 and nothing can reach them; 062 dropped the two `account_*` siblings only because
+     their bodies called a function it was removing. Dropping the rest is a one-liner.
    - **`rateLimiter.test.ts:79` has the fragile pattern that just cost four tests.** It drops
      `rate_limits` to exercise the fail-open branch and recreates it by hand in a `finally`. That
      stub currently matches the real schema exactly, so nothing is broken — but the identical
@@ -108,11 +107,6 @@
 
    Reconcile the 159 drifted rows before step 1, not after: once the projection is the only copy,
    whichever side you kept is the answer, and right now it is not obvious which that should be.
-
-7. ~~Drop `businesses_1_archive`~~ — **done (065).** Nothing had touched it: its
-   `pg_stat_user_tables` counters were identical across readings. `businesses_1_id_seq` survived as
-   designed and was proved to still mint (6984, in a rolled-back transaction). Backup at
-   `~/businesses_1-archive-2026-08-09.sql`.
 
 ---
 
@@ -183,12 +177,22 @@ same commit as the drop, not after the baseline is regenerated.
 replayed migration and no function body mentioned the table, so it needed no guard at all. The three
 places still have to be checked; sometimes the answer is that there is nothing to do.
 
-062 (`businesses_1`) is the case where a `to_regclass` guard would have been the *wrong* tool and
-would not have worked: the table still exists, under a new name, and 054 addresses the old name in
-**six** executable statements, so 054 fails long before a guard on 062 is reached. What it needed
-was the rewind-and-replay 061 established — wind the name back before the baseline, replay history
-unedited, and let the real migration rename it forward at the end of the list. **Prefer that pattern
-over a guard for any rename.**
+062-065 settled which tool to reach for, and the two are not interchangeable:
+
+- **A rename needs a rewind.** A `to_regclass` guard cannot help — the object exists, under a
+  different name, so the guard passes and the statement still fails. Wind the name back before the
+  baseline, replay history unedited, and let the real migration rename it forward at the end of the
+  list. Three renames are wound back today (061's table, 062's DEFAULT, 063's columns and indexes).
+- **A drop needs a guard**, inside the migration itself — a no-op on live, self-skipping in tests.
+
+The same statement can change category. 062's `ALTER TABLE businesses_1 RENAME TO
+businesses_1_archive` was a rewind problem until 065 dropped the archive, at which point neither
+name existed in the baseline and it became a guard problem.
+
+**And sometimes the answer is to remove the file from the replay list.** 054 came off with 065: its
+only contribution was a `CREATE OR REPLACE` of `sv_sync_in_split`, which 062 drops, so it was
+carrying four executable statements against a vanished table for no gain. Check what a replayed file
+still contributes before writing a guard for it.
 
 **062 also found a fourth place, which no amount of code grepping reaches: the baseline can emit a
 default referencing a sequence it never creates.** `businesses_1.id` was a `serial`, which
@@ -199,8 +203,11 @@ bare `DEFAULT nextval('businesses_1_id_seq')` — which nothing then declares. T
 its own `CREATE TABLE` with `relation "businesses_1_id_seq" does not exist`, before a single test
 ran. A generated baseline cannot express "this column's default points at a sequence another table
 owns", so this is structural, not a generator bug. `apply-test-migrations.mjs` now has a
-`PRE_BASELINE_SEQUENCES` step for it. **Any future migration that moves a sequence between tables
-hits this — regenerate the baseline and actually run the suite, do not assume.**
+`PRE_BASELINE_SEQUENCES` step for it. 065 dropped the archive and with it that particular dangling
+default, but the step stays and is still required: 062 is still replayed, and it reassigns the
+sequence and sets the same default on `business_profiles.business_id`, so the sequence has to exist
+before it runs. **Any future migration that moves a sequence between tables hits this — regenerate
+the baseline and actually run the suite, do not assume.**
 
 **A migration that changes where a sync reads from must enumerate every writer of the old location.**
 055's dry run proved the collapsed functions reproduce the projection for existing rows, which is
@@ -249,6 +256,10 @@ business-app's check covers `.ts` as well as `.svelte`, so no separate
 172 for a while and was simply stale: a measured run on the commit before 062 gave **180**, and 062
 added the four in `tests/auth/accountsAreAStore.test.ts`. Measure before trusting it.
 
+**Workspace names are not the directory names.** `npm run check -w <app>` takes `main-app`,
+`user-app` and `solarvipani-business` — the first two are unprefixed and the third is not
+`solarvipani-user`'s sibling. `npm run check -w solarvipani` fails with "No workspaces found".
+
 **Also run `npm run build -w <app>`** when you touch imports. `check` cannot see server code reaching
 a browser bundle, and that is a hard build failure — it left business-app undeployable for an unknown
 stretch before it was caught. business-app's `$lib/server/resolveCountry` is the current live example:
@@ -258,6 +269,11 @@ server-only, and must never reach a component.
 
 **Docker is not installed on this machine**, so `docker compose -f docker-compose.test.yml up -d`
 does not work. Build a throwaway cluster from the EDB binaries instead:
+
+**A cluster may already be running on 5544** from an earlier session — `initdb` then succeeds and
+`pg_ctl start` fails with `could not bind IPv4 address "127.0.0.1": Address already in use`, which
+reads like a port conflict but usually means the cluster you want is already up. Check before
+rebuilding: `psql -h localhost -p 5544 -U solar -d postgres -c '\l'`.
 
 ```sh
 export PATH=/System/Volumes/Data/Library/PostgreSQL/16/bin:$PATH
@@ -270,7 +286,9 @@ export TEST_POSTGRES_URL="postgres://solar:solar@localhost:5544/solar_test"
 npm test -w solarvipani-business
 ```
 
-The suite rebuilds its schema per run, so a fresh empty database is fine. Port 5433 answers but is
+The suite rebuilds its schema per run, so a fresh empty database is fine. To force a clean slate,
+drop and recreate the database rather than the `public` schema — `DROP SCHEMA public CASCADE` leaves
+the connection's `search_path` pointing at nothing and the next run fails inside `NamespaceCreate`. Port 5433 answers but is
 the EDB install, which has no `solar` role — do not point the suite at it.
 
 ### Live database
