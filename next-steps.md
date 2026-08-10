@@ -90,26 +90,23 @@
      *from*. Fixing it means deciding what a US drift check even means now that both countries share
      one set of tables and only `businesses`/`leads` are still projections.
 
-6. **Finish the table collapse: 064 drops `businesses`.** 062 archived `businesses_1` and 063 (both
-   applied) gave `business_profiles` the country-neutral names and moved all ~329 reads onto it.
-   What is left is the drop itself, and it is small:
+6. **Collapse `leads` into `leaddata` the way `businesses` went.** The table collapse is otherwise
+   **done** — 062 archived `businesses_1`, 063 gave `business_profiles` the country-neutral names,
+   064 dropped `businesses`. A business is two rows written directly, with no projection.
 
-   - `DROP FUNCTION sv_sync_business` and `DROP TABLE businesses`;
-   - delete `syncBusinessToUnified` from both apps' `unifiedSync.ts` and its call sites
-     (`submitBusiness`, `updateBusinessDetails`, `addBranch`, `deleteBranch`, `deleteAccount`,
-     `claimLead`);
-   - `writeTargets.ts` loses its reason to exist as a "projection vs store" explainer — after this
-     there are no projections left for businesses, only `leads`.
+   `leads` is the same shape `businesses` was: a rename-projection of `leaddata` driven only by
+   explicit app calls, and item 2 is what that costs — 3 `leaddata` rows with no projection and 156
+   projected rows with no source. The playbook is now proven and worth reusing in the same order:
 
-   **Do not run it until 063 is deployed and quiet.** That is the whole reason the two were split:
-   `businesses` is the table every public installer page reads, and unlike a rename the drop cannot
-   be undone by reverting code. Confirm nothing is reading it first — on live,
-   `pg_stat_user_tables.seq_scan + idx_scan` for `businesses` should stop advancing once the deploy
-   is out.
+   1. rename `leaddata`'s columns to the neutral names `leads` already uses (`state`→`level1`,
+      `district`→`level2`, `pin_code`→`postal_code`), rewriting `sv_sync_lead` in the same
+      transaction, and move every read across — the equivalent of 063;
+   2. deploy, confirm `pg_stat_user_tables` for `leads` goes flat;
+   3. drop the sync calls, deploy;
+   4. drop `leads` and `sv_sync_lead` — the equivalent of 064.
 
-   `leads` is then the only remaining projection, and item 2's drift is the argument for collapsing
-   it the same way — `leaddata` → `leads` is the identical shape, and 3 missing plus 156 orphaned
-   rows is exactly what a projection nobody drives reliably looks like.
+   Reconcile the 159 drifted rows before step 1, not after: once the projection is the only copy,
+   whichever side you kept is the answer, and right now it is not obvious which that should be.
 
 7. **Drop `businesses_1_archive` after a quiet period.** 062 renamed rather than dropped so a missed
    writer fails loudly. Nothing in any repo references it now (the last, `solar-app-internal`'s
@@ -127,19 +124,16 @@
 and comment numbered below 063 refers to. `leaddata` still uses `state`/`district`/`pin_code`; it is
 `leads` that has the neutral names. Do not assume a column name from a sibling table.
 
-**`businesses` and `leads` are a projection, not a store — `business_accounts` no longer is.**
-`sv_sync_business` is `INSERT INTO businesses ... SELECT FROM business_profiles ... ON CONFLICT DO
-UPDATE`, so anything written directly to `businesses`/`leads` is clobbered by the next sync, and
-main-app still has **zero** such writes. The rule for those two is unchanged: **read them** (filtered
-by the resolved country), **write the store** — `business_profiles`/`leaddata`, one set for every
-country since 054, discriminated by `country_code` — then call `sync*ToUnified`.
+**`leads` is the only projection left.** `sv_sync_lead` is `INSERT INTO leads ... SELECT FROM
+leaddata ... ON CONFLICT DO UPDATE`, so anything written directly to `leads` is clobbered by the next
+sync. The rule for it is unchanged: **read `leads`** (filtered by the resolved country), **write
+`leaddata`**, then call `syncLeadToUnified`.
 
-**`business_accounts` is the exception, since 062.** `sv_sync_account` was dropped with its source
-(`businesses_1`), and there was nothing to repoint it at: `business_profiles` holds no credential
-columns, by the deliberate separation in `docs/account-profile-separation.md`. So the auth layer now
-both reads *and* writes it first-class — `LoginTracker`, `magicLink`, `passwordReset`,
-`api/resetPassword`, `api/deleteAccount`. Do not add a sync call after those writes; there is no
-function to call.
+**Everything about a business is a store now — write it directly and call nothing.**
+`business_profiles` (profile) and `business_accounts` (auth) are the whole picture, and both are
+written first-class. The three sync helpers that used to sit around them are gone: `sv_sync_in_split`
+and `sv_sync_account` with 062, `sv_sync_business` with 064. There is no function to call after a
+business write, and adding one back would mean reintroducing a duplicate.
 
 **The new hazard that replaces the old one:** a business is two rows, and nothing projects the
 second any more. Every id-minting site (`submitBusiness`, `addBranch`, `claimLead`'s auto-branch)

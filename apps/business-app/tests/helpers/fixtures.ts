@@ -16,15 +16,14 @@ export async function resetDatabase(): Promise<void> {
 	// re-running migrations per test, and RESTART IDENTITY keeps ids small —
 	// leaddata.business_id and leaddata_claimrequests.business_id are smallint,
 	// so a long-running sequence would eventually overflow them.
-	// businesses_1 left the list with migration 062 — it is businesses_1_archive
-	// now, nothing writes it, and truncating it would only cost time. The
-	// RESTART IDENTITY still has to reach business_profiles.business_id, which
-	// inherited businesses_1_id_seq and is where every business id now comes from.
+	// businesses_1 left this list with 062 and `businesses` with 064 — the first
+	// is an archive nothing writes, the second is gone. RESTART IDENTITY still
+	// has to reach business_profiles.business_id, which inherited
+	// businesses_1_id_seq and is where every business id now comes from.
 	await pool.query(`
 		TRUNCATE TABLE
 			leaddata_claimrequests, leaddata, leads,
-			branches, business_profiles,
-			businesses, business_accounts,
+			branches, business_profiles, business_accounts,
 			legal_acceptances, legal_policies,
 			projects, project_management, pincode_mapping,
 			rate_limits, in_user, geo_locations
@@ -78,8 +77,8 @@ let businessSeq = 0;
 /**
  * Insert a business the same way the app does since migration 062: a
  * business_profiles row (which mints the id off businesses_1_id_seq) plus the
- * business_accounts row carrying its credentials, then the one remaining
- * projection into `businesses`. Returns the business id.
+ * business_accounts row carrying its credentials. Returns the business id.
+ * There is nothing to project since 064 — these two rows are the whole business.
  *
  * The account row is not optional scaffolding — the auth layer reads
  * business_accounts for passwords, magic-link tokens and last_login, and it is
@@ -120,9 +119,6 @@ export async function createBusiness(options: BusinessOptions = {}): Promise<num
 		[id, loginEmail, loginPassword, isvisible, lastLogin]
 	);
 
-	// `businesses` is the one projection left; it sources from business_profiles.
-	await pool.query('SELECT sv_sync_business($1, $2)', ['in', id]);
-
 	return id;
 }
 
@@ -148,8 +144,8 @@ export interface UsBusinessOptions {
  * are kept because that is what the US callers say, but they map to the IN
  * columns (`district`, `pincode`).
  *
- * sv_sync_business reads business_profiles for every country, so the profile
- * row has to exist before it is called or the projection is a silent no-op.
+ * The account row is what makes the business able to log in; without it the
+ * fixture builds a listing-only business, which is almost never what a test wants.
  */
 export async function createUsBusiness(options: UsBusinessOptions = {}): Promise<number> {
 	businessSeq += 1;
@@ -181,8 +177,6 @@ export async function createUsBusiness(options: UsBusinessOptions = {}): Promise
 		 VALUES ('us',$1,$2,$3)`,
 		[id, loginEmail, isvisible]
 	);
-
-	await pool.query('SELECT sv_sync_business($1, $2)', ['us', id]);
 
 	return id;
 }

@@ -58,7 +58,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 				if (slugMatch) {
 					installers = await db
 						.select(INSTALLER_SELECTION)
-						.from(schema.businesses)
+						.from(schema.businessProfiles)
 						.where(
 							and(
 								eq(schema.businessProfiles.countryCode, 'in'),
@@ -71,7 +71,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 			} else if (district) {
 				installers = await db
 					.select(INSTALLER_SELECTION)
-					.from(schema.businesses)
+					.from(schema.businessProfiles)
 					.where(
 						and(
 							eq(schema.businessProfiles.countryCode, 'in'),

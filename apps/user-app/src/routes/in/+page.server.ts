@@ -149,7 +149,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 					)
 				)
 				.leftJoin(
-					schema.businesses,
+					schema.businessProfiles,
 					and(
 						eq(schema.businessProfiles.countryCode, 'in'),
 						eq(schema.businessProfiles.businessId, claimed.businessId)

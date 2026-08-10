@@ -686,47 +686,6 @@ export const geoLocations = pgTable("geo_locations", {
 	unique("geo_locations_country_code_level1_slug_level2_slug_city_slu_key").on(table.countryCode, table.level1Slug, table.level2Slug, table.citySlug),
 ]);
 
-export const businesses = pgTable("businesses", {
-	id: serial().primaryKey().notNull(),
-	countryCode: char("country_code", { length: 2 }).notNull(),
-	sourceId: integer("source_id").notNull(),
-	slug: varchar({ length: 255 }),
-	businessname: varchar({ length: 255 }),
-	email: varchar({ length: 255 }),
-	phonenumber: varchar({ length: 20 }),
-	whatsapp: varchar({ length: 20 }),
-	description: varchar({ length: 256 }),
-	website: varchar({ length: 255 }),
-	instagramId: varchar("instagram_id", { length: 255 }),
-	googleMapsLink: varchar("google_maps_link", { length: 255 }),
-	address: text(),
-	pluscode: varchar({ length: 255 }),
-	services: integer().array(),
-	brands: integer().array(),
-	taxId: varchar("tax_id", { length: 50 }),
-	level1: varchar({ length: 100 }),
-	level2: varchar({ length: 100 }),
-	city: varchar({ length: 100 }),
-	postalCode: varchar("postal_code", { length: 10 }),
-	rscore: integer(),
-	tag: varchar({ length: 255 }),
-	notes: text(),
-	businessfilled: boolean(),
-	tier3: boolean(),
-	isvisible: boolean(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("businesses_geo_idx").using("btree", table.countryCode.asc().nullsLast().op("text_ops"), table.level2.asc().nullsLast().op("bpchar_ops"), table.isvisible.asc().nullsLast().op("bpchar_ops")),
-	index("businesses_slug_idx").using("btree", table.countryCode.asc().nullsLast().op("bpchar_ops"), table.slug.asc().nullsLast().op("text_ops")),
-	foreignKey({
-			columns: [table.countryCode],
-			foreignColumns: [countries.code],
-			name: "businesses_country_code_fkey"
-		}),
-	unique("businesses_country_code_source_id_key").on(table.countryCode, table.sourceId),
-]);
-
 export const businessAccounts = pgTable("business_accounts", {
 	id: serial().primaryKey().notNull(),
 	countryCode: char("country_code", { length: 2 }).notNull(),

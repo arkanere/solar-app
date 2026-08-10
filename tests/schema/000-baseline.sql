@@ -81,39 +81,6 @@ CREATE TABLE "business_profiles" (
 	CONSTRAINT "business_profiles_business_id_key" UNIQUE("business_id")
 );
 
-CREATE TABLE "businesses" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"country_code" char(2) NOT NULL,
-	"source_id" integer NOT NULL,
-	"slug" varchar(255),
-	"businessname" varchar(255),
-	"email" varchar(255),
-	"phonenumber" varchar(20),
-	"whatsapp" varchar(20),
-	"description" varchar(256),
-	"website" varchar(255),
-	"instagram_id" varchar(255),
-	"google_maps_link" varchar(255),
-	"address" text,
-	"pluscode" varchar(255),
-	"services" integer[],
-	"brands" integer[],
-	"tax_id" varchar(50),
-	"level1" varchar(100),
-	"level2" varchar(100),
-	"city" varchar(100),
-	"postal_code" varchar(10),
-	"rscore" integer,
-	"tag" varchar(255),
-	"notes" text,
-	"businessfilled" boolean,
-	"tier3" boolean,
-	"isvisible" boolean,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "businesses_country_code_source_id_key" UNIQUE("country_code","source_id")
-);
-
 CREATE TABLE "businesses_1_archive" (
 	"id" integer PRIMARY KEY DEFAULT nextval('businesses_1_id_seq'::regclass) NOT NULL,
 	"businessname" varchar(255) NOT NULL,
@@ -696,7 +663,6 @@ CREATE TABLE "embeddings"."in_embedding_index" (
 
 ALTER TABLE "business_accounts" ADD CONSTRAINT "business_accounts_country_code_fkey" FOREIGN KEY ("country_code") REFERENCES "public"."countries"("code") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "business_profiles" ADD CONSTRAINT "business_profiles_country_code_fkey" FOREIGN KEY ("country_code") REFERENCES "public"."countries"("code") ON DELETE no action ON UPDATE no action;
-ALTER TABLE "businesses" ADD CONSTRAINT "businesses_country_code_fkey" FOREIGN KEY ("country_code") REFERENCES "public"."countries"("code") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "callsafehandles" ADD CONSTRAINT "callsafelinks_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."callsafeusers"("id") ON DELETE cascade ON UPDATE no action;
 ALTER TABLE "discoms" ADD CONSTRAINT "discoms_state_slug_fkey" FOREIGN KEY ("state_slug") REFERENCES "public"."state_subsidies"("state_slug") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "geo_locations" ADD CONSTRAINT "geo_locations_country_code_fkey" FOREIGN KEY ("country_code") REFERENCES "public"."countries"("code") ON DELETE no action ON UPDATE no action;
@@ -713,8 +679,6 @@ CREATE INDEX "business_accounts_login_email_idx" ON "business_accounts" USING bt
 CREATE INDEX "business_accounts_magic_token_idx" ON "business_accounts" USING btree ("country_code","magic_link_token");
 CREATE INDEX "business_profiles_country_slug_idx" ON "business_profiles" USING btree ("country_code","slug");
 CREATE INDEX "business_profiles_geo_idx" ON "business_profiles" USING btree ("country_code","level2","isvisible");
-CREATE INDEX "businesses_geo_idx" ON "businesses" USING btree ("country_code","level2","isvisible");
-CREATE INDEX "businesses_slug_idx" ON "businesses" USING btree ("country_code","slug");
 CREATE INDEX "businesses_1_country_slug_idx" ON "businesses_1_archive" USING btree ("country_code","slug");
 CREATE INDEX "idx_businesses_city" ON "businesses_1_archive" USING btree ("city");
 CREATE INDEX "idx_businesses_slug" ON "businesses_1_archive" USING btree ("slug");

@@ -121,7 +121,7 @@ export const load: PageServerLoad = async ({ url }) => {
 				const district = districtRows[0].district;
 				installers = await db
 					.select(INSTALLER_SELECTION)
-					.from(schema.businesses)
+					.from(schema.businessProfiles)
 					.where(
 						and(
 							eq(schema.businessProfiles.countryCode, 'in'),

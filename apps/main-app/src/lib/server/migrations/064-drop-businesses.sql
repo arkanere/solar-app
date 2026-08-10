@@ -36,7 +36,19 @@
 --     `source_id AS id` (unifiedRead.ts:109,137 before 063). DROP TABLE takes
 --     the sequence, which is correct here.
 --
--- Code side, to change in the same commit as applying this:
+-- ** ORDER: THE CODE SHIPS FIRST, THEN THIS FILE. ** An earlier draft of this
+-- header said to apply the drop and change the code in one commit. That is
+-- wrong and reopens the window 063 was split to avoid: the deployed 063 code
+-- still calls syncBusinessToUnified, so dropping sv_sync_business ahead of the
+-- deploy 500s every profile write until it lands.
+--
+-- Reversed, there is no window. Removing the calls only makes `businesses`
+-- stale, and by the gate above nothing reads it — so the drop lands on a table
+-- that is neither read nor written. Deploy the commit below, confirm
+-- n_tup_ins/n_tup_upd on `businesses` have gone flat too (not just the scans),
+-- then run this.
+--
+-- Code side, shipped in the commit BEFORE applying this:
 --   business-app  lib/server/unifiedSync.ts    syncBusinessToUnified deleted
 --                 lib/server/writeTargets.ts   the projection-vs-store preamble
 --                                              now describes `leads` only

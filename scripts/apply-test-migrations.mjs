@@ -82,7 +82,14 @@ const POST_BASELINE_MIGRATIONS = [
 	// bodies — and this is what renames them forward, exactly as on live. It also
 	// leaves sv_sync_business sourcing the renamed columns, which is the version
 	// production runs; 061's is replayed first and immediately replaced here.
-	'063-country-neutral-profile-columns.sql'
+	'063-country-neutral-profile-columns.sql',
+	// Drops `businesses` and sv_sync_business. Last, and unlike 061/062/063 it
+	// needs no rewind: nothing here is a rename, so the baseline simply stops
+	// creating the table once regenerated. It still has to be replayed rather
+	// than left to the baseline, because 047/055/061/063 above all recreate
+	// sv_sync_business — without this the test database keeps a function
+	// production no longer has, writing a table it no longer has either.
+	'064-drop-businesses.sql'
 ];
 
 // 061 renamed in_business_profiles to business_profiles, so the generated
