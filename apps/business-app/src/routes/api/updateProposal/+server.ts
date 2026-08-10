@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db';
 import { PROPOSAL_RETURNING } from '$lib/server/proposals';
-import { inProposals } from '@solar/db/schema';
+import { svProposals } from '@solar/db/schema';
 import { and, eq, sql } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { SessionManager } from '$lib/auth/business';
@@ -68,7 +68,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		// `business_slug` in the predicate is what stops another business's proposal
 		// being edited by id; the ownership check above is the other half.
 		const [proposal] = await db
-			.update(inProposals)
+			.update(svProposals)
 			.set({
 				customerName: customer_name,
 				phoneNumber: phone_number ?? null,
@@ -81,7 +81,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				notes: notes ?? null,
 				updatedAt: sql`NOW()`
 			})
-			.where(and(eq(inProposals.id, id), eq(inProposals.businessSlug, business_slug)))
+			.where(and(eq(svProposals.id, id), eq(svProposals.businessSlug, business_slug)))
 			.returning(PROPOSAL_RETURNING);
 
 		if (!proposal) {

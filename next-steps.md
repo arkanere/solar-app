@@ -66,6 +66,27 @@
    read `geo_locations`, which is populated for both countries. Use it as the model, but note
    `getCities` there needs state *and* county, because US county names repeat across states.
 
+4. **069 and 070 are written and committed but NOT APPLIED to live.** Written 2026-08-10. 069 renames
+   `in_user` → `sv_user`, `in_user_feedback` → `sv_user_feedback`, `in_proposals` → `sv_proposals`;
+   070 drops `in_blog_posts`. Both repos are already on the new names, so **the current `main` of
+   both repos is broken against the current live schema** — this is the one item that must not sit.
+
+   **Deploy order: solar-app-internal, then solar-app, then run 069 and 070.** The gate is written
+   into 069's header. The renames are reversible (`069-...rollback.sql`); the drop is not, but the
+   table is empty and always has been.
+
+   Verification already done, so it does not need repeating: all three apps build, `check` is
+   unchanged at 10/32/0, the suite is green at 188, and admin-app's six rewritten raw statements were
+   put through `EXPLAIN (GENERIC_PLAN)` against live inside a transaction that applied the renames
+   and then rolled back — which is the only way to check that repo's SQL against a schema that does
+   not exist yet.
+
+   Why the `in_` prefix went: same argument as 061 — it was minted for a per-country pair that no
+   longer exists. Unlike 061 these three are genuinely IN-only *features*, so `sv_` rather than a
+   bare name. Constraints, indexes and sequences were deliberately left alone; they already carry
+   mismatched legacy names (`users_pkey` on `in_user`, `proposals_id_seq` on `in_proposals`) and have
+   for their whole life without consequence.
+
 ---
 
 ## Standing constraints
@@ -297,7 +318,9 @@ the EDB install, which has no `solar` role — do not point the suite at it.
 `npm run pull -w @solar/db`. **Never pull from a test cluster** — its baseline omits three
 `loc_key(...)` expression indexes, so a pull from there silently drops them.
 
-All migrations through **068** are applied to live, verified 2026-08-10 by introspection. 066 and
+All migrations through **068** are applied to live, verified 2026-08-10 by introspection. **069 and
+070 are written but NOT applied — see open item 4**, which is also why both repos' `main` currently
+expects a schema live does not have. 066 and
 067 were run by hand around their deploys, each gated as its header describes. 068 is pure
 housekeeping — four unreachable trigger functions — and needed no deploy gating and no baseline
 regeneration (the baseline declares tables only, which is why 047 is replayed on top of it).
@@ -317,10 +340,22 @@ SELECT attname FROM pg_attribute WHERE attrelid = 'public.business_profiles'::re
 SELECT attname FROM pg_attribute WHERE attrelid = 'public.leaddata'::regclass AND attnum > 0;
 -- 067: `leads` is gone and no sv_sync_* function is left at all.
 SELECT to_regclass('public.leads');
--- 068: and no sync_unified_* orphan either. Both queries below return 0 rows;
--- the only function left in public is sv_slugify().
+-- 068: and no sync_unified_* orphan either. This query returns 0 rows.
 SELECT proname FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
  WHERE n.nspname = 'public' AND (proname LIKE 'sv_sync%' OR proname LIKE 'sync_unified%');
+-- 069: the three renamed tables. 070: in_blog_posts gone.
+SELECT to_regclass('public.sv_user'), to_regclass('public.sv_user_feedback'),
+       to_regclass('public.sv_proposals'), to_regclass('public.in_blog_posts');
 ```
+
+**"The only function left in public is `sv_slugify()`" was wrong** and has been removed from above —
+the query it was attached to only ever looked at `sv_sync%` and `sync_unified%`, so it never
+supported that broader claim. A full sweep on 2026-08-10 found seven: `sv_slugify` and `loc_key`
+(both live and load-bearing — `loc_key` backs the three expression indexes), plus five that look like
+orphans and were not investigated: `sync_business_profile`, `sync_business_account`, and
+`update_blogs_updated_at` / `update_in_blogs_updated_at` / `update_us_blogs_updated_at`, the last
+three left behind by 048's blogs removal. None of them reference any table 069/070 touches, which is
+as far as the check went. **Worth a 071 to drop whichever are genuinely unreferenced** — check for
+attached triggers first, since a trigger function with no trigger is the only kind safe to drop.
 
 The same sweep confirms `us_*`, `locations` and `sv_referrers` are gone (056, 058, 059).

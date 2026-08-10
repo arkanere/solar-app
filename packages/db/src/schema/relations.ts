@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { callsafeusers, callsafehandles, leaddata, inProposals, projectManagement, solarBrands, solarProducts, stateSubsidies, discoms, authors, inBlogPosts, inUser, inUserFeedback, legalPolicies, legalAcceptances, countries, businessAccounts, businessProfiles, geoLocations } from "./schema";
+import { callsafeusers, callsafehandles, leaddata, svProposals, projectManagement, solarBrands, solarProducts, stateSubsidies, discoms, svUser, svUserFeedback, legalPolicies, legalAcceptances, countries, businessAccounts, businessProfiles, geoLocations } from "./schema";
 
 export const callsafehandlesRelations = relations(callsafehandles, ({one}) => ({
 	callsafeuser: one(callsafeusers, {
@@ -12,9 +12,9 @@ export const callsafeusersRelations = relations(callsafeusers, ({many}) => ({
 	callsafehandles: many(callsafehandles),
 }));
 
-export const inProposalsRelations = relations(inProposals, ({one}) => ({
+export const svProposalsRelations = relations(svProposals, ({one}) => ({
 	leaddatum: one(leaddata, {
-		fields: [inProposals.leadId],
+		fields: [svProposals.leadId],
 		references: [leaddata.id]
 	}),
 }));
@@ -24,7 +24,7 @@ export const leaddataRelations = relations(leaddata, ({one, many}) => ({
 		fields: [leaddata.countryCode],
 		references: [countries.code]
 	}),
-	inProposals: many(inProposals),
+	svProposals: many(svProposals),
 	projectManagements: many(projectManagement),
 }));
 
@@ -57,26 +57,15 @@ export const stateSubsidiesRelations = relations(stateSubsidies, ({many}) => ({
 	discoms: many(discoms),
 }));
 
-export const inBlogPostsRelations = relations(inBlogPosts, ({one}) => ({
-	author: one(authors, {
-		fields: [inBlogPosts.authorSlug],
-		references: [authors.slug]
+export const svUserFeedbackRelations = relations(svUserFeedback, ({one}) => ({
+	svUser: one(svUser, {
+		fields: [svUserFeedback.userId],
+		references: [svUser.id]
 	}),
 }));
 
-export const authorsRelations = relations(authors, ({many}) => ({
-	inBlogPosts: many(inBlogPosts),
-}));
-
-export const inUserFeedbackRelations = relations(inUserFeedback, ({one}) => ({
-	inUser: one(inUser, {
-		fields: [inUserFeedback.userId],
-		references: [inUser.id]
-	}),
-}));
-
-export const inUserRelations = relations(inUser, ({many}) => ({
-	inUserFeedbacks: many(inUserFeedback),
+export const svUserRelations = relations(svUser, ({many}) => ({
+	svUserFeedbacks: many(svUserFeedback),
 }));
 
 export const legalAcceptancesRelations = relations(legalAcceptances, ({one}) => ({

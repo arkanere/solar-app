@@ -395,7 +395,7 @@ describe('country resolution in the remaining [business_slug] loads', () => {
 
 		const data = await proposalLoad(context('oakland-solar', 'us', mainId));
 
-		// `in_proposals` has no US counterpart, so empty is the right answer.
+		// `sv_proposals` has no US counterpart, so empty is the right answer.
 		expect(data.business?.id).toBe(mainId);
 		expect(data.proposals).toEqual([]);
 	});

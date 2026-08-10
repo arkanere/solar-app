@@ -1,6 +1,6 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { inUser } from '@solar/db/schema';
+import { svUser } from '@solar/db/schema';
 import { eq, sql } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
@@ -22,7 +22,7 @@ export const POST: RequestHandler = async ({ request, params }) => {
 	if (!params.country || !isCountry(params.country)) {
 		return json({ error: 'Unknown country' }, { status: 404 });
 	}
-	// Customer accounts are IN-only: in_user has no country column and there is
+	// Customer accounts are IN-only: sv_user has no country column and there is
 	// no unified equivalent, so this must not silently write IN rows for another
 	// country's leads.
 	if (!getCountry(params.country).features.userAccounts) {
@@ -44,23 +44,23 @@ export const POST: RequestHandler = async ({ request, params }) => {
 
 		// Check if user exists, if not create them
 		const existingUsers = await db
-			.select({ id: inUser.id })
-			.from(inUser)
-			.where(eq(inUser.email, email));
+			.select({ id: svUser.id })
+			.from(svUser)
+			.where(eq(svUser.email, email));
 
 		if (existingUsers.length > 0) {
 			// Update existing user
 			await db
-				.update(inUser)
+				.update(svUser)
 				.set({
 					magicLinkToken: tokenHash,
 					magicLinkTokenExpiresAt: expiresAt,
-					name: sql`COALESCE(${name ?? null}, ${inUser.name})`
+					name: sql`COALESCE(${name ?? null}, ${svUser.name})`
 				})
-				.where(eq(inUser.id, existingUsers[0].id));
+				.where(eq(svUser.id, existingUsers[0].id));
 		} else {
 			// Create new user
-			await db.insert(inUser).values({
+			await db.insert(svUser).values({
 				email,
 				name: name || null,
 				magicLinkToken: tokenHash,

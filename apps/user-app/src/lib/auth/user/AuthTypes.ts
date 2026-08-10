@@ -35,7 +35,7 @@ export type AuthErrorCode = (typeof AUTH_ERRORS)[keyof typeof AUTH_ERRORS];
 
 /**
  * A user as every auth path hands it back. `name` and `created_at` are nullable
- * in `in_user`; this app still reads through the raw pg driver, so `created_at`
+ * in `sv_user`; this app still reads through the raw pg driver, so `created_at`
  * arrives as a `Date` rather than the `mode: 'string'` the Drizzle schema uses.
  */
 export interface AuthUser {

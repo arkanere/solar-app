@@ -16,10 +16,10 @@ import {
 // generated SQL. Same for `magic_link_token_expires_at`, which is fed straight
 // into `new Date()` below.
 const USER_SELECTION = {
-	id: schema.inUser.id,
-	email: schema.inUser.email,
-	name: schema.inUser.name,
-	created_at: sql<Date | null>`${schema.inUser.createdAt}`
+	id: schema.svUser.id,
+	email: schema.svUser.email,
+	name: schema.svUser.name,
+	created_at: sql<Date | null>`${schema.svUser.createdAt}`
 };
 
 export class TokenManager {
@@ -36,13 +36,13 @@ export class TokenManager {
 					...USER_SELECTION,
 					magic_link_token_expires_at: sql<
 						Date | null
-					>`${schema.inUser.magicLinkTokenExpiresAt}`
+					>`${schema.svUser.magicLinkTokenExpiresAt}`
 				})
-				.from(schema.inUser)
+				.from(schema.svUser)
 				.where(
 					and(
-						eq(schema.inUser.magicLinkToken, tokenHash),
-						isNotNull(schema.inUser.magicLinkToken)
+						eq(schema.svUser.magicLinkToken, tokenHash),
+						isNotNull(schema.svUser.magicLinkToken)
 					)
 				);
 
@@ -81,8 +81,8 @@ export class TokenManager {
 			// released it in a `finally`; the shared pool does that itself.
 			const rows = await db
 				.select(USER_SELECTION)
-				.from(schema.inUser)
-				.where(eq(schema.inUser.email, email))
+				.from(schema.svUser)
+				.where(eq(schema.svUser.email, email))
 				.limit(1);
 
 			if (rows.length === 0) {
@@ -103,8 +103,8 @@ export class TokenManager {
 		try {
 			const rows = await db
 				.select(USER_SELECTION)
-				.from(schema.inUser)
-				.where(eq(schema.inUser.id, userId));
+				.from(schema.svUser)
+				.where(eq(schema.svUser.id, userId));
 
 			if (rows.length === 0) {
 				return ERROR_RESPONSE('User not found', AUTH_ERRORS.USER_NOT_FOUND);

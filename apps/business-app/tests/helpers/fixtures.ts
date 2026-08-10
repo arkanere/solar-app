@@ -27,7 +27,7 @@ export async function resetDatabase(): Promise<void> {
 			branches, business_profiles, business_accounts,
 			legal_acceptances, legal_policies,
 			projects, project_management, pincode_mapping,
-			rate_limits, in_user, geo_locations
+			rate_limits, sv_user, geo_locations
 		RESTART IDENTITY CASCADE
 	`);
 }

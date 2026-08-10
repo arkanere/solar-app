@@ -127,7 +127,7 @@ export const leaddataClaimrequests = pgTable("leaddata_claimrequests", {
 	unique("unique_lead_business_claim").on(table.leadId, table.businessId),
 ]);
 
-export const inUser = pgTable("in_user", {
+export const svUser = pgTable("sv_user", {
 	id: serial().primaryKey().notNull(),
 	email: varchar({ length: 255 }).notNull(),
 	name: varchar({ length: 255 }),
@@ -212,7 +212,7 @@ export const callsafehandles = pgTable("callsafehandles", {
 		}).onDelete("cascade"),
 ]);
 
-export const inProposals = pgTable("in_proposals", {
+export const svProposals = pgTable("sv_proposals", {
 	id: serial().primaryKey().notNull(),
 	customerName: varchar("customer_name", { length: 255 }).notNull(),
 	phoneNumber: varchar("phone_number", { length: 20 }),
@@ -410,28 +410,6 @@ export const authors = pgTable("authors", {
 	unique("authors_slug_key").on(table.slug),
 ]);
 
-export const inBlogPosts = pgTable("in_blog_posts", {
-	id: serial().primaryKey().notNull(),
-	slug: varchar({ length: 255 }).notNull(),
-	title: varchar({ length: 300 }).notNull(),
-	metaTitle: varchar("meta_title", { length: 160 }),
-	metaDescription: varchar("meta_description", { length: 320 }),
-	content: text().notNull(),
-	authorSlug: varchar("author_slug", { length: 100 }),
-	parentClusterSlug: varchar("parent_cluster_slug", { length: 255 }),
-	tags: jsonb(),
-	publishedAt: timestamp("published_at", { withTimezone: true, mode: 'string' }),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
-	status: varchar({ length: 20 }).default('draft'),
-}, (table) => [
-	foreignKey({
-			columns: [table.authorSlug],
-			foreignColumns: [authors.slug],
-			name: "in_blog_posts_author_slug_fkey"
-		}),
-	unique("in_blog_posts_slug_key").on(table.slug),
-]);
-
 export const installerInvitationEmailCampaignLog = pgTable("installer_invitation_email_campaign_log", {
 	id: serial().primaryKey().notNull(),
 	dbTable: varchar("db_table", { length: 100 }).notNull(),
@@ -470,7 +448,7 @@ export const callsafeEmailCampaignLog = pgTable("callsafe_email_campaign_log", {
 	sentAt: timestamp("sent_at", { mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
 });
 
-export const inUserFeedback = pgTable("in_user_feedback", {
+export const svUserFeedback = pgTable("sv_user_feedback", {
 	id: serial().primaryKey().notNull(),
 	userId: integer("user_id").notNull(),
 	gotCallback: boolean("got_callback").notNull(),
@@ -482,7 +460,7 @@ export const inUserFeedback = pgTable("in_user_feedback", {
 }, (table) => [
 	foreignKey({
 			columns: [table.userId],
-			foreignColumns: [inUser.id],
+			foreignColumns: [svUser.id],
 			name: "in_user_feedback_user_id_fkey"
 		}),
 	unique("in_user_feedback_user_id_key").on(table.userId),

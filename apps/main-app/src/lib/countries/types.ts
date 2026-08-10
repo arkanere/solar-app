@@ -49,7 +49,7 @@ export interface CountryConfig {
 		projects: boolean;
 		chatbot: boolean;
 		pincodeLookup: boolean; // postal-code -> level2 API (pincode_mapping is IN-only)
-		userAccounts: boolean; // customer dashboard + magic link (in_user is IN-only)
+		userAccounts: boolean; // customer dashboard + magic link (sv_user is IN-only)
 	};
 	installerNoun: string; // noun used in SEO copy, e.g. 'solar installer'
 }

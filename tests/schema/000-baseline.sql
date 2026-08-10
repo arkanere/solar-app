@@ -239,64 +239,6 @@ CREATE TABLE "idea_pot" (
 	"category" varchar(255) DEFAULT NULL
 );
 
-CREATE TABLE "in_blog_posts" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"slug" varchar(255) NOT NULL,
-	"title" varchar(300) NOT NULL,
-	"meta_title" varchar(160),
-	"meta_description" varchar(320),
-	"content" text NOT NULL,
-	"author_slug" varchar(100),
-	"parent_cluster_slug" varchar(255),
-	"tags" jsonb,
-	"published_at" timestamp with time zone,
-	"updated_at" timestamp with time zone DEFAULT now(),
-	"status" varchar(20) DEFAULT 'draft',
-	CONSTRAINT "in_blog_posts_slug_key" UNIQUE("slug")
-);
-
-CREATE TABLE "in_proposals" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"customer_name" varchar(255) NOT NULL,
-	"phone_number" varchar(20),
-	"address" text,
-	"email" varchar(255),
-	"system_capacity_kw" numeric(10, 2) NOT NULL,
-	"panels_brand_model" varchar(255),
-	"number_of_panels" integer,
-	"inverter_brand_model" varchar(255),
-	"notes" text,
-	"created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
-	"updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,
-	"lead_id" integer,
-	"business_slug" varchar(255) NOT NULL
-);
-
-CREATE TABLE "in_user" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"email" varchar(255) NOT NULL,
-	"name" varchar(255),
-	"created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
-	"magic_link_token" varchar(255),
-	"last_login" timestamp,
-	"feedback_email_sent_at" timestamp,
-	"magic_link_token_expires_at" timestamp with time zone,
-	CONSTRAINT "users_email_key" UNIQUE("email")
-);
-
-CREATE TABLE "in_user_feedback" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"user_id" integer NOT NULL,
-	"got_callback" boolean NOT NULL,
-	"got_quotation" boolean NOT NULL,
-	"recommendation_rating" smallint NOT NULL,
-	"suggestions" text,
-	"created_at" timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	"updated_at" timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	CONSTRAINT "in_user_feedback_user_id_key" UNIQUE("user_id"),
-	CONSTRAINT "in_user_feedback_recommendation_rating_check" CHECK ((recommendation_rating >= 1) AND (recommendation_rating <= 5))
-);
-
 CREATE TABLE "installer_invitation_email_campaign_log" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"db_table" varchar(100) NOT NULL,
@@ -574,6 +516,48 @@ CREATE TABLE "state_subsidies" (
 	CONSTRAINT "state_subsidies_state_slug_key" UNIQUE("state_slug")
 );
 
+CREATE TABLE "sv_proposals" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"customer_name" varchar(255) NOT NULL,
+	"phone_number" varchar(20),
+	"address" text,
+	"email" varchar(255),
+	"system_capacity_kw" numeric(10, 2) NOT NULL,
+	"panels_brand_model" varchar(255),
+	"number_of_panels" integer,
+	"inverter_brand_model" varchar(255),
+	"notes" text,
+	"created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
+	"updated_at" timestamp DEFAULT CURRENT_TIMESTAMP,
+	"lead_id" integer,
+	"business_slug" varchar(255) NOT NULL
+);
+
+CREATE TABLE "sv_user" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"email" varchar(255) NOT NULL,
+	"name" varchar(255),
+	"created_at" timestamp DEFAULT CURRENT_TIMESTAMP,
+	"magic_link_token" varchar(255),
+	"last_login" timestamp,
+	"feedback_email_sent_at" timestamp,
+	"magic_link_token_expires_at" timestamp with time zone,
+	CONSTRAINT "users_email_key" UNIQUE("email")
+);
+
+CREATE TABLE "sv_user_feedback" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"user_id" integer NOT NULL,
+	"got_callback" boolean NOT NULL,
+	"got_quotation" boolean NOT NULL,
+	"recommendation_rating" smallint NOT NULL,
+	"suggestions" text,
+	"created_at" timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	"updated_at" timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	CONSTRAINT "in_user_feedback_user_id_key" UNIQUE("user_id"),
+	CONSTRAINT "in_user_feedback_recommendation_rating_check" CHECK ((recommendation_rating >= 1) AND (recommendation_rating <= 5))
+);
+
 CREATE TABLE "unsubscribe" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"email" varchar(255) NOT NULL,
@@ -593,15 +577,14 @@ ALTER TABLE "business_profiles" ADD CONSTRAINT "business_profiles_country_code_f
 ALTER TABLE "callsafehandles" ADD CONSTRAINT "callsafelinks_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."callsafeusers"("id") ON DELETE cascade ON UPDATE no action;
 ALTER TABLE "discoms" ADD CONSTRAINT "discoms_state_slug_fkey" FOREIGN KEY ("state_slug") REFERENCES "public"."state_subsidies"("state_slug") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "geo_locations" ADD CONSTRAINT "geo_locations_country_code_fkey" FOREIGN KEY ("country_code") REFERENCES "public"."countries"("code") ON DELETE no action ON UPDATE no action;
-ALTER TABLE "in_blog_posts" ADD CONSTRAINT "in_blog_posts_author_slug_fkey" FOREIGN KEY ("author_slug") REFERENCES "public"."authors"("slug") ON DELETE no action ON UPDATE no action;
-ALTER TABLE "in_proposals" ADD CONSTRAINT "proposals_lead_id_fkey" FOREIGN KEY ("lead_id") REFERENCES "public"."leaddata"("id") ON DELETE cascade ON UPDATE no action;
-ALTER TABLE "in_user_feedback" ADD CONSTRAINT "in_user_feedback_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."in_user"("id") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "leaddata" ADD CONSTRAINT "leaddata_country_code_fkey" FOREIGN KEY ("country_code") REFERENCES "public"."countries"("code") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "legal_acceptances" ADD CONSTRAINT "legal_acceptances_policy_id_fkey" FOREIGN KEY ("policy_id") REFERENCES "public"."legal_policies"("id") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "legal_acceptances" ADD CONSTRAINT "legal_acceptances_country_code_fkey" FOREIGN KEY ("country_code") REFERENCES "public"."countries"("code") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "legal_acceptances" ADD CONSTRAINT "legal_acceptances_business_fkey" FOREIGN KEY ("country_code","business_id") REFERENCES "public"."business_accounts"("country_code","source_id") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "project_management" ADD CONSTRAINT "projectmanagement_lead_id_fkey" FOREIGN KEY ("lead_id") REFERENCES "public"."leaddata"("id") ON DELETE cascade ON UPDATE no action;
 ALTER TABLE "solar_products" ADD CONSTRAINT "solar_products_brand_slug_fkey" FOREIGN KEY ("brand_slug") REFERENCES "public"."solar_brands"("slug") ON DELETE no action ON UPDATE no action;
+ALTER TABLE "sv_proposals" ADD CONSTRAINT "proposals_lead_id_fkey" FOREIGN KEY ("lead_id") REFERENCES "public"."leaddata"("id") ON DELETE cascade ON UPDATE no action;
+ALTER TABLE "sv_user_feedback" ADD CONSTRAINT "in_user_feedback_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."sv_user"("id") ON DELETE no action ON UPDATE no action;
 CREATE INDEX "business_accounts_login_email_idx" ON "business_accounts" USING btree ("country_code","login_email");
 CREATE INDEX "business_accounts_magic_token_idx" ON "business_accounts" USING btree ("country_code","magic_link_token");
 CREATE INDEX "business_profiles_country_slug_idx" ON "business_profiles" USING btree ("country_code","slug");

@@ -27,13 +27,13 @@ export const POST: RequestHandler = async ({ request }) => {
 		const expiresAt = new Date(Date.now() + TOKEN_TTL_MS);
 
 		const existingUsers = await db
-			.select({ id: schema.inUser.id })
-			.from(schema.inUser)
-			.where(eq(schema.inUser.email, email));
+			.select({ id: schema.svUser.id })
+			.from(schema.svUser)
+			.where(eq(schema.svUser.email, email));
 
 		if (existingUsers.length > 0) {
 			await db
-				.update(schema.inUser)
+				.update(schema.svUser)
 				.set({
 					magicLinkToken: tokenHash,
 					magicLinkTokenExpiresAt: expiresAt.toISOString(),
@@ -42,9 +42,9 @@ export const POST: RequestHandler = async ({ request }) => {
 					// sends none. Omitting the key from the update does the same.
 					...(name ? { name } : {})
 				})
-				.where(eq(schema.inUser.id, existingUsers[0].id));
+				.where(eq(schema.svUser.id, existingUsers[0].id));
 		} else {
-			await db.insert(schema.inUser).values({
+			await db.insert(schema.svUser).values({
 				email,
 				name: name || null,
 				magicLinkToken: tokenHash,

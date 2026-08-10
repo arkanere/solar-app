@@ -27,13 +27,13 @@ export const load: PageServerLoad = async ({ cookies }) => {
 	try {
 		const rows = await db
 			.select({
-				gotCallback: schema.inUserFeedback.gotCallback,
-				gotQuotation: schema.inUserFeedback.gotQuotation,
-				recommendationRating: schema.inUserFeedback.recommendationRating,
-				suggestions: schema.inUserFeedback.suggestions
+				gotCallback: schema.svUserFeedback.gotCallback,
+				gotQuotation: schema.svUserFeedback.gotQuotation,
+				recommendationRating: schema.svUserFeedback.recommendationRating,
+				suggestions: schema.svUserFeedback.suggestions
 			})
-			.from(schema.inUserFeedback)
-			.where(eq(schema.inUserFeedback.userId, sessionResult.user.id));
+			.from(schema.svUserFeedback)
+			.where(eq(schema.svUserFeedback.userId, sessionResult.user.id));
 		if (rows.length > 0) {
 			feedback = rows[0];
 		}
@@ -79,10 +79,10 @@ export const actions: Actions = {
 
 		try {
 			await db
-				.insert(schema.inUserFeedback)
+				.insert(schema.svUserFeedback)
 				.values(values)
 				.onConflictDoUpdate({
-					target: schema.inUserFeedback.userId,
+					target: schema.svUserFeedback.userId,
 					set: {
 						gotCallback: values.gotCallback,
 						gotQuotation: values.gotQuotation,

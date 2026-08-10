@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db';
 import { PROPOSAL_RETURNING } from '$lib/server/proposals';
-import { inProposals } from '@solar/db/schema';
+import { svProposals } from '@solar/db/schema';
 import { and, eq, sql } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { parseBody, saveProposalSchema } from '@solar/validation';
@@ -54,7 +54,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		// Update existing proposal
 		if (id) {
 			[proposal] = await db
-				.update(inProposals)
+				.update(svProposals)
 				.set({
 					customerName: customer_name,
 					phoneNumber: phone_number,
@@ -67,7 +67,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 					notes,
 					updatedAt: sql`NOW()`
 				})
-				.where(and(eq(inProposals.id, id), eq(inProposals.businessSlug, business_slug)))
+				.where(and(eq(svProposals.id, id), eq(svProposals.businessSlug, business_slug)))
 				.returning(PROPOSAL_RETURNING);
 
 			if (!proposal) {
@@ -77,7 +77,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		// Create new proposal
 		else {
 			[proposal] = await db
-				.insert(inProposals)
+				.insert(svProposals)
 				.values({
 					businessSlug: business_slug,
 					leadId: lead_id,

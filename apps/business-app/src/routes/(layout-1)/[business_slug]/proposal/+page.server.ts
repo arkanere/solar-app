@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { businessProfiles, inProposals } from '@solar/db/schema';
+import { businessProfiles, svProposals } from '@solar/db/schema';
 import { and, desc, eq } from 'drizzle-orm';
 import { error, isHttpError } from '@sveltejs/kit';
 
@@ -39,7 +39,7 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 	// literal, and not defaulted to 'in' when absent. Hoisted above the try
 	// because the catch below turns everything it sees into a 500.
 	//
-	// The proposals themselves stay IN-shaped: `in_proposals` has no US
+	// The proposals themselves stay IN-shaped: `sv_proposals` has no US
 	// counterpart, so a US business gets an empty list, which is the correct
 	// answer rather than a gap.
 	const { business_session, country } = await parent();
@@ -66,22 +66,22 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		// Get proposals filtered by business slug
 		const proposalRows = await db
 			.select({
-				id: inProposals.id,
-				customer_name: inProposals.customerName,
-				phone_number: inProposals.phoneNumber,
-				address: inProposals.address,
-				email: inProposals.email,
-				system_capacity_kw: inProposals.systemCapacityKw,
-				panels_brand_model: inProposals.panelsBrandModel,
-				number_of_panels: inProposals.numberOfPanels,
-				inverter_brand_model: inProposals.inverterBrandModel,
-				notes: inProposals.notes,
-				created_at: inProposals.createdAt,
-				updated_at: inProposals.updatedAt
+				id: svProposals.id,
+				customer_name: svProposals.customerName,
+				phone_number: svProposals.phoneNumber,
+				address: svProposals.address,
+				email: svProposals.email,
+				system_capacity_kw: svProposals.systemCapacityKw,
+				panels_brand_model: svProposals.panelsBrandModel,
+				number_of_panels: svProposals.numberOfPanels,
+				inverter_brand_model: svProposals.inverterBrandModel,
+				notes: svProposals.notes,
+				created_at: svProposals.createdAt,
+				updated_at: svProposals.updatedAt
 			})
-			.from(inProposals)
-			.where(eq(inProposals.businessSlug, businessSlug))
-			.orderBy(desc(inProposals.createdAt));
+			.from(svProposals)
+			.where(eq(svProposals.businessSlug, businessSlug))
+			.orderBy(desc(svProposals.createdAt));
 
 		const proposals = proposalRows as unknown as Proposal[];
 

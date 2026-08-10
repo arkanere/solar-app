@@ -12,7 +12,7 @@
 // Renaming the consumer sites instead is what would let this module go.
 //
 // Both LEAD selections key on `leaddata.id`, which is the platform's lead id:
-// project_management.lead_id and in_proposals.lead_id are foreign keys to it.
+// project_management.lead_id and sv_proposals.lead_id are foreign keys to it.
 // Before 066 this read `leads.source_id`, which held the same value.
 
 // businesses -> business_profiles legacy names.

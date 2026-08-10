@@ -90,7 +90,7 @@ export interface ClaimRequestPayload {
 // ===== PROPOSAL TYPES =====
 
 /**
- * Proposal entity from in_proposals table
+ * Proposal entity from sv_proposals table
  */
 export interface Proposal {
 	id: number;

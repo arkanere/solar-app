@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '$lib/server/db';
-import { businessAccounts, inUser } from '@solar/db/schema';
+import { businessAccounts, svUser } from '@solar/db/schema';
 import { and, eq, sql } from 'drizzle-orm';
 import type { AuthCountry } from '$lib/auth/business/countryTables';
 
@@ -47,17 +47,17 @@ export async function mintBusinessTokenById(
 	return raw;
 }
 
-// Upserts the user by email and returns the raw token (in_user has no slug).
+// Upserts the user by email and returns the raw token (sv_user has no slug).
 export async function mintUserToken(
 	email: string,
 	name: string | null = null
 ): Promise<string> {
 	const { raw, hash, expiresAt } = newMagicToken();
 
-	// in_user has a unique index on email, so this is a real upsert. The old
+	// sv_user has a unique index on email, so this is a real upsert. The old
 	// UPDATE-then-INSERT pair did the same thing with a race between the two.
 	await db
-		.insert(inUser)
+		.insert(svUser)
 		.values({
 			email,
 			name,
@@ -65,12 +65,12 @@ export async function mintUserToken(
 			magicLinkTokenExpiresAt: expiresAt.toISOString()
 		})
 		.onConflictDoUpdate({
-			target: inUser.email,
+			target: svUser.email,
 			set: {
 				magicLinkToken: hash,
 				magicLinkTokenExpiresAt: expiresAt.toISOString(),
 				// COALESCE: a null name must not wipe an existing one.
-				name: sql`COALESCE(${name}::varchar, ${inUser.name})`
+				name: sql`COALESCE(${name}::varchar, ${svUser.name})`
 			}
 		});
 

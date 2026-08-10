@@ -505,7 +505,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				// redirect to this canonical form; see main-app hooks.server.ts.)
 				const profileLink = `https://solarvipani.com/${country}/installer/${business.slug}`;
 
-				// Mint a fresh user token (stored hashed, upserts the in_user row);
+				// Mint a fresh user token (stored hashed, upserts the sv_user row);
 				// email the raw token.
 				const magicLinkToken = await mintUserToken(customer.email, customer.name || null);
 				const customerAccountLink = `https://user.solarvipani.com/signin-link/${magicLinkToken}`;

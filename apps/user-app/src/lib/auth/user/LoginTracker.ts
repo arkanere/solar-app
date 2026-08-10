@@ -6,7 +6,7 @@ import { AUTH_CONFIG } from './AuthTypes';
 // `last_login` is a `mode: 'string'` timestamp in the introspected schema, but
 // the driver returns a Date and `LastLoginUpdate.lastLogin` is `Date | null`.
 // Restate the existing contract; renders as the bare column.
-const LAST_LOGIN = sql<Date | null>`${schema.inUser.lastLogin}`;
+const LAST_LOGIN = sql<Date | null>`${schema.svUser.lastLogin}`;
 
 export interface LastLoginUpdate {
 	updated: boolean;
@@ -33,14 +33,14 @@ export class LoginTracker {
 			// of a caller-supplied number — the one unparameterised value in this
 			// app. make_interval() takes it as a real bind parameter instead.
 			const rows = await db
-				.update(schema.inUser)
+				.update(schema.svUser)
 				.set({ lastLogin: sql`NOW()` })
 				.where(
 					and(
-						eq(schema.inUser.id, userId),
+						eq(schema.svUser.id, userId),
 						or(
-							isNull(schema.inUser.lastLogin),
-							lt(schema.inUser.lastLogin, sql`NOW() - make_interval(hours => ${throttleHours})`)
+							isNull(schema.svUser.lastLogin),
+							lt(schema.svUser.lastLogin, sql`NOW() - make_interval(hours => ${throttleHours})`)
 						)
 					)
 				)
@@ -56,8 +56,8 @@ export class LoginTracker {
 				// Get current last_login for reference
 				const current = await db
 					.select({ last_login: LAST_LOGIN })
-					.from(schema.inUser)
-					.where(eq(schema.inUser.id, userId));
+					.from(schema.svUser)
+					.where(eq(schema.svUser.id, userId));
 
 				return {
 					updated: false,
@@ -82,8 +82,8 @@ export class LoginTracker {
 		try {
 			const rows = await db
 				.select({ last_login: LAST_LOGIN })
-				.from(schema.inUser)
-				.where(eq(schema.inUser.id, userId));
+				.from(schema.svUser)
+				.where(eq(schema.svUser.id, userId));
 			return rows[0]?.last_login || null;
 		} catch (error) {
 			console.error('❌ Error getting last_login:', error);

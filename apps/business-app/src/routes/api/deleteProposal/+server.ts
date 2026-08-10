@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { inProposals } from '@solar/db/schema';
+import { svProposals } from '@solar/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
@@ -43,9 +43,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		// Check if proposal exists for this business
 		const existing = await db
-			.select({ id: inProposals.id, customer_name: inProposals.customerName })
-			.from(inProposals)
-			.where(and(eq(inProposals.id, proposalId), eq(inProposals.businessSlug, businessSlug)));
+			.select({ id: svProposals.id, customer_name: svProposals.customerName })
+			.from(svProposals)
+			.where(and(eq(svProposals.id, proposalId), eq(svProposals.businessSlug, businessSlug)));
 
 		if (existing.length === 0) {
 			return json(
@@ -56,9 +56,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		// Delete the proposal
 		const [deletedProposal] = await db
-			.delete(inProposals)
-			.where(and(eq(inProposals.id, proposalId), eq(inProposals.businessSlug, businessSlug)))
-			.returning({ id: inProposals.id, customer_name: inProposals.customerName });
+			.delete(svProposals)
+			.where(and(eq(svProposals.id, proposalId), eq(svProposals.businessSlug, businessSlug)))
+			.returning({ id: svProposals.id, customer_name: svProposals.customerName });
 
 		return json({
 			success: true,
@@ -69,7 +69,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		console.error('❌ Error deleting proposal:', error);
 
 		// Handle specific database errors
-		if (error instanceof Error && error.message.includes('relation "in_proposals" does not exist')) {
+		if (error instanceof Error && error.message.includes('relation "sv_proposals" does not exist')) {
 			return json(
 				{ success: false, error: 'Proposals table not found. Please contact administrator.' },
 				{ status: 500 }
