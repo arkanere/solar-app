@@ -7,15 +7,10 @@ import { mintBusinessTokenById, mintUserToken } from '$lib/server/magicLink';
 import { checkLeadDataPolicy } from '$lib/compliance';
 import type { ClaimRequestPayload } from '$lib/types/lead';
 import { IN_LEAD_RETURNING } from '$lib/server/leads';
-import {
-	syncLeadToUnified,
-	syncBusinessToUnified,
-	syncAccountToUnified,
-	syncInSplitTables
-} from '$lib/server/unifiedSync';
+import { syncLeadToUnified, syncBusinessToUnified } from '$lib/server/unifiedSync';
 import {
 	branches,
-	businesses1,
+	businessAccounts,
 	businessProfiles,
 	leaddata,
 	leaddataClaimrequests,
@@ -254,33 +249,44 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 							tx.rollback();
 						}
 
-						// Confirmed — create a branch in the lead's district
+						// Confirmed — create a branch in the lead's district. Since 062
+						// the parent is read from both halves of the split, and the
+						// branch is written to both: profile mints the id, account
+						// carries the credentials it shares with the parent. This
+						// read was the last direct businesses_1 read anywhere.
 						const mainResult = await tx
 							.select({
-								slug: businesses1.slug,
-								businessname: businesses1.businessname,
-								phonenumber: businesses1.phonenumber,
-								email: businesses1.email,
-								loginEmail: businesses1.loginEmail,
-								loginPassword: businesses1.loginPassword,
-								address: businesses1.address,
-								website: businesses1.website,
-								rscore: businesses1.rscore,
-								isvisible: businesses1.isvisible,
-								pluscode: businesses1.pluscode,
-								gstn: businesses1.gstn,
-								tag: businesses1.tag,
-								services: businesses1.services,
-								description: businesses1.description
+								slug: businessProfiles.slug,
+								businessname: businessProfiles.businessname,
+								phonenumber: businessProfiles.phonenumber,
+								email: businessProfiles.email,
+								loginEmail: businessAccounts.loginEmail,
+								loginPassword: businessAccounts.loginPassword,
+								address: businessProfiles.address,
+								website: businessProfiles.website,
+								rscore: businessProfiles.rscore,
+								isvisible: businessProfiles.isvisible,
+								pluscode: businessProfiles.pluscode,
+								gstn: businessProfiles.gstn,
+								tag: businessProfiles.tag,
+								services: businessProfiles.services,
+								description: businessProfiles.description
 							})
-							.from(businesses1)
-							.where(eq(businesses1.id, mainBusinessId));
+							.from(businessProfiles)
+							.innerJoin(
+								businessAccounts,
+								and(
+									eq(businessAccounts.countryCode, businessProfiles.countryCode),
+									eq(businessAccounts.sourceId, businessProfiles.businessId)
+								)
+							)
+							.where(eq(businessProfiles.businessId, mainBusinessId));
 						const main = mainResult[0];
 						const branchSlug = `${main.slug}-branch-${Math.random().toString(16).slice(2, 8)}`;
 
 						// `city` took the same parameter as `district` in the raw INSERT ($11).
 						const newBranchResult = await tx
-							.insert(businesses1)
+							.insert(businessProfiles)
 							.values({
 								countryCode: country,
 								rscore: main.rscore,
@@ -288,8 +294,6 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 								pluscode: main.pluscode,
 								phonenumber: main.phonenumber,
 								email: main.email,
-								loginEmail: main.loginEmail,
-								loginPassword: main.loginPassword,
 								website: main.website,
 								gstn: main.gstn,
 								state: leadState,
@@ -302,8 +306,16 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 								services: main.services,
 								description: main.description ?? 'Solar panel installer'
 							})
-							.returning({ id: businesses1.id });
-						const newBranchId = newBranchResult[0].id;
+							.returning({ businessId: businessProfiles.businessId });
+						const newBranchId = newBranchResult[0].businessId;
+
+						await tx.insert(businessAccounts).values({
+							countryCode: country,
+							sourceId: newBranchId,
+							loginEmail: main.loginEmail,
+							loginPassword: main.loginPassword,
+							isvisible: main.isvisible
+						});
 
 						await tx
 							.insert(branches)
@@ -388,9 +400,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 			// Project the rows written above into the unified tables (covers the
 			// auto-created branch, the claim-count bump and the claimed copy).
-				await syncInSplitTables(tx, effectiveBusinessId);
+			// business_accounts is a store since 062, so only `businesses` and
+			// `leads` still need driving.
 				await syncBusinessToUnified(tx, country, effectiveBusinessId);
-				await syncAccountToUnified(tx, country, effectiveBusinessId);
 				await syncLeadToUnified(tx, country, lead_id);
 				if (newLead) {
 					await syncLeadToUnified(tx, country, newLead.id);
@@ -415,18 +427,33 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			try {
 				const bizResult = await db
 					.select({
-						businessname: businesses1.businessname,
-						loginEmail: businesses1.loginEmail,
-						slug: businesses1.slug
+						businessname: businessProfiles.businessname,
+						loginEmail: businessAccounts.loginEmail,
+						slug: businessProfiles.slug
 					})
-					.from(businesses1)
-					.where(eq(businesses1.id, allotmentBusinessId))
+					.from(businessProfiles)
+					.innerJoin(
+						businessAccounts,
+						and(
+							eq(businessAccounts.countryCode, businessProfiles.countryCode),
+							eq(businessAccounts.sourceId, businessProfiles.businessId)
+						)
+					)
+					.where(eq(businessProfiles.businessId, allotmentBusinessId))
 					.limit(1);
 				if (bizResult.length === 0) {
 					console.error('❌ Allotment email skipped: business not found', allotmentBusinessId);
 					return;
 				}
 				const { businessname, loginEmail, slug } = bizResult[0];
+				// business_accounts.login_email is nullable where businesses_1's was
+				// NOT NULL, so this address is no longer guaranteed. There is nothing
+				// to send to without one — treat it the same as a missing business
+				// rather than handing sendEmail a null recipient.
+				if (!loginEmail) {
+					console.error('❌ Allotment email skipped: no login email', allotmentBusinessId);
+					return;
+				}
 				// Mint a fresh token (stored hashed); email the raw token.
 				const rawToken = await mintBusinessTokenById(country, allotmentBusinessId);
 				const magicLink = `https://business.solarvipani.com/${slug}/signin-link/${rawToken}`;

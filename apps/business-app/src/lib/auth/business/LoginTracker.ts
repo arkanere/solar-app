@@ -1,9 +1,8 @@
 import { db } from '$lib/server/db';
-import { businessAccounts, businesses1 } from '@solar/db/schema';
+import { businessAccounts } from '@solar/db/schema';
 import { and, eq, isNull, lt, or, sql } from 'drizzle-orm';
 import { AUTH_CONFIG, type LoginTrackerResult } from './AuthTypes';
 import type { AuthCountry } from './countryTables';
-import { syncAccountToUnified, syncInSplitTables } from '$lib/server/unifiedSync';
 
 
 export class LoginTracker {
@@ -17,28 +16,26 @@ export class LoginTracker {
 
 		try {
 			// Update only if last_login is null or older than throttle threshold.
-			// Writes still target the legacy table (phase-2 transition); the
-			// explicit sync projects the row into business_accounts. Since 054 that
-			// is businesses_1 for every country, scoped by country_code.
+			// Since 062 this writes business_accounts directly — it is the store for
+			// the auth half, not a projection of businesses_1, so there is no sync
+			// to follow. The read below already came from here.
 			// Bind the interval as a parameter via make_interval (no string interpolation).
 			const rows = await db
-				.update(businesses1)
+				.update(businessAccounts)
 				.set({ lastLogin: sql`NOW()` })
 				.where(
 					and(
-						eq(businesses1.id, businessId),
-						eq(businesses1.countryCode, this.country),
+						eq(businessAccounts.sourceId, businessId),
+						eq(businessAccounts.countryCode, this.country),
 						or(
-							isNull(businesses1.lastLogin),
-							lt(businesses1.lastLogin, sql`NOW() - make_interval(hours => ${throttleHours})`)
+							isNull(businessAccounts.lastLogin),
+							lt(businessAccounts.lastLogin, sql`NOW() - make_interval(hours => ${throttleHours})`)
 						)
 					)
 				)
-				.returning({ lastLogin: businesses1.lastLogin });
+				.returning({ lastLogin: businessAccounts.lastLogin });
 
 			if (rows.length > 0) {
-				await syncInSplitTables(db, businessId);
-				await syncAccountToUnified(db, this.country, businessId);
 				return {
 					updated: true,
 					lastLogin: rows[0].lastLogin ? new Date(rows[0].lastLogin) : null

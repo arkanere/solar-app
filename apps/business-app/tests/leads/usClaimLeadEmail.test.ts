@@ -152,12 +152,13 @@ describe('POST /api/claimLead — a US business — emails', () => {
 			{ lead_id: leadId, business_id: businessId }
 		);
 
-		// The token is stored hashed on the write-side table and projected into
-		// business_accounts. Since 054 that table is businesses_1 for both
-		// countries, so this asserts on id AND country_code — matching on the id
-		// alone would still pass if the row had been written as an IN row.
+		// The token is stored hashed in business_accounts — written directly since
+		// migration 062, rather than staged in businesses_1 and projected. That
+		// table holds both countries, so this asserts on source_id AND
+		// country_code: matching on the id alone would still pass if the row had
+		// been written as an IN row.
 		const { rows } = await pool.query<{ magic_link_token: string | null }>(
-			"SELECT magic_link_token FROM businesses_1 WHERE id = $1 AND country_code = 'us'",
+			"SELECT magic_link_token FROM business_accounts WHERE source_id = $1 AND country_code = 'us'",
 			[businessId]
 		);
 		expect(rows).toHaveLength(1);

@@ -6,16 +6,14 @@
 // issued link (last-write-wins, by design), and `resetPassword` consumes the
 // token by clearing it — which is what makes a second use fail.
 //
-// Writes go to the legacy table, the same as mintBusinessTokenById: that is
-// still the write side, and the sv_sync_* projection carries the change into
-// business_accounts, which the auth layer reads. Since 054 that is one table
-// for every country, scoped by country_code rather than by table choice.
+// Writes go to business_accounts, the same as mintBusinessTokenById: since 062
+// that table is the store for the auth half rather than a projection of
+// businesses_1, so the mint and the auth layer's read are the same row.
 
 import { db } from '$lib/server/db';
-import { businessAccounts, businesses, businesses1 } from '@solar/db/schema';
+import { businessAccounts, businesses } from '@solar/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { TokenSecurity } from '$lib/auth/business';
-import { syncAccountToUnified, syncInSplitTables } from '$lib/server/unifiedSync';
 import type { AuthCountry } from '$lib/auth/business/countryTables';
 
 /** How long a reset link stays valid. */
@@ -100,25 +98,21 @@ export async function mintPasswordResetToken(
 	const hash = TokenSecurity.hashToken(raw);
 	const expiresAt = TokenSecurity.getTokenExpiration(RESET_TTL_HOURS);
 
-	// Since 054 both countries live in businesses_1, discriminated by
-	// country_code. The filter is what keeps a US id from matching an IN row —
-	// it replaces the table choice that used to do that job.
+	// Both countries live in business_accounts, discriminated by country_code.
+	// The filter is what keeps a US id from matching an IN row — it replaces the
+	// table choice that used to do that job.
 	const updated = await db
-		.update(businesses1)
+		.update(businessAccounts)
 		.set({
 			resetToken: hash,
 			resetTokenExpires: toNaiveLocal(expiresAt)
 		})
-		.where(and(eq(businesses1.id, businessId), eq(businesses1.countryCode, country)))
-		.returning({ id: businesses1.id });
+		.where(
+			and(eq(businessAccounts.sourceId, businessId), eq(businessAccounts.countryCode, country))
+		)
+		.returning({ sourceId: businessAccounts.sourceId });
 
 	if (updated.length === 0) return null;
-
-	// Both countries now have business_profiles rows, so the split sync is no
-	// longer IN-only. sv_sync_account reads businesses_1 directly, but keeping
-	// the profile row fresh matters for sv_sync_business.
-	await syncInSplitTables(db, businessId);
-	await syncAccountToUnified(db, country, businessId);
 
 	return raw;
 }

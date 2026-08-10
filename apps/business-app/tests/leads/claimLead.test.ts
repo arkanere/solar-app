@@ -361,10 +361,16 @@ describe('branch auto-creation', () => {
 		expect(branchRows).toHaveLength(1);
 		const branchId = branchRows[0].branch_id;
 
-		// The branch is a real businesses_1 row in the lead's district, and it —
-		// not the main business — owns the allocated lead.
+		// The branch is a real business in the lead's district, and it — not the
+		// main business — owns the allocated lead. Since migration 062 that means
+		// a row in each half of the split: the profile carries the district and
+		// slug, the account the login it shares with its parent.
 		const { rows: bizRows } = await pool.query<{ district: string; slug: string; login_email: string }>(
-			'SELECT district, slug, login_email FROM businesses_1 WHERE id = $1',
+			`SELECT p.district, p.slug, a.login_email
+			   FROM business_profiles p
+			   JOIN business_accounts a
+			     ON a.country_code = p.country_code AND a.source_id = p.business_id
+			  WHERE p.business_id = $1`,
 			[branchId]
 		);
 		expect(bizRows[0].district).toBe('Nashik');

@@ -1,10 +1,15 @@
 // App-level dual-write half of the phase-2 cutover (migration 047): after a
-// write endpoint touches a legacy table (leaddata/us_leaddata, businesses_1/
-// us_businesses, business_profiles), it calls the matching sv_sync_*
-// SQL function to project the row into the unified table. The 043/045/046
-// triggers currently run the same functions, so the explicit call is
-// idempotent — but it keeps main-app correct on its own once those
-// triggers are dropped (phase 2.4, after admin-app migrates).
+// write endpoint touches a store table (leaddata, business_profiles), it calls
+// the matching sv_sync_* SQL function to project the row into the unified
+// table. The 043/045/046 triggers that used to run the same functions are gone
+// (051), so these explicit calls are now the only thing keeping the projections
+// fresh.
+//
+// syncAccountToUnified went with migration 062: business_accounts stopped being
+// a projection when businesses_1, its source, was archived. submitBusiness —
+// this app's only caller — writes the account row directly now.
+//
+// `businesses` and `leads` are still projections. 063 retires the first of them.
 
 import { sql } from 'drizzle-orm';
 import type { Database } from '@solar/db';
@@ -34,10 +39,3 @@ export async function syncBusinessToUnified(
 	await db.execute(sql`SELECT sv_sync_business(${country}, ${sourceId})`);
 }
 
-export async function syncAccountToUnified(
-	db: SyncExecutor,
-	country: SyncCountry,
-	sourceId: number
-): Promise<void> {
-	await db.execute(sql`SELECT sv_sync_account(${country}, ${sourceId})`);
-}

@@ -100,13 +100,20 @@ describe('PasswordManager.validatePassword', () => {
 		expect(result.success).toBe(false);
 	});
 
-	it('reads the hash from business_accounts, not from businesses_1', async () => {
+	it('reads the hash from business_accounts, not from the archived copy', async () => {
 		const id = await createBusinessWithPassword('acme-solar', PASSWORD);
 		const business = businessRecord({ id, slug: 'acme-solar' });
 
-		// Change the legacy copy only. business_accounts still holds the good
-		// hash, so authentication must still succeed — that is the read path.
-		await pool.query("UPDATE businesses_1 SET login_password = 'not-a-real-hash' WHERE id = $1", [id]);
+		// This used to poison businesses_1 to prove the read came from
+		// business_accounts. Migration 062 archived that table, so the case it
+		// guarded cannot arise from a stale projection any more — what is worth
+		// pinning now is that business_accounts is sufficient on its own, with no
+		// second copy of the hash anywhere for a fallback to reach.
+		const { rows } = await pool.query<{ count: string }>(
+			`SELECT count(*) AS count FROM information_schema.columns
+			  WHERE table_name = 'business_profiles' AND column_name = 'login_password'`
+		);
+		expect(rows[0].count).toBe('0');
 
 		const result = await manager.validatePassword('acme-solar@example.test', PASSWORD, business);
 		expect(result.success).toBe(true);

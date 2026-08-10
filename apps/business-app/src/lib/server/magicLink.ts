@@ -1,13 +1,9 @@
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '$lib/server/db';
-import { businesses1, inUser } from '@solar/db/schema';
+import { businessAccounts, inUser } from '@solar/db/schema';
 import { and, eq, sql } from 'drizzle-orm';
-import {
-	syncAccountToUnified,
-	syncInSplitTables,
-	type SyncCountry
-} from '$lib/server/unifiedSync';
+import { type SyncCountry } from '$lib/server/unifiedSync';
 
 // Magic-link tokens are stored hashed at rest and expire after 15 days.
 // Emitters mint a fresh token, persist its hash, and email/return the raw token.
@@ -32,15 +28,22 @@ export async function mintBusinessTokenById(
 ): Promise<string | null> {
 	const { raw, hash, expiresAt } = newMagicToken();
 
+	// Since 062 this writes business_accounts directly rather than staging the
+	// token in businesses_1 for sv_sync_account to pick up. TokenManager already
+	// verified links against this table, so the mint and the check now agree by
+	// construction instead of by a sync call.
+	//
+	// magic_link_token_expires_at is timestamptz, so it takes .toISOString()
+	// directly — unlike reset_token_expires in passwordReset.ts, which is naive.
 	const updated = await db
-		.update(businesses1)
+		.update(businessAccounts)
 		.set({ magicLinkToken: hash, magicLinkTokenExpiresAt: expiresAt.toISOString() })
-		.where(and(eq(businesses1.id, businessId), eq(businesses1.countryCode, country)))
-		.returning({ id: businesses1.id });
+		.where(
+			and(eq(businessAccounts.sourceId, businessId), eq(businessAccounts.countryCode, country))
+		)
+		.returning({ sourceId: businessAccounts.sourceId });
 
 	if (updated.length === 0) return null;
-	await syncInSplitTables(db, businessId);
-	await syncAccountToUnified(db, country, businessId);
 	return raw;
 }
 

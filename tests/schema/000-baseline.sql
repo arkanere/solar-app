@@ -50,7 +50,7 @@ CREATE TABLE "business_accounts" (
 
 CREATE TABLE "business_profiles" (
 	"id" serial PRIMARY KEY NOT NULL,
-	"business_id" integer NOT NULL,
+	"business_id" serial NOT NULL,
 	"slug" varchar(255),
 	"businessname" varchar(255),
 	"email" varchar(255),
@@ -114,8 +114,8 @@ CREATE TABLE "businesses" (
 	CONSTRAINT "businesses_country_code_source_id_key" UNIQUE("country_code","source_id")
 );
 
-CREATE TABLE "businesses_1" (
-	"id" serial PRIMARY KEY NOT NULL,
+CREATE TABLE "businesses_1_archive" (
+	"id" integer PRIMARY KEY DEFAULT nextval('businesses_1_id_seq'::regclass) NOT NULL,
 	"businessname" varchar(255) NOT NULL,
 	"address" text,
 	"pluscode" varchar(255),
@@ -714,9 +714,9 @@ CREATE INDEX "business_profiles_country_idx" ON "business_profiles" USING btree 
 CREATE INDEX "business_profiles_slug_idx" ON "business_profiles" USING btree ("slug");
 CREATE INDEX "businesses_geo_idx" ON "businesses" USING btree ("country_code","level2","isvisible");
 CREATE INDEX "businesses_slug_idx" ON "businesses" USING btree ("country_code","slug");
-CREATE INDEX "businesses_1_country_slug_idx" ON "businesses_1" USING btree ("country_code","slug");
-CREATE INDEX "idx_businesses_city" ON "businesses_1" USING btree ("city");
-CREATE INDEX "idx_businesses_slug" ON "businesses_1" USING btree ("slug");
+CREATE INDEX "businesses_1_country_slug_idx" ON "businesses_1_archive" USING btree ("country_code","slug");
+CREATE INDEX "idx_businesses_city" ON "businesses_1_archive" USING btree ("city");
+CREATE INDEX "idx_businesses_slug" ON "businesses_1_archive" USING btree ("slug");
 CREATE UNIQUE INDEX "callsafe_unsubscribe_email_idx" ON "callsafe_unsubscribe" USING btree ("email");
 CREATE INDEX "chatbotmessagesstore_session_idx" ON "chatbotmessagesstore" USING btree ("session_id","timestamp");
 CREATE INDEX "data_access_requests_status_idx" ON "data_access_requests" USING btree ("status");

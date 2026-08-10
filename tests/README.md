@@ -67,10 +67,16 @@ Three steps, all in `scripts/apply-test-migrations.mjs`:
 Two reasons, and both are worth knowing before changing any of this.
 
 **A baseline is unavoidable.** 36 of the 55 tables — including `leaddata`,
-`businesses_1`, `branches`, `business_profiles` and `leaddata_claimrequests` —
-have no `CREATE TABLE` anywhere in the repository. They predate the migrations
+`branches`, `business_profiles` and `leaddata_claimrequests` — have no
+`CREATE TABLE` anywhere in the repository. They predate the migrations
 convention. Replaying the numbered migrations against an empty database fails at
 `034-magic-link-token-expiry.sql` with `relation "businesses_1" does not exist`.
+
+**And a baseline is not sufficient by itself.** It can emit a column default
+that names a sequence it never creates, which fails inside the baseline's own
+`CREATE TABLE`. That is why `apply-test-migrations.mjs` has a
+`PRE_BASELINE_SEQUENCES` step — see the comment there, and the 062 entry in
+`next-steps.md`, for the mechanism.
 
 **Only final-state migrations can replay on top of it.** The numbered migrations
 encode _history_; the baseline is the _end state_. `039` creates

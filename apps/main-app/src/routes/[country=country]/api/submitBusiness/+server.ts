@@ -1,9 +1,9 @@
 import { db } from '$lib/server/db';
-import { businesses1, businessProfiles } from '@solar/db/schema';
-import { and, eq, sql } from 'drizzle-orm';
+import { businessAccounts, businessProfiles } from '@solar/db/schema';
+import { and, eq } from 'drizzle-orm';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { parseBody, submitBusinessSchema } from '@solar/validation';
-import { syncBusinessToUnified, syncAccountToUnified } from '$lib/server/unifiedSync';
+import { syncBusinessToUnified } from '$lib/server/unifiedSync';
 import { isCountry } from '$lib/countries';
 
 // Since migration 054 both countries write the same legacy tables, keyed by
@@ -99,19 +99,20 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 		const slug = null;
 		const notes = null;
 
-		// `businesses_1.businessfilled` DEFAULTS TO TRUE, and the IN path has
+		// `businessfilled` DEFAULTED TO TRUE on businesses_1, and the IN path has
 		// always relied on that default while the old us_businesses insert set it
 		// to false explicitly. business-listing filters on this column, so the two
 		// countries must keep their existing values rather than converge on one.
+		// business_profiles has no default, so it is passed explicitly now.
 		const businessfilled = country === 'in';
 
-		// TODO(remove after admin-app migrates; needs id-minting moved to
-		// business_profiles): businesses_1 still mints the business id and keeps
-		// the legacy table fresh for admin-app. The explicit upserts below are the
-		// forward-facing writes; the sync triggers on businesses_1 upsert the same
-		// values, so both paths are idempotent.
+		// Since 062 business_profiles mints the id itself: businesses_1_id_seq was
+		// reassigned to business_id and set as its DEFAULT, so ids stay continuous
+		// with every id ever issued and (country_code, source_id) identity holds.
+		// The businesses_1 insert that used to stand here — purely to mint that id
+		// and to stage login_email for sv_sync_account — is gone with the table.
 		const inserted = await db
-			.insert(businesses1)
+			.insert(businessProfiles)
 			.values({
 				countryCode: country,
 				rscore,
@@ -121,7 +122,6 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 				phonenumber: phoneNumber,
 				whatsapp: whatsappNumber || null,
 				email: email || null,
-				loginEmail: login_email,
 				website: website || null,
 				gstn: gstn || null,
 				state,
@@ -133,58 +133,36 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 				businessname: businessName,
 				address
 			})
-			.returning({ id: businesses1.id });
+			.returning({ businessId: businessProfiles.businessId });
 
-		const businessId = inserted[0].id;
+		const businessId = inserted[0].businessId;
 
-		// Forward-facing writes: the new tables are the source of truth for the
-		// /in side. ON CONFLICT keeps them idempotent against the businesses_1
-		// sync triggers, which upsert the same rows.
-		const profileValues = {
-			businessId,
-			countryCode: country,
-			rscore,
-			isvisible,
-			businessfilled,
-			pluscode: plusCode || null,
-			phonenumber: phoneNumber,
-			whatsapp: whatsappNumber || null,
-			email: email || null,
-			website: website || null,
-			gstn: gstn || null,
-			state,
-			district,
-			tag,
-			slug,
-			notes,
-			city,
-			businessname: businessName,
-			address
-		};
-
-		await db
-			.insert(businessProfiles)
-			.values(profileValues)
-			.onConflictDoUpdate({
-				target: businessProfiles.businessId,
-				set: { ...profileValues, updatedAt: sql`NOW()` }
-			});
-
-		// The in_business_accounts insert that used to sit here is gone with the
-		// table (060). It was the only writer anywhere, and nothing read it back:
-		// sv_sync_account projects login_email into unified business_accounts from
-		// businesses_1, which the insert above already wrote.
-
-		// Idempotent with the businesses_1/business_profiles sync triggers;
-		// keeps the unified tables fresh once those triggers drop (phase 2.4).
+		// The account half. sv_sync_account used to write this row by reading
+		// login_email back out of businesses_1; with that table archived, the only
+		// place the address can come from is here. Skipping it would create a
+		// business that cannot log in and cannot be sent a magic link — the auth
+		// layer reads business_accounts throughout (PasswordManager.ts:25).
 		//
-		// This now passes the request's country rather than the literal 'in'. The
-		// old comment here said it must NOT — correct at the time, because every
+		// No ON CONFLICT: business_id is freshly minted above, so a conflict on
+		// (country_code, source_id) would mean the sequence handed out a live id
+		// and should fail loudly rather than overwrite an existing account.
+		await db.insert(businessAccounts).values({
+			countryCode: country,
+			sourceId: businessId,
+			loginEmail: login_email,
+			isvisible
+		});
+
+		// `businesses` is still a projection (063 drops it), and it sources from
+		// business_profiles, written above. The account sync that stood beside
+		// this call is gone — business_accounts is a store now.
+		//
+		// This passes the request's country rather than the literal 'in'. The old
+		// comment here said it must NOT — correct at the time, because every
 		// INSERT on this path hit the IN-only tables and a US request returned
 		// earlier. Since 054 those same tables hold both countries and the rows
 		// written above carry country_code, so the sync must match them.
 		await syncBusinessToUnified(db, country, businessId);
-		await syncAccountToUnified(db, country, businessId);
 
 		// The confirmation body keys level2 by the country's own noun, mirroring
 		// the form: the US path sent `county` and the IN path `district`. The

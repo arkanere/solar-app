@@ -30,9 +30,10 @@
    `tests/routing/duplicateSlug.test.ts` pins all eight against a slug shared by two businesses.
 
    **`api/updateBusinessDetails` is still wrong, and is the remaining wrong-tenant path.** It updates
-   `business_profiles` *and* `businesses_1` by slug with no id filter, so one business saving its
-   profile overwrites its twin's row in both tables, then syncs an arbitrary one of the returned ids.
-   Same fix as the loads — it has the session in scope already.
+   `business_profiles` by slug with no id filter, so one business saving its profile overwrites its
+   twin's row, then syncs an arbitrary one of the returned ids. Same fix as the loads — it has the
+   session in scope already. (062 deleted the second, `businesses_1` half of that dual-write, which
+   halves the blast radius and changes nothing else.)
 
    **Recommended order:** finish `updateBusinessDetails`, then de-duplicate, then `UNIQUE (slug)`.
    Open question before de-duplicating: whether `isvisible = f` is a soft-delete you intend to keep,
@@ -72,13 +73,10 @@
    `getCities` there needs state *and* county, because US county names repeat across states.
 
 5. **Leftovers from the 060/061 cleanup, none urgent.**
-   - `sv_sync_in_business_profile` has been an orphan since 054 inlined the profile upsert into
-     `sv_sync_in_split` — nothing calls it in the database or in any app. 061 recreated it against
-     the renamed table rather than dropping it, to keep the rename a rename. Dropping it is a
-     one-liner whenever someone wants it gone.
-   - `sv_sync_in_split` is now a misnomer for the same reason the table was: it has written both
-     countries since 054. Renaming it is a code change too (three call sites via
-     `syncInSplitTables`), so it did not belong in 061.
+   - ~~`sv_sync_in_business_profile` orphan~~ and ~~`sv_sync_in_split` misnomer~~ — both dropped by
+     062, along with `sv_sync_account` and the two dead `sync_unified_account_*` trigger functions.
+     Four `sync_unified_*` orphans remain (`business_in/us`, `lead_in/us`); their triggers went with
+     051 and nothing can reach them. Dropping them is a one-liner whenever someone wants it gone.
    - **`rateLimiter.test.ts:79` has the fragile pattern that just cost four tests.** It drops
      `rate_limits` to exercise the fail-open branch and recreates it by hand in a `finally`. That
      stub currently matches the real schema exactly, so nothing is broken — but the identical
@@ -87,19 +85,70 @@
      it to the `ALTER TABLE ... RENAME` aside-and-back that file now uses would close it for good.
    - **`check-unified-drift.sql` is already broken and was before 060.** Its `leads_us`,
      `businesses_us` and `accounts_us` scopes read `us_leaddata` and `us_businesses`, which 056
-     dropped, so the file errors partway through as written. Fixing it means deciding what a US
-     drift check even means now that both countries share one set of legacy tables.
+     dropped, so the file errors partway through as written. Its `accounts_*` scopes are now dead
+     for a second reason: 062 made `business_accounts` a store, so there is nothing left to drift
+     *from*. Fixing it means deciding what a US drift check even means now that both countries share
+     one set of tables and only `businesses`/`leads` are still projections.
+
+6. **Finish the table collapse: 063 drops `businesses`.** 062 archived `businesses_1`; step 2 folds
+   the unified `businesses` table into `business_profiles`, leaving exactly two tables —
+   `business_profiles` (profile) and `business_accounts` (auth). `businesses` is a pure duplicate:
+   verified on live at 6708 rows each, 1:1 on `source_id`, **0 value drift**, and no inbound FK. The
+   only real difference is the column vocabulary, and the decision taken is that the country-neutral
+   names win:
+
+   | `business_profiles` | becomes |
+   | --- | --- |
+   | `gstn` | `tax_id` |
+   | `state` | `level1` |
+   | `district` | `level2` |
+   | `pincode` (**char(6)**) | `postal_code` (**varchar(10)**) |
+
+   Renaming rather than the reverse is what keeps the ~434 sites that read `businesses` changing
+   only their table reference and `source_id` → `business_id`, not their column names; the ~114
+   `business_profiles` sites take the rename. **These could not go in 062**: `sv_sync_business` still
+   runs until 063 and its body selects `p.gstn, p.state, p.district, p.pincode`, so renaming under
+   it fails the projection on the next write.
+
+   063 also has to carry over what `businesses` has and `business_profiles` does not — the composite
+   `(country_code, level2, isvisible)` geo index main-app's directory pages filter on (today
+   `business_profiles` has only bare `country_code` and `slug` indexes, so those reads would hit a
+   seq scan over 6,708 rows), and the `countries` FK on `country_code`. Widening `pincode` fixes a
+   live US bug of the same family as items 3 and 4: `char(6)` space-pads, breaking equality, and a
+   ZIP+4 does not fit at all.
+
+7. **Drop `businesses_1_archive` after a quiet period.** 062 renamed rather than dropped so a missed
+   writer fails loudly. Nothing in any repo references it now (the last, `solar-app-internal`'s
+   campaign script, was repointed in the same change and verified to return an identical 537-address
+   set). Backup at `~/businesses_1-archive-2026-08-09.sql`. When it goes, note that
+   `businesses_1_id_seq` must **survive** — it mints every business id and 062 already reassigned
+   its ownership to `business_profiles.business_id` so the drop cannot take it.
 
 ---
 
 ## Standing constraints
 
-**Unified tables are a projection, not a store.** `sv_sync_business` is
-`INSERT INTO businesses ... SELECT FROM business_profiles ... ON CONFLICT DO UPDATE`. Anything
-written directly to `businesses`/`leads`/`business_accounts` is clobbered by the next sync — which
-is why main-app has **zero** unified writes anywhere. The rule is: **read unified** (filtered by the
-resolved country), **write the legacy table** (one set for every country since 054, discriminated by
-`country_code`), then call `sync*ToUnified`.
+**`businesses` and `leads` are a projection, not a store — `business_accounts` no longer is.**
+`sv_sync_business` is `INSERT INTO businesses ... SELECT FROM business_profiles ... ON CONFLICT DO
+UPDATE`, so anything written directly to `businesses`/`leads` is clobbered by the next sync, and
+main-app still has **zero** such writes. The rule for those two is unchanged: **read them** (filtered
+by the resolved country), **write the store** — `business_profiles`/`leaddata`, one set for every
+country since 054, discriminated by `country_code` — then call `sync*ToUnified`.
+
+**`business_accounts` is the exception, since 062.** `sv_sync_account` was dropped with its source
+(`businesses_1`), and there was nothing to repoint it at: `business_profiles` holds no credential
+columns, by the deliberate separation in `docs/account-profile-separation.md`. So the auth layer now
+both reads *and* writes it first-class — `LoginTracker`, `magicLink`, `passwordReset`,
+`api/resetPassword`, `api/deleteAccount`. Do not add a sync call after those writes; there is no
+function to call.
+
+**The new hazard that replaces the old one:** a business is two rows, and nothing projects the
+second any more. Every id-minting site (`submitBusiness`, `addBranch`, `claimLead`'s auto-branch)
+must insert `business_profiles` **and** `business_accounts`. Miss the account row and the business
+looks perfectly healthy — it is in `businesses`, it lists, it has a slug — and simply cannot log in,
+be sent a magic link, or reset its password. `tests/auth/accountsAreAStore.test.ts` pins the
+invariant table-wide rather than per endpoint, so a fourth minting site is covered without being
+named. `isvisible` is carried by **both** halves and both must be written when hiding a business.
 
 **`SessionManager` is country-free.** `validateSession`, `isAuthenticated` and `logout` all delegate
 to it, so an endpoint doing only those needs no country-bound `BusinessAuthService`. Only `login`
@@ -141,6 +190,25 @@ same commit as the drop, not after the baseline is regenerated.
 059 (`sv_referrers`) is the counter-example that shows the check is what matters, not the guard: no
 replayed migration and no function body mentioned the table, so it needed no guard at all. The three
 places still have to be checked; sometimes the answer is that there is nothing to do.
+
+062 (`businesses_1`) is the case where a `to_regclass` guard would have been the *wrong* tool and
+would not have worked: the table still exists, under a new name, and 054 addresses the old name in
+**six** executable statements, so 054 fails long before a guard on 062 is reached. What it needed
+was the rewind-and-replay 061 established — wind the name back before the baseline, replay history
+unedited, and let the real migration rename it forward at the end of the list. **Prefer that pattern
+over a guard for any rename.**
+
+**062 also found a fourth place, which no amount of code grepping reaches: the baseline can emit a
+default referencing a sequence it never creates.** `businesses_1.id` was a `serial`, which
+introspection round-trips fine. Reassigning the sequence to `business_profiles.business_id` made
+`pull` type *that* column `serial` (emitting a different sequence,
+`business_profiles_business_id_seq`) and leave `businesses_1_archive.id` a plain integer carrying a
+bare `DEFAULT nextval('businesses_1_id_seq')` — which nothing then declares. The baseline failed on
+its own `CREATE TABLE` with `relation "businesses_1_id_seq" does not exist`, before a single test
+ran. A generated baseline cannot express "this column's default points at a sequence another table
+owns", so this is structural, not a generator bug. `apply-test-migrations.mjs` now has a
+`PRE_BASELINE_SEQUENCES` step for it. **Any future migration that moves a sequence between tables
+hits this — regenerate the baseline and actually run the suite, do not assume.**
 
 **A migration that changes where a sync reads from must enumerate every writer of the old location.**
 055's dry run proved the collapsed functions reproduce the projection for existing rows, which is
@@ -185,8 +253,9 @@ Before touching any dependency on advisory grounds, check what is actually open:
 business-app's check covers `.ts` as well as `.svelte`, so no separate
 `npx tsc --noEmit -p apps/business-app/tsconfig.json` pass is needed.
 
-`npm test -w solarvipani-business` — **green: 172 passed, 0 skipped.** Was 176 until 059 deleted the
-referrer feature and the four `/referral` cases in `pageCountry.test.ts` with it.
+`npm test -w solarvipani-business` — **green: 184 passed, 0 skipped**, in 16 files. This line said
+172 for a while and was simply stale: a measured run on the commit before 062 gave **180**, and 062
+added the four in `tests/auth/accountsAreAStore.test.ts`. Measure before trusting it.
 
 **Also run `npm run build -w <app>`** when you touch imports. `check` cannot see server code reaching
 a browser bundle, and that is a hard build failure — it left business-app undeployable for an unknown

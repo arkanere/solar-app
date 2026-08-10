@@ -80,8 +80,8 @@ export const leaddata = pgTable("leaddata", {
 	check("check_claim_count_limit", sql`(claim_count >= 0) AND (claim_count <= 5)`),
 ]);
 
-export const businesses1 = pgTable("businesses_1", {
-	id: serial().primaryKey().notNull(),
+export const businesses1Archive = pgTable("businesses_1_archive", {
+	id: integer().default(sql`nextval('businesses_1_id_seq'::regclass)`).primaryKey().notNull(),
 	businessname: varchar({ length: 255 }).notNull(),
 	address: text(),
 	pluscode: varchar({ length: 255 }),
@@ -582,7 +582,7 @@ export const legalPolicies = pgTable("legal_policies", {
 
 export const businessProfiles = pgTable("business_profiles", {
 	id: serial().primaryKey().notNull(),
-	businessId: integer("business_id").notNull(),
+	businessId: serial("business_id").notNull(),
 	slug: varchar({ length: 255 }),
 	businessname: varchar({ length: 255 }),
 	email: varchar({ length: 255 }),

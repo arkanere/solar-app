@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db';
 import { countryForSlug } from '$lib/server/resolveCountry';
-import { branches, businesses1, businessProfiles } from '@solar/db/schema';
+import { branches, businessProfiles } from '@solar/db/schema';
 import { and, eq, sql } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { parseBody, updateBusinessDetailsSchema } from '@solar/validation';
@@ -98,16 +98,20 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			brands
 		};
 
-		// business_profiles is the source of truth for profile data
+		// business_profiles is the source of truth for profile data. The
+		// businesses_1 dual-write that stood below this went with migration 062 —
+		// it was TODO-tagged for "after main-app/admin-app migrate", and both have.
+		//
+		// NOTE: this still updates by slug with no id filter, which is the
+		// remaining wrong-tenant path in next-steps.md item 1 — one business
+		// saving its profile overwrites a slug-twin's row. Dropping the second
+		// write halves the blast radius but does not fix it; the session carries
+		// the authoritative businessId and this should select on it.
 		const [updated] = await db
 			.update(businessProfiles)
 			.set({ ...values, updatedAt: sql`NOW()` })
 			.where(eq(businessProfiles.slug, business_slug))
 			.returning({ id: businessProfiles.businessId });
-
-		// TODO(remove after main-app/admin-app migrate to business_profiles):
-		// dual-write so the marketplace and admin views stay fresh
-		await db.update(businesses1).set(values).where(eq(businesses1.slug, business_slug));
 
 		if (updated) {
 			await syncBusinessToUnified(db, country, updated.id);

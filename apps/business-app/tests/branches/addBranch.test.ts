@@ -82,11 +82,11 @@ describe('api/addBranch country tagging', () => {
 			)
 		);
 
-		// The projection is rebuilt from businesses_1 on every sync, so an
+		// The projection is rebuilt from business_profiles on every sync, so an
 		// IN-tagged source row would silently un-project the branch again on the
 		// next resync even if the unified row were somehow correct.
 		const { rows } = await pool.query<{ country_code: string }>(
-			`SELECT country_code FROM businesses_1 WHERE city = 'Berkeley'`
+			`SELECT country_code FROM business_profiles WHERE city = 'Berkeley'`
 		);
 		expect(rows).toHaveLength(1);
 		expect(rows[0].country_code.trim()).toBe('us');

@@ -64,9 +64,10 @@ async function storedReset(businessId: number) {
 		reset_token: string | null;
 		reset_token_expires: Date | null;
 		login_password: string | null;
-	}>('SELECT reset_token, reset_token_expires, login_password FROM businesses_1 WHERE id = $1', [
-		businessId
-	]);
+	}>(
+		'SELECT reset_token, reset_token_expires, login_password FROM business_accounts WHERE source_id = $1',
+		[businessId]
+	);
 	return rows[0];
 }
 
@@ -202,11 +203,11 @@ describe('POST /api/forgotPassword', () => {
 		expect(sendEmail).toHaveBeenCalledTimes(1);
 		expect(sendEmail.mock.calls[0][0]).toBe(usEmail);
 
-		// businesses_1 holds both countries since 054, so this reads the US row by
-		// id *and* country_code — asserting on the id alone would still pass if the
-		// token had been written onto an IN row that happened to share the id.
+		// business_accounts holds both countries, so this reads the US row by
+		// source_id *and* country_code — asserting on the id alone would still pass
+		// if the token had been written onto an IN row that happened to share it.
 		const { rows } = await pool.query<{ reset_token: string | null }>(
-			"SELECT reset_token FROM businesses_1 WHERE id = $1 AND country_code = 'us'",
+			"SELECT reset_token FROM business_accounts WHERE source_id = $1 AND country_code = 'us'",
 			[usBusinessId]
 		);
 		expect(rows).toHaveLength(1);
@@ -272,8 +273,8 @@ describe('POST /api/forgotPassword', () => {
 });
 
 // Live IN data has duplicate `businesses.slug` values (~25 of them, one slug ×5),
-// and businesses_1 has no unique constraint on slug — only a plain index — so it
-// can never be assumed unique. resetPassword took the slug alone with `.limit(1)`,
+// and business_profiles has no unique constraint on slug — only a plain index —
+// so it can never be assumed unique. resetPassword took the slug alone with `.limit(1)`,
 // which meant a valid link could land on a *different* row than the one its token
 // was minted against and report "invalid or expired". The token hash is what
 // actually identifies the account, so the lookup matches on it.
@@ -343,11 +344,13 @@ describe('a reset link works when its slug is not unique', () => {
 	});
 });
 
-// The round-trip tests above assert on businesses_1, which is why they passed
-// while a completed reset did not actually change what login accepts.
-// PasswordManager reads business_accounts.login_password — a projection — so
-// resetPassword has to resync the account, exactly as mintPasswordResetToken
-// does. These assert on the login that follows, not on the legacy write.
+// The round-trip tests above used to assert on businesses_1, which is why they
+// passed while a completed reset did not actually change what login accepts:
+// PasswordManager reads business_accounts.login_password, which was then a
+// projection that resetPassword forgot to refresh. Migration 062 made that table
+// the store and both now write it, so the two halves can no longer disagree —
+// but these still assert on the login that follows rather than on the write,
+// which is the property that actually matters.
 describe('a completed reset changes what login accepts', () => {
 	const OLD_PASSWORD = '0ld!Passw0rd';
 

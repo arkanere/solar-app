@@ -1,10 +1,20 @@
 // App-level dual-write half of the phase-2 cutover (migration 047): after a
-// write endpoint touches a legacy table (leaddata/us_leaddata, businesses_1/
-// us_businesses, business_profiles), it calls the matching sv_sync_*
-// SQL function to project the row into the unified table. The 043/045/046
-// triggers currently run the same functions, so the explicit call is
-// idempotent — but it keeps business-app correct on its own once those
-// triggers are dropped (after user-app/admin-app migrate).
+// write endpoint touches a store table (leaddata, business_profiles), it calls
+// the matching sv_sync_* SQL function to project the row into the unified
+// table. The 043/045/046 triggers that used to run the same functions are gone
+// (051), so these explicit calls are now the only thing keeping the projections
+// fresh.
+//
+// Two of these went with migration 062:
+//   syncAccountToUnified — business_accounts stopped being a projection. Its
+//     source, businesses_1, is archived, and there is nothing to repoint
+//     sv_sync_account at: business_profiles holds no credential columns, by the
+//     separation in docs/account-profile-separation.md. Auth writes go straight
+//     to business_accounts now.
+//   syncInSplitTables — sv_sync_in_split was the businesses_1 -> business_profiles
+//     projection. business_profiles has been written directly since 054.
+//
+// `businesses` and `leads` are still projections. 063 retires the first of them.
 
 import { sql } from 'drizzle-orm';
 import type { Database } from '@solar/db';
@@ -33,20 +43,3 @@ export async function syncBusinessToUnified(
 	await db.execute(sql`SELECT sv_sync_business(${country}, ${sourceId})`);
 }
 
-export async function syncAccountToUnified(
-	db: SyncExecutor,
-	country: SyncCountry,
-	sourceId: number
-): Promise<void> {
-	await db.execute(sql`SELECT sv_sync_account(${country}, ${sourceId})`);
-}
-
-// businesses_1 -> business_profiles (migration 050, rewritten by 054). The
-// in_business_accounts arm 050 gave this function was dropped by 054 and the
-// table itself by 060; sv_sync_account reads businesses_1 directly.
-// Call after a businesses_1 write, BEFORE syncBusinessToUnified —
-// sv_sync_business('in') sources from business_profiles. Idempotent with
-// the 039/040 triggers; keeps the split tables fresh once those drop.
-export async function syncInSplitTables(db: SyncExecutor, sourceId: number): Promise<void> {
-	await db.execute(sql`SELECT sv_sync_in_split(${sourceId})`);
-}

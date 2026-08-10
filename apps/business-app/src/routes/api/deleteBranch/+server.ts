@@ -1,10 +1,10 @@
 import { db } from '$lib/server/db';
 import { countryForSlug } from '$lib/server/resolveCountry';
-import { branches, businesses1 } from '@solar/db/schema';
+import { branches, businessAccounts, businessProfiles } from '@solar/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { SessionManager } from '$lib/auth/business';
-import { syncBusinessToUnified, syncAccountToUnified, syncInSplitTables } from '$lib/server/unifiedSync';
+import { syncBusinessToUnified } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
@@ -65,11 +65,24 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				)
 			);
 
-		await db.update(businesses1).set({ isvisible: false }).where(eq(businesses1.id, branchId));
+		// `isvisible` is carried by both halves of the split since 062 — profiles
+		// feeds the public listing, accounts gates the auth layer — so hiding a
+		// branch means writing both. Credentials are left alone: a branch shares
+		// the main business's login, and clearing them here would lock the parent
+		// out (which is why deleteAccount clears them and this does not).
+		await db
+			.update(businessProfiles)
+			.set({ isvisible: false })
+			.where(eq(businessProfiles.businessId, branchId));
 
-		await syncInSplitTables(db, branchId);
+		await db
+			.update(businessAccounts)
+			.set({ isvisible: false })
+			.where(
+				and(eq(businessAccounts.sourceId, branchId), eq(businessAccounts.countryCode, country))
+			);
+
 		await syncBusinessToUnified(db, country, branchId);
-		await syncAccountToUnified(db, country, branchId);
 
 		return json({ success: true, message: 'Branch deleted successfully' });
 	} catch (error) {

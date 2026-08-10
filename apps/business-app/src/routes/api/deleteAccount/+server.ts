@@ -2,10 +2,10 @@ import { db } from '$lib/server/db';
 import { countryForSlug } from '$lib/server/resolveCountry';
 import { json } from '@sveltejs/kit';
 import { SessionManager } from '$lib/auth/business';
-import { syncBusinessToUnified, syncAccountToUnified, syncInSplitTables } from '$lib/server/unifiedSync';
+import { syncBusinessToUnified } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
-import { branches, businesses1 } from '@solar/db/schema';
-import { eq, inArray } from 'drizzle-orm';
+import { branches, businessAccounts, businessProfiles } from '@solar/db/schema';
+import { and, eq, inArray } from 'drizzle-orm';
 
 export const POST: RequestHandler = async ({ cookies }) => {
 
@@ -31,31 +31,55 @@ export const POST: RequestHandler = async ({ cookies }) => {
 
 		// Soft-delete the account: hide the business, disable re-login by clearing
 		// credentials, and deactivate/hide any branches it owns.
+		//
+		// Since 062 this is two writes rather than one. `isvisible` is carried by
+		// both halves of the split — business_profiles feeds the public listing
+		// through sv_sync_business, business_accounts gates the auth layer
+		// (TokenManager.ts:32) — and the credentials only exist on the account
+		// side. Hiding one half and not the other leaves the account either
+		// visible or still able to log in.
 		await db
-			.update(businesses1)
+			.update(businessProfiles)
+			.set({ isvisible: false })
+			.where(eq(businessProfiles.businessId, businessId));
+
+		await db
+			.update(businessAccounts)
 			.set({ isvisible: false, loginPassword: null, magicLinkToken: null })
-			.where(eq(businesses1.id, businessId));
+			.where(
+				and(
+					eq(businessAccounts.sourceId, businessId),
+					eq(businessAccounts.countryCode, country)
+				)
+			);
 
 		await db.update(branches).set({ isactive: false }).where(eq(branches.mainId, businessId));
 
-		const hiddenBranches = await db
-			.update(businesses1)
-			.set({ isvisible: false })
-			.where(
-				inArray(
-					businesses1.id,
-					db
-						.select({ branchId: branches.branchId })
-						.from(branches)
-						.where(eq(branches.mainId, businessId))
-				)
-			)
-			.returning({ id: businesses1.id });
+		const branchIds = db
+			.select({ branchId: branches.branchId })
+			.from(branches)
+			.where(eq(branches.mainId, businessId));
 
+		const hiddenBranches = await db
+			.update(businessProfiles)
+			.set({ isvisible: false })
+			.where(inArray(businessProfiles.businessId, branchIds))
+			.returning({ id: businessProfiles.businessId });
+
+		await db
+			.update(businessAccounts)
+			.set({ isvisible: false, loginPassword: null, magicLinkToken: null })
+			.where(
+				and(
+					inArray(businessAccounts.sourceId, branchIds),
+					eq(businessAccounts.countryCode, country)
+				)
+			);
+
+		// business_accounts is a store now, so only the `businesses` projection
+		// still needs driving. It sources from business_profiles, written above.
 		for (const row of [{ id: businessId }, ...hiddenBranches]) {
-			await syncInSplitTables(db, row.id);
 			await syncBusinessToUnified(db, country, row.id);
-			await syncAccountToUnified(db, country, row.id);
 		}
 
 		// End the session

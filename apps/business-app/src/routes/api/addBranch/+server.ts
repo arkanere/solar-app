@@ -1,12 +1,12 @@
 // src/routes/api/addBranch/+server.ts
 import { db } from '$lib/server/db';
 import { countryForSlug } from '$lib/server/resolveCountry';
-import { branches, businesses1, businessProfiles } from '@solar/db/schema';
+import { branches, businessAccounts, businessProfiles } from '@solar/db/schema';
 import { and, eq, sql } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { randomBytes } from 'crypto';
 import { SessionManager } from '$lib/auth/business';
-import { syncBusinessToUnified, syncAccountToUnified, syncInSplitTables } from '$lib/server/unifiedSync';
+import { syncBusinessToUnified } from '$lib/server/unifiedSync';
 import type { RequestHandler } from './$types';
 import type { AddBranchRequest } from '$lib/types/business';
 
@@ -53,11 +53,37 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			);
 		}
 
-		// 1. Fetch the main business data
+		// 1. Fetch the main business data. Since 062 it comes from both halves of
+		// the split: the profile columns cloned onto the branch below, and the
+		// credentials the branch shares with its parent.
 		const [mainBusiness] = await db
-			.select()
-			.from(businesses1)
-			.where(eq(businesses1.id, businessId))
+			.select({
+				slug: businessProfiles.slug,
+				businessname: businessProfiles.businessname,
+				city: businessProfiles.city,
+				rscore: businessProfiles.rscore,
+				isvisible: businessProfiles.isvisible,
+				pluscode: businessProfiles.pluscode,
+				phonenumber: businessProfiles.phonenumber,
+				email: businessProfiles.email,
+				website: businessProfiles.website,
+				gstn: businessProfiles.gstn,
+				tag: businessProfiles.tag,
+				address: businessProfiles.address,
+				services: businessProfiles.services,
+				description: businessProfiles.description,
+				loginEmail: businessAccounts.loginEmail,
+				loginPassword: businessAccounts.loginPassword
+			})
+			.from(businessProfiles)
+			.innerJoin(
+				businessAccounts,
+				and(
+					eq(businessAccounts.countryCode, businessProfiles.countryCode),
+					eq(businessAccounts.sourceId, businessProfiles.businessId)
+				)
+			)
+			.where(eq(businessProfiles.businessId, businessId))
 			.limit(1);
 
 		if (!mainBusiness) {
@@ -98,25 +124,27 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			);
 		}
 
-		// 3. If no presence in the city, create a new branch entry in businesses_1
+		// 3. If no presence in the city, create the branch. Since 062 that is a row
+		// in each half of the split rather than one businesses_1 row: the profile
+		// mints the id from the reassigned sequence, and the account carries the
+		// credentials the branch shares with its parent.
 		// Generate a unique slug for the branch using main business slug
 		const branchSlug = generateBranchSlug(mainBusiness.slug ?? '');
 
 		// Use the main business values but update state, district, city, and add branch notes
 		const [insertedBranch] = await db
-			.insert(businesses1)
+			.insert(businessProfiles)
 			.values({
-				// businesses_1 holds both countries since 054 and country_code
-				// defaults to 'in'. Without this a US business's branch was written
-				// IN-tagged, so the sv_sync_business('us', ...) below matched nothing
-				// and returned silently — success reported, branch never projected.
+				// business_profiles holds both countries and country_code defaults
+				// to 'in'. Without this a US business's branch was written IN-tagged,
+				// so the sv_sync_business('us', ...) below matched nothing and
+				// returned silently — success reported, branch never projected.
 				countryCode: country,
 				rscore: mainBusiness.rscore,
 				isvisible: mainBusiness.isvisible,
 				pluscode: mainBusiness.pluscode,
 				phonenumber: mainBusiness.phonenumber,
 				email: mainBusiness.email,
-				loginEmail: mainBusiness.loginEmail,
 				website: mainBusiness.website,
 				gstn: mainBusiness.gstn,
 				state, // Use the provided state
@@ -127,13 +155,23 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				city, // Use the provided city
 				businessname: mainBusiness.businessname, // Same business name
 				address: mainBusiness.address, // Same address
-				loginPassword: mainBusiness.loginPassword, // Same login password
 				services: mainBusiness.services, // Copy services array from main business
 				description: mainBusiness.description || 'Solar panel installer'
 			})
-			.returning({ id: businesses1.id });
+			.returning({ businessId: businessProfiles.businessId });
 
-		const branchId = insertedBranch.id;
+		const branchId = insertedBranch.businessId;
+
+		// The branch logs in with the parent's credentials, which is why the
+		// select above joins them out of the parent's account row rather than
+		// minting new ones.
+		await db.insert(businessAccounts).values({
+			countryCode: country,
+			sourceId: branchId,
+			loginEmail: mainBusiness.loginEmail,
+			loginPassword: mainBusiness.loginPassword,
+			isvisible: mainBusiness.isvisible
+		});
 
 		// 4. Create an entry in the branches table to establish the relationship
 		await db.insert(branches).values({
@@ -142,9 +180,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			isactive: true // Set as active by default
 		});
 
-		await syncInSplitTables(db, branchId);
 		await syncBusinessToUnified(db, country, branchId);
-		await syncAccountToUnified(db, country, branchId);
 
 		return json({
 			success: true,

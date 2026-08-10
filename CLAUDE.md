@@ -63,7 +63,7 @@ grep `COMPLETED n FILES x ERRORS`, not `found x errors`. A change passes if the 
 | app | errors | warnings |
 | --- | --- | --- |
 | main-app | 10 | 1 |
-| business-app | 33 | 0 |
+| business-app | 32 | 0 |
 | user-app | 0 | 2 |
 
 **business-app's check now covers everything.** `--no-tsconfig --ignore "src/lib/components/ui"` was

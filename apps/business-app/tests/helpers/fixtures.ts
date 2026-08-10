@@ -16,10 +16,14 @@ export async function resetDatabase(): Promise<void> {
 	// re-running migrations per test, and RESTART IDENTITY keeps ids small —
 	// leaddata.business_id and leaddata_claimrequests.business_id are smallint,
 	// so a long-running sequence would eventually overflow them.
+	// businesses_1 left the list with migration 062 — it is businesses_1_archive
+	// now, nothing writes it, and truncating it would only cost time. The
+	// RESTART IDENTITY still has to reach business_profiles.business_id, which
+	// inherited businesses_1_id_seq and is where every business id now comes from.
 	await pool.query(`
 		TRUNCATE TABLE
 			leaddata_claimrequests, leaddata, leads,
-			branches, businesses_1, business_profiles,
+			branches, business_profiles,
 			businesses, business_accounts,
 			legal_acceptances, legal_policies,
 			projects, project_management, pincode_mapping,
@@ -72,8 +76,15 @@ export interface BusinessOptions {
 let businessSeq = 0;
 
 /**
- * Insert a businesses_1 row and project it into the split + unified tables the
- * same way the app does after a write. Returns the businesses_1 id.
+ * Insert a business the same way the app does since migration 062: a
+ * business_profiles row (which mints the id off businesses_1_id_seq) plus the
+ * business_accounts row carrying its credentials, then the one remaining
+ * projection into `businesses`. Returns the business id.
+ *
+ * The account row is not optional scaffolding — the auth layer reads
+ * business_accounts for passwords, magic-link tokens and last_login, and it is
+ * no longer projected from anywhere. A fixture without one produces a business
+ * that cannot log in.
  */
 export async function createBusiness(options: BusinessOptions = {}): Promise<number> {
 	businessSeq += 1;
@@ -92,35 +103,25 @@ export async function createBusiness(options: BusinessOptions = {}): Promise<num
 		lastLogin = null
 	} = options;
 
-	const { rows } = await pool.query<{ id: number }>(
-		`INSERT INTO businesses_1
-		   (businessname, slug, login_email, login_password, district, state, city,
-		    isvisible, description, google_maps_link, brands, last_login)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
-		 RETURNING id`,
-		[
-			businessname,
-			slug,
-			loginEmail,
-			loginPassword,
-			district,
-			state,
-			city,
-			isvisible,
-			description,
-			googleMapsLink,
-			brands,
-			lastLogin
-		]
+	const { rows } = await pool.query<{ business_id: number }>(
+		`INSERT INTO business_profiles
+		   (businessname, slug, district, state, city,
+		    isvisible, description, google_maps_link, brands)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+		 RETURNING business_id`,
+		[businessname, slug, district, state, city, isvisible, description, googleMapsLink, brands]
 	);
-	const id = rows[0].id;
+	const id = rows[0].business_id;
 
-	// Mirror the app's post-write sync so business_accounts / businesses /
-	// business_profiles are populated — the auth code reads those, not
-	// businesses_1.
-	await pool.query('SELECT sv_sync_in_split($1)', [id]);
+	await pool.query(
+		`INSERT INTO business_accounts
+		   (country_code, source_id, login_email, login_password, isvisible, last_login)
+		 VALUES ('in',$1,$2,$3,$4,$5)`,
+		[id, loginEmail, loginPassword, isvisible, lastLogin]
+	);
+
+	// `businesses` is the one projection left; it sources from business_profiles.
 	await pool.query('SELECT sv_sync_business($1, $2)', ['in', id]);
-	await pool.query('SELECT sv_sync_account($1, $2)', ['in', id]);
 
 	return id;
 }
@@ -141,14 +142,14 @@ export interface UsBusinessOptions {
  * Insert a US business and project it into the unified tables, the same way
  * createBusiness() does for the IN side.
  *
- * Since migration 054 this writes `businesses_1` with country_code = 'us', not
- * `us_businesses` — one set of legacy tables holds both countries, on the IN
- * structure. The `county`/`zipcode` option names are kept because that is what
- * the US callers say, but they map to the IN columns (`district`, `pincode`).
+ * Since migration 054 this writes one set of tables for both countries, on the
+ * IN structure, discriminated by country_code — and since 062 that set is
+ * business_profiles + business_accounts. The `county`/`zipcode` option names
+ * are kept because that is what the US callers say, but they map to the IN
+ * columns (`district`, `pincode`).
  *
- * The sv_sync_in_split call is new for US and is not optional: 055's
- * sv_sync_business reads business_profiles for every country, so without a
- * profile row the projection is a silent no-op.
+ * sv_sync_business reads business_profiles for every country, so the profile
+ * row has to exist before it is called or the projection is a silent no-op.
  */
 export async function createUsBusiness(options: UsBusinessOptions = {}): Promise<number> {
 	businessSeq += 1;
@@ -164,19 +165,24 @@ export async function createUsBusiness(options: UsBusinessOptions = {}): Promise
 		isvisible = true
 	} = options;
 
-	const { rows } = await pool.query<{ id: number }>(
-		`INSERT INTO businesses_1
-		   (country_code, businessname, slug, login_email, email, phonenumber, state,
+	const { rows } = await pool.query<{ business_id: number }>(
+		`INSERT INTO business_profiles
+		   (country_code, businessname, slug, email, phonenumber, state,
 		    district, city, isvisible)
-		 VALUES ('us',$1,$2,$3,$4,$5,$6,$7,$8,$9)
-		 RETURNING id`,
-		[businessname, slug, loginEmail, email, phonenumber, state, county, city, isvisible]
+		 VALUES ('us',$1,$2,$3,$4,$5,$6,$7,$8)
+		 RETURNING business_id`,
+		[businessname, slug, email, phonenumber, state, county, city, isvisible]
 	);
-	const id = rows[0].id;
+	const id = rows[0].business_id;
 
-	await pool.query('SELECT sv_sync_in_split($1)', [id]);
+	await pool.query(
+		`INSERT INTO business_accounts
+		   (country_code, source_id, login_email, isvisible)
+		 VALUES ('us',$1,$2,$3)`,
+		[id, loginEmail, isvisible]
+	);
+
 	await pool.query('SELECT sv_sync_business($1, $2)', ['us', id]);
-	await pool.query('SELECT sv_sync_account($1, $2)', ['us', id]);
 
 	return id;
 }
