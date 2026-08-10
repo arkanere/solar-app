@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { callsafeusers, callsafehandles, leaddata, inProposals, projectManagement, solarBrands, solarProducts, stateSubsidies, discoms, authors, inBlogPosts, inUser, inUserFeedback, legalPolicies, legalAcceptances, countries, businessAccounts, geoLocations, businesses, leads } from "./schema";
+import { callsafeusers, callsafehandles, leaddata, inProposals, projectManagement, solarBrands, solarProducts, stateSubsidies, discoms, authors, inBlogPosts, inUser, inUserFeedback, legalPolicies, legalAcceptances, countries, businessAccounts, businessProfiles, geoLocations, businesses, leads } from "./schema";
 
 export const callsafehandlesRelations = relations(callsafehandles, ({one}) => ({
 	callsafeuser: one(callsafeusers, {
@@ -96,6 +96,7 @@ export const legalPoliciesRelations = relations(legalPolicies, ({many}) => ({
 
 export const countriesRelations = relations(countries, ({many}) => ({
 	legalAcceptances: many(legalAcceptances),
+	businessProfiles: many(businessProfiles),
 	geoLocations: many(geoLocations),
 	businesses: many(businesses),
 	businessAccounts: many(businessAccounts),
@@ -106,6 +107,13 @@ export const businessAccountsRelations = relations(businessAccounts, ({one, many
 	legalAcceptances: many(legalAcceptances),
 	country: one(countries, {
 		fields: [businessAccounts.countryCode],
+		references: [countries.code]
+	}),
+}));
+
+export const businessProfilesRelations = relations(businessProfiles, ({one}) => ({
+	country: one(countries, {
+		fields: [businessProfiles.countryCode],
 		references: [countries.code]
 	}),
 }));

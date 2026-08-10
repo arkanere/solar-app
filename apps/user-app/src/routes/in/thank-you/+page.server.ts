@@ -58,9 +58,9 @@ const LEAD_SELECTION = {
 // Same reasoning as sendLeadSubmissionConfirmation's copy: `businessname` is
 // nullable, but Installer declares it non-null and the page renders it unguarded.
 const INSTALLER_SELECTION = {
-	businessname: sql<string>`${schema.businesses.businessname}`,
-	address: schema.businesses.address,
-	phonenumber: schema.businesses.phonenumber
+	businessname: sql<string>`${schema.businessProfiles.businessname}`,
+	address: schema.businessProfiles.address,
+	phonenumber: schema.businessProfiles.phonenumber
 };
 
 export const load: PageServerLoad = async ({ url }) => {
@@ -124,14 +124,14 @@ export const load: PageServerLoad = async ({ url }) => {
 					.from(schema.businesses)
 					.where(
 						and(
-							eq(schema.businesses.countryCode, 'in'),
+							eq(schema.businessProfiles.countryCode, 'in'),
 							// `sql` escape hatches: case-insensitive district compare, and
 							// DESC NULLS LAST (Postgres defaults DESC to NULLS FIRST).
-							sql`LOWER(${schema.businesses.level2}) = LOWER(${district})`,
-							eq(schema.businesses.isvisible, true)
+							sql`LOWER(${schema.businessProfiles.level2}) = LOWER(${district})`,
+							eq(schema.businessProfiles.isvisible, true)
 						)
 					)
-					.orderBy(sql`${schema.businesses.rscore} DESC NULLS LAST`)
+					.orderBy(sql`${schema.businessProfiles.rscore} DESC NULLS LAST`)
 					.limit(5);
 			}
 		} catch {

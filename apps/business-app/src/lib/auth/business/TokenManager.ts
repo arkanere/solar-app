@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db';
-import { branches, businessAccounts, businesses } from '@solar/db/schema';
+import { branches, businessAccounts, businessProfiles } from '@solar/db/schema';
 import { and, eq, isNotNull, notExists } from 'drizzle-orm';
 import { AUTH_ERRORS, SUCCESS_RESPONSE, ERROR_RESPONSE } from './AuthTypes';
 import { TokenSecurity } from './TokenSecurity';
@@ -25,8 +25,8 @@ export class TokenManager {
 			const rows = await db
 				.select({
 					id: businessAccounts.sourceId,
-					businessname: businesses.businessname,
-					slug: businesses.slug,
+					businessname: businessProfiles.businessname,
+					slug: businessProfiles.slug,
 					login_email: businessAccounts.loginEmail,
 					magic_link_token: businessAccounts.magicLinkToken,
 					isvisible: businessAccounts.isvisible,
@@ -34,16 +34,16 @@ export class TokenManager {
 				})
 				.from(businessAccounts)
 				.innerJoin(
-					businesses,
+					businessProfiles,
 					and(
-						eq(businesses.countryCode, businessAccounts.countryCode),
-						eq(businesses.sourceId, businessAccounts.sourceId)
+						eq(businessProfiles.countryCode, businessAccounts.countryCode),
+						eq(businessProfiles.businessId, businessAccounts.sourceId)
 					)
 				)
 				.where(
 					and(
 						eq(businessAccounts.countryCode, this.country),
-						eq(businesses.slug, businessSlug),
+						eq(businessProfiles.slug, businessSlug),
 						eq(businessAccounts.magicLinkToken, tokenHash),
 						isNotNull(businessAccounts.magicLinkToken)
 					)
@@ -88,17 +88,17 @@ export class TokenManager {
 			const rows = await db
 				.select({
 					id: businessAccounts.sourceId,
-					businessname: businesses.businessname,
-					slug: businesses.slug,
+					businessname: businessProfiles.businessname,
+					slug: businessProfiles.slug,
 					login_email: businessAccounts.loginEmail,
 					isvisible: businessAccounts.isvisible
 				})
 				.from(businessAccounts)
 				.innerJoin(
-					businesses,
+					businessProfiles,
 					and(
-						eq(businesses.countryCode, businessAccounts.countryCode),
-						eq(businesses.sourceId, businessAccounts.sourceId)
+						eq(businessProfiles.countryCode, businessAccounts.countryCode),
+						eq(businessProfiles.businessId, businessAccounts.sourceId)
 					)
 				)
 				.where(
@@ -147,23 +147,23 @@ export class TokenManager {
 			const rows = await db
 				.select({
 					id: businessAccounts.sourceId,
-					businessname: businesses.businessname,
-					slug: businesses.slug,
+					businessname: businessProfiles.businessname,
+					slug: businessProfiles.slug,
 					login_email: businessAccounts.loginEmail,
 					isvisible: businessAccounts.isvisible
 				})
 				.from(businessAccounts)
 				.innerJoin(
-					businesses,
+					businessProfiles,
 					and(
-						eq(businesses.countryCode, businessAccounts.countryCode),
-						eq(businesses.sourceId, businessAccounts.sourceId)
+						eq(businessProfiles.countryCode, businessAccounts.countryCode),
+						eq(businessProfiles.businessId, businessAccounts.sourceId)
 					)
 				)
 				.where(
 					and(
 						eq(businessAccounts.countryCode, this.country),
-						eq(businesses.slug, businessSlug),
+						eq(businessProfiles.slug, businessSlug),
 						eq(businessAccounts.isvisible, true)
 					)
 				);

@@ -1,33 +1,33 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { branches as branchesTable, businesses } from '@solar/db/schema';
+import { branches as branchesTable, businessProfiles } from '@solar/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 
 const BRANCH_BUSINESS_SELECTION = {
-	id: businesses.sourceId,
-	slug: businesses.slug,
-	businessname: businesses.businessname,
-	email: businesses.email,
-	phonenumber: businesses.phonenumber,
-	whatsapp: businesses.whatsapp,
-	description: businesses.description,
-	website: businesses.website,
-	instagram_id: businesses.instagramId,
-	google_maps_link: businesses.googleMapsLink,
-	address: businesses.address,
-	pluscode: businesses.pluscode,
-	services: businesses.services,
-	brands: businesses.brands,
-	gstn: businesses.taxId,
-	state: businesses.level1,
-	district: businesses.level2,
-	city: businesses.city,
-	pincode: businesses.postalCode,
-	rscore: businesses.rscore,
-	tag: businesses.tag,
-	businessfilled: businesses.businessfilled,
-	isvisible: businesses.isvisible
+	id: businessProfiles.businessId,
+	slug: businessProfiles.slug,
+	businessname: businessProfiles.businessname,
+	email: businessProfiles.email,
+	phonenumber: businessProfiles.phonenumber,
+	whatsapp: businessProfiles.whatsapp,
+	description: businessProfiles.description,
+	website: businessProfiles.website,
+	instagram_id: businessProfiles.instagramId,
+	google_maps_link: businessProfiles.googleMapsLink,
+	address: businessProfiles.address,
+	pluscode: businessProfiles.pluscode,
+	services: businessProfiles.services,
+	brands: businessProfiles.brands,
+	gstn: businessProfiles.taxId,
+	state: businessProfiles.level1,
+	district: businessProfiles.level2,
+	city: businessProfiles.city,
+	pincode: businessProfiles.postalCode,
+	rscore: businessProfiles.rscore,
+	tag: businessProfiles.tag,
+	businessfilled: businessProfiles.businessfilled,
+	isvisible: businessProfiles.isvisible
 };
 
 export const prerender = false;
@@ -76,11 +76,11 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		// keyed by this id, so landing on a twin lists another company's branches.
 		const mainBusinessRows = await db
 			.select(BRANCH_BUSINESS_SELECTION)
-			.from(businesses)
+			.from(businessProfiles)
 			.where(
 				and(
-					eq(businesses.countryCode, country),
-					eq(businesses.sourceId, parentData.business_session.businessId)
+					eq(businessProfiles.countryCode, country),
+					eq(businessProfiles.businessId, parentData.business_session.businessId)
 				)
 			);
 
@@ -99,8 +99,8 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 			.select(BRANCH_BUSINESS_SELECTION)
 			.from(branchesTable)
 			.innerJoin(
-				businesses,
-				and(eq(businesses.countryCode, country), eq(branchesTable.branchId, businesses.sourceId))
+				businessProfiles,
+				and(eq(businessProfiles.countryCode, country), eq(branchesTable.branchId, businessProfiles.businessId))
 			)
 			.where(and(eq(branchesTable.mainId, mainBusinessId), eq(branchesTable.isactive, true)));
 		const branches = branchRows as unknown as Business[];

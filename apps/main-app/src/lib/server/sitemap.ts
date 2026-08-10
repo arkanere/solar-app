@@ -1,7 +1,7 @@
 import { db } from './db';
 import {
 	authors,
-	businesses,
+	businessProfiles,
 	discoms,
 	geoLocations,
 	seoPages,
@@ -67,12 +67,12 @@ function businessesExistFor(...matches: ReturnType<typeof sql>[]) {
 	return exists(
 		db
 			.select({ one: sql`1` })
-			.from(businesses)
+			.from(businessProfiles)
 			.where(
 				and(
-					eq(businesses.countryCode, geoLocations.countryCode),
+					eq(businessProfiles.countryCode, geoLocations.countryCode),
 					...matches,
-					eq(businesses.isvisible, true)
+					eq(businessProfiles.isvisible, true)
 				)
 			)
 	);
@@ -88,17 +88,17 @@ export async function generateSitemapEntries(country: CountryConfig): Promise<Si
 
 	const [businessRows, geoLevel1Rows, geoLevel2Rows, geoCityRows] = await Promise.all([
 		db
-			.select({ slug: businesses.slug })
-			.from(businesses)
-			.where(and(eq(businesses.countryCode, code), eq(businesses.isvisible, true)))
-			.orderBy(asc(businesses.slug)),
+			.select({ slug: businessProfiles.slug })
+			.from(businessProfiles)
+			.where(and(eq(businessProfiles.countryCode, code), eq(businessProfiles.isvisible, true)))
+			.orderBy(asc(businessProfiles.slug)),
 		db
 			.selectDistinct({ level1: geoLocations.level1, level1_slug: geoLocations.level1Slug })
 			.from(geoLocations)
 			.where(
 				and(
 					eq(geoLocations.countryCode, code),
-					businessesExistFor(sql`LOWER(${businesses.level1}) = LOWER(${geoLocations.level1})`)
+					businessesExistFor(sql`LOWER(${businessProfiles.level1}) = LOWER(${geoLocations.level1})`)
 				)
 			)
 			.orderBy(asc(geoLocations.level1)),
@@ -113,7 +113,7 @@ export async function generateSitemapEntries(country: CountryConfig): Promise<Si
 			.where(
 				and(
 					eq(geoLocations.countryCode, code),
-					businessesExistFor(sql`LOWER(${businesses.level2}) = LOWER(${geoLocations.level2})`)
+					businessesExistFor(sql`LOWER(${businessProfiles.level2}) = LOWER(${geoLocations.level2})`)
 				)
 			)
 			.orderBy(asc(geoLocations.level1), asc(geoLocations.level2)),
@@ -131,8 +131,8 @@ export async function generateSitemapEntries(country: CountryConfig): Promise<Si
 				and(
 					eq(geoLocations.countryCode, code),
 					businessesExistFor(
-						sql`LOWER(${businesses.city}) = LOWER(${geoLocations.city})`,
-						sql`LOWER(${businesses.level2}) = LOWER(${geoLocations.level2})`
+						sql`LOWER(${businessProfiles.city}) = LOWER(${geoLocations.city})`,
+						sql`LOWER(${businessProfiles.level2}) = LOWER(${geoLocations.level2})`
 					)
 				)
 			)

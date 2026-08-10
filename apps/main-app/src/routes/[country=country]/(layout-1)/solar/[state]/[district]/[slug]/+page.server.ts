@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { businesses as businessesTable, pincodeMapping, projects } from '@solar/db/schema';
+import { businessProfiles as businessesTable, pincodeMapping, projects } from '@solar/db/schema';
 import { and, asc, desc, eq, sql } from 'drizzle-orm';
 import { error, redirect } from '@sveltejs/kit';
 import { getCountry } from '$lib/countries';

@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
 import { IN_LEAD_SELECTION } from '$lib/server/unifiedRead';
-import { branches, businesses, leaddataClaimrequests, leads } from '@solar/db/schema';
+import { branches, businessProfiles, leaddataClaimrequests, leads } from '@solar/db/schema';
 import { and, desc, eq, gte, inArray, like, not, or, sql } from 'drizzle-orm';
 
 export const prerender = false;
@@ -61,19 +61,19 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		// data of whichever business the lookup lands on.
 		const businessRows = await db
 			.select({
-				id: businesses.sourceId,
-				businessname: businesses.businessname,
-				description: businesses.description,
-				phonenumber: businesses.phonenumber,
-				email: businesses.email,
-				address: businesses.address,
-				website: businesses.website,
-				district: businesses.level2,
-				state: businesses.level1
+				id: businessProfiles.businessId,
+				businessname: businessProfiles.businessname,
+				description: businessProfiles.description,
+				phonenumber: businessProfiles.phonenumber,
+				email: businessProfiles.email,
+				address: businessProfiles.address,
+				website: businessProfiles.website,
+				district: businessProfiles.level2,
+				state: businessProfiles.level1
 			})
-			.from(businesses)
+			.from(businessProfiles)
 			.where(
-				and(eq(businesses.countryCode, country), eq(businesses.sourceId, business_session.businessId))
+				and(eq(businessProfiles.countryCode, country), eq(businessProfiles.businessId, business_session.businessId))
 			)
 			.limit(1);
 
@@ -87,15 +87,15 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		// ✅ Get all branch business IDs and slugs for this main business
 		const branchRows = (await db
 			.select({
-				id: businesses.sourceId,
-				slug: businesses.slug,
-				district: businesses.level2,
-				state: businesses.level1
+				id: businessProfiles.businessId,
+				slug: businessProfiles.slug,
+				district: businessProfiles.level2,
+				state: businessProfiles.level1
 			})
 			.from(branches)
 			.innerJoin(
-				businesses,
-				and(eq(businesses.countryCode, country), eq(branches.branchId, businesses.sourceId))
+				businessProfiles,
+				and(eq(businessProfiles.countryCode, country), eq(branches.branchId, businessProfiles.businessId))
 			)
 			.where(and(eq(branches.mainId, businessId), eq(branches.isactive, true)))) as unknown as Branch[];
 

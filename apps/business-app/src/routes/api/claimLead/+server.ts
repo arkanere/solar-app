@@ -230,7 +230,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 								// branch creation. Every other lookup here is by a globally
 								// unique id, which is why this is the only one that needs it.
 								eq(businessProfiles.countryCode, country),
-								eq(businessProfiles.district, leadDistrict),
+								eq(businessProfiles.level2, leadDistrict),
 								sql`(${businessProfiles.businessId} = ${mainBusinessId} OR EXISTS (
 								     SELECT 1 FROM ${branches} WHERE ${branches.mainId} = ${mainBusinessId}
 								     AND ${branches.branchId} = ${businessProfiles.businessId}
@@ -267,7 +267,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 								rscore: businessProfiles.rscore,
 								isvisible: businessProfiles.isvisible,
 								pluscode: businessProfiles.pluscode,
-								gstn: businessProfiles.gstn,
+								taxId: businessProfiles.taxId,
 								tag: businessProfiles.tag,
 								services: businessProfiles.services,
 								description: businessProfiles.description
@@ -295,9 +295,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 								phonenumber: main.phonenumber,
 								email: main.email,
 								website: main.website,
-								gstn: main.gstn,
-								state: leadState,
-								district: leadDistrict,
+								taxId: main.taxId,
+								level1: leadState,
+								level2: leadDistrict,
 								tag: main.tag,
 								slug: branchSlug,
 								city: leadDistrict,

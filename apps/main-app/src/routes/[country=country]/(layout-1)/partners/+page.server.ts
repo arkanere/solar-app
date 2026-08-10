@@ -25,7 +25,7 @@ export const load: PageServerLoad = async () => {
 				businessname: businessProfiles.businessname,
 				phonenumber: businessProfiles.phonenumber,
 				city: businessProfiles.city,
-				state: businessProfiles.state,
+				state: businessProfiles.level1,
 				slug: businessProfiles.slug
 			})
 			.from(businessProfiles)

@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
 import {
-	businesses as businessesTable,
+	businessProfiles as businessesTable,
 	leads,
 	pincodeMapping,
 	projects,

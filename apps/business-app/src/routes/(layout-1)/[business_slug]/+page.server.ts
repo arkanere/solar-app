@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
 import { IN_BUSINESS_SELECTION, IN_LEAD_SELECTION } from '$lib/server/unifiedRead';
-import { branches, businesses, inProposals, leaddataClaimrequests, leads, projects } from '@solar/db/schema';
+import { branches, businessProfiles, inProposals, leaddataClaimrequests, leads, projects } from '@solar/db/schema';
 import { and, count, desc, eq, gte, inArray, like, not, or, sql } from 'drizzle-orm';
 
 export const prerender = false;
@@ -68,9 +68,9 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		// different row than the layout's and render another company's leads.
 		const businessRows = await db
 			.select(IN_BUSINESS_SELECTION)
-			.from(businesses)
+			.from(businessProfiles)
 			.where(
-				and(eq(businesses.countryCode, country), eq(businesses.sourceId, business_session.businessId))
+				and(eq(businessProfiles.countryCode, country), eq(businessProfiles.businessId, business_session.businessId))
 			)
 			.limit(1);
 
@@ -84,15 +84,15 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		// ✅ Get all branch business IDs and slugs for this main business
 		const branchRows = (await db
 			.select({
-				id: businesses.sourceId,
-				slug: businesses.slug,
-				district: businesses.level2,
-				state: businesses.level1
+				id: businessProfiles.businessId,
+				slug: businessProfiles.slug,
+				district: businessProfiles.level2,
+				state: businessProfiles.level1
 			})
 			.from(branches)
 			.innerJoin(
-				businesses,
-				and(eq(businesses.countryCode, country), eq(branches.branchId, businesses.sourceId))
+				businessProfiles,
+				and(eq(businessProfiles.countryCode, country), eq(branches.branchId, businessProfiles.businessId))
 			)
 			.where(and(eq(branches.mainId, businessId), eq(branches.isactive, true)))) as unknown as Branch[];
 

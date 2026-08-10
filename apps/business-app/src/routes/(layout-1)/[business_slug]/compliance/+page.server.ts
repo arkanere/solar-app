@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { businesses } from '@solar/db/schema';
+import { businessProfiles } from '@solar/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 import {
@@ -55,12 +55,12 @@ export const load: PageServerLoad<PageData> = async ({ parent }) => {
 		// and the history below are keyed by — landing on a twin would report
 		// another company's acceptance as this one's.
 		const businessRows = await db
-			.select({ id: businesses.sourceId })
-			.from(businesses)
+			.select({ id: businessProfiles.businessId })
+			.from(businessProfiles)
 			.where(
 				and(
-					eq(businesses.countryCode, country),
-					eq(businesses.sourceId, parentData.business_session.businessId)
+					eq(businessProfiles.countryCode, country),
+					eq(businessProfiles.businessId, parentData.business_session.businessId)
 				)
 			);
 

@@ -1,7 +1,8 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { businesses, businessProfiles } from '@solar/db/schema';
+import { businessProfiles } from '@solar/db/schema';
 import { and, desc, eq } from 'drizzle-orm';
+import { isCountry } from '$lib/countries';
 
 export const config = {
 	isr: {
@@ -9,66 +10,55 @@ export const config = {
 	}
 };
 
-// Per-country legacy tables, per §3.4 of docs/migration-plan-delete-us.md: no
-// data migration and no table switch here — de-countrying these reads belongs
-// to the write cutover in docs/country-scalable-architecture.md.
+// One query for both countries since migration 063. This function used to be
+// two: the US branch read unified `businesses` filtered to country_code='us'
+// (replacing the dropped us_businesses) while the IN branch read
+// business_profiles, because the two tables carried different column names for
+// the same values. 063 gave business_profiles the country-neutral names and 064
+// drops `businesses`, so the branches collapse into the query below.
 //
 // The level2 column (`district` in IN, `county` in US) is deliberately NOT
 // selected: the installer cards render only businessname/city/state/phone/slug,
-// and the IN query's unused `district` was the one thing that made this page's
-// serialized payload differ across the merge. Both branches now return the
-// same shape without needing an alias.
+// and the unused district was the one thing that made this page's serialized
+// payload differ across the earlier merge.
 //
-// The two table-name-keyed SQL strings became two Drizzle queries, continuing
-// the per-country-tables approach from Phases 2 and 5. The IN table keys the
-// business on `business_id`, the US one on `id`; both are aliased to `id`.
-//
-// The US branch reads the **unified** `businesses` table filtered to
-// country_code='us', replacing the dropped `us_businesses`. Per the read
-// unified / write legacy rule, a page load reads unified. The unified column
-// names are country-neutral, so `state` comes from `level1` and the legacy row
-// id from `source_id`; all 12 US rows matched `us_businesses` field-for-field
-// on every column selected here, and the query returns an identical result set.
-function latestBusinesses(country: string) {
-	if (country === 'us') {
-		return db
-			.select({
-				id: businesses.sourceId,
-				businessname: businesses.businessname,
-				phonenumber: businesses.phonenumber,
-				city: businesses.city,
-				state: businesses.level1,
-				slug: businesses.slug
-			})
-			.from(businesses)
-			.where(
-				and(
-					eq(businesses.countryCode, 'us'),
-					eq(businesses.isvisible, true),
-					eq(businesses.businessfilled, true)
-				)
-			)
-			.orderBy(desc(businesses.sourceId))
-			.limit(10);
-	}
-
+// **The IN branch had no country predicate**, which was a latent bug rather
+// than a live one. business_profiles has held both countries since 054, so
+// /in/business-listing was entitled to return US rows; it did not only because
+// submitBusiness sets `businessfilled = country === 'in'` and the filter below
+// excludes them. That is a mask, not a guarantee — flip that default and US
+// businesses appear on the Indian listing. Scoping by country_code makes the
+// intent explicit and no longer depends on an unrelated column.
+function latestBusinesses(country: 'in' | 'us') {
 	return db
 		.select({
 			id: businessProfiles.businessId,
 			businessname: businessProfiles.businessname,
 			phonenumber: businessProfiles.phonenumber,
 			city: businessProfiles.city,
-			state: businessProfiles.state,
+			state: businessProfiles.level1,
 			slug: businessProfiles.slug
 		})
 		.from(businessProfiles)
-		.where(and(eq(businessProfiles.isvisible, true), eq(businessProfiles.businessfilled, true)))
+		.where(
+			and(
+				eq(businessProfiles.countryCode, country),
+				eq(businessProfiles.isvisible, true),
+				eq(businessProfiles.businessfilled, true)
+			)
+		)
 		.orderBy(desc(businessProfiles.businessId))
 		.limit(10);
 }
 
 export const load: PageServerLoad = async ({ params }) => {
 	try {
+		// The route matcher guarantees this, but the predicate above now depends
+		// on it being a real country rather than any string.
+		if (!isCountry(params.country)) {
+			return { errorMessage: 'Failed to load businesses' };
+		}
+
 		const businesses = await latestBusinesses(params.country);
 
 		if (businesses.length > 0) {

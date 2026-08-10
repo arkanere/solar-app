@@ -67,7 +67,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				phonenumber: businessProfiles.phonenumber,
 				email: businessProfiles.email,
 				website: businessProfiles.website,
-				gstn: businessProfiles.gstn,
+				taxId: businessProfiles.taxId,
 				tag: businessProfiles.tag,
 				address: businessProfiles.address,
 				services: businessProfiles.services,
@@ -131,7 +131,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		// Generate a unique slug for the branch using main business slug
 		const branchSlug = generateBranchSlug(mainBusiness.slug ?? '');
 
-		// Use the main business values but update state, district, city, and add branch notes
+		// Use the main business values but update level1, level2, city, and add branch notes
 		const [insertedBranch] = await db
 			.insert(businessProfiles)
 			.values({
@@ -146,9 +146,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				phonenumber: mainBusiness.phonenumber,
 				email: mainBusiness.email,
 				website: mainBusiness.website,
-				gstn: mainBusiness.gstn,
-				state, // Use the provided state
-				district, // Use the provided district
+				taxId: mainBusiness.taxId,
+				level1: state, // Use the provided state
+				level2: district, // Use the provided district
 				tag: mainBusiness.tag,
 				slug: branchSlug, // Use the generated branch slug
 				notes: `Branch office of ${mainBusiness.businessname}`, // Mark it as a branch

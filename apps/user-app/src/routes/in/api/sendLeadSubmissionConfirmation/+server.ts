@@ -13,14 +13,14 @@ interface InstallerRow {
 	phonenumber: string | null;
 }
 
-// `businesses.businessname` is nullable in the schema; InstallerRow has always
+// `businessProfiles.businessname` is nullable in the schema; InstallerRow has always
 // declared it non-null and the template renders it unguarded. Restate the
 // existing contract rather than widen the interface — renders as the bare
 // column, so the SQL is unchanged.
 const INSTALLER_SELECTION = {
-	businessname: sql<string>`${schema.businesses.businessname}`,
-	address: schema.businesses.address,
-	phonenumber: schema.businesses.phonenumber
+	businessname: sql<string>`${schema.businessProfiles.businessname}`,
+	address: schema.businessProfiles.address,
+	phonenumber: schema.businessProfiles.phonenumber
 };
 
 export const POST: RequestHandler = async ({ request, fetch }) => {
@@ -61,9 +61,9 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 						.from(schema.businesses)
 						.where(
 							and(
-								eq(schema.businesses.countryCode, 'in'),
-								eq(schema.businesses.slug, slugMatch[1]),
-								eq(schema.businesses.isvisible, true)
+								eq(schema.businessProfiles.countryCode, 'in'),
+								eq(schema.businessProfiles.slug, slugMatch[1]),
+								eq(schema.businessProfiles.isvisible, true)
 							)
 						)
 						.limit(1);
@@ -74,14 +74,14 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 					.from(schema.businesses)
 					.where(
 						and(
-							eq(schema.businesses.countryCode, 'in'),
+							eq(schema.businessProfiles.countryCode, 'in'),
 							// `sql` escape hatch: case-insensitive district compare, as
 							// in the raw SQL. Same pattern as Phase 1's getCities.
-							sql`LOWER(${schema.businesses.level2}) = LOWER(${district})`,
-							eq(schema.businesses.isvisible, true)
+							sql`LOWER(${schema.businessProfiles.level2}) = LOWER(${district})`,
+							eq(schema.businessProfiles.isvisible, true)
 						)
 					)
-					.orderBy(sql`${schema.businesses.rscore} DESC NULLS LAST`)
+					.orderBy(sql`${schema.businessProfiles.rscore} DESC NULLS LAST`)
 					.limit(5);
 			}
 		} catch (e) {

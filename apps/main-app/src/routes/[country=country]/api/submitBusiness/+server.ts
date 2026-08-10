@@ -9,7 +9,8 @@ import { isCountry } from '$lib/countries';
 // Since migration 054 both countries write the same legacy tables, keyed by
 // country_code, so the separate insertUsBusiness() path is gone. The US column
 // renames it used to apply (ein/county/zipcode) no longer exist — 054 copied
-// the US rows into the IN columns, so gstn/district/pincode are the only names.
+// the US rows into the IN columns; 063 then renamed those to the country-neutral
+// tax_id/level1/level2/postal_code, which are now the only names.
 //
 // This must ship together with 055, which repoints sv_sync_*('us', …) at these
 // tables. A writer here without that migration writes rows the sync cannot see.
@@ -76,7 +77,7 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 				.where(
 					and(
 						eq(businessProfiles.countryCode, country),
-						eq(businessProfiles.gstn, gstn as string)
+						eq(businessProfiles.taxId, gstn as string)
 					)
 				);
 
@@ -123,9 +124,9 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 				whatsapp: whatsappNumber || null,
 				email: email || null,
 				website: website || null,
-				gstn: gstn || null,
-				state,
-				district,
+				taxId: gstn || null,
+				level1: state,
+				level2: district,
 				tag,
 				slug,
 				notes,

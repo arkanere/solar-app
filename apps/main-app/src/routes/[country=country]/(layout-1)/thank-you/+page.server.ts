@@ -53,7 +53,7 @@ export const load: PageServerLoad = async ({ url, params }) => {
 					.from(businessProfiles)
 					.where(
 						and(
-							eq(businessProfiles.district, lead.district),
+							eq(businessProfiles.level2, lead.district),
 							eq(businessProfiles.isvisible, true)
 						)
 					);

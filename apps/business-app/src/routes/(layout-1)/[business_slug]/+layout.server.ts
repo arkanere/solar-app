@@ -1,6 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { businesses, leads } from '@solar/db/schema';
+import { businessProfiles, leads } from '@solar/db/schema';
 import { and, count, eq, gt, inArray, sql } from 'drizzle-orm';
 import type { LayoutServerLoad } from './$types';
 import type { SessionData } from '$lib/types/auth';
@@ -94,7 +94,7 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 			// Load basic business info for sidebar.
 			//
 			// Resolved by the session's businessId, never by the slug in the URL.
-			// `businesses.slug` is not unique and cannot be made unique — see
+			// `businessProfiles.slug` is not unique and cannot be made unique — see
 			// next-steps.md item 1 — so a slug lookup returns an arbitrary row from
 			// a duplicate group, and every count below would then be computed for
 			// another company. The id came from the account's login email at login,
@@ -102,20 +102,20 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 			try {
 				const businessRows = await db
 					.select({
-						id: businesses.sourceId,
-						businessname: businesses.businessname,
-						slug: businesses.slug,
-						email: businesses.email,
-						description: businesses.description,
-						website: businesses.website,
-						google_maps_link: businesses.googleMapsLink,
-						brands: businesses.brands
+						id: businessProfiles.businessId,
+						businessname: businessProfiles.businessname,
+						slug: businessProfiles.slug,
+						email: businessProfiles.email,
+						description: businessProfiles.description,
+						website: businessProfiles.website,
+						google_maps_link: businessProfiles.googleMapsLink,
+						brands: businessProfiles.brands
 					})
-					.from(businesses)
+					.from(businessProfiles)
 					.where(
 						and(
-							eq(businesses.countryCode, country),
-							eq(businesses.sourceId, sessionData.businessId)
+							eq(businessProfiles.countryCode, country),
+							eq(businessProfiles.businessId, sessionData.businessId)
 						)
 					)
 					.limit(1);

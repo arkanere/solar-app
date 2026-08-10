@@ -2,7 +2,7 @@
 // (migration 043). Profile data only — auth lives elsewhere.
 
 import { db } from './db';
-import { businesses } from '@solar/db/schema';
+import { businessProfiles } from '@solar/db/schema';
 import { and, asc, eq, sql } from 'drizzle-orm';
 import type { PgColumn } from 'drizzle-orm/pg-core';
 import type { CountryCode } from '$lib/countries';
@@ -38,52 +38,52 @@ export interface Business {
 // same way (`r.businessname as string`), so the wrapper preserves that
 // contract rather than widening the interface.
 const BUSINESS_SELECTION = {
-	id: businesses.id,
-	sourceId: businesses.sourceId,
-	slug: businesses.slug,
-	businessname: sql<string>`${businesses.businessname}`,
-	email: businesses.email,
-	phonenumber: businesses.phonenumber,
-	whatsapp: businesses.whatsapp,
-	description: businesses.description,
-	website: businesses.website,
-	instagramId: businesses.instagramId,
-	googleMapsLink: businesses.googleMapsLink,
-	address: businesses.address,
-	pluscode: businesses.pluscode,
-	services: businesses.services,
-	brands: businesses.brands,
-	level1: businesses.level1,
-	level2: businesses.level2,
-	city: businesses.city,
-	postalCode: businesses.postalCode,
-	rscore: businesses.rscore,
-	tag: businesses.tag,
-	tier3: businesses.tier3
+	id: businessProfiles.id,
+	sourceId: businessProfiles.businessId,
+	slug: businessProfiles.slug,
+	businessname: sql<string>`${businessProfiles.businessname}`,
+	email: businessProfiles.email,
+	phonenumber: businessProfiles.phonenumber,
+	whatsapp: businessProfiles.whatsapp,
+	description: businessProfiles.description,
+	website: businessProfiles.website,
+	instagramId: businessProfiles.instagramId,
+	googleMapsLink: businessProfiles.googleMapsLink,
+	address: businessProfiles.address,
+	pluscode: businessProfiles.pluscode,
+	services: businessProfiles.services,
+	brands: businessProfiles.brands,
+	level1: businessProfiles.level1,
+	level2: businessProfiles.level2,
+	city: businessProfiles.city,
+	postalCode: businessProfiles.postalCode,
+	rscore: businessProfiles.rscore,
+	tag: businessProfiles.tag,
+	tier3: businessProfiles.tier3
 };
 
 // `LOWER(col) = LOWER($n)` on both sides, and `NULLS LAST`, have no query
 // builder equivalent — both stay on the sql escape hatch.
 const lower = (col: PgColumn, value: string) => sql`LOWER(${col}) = LOWER(${value})`;
 
-const RSCORE_DESC = sql`${businesses.rscore} DESC NULLS LAST`;
+const RSCORE_DESC = sql`${businessProfiles.rscore} DESC NULLS LAST`;
 
 // The geo directory pages (solar/[state]/[district] and its [slug] leaf) ship
 // installer cards straight to the client, so this one keeps the table's
 // snake_case names — a different wire shape from Business above.
 export const BUSINESS_CARD_SELECTION = {
-	businessname: businesses.businessname,
-	description: businesses.description,
-	phonenumber: businesses.phonenumber,
-	slug: businesses.slug,
-	address: businesses.address,
-	pluscode: businesses.pluscode,
-	state: businesses.level1,
-	city: businesses.city,
-	tag: businesses.tag,
-	rscore: businesses.rscore,
-	businessfilled: businesses.businessfilled,
-	services: businesses.services
+	businessname: businessProfiles.businessname,
+	description: businessProfiles.description,
+	phonenumber: businessProfiles.phonenumber,
+	slug: businessProfiles.slug,
+	address: businessProfiles.address,
+	pluscode: businessProfiles.pluscode,
+	state: businessProfiles.level1,
+	city: businessProfiles.city,
+	tag: businessProfiles.tag,
+	rscore: businessProfiles.rscore,
+	businessfilled: businessProfiles.businessfilled,
+	services: businessProfiles.services
 };
 
 export async function getBusinessBySlug(
@@ -92,12 +92,12 @@ export async function getBusinessBySlug(
 ): Promise<Business | null> {
 	const rows = await db
 		.select(BUSINESS_SELECTION)
-		.from(businesses)
+		.from(businessProfiles)
 		.where(
 			and(
-				eq(businesses.countryCode, country),
-				eq(businesses.slug, slug),
-				eq(businesses.isvisible, true)
+				eq(businessProfiles.countryCode, country),
+				eq(businessProfiles.slug, slug),
+				eq(businessProfiles.isvisible, true)
 			)
 		)
 		.orderBy(RSCORE_DESC)
@@ -112,16 +112,16 @@ export async function getBusinessesByLevel2(
 ): Promise<Business[]> {
 	return db
 		.select(BUSINESS_SELECTION)
-		.from(businesses)
+		.from(businessProfiles)
 		.where(
 			and(
-				eq(businesses.countryCode, country),
-				lower(businesses.level2, level2),
-				level1 ? lower(businesses.level1, level1) : undefined,
-				eq(businesses.isvisible, true)
+				eq(businessProfiles.countryCode, country),
+				lower(businessProfiles.level2, level2),
+				level1 ? lower(businessProfiles.level1, level1) : undefined,
+				eq(businessProfiles.isvisible, true)
 			)
 		)
-		.orderBy(RSCORE_DESC, asc(businesses.businessname));
+		.orderBy(RSCORE_DESC, asc(businessProfiles.businessname));
 }
 
 export async function getBusinessesByCity(
@@ -131,16 +131,16 @@ export async function getBusinessesByCity(
 ): Promise<Business[]> {
 	return db
 		.select(BUSINESS_SELECTION)
-		.from(businesses)
+		.from(businessProfiles)
 		.where(
 			and(
-				eq(businesses.countryCode, country),
-				lower(businesses.city, city),
-				level2 ? lower(businesses.level2, level2) : undefined,
-				eq(businesses.isvisible, true)
+				eq(businessProfiles.countryCode, country),
+				lower(businessProfiles.city, city),
+				level2 ? lower(businessProfiles.level2, level2) : undefined,
+				eq(businessProfiles.isvisible, true)
 			)
 		)
-		.orderBy(RSCORE_DESC, asc(businesses.businessname));
+		.orderBy(RSCORE_DESC, asc(businessProfiles.businessname));
 }
 
 export async function hasBusinessesInLevel2(
@@ -150,13 +150,13 @@ export async function hasBusinessesInLevel2(
 ): Promise<boolean> {
 	const rows = await db
 		.select({ one: sql`1` })
-		.from(businesses)
+		.from(businessProfiles)
 		.where(
 			and(
-				eq(businesses.countryCode, country),
-				lower(businesses.level2, level2),
-				level1 ? lower(businesses.level1, level1) : undefined,
-				eq(businesses.isvisible, true)
+				eq(businessProfiles.countryCode, country),
+				lower(businessProfiles.level2, level2),
+				level1 ? lower(businessProfiles.level1, level1) : undefined,
+				eq(businessProfiles.isvisible, true)
 			)
 		)
 		.limit(1);

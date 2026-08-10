@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { businesses } from '@solar/db/schema';
+import { businessProfiles } from '@solar/db/schema';
 import { and, count, eq, sql } from 'drizzle-orm';
 import { getCountry } from '$lib/countries';
 
@@ -30,7 +30,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			WITH level2s AS (
 			  SELECT g.level1, g.level1_slug, g.level2,
 			         EXISTS (
-			           SELECT 1 FROM businesses b
+			           SELECT 1 FROM business_profiles b
 			           WHERE b.country_code = ${country.code}
 			             AND LOWER(b.level1) = LOWER(g.level1)
 			             AND LOWER(b.level2) = LOWER(g.level2)
@@ -43,7 +43,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			SELECT level1, level1_slug,
 			       COUNT(*) as level2_count,
 			       COUNT(*) FILTER (WHERE covered) as covered_level2_count,
-			       (SELECT COUNT(*) FROM businesses b
+			       (SELECT COUNT(*) FROM business_profiles b
 			        WHERE b.country_code = ${country.code}
 			          AND LOWER(b.level1) = LOWER(level2s.level1) AND b.isvisible = true) as installer_count
 			FROM level2s
@@ -52,8 +52,8 @@ export const load: PageServerLoad = async ({ params }) => {
 		`),
 		db
 			.select({ total_installers: count() })
-			.from(businesses)
-			.where(and(eq(businesses.countryCode, country.code), eq(businesses.isvisible, true)))
+			.from(businessProfiles)
+			.where(and(eq(businessProfiles.countryCode, country.code), eq(businessProfiles.isvisible, true)))
 	]);
 
 	const level1Rows = level1Result.rows;

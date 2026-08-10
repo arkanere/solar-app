@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { businesses, geoLocations, projects, stateSubsidies } from '@solar/db/schema';
+import { businessProfiles, geoLocations, projects, stateSubsidies } from '@solar/db/schema';
 import { and, asc, count, eq, max, sql } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 import { mostRecentDate } from '$lib/server/format';
@@ -28,9 +28,9 @@ export const load: PageServerLoad = async ({ params }) => {
 				level2_slug: geoLocations.level2Slug,
 				// level1 is part of the match because level2 names repeat across level1s
 				// (e.g. "Washington County" in many US states). The correlated scalar
-				// subquery needs its own alias for `businesses` and compares LOWER() on
-				// both sides, so it stays on the sql escape hatch.
-				installer_count: sql<string>`(SELECT COUNT(*) FROM businesses b
+				// subquery needs its own alias for `business_profiles` and compares
+				// LOWER() on both sides, so it stays on the sql escape hatch.
+				installer_count: sql<string>`(SELECT COUNT(*) FROM business_profiles b
 			         WHERE b.country_code = ${geoLocations.countryCode}
 			           AND LOWER(b.level1) = LOWER(${level1})
 			           AND LOWER(b.level2) = LOWER(${geoLocations.level2}) AND b.isvisible = true)`
@@ -44,14 +44,14 @@ export const load: PageServerLoad = async ({ params }) => {
 		db
 			.select({
 				installer_count: count(),
-				latest_installer_added: max(businesses.createdAt)
+				latest_installer_added: max(businessProfiles.createdAt)
 			})
-			.from(businesses)
+			.from(businessProfiles)
 			.where(
 				and(
-					eq(businesses.countryCode, country.code),
-					sql`LOWER(${businesses.level1}) = LOWER(${level1})`,
-					eq(businesses.isvisible, true)
+					eq(businessProfiles.countryCode, country.code),
+					sql`LOWER(${businessProfiles.level1}) = LOWER(${level1})`,
+					eq(businessProfiles.isvisible, true)
 				)
 			),
 		country.features.subsidy
@@ -74,14 +74,14 @@ export const load: PageServerLoad = async ({ params }) => {
 					.select({ latest_project_date: max(projects.projectDate) })
 					.from(projects)
 					.innerJoin(
-						businesses,
+						businessProfiles,
 						and(
-							eq(projects.businessSlug, businesses.slug),
-							eq(businesses.countryCode, country.code)
+							eq(projects.businessSlug, businessProfiles.slug),
+							eq(businessProfiles.countryCode, country.code)
 						)
 					)
 					.where(
-						and(sql`LOWER(${businesses.level1}) = LOWER(${level1})`, eq(projects.isvisible, true))
+						and(sql`LOWER(${businessProfiles.level1}) = LOWER(${level1})`, eq(projects.isvisible, true))
 					)
 			: Promise.resolve([])
 	]);

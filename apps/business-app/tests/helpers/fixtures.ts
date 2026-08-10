@@ -105,7 +105,7 @@ export async function createBusiness(options: BusinessOptions = {}): Promise<num
 
 	const { rows } = await pool.query<{ business_id: number }>(
 		`INSERT INTO business_profiles
-		   (businessname, slug, district, state, city,
+		   (businessname, slug, level2, level1, city,
 		    isvisible, description, google_maps_link, brands)
 		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
 		 RETURNING business_id`,
@@ -167,8 +167,8 @@ export async function createUsBusiness(options: UsBusinessOptions = {}): Promise
 
 	const { rows } = await pool.query<{ business_id: number }>(
 		`INSERT INTO business_profiles
-		   (country_code, businessname, slug, email, phonenumber, state,
-		    district, city, isvisible)
+		   (country_code, businessname, slug, email, phonenumber, level1,
+		    level2, city, isvisible)
 		 VALUES ('us',$1,$2,$3,$4,$5,$6,$7,$8)
 		 RETURNING business_id`,
 		[businessname, slug, email, phonenumber, state, county, city, isvisible]

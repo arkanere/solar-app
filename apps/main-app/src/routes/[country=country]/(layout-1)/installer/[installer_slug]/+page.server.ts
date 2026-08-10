@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { businesses, geoLocations, projects } from '@solar/db/schema';
+import { businessProfiles, geoLocations, projects } from '@solar/db/schema';
 import { and, asc, desc, eq, sql } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 import { getCountry } from '$lib/countries';
@@ -20,33 +20,33 @@ export const load: PageServerLoad = async ({ params }) => {
 	// rewriting the page.
 	const businessRows = await db
 		.select({
-			businessname: sql<string>`${businesses.businessname}`,
-			description: businesses.description,
-			phonenumber: sql<string>`${businesses.phonenumber}`,
-			email: businesses.email,
-			website: businesses.website,
-			slug: sql<string>`${businesses.slug}`,
-			address: businesses.address,
-			district: businesses.level2,
-			state: businesses.level1,
-			city: sql<string>`${businesses.city}`,
-			tag: businesses.tag,
-			rscore: businesses.rscore,
-			businessfilled: businesses.businessfilled,
-			services: sql<number[]>`${businesses.services}`,
-			brands: sql<number[]>`${businesses.brands}`,
-			instagram_id: businesses.instagramId,
-			google_maps_link: businesses.googleMapsLink
+			businessname: sql<string>`${businessProfiles.businessname}`,
+			description: businessProfiles.description,
+			phonenumber: sql<string>`${businessProfiles.phonenumber}`,
+			email: businessProfiles.email,
+			website: businessProfiles.website,
+			slug: sql<string>`${businessProfiles.slug}`,
+			address: businessProfiles.address,
+			district: businessProfiles.level2,
+			state: businessProfiles.level1,
+			city: sql<string>`${businessProfiles.city}`,
+			tag: businessProfiles.tag,
+			rscore: businessProfiles.rscore,
+			businessfilled: businessProfiles.businessfilled,
+			services: sql<number[]>`${businessProfiles.services}`,
+			brands: sql<number[]>`${businessProfiles.brands}`,
+			instagram_id: businessProfiles.instagramId,
+			google_maps_link: businessProfiles.googleMapsLink
 		})
-		.from(businesses)
+		.from(businessProfiles)
 		.where(
 			and(
-				eq(businesses.countryCode, country.code),
-				eq(businesses.slug, slug),
-				eq(businesses.isvisible, true)
+				eq(businessProfiles.countryCode, country.code),
+				eq(businessProfiles.slug, slug),
+				eq(businessProfiles.isvisible, true)
 			)
 		)
-		.orderBy(sql`${businesses.rscore} DESC NULLS LAST`)
+		.orderBy(sql`${businessProfiles.rscore} DESC NULLS LAST`)
 		.limit(1);
 
 	if (businessRows.length === 0) {

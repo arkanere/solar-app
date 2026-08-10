@@ -596,11 +596,11 @@ export const businessProfiles = pgTable("business_profiles", {
 	pluscode: varchar({ length: 255 }),
 	services: integer().array(),
 	brands: integer().array(),
-	gstn: varchar({ length: 50 }),
-	state: varchar({ length: 100 }),
-	district: varchar({ length: 100 }),
+	taxId: varchar("tax_id", { length: 50 }),
+	level1: varchar({ length: 100 }),
+	level2: varchar({ length: 100 }),
 	city: varchar({ length: 100 }),
-	pincode: char({ length: 6 }),
+	postalCode: varchar("postal_code", { length: 10 }),
 	rscore: integer(),
 	tag: varchar({ length: 255 }),
 	notes: text(),
@@ -611,8 +611,13 @@ export const businessProfiles = pgTable("business_profiles", {
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	countryCode: char("country_code", { length: 2 }).default('in').notNull(),
 }, (table) => [
-	index("business_profiles_country_idx").using("btree", table.countryCode.asc().nullsLast().op("bpchar_ops")),
-	index("business_profiles_slug_idx").using("btree", table.slug.asc().nullsLast().op("text_ops")),
+	index("business_profiles_country_slug_idx").using("btree", table.countryCode.asc().nullsLast().op("bpchar_ops"), table.slug.asc().nullsLast().op("text_ops")),
+	index("business_profiles_geo_idx").using("btree", table.countryCode.asc().nullsLast().op("text_ops"), table.level2.asc().nullsLast().op("text_ops"), table.isvisible.asc().nullsLast().op("bool_ops")),
+	foreignKey({
+			columns: [table.countryCode],
+			foreignColumns: [countries.code],
+			name: "business_profiles_country_code_fkey"
+		}),
 	unique("business_profiles_business_id_key").on(table.businessId),
 ]);
 

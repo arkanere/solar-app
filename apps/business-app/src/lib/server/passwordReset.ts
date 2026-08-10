@@ -11,7 +11,7 @@
 // businesses_1, so the mint and the auth layer's read are the same row.
 
 import { db } from '$lib/server/db';
-import { businessAccounts, businesses } from '@solar/db/schema';
+import { businessAccounts, businessProfiles } from '@solar/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { TokenSecurity } from '$lib/auth/business';
 import type { AuthCountry } from '$lib/auth/business/countryTables';
@@ -59,16 +59,16 @@ export async function findResetTargetByEmail(
 	const [row] = await db
 		.select({
 			businessId: businessAccounts.sourceId,
-			slug: businesses.slug,
-			businessname: businesses.businessname,
+			slug: businessProfiles.slug,
+			businessname: businessProfiles.businessname,
 			loginEmail: businessAccounts.loginEmail
 		})
 		.from(businessAccounts)
 		.innerJoin(
-			businesses,
+			businessProfiles,
 			and(
-				eq(businesses.countryCode, businessAccounts.countryCode),
-				eq(businesses.sourceId, businessAccounts.sourceId)
+				eq(businessProfiles.countryCode, businessAccounts.countryCode),
+				eq(businessProfiles.businessId, businessAccounts.sourceId)
 			)
 		)
 		.where(and(eq(businessAccounts.countryCode, country), eq(businessAccounts.loginEmail, email)))

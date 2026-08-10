@@ -1,9 +1,9 @@
 import { db } from '$lib/server/db';
-import { branches, businesses } from '@solar/db/schema';
+import { branches, businessProfiles } from '@solar/db/schema';
 import { aliasedTable, and, eq } from 'drizzle-orm';
 
-const main = aliasedTable(businesses, 'main');
-const branch = aliasedTable(businesses, 'branch');
+const main = aliasedTable(businessProfiles, 'main');
+const branch = aliasedTable(businessProfiles, 'branch');
 
 /**
  * True when `targetSlug` is the session's own business or one of its active
@@ -19,8 +19,8 @@ export async function ownsBusinessSlug(
 	const branchCheck = await db
 		.select({ id: branches.id })
 		.from(branches)
-		.innerJoin(main, and(eq(main.countryCode, 'in'), eq(branches.mainId, main.sourceId)))
-		.innerJoin(branch, and(eq(branch.countryCode, 'in'), eq(branches.branchId, branch.sourceId)))
+		.innerJoin(main, and(eq(main.countryCode, 'in'), eq(branches.mainId, main.businessId)))
+		.innerJoin(branch, and(eq(branch.countryCode, 'in'), eq(branches.branchId, branch.businessId)))
 		.where(
 			and(
 				eq(main.slug, sessionBusinessSlug),

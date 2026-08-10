@@ -20,12 +20,17 @@ function event(body: unknown, cookies: ReturnType<typeof createSessionCookies>):
 	return { request: jsonRequest(body), cookies };
 }
 
-async function unifiedBranchesOf(country: 'in' | 'us', mainId: number) {
+async function branchesOf(country: 'in' | 'us', mainId: number) {
+	// Read business_profiles rather than the `businesses` projection: 063 gave
+	// this table the country-neutral names and 064 drops the projection, so the
+	// branch row itself is what there is to assert on. The country tagging this
+	// file exists to pin lives here — it was always the source column that was
+	// wrong, and the projection only made the symptom visible.
 	const { rows } = await pool.query<{ slug: string; country_code: string }>(
-		`SELECT b.slug, b.country_code
+		`SELECT p.slug, p.country_code
 		   FROM branches br
-		   JOIN businesses b
-		     ON b.source_id = br.branch_id AND b.country_code = $1
+		   JOIN business_profiles p
+		     ON p.business_id = br.branch_id AND p.country_code = $1
 		  WHERE br.main_id = $2`,
 		[country, mainId]
 	);
@@ -62,7 +67,7 @@ describe('api/addBranch country tagging', () => {
 
 		// Before the fix the row landed in businesses_1 with country_code 'in',
 		// so the 'us' sync was a no-op and this came back empty.
-		const branches = await unifiedBranchesOf('us', mainId);
+		const branches = await branchesOf('us', mainId);
 		expect(branches).toHaveLength(1);
 		expect(branches[0].country_code.trim()).toBe('us');
 	});
@@ -109,7 +114,7 @@ describe('api/addBranch country tagging', () => {
 		const result = await response.json();
 
 		expect(result.success).toBe(true);
-		const branches = await unifiedBranchesOf('in', mainId);
+		const branches = await branchesOf('in', mainId);
 		expect(branches).toHaveLength(1);
 		expect(branches[0].country_code.trim()).toBe('in');
 	});
@@ -129,6 +134,6 @@ describe('api/addBranch country tagging', () => {
 			)
 		);
 
-		expect(await unifiedBranchesOf('in', mainId)).toEqual([]);
+		expect(await branchesOf('in', mainId)).toEqual([]);
 	});
 });

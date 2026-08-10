@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { businesses, projects as projectsTable } from '@solar/db/schema';
+import { businessProfiles, projects as projectsTable } from '@solar/db/schema';
 import { and, desc, eq, isNull, or } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 
@@ -61,35 +61,35 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		// slugs are not unique (next-steps.md item 1).
 		const mainBusinessRows = await db
 			.select({
-				id: businesses.sourceId,
-				slug: businesses.slug,
-				businessname: businesses.businessname,
-				email: businesses.email,
-				phonenumber: businesses.phonenumber,
-				whatsapp: businesses.whatsapp,
-				description: businesses.description,
-				website: businesses.website,
-				instagram_id: businesses.instagramId,
-				google_maps_link: businesses.googleMapsLink,
-				address: businesses.address,
-				pluscode: businesses.pluscode,
-				services: businesses.services,
-				brands: businesses.brands,
-				gstn: businesses.taxId,
-				state: businesses.level1,
-				district: businesses.level2,
-				city: businesses.city,
-				pincode: businesses.postalCode,
-				rscore: businesses.rscore,
-				tag: businesses.tag,
-				businessfilled: businesses.businessfilled,
-				isvisible: businesses.isvisible
+				id: businessProfiles.businessId,
+				slug: businessProfiles.slug,
+				businessname: businessProfiles.businessname,
+				email: businessProfiles.email,
+				phonenumber: businessProfiles.phonenumber,
+				whatsapp: businessProfiles.whatsapp,
+				description: businessProfiles.description,
+				website: businessProfiles.website,
+				instagram_id: businessProfiles.instagramId,
+				google_maps_link: businessProfiles.googleMapsLink,
+				address: businessProfiles.address,
+				pluscode: businessProfiles.pluscode,
+				services: businessProfiles.services,
+				brands: businessProfiles.brands,
+				gstn: businessProfiles.taxId,
+				state: businessProfiles.level1,
+				district: businessProfiles.level2,
+				city: businessProfiles.city,
+				pincode: businessProfiles.postalCode,
+				rscore: businessProfiles.rscore,
+				tag: businessProfiles.tag,
+				businessfilled: businessProfiles.businessfilled,
+				isvisible: businessProfiles.isvisible
 			})
-			.from(businesses)
+			.from(businessProfiles)
 			.where(
 				and(
-					eq(businesses.countryCode, country),
-					eq(businesses.sourceId, parentData.business_session.businessId)
+					eq(businessProfiles.countryCode, country),
+					eq(businessProfiles.businessId, parentData.business_session.businessId)
 				)
 			);
 

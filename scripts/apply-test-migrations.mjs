@@ -75,7 +75,14 @@ const POST_BASELINE_MIGRATIONS = [
 	// sv_sync_in_split, which 047/050/055 recreate above; without it the test
 	// database keeps two functions production no longer has, both reading a
 	// table that no longer exists under that name.
-	'062-archive-businesses-1.sql'
+	'062-archive-businesses-1.sql',
+	// The country-neutral column names on business_profiles, plus the composite
+	// indexes and the countries FK. Last because everything above addresses the
+	// old names — 054's ALTERs and CREATE INDEXes, and 055/061's sv_sync_business
+	// bodies — and this is what renames them forward, exactly as on live. It also
+	// leaves sv_sync_business sourcing the renamed columns, which is the version
+	// production runs; 061's is replayed first and immediately replaced here.
+	'063-country-neutral-profile-columns.sql'
 ];
 
 // 061 renamed in_business_profiles to business_profiles, so the generated
@@ -103,7 +110,27 @@ const POST_BASELINE_MIGRATIONS = [
 // The sequence's OWNED BY is deliberately not wound back. It is invisible to
 // every statement replayed below — it only decides what a DROP TABLE takes with
 // it, and nothing here drops either table.
+// 063 joins the same list, and it has to be undone FIRST — it replaced the two
+// bare indexes with composites, so the index renames below have nothing to
+// rename until its half is wound back. Its column renames matter for the same
+// reason 054 needs the old table name: 054, 055 and 061 all address
+// gstn/state/district/pincode by name, in DDL and in sv_sync_business bodies.
+//
+// The countries FK has to go too, or replaying 063 fails on a duplicate
+// constraint name. postal_code's type is deliberately NOT wound back to char(6):
+// nothing replayed below reads the type, and 063's widening is a no-op when it
+// runs against varchar(10) again.
 const REWIND_TO_PRE_061 = `
+	ALTER TABLE business_profiles RENAME COLUMN tax_id      TO gstn;
+	ALTER TABLE business_profiles RENAME COLUMN level1      TO state;
+	ALTER TABLE business_profiles RENAME COLUMN level2      TO district;
+	ALTER TABLE business_profiles RENAME COLUMN postal_code TO pincode;
+	ALTER TABLE business_profiles DROP CONSTRAINT business_profiles_country_code_fkey;
+	DROP INDEX business_profiles_geo_idx;
+	DROP INDEX business_profiles_country_slug_idx;
+	CREATE INDEX business_profiles_country_idx ON business_profiles USING btree (country_code);
+	CREATE INDEX business_profiles_slug_idx ON business_profiles USING btree (slug);
+
 	ALTER TABLE business_profiles RENAME TO in_business_profiles;
 	ALTER INDEX business_profiles_slug_idx RENAME TO in_business_profiles_slug_idx;
 	ALTER INDEX business_profiles_country_idx RENAME TO in_business_profiles_country_idx;

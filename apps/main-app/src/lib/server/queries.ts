@@ -37,13 +37,13 @@ export async function getDistrictsWithInstallerCounts(): Promise<DistrictWithIns
 			.orderBy(asc(geoLocations.level1), asc(geoLocations.level2)),
 		db
 			.select({
-				state: sql<string>`LOWER(${businessProfiles.state})`,
-				district: sql<string>`LOWER(${businessProfiles.district})`,
+				state: sql<string>`LOWER(${businessProfiles.level1})`,
+				district: sql<string>`LOWER(${businessProfiles.level2})`,
 				cnt: count()
 			})
 			.from(businessProfiles)
 			.where(eq(businessProfiles.isvisible, true))
-			.groupBy(sql`LOWER(${businessProfiles.state})`, sql`LOWER(${businessProfiles.district})`)
+			.groupBy(sql`LOWER(${businessProfiles.level1})`, sql`LOWER(${businessProfiles.level2})`)
 	]);
 
 	const countMap = new Map<string, number>();
@@ -86,7 +86,7 @@ export async function getTopDistricts(limit = 5): Promise<TopDistrict[]> {
 		.innerJoin(
 			businessProfiles,
 			and(
-				sql`lower(${businessProfiles.district}) = lower(${geoLocations.level2})`,
+				sql`lower(${businessProfiles.level2}) = lower(${geoLocations.level2})`,
 				eq(businessProfiles.isvisible, true)
 			)
 		)

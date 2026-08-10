@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import { db } from '$lib/server/db';
-import { businessAccounts, businesses } from '@solar/db/schema';
+import { businessAccounts, businessProfiles } from '@solar/db/schema';
 import { and, eq } from 'drizzle-orm';
 import type { Business, AuthResponse } from '$lib/types/auth';
 import { AUTH_ERRORS, SUCCESS_RESPONSE, ERROR_RESPONSE } from '$lib/types/auth';
@@ -25,17 +25,17 @@ export class PasswordManager {
 				.select({ loginPassword: businessAccounts.loginPassword })
 				.from(businessAccounts)
 				.innerJoin(
-					businesses,
+					businessProfiles,
 					and(
-						eq(businesses.countryCode, businessAccounts.countryCode),
-						eq(businesses.sourceId, businessAccounts.sourceId)
+						eq(businessProfiles.countryCode, businessAccounts.countryCode),
+						eq(businessProfiles.businessId, businessAccounts.sourceId)
 					)
 				)
 				.where(
 					and(
 						eq(businessAccounts.countryCode, this.country),
 						eq(businessAccounts.loginEmail, email),
-						eq(businesses.slug, business.slug)
+						eq(businessProfiles.slug, business.slug)
 					)
 				);
 

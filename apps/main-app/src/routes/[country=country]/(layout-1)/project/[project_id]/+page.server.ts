@@ -37,8 +37,8 @@ export const load: PageServerLoad = async ({ params }) => {
 			businessname: sql<string>`${businessProfiles.businessname}`,
 			business_slug: sql<string>`${businessProfiles.slug}`,
 			business_city: sql<string>`${businessProfiles.city}`,
-			business_district: sql<string>`${businessProfiles.district}`,
-			business_state: sql<string>`${businessProfiles.state}`,
+			business_district: sql<string>`${businessProfiles.level2}`,
+			business_state: sql<string>`${businessProfiles.level1}`,
 			phonenumber: sql<string>`${businessProfiles.phonenumber}`
 		})
 		.from(projects)

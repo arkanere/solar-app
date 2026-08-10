@@ -125,12 +125,12 @@ export const load: PageServerLoad = async ({ cookies }) => {
 					lead_pin_code: original.postalCode,
 					lead_type: original.type,
 					lead_created_at: sql<Date | null>`${original.createdAt}`,
-					business_id: schema.businesses.sourceId,
-					businessname: schema.businesses.businessname,
-					business_slug: schema.businesses.slug,
-					business_district: schema.businesses.level2,
-					business_state: schema.businesses.level1,
-					business_phone: schema.businesses.phonenumber,
+					business_id: schema.businessProfiles.businessId,
+					businessname: schema.businessProfiles.businessname,
+					business_slug: schema.businessProfiles.slug,
+					business_district: schema.businessProfiles.level2,
+					business_state: schema.businessProfiles.level1,
+					business_phone: schema.businessProfiles.phonenumber,
 					interest_received_at: sql<Date | null>`${schema.leaddataClaimrequests.createdAt}`,
 					isallotted: schema.leaddataClaimrequests.isallotted,
 					isresolved: schema.leaddataClaimrequests.isresolved
@@ -151,8 +151,8 @@ export const load: PageServerLoad = async ({ cookies }) => {
 				.leftJoin(
 					schema.businesses,
 					and(
-						eq(schema.businesses.countryCode, 'in'),
-						eq(schema.businesses.sourceId, claimed.businessId)
+						eq(schema.businessProfiles.countryCode, 'in'),
+						eq(schema.businessProfiles.businessId, claimed.businessId)
 					)
 				)
 				.leftJoin(

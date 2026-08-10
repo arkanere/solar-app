@@ -7,7 +7,7 @@
 // feed them.
 
 import { db } from '$lib/server/db';
-import { businessAccounts, businesses } from '@solar/db/schema';
+import { businessAccounts, businessProfiles } from '@solar/db/schema';
 import { and, eq } from 'drizzle-orm';
 import type { AuthCountry } from '$lib/auth/business/countryTables';
 
@@ -34,9 +34,9 @@ export async function countryForSlug(slug: string): Promise<AuthCountry | null> 
 	if (!slug) return null;
 
 	const rows = await db
-		.select({ countryCode: businesses.countryCode })
-		.from(businesses)
-		.where(and(eq(businesses.slug, slug), eq(businesses.isvisible, true)))
+		.select({ countryCode: businessProfiles.countryCode })
+		.from(businessProfiles)
+		.where(and(eq(businessProfiles.slug, slug), eq(businessProfiles.isvisible, true)))
 		.limit(1);
 
 	return toCountry(rows[0]?.countryCode);

@@ -4,7 +4,7 @@
 // scans.
 
 import { db } from './db';
-import { businesses, geoLocations } from '@solar/db/schema';
+import { businessProfiles, geoLocations } from '@solar/db/schema';
 import { and, asc, countDistinct, desc, eq, exists, sql } from 'drizzle-orm';
 import type { CountryCode } from '$lib/countries';
 
@@ -135,12 +135,12 @@ function hasVisibleBusinessesInLevel1() {
 	return exists(
 		db
 			.select({ one: sql`1` })
-			.from(businesses)
+			.from(businessProfiles)
 			.where(
 				and(
-					eq(businesses.countryCode, geoLocations.countryCode),
-					sql`LOWER(${businesses.level1}) = LOWER(${geoLocations.level1})`,
-					eq(businesses.isvisible, true)
+					eq(businessProfiles.countryCode, geoLocations.countryCode),
+					sql`LOWER(${businessProfiles.level1}) = LOWER(${geoLocations.level1})`,
+					eq(businessProfiles.isvisible, true)
 				)
 			)
 	);
@@ -150,12 +150,12 @@ function hasVisibleBusinessesInLevel2() {
 	return exists(
 		db
 			.select({ one: sql`1` })
-			.from(businesses)
+			.from(businessProfiles)
 			.where(
 				and(
-					eq(businesses.countryCode, geoLocations.countryCode),
-					sql`LOWER(${businesses.level2}) = LOWER(${geoLocations.level2})`,
-					eq(businesses.isvisible, true)
+					eq(businessProfiles.countryCode, geoLocations.countryCode),
+					sql`LOWER(${businessProfiles.level2}) = LOWER(${geoLocations.level2})`,
+					eq(businessProfiles.isvisible, true)
 				)
 			)
 	);
@@ -215,7 +215,7 @@ export interface TopLevel2 {
 
 // Generalizes queries.ts getTopDistricts to any country.
 export async function getTopLevel2s(country: CountryCode, limit = 5): Promise<TopLevel2[]> {
-	const installerCount = countDistinct(businesses.sourceId);
+	const installerCount = countDistinct(businessProfiles.businessId);
 	const rows = await db
 		.select({
 			name: geoLocations.level2,
@@ -226,11 +226,11 @@ export async function getTopLevel2s(country: CountryCode, limit = 5): Promise<To
 		})
 		.from(geoLocations)
 		.innerJoin(
-			businesses,
+			businessProfiles,
 			and(
-				eq(businesses.countryCode, geoLocations.countryCode),
-				sql`LOWER(${businesses.level2}) = LOWER(${geoLocations.level2})`,
-				eq(businesses.isvisible, true)
+				eq(businessProfiles.countryCode, geoLocations.countryCode),
+				sql`LOWER(${businessProfiles.level2}) = LOWER(${geoLocations.level2})`,
+				eq(businessProfiles.isvisible, true)
 			)
 		)
 		.where(eq(geoLocations.countryCode, country))

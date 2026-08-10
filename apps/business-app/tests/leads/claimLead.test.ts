@@ -365,15 +365,15 @@ describe('branch auto-creation', () => {
 		// main business — owns the allocated lead. Since migration 062 that means
 		// a row in each half of the split: the profile carries the district and
 		// slug, the account the login it shares with its parent.
-		const { rows: bizRows } = await pool.query<{ district: string; slug: string; login_email: string }>(
-			`SELECT p.district, p.slug, a.login_email
+		const { rows: bizRows } = await pool.query<{ level2: string; slug: string; login_email: string }>(
+			`SELECT p.level2, p.slug, a.login_email
 			   FROM business_profiles p
 			   JOIN business_accounts a
 			     ON a.country_code = p.country_code AND a.source_id = p.business_id
 			  WHERE p.business_id = $1`,
 			[branchId]
 		);
-		expect(bizRows[0].district).toBe('Nashik');
+		expect(bizRows[0].level2).toBe('Nashik');
 		expect(bizRows[0].slug).toMatch(/^acme-solar-branch-/);
 		expect(bizRows[0].login_email).toBe('acme-solar@example.test');
 		expect(body.newLead!.business_id).toBe(branchId);

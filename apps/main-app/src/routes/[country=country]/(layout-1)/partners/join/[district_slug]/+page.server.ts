@@ -31,7 +31,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			.from(businessProfiles)
 			.where(
 				and(
-					sql`LOWER(${businessProfiles.district}) = LOWER(${district})`,
+					sql`LOWER(${businessProfiles.level2}) = LOWER(${district})`,
 					eq(businessProfiles.isvisible, true)
 				)
 			),

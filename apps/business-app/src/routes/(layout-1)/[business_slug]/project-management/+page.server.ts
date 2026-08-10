@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { businesses, leads, projectManagement } from '@solar/db/schema';
+import { businessProfiles, leads, projectManagement } from '@solar/db/schema';
 import { and, desc, eq } from 'drizzle-orm';
 import { error, isHttpError } from '@sveltejs/kit';
 
@@ -51,10 +51,10 @@ export const load: PageServerLoad<PageData> = async ({ parent }) => {
 		// slugs are not unique (next-steps.md item 1), and businessId keys every
 		// project read below.
 		const businessRows = await db
-			.select({ id: businesses.sourceId, businessname: businesses.businessname })
-			.from(businesses)
+			.select({ id: businessProfiles.businessId, businessname: businessProfiles.businessname })
+			.from(businessProfiles)
 			.where(
-				and(eq(businesses.countryCode, country), eq(businesses.sourceId, business_session.businessId))
+				and(eq(businessProfiles.countryCode, country), eq(businessProfiles.businessId, business_session.businessId))
 			);
 
 		if (businessRows.length === 0) {
