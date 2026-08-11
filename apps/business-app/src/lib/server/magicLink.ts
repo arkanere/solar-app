@@ -2,8 +2,7 @@ import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '$lib/server/db';
 import { businessAccounts, svUser } from '@solar/db/schema';
-import { and, eq, sql } from 'drizzle-orm';
-import type { AuthCountry } from '$lib/auth/business/countryTables';
+import { eq, sql } from 'drizzle-orm';
 
 // Magic-link tokens are stored hashed at rest and expire after 15 days.
 // Emitters mint a fresh token, persist its hash, and email/return the raw token.
@@ -18,14 +17,15 @@ export function newMagicToken() {
 	return { raw, hash, expiresAt };
 }
 
-// Takes a country rather than a table name. The old signature named the
-// per-country business table ('businesses_1' | 'us_businesses'), a holdover
-// from when these were raw SQL strings; since 054 united those tables there is
-// only one to name, and what actually varies is the country_code filter.
-export async function mintBusinessTokenById(
-	country: AuthCountry,
-	businessId: number
-): Promise<string | null> {
+// Keyed by business id alone. The signature used to take a country as well,
+// because source_id was unique only per country — but business_profiles.business_id
+// carries `business_profiles_business_id_key`, so the id it holds is globally
+// unique, and 071 states that on business_accounts.source_id directly. A caller
+// that has the id therefore identifies exactly one account with it, and the
+// country it had to thread alongside was redundant. (It was also the failure
+// mode: admin-app's welcome mail 400'd for months because one hop in the chain
+// did not forward it.)
+export async function mintBusinessTokenById(businessId: number): Promise<string | null> {
 	const { raw, hash, expiresAt } = newMagicToken();
 
 	// Since 062 this writes business_accounts directly rather than staging the
@@ -38,9 +38,7 @@ export async function mintBusinessTokenById(
 	const updated = await db
 		.update(businessAccounts)
 		.set({ magicLinkToken: hash, magicLinkTokenExpiresAt: expiresAt.toISOString() })
-		.where(
-			and(eq(businessAccounts.sourceId, businessId), eq(businessAccounts.countryCode, country))
-		)
+		.where(eq(businessAccounts.sourceId, businessId))
 		.returning({ sourceId: businessAccounts.sourceId });
 
 	if (updated.length === 0) return null;

@@ -651,6 +651,7 @@ export const businessAccounts = pgTable("business_accounts", {
 			name: "business_accounts_country_code_fkey"
 		}),
 	unique("business_accounts_country_code_source_id_key").on(table.countryCode, table.sourceId),
+	unique("business_accounts_source_id_key").on(table.sourceId),
 ]);
 
 export const chatbotmessagesstore = pgTable("chatbotmessagesstore", {

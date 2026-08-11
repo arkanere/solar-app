@@ -45,7 +45,8 @@ CREATE TABLE "business_accounts" (
 	"last_login" timestamp,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "business_accounts_country_code_source_id_key" UNIQUE("country_code","source_id")
+	CONSTRAINT "business_accounts_country_code_source_id_key" UNIQUE("country_code","source_id"),
+	CONSTRAINT "business_accounts_source_id_key" UNIQUE("source_id")
 );
 
 CREATE TABLE "business_profiles" (

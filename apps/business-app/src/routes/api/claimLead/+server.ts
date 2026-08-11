@@ -448,7 +448,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 					return;
 				}
 				// Mint a fresh token (stored hashed); email the raw token.
-				const rawToken = await mintBusinessTokenById(country, allotmentBusinessId);
+				const rawToken = await mintBusinessTokenById(allotmentBusinessId);
 				const magicLink = `https://business.solarvipani.com/${slug}/signin-link/${rawToken}`;
 
 				const subject = 'New Lead Allotted - Solar Vipani';
