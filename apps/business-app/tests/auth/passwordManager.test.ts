@@ -92,6 +92,28 @@ describe('PasswordManager.validatePassword', () => {
 		}
 	});
 
+	it('never authenticates against a plaintext value stored in login_password', async () => {
+		// 074's premise. 6472 live rows held the literal string
+		// `businessadminzpassword` in login_password rather than a bcrypt hash —
+		// a seeded placeholder, not something anyone chose. It is safe only
+		// because bcrypt.compare() returns false for anything that is not a
+		// valid hash, so the obvious guess cannot get in. That is a property of
+		// bcrypt rather than of this code, which is exactly why it is worth a
+		// test: a rewrite that added a `stored === password` fallback (a
+		// plausible "support legacy passwords" change) would hand out 6472
+		// accounts at once, and every other test here would still pass.
+		const id = await createBusiness({ slug: 'plaintext-pw', loginPassword: 'plaintextsecret' });
+		const business = businessRecord({ id, slug: 'plaintext-pw' });
+
+		const result = await manager.validatePassword(
+			'plaintext-pw@example.test',
+			'plaintextsecret',
+			business
+		);
+
+		expect(result.success).toBe(false);
+	});
+
 	it('rejects an unknown business rather than throwing', async () => {
 		const business = businessRecord({ id: 999, slug: 'does-not-exist' });
 
