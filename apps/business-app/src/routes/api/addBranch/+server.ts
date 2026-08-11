@@ -139,6 +139,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				// so the sv_sync_business('us', ...) below matched nothing and
 				// returned silently — success reported, branch never projected.
 				countryCode: country,
+				// 075: the branch's account is the main's. This is the column that
+				// says so, replacing the '-branch-' slug convention that admin-app
+				// used to reverse with SPLIT_PART to find its way back here.
+				accountBusinessId: businessId,
 				rscore: mainBusiness.rscore,
 				isvisible: mainBusiness.isvisible,
 				pluscode: mainBusiness.pluscode,

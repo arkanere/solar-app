@@ -114,6 +114,12 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 		const inserted = await db
 			.insert(businessProfiles)
 			.values({
+				// 075: a main business owns its own account, so account_business_id is
+				// its own business_id — which the DEFAULT does not hand out until the
+				// row exists. Hence the placeholder and the UPDATE below. There is no
+				// FK on the column, so the interim value is legal; 075's header
+				// explains why claiming the id off the sequence instead is not safe.
+				accountBusinessId: 0,
 				countryCode: country,
 				rscore,
 				isvisible,
@@ -136,6 +142,12 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 			.returning({ businessId: businessProfiles.businessId });
 
 		const businessId = inserted[0].businessId;
+
+		// Point the profile at its own account now that it has an id.
+		await db
+			.update(businessProfiles)
+			.set({ accountBusinessId: businessId })
+			.where(eq(businessProfiles.businessId, businessId));
 
 		// The account half. sv_sync_account used to write this row by reading
 		// login_email back out of businesses_1; with that table archived, the only

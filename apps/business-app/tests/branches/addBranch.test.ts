@@ -119,6 +119,48 @@ describe('api/addBranch country tagging', () => {
 		expect(branches[0].country_code.trim()).toBe('in');
 	});
 
+	it('points the new branch at its main as the account holder', async () => {
+		// 075. business_accounts is becoming one row per business rather than one
+		// per profile, so a branch has to name the profile whose account it uses.
+		// Before the column existed this relationship was recoverable only from
+		// the `-branch-` slug convention, which admin-app reversed with SPLIT_PART.
+		const mainId = await createBusiness({ slug: 'pune-solar', businessname: 'Pune Solar' });
+		const cookies = createSessionCookies({
+			id: mainId,
+			slug: 'pune-solar',
+			businessname: 'Pune Solar'
+		});
+
+		await addBranch(
+			event(
+				{ businessId: mainId, state: 'Maharashtra', district: 'Pune', city: 'Kothrud' },
+				cookies
+			)
+		);
+
+		const { rows } = await pool.query<{ business_id: number; account_business_id: number }>(
+			`SELECT p.business_id, p.account_business_id
+			   FROM branches br JOIN business_profiles p ON p.business_id = br.branch_id
+			  WHERE br.main_id = $1`,
+			[mainId]
+		);
+
+		expect(rows).toHaveLength(1);
+		expect(rows[0].account_business_id).toBe(mainId);
+		expect(rows[0].account_business_id).not.toBe(rows[0].business_id);
+	});
+
+	it('leaves a main business owning its own account', async () => {
+		const mainId = await createBusiness({ slug: 'pune-solar' });
+
+		const { rows } = await pool.query<{ account_business_id: number }>(
+			'SELECT account_business_id FROM business_profiles WHERE business_id = $1',
+			[mainId]
+		);
+
+		expect(rows[0].account_business_id).toBe(mainId);
+	});
+
 	it('does not cross-project a branch into the other country', async () => {
 		const mainId = await createUsBusiness({ slug: 'oakland-solar', city: 'Oakland' });
 		const cookies = createSessionCookies({

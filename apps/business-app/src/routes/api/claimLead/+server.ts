@@ -288,6 +288,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 							.insert(businessProfiles)
 							.values({
 								countryCode: country,
+								// 075: the branch's account is the main's, stated rather than
+								// implied by the '-branch-' slug built just above.
+								accountBusinessId: mainBusinessId,
 								rscore: main.rscore,
 								isvisible: main.isvisible,
 								pluscode: main.pluscode,

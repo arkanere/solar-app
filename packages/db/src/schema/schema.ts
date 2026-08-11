@@ -552,7 +552,9 @@ export const businessProfiles = pgTable("business_profiles", {
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	countryCode: char("country_code", { length: 2 }).default('in').notNull(),
+	accountBusinessId: integer("account_business_id").notNull(),
 }, (table) => [
+	index("business_profiles_account_business_id_idx").using("btree", table.accountBusinessId.asc().nullsLast().op("int4_ops")),
 	index("business_profiles_country_slug_idx").using("btree", table.countryCode.asc().nullsLast().op("bpchar_ops"), table.slug.asc().nullsLast().op("text_ops")),
 	index("business_profiles_geo_idx").using("btree", table.countryCode.asc().nullsLast().op("text_ops"), table.level2.asc().nullsLast().op("text_ops"), table.isvisible.asc().nullsLast().op("bool_ops")),
 	foreignKey({

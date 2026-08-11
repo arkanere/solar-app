@@ -103,15 +103,25 @@ export async function createBusiness(options: BusinessOptions = {}): Promise<num
 		lastLogin = null
 	} = options;
 
+	// A main names itself, and its id comes from the column DEFAULT — so the row
+	// is inserted first and points at itself second. Do not try to claim the id
+	// off the sequence to do it in one statement: the DEFAULT is
+	// businesses_1_id_seq (062 reassigned it) but the baseline's `serial` owns a
+	// different sequence here, so no name is right in both databases. 075's header
+	// has the detail. The app's main-insert path has the same two steps.
 	const { rows } = await pool.query<{ business_id: number }>(
 		`INSERT INTO business_profiles
 		   (businessname, slug, level2, level1, city,
-		    isvisible, description, google_maps_link, brands)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+		    isvisible, description, google_maps_link, brands, account_business_id)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9, 0)
 		 RETURNING business_id`,
 		[businessname, slug, district, state, city, isvisible, description, googleMapsLink, brands]
 	);
 	const id = rows[0].business_id;
+	await pool.query(
+		'UPDATE business_profiles SET account_business_id = business_id WHERE business_id = $1',
+		[id]
+	);
 
 	await pool.query(
 		`INSERT INTO business_accounts
@@ -162,15 +172,20 @@ export async function createUsBusiness(options: UsBusinessOptions = {}): Promise
 		isvisible = true
 	} = options;
 
+	// Insert, then point at itself — same two steps and same reason as createBusiness.
 	const { rows } = await pool.query<{ business_id: number }>(
 		`INSERT INTO business_profiles
 		   (country_code, businessname, slug, email, phonenumber, level1,
-		    level2, city, isvisible)
-		 VALUES ('us',$1,$2,$3,$4,$5,$6,$7,$8)
+		    level2, city, isvisible, account_business_id)
+		 VALUES ('us',$1,$2,$3,$4,$5,$6,$7,$8, 0)
 		 RETURNING business_id`,
 		[businessname, slug, email, phonenumber, state, county, city, isvisible]
 	);
 	const id = rows[0].business_id;
+	await pool.query(
+		'UPDATE business_profiles SET account_business_id = business_id WHERE business_id = $1',
+		[id]
+	);
 
 	await pool.query(
 		`INSERT INTO business_accounts
@@ -254,6 +269,13 @@ export async function createBranch(mainId: number, branchId: number, isactive = 
 		mainId,
 		branchId,
 		isactive
+	]);
+	// 075: a branch profile names its main as the account holder. createBusiness
+	// makes every profile self-pointing, so becoming a branch is what repoints it
+	// — the same order the app does it in (insert the profile, then link it).
+	await pool.query('UPDATE business_profiles SET account_business_id = $1 WHERE business_id = $2', [
+		mainId,
+		branchId
 	]);
 }
 

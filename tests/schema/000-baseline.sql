@@ -79,6 +79,7 @@ CREATE TABLE "business_profiles" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"country_code" char(2) DEFAULT 'in' NOT NULL,
+	"account_business_id" integer NOT NULL,
 	CONSTRAINT "business_profiles_business_id_key" UNIQUE("business_id")
 );
 
@@ -588,6 +589,7 @@ ALTER TABLE "sv_proposals" ADD CONSTRAINT "proposals_lead_id_fkey" FOREIGN KEY (
 ALTER TABLE "sv_user_feedback" ADD CONSTRAINT "in_user_feedback_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."sv_user"("id") ON DELETE no action ON UPDATE no action;
 CREATE INDEX "business_accounts_login_email_idx" ON "business_accounts" USING btree ("country_code","login_email");
 CREATE INDEX "business_accounts_magic_token_idx" ON "business_accounts" USING btree ("country_code","magic_link_token");
+CREATE INDEX "business_profiles_account_business_id_idx" ON "business_profiles" USING btree ("account_business_id");
 CREATE INDEX "business_profiles_country_slug_idx" ON "business_profiles" USING btree ("country_code","slug");
 CREATE INDEX "business_profiles_geo_idx" ON "business_profiles" USING btree ("country_code","level2","isvisible");
 CREATE UNIQUE INDEX "callsafe_unsubscribe_email_idx" ON "callsafe_unsubscribe" USING btree ("email");
