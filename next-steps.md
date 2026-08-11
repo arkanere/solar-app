@@ -6,41 +6,7 @@
 
 ## Open
 
-1. **Duplicate `business_profiles.slug` values in live IN data.** Surveyed 2026-08-09.
-
-   **6708 profiles, 6518 distinct slugs, 36 NULL.**
-
-   **The largest offender is not a duplicate at all.** The literal slug `incorrect` is on **125
-   rows** spanning 117 distinct business names and 90 cities — a sentinel, not a collision. 124 of
-   the 125 are `isvisible = f`. Those businesses have no usable URL, which is arguably a bigger gap
-   than the collisions. Nobody has traced which writer produces it; do that before fixing, or it
-   comes back.
-
-   **The genuine collisions are 24 slugs / 54 rows**, and they have a consistent shape: in every
-   group **at most one row is `isvisible = t AND businessfilled = t`**. Eight groups have exactly one
-   live row plus invisible twins; sixteen are entirely invisible. The Spectrum groups (×5, ×4, ×3)
-   are identical in name, city and phone — true duplicate records. Every one of the 54 has an account
-   row with a password set, but only **5 have ever logged in**, all of them the visible row.
-
-   **This is a data task only — the code half is done and is not a security bug.** Every read and
-   write resolves the business by the session's `businessId`, never by the URL slug, and
-   `tests/routing/duplicateSlug.test.ts` holds that line.
-
-   **Remaining: de-duplicate, then `UNIQUE (slug)`.** The open question is now answered:
-   **`isvisible = f` is a soft-delete and the rows are kept.** So the losing rows get **re-slugged,
-   not deleted** — every one of the 54 stays, and the 46 invisible ones need a new slug rather than a
-   `DELETE`. That also means `UNIQUE (slug)` has to hold across soft-deleted rows, so it is a plain
-   unique constraint and not a partial index on `isvisible = t`.
-
-   **The `incorrect` sentinel stays as it is** (decided 2026-08-10) — those 125 rows are not part of
-   the de-duplication. Tracing which writer produces it is still worth doing before any future fix,
-   but it is not blocking the collision work.
-
-   The duplicates are also why `business_profiles` cannot take a `UNIQUE (slug)` constraint, and why
-   `api/resetPassword` matches on the token hash rather than on the slug alone (`cdeff73`) — any new
-   slug lookup has to assume duplicates until this is closed.
-
-2. **No US lead ever gets a `state`, so the US non-exclusive lead pool is permanently empty.** The
+1. **No US lead ever gets a `state`, so the US non-exclusive lead pool is permanently empty.** The
    dashboard's and `/crm`'s category-1 read matches `leaddata.level1 IN (business states)`, but
    every writer of a US lead leaves `leaddata.level1` null: `insertLead()` resolves level1/level2
    from `pincode_mapping` behind a `country === 'in'` guard (`apps/main-app/src/lib/server/leads.ts`),
@@ -53,14 +19,14 @@
    one. Whoever fixes it should flip those two tests rather than delete them.
 
    **Decided 2026-08-10: the US postal-code data is going to be added**, in a later session. So this
-   is waiting on that import rather than on a decision — when the source lands, items 2 and 3 close
+   is waiting on that import rather than on a decision — when the source lands, items 1 and 2 close
    together.
 
-3. **`PostRecentProject.svelte:395-419` is India-shaped and US businesses reach it.** It labels its
+2. **`PostRecentProject.svelte:395-419` is India-shaped and US businesses reach it.** It labels its
    fields **"Pincode:"** and **"District (Auto-filled):"** and auto-fills from
    `/api/getDistrictByPincode`, which queries `pincode_mapping`. That is the one lookup
    `geo_locations` cannot replace — it has no postal-code column, and a live schema sweep found no US
-   zip source anywhere. Blocked on the same missing data as item 2; solve the two together.
+   zip source anywhere. Blocked on the same missing data as item 1; solve the two together.
 
    The sibling branch form was the same bug and is fixed (`d418a08`, `0a8351a`) — its dropdowns now
    read `geo_locations`, which is populated for both countries. Use it as the model, but note
@@ -120,7 +86,7 @@ lose its name and `check` would not catch it; and it omits `business_notes`, `qu
 `reference_uuid` and the four `bill_*` columns, two of which `CustomerInquiry.svelte` declares on its
 `Lead` type. That selection was shaped for the narrow legacy `us_leaddata` table; since 054 the surviving
 lead table carries these for both countries, so narrowing buys nothing. The real IN-only leakage is in
-the write forms — items 2 and 3.
+the write forms — items 1 and 2.
 
 **There is a FOURTH place, and it is not in this repo.** `solar-app-internal` — admin-app and
 `automation-scripts` — runs against the same production database. 060, 061, 062 and 065 all checked

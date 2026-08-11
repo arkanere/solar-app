@@ -1,6 +1,19 @@
 -- Replace the businessadminz@solar.com sentinel with NULL (2026-08-11).
 --
--- ** NOT YET APPLIED. **
+-- ** APPLIED to live 2026-08-11. ** UPDATE 5885. Afterwards: 0 rows carry the
+-- sentinel address, 5885 have a NULL login_email (0 did before), and the
+-- audience the four rewritten queries select is unchanged at 638 visible IN
+-- businesses — which is the point, the code change ahead of this was a no-op on
+-- every result set and this makes it correct rather than lucky.
+--
+-- One number in the notes below was wrong when written, and the apply exposed
+-- it: `businessadminzpassword` is on 6472 rows, not 5883. The extra 589 have
+-- *real* login emails, so this migration's WHERE (keyed on the sentinel address)
+-- did not clear them, by design — it updated 5885 rows and left those 589
+-- alone. They are now the entire remaining population of non-bcrypt passwords,
+-- and they are not the same shape as this seed: 441 have a visible profile, 152
+-- have logged in, and they span 448 distinct real addresses. That is a separate
+-- migration, not an oversight to fold in here.
 --
 -- `business_accounts.login_email` is nullable, and NULL already means "we have
 -- no address for this business" — claimLead checks for it by name ("There is
