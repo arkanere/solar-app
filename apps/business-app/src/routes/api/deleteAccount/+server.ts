@@ -3,8 +3,8 @@ import { countryForSlug } from '$lib/server/resolveCountry';
 import { json } from '@sveltejs/kit';
 import { SessionManager } from '$lib/auth/business';
 import type { RequestHandler } from './$types';
-import { branches, businessAccounts, businessProfiles } from '@solar/db/schema';
-import { and, eq, inArray } from 'drizzle-orm';
+import { businessAccounts, businessProfiles } from '@solar/db/schema';
+import { and, eq } from 'drizzle-orm';
 
 export const POST: RequestHandler = async ({ cookies }) => {
 
@@ -28,23 +28,27 @@ export const POST: RequestHandler = async ({ cookies }) => {
 
 		const businessId = sessionResult.session.businessId;
 
-		// Soft-delete the account: hide the business, disable re-login by clearing
-		// credentials, and deactivate/hide any branches it owns.
+		// Soft-delete the account: hide every location the business has, and
+		// disable re-login by clearing credentials.
 		//
-		// Since 062 this is two writes rather than one. `isvisible` is carried by
-		// both halves of the split — business_profiles feeds the public listing
-		// through sv_sync_business, business_accounts gates the auth layer
-		// (TokenManager.ts:32) — and the credentials only exist on the account
-		// side. Hiding one half and not the other leaves the account either
-		// visible or still able to log in.
+		// Still two writes, but they now answer two different questions rather than
+		// the same one twice. business_accounts.is_active (077) gates the login;
+		// business_profiles.isvisible decides whether a location is listed. Both
+		// have to be written — clearing only the account leaves the listings up,
+		// clearing only the profiles leaves a working login pointing at nothing.
+		//
+		// One statement covers the main and every branch: since 075 each of them
+		// names this business in account_business_id, and since 078 that is the
+		// only place the relationship is recorded. The three statements that used
+		// to walk `branches` to reach the same rows are gone with the table.
 		await db
 			.update(businessProfiles)
 			.set({ isvisible: false })
-			.where(eq(businessProfiles.businessId, businessId));
+			.where(eq(businessProfiles.accountBusinessId, businessId));
 
 		await db
 			.update(businessAccounts)
-			.set({ isvisible: false, loginPassword: null, magicLinkToken: null })
+			.set({ isActive: false, loginPassword: null, magicLinkToken: null })
 			.where(
 				and(
 					eq(businessAccounts.sourceId, businessId),
@@ -52,25 +56,8 @@ export const POST: RequestHandler = async ({ cookies }) => {
 				)
 			);
 
-		await db.update(branches).set({ isactive: false }).where(eq(branches.mainId, businessId));
-
-		const branchIds = db
-			.select({ branchId: branches.branchId })
-			.from(branches)
-			.where(eq(branches.mainId, businessId));
-
-		await db
-			.update(businessProfiles)
-			.set({ isvisible: false })
-			.where(inArray(businessProfiles.businessId, branchIds));
-
-		// Branches have no account row to hide since 075 — they share the main's,
-		// which the update above already cleared. The fourth statement that used to
-		// stand here blanked their duplicate credentials, and with the duplicates
-		// gone it would match nothing.
-
 		// No sync loop here any more. Both halves are stores since 062/064, so the
-		// three updates above are the entire soft-delete; the loop existed only to
+		// two updates above are the entire soft-delete; the loop existed only to
 		// drive sv_sync_business over the business and each of its branches, and
 		// `hiddenBranches` existed only to feed it.
 

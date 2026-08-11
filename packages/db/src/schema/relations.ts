@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { callsafeusers, callsafehandles, leaddata, svProposals, projectManagement, solarBrands, solarProducts, stateSubsidies, discoms, svUser, svUserFeedback, legalPolicies, legalAcceptances, countries, businessAccounts, businessProfiles, geoLocations } from "./schema";
+import { callsafeusers, callsafehandles, leaddata, svProposals, projectManagement, solarBrands, solarProducts, stateSubsidies, discoms, svUser, svUserFeedback, legalPolicies, legalAcceptances, countries, businessAccounts, geoLocations } from "./schema";
 
 export const callsafehandlesRelations = relations(callsafehandles, ({one}) => ({
 	callsafeuser: one(callsafeusers, {
@@ -89,7 +89,6 @@ export const legalPoliciesRelations = relations(legalPolicies, ({many}) => ({
 
 export const countriesRelations = relations(countries, ({many}) => ({
 	legalAcceptances: many(legalAcceptances),
-	businessProfiles: many(businessProfiles),
 	geoLocations: many(geoLocations),
 	businessAccounts: many(businessAccounts),
 	leaddata: many(leaddata),
@@ -103,12 +102,11 @@ export const businessAccountsRelations = relations(businessAccounts, ({one, many
 	}),
 }));
 
-export const businessProfilesRelations = relations(businessProfiles, ({one}) => ({
-	country: one(countries, {
-		fields: [businessProfiles.countryCode],
-		references: [countries.code]
-	}),
-}));
+// business_profiles has no `country` relation since 079 dropped its country_code
+// and the FK to countries with it. A profile's country is its account's, reached
+// through account_business_id -> business_accounts.source_id. That is not a
+// foreign key (075 explains why account_business_id cannot carry one), so pull
+// emits no relation for it and none is declared here.
 
 export const geoLocationsRelations = relations(geoLocations, ({one}) => ({
 	country: one(countries, {

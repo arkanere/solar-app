@@ -1,12 +1,14 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
 import {
+	businessAccounts,
 	businessProfiles as businessesTable,
 	leaddata,
 	pincodeMapping,
 	projects,
 	stateSubsidies
 } from '@solar/db/schema';
+import { accountOfProfile, businessInCountry } from '$lib/server/businessCountry';
 import { and, count, desc, eq, sql } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 import { getCountry } from '$lib/countries';
@@ -31,13 +33,20 @@ export const load: PageServerLoad = async ({ params }) => {
 	const { level1, level2 } = resolved;
 
 	const inLevel2 = and(
-		eq(businessesTable.countryCode, country.code),
+		// 079: country is the account's. Every query using `inLevel2` therefore
+		// joins businessAccounts on accountOfProfile — leaving the join off makes
+		// this predicate reference a table the query does not have.
+		businessInCountry(country.code),
 		sql`LOWER(${businessesTable.level2}) = LOWER(${level2})`,
 		eq(businessesTable.isvisible, true)
 	);
 
 	const [businessRows, projectRows, cities, subsidyRows, postalRows, leadRows] = await Promise.all([
-		db.select(BUSINESS_CARD_SELECTION).from(businessesTable).where(inLevel2),
+		db
+			.select(BUSINESS_CARD_SELECTION)
+			.from(businessesTable)
+			.innerJoin(businessAccounts, accountOfProfile)
+			.where(inLevel2),
 		country.features.projects
 			? db
 					.select({ ...PROJECT_CARD_SELECTION, district: projects.district })
@@ -53,6 +62,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			const cityRowsWithBusiness = await db
 				.selectDistinct({ city: sql<string>`LOWER(${businessesTable.city})` })
 				.from(businessesTable)
+				.innerJoin(businessAccounts, accountOfProfile)
 				.where(inLevel2);
 			const citiesWithBusiness = new Set(cityRowsWithBusiness.map((r) => r.city));
 			return cityRows.map((c) => ({

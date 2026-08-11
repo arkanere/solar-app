@@ -1,6 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { businessProfiles, svProposals } from '@solar/db/schema';
+import { businessAccounts, businessProfiles, svProposals } from '@solar/db/schema';
+import { accountOfProfile, businessInCountry } from '$lib/server/writeTargets';
 import { and, desc, eq } from 'drizzle-orm';
 import { error, isHttpError } from '@sveltejs/kit';
 
@@ -53,9 +54,13 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		const businessRows = await db
 			.select({ id: businessProfiles.businessId, businessname: businessProfiles.businessname, slug: businessProfiles.slug })
 			.from(businessProfiles)
-			.where(
-				and(eq(businessProfiles.countryCode, country), eq(businessProfiles.businessId, business_session.businessId))
-			);
+			// The country predicate is NOT redundant beside the id — see
+			// businessInCountry's doc comment in $lib/server/writeTargets. It asserts
+			// that the session's business and the country the layout resolved from the
+			// slug agree, which they can fail to do when a slug exists in both
+			// countries.
+			.innerJoin(businessAccounts, accountOfProfile)
+			.where(and(businessInCountry(country), eq(businessProfiles.businessId, business_session.businessId)));
 
 		if (businessRows.length === 0) {
 			throw error(404, 'Business not found');

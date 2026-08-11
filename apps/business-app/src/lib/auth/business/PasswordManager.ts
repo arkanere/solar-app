@@ -26,13 +26,12 @@ export class PasswordManager {
 				.from(businessAccounts)
 				.innerJoin(
 					businessProfiles,
-					and(
-						eq(businessProfiles.countryCode, businessAccounts.countryCode),
-						// 075: the credential lives on the account the profile names.
-						// For a branch that is its main's — which is what it has always
-						// been in effect, since the branch's own account was a copy.
-						eq(businessProfiles.accountBusinessId, businessAccounts.sourceId)
-					)
+					// 075: the credential lives on the account the profile names. For a
+					// branch that is its main's — which is what it has always been in
+					// effect, since the branch's own account was a copy. The country half
+					// of this condition went with 079: the profile has no country_code,
+					// and the account's is filtered below.
+					eq(businessProfiles.accountBusinessId, businessAccounts.sourceId)
 				)
 				.where(
 					and(

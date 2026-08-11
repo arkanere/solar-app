@@ -1,6 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { businessProfiles as businessesTable, pincodeMapping, projects } from '@solar/db/schema';
+import { businessAccounts, businessProfiles as businessesTable, pincodeMapping, projects } from '@solar/db/schema';
+import { accountOfProfile, businessInCountry } from '$lib/server/businessCountry';
 import { and, asc, desc, eq, sql } from 'drizzle-orm';
 import { error, redirect } from '@sveltejs/kit';
 import { getCountry } from '$lib/countries';
@@ -32,7 +33,10 @@ export const load: PageServerLoad = async ({ params }) => {
 	}
 
 	const inLevel2 = and(
-		eq(businessesTable.countryCode, country.code),
+		// 079: country is the account's. Every query using `inLevel2` therefore
+		// joins businessAccounts on accountOfProfile — leaving the join off makes
+		// this predicate reference a table the query does not have.
+		businessInCountry(country.code),
 		sql`LOWER(${businessesTable.level2}) = LOWER(${level2})`,
 		eq(businessesTable.isvisible, true)
 	);
@@ -44,6 +48,7 @@ export const load: PageServerLoad = async ({ params }) => {
 			db
 				.select(BUSINESS_CARD_SELECTION)
 				.from(businessesTable)
+				.innerJoin(businessAccounts, accountOfProfile)
 				.where(and(inLevel2, sql`LOWER(${businessesTable.city}) = LOWER(${city})`)),
 			country.features.projects
 				? db
@@ -92,6 +97,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		const siblingCityRows = await db
 			.selectDistinct({ city: businessesTable.city })
 			.from(businessesTable)
+			.innerJoin(businessAccounts, accountOfProfile)
 			.where(and(inLevel2, sql`LOWER(REPLACE(${businessesTable.city}, ' ', '-')) != ${slug}`))
 			.orderBy(asc(businessesTable.city))
 			.limit(5);
@@ -126,6 +132,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		const businessRows = await db
 			.select(BUSINESS_CARD_SELECTION)
 			.from(businessesTable)
+			.innerJoin(businessAccounts, accountOfProfile)
 			.where(
 				and(
 					inLevel2,
@@ -157,6 +164,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		const businessRows = await db
 			.select(BUSINESS_CARD_SELECTION)
 			.from(businessesTable)
+			.innerJoin(businessAccounts, accountOfProfile)
 			.where(inLevel2);
 
 		if (businessRows.length === 0) {

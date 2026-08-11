@@ -1,6 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { businessProfiles, geoLocations, projects, stateSubsidies } from '@solar/db/schema';
+import { businessAccounts, businessProfiles, geoLocations, projects, stateSubsidies } from '@solar/db/schema';
+import { accountOfProfile, businessInCountry } from '$lib/server/businessCountry';
 import { and, asc, count, eq, max, sql } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 import { mostRecentDate } from '$lib/server/format';
@@ -47,9 +48,10 @@ export const load: PageServerLoad = async ({ params }) => {
 				latest_installer_added: max(businessProfiles.createdAt)
 			})
 			.from(businessProfiles)
+			.innerJoin(businessAccounts, accountOfProfile)
 			.where(
 				and(
-					eq(businessProfiles.countryCode, country.code),
+					businessInCountry(country.code),
 					sql`LOWER(${businessProfiles.level1}) = LOWER(${level1})`,
 					eq(businessProfiles.isvisible, true)
 				)
@@ -73,15 +75,16 @@ export const load: PageServerLoad = async ({ params }) => {
 			? db
 					.select({ latest_project_date: max(projects.projectDate) })
 					.from(projects)
-					.innerJoin(
-						businessProfiles,
-						and(
-							eq(projects.businessSlug, businessProfiles.slug),
-							eq(businessProfiles.countryCode, country.code)
-						)
-					)
+					.innerJoin(businessProfiles, eq(projects.businessSlug, businessProfiles.slug))
+					// 079: the country filter that used to sit in the join above now
+					// reaches the profile's account.
+					.innerJoin(businessAccounts, accountOfProfile)
 					.where(
-						and(sql`LOWER(${businessProfiles.level1}) = LOWER(${level1})`, eq(projects.isvisible, true))
+						and(
+							businessInCountry(country.code),
+							sql`LOWER(${businessProfiles.level1}) = LOWER(${level1})`,
+							eq(projects.isvisible, true)
+						)
 					)
 			: Promise.resolve([])
 	]);

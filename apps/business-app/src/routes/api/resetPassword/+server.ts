@@ -92,14 +92,13 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 			.from(businessAccounts)
 			.innerJoin(
 				businessProfiles,
-				and(
-					eq(businessProfiles.countryCode, businessAccounts.countryCode),
-					// 075: reach the account the slug's profile names. `id` stays
-					// businessAccounts.sourceId here, unlike the lookups in
-					// TokenManager — this one goes on to *write* the account, so it
-					// wants the account's id and not the profile's.
-					eq(businessProfiles.accountBusinessId, businessAccounts.sourceId)
-				)
+				// 075: reach the account the slug's profile names. `id` stays
+				// businessAccounts.sourceId here, unlike the lookups in TokenManager —
+				// this one goes on to *write* the account, so it wants the account's id
+				// and not the profile's. The country half of this condition went with
+				// 079: business_profiles has no country_code, and source_id is globally
+				// unique so the link alone is exact.
+				eq(businessProfiles.accountBusinessId, businessAccounts.sourceId)
 			)
 			.where(
 				and(eq(businessProfiles.slug, business_slug), eq(businessAccounts.resetToken, hashedToken))

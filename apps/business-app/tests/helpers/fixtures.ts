@@ -24,7 +24,7 @@ export async function resetDatabase(): Promise<void> {
 	await pool.query(`
 		TRUNCATE TABLE
 			leaddata_claimrequests, leaddata,
-			branches, business_profiles, business_accounts,
+			business_profiles, business_accounts,
 			legal_acceptances, legal_policies,
 			projects, project_management, pincode_mapping,
 			rate_limits, sv_user, geo_locations
@@ -125,7 +125,7 @@ export async function createBusiness(options: BusinessOptions = {}): Promise<num
 
 	await pool.query(
 		`INSERT INTO business_accounts
-		   (country_code, source_id, login_email, login_password, isvisible, last_login)
+		   (country_code, source_id, login_email, login_password, is_active, last_login)
 		 VALUES ('in',$1,$2,$3,$4,$5)`,
 		[id, loginEmail, loginPassword, isvisible, lastLogin]
 	);
@@ -174,10 +174,12 @@ export async function createUsBusiness(options: UsBusinessOptions = {}): Promise
 
 	// Insert, then point at itself — same two steps and same reason as createBusiness.
 	const { rows } = await pool.query<{ business_id: number }>(
+		// No country_code since 079 — the profile's country is its account's, and
+		// the 'us' account inserted below is what makes this a US business.
 		`INSERT INTO business_profiles
-		   (country_code, businessname, slug, email, phonenumber, level1,
+		   (businessname, slug, email, phonenumber, level1,
 		    level2, city, isvisible, account_business_id)
-		 VALUES ('us',$1,$2,$3,$4,$5,$6,$7,$8, 0)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8, 0)
 		 RETURNING business_id`,
 		[businessname, slug, email, phonenumber, state, county, city, isvisible]
 	);
@@ -189,7 +191,7 @@ export async function createUsBusiness(options: UsBusinessOptions = {}): Promise
 
 	await pool.query(
 		`INSERT INTO business_accounts
-		   (country_code, source_id, login_email, isvisible)
+		   (country_code, source_id, login_email, is_active)
 		 VALUES ('us',$1,$2,$3)`,
 		[id, loginEmail, isvisible]
 	);
@@ -264,19 +266,41 @@ export async function createUsLead(options: UsLeadOptions = {}): Promise<number>
 	return rows[0].id;
 }
 
-export async function createBranch(mainId: number, branchId: number, isactive = true): Promise<void> {
-	await pool.query('INSERT INTO branches (main_id, branch_id, isactive) VALUES ($1, $2, $3)', [
-		mainId,
-		branchId,
-		isactive
-	]);
-	// 075: a branch profile names its main as the account holder. createBusiness
-	// makes every profile self-pointing, so becoming a branch is what repoints it
-	// — the same order the app does it in (insert the profile, then link it).
+/**
+ * Make an existing profile a branch of `mainId`.
+ *
+ * 075: a branch profile names its main as the account holder. createBusiness
+ * makes every profile self-pointing, so becoming a branch is what repoints it —
+ * the same order the app does it in (insert the profile, then link it).
+ *
+ * `isactive` used to be a column on `branches`, which 078 dropped; it now folds
+ * into the branch profile's own `isvisible`. It is deliberately OPTIONAL rather
+ * than defaulting to true: callers that want a hidden branch build it with
+ * createBusiness({ isvisible: false }) and then call this to link it, and a
+ * default would overwrite the very thing they set. Pass it only to mean "and
+ * also deactivate this branch", which is what deleteBranch does.
+ *
+ * The branch's own business_accounts row, which createBusiness inserted, is
+ * deleted: since 076 a branch has no account of its own and logs in with its
+ * main's. Leaving it would give the fixture a shape production no longer has —
+ * two accounts for one business — and the login lookups would find the wrong one.
+ */
+export async function createBranch(
+	mainId: number,
+	branchId: number,
+	isactive?: boolean
+): Promise<void> {
 	await pool.query('UPDATE business_profiles SET account_business_id = $1 WHERE business_id = $2', [
 		mainId,
 		branchId
 	]);
+	if (isactive !== undefined) {
+		await pool.query('UPDATE business_profiles SET isvisible = $1 WHERE business_id = $2', [
+			isactive,
+			branchId
+		]);
+	}
+	await pool.query('DELETE FROM business_accounts WHERE source_id = $1', [branchId]);
 }
 
 export interface LeadOptions {

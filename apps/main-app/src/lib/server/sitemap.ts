@@ -1,6 +1,7 @@
 import { db } from './db';
 import {
 	authors,
+	businessAccounts,
 	businessProfiles,
 	discoms,
 	geoLocations,
@@ -10,6 +11,7 @@ import {
 	stateSubsidies
 } from '@solar/db/schema';
 import { and, asc, eq, exists, sql } from 'drizzle-orm';
+import { accountOfProfile, businessInCountry } from './businessCountry';
 import type { CountryConfig } from '$lib/countries';
 import { geoUrl, installerUrl } from '$lib/countries/urls';
 
@@ -68,9 +70,12 @@ function businessesExistFor(...matches: ReturnType<typeof sql>[]) {
 		db
 			.select({ one: sql`1` })
 			.from(businessProfiles)
+			// 079: the profile's country is its account's, so correlating to
+			// geoLocations.countryCode means joining to reach it.
+			.innerJoin(businessAccounts, accountOfProfile)
 			.where(
 				and(
-					eq(businessProfiles.countryCode, geoLocations.countryCode),
+					eq(businessAccounts.countryCode, geoLocations.countryCode),
 					...matches,
 					eq(businessProfiles.isvisible, true)
 				)
@@ -90,7 +95,8 @@ export async function generateSitemapEntries(country: CountryConfig): Promise<Si
 		db
 			.select({ slug: businessProfiles.slug })
 			.from(businessProfiles)
-			.where(and(eq(businessProfiles.countryCode, code), eq(businessProfiles.isvisible, true)))
+			.innerJoin(businessAccounts, accountOfProfile)
+			.where(and(businessInCountry(code), eq(businessProfiles.isvisible, true)))
 			.orderBy(asc(businessProfiles.slug)),
 		db
 			.selectDistinct({ level1: geoLocations.level1, level1_slug: geoLocations.level1Slug })

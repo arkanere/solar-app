@@ -64,13 +64,10 @@ export async function findResetTargetByEmail(
 			loginEmail: businessAccounts.loginEmail
 		})
 		.from(businessAccounts)
-		.innerJoin(
-			businessProfiles,
-			and(
-				eq(businessProfiles.countryCode, businessAccounts.countryCode),
-				eq(businessProfiles.businessId, businessAccounts.sourceId)
-			)
-		)
+		// The account's own profile, so this joins on businessId rather than
+		// accountBusinessId. 079's country condition is gone: business_profiles has
+		// no country_code, and the account's is filtered below.
+		.innerJoin(businessProfiles, eq(businessProfiles.businessId, businessAccounts.sourceId))
 		.where(and(eq(businessAccounts.countryCode, country), eq(businessAccounts.loginEmail, email)))
 		.limit(1);
 

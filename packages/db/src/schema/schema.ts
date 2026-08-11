@@ -158,13 +158,9 @@ export const chatbotmessagecount = pgTable("chatbotmessagecount", {
 	unique("unique_ip_date").on(table.ip, table.date),
 ]);
 
-export const branches = pgTable("branches", {
-	id: serial().primaryKey().notNull(),
-	mainId: integer("main_id").notNull(),
-	branchId: integer("branch_id").notNull(),
-	isactive: boolean().default(true),
-	createdAt: timestamp("created_at", { mode: 'string' }).defaultNow(),
-});
+// `branches` was dropped by 078. The main-to-branch edge it stored is
+// business_profiles.account_business_id (075), and its `isactive` flag folded
+// into business_profiles.isvisible — the two were always written together.
 
 export const unsubscribe = pgTable("unsubscribe", {
 	id: serial().primaryKey().notNull(),
@@ -551,17 +547,15 @@ export const businessProfiles = pgTable("business_profiles", {
 	isvisible: boolean(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	countryCode: char("country_code", { length: 2 }).default('in').notNull(),
 	accountBusinessId: integer("account_business_id").notNull(),
 }, (table) => [
 	index("business_profiles_account_business_id_idx").using("btree", table.accountBusinessId.asc().nullsLast().op("int4_ops")),
-	index("business_profiles_country_slug_idx").using("btree", table.countryCode.asc().nullsLast().op("bpchar_ops"), table.slug.asc().nullsLast().op("text_ops")),
-	index("business_profiles_geo_idx").using("btree", table.countryCode.asc().nullsLast().op("text_ops"), table.level2.asc().nullsLast().op("text_ops"), table.isvisible.asc().nullsLast().op("bool_ops")),
-	foreignKey({
-			columns: [table.countryCode],
-			foreignColumns: [countries.code],
-			name: "business_profiles_country_code_fkey"
-		}),
+	// 079 dropped country_code from this table, so both of these lost their
+	// leading column. Country now lives only on business_accounts and is reached
+	// through account_business_id — which is why account_business_id leads the
+	// slug index: it is the join column every country-scoped read now starts from.
+	index("business_profiles_slug_idx").using("btree", table.slug.asc().nullsLast().op("text_ops")),
+	index("business_profiles_geo_idx").using("btree", table.level2.asc().nullsLast().op("text_ops"), table.isvisible.asc().nullsLast().op("bool_ops")),
 	unique("business_profiles_business_id_key").on(table.businessId),
 ]);
 
@@ -640,7 +634,11 @@ export const businessAccounts = pgTable("business_accounts", {
 	magicLinkTokenExpiresAt: timestamp("magic_link_token_expires_at", { withTimezone: true, mode: 'string' }),
 	resetToken: varchar("reset_token", { length: 255 }),
 	resetTokenExpires: timestamp("reset_token_expires", { mode: 'string' }),
-	isvisible: boolean(),
+	// Renamed from `isvisible` by 077/080. It gates the login, and nothing else:
+	// whether a *location* is listed publicly is business_profiles.isvisible. The
+	// old name was the same on both tables, which is why three endpoints needed a
+	// comment to say which one they meant.
+	isActive: boolean("is_active").default(true).notNull(),
 	lastLogin: timestamp("last_login", { mode: 'string' }),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),

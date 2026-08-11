@@ -1,7 +1,7 @@
 import { db } from '$lib/server/db';
 import { countryForSlug } from '$lib/server/resolveCountry';
-import { branches, businessProfiles } from '@solar/db/schema';
-import { and, eq } from 'drizzle-orm';
+import { businessProfiles } from '@solar/db/schema';
+import { and, eq, ne } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { SessionManager } from '$lib/auth/business';
 import type { RequestHandler } from './$types';
@@ -34,15 +34,23 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			);
 		}
 
-		// Verify this branch belongs to the logged-in business
+		// Verify this branch belongs to the logged-in business.
+		//
+		// Since 078 that is a property of the branch's own profile rather than a
+		// row in `branches`: it names the session's business in
+		// `account_business_id`, and `isvisible` carries what `isactive` used to.
+		// The `ne` is what `branches` used to give for free — a main names itself,
+		// so without it a business could pass its own id here and delete itself
+		// through the branch endpoint.
 		const existingBranch = await db
-			.select({ id: branches.id, mainId: branches.mainId, branchId: branches.branchId })
-			.from(branches)
+			.select({ businessId: businessProfiles.businessId })
+			.from(businessProfiles)
 			.where(
 				and(
-					eq(branches.branchId, branchId),
-					eq(branches.mainId, sessionResult.session.businessId),
-					eq(branches.isactive, true)
+					eq(businessProfiles.businessId, branchId),
+					eq(businessProfiles.accountBusinessId, sessionResult.session.businessId),
+					ne(businessProfiles.businessId, sessionResult.session.businessId),
+					eq(businessProfiles.isvisible, true)
 				)
 			);
 
@@ -53,38 +61,21 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			);
 		}
 
-		// Soft-delete: deactivate the branch relationship and hide from listings
-		await db
-			.update(branches)
-			.set({ isactive: false })
-			.where(
-				and(
-					eq(branches.branchId, branchId),
-					eq(branches.mainId, sessionResult.session.businessId)
-				)
-			);
-
-		// `isvisible` is carried by both halves of the split since 062 — profiles
-		// feeds the public listing, accounts gates the auth layer — so hiding a
-		// branch means writing both. Credentials are left alone: a branch shares
-		// the main business's login, and clearing them here would lock the parent
-		// out (which is why deleteAccount clears them and this does not).
+		// Soft-delete: hide the location. This is now the whole operation — 078
+		// folded branches.isactive into this column, because the two were always
+		// written together and a branch has no other state to carry.
+		//
+		// Credentials are still left alone, and the reason is unchanged: a branch
+		// shares the main business's account row outright (076), so touching it
+		// here would lock the parent out. That is why deleteAccount clears
+		// credentials and this does not, and why TokenManager's slug lookups test
+		// the profile's isvisible as well as the account's is_active — without
+		// that, hiding a branch would stop listing it but still let someone sign in
+		// at its slug.
 		await db
 			.update(businessProfiles)
 			.set({ isvisible: false })
 			.where(eq(businessProfiles.businessId, branchId));
-
-		// The account write that used to stand here is gone, and must not come
-		// back. It hid the branch's *own* account row, which existed only as a copy
-		// of the parent's; since 075 the branch shares the parent's row outright, so
-		// the same statement would now deactivate the parent's login — the exact
-		// lockout the comment above says this endpoint exists to avoid.
-		//
-		// Branch visibility is therefore business_profiles.isvisible alone, which is
-		// why the two slug lookups in TokenManager test the profile's flag as well
-		// as the account's: without that, hiding a branch would stop listing it but
-		// still let someone sign in at its slug.
-
 
 		return json({ success: true, message: 'Branch deleted successfully' });
 	} catch (error) {

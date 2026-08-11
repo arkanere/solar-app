@@ -1,6 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { businessProfiles } from '@solar/db/schema';
+import { businessAccounts, businessProfiles } from '@solar/db/schema';
+import { accountOfProfile, businessInCountry } from '$lib/server/businessCountry';
 import { and, count, eq, sql } from 'drizzle-orm';
 import { getCountry } from '$lib/countries';
 
@@ -53,7 +54,8 @@ export const load: PageServerLoad = async ({ params }) => {
 		db
 			.select({ total_installers: count() })
 			.from(businessProfiles)
-			.where(and(eq(businessProfiles.countryCode, country.code), eq(businessProfiles.isvisible, true)))
+			.innerJoin(businessAccounts, accountOfProfile)
+			.where(and(businessInCountry(country.code), eq(businessProfiles.isvisible, true)))
 	]);
 
 	const level1Rows = level1Result.rows;

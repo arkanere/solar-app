@@ -5,8 +5,9 @@
 //   1. tests/schema/000-baseline.sql — every table, constraint and index,
 //      generated from packages/db/src/schema (see scripts/generate-test-baseline.mjs).
 //      A baseline is unavoidable: most of the tables — including leaddata,
-//      branches, business_profiles and leaddata_claimrequests — predate the
-//      migrations convention and have no CREATE TABLE anywhere in the repo.
+//      business_profiles and leaddata_claimrequests — predate the migrations
+//      convention and have no CREATE TABLE anywhere in the repo. (`branches` was
+//      on that list until 078 dropped it.)
 //
 //   2. POST_BASELINE_MIGRATIONS — the few migration files that add what an
 //      introspected schema cannot express: the sv_sync_* stored functions the
@@ -110,7 +111,19 @@ const POST_BASELINE_MIGRATIONS = [
 	// pair, so without this the test database keeps four functions production
 	// does not have. No rewind and no guard — DROP FUNCTION IF EXISTS is already
 	// self-skipping and nothing in the file is a rename.
-	'068-drop-sync-unified-orphans.sql'
+	'068-drop-sync-unified-orphans.sql',
+	// Drops business_profiles.country_code, its countries FK and the two indexes
+	// that led with it. Must come after 063, which is what creates all three —
+	// and 063 only has something to create because the rewind below puts the
+	// column back. Without this the test database would keep a column production
+	// no longer has, and every query written against the join would still pass
+	// here while failing on live. Every statement in the file is guarded, so it
+	// is a no-op against a database already in the end state.
+	//
+	// 077/078/080 are deliberately NOT here. 078's table and 080's column simply
+	// stop being created once the regenerated baseline drops them, and nothing on
+	// this list references either outside a plpgsql body whose function 062 drops.
+	'079-drop-profile-country-code.sql'
 ];
 
 // The baseline is the *end state*; the files above are *history*. Where a
@@ -140,14 +153,29 @@ const POST_BASELINE_MIGRATIONS = [
 //
 // postal_code's type is deliberately not wound back to char(6): nothing here
 // reads the type, and 063's widening is a no-op against varchar(10).
+//
+// 079 adds a fourth thing to wind back, and it is a column rather than a name:
+// business_profiles.country_code no longer exists in the end state, so the
+// baseline does not create it — but 063, replayed below, builds the countries FK
+// and both composite indexes ON that column. It is added back here so 063 has
+// something to act on, and 079 (last on the list above) drops it again. The
+// table is empty at this point, so NOT NULL DEFAULT costs nothing and matches
+// the shape 063 expects.
+//
+// The two index statements that follow it are no longer symmetrical with the end
+// state either: the baseline now carries business_profiles_slug_idx and a
+// business_profiles_geo_idx WITHOUT country_code, so both are dropped and the
+// pre-063 pair recreated, rather than the old code's drop-two/create-two of
+// differently named indexes. The countries FK is not dropped here any more
+// because the baseline no longer creates it.
 const REWIND_TO_PRE_061_062_063 = `
+	ALTER TABLE business_profiles ADD COLUMN country_code CHAR(2) NOT NULL DEFAULT 'in';
 	ALTER TABLE business_profiles RENAME COLUMN tax_id      TO gstn;
 	ALTER TABLE business_profiles RENAME COLUMN level1      TO state;
 	ALTER TABLE business_profiles RENAME COLUMN level2      TO district;
 	ALTER TABLE business_profiles RENAME COLUMN postal_code TO pincode;
-	ALTER TABLE business_profiles DROP CONSTRAINT business_profiles_country_code_fkey;
 	DROP INDEX business_profiles_geo_idx;
-	DROP INDEX business_profiles_country_slug_idx;
+	DROP INDEX business_profiles_slug_idx;
 	CREATE INDEX business_profiles_country_idx ON business_profiles USING btree (country_code);
 	CREATE INDEX business_profiles_slug_idx ON business_profiles USING btree (slug);
 

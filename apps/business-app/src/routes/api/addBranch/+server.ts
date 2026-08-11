@@ -1,8 +1,8 @@
 // src/routes/api/addBranch/+server.ts
 import { db } from '$lib/server/db';
 import { countryForSlug } from '$lib/server/resolveCountry';
-import { branches, businessAccounts, businessProfiles } from '@solar/db/schema';
-import { and, eq, sql } from 'drizzle-orm';
+import { businessAccounts, businessProfiles } from '@solar/db/schema';
+import { and, eq, ne, sql } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { randomBytes } from 'crypto';
 import { SessionManager } from '$lib/auth/business';
@@ -29,8 +29,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			);
 		}
 
-		// URLs no longer carry the country, so it comes from the acting
-		// business. Writes below target that country's legacy tables.
+		// Nothing written below is country-scoped any more — 079 moved country onto
+		// the account the branch inherits — so this is now purely the check that
+		// the acting business exists and is visible. It stays for that: a session
+		// whose business has since been hidden should not be able to add branches.
 		const country = await countryForSlug(sessionResult.session.businessSlug);
 		if (!country) {
 			return json({ success: false, error: 'Business not found' }, { status: 404 });
@@ -73,13 +75,11 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				description: businessProfiles.description
 			})
 			.from(businessProfiles)
-			.innerJoin(
-				businessAccounts,
-				and(
-					eq(businessAccounts.countryCode, businessProfiles.countryCode),
-					eq(businessAccounts.sourceId, businessProfiles.accountBusinessId)
-				)
-			)
+			// 079 took country_code off business_profiles, so the join is on the
+			// account link alone. It loses nothing: business_id is globally unique
+			// across both countries, which is what made the country half of this
+			// condition redundant even before the column moved.
+			.innerJoin(businessAccounts, eq(businessAccounts.sourceId, businessProfiles.accountBusinessId))
 			.where(eq(businessProfiles.businessId, businessId))
 			.limit(1);
 
@@ -100,15 +100,21 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			);
 		}
 
-		// 2.2 Next, check if any existing branches are in the same city
+		// 2.2 Next, check if any existing branches are in the same city.
+		//
+		// Since 078 the branches of a business are the profiles that name it in
+		// account_business_id, minus the business itself — the join to `branches`
+		// this replaces is exactly that set. `isvisible` also stands in for the old
+		// `branches.isactive`, which is why only one flag is tested now.
+		//
 		// `sql` escape hatch: case-insensitive city compare (LOWER() = LOWER()).
 		const existingBranches = await db
 			.select({ id: businessProfiles.businessId })
 			.from(businessProfiles)
-			.innerJoin(branches, eq(businessProfiles.businessId, branches.branchId))
 			.where(
 				and(
-					eq(branches.mainId, businessId),
+					eq(businessProfiles.accountBusinessId, businessId),
+					ne(businessProfiles.businessId, businessId),
 					sql`LOWER(${businessProfiles.city}) = LOWER(${city})`,
 					eq(businessProfiles.isvisible, true)
 				)
@@ -132,11 +138,13 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		const [insertedBranch] = await db
 			.insert(businessProfiles)
 			.values({
-				// business_profiles holds both countries and country_code defaults
-				// to 'in'. Without this a US business's branch was written IN-tagged,
-				// so the sv_sync_business('us', ...) below matched nothing and
-				// returned silently — success reported, branch never projected.
-				countryCode: country,
+				// The countryCode that used to lead this list is gone with 079. The
+				// branch's country is its account's, and accountBusinessId below is
+				// what points at that account — so a US business's branch is US
+				// because it shares the US account, not because a column repeats it.
+				// That removes the failure the old comment here described, where a
+				// missing countryCode silently wrote a US branch as IN.
+				//
 				// 075: the branch's account is the main's. This is the column that
 				// says so, replacing the '-branch-' slug convention that admin-app
 				// used to reverse with SPLIT_PART to find its way back here.
@@ -170,13 +178,11 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		// replaces; that copy went stale whenever the parent changed its password,
 		// and it is how the seeded plaintext password (074) spread.
 
-		// 4. Create an entry in the branches table to establish the relationship
-		await db.insert(branches).values({
-			mainId: businessId, // Main business ID
-			branchId, // Branch business ID
-			isactive: true // Set as active by default
-		});
-
+		// No `branches` row either. 078 dropped that table: accountBusinessId above
+		// already states the relationship it existed to record, and its `isactive`
+		// is the branch profile's own `isvisible`, which is copied from the main a
+		// few lines up. The insert that used to stand here was the second of two
+		// writes that had to agree, and nothing enforced that they did.
 
 		return json({
 			success: true,

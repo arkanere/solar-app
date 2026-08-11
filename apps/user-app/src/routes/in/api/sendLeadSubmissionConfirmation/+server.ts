@@ -59,9 +59,19 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 					installers = await db
 						.select(INSTALLER_SELECTION)
 						.from(schema.businessProfiles)
+					.innerJoin(
+						schema.businessAccounts,
+						eq(schema.businessAccounts.sourceId, schema.businessProfiles.accountBusinessId)
+					)
+						// 079: country lives on the account now, reached through
+						// account_business_id.
+						.innerJoin(
+							schema.businessAccounts,
+							eq(schema.businessAccounts.sourceId, schema.businessProfiles.accountBusinessId)
+						)
 						.where(
 							and(
-								eq(schema.businessProfiles.countryCode, 'in'),
+								eq(schema.businessAccounts.countryCode, 'in'),
 								eq(schema.businessProfiles.slug, slugMatch[1]),
 								eq(schema.businessProfiles.isvisible, true)
 							)
@@ -74,7 +84,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 					.from(schema.businessProfiles)
 					.where(
 						and(
-							eq(schema.businessProfiles.countryCode, 'in'),
+							eq(schema.businessAccounts.countryCode, 'in'),
 							// `sql` escape hatch: case-insensitive district compare, as
 							// in the raw SQL. Same pattern as Phase 1's getCities.
 							sql`LOWER(${schema.businessProfiles.level2}) = LOWER(${district})`,

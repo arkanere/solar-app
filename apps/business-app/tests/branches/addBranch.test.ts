@@ -1,12 +1,14 @@
-// api/addBranch resolves the acting business's country and syncs the new branch
-// with it, but the businesses_1 insert never set country_code — which defaults
-// to 'in'. For a US business that made the row IN-tagged, so
-// sv_sync_business('us', branchId) matched nothing and returned silently: the
-// endpoint reported success, the branches join row existed, and the branch was
-// absent from unified and therefore from the branch list forever.
+// api/addBranch resolves the acting business's country and tags the new branch
+// with it. The bug this file was written for: the insert never set country_code,
+// which defaulted to 'in', so a US business's branch was IN-tagged and vanished
+// from its own branch list forever.
 //
-// The IN cases pass either way (the default happened to be right for them);
-// they are here so a future change to the default cannot break them unnoticed.
+// 079 removed the column that bug lived in. A branch has no country of its own
+// any more — it shares its main's account, and the account is where country is
+// stored — so the mistake is now unrepresentable rather than merely fixed. These
+// tests are kept and rewritten to assert the property through the join, because
+// what has to stay true is the outcome (a US main's branch is a US branch), and
+// that could still break if addBranch ever mis-set account_business_id.
 
 import { beforeEach, describe, expect, it } from 'vitest';
 import { pool } from '../setup/testDb';
@@ -21,18 +23,17 @@ function event(body: unknown, cookies: ReturnType<typeof createSessionCookies>):
 }
 
 async function branchesOf(country: 'in' | 'us', mainId: number) {
-	// Read business_profiles rather than the `businesses` projection: 063 gave
-	// this table the country-neutral names and 064 drops the projection, so the
-	// branch row itself is what there is to assert on. The country tagging this
-	// file exists to pin lives here — it was always the source column that was
-	// wrong, and the projection only made the symptom visible.
+	// Both halves of what this file pins, in one query. `branches` is gone (078),
+	// so a branch is a profile naming `mainId` in account_business_id but not
+	// itself; country is gone from business_profiles (079), so it comes from the
+	// account that link reaches. That account is the main's, which is exactly why
+	// a branch can no longer disagree with its main about what country it is in.
 	const { rows } = await pool.query<{ slug: string; country_code: string }>(
-		`SELECT p.slug, p.country_code
-		   FROM branches br
-		   JOIN business_profiles p
-		     ON p.business_id = br.branch_id AND p.country_code = $1
-		  WHERE br.main_id = $2`,
-		[country, mainId]
+		`SELECT p.slug, a.country_code
+		   FROM business_profiles p
+		   JOIN business_accounts a ON a.source_id = p.account_business_id
+		  WHERE p.account_business_id = $1 AND p.business_id <> $1 AND a.country_code = $2`,
+		[mainId, country]
 	);
 	return rows;
 }
@@ -72,7 +73,7 @@ describe('api/addBranch country tagging', () => {
 		expect(branches[0].country_code.trim()).toBe('us');
 	});
 
-	it('tags the legacy row itself, not just the projection', async () => {
+	it('reaches the right country from the branch row itself', async () => {
 		const mainId = await createUsBusiness({ slug: 'oakland-solar', city: 'Oakland' });
 		const cookies = createSessionCookies({
 			id: mainId,
@@ -87,11 +88,15 @@ describe('api/addBranch country tagging', () => {
 			)
 		);
 
-		// The projection is rebuilt from business_profiles on every sync, so an
-		// IN-tagged source row would silently un-project the branch again on the
-		// next resync even if the unified row were somehow correct.
+		// Asserted from the branch row outward, not from the main inward: start at
+		// the profile the endpoint created and follow account_business_id. If
+		// addBranch ever wrote the wrong link, this is where it shows up — the
+		// branch would reach some other business's account, or none at all.
 		const { rows } = await pool.query<{ country_code: string }>(
-			`SELECT country_code FROM business_profiles WHERE city = 'Berkeley'`
+			`SELECT a.country_code
+			   FROM business_profiles p
+			   JOIN business_accounts a ON a.source_id = p.account_business_id
+			  WHERE p.city = 'Berkeley'`
 		);
 		expect(rows).toHaveLength(1);
 		expect(rows[0].country_code.trim()).toBe('us');
@@ -120,10 +125,11 @@ describe('api/addBranch country tagging', () => {
 	});
 
 	it('points the new branch at its main as the account holder', async () => {
-		// 075. business_accounts is becoming one row per business rather than one
-		// per profile, so a branch has to name the profile whose account it uses.
-		// Before the column existed this relationship was recoverable only from
-		// the `-branch-` slug convention, which admin-app reversed with SPLIT_PART.
+		// 075. business_accounts is one row per business rather than one per
+		// profile, so a branch has to name the profile whose account it uses. Since
+		// 078 this column is also the ONLY record of the relationship — `branches`
+		// is gone — so if addBranch stops writing it, the branch is not merely
+		// mislinked but invisible as a branch to every query in the app.
 		const mainId = await createBusiness({ slug: 'pune-solar', businessname: 'Pune Solar' });
 		const cookies = createSessionCookies({
 			id: mainId,
@@ -139,9 +145,9 @@ describe('api/addBranch country tagging', () => {
 		);
 
 		const { rows } = await pool.query<{ business_id: number; account_business_id: number }>(
-			`SELECT p.business_id, p.account_business_id
-			   FROM branches br JOIN business_profiles p ON p.business_id = br.branch_id
-			  WHERE br.main_id = $1`,
+			`SELECT business_id, account_business_id
+			   FROM business_profiles
+			  WHERE account_business_id = $1 AND business_id <> $1`,
 			[mainId]
 		);
 

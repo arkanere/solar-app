@@ -1,6 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { businessProfiles } from '@solar/db/schema';
+import { businessAccounts, businessProfiles } from '@solar/db/schema';
+import { accountOfProfile, businessInCountry } from '$lib/server/businessCountry';
 import { and, desc, eq } from 'drizzle-orm';
 import { isCountry } from '$lib/countries';
 
@@ -40,9 +41,10 @@ function latestBusinesses(country: 'in' | 'us') {
 			slug: businessProfiles.slug
 		})
 		.from(businessProfiles)
+		.innerJoin(businessAccounts, accountOfProfile)
 		.where(
 			and(
-				eq(businessProfiles.countryCode, country),
+				businessInCountry(country),
 				eq(businessProfiles.isvisible, true),
 				eq(businessProfiles.businessfilled, true)
 			)

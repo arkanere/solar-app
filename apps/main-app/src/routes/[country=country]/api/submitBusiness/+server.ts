@@ -1,5 +1,6 @@
 import { db } from '$lib/server/db';
 import { businessAccounts, businessProfiles } from '@solar/db/schema';
+import { accountOfProfile, businessInCountry } from '$lib/server/businessCountry';
 import { and, eq } from 'drizzle-orm';
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { parseBody, submitBusinessSchema } from '@solar/validation';
@@ -73,12 +74,8 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 			const duplicates = await db
 				.select({ business_id: businessProfiles.businessId })
 				.from(businessProfiles)
-				.where(
-					and(
-						eq(businessProfiles.countryCode, country),
-						eq(businessProfiles.taxId, gstn as string)
-					)
-				);
+				.innerJoin(businessAccounts, accountOfProfile)
+				.where(and(businessInCountry(country), eq(businessProfiles.taxId, gstn as string)));
 
 			if (duplicates.length > 0) {
 				return json(
@@ -120,7 +117,11 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 				// FK on the column, so the interim value is legal; 075's header
 				// explains why claiming the id off the sequence instead is not safe.
 				accountBusinessId: 0,
-				countryCode: country,
+				// No countryCode since 079 — the profile's country is its account's,
+				// and the account inserted below carries it. accountBusinessId is what
+				// reaches it, which is why the placeholder-then-UPDATE dance above
+				// matters more than it used to: until that UPDATE lands, this row
+				// points at account 0 and has no country at all.
 				rscore,
 				isvisible,
 				businessfilled,
@@ -162,7 +163,11 @@ export const POST: RequestHandler = async ({ request, fetch, params }) => {
 			countryCode: country,
 			sourceId: businessId,
 			loginEmail: login_email,
-			isvisible
+			// 077 renamed this from `isvisible`. It gates the login; the profile's
+			// own isvisible, set above, decides whether the location is listed. Both
+			// still come from the same `isvisible` variable at signup — a new
+			// business is either live in both senses or neither.
+			isActive: isvisible
 		});
 
 		// The two inserts above are the whole write. There is no sync call left

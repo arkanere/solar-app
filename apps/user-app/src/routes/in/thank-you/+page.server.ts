@@ -123,9 +123,15 @@ export const load: PageServerLoad = async ({ url }) => {
 				installers = await db
 					.select(INSTALLER_SELECTION)
 					.from(schema.businessProfiles)
+					// 079: country lives on the account now, reached through
+					// account_business_id.
+					.innerJoin(
+						schema.businessAccounts,
+						eq(schema.businessAccounts.sourceId, schema.businessProfiles.accountBusinessId)
+					)
 					.where(
 						and(
-							eq(schema.businessProfiles.countryCode, 'in'),
+							eq(schema.businessAccounts.countryCode, 'in'),
 							// `sql` escape hatches: case-insensitive district compare, and
 							// DESC NULLS LAST (Postgres defaults DESC to NULLS FIRST).
 							sql`LOWER(${schema.businessProfiles.level2}) = LOWER(${district})`,

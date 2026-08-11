@@ -1,6 +1,7 @@
 import type { LayoutServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { businessProfiles, leaddata } from '@solar/db/schema';
+import { businessAccounts, businessProfiles, leaddata } from '@solar/db/schema';
+import { accountOfProfile, businessInCountry } from '$lib/server/businessCountry';
 import { and, count, eq } from 'drizzle-orm';
 import { getCountry } from '$lib/countries';
 
@@ -11,7 +12,8 @@ export const load: LayoutServerLoad = async ({ params }) => {
 		db
 			.select({ count: count() })
 			.from(businessProfiles)
-			.where(and(eq(businessProfiles.countryCode, country.code), eq(businessProfiles.isvisible, true))),
+			.innerJoin(businessAccounts, accountOfProfile)
+			.where(and(businessInCountry(country.code), eq(businessProfiles.isvisible, true))),
 		db.select({ count: count() }).from(leaddata).where(eq(leaddata.countryCode, country.code))
 	]);
 

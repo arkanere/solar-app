@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db';
-import { branches, businessProfiles } from '@solar/db/schema';
-import { and, eq, sql } from 'drizzle-orm';
+import { businessProfiles } from '@solar/db/schema';
+import { and, eq, ne, sql } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { parseBody, updateBusinessDetailsSchema } from '@solar/validation';
 import { SessionManager } from '$lib/auth/business';
@@ -48,17 +48,19 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			targetBusinessId = sessionResult.session.businessId;
 		} else {
 			// Check if business_slug is an active branch of the logged-in business.
-			// The join is what disambiguates a duplicated branch slug: only a row
-			// that is genuinely this business's branch can match.
+			// The account_business_id predicate is what disambiguates a duplicated
+			// branch slug: only a profile that genuinely belongs to this business's
+			// account can match. Since 078 that single column replaces the join to
+			// `branches`, and its `isactive` is this profile's own `isvisible`.
 			const [branchCheck] = await db
-				.select({ branchId: branches.branchId })
-				.from(branches)
-				.innerJoin(businessProfiles, eq(branches.branchId, businessProfiles.businessId))
+				.select({ branchId: businessProfiles.businessId })
+				.from(businessProfiles)
 				.where(
 					and(
-						eq(branches.mainId, sessionResult.session.businessId),
+						eq(businessProfiles.accountBusinessId, sessionResult.session.businessId),
+						ne(businessProfiles.businessId, sessionResult.session.businessId),
 						eq(businessProfiles.slug, business_slug),
-						eq(branches.isactive, true)
+						eq(businessProfiles.isvisible, true)
 					)
 				)
 				.limit(1);

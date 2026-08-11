@@ -1,6 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { businessProfiles, geoLocations, projects } from '@solar/db/schema';
+import { businessAccounts, businessProfiles, geoLocations, projects } from '@solar/db/schema';
+import { accountOfProfile, businessInCountry } from '$lib/server/businessCountry';
 import { and, asc, desc, eq, sql } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 import { getCountry } from '$lib/countries';
@@ -39,9 +40,10 @@ export const load: PageServerLoad = async ({ params }) => {
 			google_maps_link: businessProfiles.googleMapsLink
 		})
 		.from(businessProfiles)
+		.innerJoin(businessAccounts, accountOfProfile)
 		.where(
 			and(
-				eq(businessProfiles.countryCode, country.code),
+				businessInCountry(country.code),
 				eq(businessProfiles.slug, slug),
 				eq(businessProfiles.isvisible, true)
 			)

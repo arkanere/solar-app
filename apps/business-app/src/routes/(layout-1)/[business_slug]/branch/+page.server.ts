@@ -1,7 +1,8 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { branches as branchesTable, businessProfiles } from '@solar/db/schema';
-import { and, eq } from 'drizzle-orm';
+import { businessAccounts, businessProfiles } from '@solar/db/schema';
+import { accountOfProfile, businessInCountry } from '$lib/server/writeTargets';
+import { and, eq, ne } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 
 const BRANCH_BUSINESS_SELECTION = {
@@ -77,12 +78,13 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		const mainBusinessRows = await db
 			.select(BRANCH_BUSINESS_SELECTION)
 			.from(businessProfiles)
-			.where(
-				and(
-					eq(businessProfiles.countryCode, country),
-					eq(businessProfiles.businessId, parentData.business_session.businessId)
-				)
-			);
+			// The country predicate is NOT redundant beside the id — see
+			// businessInCountry's doc comment in $lib/server/writeTargets. It asserts
+			// that the session's business and the country the layout resolved from the
+			// slug agree, which they can fail to do when a slug exists in both
+			// countries.
+			.innerJoin(businessAccounts, accountOfProfile)
+			.where(and(businessInCountry(country), eq(businessProfiles.businessId, parentData.business_session.businessId)));
 
 		if (mainBusinessRows.length === 0) {
 			return {
@@ -94,15 +96,20 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		const mainBusiness = mainBusinessRows[0] as unknown as Business;
 		const mainBusinessId = mainBusiness.id;
 
-		// Get all branch offices linked to this main business
+		// Get all branch offices linked to this main business. Since 078 that is
+		// one predicate on the profiles themselves: every branch names this
+		// business in account_business_id, the main names itself (hence the `ne`),
+		// and the old branches.isactive is the branch profile's own isvisible.
 		const branchRows = await db
 			.select(BRANCH_BUSINESS_SELECTION)
-			.from(branchesTable)
-			.innerJoin(
-				businessProfiles,
-				and(eq(businessProfiles.countryCode, country), eq(branchesTable.branchId, businessProfiles.businessId))
-			)
-			.where(and(eq(branchesTable.mainId, mainBusinessId), eq(branchesTable.isactive, true)));
+			.from(businessProfiles)
+			.where(
+				and(
+					eq(businessProfiles.accountBusinessId, mainBusinessId),
+					ne(businessProfiles.businessId, mainBusinessId),
+					eq(businessProfiles.isvisible, true)
+				)
+			);
 		const branches = branchRows as unknown as Business[];
 
 		// Also include the main business in the response

@@ -23,14 +23,6 @@ CREATE TABLE "authors" (
 	CONSTRAINT "authors_slug_key" UNIQUE("slug")
 );
 
-CREATE TABLE "branches" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"main_id" integer NOT NULL,
-	"branch_id" integer NOT NULL,
-	"isactive" boolean DEFAULT true,
-	"created_at" timestamp DEFAULT now()
-);
-
 CREATE TABLE "business_accounts" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"country_code" char(2) NOT NULL,
@@ -41,7 +33,7 @@ CREATE TABLE "business_accounts" (
 	"magic_link_token_expires_at" timestamp with time zone,
 	"reset_token" varchar(255),
 	"reset_token_expires" timestamp,
-	"isvisible" boolean,
+	"is_active" boolean DEFAULT true NOT NULL,
 	"last_login" timestamp,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -78,7 +70,6 @@ CREATE TABLE "business_profiles" (
 	"isvisible" boolean,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"country_code" char(2) DEFAULT 'in' NOT NULL,
 	"account_business_id" integer NOT NULL,
 	CONSTRAINT "business_profiles_business_id_key" UNIQUE("business_id")
 );
@@ -575,7 +566,6 @@ CREATE TABLE "embeddings"."in_embedding_index" (
 );
 
 ALTER TABLE "business_accounts" ADD CONSTRAINT "business_accounts_country_code_fkey" FOREIGN KEY ("country_code") REFERENCES "public"."countries"("code") ON DELETE no action ON UPDATE no action;
-ALTER TABLE "business_profiles" ADD CONSTRAINT "business_profiles_country_code_fkey" FOREIGN KEY ("country_code") REFERENCES "public"."countries"("code") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "callsafehandles" ADD CONSTRAINT "callsafelinks_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."callsafeusers"("id") ON DELETE cascade ON UPDATE no action;
 ALTER TABLE "discoms" ADD CONSTRAINT "discoms_state_slug_fkey" FOREIGN KEY ("state_slug") REFERENCES "public"."state_subsidies"("state_slug") ON DELETE no action ON UPDATE no action;
 ALTER TABLE "geo_locations" ADD CONSTRAINT "geo_locations_country_code_fkey" FOREIGN KEY ("country_code") REFERENCES "public"."countries"("code") ON DELETE no action ON UPDATE no action;
@@ -590,8 +580,8 @@ ALTER TABLE "sv_user_feedback" ADD CONSTRAINT "in_user_feedback_user_id_fkey" FO
 CREATE INDEX "business_accounts_login_email_idx" ON "business_accounts" USING btree ("country_code","login_email");
 CREATE INDEX "business_accounts_magic_token_idx" ON "business_accounts" USING btree ("country_code","magic_link_token");
 CREATE INDEX "business_profiles_account_business_id_idx" ON "business_profiles" USING btree ("account_business_id");
-CREATE INDEX "business_profiles_country_slug_idx" ON "business_profiles" USING btree ("country_code","slug");
-CREATE INDEX "business_profiles_geo_idx" ON "business_profiles" USING btree ("country_code","level2","isvisible");
+CREATE INDEX "business_profiles_slug_idx" ON "business_profiles" USING btree ("slug");
+CREATE INDEX "business_profiles_geo_idx" ON "business_profiles" USING btree ("level2","isvisible");
 CREATE UNIQUE INDEX "callsafe_unsubscribe_email_idx" ON "callsafe_unsubscribe" USING btree ("email");
 CREATE INDEX "chatbotmessagesstore_session_idx" ON "chatbotmessagesstore" USING btree ("session_id","timestamp");
 CREATE INDEX "data_access_requests_status_idx" ON "data_access_requests" USING btree ("status");

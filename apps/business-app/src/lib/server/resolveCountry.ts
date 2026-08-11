@@ -33,9 +33,16 @@ function toCountry(code: string | null | undefined): AuthCountry | null {
 export async function countryForSlug(slug: string): Promise<AuthCountry | null> {
 	if (!slug) return null;
 
+	// Since 079 the country is the account's, so this joins to reach it. That
+	// join is also why the isvisible filter above is now doing two jobs: it still
+	// disambiguates the sentinel slugs, and it is the only visibility flag on the
+	// profile side — the account's is_active is a different question and is
+	// deliberately not tested here, because a hidden branch of a live business
+	// still has a country.
 	const rows = await db
-		.select({ countryCode: businessProfiles.countryCode })
+		.select({ countryCode: businessAccounts.countryCode })
 		.from(businessProfiles)
+		.innerJoin(businessAccounts, eq(businessAccounts.sourceId, businessProfiles.accountBusinessId))
 		.where(and(eq(businessProfiles.slug, slug), eq(businessProfiles.isvisible, true)))
 		.limit(1);
 
@@ -43,7 +50,7 @@ export async function countryForSlug(slug: string): Promise<AuthCountry | null> 
 }
 
 /**
- * The country of the account logging in with `email`, or null when no visible
+ * The country of the account logging in with `email`, or null when no active
  * account has it.
  *
  * /login has no slug in the URL, and TokenManager.getBusinessByEmail is bound
@@ -58,7 +65,7 @@ export async function countryForLoginEmail(email: string): Promise<AuthCountry |
 	const rows = await db
 		.select({ countryCode: businessAccounts.countryCode })
 		.from(businessAccounts)
-		.where(and(eq(businessAccounts.loginEmail, email), eq(businessAccounts.isvisible, true)))
+		.where(and(eq(businessAccounts.loginEmail, email), eq(businessAccounts.isActive, true)))
 		.limit(1);
 
 	return toCountry(rows[0]?.countryCode);

@@ -8,14 +8,13 @@ import { checkLeadDataPolicy } from '$lib/compliance';
 import type { ClaimRequestPayload } from '$lib/types/lead';
 import { IN_LEAD_RETURNING } from '$lib/server/leads';
 import {
-	branches,
 	businessAccounts,
 	businessProfiles,
 	leaddata,
 	leaddataClaimrequests,
 	projects
 } from '@solar/db/schema';
-import { and, count, eq, inArray, sql } from 'drizzle-orm';
+import { and, count, eq, inArray, ne, or, sql } from 'drizzle-orm';
 
 // Allow time for the full claim pipeline including Brevo calls — the default
 // limit kills the function mid-run and silently drops the notification emails
@@ -71,10 +70,19 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		// Claim gate: businesses with 10+ claimed leads must meet requirements
+		// Since 078 a branch is a profile naming this business in
+		// account_business_id, with the old branches.isactive read off the branch
+		// profile's own isvisible. The `ne` drops the main, which names itself.
 		const gateBranchesRes = await db
-			.select({ branchId: branches.branchId })
-			.from(branches)
-			.where(and(eq(branches.mainId, business_id), eq(branches.isactive, true)));
+			.select({ branchId: businessProfiles.businessId })
+			.from(businessProfiles)
+			.where(
+				and(
+					eq(businessProfiles.accountBusinessId, business_id),
+					ne(businessProfiles.businessId, business_id),
+					eq(businessProfiles.isvisible, true)
+				)
+			);
 		const gateAllIds = [business_id, ...gateBranchesRes.map((r) => r.branchId)];
 
 		const gateSlug = sessionResult.session.businessSlug;
@@ -210,11 +218,17 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				const leadState = leadLocationResult[0]?.state ?? null;
 
 				if (leadDistrict) {
-					// Resolve main business ID (in case business_id belongs to a branch)
+					// Resolve main business ID (in case business_id belongs to a branch).
+					// account_business_id answers this directly since 075: a main names
+					// itself, a branch names its main, so the COALESCE the old branches
+					// lookup needed is gone. It also resolves unconditionally now — the
+					// old query filtered isactive and fell back to treating a
+					// deactivated branch as its own main, which is not something any
+					// caller wanted.
 					const parentResult = await tx
-						.select({ mainId: branches.mainId })
-						.from(branches)
-						.where(and(eq(branches.branchId, business_id), eq(branches.isactive, true)))
+						.select({ mainId: businessProfiles.accountBusinessId })
+						.from(businessProfiles)
+						.where(eq(businessProfiles.businessId, business_id))
 						.limit(1);
 					mainBusinessId = parentResult.length > 0 ? parentResult[0].mainId : business_id;
 
@@ -224,17 +238,22 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 						.from(businessProfiles)
 						.where(
 							and(
-								// district is not id-scoped, so without the country filter a US
-								// lead's district could match an IN business's and suppress the
-								// branch creation. Every other lookup here is by a globally
-								// unique id, which is why this is the only one that needs it.
-								eq(businessProfiles.countryCode, country),
-								eq(businessProfiles.level2, leadDistrict),
-								sql`(${businessProfiles.businessId} = ${mainBusinessId} OR EXISTS (
-								     SELECT 1 FROM ${branches} WHERE ${branches.mainId} = ${mainBusinessId}
-								     AND ${branches.branchId} = ${businessProfiles.businessId}
-								     AND ${branches.isactive} = true
-								 ))`
+								// The whole main-plus-branches set in one predicate, which is
+								// what account_business_id is for: the main names itself and
+								// every branch names it. This replaces both the correlated
+								// EXISTS over `branches` and the country filter that used to
+								// sit beside it — country was there because `district` is not
+								// id-scoped, and this predicate is id-scoped, so it is no
+								// longer doing any work.
+								eq(businessProfiles.accountBusinessId, mainBusinessId),
+								// The main counts whether or not it is listed; a branch only
+								// counts while it is. That asymmetry is what the old
+								// `isactive = true` on the branches arm alone expressed.
+								or(
+									eq(businessProfiles.businessId, mainBusinessId),
+									eq(businessProfiles.isvisible, true)
+								),
+								eq(businessProfiles.level2, leadDistrict)
 							)
 						)
 						.limit(1);
@@ -270,12 +289,11 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 								description: businessProfiles.description
 							})
 							.from(businessProfiles)
+							// 079 took country_code off business_profiles; business_id is
+							// globally unique, so the account link alone is the whole join.
 							.innerJoin(
 								businessAccounts,
-								and(
-									eq(businessAccounts.countryCode, businessProfiles.countryCode),
-									eq(businessAccounts.sourceId, businessProfiles.accountBusinessId)
-								)
+								eq(businessAccounts.sourceId, businessProfiles.accountBusinessId)
 							)
 							.where(eq(businessProfiles.businessId, mainBusinessId));
 						const main = mainResult[0];
@@ -285,7 +303,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 						const newBranchResult = await tx
 							.insert(businessProfiles)
 							.values({
-								countryCode: country,
+								// No countryCode since 079 — the branch's country is the
+								// account's, and accountBusinessId below is what reaches it.
 								// 075: the branch's account is the main's, stated rather than
 								// implied by the '-branch-' slug built just above.
 								accountBusinessId: mainBusinessId,
@@ -313,9 +332,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 						// it at the main's, so there is nothing left to copy. See
 						// addBranch, which creates branches the same way.
 
-						await tx
-							.insert(branches)
-							.values({ mainId: mainBusinessId, branchId: newBranchId, isactive: true });
+						// No `branches` row — 078 dropped the table. accountBusinessId
+						// above is the relationship, and `isvisible`, copied from the main,
+						// is what its `isactive` became.
 
 						effectiveBusinessId = newBranchId;
 					} else {
@@ -422,12 +441,17 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 						slug: businessProfiles.slug
 					})
 					.from(businessProfiles)
+					// account_business_id, NOT business_id. This join used to be
+					// `sourceId = businessProfiles.businessId`, which is exactly the
+					// pattern 076's header warned about: once the duplicate branch
+					// accounts were deleted, a branch profile matched no account row and
+					// this innerJoin returned nothing, so every lead allotted to a branch
+					// silently skipped its notification email. The country half of the
+					// condition is gone with 079 and was redundant anyway — business_id
+					// is globally unique.
 					.innerJoin(
 						businessAccounts,
-						and(
-							eq(businessAccounts.countryCode, businessProfiles.countryCode),
-							eq(businessAccounts.sourceId, businessProfiles.businessId)
-						)
+						eq(businessAccounts.sourceId, businessProfiles.accountBusinessId)
 					)
 					.where(eq(businessProfiles.businessId, allotmentBusinessId))
 					.limit(1);

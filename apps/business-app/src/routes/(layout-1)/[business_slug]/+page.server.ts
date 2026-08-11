@@ -1,8 +1,9 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
 import { IN_BUSINESS_SELECTION, IN_LEAD_SELECTION } from '$lib/server/unifiedRead';
-import { branches, businessProfiles, svProposals, leaddata, leaddataClaimrequests, projects } from '@solar/db/schema';
-import { and, count, desc, eq, gte, inArray, like, not, or, sql } from 'drizzle-orm';
+import { businessAccounts, businessProfiles, leaddata, leaddataClaimrequests, projects, svProposals } from '@solar/db/schema';
+import { accountOfProfile, businessInCountry } from '$lib/server/writeTargets';
+import { and, count, desc, eq, gte, inArray, like, ne, not, or, sql } from 'drizzle-orm';
 
 export const prerender = false;
 
@@ -69,9 +70,13 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		const businessRows = await db
 			.select(IN_BUSINESS_SELECTION)
 			.from(businessProfiles)
-			.where(
-				and(eq(businessProfiles.countryCode, country), eq(businessProfiles.businessId, business_session.businessId))
-			)
+			// The country predicate is NOT redundant beside the id — see
+			// businessInCountry's doc comment in $lib/server/writeTargets. It asserts
+			// that the session's business and the country the layout resolved from the
+			// slug agree, which they can fail to do when a slug exists in both
+			// countries.
+			.innerJoin(businessAccounts, accountOfProfile)
+			.where(and(businessInCountry(country), eq(businessProfiles.businessId, business_session.businessId)))
 			.limit(1);
 
 		if (businessRows.length === 0) {
@@ -81,7 +86,14 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 		const business = businessRows[0] as unknown as Business;
 		const { id: businessId, state } = business;
 
-		// ✅ Get all branch business IDs and slugs for this main business
+		// ✅ Get all branch business IDs and slugs for this main business.
+		//
+		// Since 078 the branches of a business are the profiles naming it in
+		// account_business_id, minus the business itself, with the old
+		// branches.isactive read off each branch profile's own isvisible. The
+		// country filter that sat on the join went with 079 and was redundant
+		// anyway — business_id is globally unique, so the id predicate scopes this
+		// to one country by itself.
 		const branchRows = (await db
 			.select({
 				id: businessProfiles.businessId,
@@ -89,12 +101,14 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 				district: businessProfiles.level2,
 				state: businessProfiles.level1
 			})
-			.from(branches)
-			.innerJoin(
-				businessProfiles,
-				and(eq(businessProfiles.countryCode, country), eq(branches.branchId, businessProfiles.businessId))
-			)
-			.where(and(eq(branches.mainId, businessId), eq(branches.isactive, true)))) as unknown as Branch[];
+			.from(businessProfiles)
+			.where(
+				and(
+					eq(businessProfiles.accountBusinessId, businessId),
+					ne(businessProfiles.businessId, businessId),
+					eq(businessProfiles.isvisible, true)
+				)
+			)) as unknown as Branch[];
 
 		// Create arrays of all business IDs (main + branches) and slugs for queries
 		const allBusinessIds = [businessId, ...branchRows.map((branch) => branch.id)];

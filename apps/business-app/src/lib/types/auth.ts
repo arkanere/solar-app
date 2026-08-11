@@ -69,7 +69,11 @@ export interface Business {
 	businessname: string;
 	slug: string;
 	login_email: string;
-	isvisible: boolean;
+	// business_accounts.is_active (077), not business_profiles.isvisible. This
+	// says the login is live; whether the location is listed is a different
+	// question and a different column, which is why the two no longer share a
+	// name. Only TokenManager produces this field.
+	isActive: boolean;
 }
 
 export interface BusinessPartial {

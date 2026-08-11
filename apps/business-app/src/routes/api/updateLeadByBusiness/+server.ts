@@ -6,8 +6,8 @@ import { SessionManager } from '$lib/auth/business';
 import type { RequestHandler } from './$types';
 import type { LeadUpdatePayload } from '$lib/types/lead';
 import { IN_LEAD_RETURNING } from '$lib/server/leads';
-import { branches, leaddata, projectManagement } from '@solar/db/schema';
-import { and, eq } from 'drizzle-orm';
+import { businessProfiles, leaddata, projectManagement } from '@solar/db/schema';
+import { and, eq, ne } from 'drizzle-orm';
 
 /**
  * Updates lead fields (stage, status, business_notes) for a business's lead
@@ -44,12 +44,22 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			);
 		}
 
-		// Get all business IDs this session can manage (main + branches)
+		// Get all business IDs this session can manage (main + branches).
+		//
+		// Since 078 a branch is a profile naming this business in
+		// account_business_id, and the old branches.isactive filter is the branch
+		// profile's own isvisible. The `ne` excludes the main, which names itself.
 		const mainBusinessId = sessionResult.session.businessId;
 		const branchResult = await db
-			.select({ branchId: branches.branchId })
-			.from(branches)
-			.where(and(eq(branches.mainId, mainBusinessId), eq(branches.isactive, true)));
+			.select({ branchId: businessProfiles.businessId })
+			.from(businessProfiles)
+			.where(
+				and(
+					eq(businessProfiles.accountBusinessId, mainBusinessId),
+					ne(businessProfiles.businessId, mainBusinessId),
+					eq(businessProfiles.isvisible, true)
+				)
+			);
 		const allowedBusinessIds = [mainBusinessId, ...branchResult.map((r) => r.branchId)];
 
 		// Verify the lead exists and belongs to main business or its branches

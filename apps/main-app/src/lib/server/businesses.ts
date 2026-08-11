@@ -2,10 +2,11 @@
 // (migration 043). Profile data only — auth lives elsewhere.
 
 import { db } from './db';
-import { businessProfiles } from '@solar/db/schema';
+import { businessAccounts, businessProfiles } from '@solar/db/schema';
 import { and, asc, eq, sql } from 'drizzle-orm';
 import type { PgColumn } from 'drizzle-orm/pg-core';
 import type { CountryCode } from '$lib/countries';
+import { accountOfProfile, businessInCountry } from './businessCountry';
 
 export interface Business {
 	id: number;
@@ -93,9 +94,10 @@ export async function getBusinessBySlug(
 	const rows = await db
 		.select(BUSINESS_SELECTION)
 		.from(businessProfiles)
+		.innerJoin(businessAccounts, accountOfProfile)
 		.where(
 			and(
-				eq(businessProfiles.countryCode, country),
+				businessInCountry(country),
 				eq(businessProfiles.slug, slug),
 				eq(businessProfiles.isvisible, true)
 			)
@@ -113,9 +115,10 @@ export async function getBusinessesByLevel2(
 	return db
 		.select(BUSINESS_SELECTION)
 		.from(businessProfiles)
+		.innerJoin(businessAccounts, accountOfProfile)
 		.where(
 			and(
-				eq(businessProfiles.countryCode, country),
+				businessInCountry(country),
 				lower(businessProfiles.level2, level2),
 				level1 ? lower(businessProfiles.level1, level1) : undefined,
 				eq(businessProfiles.isvisible, true)
@@ -132,9 +135,10 @@ export async function getBusinessesByCity(
 	return db
 		.select(BUSINESS_SELECTION)
 		.from(businessProfiles)
+		.innerJoin(businessAccounts, accountOfProfile)
 		.where(
 			and(
-				eq(businessProfiles.countryCode, country),
+				businessInCountry(country),
 				lower(businessProfiles.city, city),
 				level2 ? lower(businessProfiles.level2, level2) : undefined,
 				eq(businessProfiles.isvisible, true)
@@ -151,9 +155,10 @@ export async function hasBusinessesInLevel2(
 	const rows = await db
 		.select({ one: sql`1` })
 		.from(businessProfiles)
+		.innerJoin(businessAccounts, accountOfProfile)
 		.where(
 			and(
-				eq(businessProfiles.countryCode, country),
+				businessInCountry(country),
 				lower(businessProfiles.level2, level2),
 				level1 ? lower(businessProfiles.level1, level1) : undefined,
 				eq(businessProfiles.isvisible, true)

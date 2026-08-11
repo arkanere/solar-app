@@ -4,8 +4,9 @@
 // Why a baseline exists at all: the numbered SQL migrations in
 // apps/main-app/src/lib/server/migrations/ only go back as far as the migrations
 // convention does. 36 of the 55 tables — including leaddata, businesses_1,
-// branches, business_profiles and leaddata_claimrequests — were created
-// before that and have no CREATE TABLE anywhere in the repo. Replaying the
+// business_profiles and leaddata_claimrequests — were created before that and
+// have no CREATE TABLE anywhere in the repo (`branches` was one of them until
+// 078 dropped it). Replaying the
 // migrations against an empty database therefore fails at 034.
 //
 // So the test schema is built in two steps: this baseline creates the tables,

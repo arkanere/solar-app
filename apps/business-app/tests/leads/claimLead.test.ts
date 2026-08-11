@@ -356,8 +356,12 @@ describe('branch auto-creation', () => {
 
 		expect(body.success).toBe(true);
 
+		// 078 dropped `branches`. A branch is a profile naming this business in
+		// account_business_id but not itself, and the old isactive is its isvisible.
 		const { rows: branchRows } = await pool.query<{ branch_id: number }>(
-			'SELECT branch_id FROM branches WHERE main_id = $1 AND isactive = true',
+			`SELECT business_id AS branch_id
+			   FROM business_profiles
+			  WHERE account_business_id = $1 AND business_id <> $1 AND isvisible = true`,
 			[businessId]
 		);
 		expect(branchRows).toHaveLength(1);
@@ -373,7 +377,7 @@ describe('branch auto-creation', () => {
 			`SELECT p.level2, p.slug, a.login_email
 			   FROM business_profiles p
 			   JOIN business_accounts a
-			     ON a.country_code = p.country_code AND a.source_id = p.account_business_id
+			     ON a.source_id = p.account_business_id
 			  WHERE p.business_id = $1`,
 			[branchId]
 		);
@@ -405,7 +409,10 @@ describe('branch auto-creation', () => {
 		expect(body.needsBranchConfirmation).toBeUndefined();
 		expect(body.newLead!.business_id).toBe(branchId);
 		// No new branch was created.
-		const { rows } = await pool.query('SELECT id FROM branches WHERE main_id = $1', [mainId]);
+		const { rows } = await pool.query(
+			'SELECT business_id FROM business_profiles WHERE account_business_id = $1 AND business_id <> $1',
+			[mainId]
+		);
 		expect(rows).toHaveLength(1);
 	});
 

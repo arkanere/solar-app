@@ -35,17 +35,18 @@ export class TokenManager {
 					slug: businessProfiles.slug,
 					login_email: businessAccounts.loginEmail,
 					magic_link_token: businessAccounts.magicLinkToken,
-					isvisible: businessAccounts.isvisible,
+					isActive: businessAccounts.isActive,
 					profileIsvisible: businessProfiles.isvisible,
 					magic_link_token_expires_at: businessAccounts.magicLinkTokenExpiresAt
 				})
 				.from(businessAccounts)
+				// 079 took country_code off business_profiles, so the join is the
+				// account link alone and the country filter applies once, on the
+				// account. The profile's country IS the account's now, so the pair of
+				// conditions this replaces could no longer disagree even in principle.
 				.innerJoin(
 					businessProfiles,
-					and(
-						eq(businessProfiles.countryCode, businessAccounts.countryCode),
-						eq(businessProfiles.accountBusinessId, businessAccounts.sourceId)
-					)
+					eq(businessProfiles.accountBusinessId, businessAccounts.sourceId)
 				)
 				.where(
 					and(
@@ -67,12 +68,12 @@ export class TokenManager {
 				return ERROR_RESPONSE('Invalid or expired magic link', AUTH_ERRORS.INVALID_TOKEN);
 			}
 
-			// Check if business is visible/active. Both flags: the account's says the
-			// login is live, the profile's says *this location* is. They are kept in
-			// step for a main, but a deactivated branch keeps its parent's live
-			// account — so without the profile check, deleteBranch would stop listing
-			// a branch while still letting a link sign in at its slug.
-			if (!business.isvisible || !business.profileIsvisible) {
+			// Both flags, and since 077 they finally have different names for the
+			// different questions they answer: is_active says the login is live,
+			// isvisible says *this location* is listed. A deactivated branch keeps its
+			// parent's live account, so without the profile check deleteBranch would
+			// stop listing a branch while still letting a link sign in at its slug.
+			if (!business.isActive || !business.profileIsvisible) {
 				return ERROR_RESPONSE('Business account is not active', AUTH_ERRORS.INVALID_BUSINESS);
 			}
 			return SUCCESS_RESPONSE({
@@ -81,7 +82,7 @@ export class TokenManager {
 					businessname: business.businessname,
 					slug: business.slug,
 					login_email: business.login_email,
-					isvisible: business.isvisible
+					isActive: business.isActive
 				}
 			});
 		} catch (error) {
@@ -110,21 +111,19 @@ export class TokenManager {
 					businessname: businessProfiles.businessname,
 					slug: businessProfiles.slug,
 					login_email: businessAccounts.loginEmail,
-					isvisible: businessAccounts.isvisible
+					isActive: businessAccounts.isActive
 				})
 				.from(businessAccounts)
-				.innerJoin(
-					businessProfiles,
-					and(
-						eq(businessProfiles.countryCode, businessAccounts.countryCode),
-						eq(businessProfiles.businessId, businessAccounts.sourceId)
-					)
-				)
+				// The account's own profile — sourceId names it directly — so this one
+				// stays on businessId rather than accountBusinessId. 079's country
+				// condition is gone from the join for the usual reason: source_id is
+				// globally unique and the country filter below applies to the same row.
+				.innerJoin(businessProfiles, eq(businessProfiles.businessId, businessAccounts.sourceId))
 				.where(
 					and(
 						eq(businessAccounts.countryCode, this.country),
 						eq(businessAccounts.loginEmail, email),
-						eq(businessAccounts.isvisible, true)
+						eq(businessAccounts.isActive, true)
 					)
 				)
 				.limit(1);
@@ -141,7 +140,7 @@ export class TokenManager {
 					businessname: business.businessname,
 					slug: business.slug,
 					login_email: business.login_email,
-					isvisible: business.isvisible
+					isActive: business.isActive
 				}
 			});
 		} catch (error) {
@@ -162,21 +161,18 @@ export class TokenManager {
 					businessname: businessProfiles.businessname,
 					slug: businessProfiles.slug,
 					login_email: businessAccounts.loginEmail,
-					isvisible: businessAccounts.isvisible
+					isActive: businessAccounts.isActive
 				})
 				.from(businessAccounts)
 				.innerJoin(
 					businessProfiles,
-					and(
-						eq(businessProfiles.countryCode, businessAccounts.countryCode),
-						eq(businessProfiles.accountBusinessId, businessAccounts.sourceId)
-					)
+					eq(businessProfiles.accountBusinessId, businessAccounts.sourceId)
 				)
 				.where(
 					and(
 						eq(businessAccounts.countryCode, this.country),
 						eq(businessProfiles.slug, businessSlug),
-						eq(businessAccounts.isvisible, true),
+						eq(businessAccounts.isActive, true),
 						// Same reason as validateMagicLinkToken: a hidden branch shares
 						// its parent's live account, so the profile has to be asked too.
 						eq(businessProfiles.isvisible, true)
@@ -195,7 +191,7 @@ export class TokenManager {
 					businessname: business.businessname,
 					slug: business.slug,
 					login_email: business.login_email,
-					isvisible: business.isvisible
+					isActive: business.isActive
 				}
 			});
 		} catch (error) {

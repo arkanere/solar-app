@@ -29,7 +29,7 @@ async function accountlessProfiles(): Promise<number[]> {
 		`SELECT p.business_id
 		   FROM business_profiles p
 		   LEFT JOIN business_accounts a
-		     ON a.country_code = p.country_code AND a.source_id = p.business_id
+		     ON a.source_id = p.account_business_id
 		  WHERE a.id IS NULL
 		  ORDER BY p.business_id`
 	);
@@ -54,12 +54,12 @@ describe('business_accounts is a store, not a projection', () => {
 		expect(await accountlessProfiles()).toEqual([]);
 	});
 
-	it('pairs the account to the profile on country_code as well as id', async () => {
-		// The ids come from one sequence shared by both countries, so source_id
-		// alone is unique — but the unique constraint and every join in the auth
-		// layer are on (country_code, source_id). A row written with the wrong
-		// country is invisible to login rather than wrong-tenant, which is a
-		// silent failure of exactly the kind 062's addBranch comment describes.
+	it('carries the country on the account, which is now the only copy', async () => {
+		// 079 dropped business_profiles.country_code, so this row is where a
+		// business's country lives. A row written with the wrong country is
+		// invisible to login rather than wrong-tenant, and since the profile no
+		// longer has a second copy to disagree with, this assertion is the only
+		// thing standing between a US fixture and an IN-shaped one.
 		const usId = await createUsBusiness({ slug: 'us-pairing' });
 
 		const { rows } = await pool.query<{ country_code: string }>(

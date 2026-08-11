@@ -360,7 +360,9 @@ describe('a completed reset changes what login accepts', () => {
 			slug,
 			businessname: 'Test Business',
 			login_email: loginEmail,
-			isvisible: true
+			// 077: the account's flag, renamed from isvisible so it stops sharing a
+			// name with the profile's per-location one.
+			isActive: true
 		} as Business;
 	}
 

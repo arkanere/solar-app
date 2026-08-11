@@ -148,12 +148,14 @@ export const load: PageServerLoad = async ({ cookies }) => {
 						isNotNull(claimed.businessId)
 					)
 				)
+				// business_id is globally unique, so it scopes this to one country by
+				// itself — which is why 079 taking country_code off business_profiles
+				// costs this leftJoin no second join. Adding one would also change the
+				// result: an inner join to business_accounts inside a leftJoin would
+				// drop the outer-join semantics this relies on.
 				.leftJoin(
 					schema.businessProfiles,
-					and(
-						eq(schema.businessProfiles.countryCode, 'in'),
-						eq(schema.businessProfiles.businessId, claimed.businessId)
-					)
+					eq(schema.businessProfiles.businessId, claimed.businessId)
 				)
 				.leftJoin(
 					schema.leaddataClaimrequests,

@@ -4,8 +4,9 @@
 //  - tokens are matched by HASH, never by the raw value at rest;
 //  - a NULL expiry counts as expired (fail-closed), which is the opposite of
 //    what a naive `expires_at > now()` rewrite would do;
-//  - getBusinessByEmail excludes active branches, so a shared login_email
-//    resolves to the main business rather than to whichever row came first.
+//  - getBusinessByEmail resolves a shared login_email to the main business,
+//    which since 076 is a property of the data (a branch has no account) rather
+//    than of a filter in the query.
 
 import { beforeEach, describe, expect, it } from 'vitest';
 import { TokenManager } from '$lib/auth/business/TokenManager';
@@ -160,8 +161,12 @@ describe('TokenManager.getBusinessByEmail', () => {
 		if (result.success) expect(result.business.id).toBe(id);
 	});
 
-	it('skips active branches so a shared email resolves to the main business', async () => {
-		// A branch created by claimLead inherits the main business's login_email.
+	it('resolves a shared email to the main business, because only it has an account', async () => {
+		// This used to test an *exclusion*: a branch carried a duplicate account
+		// holding its main's login_email, so one address matched several rows and
+		// getBusinessByEmail had to filter the branches back out. 076 deleted those
+		// duplicates and createBranch now models that — the branch has no account —
+		// so the answer is unambiguous at the data level rather than by filtering.
 		const mainId = await createBusiness({ slug: 'acme-solar', loginEmail: 'shared@example.test' });
 		const branchId = await createBusiness({
 			slug: 'acme-solar-branch-1',
@@ -175,7 +180,12 @@ describe('TokenManager.getBusinessByEmail', () => {
 		if (result.success) expect(result.business.id).toBe(mainId);
 	});
 
-	it('does not skip an inactive branch', async () => {
+	it('does not resolve an email that belonged to a branch before it became one', async () => {
+		// The counterpart of the test above, and the reason deleteBranch must not
+		// clear credentials: a branch has no account at all since 076, so an address
+		// that only ever existed on its own row is gone with that row. If this
+		// starts passing, something has re-created per-branch accounts and the
+		// duplicate-credential drift 074/076 cleaned up is back.
 		const mainId = await createBusiness({ slug: 'acme-solar', loginEmail: 'a@example.test' });
 		const branchId = await createBusiness({
 			slug: 'old-branch',
@@ -185,8 +195,7 @@ describe('TokenManager.getBusinessByEmail', () => {
 
 		const result = await manager.getBusinessByEmail('old-branch@example.test');
 
-		expect(result.success).toBe(true);
-		if (result.success) expect(result.business.id).toBe(branchId);
+		expect(result.success).toBe(false);
 	});
 
 	it('does not find an invisible business', async () => {

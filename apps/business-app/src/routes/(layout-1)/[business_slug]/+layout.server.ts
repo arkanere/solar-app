@@ -1,13 +1,13 @@
 import { error, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { businessProfiles, leaddata } from '@solar/db/schema';
-import { and, count, eq, gt, inArray, sql } from 'drizzle-orm';
+import { businessAccounts, businessProfiles, leaddata } from '@solar/db/schema';
+import { and, count, eq, gt, inArray, ne, sql } from 'drizzle-orm';
 import type { LayoutServerLoad } from './$types';
 import type { SessionData } from '$lib/types/auth';
 import { SessionManager } from '$lib/auth/business';
 import { countryForSlug } from '$lib/server/resolveCountry';
 import type { AuthCountry } from '$lib/auth/business/countryTables';
-import { branchTable, projectTable } from '$lib/server/writeTargets';
+import { accountOfProfile, businessInCountry, projectTable } from '$lib/server/writeTargets';
 
 interface BusinessRow {
 	id: number | null;
@@ -81,14 +81,14 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 			}
 
 			// The route no longer carries an /in or /us segment, so the country comes
-			// from the business itself. The reads below are unified and filtered by
-			// it. Since 054 branches/projects are single tables for every country —
-			// they key off business ids, which are globally unique.
+			// from the business itself. The leaddata reads below are filtered by it;
+			// the profile reads are not, because business ids are globally unique.
+			// Since 054 projects has been a single table for every country for the
+			// same reason (branches was too, until 078 dropped it).
 			const country = await countryForSlug(business_slug);
 			if (!country) {
 				throw error(404, 'Business not found');
 			}
-			const branches = branchTable;
 			const projects = projectTable;
 
 			// Load basic business info for sidebar.
@@ -112,11 +112,11 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 						brands: businessProfiles.brands
 					})
 					.from(businessProfiles)
+					// The country predicate is NOT redundant beside the id — see
+					// businessInCountry's doc comment in $lib/server/writeTargets.
+					.innerJoin(businessAccounts, accountOfProfile)
 					.where(
-						and(
-							eq(businessProfiles.countryCode, country),
-							eq(businessProfiles.businessId, sessionData.businessId)
-						)
+						and(businessInCountry(country), eq(businessProfiles.businessId, sessionData.businessId))
 					)
 					.limit(1);
 
@@ -124,11 +124,20 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 					const business: BusinessRow = businessRows[0];
 					const businessId = business.id as number;
 
-					// Get all branch IDs so lead counts include branch-assigned leads
+					// Get all branch IDs so lead counts include branch-assigned leads.
+					// Since 078 the branches are the profiles naming this business in
+					// account_business_id, minus the business itself, and the old
+					// branches.isactive is each branch profile's own isvisible.
 					const branchRows = await db
-						.select({ branch_id: branches.branchId })
-						.from(branches)
-						.where(and(eq(branches.mainId, businessId), eq(branches.isactive, true)));
+						.select({ branch_id: businessProfiles.businessId })
+						.from(businessProfiles)
+						.where(
+							and(
+								eq(businessProfiles.accountBusinessId, businessId),
+								ne(businessProfiles.businessId, businessId),
+								eq(businessProfiles.isvisible, true)
+							)
+						);
 					const allBusinessIds = [businessId, ...branchRows.map((r) => r.branch_id)];
 
 					const claimedLeadWhere = and(

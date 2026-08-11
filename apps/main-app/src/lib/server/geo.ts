@@ -4,9 +4,10 @@
 // scans.
 
 import { db } from './db';
-import { businessProfiles, geoLocations } from '@solar/db/schema';
+import { businessAccounts, businessProfiles, geoLocations } from '@solar/db/schema';
 import { and, asc, countDistinct, desc, eq, exists, sql } from 'drizzle-orm';
 import type { CountryCode } from '$lib/countries';
+import { accountOfProfile, businessInCountry } from './businessCountry';
 
 export interface GeoLevel1 {
 	level1: string;
@@ -136,9 +137,13 @@ function hasVisibleBusinessesInLevel1() {
 		db
 			.select({ one: sql`1` })
 			.from(businessProfiles)
+			// 079: the profile's country is its account's, so the correlation to
+			// geoLocations.countryCode goes through the join rather than a column
+			// on business_profiles.
+			.innerJoin(businessAccounts, accountOfProfile)
 			.where(
 				and(
-					eq(businessProfiles.countryCode, geoLocations.countryCode),
+					eq(businessAccounts.countryCode, geoLocations.countryCode),
 					sql`LOWER(${businessProfiles.level1}) = LOWER(${geoLocations.level1})`,
 					eq(businessProfiles.isvisible, true)
 				)
@@ -151,9 +156,13 @@ function hasVisibleBusinessesInLevel2() {
 		db
 			.select({ one: sql`1` })
 			.from(businessProfiles)
+			// 079: the profile's country is its account's, so the correlation to
+			// geoLocations.countryCode goes through the join rather than a column
+			// on business_profiles.
+			.innerJoin(businessAccounts, accountOfProfile)
 			.where(
 				and(
-					eq(businessProfiles.countryCode, geoLocations.countryCode),
+					eq(businessAccounts.countryCode, geoLocations.countryCode),
 					sql`LOWER(${businessProfiles.level2}) = LOWER(${geoLocations.level2})`,
 					eq(businessProfiles.isvisible, true)
 				)
@@ -228,12 +237,15 @@ export async function getTopLevel2s(country: CountryCode, limit = 5): Promise<To
 		.innerJoin(
 			businessProfiles,
 			and(
-				eq(businessProfiles.countryCode, geoLocations.countryCode),
 				sql`LOWER(${businessProfiles.level2}) = LOWER(${geoLocations.level2})`,
 				eq(businessProfiles.isvisible, true)
 			)
 		)
-		.where(eq(geoLocations.countryCode, country))
+		// 079: country moved to the account, so matching geoLocations.countryCode
+		// means reaching it through the profile's account rather than comparing two
+		// columns in the join above.
+		.innerJoin(businessAccounts, accountOfProfile)
+		.where(and(eq(geoLocations.countryCode, country), businessInCountry(country)))
 		.groupBy(
 			geoLocations.level2,
 			geoLocations.level1,
