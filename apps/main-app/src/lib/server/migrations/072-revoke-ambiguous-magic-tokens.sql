@@ -1,10 +1,21 @@
 -- Revoke the magic-link tokens that are valid for more than one account (2026-08-11).
 --
--- ** NOT YET APPLIED, AND NOT AUTOMATIC. ** This invalidates credentials that
--- have already been emailed to real businesses, so it is a judgement call rather
--- than a mechanical follow-on from 071. Read the counts below, decide, then run
--- it. The code fix (id-keyed minting) stops new ones appearing whether this runs
--- or not; this only deals with the ones already out there.
+-- ** APPLIED to live 2026-08-11, on explicit instruction. ** UPDATE 12, and
+-- afterwards: 0 shared token hashes, all 12 rows still non-empty (so the
+-- audience filter described below still passes them) and all 12 with a NULL
+-- expiry. Not automatic, and should not be made so — it invalidates credentials
+-- already emailed to real businesses, which is a judgement call rather than a
+-- mechanical follow-on from 071. The code fix (id-keyed minting) stops new ones
+-- appearing whether this runs or not; this only dealt with the ones already out
+-- there.
+--
+-- One thing the pre-run row dump showed that is worth keeping: every one of the
+-- 6 pairs was a real business alongside `businessadminz@solar.com`, the internal
+-- placeholder — not two real businesses. So the exposure was narrower than the
+-- shape of the bug allows: a business's link could land on the placeholder
+-- account rather than on a competitor's leads. The bug could have paired two
+-- real businesses (31 non-sentinel slugs are shared on live); it happened not
+-- to have yet.
 --
 -- What produced them. admin-app's mintInBusinessTokenBySlug() minted with
 --   UPDATE business_accounts a ... FROM business_profiles b

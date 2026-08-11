@@ -1,9 +1,12 @@
 -- business_accounts.source_id becomes unique on its own (2026-08-11).
 --
--- ** NOT YET APPLIED. ** Additive and non-breaking, so it can go on before the
--- code that depends on it, and should: the mint functions stop filtering by
--- country_code in the same commit, and this is what makes that safe by
--- construction rather than by the data happening to cooperate.
+-- ** APPLIED to live 2026-08-11. ** Both uniques confirmed present afterwards,
+-- and 6709/6709 distinct source_id unchanged.
+--
+-- Additive and non-breaking, so it could go on before the code that depends on
+-- it, and did: the mint functions stop filtering by country_code in the same
+-- commit, and this is what makes that safe by construction rather than by the
+-- data happening to cooperate.
 --
 -- Why. `source_id` holds a business_profiles.business_id, and that column has
 -- carried `business_profiles_business_id_key` — a plain UNIQUE — since the
