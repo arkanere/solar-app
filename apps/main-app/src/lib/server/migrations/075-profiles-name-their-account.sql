@@ -1,6 +1,18 @@
 -- business_profiles.account_business_id (2026-08-11).
 --
--- ** NOT YET APPLIED. **
+-- ** APPLIED to live. ** This header said NOT YET APPLIED until 2026-08-11,
+-- when it was found to be wrong: the column was already there, NOT NULL, with
+-- every footer check below passing. The apply was not recorded at the time, so
+-- the marker is written from the live schema rather than from the run — all
+-- four checks re-measured on 2026-08-11: 0 NULLs, 203 rows naming another
+-- profile (matching all 203 in `branches`), 0 disagreeing with branches.main_id,
+-- 0 naming a profile that does not exist, and the index present.
+--
+-- ** A stale NOT-YET-APPLIED marker costs real time. ** It sent a magic-link
+-- outage investigation at this file first, because 076 records itself as
+-- applied ahead of its prerequisite and this said the prerequisite never ran —
+-- a believable story that was not what had happened. The actual cause was 077.
+-- Record the apply when you run it; a marker is only load-bearing if it is true.
 --
 -- Step one of making business_accounts one-row-per-business. Today it is
 -- one-row-per-*profile*, and since a branch office is its own profile row, every

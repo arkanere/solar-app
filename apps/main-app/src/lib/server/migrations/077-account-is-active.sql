@@ -1,6 +1,20 @@
 -- business_accounts.is_active (2026-08-11).
 --
--- ** NOT YET APPLIED. **
+-- ** APPLIED to live 2026-08-11. ** ALTER TABLE, UPDATE 6506, COMMIT. The
+-- backfill measurement the header below asks for, taken immediately before:
+-- isvisible was false on 6037 accounts and true on 469, with **no NULL bucket
+-- at all** — so COALESCE(isvisible, FALSE) was a straight copy and no account's
+-- access changed. Verified after: 0 rows where is_active IS DISTINCT FROM
+-- COALESCE(isvisible, FALSE), and the grouping matches at 6037/469.
+--
+-- ** This was applied AFTER the code deploy, not before as instructed below,
+-- and the gap was an outage. ** The deployed business-app selected
+-- business_accounts.is_active while the column did not exist, so Postgres
+-- raised `column ba.is_active does not exist` on every magic-link validation,
+-- TokenManager caught it, and every claim link in every lead mail returned
+-- "Database error during token validation". The failure named a database error
+-- rather than an invalid token, which is the tell: an exception, not a lookup
+-- that found nothing.
 --
 -- Step one of separating the two flags that have both been called `isvisible`
 -- since 062 split the table. They are different questions:
