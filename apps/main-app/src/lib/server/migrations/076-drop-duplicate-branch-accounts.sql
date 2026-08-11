@@ -1,6 +1,20 @@
 -- Delete the branch account rows (2026-08-11).
 --
--- ** NOT YET APPLIED. MUST FOLLOW THE CODE DEPLOY, NOT PRECEDE IT. **
+-- ** APPLIED to live 2026-08-11, on explicit instruction, WITHOUT waiting to
+-- confirm the code deploy had landed. ** SELECT 203 archived, UPDATE 4
+-- last_logins folded into their mains, DELETE 203. Afterwards: 6506 accounts
+-- (6709 - 203), 0 branch accounts left, 203 rows in the archive table, and 0
+-- profiles cut off from a login — the check that matters. business_profiles is
+-- unchanged at 6709, so the end state is 6506 accounts across 6709 locations,
+-- with 68 businesses holding more than one.
+--
+-- The ordering note below stands and was not satisfied. If any production build
+-- still joins `a.source_id = b.business_id`, branch-slug logins, magic links,
+-- password resets and the admin edit page fail for the 203 branch locations
+-- until the deploy lands. Nothing is lost either way — the rows are in
+-- business_accounts_archive_076 — but that is the window to watch.
+--
+-- ** MUST FOLLOW THE CODE DEPLOY, NOT PRECEDE IT. **
 --
 -- Step three, after 075 added business_profiles.account_business_id and the code
 -- switched every account lookup onto it. This deletes what that made redundant:
