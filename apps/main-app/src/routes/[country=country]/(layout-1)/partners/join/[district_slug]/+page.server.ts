@@ -56,9 +56,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		db
 			.selectDistinct({
 				district: geoLocations.level2,
-				slug: geoLocations.level2Slug,
-				installer_count: sql<string>`(SELECT COUNT(*) FROM business_profiles b
-				        WHERE LOWER(b.district) = LOWER(${geoLocations.level2}) AND b.isvisible = true)`
+				slug: geoLocations.level2Slug
 			})
 			.from(geoLocations)
 			.where(
@@ -72,6 +70,29 @@ export const load: PageServerLoad = async ({ params }) => {
 			.limit(6)
 	]);
 
+	// Counts for the nearby districts, in their own query rather than a
+	// correlated subquery in the select list above: Drizzle renders a column
+	// interpolated there unqualified, so `LOWER(b.district) = LOWER(level2)`
+	// resolved both sides against business_profiles. It also still said
+	// `b.district`, a column 3d0122b renamed to level2, so it threw outright.
+	const nearbyCountRows = await db
+		.select({ district: businessProfiles.level2, count: count() })
+		.from(businessProfiles)
+		.where(
+			and(
+				sql`LOWER(${businessProfiles.level1}) = LOWER(${state})`,
+				eq(businessProfiles.isvisible, true)
+			)
+		)
+		.groupBy(businessProfiles.level2);
+
+	const nearbyCountByDistrict = new Map<string, number>();
+	for (const row of nearbyCountRows) {
+		if (!row.district) continue;
+		const key = row.district.toLowerCase();
+		nearbyCountByDistrict.set(key, (nearbyCountByDistrict.get(key) || 0) + row.count);
+	}
+
 	return {
 		state,
 		district,
@@ -82,7 +103,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		nearbyDistricts: nearbyRows.map((r) => ({
 			name: r.district,
 			slug: r.slug,
-			installerCount: parseInt(r.installer_count)
+			installerCount: nearbyCountByDistrict.get(r.district.toLowerCase()) || 0
 		}))
 	};
 };

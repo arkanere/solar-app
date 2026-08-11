@@ -1,6 +1,12 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { businessAccounts, businessProfiles, geoLocations, projects, stateSubsidies } from '@solar/db/schema';
+import {
+	businessAccounts,
+	businessProfiles,
+	geoLocations,
+	projects,
+	stateSubsidies
+} from '@solar/db/schema';
 import { accountOfProfile, businessInCountry } from '$lib/server/businessCountry';
 import { and, asc, count, eq, max, sql } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
@@ -22,80 +28,105 @@ export const load: PageServerLoad = async ({ params }) => {
 	}
 	const level1 = resolved.level1;
 
-	const [level2Rows, statsRows, subsidyRows, latestProjectRows] = await Promise.all([
-		db
-			.select({
-				level2: geoLocations.level2,
-				level2_slug: geoLocations.level2Slug,
-				// level1 is part of the match because level2 names repeat across level1s
-				// (e.g. "Washington County" in many US states). The correlated scalar
-				// subquery needs its own alias for `business_profiles` and compares
-				// LOWER() on both sides, so it stays on the sql escape hatch.
-				installer_count: sql<string>`(SELECT COUNT(*) FROM business_profiles b
-			         WHERE b.country_code = ${geoLocations.countryCode}
-			           AND LOWER(b.level1) = LOWER(${level1})
-			           AND LOWER(b.level2) = LOWER(${geoLocations.level2}) AND b.isvisible = true)`
-			})
-			.from(geoLocations)
-			.where(
-				and(eq(geoLocations.countryCode, country.code), eq(geoLocations.level1Slug, level1Slug))
-			)
-			.groupBy(geoLocations.countryCode, geoLocations.level2, geoLocations.level2Slug)
-			.orderBy(asc(geoLocations.level2)),
-		db
-			.select({
-				installer_count: count(),
-				latest_installer_added: max(businessProfiles.createdAt)
-			})
-			.from(businessProfiles)
-			.innerJoin(businessAccounts, accountOfProfile)
-			.where(
-				and(
-					businessInCountry(country.code),
-					sql`LOWER(${businessProfiles.level1}) = LOWER(${level1})`,
-					eq(businessProfiles.isvisible, true)
+	const [level2Rows, level2CountRows, statsRows, subsidyRows, latestProjectRows] =
+		await Promise.all([
+			db
+				.select({
+					level2: geoLocations.level2,
+					level2_slug: geoLocations.level2Slug
+				})
+				.from(geoLocations)
+				.where(
+					and(eq(geoLocations.countryCode, country.code), eq(geoLocations.level1Slug, level1Slug))
 				)
-			),
-		country.features.subsidy
-			? db
-					.select({
-						state_slug: stateSubsidies.stateSlug,
-						state_name: stateSubsidies.stateName
-					})
-					.from(stateSubsidies)
-					.where(
-						and(
-							sql`LOWER(${stateSubsidies.stateName}) = LOWER(${level1})`,
-							eq(stateSubsidies.status, 'published')
-						)
+				.groupBy(geoLocations.countryCode, geoLocations.level2, geoLocations.level2Slug)
+				.orderBy(asc(geoLocations.level2)),
+			// Per-level2 installer counts, matched to the geography in JS below.
+			//
+			// This used to be a correlated scalar subquery in the select list. Drizzle
+			// renders a column interpolated there UNqualified ("level2", not
+			// "geo_locations"."level2"), so inside the subquery it resolved against
+			// business_profiles instead: the correlation became b.level2 = b.level2,
+			// every level2 reported the state total, and the >0 filter below stopped
+			// filtering. Grouping in its own query keeps every column unambiguous.
+			//
+			// level1 is part of the match because level2 names repeat across level1s
+			// (e.g. "Washington County" in many US states).
+			db
+				.select({ level2: businessProfiles.level2, installer_count: count() })
+				.from(businessProfiles)
+				.innerJoin(businessAccounts, accountOfProfile)
+				.where(
+					and(
+						businessInCountry(country.code),
+						sql`LOWER(${businessProfiles.level1}) = LOWER(${level1})`,
+						eq(businessProfiles.isvisible, true)
 					)
-					.limit(1)
-			: Promise.resolve([]),
-		country.features.projects
-			? db
-					.select({ latest_project_date: max(projects.projectDate) })
-					.from(projects)
-					.innerJoin(businessProfiles, eq(projects.businessSlug, businessProfiles.slug))
-					// 079: the country filter that used to sit in the join above now
-					// reaches the profile's account.
-					.innerJoin(businessAccounts, accountOfProfile)
-					.where(
-						and(
-							businessInCountry(country.code),
-							sql`LOWER(${businessProfiles.level1}) = LOWER(${level1})`,
-							eq(projects.isvisible, true)
-						)
+				)
+				.groupBy(businessProfiles.level2),
+			db
+				.select({
+					installer_count: count(),
+					latest_installer_added: max(businessProfiles.createdAt)
+				})
+				.from(businessProfiles)
+				.innerJoin(businessAccounts, accountOfProfile)
+				.where(
+					and(
+						businessInCountry(country.code),
+						sql`LOWER(${businessProfiles.level1}) = LOWER(${level1})`,
+						eq(businessProfiles.isvisible, true)
 					)
-			: Promise.resolve([])
-	]);
+				),
+			country.features.subsidy
+				? db
+						.select({
+							state_slug: stateSubsidies.stateSlug,
+							state_name: stateSubsidies.stateName
+						})
+						.from(stateSubsidies)
+						.where(
+							and(
+								sql`LOWER(${stateSubsidies.stateName}) = LOWER(${level1})`,
+								eq(stateSubsidies.status, 'published')
+							)
+						)
+						.limit(1)
+				: Promise.resolve([]),
+			country.features.projects
+				? db
+						.select({ latest_project_date: max(projects.projectDate) })
+						.from(projects)
+						.innerJoin(businessProfiles, eq(projects.businessSlug, businessProfiles.slug))
+						// 079: the country filter that used to sit in the join above now
+						// reaches the profile's account.
+						.innerJoin(businessAccounts, accountOfProfile)
+						.where(
+							and(
+								businessInCountry(country.code),
+								sql`LOWER(${businessProfiles.level1}) = LOWER(${level1})`,
+								eq(projects.isvisible, true)
+							)
+						)
+				: Promise.resolve([])
+		]);
+
+	// Keyed on LOWER(level2) because the two tables do not agree on casing, and
+	// summed because business_profiles can hold several casings of one name.
+	const installerCountByLevel2 = new Map<string, number>();
+	for (const row of level2CountRows) {
+		if (!row.level2) continue;
+		const key = row.level2.toLowerCase();
+		installerCountByLevel2.set(key, (installerCountByLevel2.get(key) || 0) + row.installer_count);
+	}
 
 	const level2s = level2Rows
-		.filter((r) => parseInt(r.installer_count) > 0)
 		.map((r) => ({
 			name: r.level2,
 			slug: r.level2_slug,
-			installerCount: parseInt(r.installer_count)
-		}));
+			installerCount: installerCountByLevel2.get(r.level2.toLowerCase()) || 0
+		}))
+		.filter((r) => r.installerCount > 0);
 
 	const installerCount = Number(statsRows[0]?.installer_count || 0);
 	const lastUpdated = mostRecentDate([
