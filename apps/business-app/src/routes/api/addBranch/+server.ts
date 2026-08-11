@@ -70,16 +70,14 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				tag: businessProfiles.tag,
 				address: businessProfiles.address,
 				services: businessProfiles.services,
-				description: businessProfiles.description,
-				loginEmail: businessAccounts.loginEmail,
-				loginPassword: businessAccounts.loginPassword
+				description: businessProfiles.description
 			})
 			.from(businessProfiles)
 			.innerJoin(
 				businessAccounts,
 				and(
 					eq(businessAccounts.countryCode, businessProfiles.countryCode),
-					eq(businessAccounts.sourceId, businessProfiles.businessId)
+					eq(businessAccounts.sourceId, businessProfiles.accountBusinessId)
 				)
 			)
 			.where(eq(businessProfiles.businessId, businessId))
@@ -165,16 +163,12 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		const branchId = insertedBranch.businessId;
 
-		// The branch logs in with the parent's credentials, which is why the
-		// select above joins them out of the parent's account row rather than
-		// minting new ones.
-		await db.insert(businessAccounts).values({
-			countryCode: country,
-			sourceId: branchId,
-			loginEmail: mainBusiness.loginEmail,
-			loginPassword: mainBusiness.loginPassword,
-			isvisible: mainBusiness.isvisible
-		});
+		// No account row for the branch. It logs in with the parent's credentials,
+		// and since 075 it says so — accountBusinessId above points at the parent,
+		// so every auth lookup reaches the parent's account directly. Copying the
+		// parent's login_email and login_password into a second row is what this
+		// replaces; that copy went stale whenever the parent changed its password,
+		// and it is how the seeded plaintext password (074) spread.
 
 		// 4. Create an entry in the branches table to establish the relationship
 		await db.insert(branches).values({

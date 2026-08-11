@@ -259,8 +259,6 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 								businessname: businessProfiles.businessname,
 								phonenumber: businessProfiles.phonenumber,
 								email: businessProfiles.email,
-								loginEmail: businessAccounts.loginEmail,
-								loginPassword: businessAccounts.loginPassword,
 								address: businessProfiles.address,
 								website: businessProfiles.website,
 								rscore: businessProfiles.rscore,
@@ -276,7 +274,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 								businessAccounts,
 								and(
 									eq(businessAccounts.countryCode, businessProfiles.countryCode),
-									eq(businessAccounts.sourceId, businessProfiles.businessId)
+									eq(businessAccounts.sourceId, businessProfiles.accountBusinessId)
 								)
 							)
 							.where(eq(businessProfiles.businessId, mainBusinessId));
@@ -311,13 +309,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 							.returning({ businessId: businessProfiles.businessId });
 						const newBranchId = newBranchResult[0].businessId;
 
-						await tx.insert(businessAccounts).values({
-							countryCode: country,
-							sourceId: newBranchId,
-							loginEmail: main.loginEmail,
-							loginPassword: main.loginPassword,
-							isvisible: main.isvisible
-						});
+						// No account row for the branch — accountBusinessId above points
+						// it at the main's, so there is nothing left to copy. See
+						// addBranch, which creates branches the same way.
 
 						await tx
 							.insert(branches)

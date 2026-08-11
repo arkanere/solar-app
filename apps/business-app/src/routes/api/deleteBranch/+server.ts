@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db';
 import { countryForSlug } from '$lib/server/resolveCountry';
-import { branches, businessAccounts, businessProfiles } from '@solar/db/schema';
+import { branches, businessProfiles } from '@solar/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { json } from '@sveltejs/kit';
 import { SessionManager } from '$lib/auth/business';
@@ -74,12 +74,16 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			.set({ isvisible: false })
 			.where(eq(businessProfiles.businessId, branchId));
 
-		await db
-			.update(businessAccounts)
-			.set({ isvisible: false })
-			.where(
-				and(eq(businessAccounts.sourceId, branchId), eq(businessAccounts.countryCode, country))
-			);
+		// The account write that used to stand here is gone, and must not come
+		// back. It hid the branch's *own* account row, which existed only as a copy
+		// of the parent's; since 075 the branch shares the parent's row outright, so
+		// the same statement would now deactivate the parent's login — the exact
+		// lockout the comment above says this endpoint exists to avoid.
+		//
+		// Branch visibility is therefore business_profiles.isvisible alone, which is
+		// why the two slug lookups in TokenManager test the profile's flag as well
+		// as the account's: without that, hiding a branch would stop listing it but
+		// still let someone sign in at its slug.
 
 
 		return json({ success: true, message: 'Branch deleted successfully' });

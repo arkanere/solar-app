@@ -101,6 +101,46 @@ describe('TokenManager.validateMagicLinkToken', () => {
 		if (!result.success) expect(result.error).toMatch(/not active/i);
 	});
 
+	it('rejects a token for a deactivated branch, whose parent account is still live', async () => {
+		// 075/076. A branch used to hold its own account row, so deleteBranch hid
+		// the branch by setting isvisible = false on both halves. The branch now
+		// shares its parent's account outright — deleteBranch must not touch it, or
+		// hiding one location would lock the whole business out — so the profile's
+		// flag is the only thing that says this location is off. Validation has to
+		// read it, or a magic link would still sign in at a deleted branch's slug.
+		const mainId = await createBusiness({ slug: 'acme-solar' });
+		const branchId = await createBusiness({ slug: 'acme-solar-branch-1', isvisible: false });
+		await createBranch(mainId, branchId);
+
+		// The token is on the parent's account, which is live and stays live.
+		await storeMagicToken(mainId, RAW_TOKEN);
+
+		const atBranch = await manager.validateMagicLinkToken(RAW_TOKEN, 'acme-solar-branch-1');
+		expect(atBranch.success).toBe(false);
+
+		// The same token at the parent's own slug still works — the account was
+		// never deactivated, only that one location.
+		const atMain = await manager.validateMagicLinkToken(RAW_TOKEN, 'acme-solar');
+		expect(atMain.success).toBe(true);
+		if (atMain.success) expect(atMain.business.id).toBe(mainId);
+	});
+
+	it('accepts a token at an active branch’s slug, on the parent’s account', async () => {
+		// The other half: an active branch has no account of its own, so this only
+		// resolves because account_business_id points at the parent.
+		const mainId = await createBusiness({ slug: 'acme-solar' });
+		const branchId = await createBusiness({ slug: 'acme-solar-branch-2' });
+		await createBranch(mainId, branchId);
+		await storeMagicToken(mainId, RAW_TOKEN);
+
+		const result = await manager.validateMagicLinkToken(RAW_TOKEN, 'acme-solar-branch-2');
+
+		expect(result.success).toBe(true);
+		// Identity stays the branch — the session is about the location the link
+		// named, not the account behind it.
+		if (result.success) expect(result.business.id).toBe(branchId);
+	});
+
 	it('rejects an unknown token', async () => {
 		await createBusiness({ slug: 'acme-solar' });
 

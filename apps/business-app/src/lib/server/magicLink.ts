@@ -1,8 +1,8 @@
 import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '$lib/server/db';
-import { businessAccounts, svUser } from '@solar/db/schema';
-import { eq, sql } from 'drizzle-orm';
+import { businessAccounts, businessProfiles, svUser } from '@solar/db/schema';
+import { eq, inArray, sql } from 'drizzle-orm';
 
 // Magic-link tokens are stored hashed at rest and expire after 15 days.
 // Emitters mint a fresh token, persist its hash, and email/return the raw token.
@@ -28,6 +28,17 @@ export function newMagicToken() {
 export async function mintBusinessTokenById(businessId: number): Promise<string | null> {
 	const { raw, hash, expiresAt } = newMagicToken();
 
+	// 075: the caller passes a *profile* id, which since the account duplication
+	// went may not be an account id — a branch names its main's. Resolving here
+	// rather than at each call site means a caller holding a branch id cannot
+	// silently mint nothing. claimLead is exactly that caller: it allots to a
+	// branch it may have just created, and before this it would have got a null
+	// token and emailed a link with `null` in it.
+	const accountId = db
+		.select({ id: businessProfiles.accountBusinessId })
+		.from(businessProfiles)
+		.where(eq(businessProfiles.businessId, businessId));
+
 	// Since 062 this writes business_accounts directly rather than staging the
 	// token in businesses_1 for sv_sync_account to pick up. TokenManager already
 	// verified links against this table, so the mint and the check now agree by
@@ -38,7 +49,7 @@ export async function mintBusinessTokenById(businessId: number): Promise<string 
 	const updated = await db
 		.update(businessAccounts)
 		.set({ magicLinkToken: hash, magicLinkTokenExpiresAt: expiresAt.toISOString() })
-		.where(eq(businessAccounts.sourceId, businessId))
+		.where(inArray(businessAccounts.sourceId, accountId))
 		.returning({ sourceId: businessAccounts.sourceId });
 
 	if (updated.length === 0) return null;

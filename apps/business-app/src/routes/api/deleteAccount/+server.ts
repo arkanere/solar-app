@@ -64,18 +64,13 @@ export const POST: RequestHandler = async ({ cookies }) => {
 			.set({ isvisible: false })
 			.where(inArray(businessProfiles.businessId, branchIds));
 
-		await db
-			.update(businessAccounts)
-			.set({ isvisible: false, loginPassword: null, magicLinkToken: null })
-			.where(
-				and(
-					inArray(businessAccounts.sourceId, branchIds),
-					eq(businessAccounts.countryCode, country)
-				)
-			);
+		// Branches have no account row to hide since 075 — they share the main's,
+		// which the update above already cleared. The fourth statement that used to
+		// stand here blanked their duplicate credentials, and with the duplicates
+		// gone it would match nothing.
 
 		// No sync loop here any more. Both halves are stores since 062/064, so the
-		// four updates above are the entire soft-delete; the loop existed only to
+		// three updates above are the entire soft-delete; the loop existed only to
 		// drive sv_sync_business over the business and each of its branches, and
 		// `hiddenBranches` existed only to feed it.
 

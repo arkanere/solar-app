@@ -364,20 +364,30 @@ describe('branch auto-creation', () => {
 		const branchId = branchRows[0].branch_id;
 
 		// The branch is a real business in the lead's district, and it — not the
-		// main business — owns the allocated lead. Since migration 062 that means
-		// a row in each half of the split: the profile carries the district and
-		// slug, the account the login it shares with its parent.
+		// main business — owns the allocated lead. The profile carries the district
+		// and slug; the login comes from the parent's account, which since 075 the
+		// branch reaches through account_business_id rather than through a copy of
+		// its own. The join is the assertion: it only resolves because the branch
+		// names its parent.
 		const { rows: bizRows } = await pool.query<{ level2: string; slug: string; login_email: string }>(
 			`SELECT p.level2, p.slug, a.login_email
 			   FROM business_profiles p
 			   JOIN business_accounts a
-			     ON a.country_code = p.country_code AND a.source_id = p.business_id
+			     ON a.country_code = p.country_code AND a.source_id = p.account_business_id
 			  WHERE p.business_id = $1`,
 			[branchId]
 		);
 		expect(bizRows[0].level2).toBe('Nashik');
 		expect(bizRows[0].slug).toMatch(/^acme-solar-branch-/);
 		expect(bizRows[0].login_email).toBe('acme-solar@example.test');
+
+		// And the branch has no account row of its own — that duplication is the
+		// thing 075/076 removed.
+		const { rows: ownAccount } = await pool.query(
+			'SELECT 1 FROM business_accounts WHERE source_id = $1',
+			[branchId]
+		);
+		expect(ownAccount).toHaveLength(0);
 		expect(body.newLead!.business_id).toBe(branchId);
 	});
 

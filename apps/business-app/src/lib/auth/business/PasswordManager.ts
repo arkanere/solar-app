@@ -28,7 +28,10 @@ export class PasswordManager {
 					businessProfiles,
 					and(
 						eq(businessProfiles.countryCode, businessAccounts.countryCode),
-						eq(businessProfiles.businessId, businessAccounts.sourceId)
+						// 075: the credential lives on the account the profile names.
+						// For a branch that is its main's — which is what it has always
+						// been in effect, since the branch's own account was a copy.
+						eq(businessProfiles.accountBusinessId, businessAccounts.sourceId)
 					)
 				)
 				.where(

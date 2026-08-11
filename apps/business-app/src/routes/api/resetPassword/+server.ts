@@ -94,7 +94,11 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 				businessProfiles,
 				and(
 					eq(businessProfiles.countryCode, businessAccounts.countryCode),
-					eq(businessProfiles.businessId, businessAccounts.sourceId)
+					// 075: reach the account the slug's profile names. `id` stays
+					// businessAccounts.sourceId here, unlike the lookups in
+					// TokenManager — this one goes on to *write* the account, so it
+					// wants the account's id and not the profile's.
+					eq(businessProfiles.accountBusinessId, businessAccounts.sourceId)
 				)
 			)
 			.where(
