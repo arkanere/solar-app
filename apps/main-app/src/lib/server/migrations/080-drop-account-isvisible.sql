@@ -1,8 +1,24 @@
 -- Drop business_accounts.isvisible (2026-08-11).
 --
--- ** NOT YET APPLIED. **
+-- ** APPLIED to live 2026-08-20. ** BEGIN, ALTER TABLE, COMMIT. The agreement
+-- check below was run immediately before and came back **1, not 0** — account
+-- 6986, isvisible true against is_active false. That one row is the whole
+-- reason this file waited: admin-app's verify/save still wrote `isvisible`
+-- only, so the business it verified could not sign in by any route. It was
+-- folded forward as a separate statement, exactly as the note below says to,
+-- and the check re-run to 0 before the drop.
 --
--- ** MUST FOLLOW THE CODE DEPLOY, NOT PRECEDE IT. **
+-- Verified after: no `isvisible` on business_accounts; is_active 6037 false /
+-- 470 true; one `isvisible` left across the two tables and it is
+-- business_profiles'. The footer's expected total of 6506 is now **6507** —
+-- 6986 signed up on 2026-08-20, after this file was written. 470 true is 469
+-- from 077 plus that same account.
+--
+-- ** This was applied BEFORE the code deploy, deliberately, inverting the
+-- instruction below. ** Sole maintainer, internal tool, explicit call: the
+-- window where admin-app's edit action writes a column that no longer exists
+-- was accepted rather than staged around. Nothing user-facing reads it — the
+-- only two consumers were admin-app's verify/save and one automation script.
 --
 -- The second half of 077. That file added `is_active` and backfilled it; the
 -- code now reads and writes `is_active` everywhere, so the old column is dead
