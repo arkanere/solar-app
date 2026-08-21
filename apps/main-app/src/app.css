@@ -421,6 +421,18 @@
   --container-shadow: var(--shadow-xs);
   --container-transition: var(--transition-default);
 
+  /* Page Layout Tokens (consumed by lib/components/layout/PageShell.svelte)
+     1140px matches the width SiteFooter and both route layouts already frame
+     the site at. Pages used to hardcode their own width, which is how the tree
+     drifted into five different container widths. */
+  --page-max-width: 71.25rem;          /* 1140px — default marketing/content pages */
+  --page-max-width-content: 56rem;     /* 896px  — tools and utility pages */
+  --page-max-width-doc: 48rem;         /* 768px  — reading measure for legal/form pages */
+
+  /* Vertical rhythm between top-level page sections. Replaces the hand-repeated
+     mb-8 that every page wrote for itself. */
+  --section-gap: 2rem;
+
   /* Step Indicator Component Tokens */
   --step-indicator-size: 1.5rem;
 
