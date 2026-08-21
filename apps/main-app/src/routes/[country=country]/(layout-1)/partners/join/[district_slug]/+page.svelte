@@ -76,14 +76,14 @@
 	<!-- Breadcrumb -->
 	<nav class="mb-6 text-sm text-muted-foreground" aria-label="Breadcrumb">
 		<ol class="flex flex-wrap gap-1">
-			<li><a href={homeUrl} class="hover:text-primary">Home</a> /</li>
-			<li><a href={partnersUrl} class="hover:text-primary">Partners</a> /</li>
-			<li><a href={joinUrl} class="hover:text-primary">Join</a> /</li>
+			<li><a href={homeUrl} class="hover:text-primary-strong">Home</a> /</li>
+			<li><a href={partnersUrl} class="hover:text-primary-strong">Partners</a> /</li>
+			<li><a href={joinUrl} class="hover:text-primary-strong">Join</a> /</li>
 			<li class="font-medium text-foreground">{data.district}</li>
 		</ol>
 	</nav>
 
-	<h1 class="mb-4 text-center text-3xl font-bold text-primary md:text-4xl">
+	<h1 class="mb-4 text-center text-3xl font-bold text-primary-strong md:text-4xl">
 		Become a Solar Installer Partner in {data.district}
 	</h1>
 
@@ -97,18 +97,18 @@
 	<!-- District stats -->
 	<div class="mb-8 flex flex-wrap justify-center gap-4">
 		<div class="flex items-center gap-2 rounded-lg bg-muted px-4 py-2">
-			<Users class="h-5 w-5 text-primary" />
+			<Users class="h-5 w-5 text-primary-strong" />
 			<span class="font-semibold">{data.installerCount}</span>
 			<span class="text-muted-foreground">Installers in {data.district}</span>
 		</div>
 		<div class="flex items-center gap-2 rounded-lg bg-muted px-4 py-2">
-			<MapPin class="h-5 w-5 text-primary" />
+			<MapPin class="h-5 w-5 text-primary-strong" />
 			<span class="font-semibold">{data.cityCount}</span>
 			<span class="text-muted-foreground">Cities Covered</span>
 		</div>
 		{#if data.recentLeadCount > 0}
 			<div class="flex items-center gap-2 rounded-lg bg-muted px-4 py-2">
-				<TrendingUp class="h-5 w-5 text-primary" />
+				<TrendingUp class="h-5 w-5 text-primary-strong" />
 				<span class="font-semibold">{data.recentLeadCount}</span>
 				<span class="text-muted-foreground">Recent Quotes</span>
 			</div>
@@ -132,7 +132,7 @@
 				{#each nearbyWithInstallers as d}
 					<a
 						href="{joinUrl}{d.slug}/"
-						class="rounded-full border px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+						class="rounded-full border px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary-strong"
 					>
 						{d.name}
 					</a>

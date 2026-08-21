@@ -30,12 +30,12 @@
 <div class="max-w-4xl mx-auto px-4 py-8">
 	<nav class="text-sm text-muted-foreground mb-6" aria-label="Breadcrumb">
 		<ol class="flex flex-wrap gap-1">
-			<li><a href={countryUrl("in", "/")} class="hover:text-primary">Home</a> /</li>
+			<li><a href={countryUrl("in", "/")} class="hover:text-primary-strong">Home</a> /</li>
 			<li class="text-foreground font-medium">Tools</li>
 		</ol>
 	</nav>
 
-	<h1 class="text-3xl md:text-4xl font-bold text-primary mb-4">Solar Tools & Calculators</h1>
+	<h1 class="text-3xl md:text-4xl font-bold text-primary-strong mb-4">Solar Tools & Calculators</h1>
 	<p class="text-muted-foreground mb-8 max-w-2xl">
 		Free tools to help you plan your solar installation. Calculate costs, compare financing, and
 		check subsidies — all based on real marketplace data.
@@ -50,10 +50,10 @@
 			>
 				<div class="mb-4">
 					{#if Icon}
-						<Icon class="w-8 h-8 text-primary" />
+						<Icon class="w-8 h-8 text-primary-strong" />
 					{/if}
 				</div>
-				<h2 class="text-lg font-semibold text-primary group-hover:underline mb-2">
+				<h2 class="text-lg font-semibold text-primary-strong group-hover:underline mb-2">
 					{tool.title}
 				</h2>
 				<p class="text-sm text-muted-foreground">{tool.description}</p>

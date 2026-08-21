@@ -32,11 +32,11 @@
 		{ name: discom.name, href: '' }
 	]} />
 
-	<h1 class="text-3xl md:text-4xl font-bold text-primary mb-4">{discom.name} — Solar Net Metering</h1>
+	<h1 class="text-3xl md:text-4xl font-bold text-primary-strong mb-4">{discom.name} — Solar Net Metering</h1>
 
 	{#if discom.net_metering_policy}
 		<section class="mb-8">
-			<h2 class="text-2xl font-semibold text-primary mb-3">Net Metering Policy</h2>
+			<h2 class="text-2xl font-semibold text-primary-strong mb-3">Net Metering Policy</h2>
 			<div class="text-muted-foreground leading-relaxed prose prose-sm max-w-none">
 				{@html discom.net_metering_policy}
 			</div>
@@ -45,7 +45,7 @@
 
 	{#if discom.tariff_structure}
 		<section class="mb-8">
-			<h2 class="text-2xl font-semibold text-primary mb-3">Tariff Structure</h2>
+			<h2 class="text-2xl font-semibold text-primary-strong mb-3">Tariff Structure</h2>
 			<div class="text-muted-foreground leading-relaxed prose prose-sm max-w-none">
 				{@html discom.tariff_structure}
 			</div>
@@ -54,7 +54,7 @@
 
 	{#if discom.application_process}
 		<section class="mb-8">
-			<h2 class="text-2xl font-semibold text-primary mb-3">Application Process</h2>
+			<h2 class="text-2xl font-semibold text-primary-strong mb-3">Application Process</h2>
 			<div class="text-muted-foreground leading-relaxed prose prose-sm max-w-none">
 				{@html discom.application_process}
 			</div>
@@ -67,7 +67,7 @@
 	<section class="mb-8">
 		<p class="text-sm text-muted-foreground">
 			Learn more about net metering policies →
-			<a href={contentUrl('/solar-subsidy/net-metering/')} class="text-primary hover:underline font-medium">
+			<a href={contentUrl('/solar-subsidy/net-metering/')} class="text-primary-strong hover:underline font-medium">
 				Net Metering Guide
 			</a>
 		</p>
@@ -75,7 +75,7 @@
 
 	{#if siblingDiscoms.length > 0}
 		<section class="mb-8">
-			<h2 class="text-lg font-semibold text-primary mb-3">Other DISCOMs in {stateName}</h2>
+			<h2 class="text-lg font-semibold text-primary-strong mb-3">Other DISCOMs in {stateName}</h2>
 			<div class="flex flex-wrap gap-2">
 				{#each siblingDiscoms as sibling}
 					<a
@@ -92,7 +92,7 @@
 	<FAQ items={discom.faq ?? []} title="FAQs — {discom.name}" />
 
 	<div class="mt-8">
-		<a href={contentUrl(`/solar-subsidy/${discom.state_slug}/`)} class="text-primary hover:underline text-sm">
+		<a href={contentUrl(`/solar-subsidy/${discom.state_slug}/`)} class="text-primary-strong hover:underline text-sm">
 			← Solar Subsidy in {stateName}
 		</a>
 	</div>

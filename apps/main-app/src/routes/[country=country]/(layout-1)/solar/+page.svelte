@@ -40,13 +40,13 @@
 	<!-- Breadcrumb -->
 	<nav class="text-sm text-muted-foreground mb-6" aria-label="Breadcrumb">
 		<ol class="flex flex-wrap gap-1">
-			<li><a href="/{cc}" class="hover:text-primary">Home</a> /</li>
+			<li><a href="/{cc}" class="hover:text-primary-strong">Home</a> /</li>
 			<li class="text-foreground font-medium">Solar</li>
 		</ol>
 	</nav>
 
 	<!-- Hero -->
-	<h1 class="text-3xl md:text-4xl font-bold text-primary mb-4">
+	<h1 class="text-3xl md:text-4xl font-bold text-primary-strong mb-4">
 		Solar Panel Installers in {country.name}
 	</h1>
 	<p class="text-muted-foreground mb-6 max-w-2xl">
@@ -67,7 +67,7 @@
 	<!-- National coverage -->
 	<div class="bg-accent/10 rounded-lg p-4 mb-8">
 		<p class="text-sm">
-			<strong class="text-primary">Nationwide coverage:</strong>
+			<strong class="text-primary-strong">Nationwide coverage:</strong>
 			verified installers in {data.level1Count} of {data.totalLevel1Count}
 			{level1Label.plural.toLowerCase()} ({level1Coverage}%), across {data.coveredLevel2Count}
 			{level2Label.plural.toLowerCase()}.
@@ -80,7 +80,7 @@
 	<!-- Solar Guides -->
 	{#if country.features.seoContentFamilies}
 		<section class="mb-8">
-			<h2 class="text-lg font-semibold text-primary mb-3">Solar Guides</h2>
+			<h2 class="text-lg font-semibold text-primary-strong mb-3">Solar Guides</h2>
 			<div class="flex flex-wrap gap-2">
 				<a href={contentUrl("/rooftop-solar/")} class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
 					Rooftop Solar Guide

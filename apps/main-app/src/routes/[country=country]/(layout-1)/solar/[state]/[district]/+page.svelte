@@ -101,9 +101,9 @@
 	<!-- Breadcrumb -->
 	<nav class="text-sm text-muted-foreground mb-6" aria-label="Breadcrumb">
 		<ol class="flex flex-wrap gap-1">
-			<li><a href="/{cc}" class="hover:text-primary">Home</a> /</li>
-			<li><a href="/{cc}/solar" class="hover:text-primary">Solar</a> /</li>
-			<li><a href="/{cc}/solar/{data.level1Slug}" class="hover:text-primary">{data.level1}</a> /</li>
+			<li><a href="/{cc}" class="hover:text-primary-strong">Home</a> /</li>
+			<li><a href="/{cc}/solar" class="hover:text-primary-strong">Solar</a> /</li>
+			<li><a href="/{cc}/solar/{data.level1Slug}" class="hover:text-primary-strong">{data.level1}</a> /</li>
 			<li class="text-foreground font-medium">{data.level2}</li>
 		</ol>
 	</nav>
@@ -117,7 +117,7 @@
 	<!-- Local social proof -->
 	{#if data.level2LeadCount >= 3}
 		<p class="bg-primary/5 border border-primary/20 rounded-lg px-4 py-3 mb-8 text-center font-medium">
-			<span class="text-primary font-bold">{data.level2LeadCount.toLocaleString(country.locale)}</span>
+			<span class="text-primary-strong font-bold">{data.level2LeadCount.toLocaleString(country.locale)}</span>
 			customers from {data.level2} have started their solar journey with Solar Vipani.
 		</p>
 	{/if}
@@ -126,7 +126,7 @@
 	<LeadFormSection city={data.level2} hasBusinesses={true} country={data.country} />
 
 	<!-- Installer Cards -->
-	<h2 class="text-2xl font-semibold text-primary mb-4">
+	<h2 class="text-2xl font-semibold text-primary-strong mb-4">
 		Top Solar Installers in {data.level2}
 	</h2>
 	<InstallerCard businesses={data.businesses} countryCode={cc} />
@@ -156,7 +156,7 @@
 	<!-- Solar Guides -->
 	{#if country.features.seoContentFamilies}
 		<section class="mb-8">
-			<h2 class="text-2xl font-semibold text-primary mb-4">Solar Guides</h2>
+			<h2 class="text-2xl font-semibold text-primary-strong mb-4">Solar Guides</h2>
 			<p class="text-sm text-muted-foreground mb-3">
 				Not sure where to start? These guides can help you make an informed decision.
 			</p>
@@ -191,7 +191,7 @@
 	<!-- FAQ -->
 	{#if faqItems.length > 0}
 		<section class="mb-8">
-			<h2 class="text-2xl font-semibold text-primary mb-4">
+			<h2 class="text-2xl font-semibold text-primary-strong mb-4">
 				Frequently Asked Questions — Solar in {data.level2}
 			</h2>
 			<div class="space-y-4">
@@ -208,7 +208,7 @@
 	<!-- City links -->
 	{#if data.cities.length > 0}
 		<section class="mb-8">
-			<h2 class="text-2xl font-semibold text-primary mb-4">
+			<h2 class="text-2xl font-semibold text-primary-strong mb-4">
 				Cities in {data.level2}
 			</h2>
 			<div class="flex flex-wrap gap-2">
@@ -233,7 +233,7 @@
 	<!-- Size links -->
 	{#if country.features.seoContentFamilies}
 		<section class="mb-8">
-			<h2 class="text-2xl font-semibold text-primary mb-4">
+			<h2 class="text-2xl font-semibold text-primary-strong mb-4">
 				Solar Systems by Size in {data.level2}
 			</h2>
 			<div class="flex flex-wrap gap-2">

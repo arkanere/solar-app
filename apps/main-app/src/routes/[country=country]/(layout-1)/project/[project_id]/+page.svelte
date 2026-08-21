@@ -75,9 +75,9 @@
 	<!-- Breadcrumb -->
 	<nav class="text-sm text-muted-foreground mb-6" aria-label="Breadcrumb">
 		<ol class="flex flex-wrap gap-1">
-			<li><a href={countryUrl(cc, "/")} class="hover:text-primary">Home</a> /</li>
-			<li><a href={geoUrl(cc)} class="hover:text-primary">Solar</a> /</li>
-			<li><a href={installerUrl(cc, business.slug)} class="hover:text-primary">{business.businessname}</a> /</li>
+			<li><a href={countryUrl(cc, "/")} class="hover:text-primary-strong">Home</a> /</li>
+			<li><a href={geoUrl(cc)} class="hover:text-primary-strong">Solar</a> /</li>
+			<li><a href={installerUrl(cc, business.slug)} class="hover:text-primary-strong">{business.businessname}</a> /</li>
 			<li class="text-foreground font-medium">{project.title}</li>
 		</ol>
 	</nav>
@@ -95,24 +95,24 @@
 	{/if}
 
 	<!-- Project Specs -->
-	<h1 class="text-3xl md:text-4xl font-bold text-primary mb-4">{project.title}</h1>
+	<h1 class="text-3xl md:text-4xl font-bold text-primary-strong mb-4">{project.title}</h1>
 
 	<div class="flex flex-wrap gap-4 mb-8 text-sm text-muted-foreground">
 		{#if project.pincode}
 			<span class="flex items-center gap-1.5 bg-muted rounded-lg px-3 py-1.5">
-				<Hash class="w-4 h-4 text-primary" />
+				<Hash class="w-4 h-4 text-primary-strong" />
 				Pincode: {project.pincode}
 			</span>
 		{/if}
 		{#if project.project_date}
 			<span class="flex items-center gap-1.5 bg-muted rounded-lg px-3 py-1.5">
-				<Calendar class="w-4 h-4 text-primary" />
+				<Calendar class="w-4 h-4 text-primary-strong" />
 				{formatDate(project.project_date)}
 			</span>
 		{/if}
 		{#if project.district}
 			<span class="flex items-center gap-1.5 bg-muted rounded-lg px-3 py-1.5">
-				<MapPin class="w-4 h-4 text-primary" />
+				<MapPin class="w-4 h-4 text-primary-strong" />
 				{project.district}
 			</span>
 		{/if}
@@ -121,7 +121,7 @@
 	<!-- Installer Attribution -->
 	<section class="mb-8 bg-accent/10 rounded-lg p-6">
 		<p class="text-sm text-muted-foreground mb-2">Installed by</p>
-		<a href={installerUrl(cc, business.slug)} class="text-xl font-semibold text-primary hover:underline">
+		<a href={installerUrl(cc, business.slug)} class="text-xl font-semibold text-primary-strong hover:underline">
 			{business.businessname}
 		</a>
 		{#if business.city}
@@ -138,7 +138,7 @@
 	{#if sizeKw}
 		<p class="text-sm text-muted-foreground mb-8">
 			Learn about {sizeKw}kW systems →
-			<a href={contentUrl(`/rooftop-solar/${sizeKw}kw-system/`)} class="text-primary hover:underline font-medium">
+			<a href={contentUrl(`/rooftop-solar/${sizeKw}kw-system/`)} class="text-primary-strong hover:underline font-medium">
 				Complete {sizeKw}kW Solar System Guide
 			</a>
 		</p>
@@ -147,15 +147,15 @@
 	<!-- Location Context -->
 	{#if stateSlug && districtSlug && project.district}
 		<section class="mb-8">
-			<h2 class="text-lg font-semibold text-primary mb-2">Location</h2>
+			<h2 class="text-lg font-semibold text-primary-strong mb-2">Location</h2>
 			<p class="text-muted-foreground">
 				This project is in
 				{#if project.city}
-					<a href={geoUrl(cc, stateSlug, districtSlug, project.city.toLowerCase().replace(/\s+/g, "-"))} class="text-primary hover:underline">
+					<a href={geoUrl(cc, stateSlug, districtSlug, project.city.toLowerCase().replace(/\s+/g, "-"))} class="text-primary-strong hover:underline">
 						{project.city}
 					</a>,
 				{/if}
-				<a href={geoUrl(cc, stateSlug, districtSlug)} class="text-primary hover:underline">
+				<a href={geoUrl(cc, stateSlug, districtSlug)} class="text-primary-strong hover:underline">
 					{project.district}
 				</a>.
 				View more solar installers and projects in this area.
@@ -175,7 +175,7 @@
 
 	<!-- Back link -->
 	<div class="mt-8">
-		<a href={installerUrl(cc, business.slug)} class="text-primary hover:underline text-sm">
+		<a href={installerUrl(cc, business.slug)} class="text-primary-strong hover:underline text-sm">
 			← Back to {business.businessname}
 		</a>
 	</div>

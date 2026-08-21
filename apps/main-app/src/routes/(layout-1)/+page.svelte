@@ -68,7 +68,7 @@
 
   <!-- Country Selector -->
   <section class="max-w-6xl mx-auto px-8 py-16 md:px-8 md:py-20">
-    <h2 class="text-center text-3xl md:text-4xl mb-12 text-primary font-semibold">Choose Your Region</h2>
+    <h2 class="text-center text-3xl md:text-4xl mb-12 text-primary-strong font-semibold">Choose Your Region</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
       {#each countries as country}
         <button
@@ -76,7 +76,7 @@
           class="bg-card text-card-foreground border-2 border-border rounded-[theme(--radius-xl)] px-8 py-4 text-center cursor-pointer transition-all duration-[theme(--duration-default)] hover:shadow-[theme(--shadow-card-hover)] hover:border-accent hover:scale-[1.05]"
         >
           <div class="text-6xl mb-4">{country.flag}</div>
-          <h3 class="text-2xl font-semibold text-primary">{country.name}</h3>
+          <h3 class="text-2xl font-semibold text-primary-strong">{country.name}</h3>
         </button>
       {/each}
     </div>

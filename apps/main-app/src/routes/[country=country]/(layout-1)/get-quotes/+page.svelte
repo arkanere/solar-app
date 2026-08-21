@@ -55,12 +55,12 @@
 	<!-- Breadcrumb -->
 	<nav class="text-sm text-muted-foreground mb-6" aria-label="Breadcrumb">
 		<ol class="flex flex-wrap gap-1">
-			<li><a href={homeUrl} class="hover:text-primary">Home</a> /</li>
+			<li><a href={homeUrl} class="hover:text-primary-strong">Home</a> /</li>
 			<li class="text-foreground font-medium">Get Quotes</li>
 		</ol>
 	</nav>
 
-	<h1 class="text-3xl md:text-4xl font-bold text-primary mb-4 text-center">
+	<h1 class="text-3xl md:text-4xl font-bold text-primary-strong mb-4 text-center">
 		Get a Free Solar Quotation Online
 	</h1>
 
@@ -71,12 +71,12 @@
 	<!-- Trust Bar -->
 	<div class="flex flex-wrap justify-center gap-6 mb-10">
 		<div class="flex items-center gap-2 bg-muted rounded-lg px-4 py-2">
-			<Users class="w-5 h-5 text-primary" />
+			<Users class="w-5 h-5 text-primary-strong" />
 			<span class="font-semibold">{data.installerCount}+</span>
 			<span class="text-muted-foreground">Verified Installers</span>
 		</div>
 		<div class="flex items-center gap-2 bg-muted rounded-lg px-4 py-2">
-			<FolderCheck class="w-5 h-5 text-primary" />
+			<FolderCheck class="w-5 h-5 text-primary-strong" />
 			<span class="font-semibold">{data.projectCount}+</span>
 			<span class="text-muted-foreground">Verified Projects</span>
 		</div>
@@ -87,23 +87,23 @@
 
 	<!-- How to get a solar quotation online -->
 	<section class="mt-12">
-		<h2 class="text-2xl md:text-3xl font-semibold text-primary mb-6 text-center">
+		<h2 class="text-2xl md:text-3xl font-semibold text-primary-strong mb-6 text-center">
 			How to Get Your Solar Quotation Online
 		</h2>
 		<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 			<div class="border border-border rounded-lg p-6 text-center">
 				<div class="w-10 h-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold mx-auto mb-3">1</div>
-				<h3 class="font-semibold text-primary mb-2">Fill the Form Online</h3>
+				<h3 class="font-semibold text-primary-strong mb-2">Fill the Form Online</h3>
 				<p class="text-sm text-muted-foreground">Share your location and energy requirements in the form above — it takes less than a minute.</p>
 			</div>
 			<div class="border border-border rounded-lg p-6 text-center">
 				<div class="w-10 h-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold mx-auto mb-3">2</div>
-				<h3 class="font-semibold text-primary mb-2">Receive 2-3 Quotations</h3>
+				<h3 class="font-semibold text-primary-strong mb-2">Receive 2-3 Quotations</h3>
 				<p class="text-sm text-muted-foreground">Verified installers near you send competitive solar quotations, usually within 24 hours.</p>
 			</div>
 			<div class="border border-border rounded-lg p-6 text-center">
 				<div class="w-10 h-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold mx-auto mb-3">3</div>
-				<h3 class="font-semibold text-primary mb-2">Compare & Choose</h3>
+				<h3 class="font-semibold text-primary-strong mb-2">Compare & Choose</h3>
 				<p class="text-sm text-muted-foreground">Compare prices, equipment, and reviews online, then pick the installer that suits you best.</p>
 			</div>
 		</div>
@@ -111,7 +111,7 @@
 
 	<!-- FAQ -->
 	<section class="mt-12">
-		<h2 class="text-2xl md:text-3xl font-semibold text-primary mb-6 text-center">
+		<h2 class="text-2xl md:text-3xl font-semibold text-primary-strong mb-6 text-center">
 			Frequently Asked Questions
 		</h2>
 		<div class="max-w-2xl mx-auto divide-y divide-border">
@@ -119,7 +119,7 @@
 				<details class="group py-4 cursor-pointer">
 					<summary class="flex items-center justify-between gap-4 list-none font-semibold text-foreground select-none">
 						<span>{faq.q}</span>
-						<span class="shrink-0 text-primary transition-transform duration-200 group-open:rotate-45">+</span>
+						<span class="shrink-0 text-primary-strong transition-transform duration-200 group-open:rotate-45">+</span>
 					</summary>
 					<p class="mt-3 text-muted-foreground leading-relaxed">{faq.a}</p>
 				</details>

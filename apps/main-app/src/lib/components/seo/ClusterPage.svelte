@@ -54,7 +54,7 @@
 		{ name: clusterData.h1, href: '' }
 	]} />
 
-	<h1 class="text-3xl md:text-4xl font-bold text-primary mb-4">{clusterData.h1}</h1>
+	<h1 class="text-3xl md:text-4xl font-bold text-primary-strong mb-4">{clusterData.h1}</h1>
 
 	<ContentSections sections={clusterData.content} />
 
@@ -76,7 +76,7 @@
 
 	{#if sizeKw && topDistricts.length > 0}
 		<section class="mb-8">
-			<h2 class="text-2xl font-semibold text-primary mb-3">
+			<h2 class="text-2xl font-semibold text-primary-strong mb-3">
 				{sizeKw}kW Solar System — Prices by City
 			</h2>
 			<p class="text-sm text-muted-foreground mb-4">

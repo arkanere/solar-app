@@ -9,7 +9,7 @@
 
 {#if clusters.length > 0}
 	<nav class="mb-8">
-		<h3 class="text-lg font-semibold text-primary mb-3">Related Topics</h3>
+		<h3 class="text-lg font-semibold text-primary-strong mb-3">Related Topics</h3>
 		<div class="flex flex-wrap gap-2">
 			{#each clusters as cluster}
 				{#if cluster.slug !== currentSlug}

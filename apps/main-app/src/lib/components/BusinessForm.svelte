@@ -389,7 +389,7 @@
           You will be redirected after submission. Ensure the next page confirms your submission.
         </p>
         <p class="text-sm text-muted-foreground">
-          In case of any issue, call us at <a href="tel:+918983066701" class="text-primary underline">+91 8983066701</a>
+          In case of any issue, call us at <a href="tel:+918983066701" class="text-primary-strong underline">+91 8983066701</a>
         </p>
       </div>
     </form>

@@ -118,10 +118,10 @@
 	<!-- Breadcrumb -->
 	<nav class="text-sm text-muted-foreground mb-6" aria-label="Breadcrumb">
 		<ol class="flex flex-wrap gap-1">
-			<li><a href="/{cc}" class="hover:text-primary">Home</a> /</li>
-			<li><a href="/{cc}/solar" class="hover:text-primary">Solar</a> /</li>
-			<li><a href="/{cc}/solar/{d.level1Slug}" class="hover:text-primary">{d.level1}</a> /</li>
-			<li><a href="/{cc}/solar/{d.level1Slug}/{d.level2Slug}" class="hover:text-primary">{d.level2}</a> /</li>
+			<li><a href="/{cc}" class="hover:text-primary-strong">Home</a> /</li>
+			<li><a href="/{cc}/solar" class="hover:text-primary-strong">Solar</a> /</li>
+			<li><a href="/{cc}/solar/{d.level1Slug}" class="hover:text-primary-strong">{d.level1}</a> /</li>
+			<li><a href="/{cc}/solar/{d.level1Slug}/{d.level2Slug}" class="hover:text-primary-strong">{d.level2}</a> /</li>
 			<li class="text-foreground font-medium">
 				{isCity ? d.city : isBrand ? d.brandName : `${d.sizeKw}kW Solar System`}
 			</li>
@@ -139,7 +139,7 @@
 	<!-- Size-specific pricing -->
 	{#if isSize}
 		<section class="mb-8 bg-accent/10 rounded-lg p-6">
-			<h2 class="text-xl font-semibold text-primary mb-4">
+			<h2 class="text-xl font-semibold text-primary-strong mb-4">
 				{d.sizeKw}kW Solar System — Estimated Pricing
 			</h2>
 			{#if sizeRow}
@@ -154,7 +154,7 @@
 					</div>
 					<div class="bg-card rounded-lg p-4">
 						<p class="text-sm text-muted-foreground">Net Cost After Subsidy</p>
-						<p class="text-lg font-semibold text-primary">{sizeRow.netCost}</p>
+						<p class="text-lg font-semibold text-primary-strong">{sizeRow.netCost}</p>
 					</div>
 				</div>
 			{:else}
@@ -167,7 +167,7 @@
 	{#if isSize}
 		<p class="text-sm text-muted-foreground mb-8">
 			Understand what a {d.sizeKw}kW system powers →
-			<a href={contentUrl(`/rooftop-solar/${d.sizeKw}kw-system/`)} class="text-primary hover:underline font-medium">
+			<a href={contentUrl(`/rooftop-solar/${d.sizeKw}kw-system/`)} class="text-primary-strong hover:underline font-medium">
 				Complete {d.sizeKw}kW Solar System Guide
 			</a>
 		</p>
@@ -177,7 +177,7 @@
 	<LeadFormSection city={isCity ? d.city : d.level2} hasBusinesses={true} country={data.country} />
 
 	<!-- Installer Cards -->
-	<h2 class="text-2xl font-semibold text-primary mb-4">
+	<h2 class="text-2xl font-semibold text-primary-strong mb-4">
 		{isBrand ? `${d.brandName} ` : ''}Solar Installers in {isCity ? d.city : d.level2}
 	</h2>
 	<InstallerCard businesses={d.businesses} countryCode={cc} />
@@ -195,7 +195,7 @@
 	<!-- FAQ (city only) -->
 	{#if faqItems.length > 0}
 		<section class="mb-8">
-			<h2 class="text-2xl font-semibold text-primary mb-4">
+			<h2 class="text-2xl font-semibold text-primary-strong mb-4">
 				Frequently Asked Questions — Solar in {d.city}
 			</h2>
 			<div class="space-y-4">
@@ -212,7 +212,7 @@
 	<!-- Sibling city links -->
 	{#if isCity && d.siblingCities?.length > 0}
 		<section class="mb-8">
-			<h2 class="text-lg font-semibold text-primary mb-3">Nearby Areas</h2>
+			<h2 class="text-lg font-semibold text-primary-strong mb-3">Nearby Areas</h2>
 			<div class="flex flex-wrap gap-2">
 				{#each d.siblingCities as sc}
 					<a
@@ -229,7 +229,7 @@
 	<!-- Sibling size links -->
 	{#if isSize}
 		<section class="mb-8">
-			<h2 class="text-lg font-semibold text-primary mb-3">Other System Sizes</h2>
+			<h2 class="text-lg font-semibold text-primary-strong mb-3">Other System Sizes</h2>
 			<div class="flex flex-wrap gap-2">
 				{#each COMMON_SIZES.filter(s => s !== d.sizeKw) as size}
 					<a
@@ -257,7 +257,7 @@
 
 	<!-- Back link -->
 	<div class="mt-8">
-		<a href="/{cc}/solar/{d.level1Slug}/{d.level2Slug}/" class="text-primary hover:underline text-sm">
+		<a href="/{cc}/solar/{d.level1Slug}/{d.level2Slug}/" class="text-primary-strong hover:underline text-sm">
 			← All installers in {d.level2}
 		</a>
 	</div>

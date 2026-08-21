@@ -26,7 +26,7 @@
 <section id="lead-form-sv" class="mb-8 mx-auto max-w-md">
 	<div class="rounded-[theme(--radius-lg)] p-[theme(--card-padding-y)] shadow-[theme(--shadow-lg)] bg-gradient-to-br from-primary/10 to-primary/5">
 		<div class="text-center mb-8">
-			<h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">{displayTitle}</h2>
+			<h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary-strong">{displayTitle}</h2>
 			<div class="flex justify-center items-center my-4">
 				<span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
 			</div>

@@ -8,7 +8,7 @@
 	<div class="space-y-8 mb-8">
 		{#each sections as section}
 			<section>
-				<h2 class="text-2xl font-semibold text-primary mb-3">{section.heading}</h2>
+				<h2 class="text-2xl font-semibold text-primary-strong mb-3">{section.heading}</h2>
 				<div class="content-body text-muted-foreground leading-relaxed prose prose-sm max-w-none">
 					{@html section.body}
 				</div>

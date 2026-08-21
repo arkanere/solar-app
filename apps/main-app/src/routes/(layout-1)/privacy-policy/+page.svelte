@@ -59,7 +59,7 @@
 				and tick the consent checkbox, in accordance with Section 6 of the DPDP Act. Your consent is
 				free, specific, informed, and unambiguous. You may withdraw your consent at any time by
 				contacting our Grievance Officer (Section 9) or by using our
-				<a href="/data-deletion" class="text-primary underline hover:no-underline">Data Deletion Request</a>
+				<a href="/data-deletion" class="text-primary-strong underline hover:no-underline">Data Deletion Request</a>
 				page; withdrawal does not affect processing carried out before withdrawal.
 			</p>
 		</section>
@@ -152,7 +152,7 @@
 				<li>
 					<strong class="text-foreground">Right to access:</strong> obtain a summary of the personal data
 					we hold about you and who it has been shared with, via our
-					<a href="/data-access" class="text-primary underline hover:no-underline">Request My Data</a>
+					<a href="/data-access" class="text-primary-strong underline hover:no-underline">Request My Data</a>
 					page. We will respond within 30 days.
 				</li>
 				<li>
@@ -162,7 +162,7 @@
 				<li>
 					<strong class="text-foreground">Right to erasure:</strong> request deletion of your personal
 					data via our
-					<a href="/data-deletion" class="text-primary underline hover:no-underline">Data Deletion Request</a>
+					<a href="/data-deletion" class="text-primary-strong underline hover:no-underline">Data Deletion Request</a>
 					page. We will process your request within 30 days.
 				</li>
 				<li>
@@ -199,7 +199,7 @@
 			<div class="mt-3 p-4 rounded-lg border border-foreground/15 text-base md:text-lg leading-relaxed text-foreground-secondary">
 				<p><strong class="text-foreground">Grievance Officer</strong>, Solar Vipani</p>
 				<p>
-					Email: <a href="mailto:admin@solarvipani.com" class="text-primary underline hover:no-underline">admin@solarvipani.com</a>
+					Email: <a href="mailto:admin@solarvipani.com" class="text-primary-strong underline hover:no-underline">admin@solarvipani.com</a>
 				</p>
 				<p>We acknowledge complaints promptly and resolve them within 30 days.</p>
 			</div>
@@ -254,7 +254,7 @@
 			<h2 class="text-2xl font-semibold mb-3">15. Contact Us</h2>
 			<p class="text-base md:text-lg leading-relaxed text-foreground-secondary">
 				If you have any questions or concerns about this Privacy Policy or our data practices, please
-				contact us at <a href="mailto:admin@solarvipani.com" class="text-primary underline hover:no-underline">admin@solarvipani.com</a>.
+				contact us at <a href="mailto:admin@solarvipani.com" class="text-primary-strong underline hover:no-underline">admin@solarvipani.com</a>.
 			</p>
 		</section>
 	</div>

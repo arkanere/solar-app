@@ -67,14 +67,14 @@
 <nav class="flex flex-wrap items-center w-full justify-between border-b border-border bg-background text-foreground p-[theme(--container-padding)] gap-4 transition-colors duration-[theme(--transition-default)]">
   <!-- Left: brand + learn/find dropdowns -->
   <div class="flex items-center gap-6 flex-wrap">
-    <a href={country ? `/${cc}` : "/"} class="no-underline text-lg font-semibold transition-colors duration-[theme(--transition-default)] hover:text-primary whitespace-nowrap">Solar Vipani</a>
+    <a href={country ? `/${cc}` : "/"} class="no-underline text-lg font-semibold transition-colors duration-[theme(--transition-default)] hover:text-primary-strong whitespace-nowrap">Solar Vipani</a>
 
     <!-- Solar Guide Dropdown (per-country trees gate it on the content flag) -->
     {#if !country || features?.seoContentFamilies}
       <div class="relative">
         <button
           onclick={() => { showSolarGuide = !showSolarGuide; showFindSolar = false; }}
-          class="flex items-center gap-1 cursor-pointer text-sm font-medium transition-colors duration-[theme(--transition-default)] hover:text-primary whitespace-nowrap bg-transparent border-none text-foreground"
+          class="flex items-center gap-1 cursor-pointer text-sm font-medium transition-colors duration-[theme(--transition-default)] hover:text-primary-strong whitespace-nowrap bg-transparent border-none text-foreground"
         >
           Solar Guide
           <svg class="w-3.5 h-3.5 transition-transform duration-200" class:rotate-180={showSolarGuide} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
@@ -114,7 +114,7 @@
       <div class="relative">
         <button
           onclick={() => { showFindSolar = !showFindSolar; showSolarGuide = false; }}
-          class="flex items-center gap-1 cursor-pointer text-sm font-medium transition-colors duration-[theme(--transition-default)] hover:text-primary whitespace-nowrap bg-transparent border-none text-foreground"
+          class="flex items-center gap-1 cursor-pointer text-sm font-medium transition-colors duration-[theme(--transition-default)] hover:text-primary-strong whitespace-nowrap bg-transparent border-none text-foreground"
         >
           Find Solar
           <svg class="w-3.5 h-3.5 transition-transform duration-200" class:rotate-180={showFindSolar} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
@@ -155,7 +155,7 @@
         Get Quotes
       </a>
 
-      <a href="/{cc}/partners" class="no-underline text-sm font-medium text-foreground transition-colors duration-[theme(--transition-default)] hover:text-primary whitespace-nowrap">Partner with Us</a>
+      <a href="/{cc}/partners" class="no-underline text-sm font-medium text-foreground transition-colors duration-[theme(--transition-default)] hover:text-primary-strong whitespace-nowrap">Partner with Us</a>
     {:else if country}
       <a
         href="/{cc}/business-form"
@@ -217,7 +217,7 @@
 
     <div class="space-y-[theme(--card-gap)]">
       <div>
-        <h4 class="text-base font-semibold text-primary mb-3">📱 On Mobile:</h4>
+        <h4 class="text-base font-semibold text-primary-strong mb-3">📱 On Mobile:</h4>
         <div class="space-y-4">
           {#each ["Tap the three dots menu (⋮) in your browser", "Look for \"Translate\" option", "Select your language"] as step, i}
             <div class="flex items-start gap-4">
@@ -231,7 +231,7 @@
       </div>
 
       <div>
-        <h4 class="text-base font-semibold text-primary mb-3">💻 On Desktop:</h4>
+        <h4 class="text-base font-semibold text-primary-strong mb-3">💻 On Desktop:</h4>
         <div class="space-y-4">
           {#each ["Right-click anywhere on this page", "Look for \"Translate\" option", "Click to translate"] as step, i}
             <div class="flex items-start gap-4">

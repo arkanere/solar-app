@@ -146,7 +146,7 @@
 		]}
 	/>
 
-	<h1 class="text-3xl md:text-4xl font-bold text-primary mb-4">Solar Calculator</h1>
+	<h1 class="text-3xl md:text-4xl font-bold text-primary-strong mb-4">Solar Calculator</h1>
 	<p class="text-muted-foreground mb-8 max-w-2xl">
 		Enter your electricity bill and location to get an estimate of system size, cost, savings, and
 		payback period. Based on real data from {data.totalInstallers}+ verified installers.
@@ -208,7 +208,7 @@
 			<div class="flex flex-col gap-2">
 				<div class="flex justify-between items-baseline">
 					<Label for="bill">Monthly Electricity Bill</Label>
-					<span class="text-primary text-lg font-semibold">Rs {monthlyBill.toLocaleString('en-IN')}</span>
+					<span class="text-primary-strong text-lg font-semibold">Rs {monthlyBill.toLocaleString('en-IN')}</span>
 				</div>
 				<Slider
 					id="bill"
@@ -225,7 +225,7 @@
 			<div class="flex flex-col gap-2">
 				<div class="flex justify-between items-baseline">
 					<Label for="rate">Electricity Rate (Rs/unit)</Label>
-					<span class="text-primary text-lg font-semibold">Rs {ratePerUnit.toFixed(1)}</span>
+					<span class="text-primary-strong text-lg font-semibold">Rs {ratePerUnit.toFixed(1)}</span>
 				</div>
 				<Slider
 					id="rate"
@@ -250,34 +250,34 @@
 	<!-- Results -->
 	{#if hasCalculated}
 		<div class="rounded-lg border bg-card p-6 shadow-[theme(--shadow-xs)] mb-8">
-			<h2 class="text-2xl font-semibold text-primary mb-6">Your Solar Estimate</h2>
+			<h2 class="text-2xl font-semibold text-primary-strong mb-6">Your Solar Estimate</h2>
 
 			<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
 				<div class="rounded-lg bg-muted p-4 text-center">
-					<Sun class="w-6 h-6 text-primary mx-auto mb-2" />
-					<p class="text-2xl font-bold text-primary">{systemSizeKw} kW</p>
+					<Sun class="w-6 h-6 text-primary-strong mx-auto mb-2" />
+					<p class="text-2xl font-bold text-primary-strong">{systemSizeKw} kW</p>
 					<p class="text-xs text-muted-foreground">System Size</p>
 				</div>
 				<div class="rounded-lg bg-muted p-4 text-center">
-					<IndianRupee class="w-6 h-6 text-primary mx-auto mb-2" />
-					<p class="text-2xl font-bold text-primary">Rs {formatCurrency(netCost)}</p>
+					<IndianRupee class="w-6 h-6 text-primary-strong mx-auto mb-2" />
+					<p class="text-2xl font-bold text-primary-strong">Rs {formatCurrency(netCost)}</p>
 					<p class="text-xs text-muted-foreground">Net Cost (after subsidy)</p>
 				</div>
 				<div class="rounded-lg bg-muted p-4 text-center">
-					<Zap class="w-6 h-6 text-primary mx-auto mb-2" />
-					<p class="text-2xl font-bold text-primary">Rs {formatCurrency(annualSavings)}</p>
+					<Zap class="w-6 h-6 text-primary-strong mx-auto mb-2" />
+					<p class="text-2xl font-bold text-primary-strong">Rs {formatCurrency(annualSavings)}</p>
 					<p class="text-xs text-muted-foreground">Annual Savings</p>
 				</div>
 				<div class="rounded-lg bg-muted p-4 text-center">
-					<Clock class="w-6 h-6 text-primary mx-auto mb-2" />
-					<p class="text-2xl font-bold text-primary">{paybackYears} yrs</p>
+					<Clock class="w-6 h-6 text-primary-strong mx-auto mb-2" />
+					<p class="text-2xl font-bold text-primary-strong">{paybackYears} yrs</p>
 					<p class="text-xs text-muted-foreground">Payback Period</p>
 				</div>
 			</div>
 
 			<!-- Detailed Breakdown -->
 			<div class="border-t pt-4 space-y-3">
-				<h3 class="font-semibold text-primary mb-2">Cost Breakdown</h3>
+				<h3 class="font-semibold text-primary-strong mb-2">Cost Breakdown</h3>
 				<div class="flex justify-between text-sm">
 					<span class="text-muted-foreground">Gross System Cost</span>
 					<span class="font-medium">Rs {grossCost.toLocaleString('en-IN')}</span>
@@ -290,12 +290,12 @@
 				{/if}
 				<div class="flex justify-between text-sm border-t pt-2">
 					<span class="font-semibold">Net Cost</span>
-					<span class="font-bold text-primary">Rs {netCost.toLocaleString('en-IN')}</span>
+					<span class="font-bold text-primary-strong">Rs {netCost.toLocaleString('en-IN')}</span>
 				</div>
 			</div>
 
 			<div class="border-t pt-4 mt-4 space-y-3">
-				<h3 class="font-semibold text-primary mb-2">Generation & Savings</h3>
+				<h3 class="font-semibold text-primary-strong mb-2">Generation & Savings</h3>
 				<div class="flex justify-between text-sm">
 					<span class="text-muted-foreground">Monthly Consumption</span>
 					<span class="font-medium">{monthlyUnits} units</span>
@@ -338,11 +338,11 @@
 
 			<!-- Related tools -->
 			<div class="mt-4 flex flex-wrap gap-3 text-sm">
-				<a href={contentUrl("/tools/emi-calculator/")} class="text-primary hover:underline">
+				<a href={contentUrl("/tools/emi-calculator/")} class="text-primary-strong hover:underline">
 					Calculate EMI for this system
 				</a>
 				<span class="text-muted-foreground">|</span>
-				<a href={contentUrl("/tools/subsidy-checker/")} class="text-primary hover:underline">
+				<a href={contentUrl("/tools/subsidy-checker/")} class="text-primary-strong hover:underline">
 					Check detailed subsidy
 				</a>
 			</div>
@@ -351,9 +351,9 @@
 
 	<!-- Authority links -->
 	<div class="flex flex-wrap gap-3 text-sm mb-8">
-		<a href={contentUrl("/rooftop-solar/cost/")} class="text-primary hover:underline">Solar Panel Cost Guide</a>
+		<a href={contentUrl("/rooftop-solar/cost/")} class="text-primary-strong hover:underline">Solar Panel Cost Guide</a>
 		<span class="text-muted-foreground">|</span>
-		<a href={geoUrl("in")} class="text-primary hover:underline">Browse Installers by State</a>
+		<a href={geoUrl("in")} class="text-primary-strong hover:underline">Browse Installers by State</a>
 	</div>
 
 	<FAQ items={faqs} />

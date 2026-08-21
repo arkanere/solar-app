@@ -30,13 +30,13 @@
 		{ name: product.name, href: '' }
 	]} />
 
-	<h1 class="text-3xl md:text-4xl font-bold text-primary mb-4">{product.name}</h1>
+	<h1 class="text-3xl md:text-4xl font-bold text-primary-strong mb-4">{product.name}</h1>
 	<p class="text-muted-foreground mb-6">by {brand.name}</p>
 
 	{#if product.price_range_min && product.price_range_max}
 		<div class="bg-accent/10 rounded-lg p-4 mb-6 inline-block">
 			<span class="text-sm text-muted-foreground">Price Range: </span>
-			<span class="text-lg font-semibold text-primary">
+			<span class="text-lg font-semibold text-primary-strong">
 				₹{product.price_range_min.toLocaleString('en-IN')} – ₹{product.price_range_max.toLocaleString('en-IN')}
 			</span>
 		</div>
@@ -44,7 +44,7 @@
 
 	{#if specEntries.length > 0}
 		<section class="mb-8">
-			<h2 class="text-2xl font-semibold text-primary mb-4">Specifications</h2>
+			<h2 class="text-2xl font-semibold text-primary-strong mb-4">Specifications</h2>
 			<div class="border rounded-lg overflow-hidden">
 				<table class="w-full text-sm">
 					<tbody>
@@ -65,7 +65,7 @@
 			href={product.datasheet_url}
 			target="_blank"
 			rel="noopener noreferrer"
-			class="inline-block text-primary hover:underline mb-8"
+			class="inline-block text-primary-strong hover:underline mb-8"
 		>
 			Download Datasheet →
 		</a>
@@ -73,7 +73,7 @@
 
 	{#if siblingProducts.length > 0}
 		<section class="mb-8">
-			<h2 class="text-2xl font-semibold text-primary mb-4">Other {brand.name} Products</h2>
+			<h2 class="text-2xl font-semibold text-primary-strong mb-4">Other {brand.name} Products</h2>
 			<div class="flex flex-wrap gap-2">
 				{#each siblingProducts as sibling}
 					{#if sibling.model_slug !== product.model_slug}

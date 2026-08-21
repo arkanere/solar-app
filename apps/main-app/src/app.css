@@ -290,6 +290,7 @@
   /* Primary */
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-strong: hsl(var(--primary-strong));
   --color-primary-hover: var(--primary-hover);
 
   /* Secondary */
@@ -598,7 +599,7 @@
     @apply bg-[rgba(255,255,255,0.7)];
   }
   .text-link {
-    @apply text-primary hover:opacity-80;
+    @apply text-primary-strong hover:opacity-80;
   }
 
   /* Typography weight utilities */
@@ -644,7 +645,7 @@
 
   /* Default link transitions */
   a:not([class]) {
-    color: hsl(var(--primary));
+    color: hsl(var(--primary-strong));
     transition: color 150ms ease, opacity 150ms ease;
   }
   a:not([class]):hover {
@@ -681,6 +682,11 @@
      a hero photo" now say text-white, which is what they meant. */
   --primary-foreground: 30 8% 10%;
   --primary-hover: hsl(var(--primary) / 0.9);
+  /* Orange TEXT on a light surface. The brand #FF6600 is only 2.77:1 against
+     the cream background — it fails AA and even the 3:1 large-text threshold.
+     This darker orange is 4.97:1. --primary stays #FF6600 for surfaces and the
+     logo; use text-primary-strong for any orange lettering. */
+  --primary-strong: 24 100% 36%;   /* #B84900 */
 
   /* Accent = Primary (single brand color) */
   --accent: var(--primary);
@@ -766,6 +772,8 @@
   --primary: 24 100% 55%;
   /* Dark text on the orange here too: 6.50:1 against #FF751A. */
   --primary-foreground: 30 8% 10%;
+  /* No darkening needed in dark mode — the brand orange is 7.12:1 there. */
+  --primary-strong: var(--primary);
   /* ring inherits --primary via var() */
 
   /* Component surfaces */

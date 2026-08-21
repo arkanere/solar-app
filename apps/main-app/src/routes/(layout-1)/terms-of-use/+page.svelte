@@ -117,7 +117,7 @@
 					Your use of the Website is governed by our <a
 						href="/privacy-policy"
 						aria-label="Privacy Policy"
-						class="text-primary underline hover:no-underline">Privacy Policy</a
+						class="text-primary-strong underline hover:no-underline">Privacy Policy</a
 					>.
 				</p>
 			</div>
@@ -147,8 +147,8 @@
 				<h2 class="text-2xl font-semibold mb-3">14. Contact Us</h2>
 				<p class="text-base md:text-lg leading-relaxed text-foreground-secondary mb-3">For questions or concerns about these Terms, please contact us:</p>
 				<ul class="ml-4 md:ml-6 space-y-2 text-base md:text-lg text-foreground-secondary">
-					<li>Email: <a href="mailto:admin@solarvipani.com" class="text-primary underline hover:no-underline">admin@solarvipani.com</a></li>
-					<li>Phone: <a href="tel:+918983066701" class="text-primary underline hover:no-underline">+91 8983066701</a></li>
+					<li>Email: <a href="mailto:admin@solarvipani.com" class="text-primary-strong underline hover:no-underline">admin@solarvipani.com</a></li>
+					<li>Phone: <a href="tel:+918983066701" class="text-primary-strong underline hover:no-underline">+91 8983066701</a></li>
 				</ul>
 			</div>
 		</section>

@@ -451,7 +451,7 @@
     <section id="lead-form-sv" class="mb-8 mx-auto max-w-md">
       <div class="rounded-[theme(--radius-lg)] p-[theme(--card-padding-y)] shadow-[theme(--shadow-lg)] bg-gradient-to-br from-primary/10 to-primary/5">
         <div class="text-center mb-8">
-          <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">Get Your Free Solar Quotation Online</h2>
+          <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary-strong">Get Your Free Solar Quotation Online</h2>
           <div class="flex justify-center items-center my-4">
             <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
           </div>
@@ -478,7 +478,7 @@
     {#if features.seoContentFamilies}
     <section class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">
       <div class="text-center mb-8">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">Solar Knowledge Hub</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary-strong">Solar Knowledge Hub</h2>
         <div class="flex justify-center items-center my-4">
           <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
         </div>
@@ -501,7 +501,7 @@
             class="group flex flex-col border border-border rounded-[theme(--radius-lg)] bg-background p-6 no-underline transition-all duration-[theme(--transition-default)] hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-sm)]"
           >
             <span class="text-3xl mb-3">{pillar.icon}</span>
-            <h3 class="text-lg font-semibold text-primary mb-2 group-hover:text-primary-hover transition-colors">{pillar.title}</h3>
+            <h3 class="text-lg font-semibold text-primary-strong mb-2 group-hover:text-primary-hover transition-colors">{pillar.title}</h3>
             <p class="text-sm text-foreground dark:text-foreground-secondary leading-relaxed">{pillar.desc}</p>
           </a>
         {/each}
@@ -513,7 +513,7 @@
     {#if hasQuoteFunnel}
     <section class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">
       <div class="text-center mb-8">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">How Solar Vipani Works</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary-strong">How Solar Vipani Works</h2>
         <div class="flex justify-center items-center my-4">
           <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
         </div>
@@ -521,28 +521,28 @@
       <div class="grid grid-cols-1 md:grid-cols-4 gap-[theme(--card-gap)]">
         <div class="text-center border border-border hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] bg-background p-8 transition-all duration-[theme(--transition-default)]">
           <div class="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4">1</div>
-          <h3 class="text-lg font-semibold text-primary mb-3">Fill the Inquiry Form</h3>
+          <h3 class="text-lg font-semibold text-primary-strong mb-3">Fill the Inquiry Form</h3>
           <p class="text-foreground dark:text-foreground-secondary">
             Share your basic details and energy requirements to help us understand your needs.
           </p>
         </div>
         <div class="text-center border border-border hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] bg-background p-8 transition-all duration-[theme(--transition-default)]">
           <div class="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4">2</div>
-          <h3 class="text-lg font-semibold text-primary mb-3">Receive Competitive Quotes</h3>
+          <h3 class="text-lg font-semibold text-primary-strong mb-3">Receive Competitive Quotes</h3>
           <p class="text-foreground dark:text-foreground-secondary">
             Review quotes from 2-3 solar companies, comparing costs, equipment, and terms to find the perfect match.
           </p>
         </div>
         <div class="text-center border border-border hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] bg-background p-8 transition-all duration-[theme(--transition-default)]">
           <div class="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4">3</div>
-          <h3 class="text-lg font-semibold text-primary mb-3">Make an Informed Choice</h3>
+          <h3 class="text-lg font-semibold text-primary-strong mb-3">Make an Informed Choice</h3>
           <p class="text-foreground dark:text-foreground-secondary">
             Select a provider with complete confidence, backed by transparent, verified information.
           </p>
         </div>
         <div class="text-center border border-border hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-sm)] rounded-[theme(--radius-lg)] bg-background p-8 transition-all duration-[theme(--transition-default)]">
           <div class="w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-xl mx-auto mb-4">4</div>
-          <h3 class="text-lg font-semibold text-primary mb-3">Share Your Success</h3>
+          <h3 class="text-lg font-semibold text-primary-strong mb-3">Share Your Success</h3>
           <p class="text-foreground dark:text-foreground-secondary">
             Join our community of solar adopters by sharing your experience, helping others on their journey to clean energy.
           </p>
@@ -569,7 +569,7 @@
     {#if showSubsidyCopy}
     <section class="mb-8 rounded-[theme(--radius-lg)] bg-accent-muted p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">
       <div class="text-center mb-8">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">Why Now is the Right Time to Install Solar in India</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary-strong">Why Now is the Right Time to Install Solar in India</h2>
         <div class="flex justify-center items-center my-4">
           <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
         </div>
@@ -581,8 +581,8 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-[theme(--card-gap)] mb-8">
         <div class="flex flex-col items-center text-center border-t-[theme(--card-accent-border)] border-accent hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-md)] rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] transition-all duration-[theme(--transition-default)]">
           <div class="text-5xl mb-4">💰</div>
-          <div class="text-3xl font-bold text-primary mb-2">Up to ₹78,000</div>
-          <h3 class="text-xl font-semibold text-primary mb-3">Government Subsidy</h3>
+          <div class="text-3xl font-bold text-primary-strong mb-2">Up to ₹78,000</div>
+          <h3 class="text-xl font-semibold text-primary-strong mb-3">Government Subsidy</h3>
           <p class="text-foreground dark:text-foreground-secondary">
             Get up to ₹78,000 in direct subsidy under PM Surya Ghar Yojana - available for limited time
           </p>
@@ -590,15 +590,15 @@
 
         <div class="flex flex-col items-center text-center border-t-[theme(--card-accent-border)] border-accent hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-md)] rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] transition-all duration-[theme(--transition-default)]">
           <div class="text-5xl mb-4">🏦</div>
-          <div class="text-3xl font-bold text-primary mb-2">0% Interest</div>
-          <h3 class="text-xl font-semibold text-primary mb-3">Easy Financing Options</h3>
+          <div class="text-3xl font-bold text-primary-strong mb-2">0% Interest</div>
+          <h3 class="text-xl font-semibold text-primary-strong mb-3">Easy Financing Options</h3>
           <p class="text-foreground dark:text-foreground-secondary">Zero-cost EMI and attractive loan schemes from leading banks and NBFCs make solar affordable</p>
         </div>
 
         <div class="flex flex-col items-center text-center border-t-[theme(--card-accent-border)] border-accent hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-md)] rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] transition-all duration-[theme(--transition-default)]">
           <div class="text-5xl mb-4">⚡</div>
-          <div class="text-3xl font-bold text-primary mb-2">50-80%</div>
-          <h3 class="text-xl font-semibold text-primary mb-3">Electricity Bill Savings</h3>
+          <div class="text-3xl font-bold text-primary-strong mb-2">50-80%</div>
+          <h3 class="text-xl font-semibold text-primary-strong mb-3">Electricity Bill Savings</h3>
           <p class="text-foreground dark:text-foreground-secondary">
             Save up to 80% on rising electricity costs with net metering and reduce dependency on the grid
           </p>
@@ -611,7 +611,7 @@
     {#if showSubsidyCopy}
     <section class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">
       <div class="text-center mb-8">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">Frequently Asked Questions</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary-strong">Frequently Asked Questions</h2>
         <div class="flex justify-center items-center my-4">
           <span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
         </div>
@@ -642,7 +642,7 @@
           <details class="group py-4 cursor-pointer">
             <summary class="flex items-center justify-between gap-4 list-none font-semibold text-foreground text-base md:text-lg select-none">
               <span>{faq.q}</span>
-              <span class="shrink-0 text-primary transition-transform duration-200 group-open:rotate-45">+</span>
+              <span class="shrink-0 text-primary-strong transition-transform duration-200 group-open:rotate-45">+</span>
             </summary>
             <p class="mt-3 text-foreground dark:text-foreground-secondary leading-relaxed">{faq.a}</p>
           </details>
@@ -655,7 +655,7 @@
     {#if isUs}
       <section class="mb-8 rounded-[theme(--radius-lg)] bg-accent-muted p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">
         <div class="text-center mb-8">
-          <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">
+          <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary-strong">
             Why Choose Solar Panel Installation in the USA?
           </h2>
           <div class="flex justify-center items-center my-4">
@@ -675,8 +675,8 @@
           ] as benefit}
             <div class="flex flex-col items-center text-center border-t-[theme(--card-accent-border)] border-accent hover:shadow-[theme(--shadow-card-hover)] hover:-translate-y-[theme(--hover-lift-md)] rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)] transition-all duration-[theme(--transition-default)]">
               <div class="text-5xl mb-4">{benefit.icon}</div>
-              <div class="text-3xl font-bold text-primary mb-2">{benefit.stat}</div>
-              <h3 class="text-xl font-semibold text-primary mb-3">{benefit.title}</h3>
+              <div class="text-3xl font-bold text-primary-strong mb-2">{benefit.stat}</div>
+              <h3 class="text-xl font-semibold text-primary-strong mb-3">{benefit.title}</h3>
               <p class="text-foreground dark:text-foreground-secondary">{benefit.desc}</p>
             </div>
           {/each}
@@ -692,7 +692,7 @@
       <section id="lead-form-sv" class="mb-8">
         <div class="rounded-[theme(--radius-lg)] p-[theme(--card-padding-y)] shadow-[theme(--shadow-lg)] bg-gradient-to-br from-primary/10 to-primary/5">
           <div class="text-center mb-8">
-            <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">
+            <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary-strong">
               Book A Free Consultation
             </h2>
             <div class="flex justify-center items-center my-4">

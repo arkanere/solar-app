@@ -24,7 +24,7 @@
 						<a
 							href={`/${countryCode}/installer/${business.slug}/`}
 							onclick={() => capture('installer_card_clicked', { business_slug: business.slug, city: business.city })}
-							class="text-primary hover:opacity-80 underline-offset-2 hover:underline transition-all"
+							class="text-primary-strong hover:opacity-80 underline-offset-2 hover:underline transition-all"
 						>
 							{business.businessname}
 						</a>
@@ -41,15 +41,15 @@
 
 				<Card.Content class="flex flex-col gap-2">
 					<div class="flex items-start text-foreground-secondary gap-2">
-						<MapPin class="w-5 h-5 text-primary shrink-0 mt-0.5" />
+						<MapPin class="w-5 h-5 text-primary-strong shrink-0 mt-0.5" />
 						<span>{business.address || `${business.city}, ${business.state}`}</span>
 					</div>
 					{#if business.phonenumber}
 						<div class="flex items-center text-foreground-secondary gap-2">
-							<Phone class="w-5 h-5 text-primary shrink-0" />
+							<Phone class="w-5 h-5 text-primary-strong shrink-0" />
 							<a
 								href={`tel:${business.phonenumber}`}
-								class="text-primary hover:opacity-80 hover:underline transition-all"
+								class="text-primary-strong hover:opacity-80 hover:underline transition-all"
 							>
 								{business.phonenumber}
 							</a>

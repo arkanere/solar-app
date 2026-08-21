@@ -80,7 +80,7 @@
 		<p class="text-base md:text-lg max-w-2xl mx-auto mb-3">
 			If you'd like to speak with us, feel free to give us a call at <a
 				href="tel:+918983066701"
-				class="text-primary underline hover:no-underline"
+				class="text-primary-strong underline hover:no-underline"
 			>+91 8983066701</a
 			>
 		</p>
@@ -132,7 +132,7 @@
 		{/if}
 	{/if}
 
-	<h2 class="text-xl md:text-2xl font-bold my-4 text-primary">Next Steps</h2>
+	<h2 class="text-xl md:text-2xl font-bold my-4 text-primary-strong">Next Steps</h2>
 	{#if customerDetails && customerDetails.hasVerifiedBusinessInDistrict}
 		<p class="text-base md:text-lg max-w-2xl mx-auto mb-3">
 			We will call you within 24 hours to gather the exact requirement and clear any doubts that you
@@ -159,7 +159,7 @@
 		<p class="text-base md:text-lg max-w-2xl mx-auto mb-3">
 			If you'd like to speak with us right away, feel free to give us a call at <a
 				href="tel:+918983066701"
-				class="text-primary underline hover:no-underline"
+				class="text-primary-strong underline hover:no-underline"
 			>+91 8983066701</a
 			>
 		</p>

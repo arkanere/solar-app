@@ -249,7 +249,7 @@
 		<!-- Breadcrumb -->
 		<nav class="mb-6 text-sm text-muted-foreground" aria-label="Breadcrumb">
 			<ol class="flex flex-wrap gap-1">
-				<li><a href={homeUrl} class="hover:text-primary">Home</a> /</li>
+				<li><a href={homeUrl} class="hover:text-primary-strong">Home</a> /</li>
 				<li class="font-medium text-foreground">Partners</li>
 			</ol>
 		</nav>
@@ -267,7 +267,7 @@
 		<!-- Benefits -->
 		<Card class="mb-8 p-[theme(--card-padding-y)]">
 			<div class="mb-8 text-center">
-				<h2 class="mb-4 text-3xl font-semibold text-primary md:text-4xl">
+				<h2 class="mb-4 text-3xl font-semibold text-primary-strong md:text-4xl">
 					Why Partner with Solar Vipani?
 				</h2>
 				<div class="my-4 flex items-center justify-center">
@@ -287,7 +287,7 @@
 						<div
 							class="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10"
 						>
-							<benefit.icon class="h-7 w-7 text-primary" />
+							<benefit.icon class="h-7 w-7 text-primary-strong" />
 						</div>
 						<h3 class="text-lg font-semibold text-foreground">{benefit.title}</h3>
 						<p class="text-sm text-muted-foreground">{benefit.description}</p>
@@ -307,7 +307,7 @@
 		<!-- Recently Joined Verified Installers -->
 		<Card class="mb-8 bg-primary/5 p-[theme(--card-padding-y)]">
 			<div class="mb-8 text-center">
-				<h2 class="mb-4 text-3xl font-semibold text-primary md:text-4xl">
+				<h2 class="mb-4 text-3xl font-semibold text-primary-strong md:text-4xl">
 					Recently Joined Verified Installers
 				</h2>
 				<div class="my-4 flex items-center justify-center">
@@ -334,7 +334,7 @@
 									<CheckCircle class="h-3.5 w-3.5" />
 									<span>Verified</span>
 								</div>
-								<h3 class="pr-20 text-lg font-semibold text-primary">
+								<h3 class="pr-20 text-lg font-semibold text-primary-strong">
 									{business.businessname}
 								</h3>
 								<div class="mt-auto flex flex-col gap-2 pt-3">
@@ -375,7 +375,7 @@
 		<!-- How It Works Video -->
 		<Card class="mb-8 p-[theme(--card-padding-y)] text-center" id="product-working">
 			<div class="mb-8 text-center">
-				<h2 class="mb-4 text-3xl font-semibold text-primary md:text-4xl">See How It Works</h2>
+				<h2 class="mb-4 text-3xl font-semibold text-primary-strong md:text-4xl">See How It Works</h2>
 				<div class="my-4 flex items-center justify-center">
 					<span class="h-1 w-20 rounded bg-accent"></span>
 				</div>
@@ -410,7 +410,7 @@
 		<!-- FAQs -->
 		<Card class="mb-8 p-[theme(--card-padding-y)]">
 			<div class="mb-8 text-center">
-				<h2 class="mb-4 text-3xl font-semibold text-primary md:text-4xl">
+				<h2 class="mb-4 text-3xl font-semibold text-primary-strong md:text-4xl">
 					Frequently Asked Questions
 				</h2>
 				<div class="my-4 flex items-center justify-center">
@@ -421,7 +421,7 @@
 			<div class="mx-auto flex max-w-2xl flex-col items-center gap-[theme(--card-gap)]">
 				{#each faqs as faq}
 					<Card class="w-full p-4">
-						<h3 class="mb-3 text-lg font-semibold text-primary">{faq.question}</h3>
+						<h3 class="mb-3 text-lg font-semibold text-primary-strong">{faq.question}</h3>
 						<p class="text-sm text-muted-foreground">{faq.answer}</p>
 					</Card>
 				{/each}
@@ -431,7 +431,7 @@
 		<!-- Help / Contact -->
 		<Card class="mb-8 p-[theme(--card-padding-y)]">
 			<div class="mb-8 text-center">
-				<h2 class="mb-4 text-3xl font-semibold text-primary md:text-4xl">
+				<h2 class="mb-4 text-3xl font-semibold text-primary-strong md:text-4xl">
 					We're Here to Help
 				</h2>
 				<div class="my-4 flex items-center justify-center">
@@ -441,25 +441,25 @@
 
 			<div class="flex flex-wrap justify-center gap-8">
 				<Card class="w-64 p-4 text-center">
-					<div class="mb-4 flex justify-center text-primary">
+					<div class="mb-4 flex justify-center text-primary-strong">
 						<MailIcon class="h-6 w-6" />
 					</div>
 					<p class="mb-2 text-muted-foreground">Email us at</p>
 					<a
 						href="mailto:admin@solarvipani.com"
-						class="block text-lg font-semibold text-primary transition-colors hover:underline"
+						class="block text-lg font-semibold text-primary-strong transition-colors hover:underline"
 						rel="noopener">admin@solarvipani.com</a
 					>
 				</Card>
 
 				<Card class="w-64 p-4 text-center">
-					<div class="mb-4 flex justify-center text-primary">
+					<div class="mb-4 flex justify-center text-primary-strong">
 						<Phone class="h-6 w-6" />
 					</div>
 					<p class="mb-2 text-muted-foreground">Call us at</p>
 					<a
 						href="tel:+918983066701"
-						class="block text-lg font-semibold text-primary transition-colors hover:underline"
+						class="block text-lg font-semibold text-primary-strong transition-colors hover:underline"
 						rel="noopener">+91 8983066701</a
 					>
 				</Card>

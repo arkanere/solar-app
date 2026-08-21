@@ -33,7 +33,7 @@
 
 <section class="py-[theme(--card-gap)] px-[theme(--container-padding)] sm:px-6 lg:px-8">
 	<div class="max-w-4xl mx-auto">
-		<h2 class="text-center text-primary text-3xl font-semibold mb-[theme(--card-gap)] leading-9">
+		<h2 class="text-center text-primary-strong text-3xl font-semibold mb-[theme(--card-gap)] leading-9">
 			Recommended Solar Systems for Homes
 		</h2>
 
@@ -63,7 +63,7 @@
 									<Table.Cell class="font-medium">{row.consumption}</Table.Cell>
 									<Table.Cell>{row.outage}</Table.Cell>
 									<Table.Cell>
-										<div class="text-primary font-semibold">{row.system}</div>
+										<div class="text-primary-strong font-semibold">{row.system}</div>
 										{#if row.note}
 											<div class="text-foreground-secondary text-sm leading-5 mt-[theme(--form-element-field-gap)]">
 												({row.note})

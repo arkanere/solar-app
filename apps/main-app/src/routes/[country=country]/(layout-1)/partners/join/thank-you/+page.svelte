@@ -45,7 +45,7 @@
 		</ol>
 	</div>
 
-	<a href={partnersUrl} class="text-sm text-primary hover:underline">
+	<a href={partnersUrl} class="text-sm text-primary-strong hover:underline">
 		Back to Partners
 	</a>
 </div>

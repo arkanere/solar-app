@@ -463,7 +463,7 @@
     <!-- Value Proposition Section -->
     <Card class="p-[theme(--card-padding-y)] mb-8">
       <div class="text-center mb-8">
-        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-4">Why List Your Business with Solar Vipani?</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold text-primary-strong mb-4">Why List Your Business with Solar Vipani?</h2>
         <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
@@ -477,8 +477,8 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-[theme(--card-gap)] mb-8">
         {#each benefits as benefit}
           <Card class="text-center flex flex-col items-center p-4">
-            <div class="w-16 h-16 flex items-center justify-center text-primary mb-4 rounded-full bg-primary/10">{@html benefit.icon}</div>
-            <h3 class="text-xl font-semibold text-primary mb-3">{benefit.title}</h3>
+            <div class="w-16 h-16 flex items-center justify-center text-primary-strong mb-4 rounded-full bg-primary/10">{@html benefit.icon}</div>
+            <h3 class="text-xl font-semibold text-primary-strong mb-3">{benefit.title}</h3>
             <div class="text-foreground dark:text-foreground-secondary text-sm">
               {#each benefit.descriptions as description}
                 <p class="mb-2">{description}</p>
@@ -514,7 +514,7 @@
     {#if showSocialProof}
     <Card class="bg-accent-muted p-[theme(--card-padding-y)] mb-8">
       <div class="text-center mb-8">
-        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-4">Join the Solar Installer Community</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold text-primary-strong mb-4">Join the Solar Installer Community</h2>
         <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
@@ -523,7 +523,7 @@
       <div class="flex justify-center flex-wrap gap-8 mb-8">
         {#each stats as stat}
           <Card class="w-48 text-center p-4">
-            <div class="text-5xl font-bold text-primary mb-2">{stat.number}</div>
+            <div class="text-5xl font-bold text-primary-strong mb-2">{stat.number}</div>
             <div class="text-lg font-semibold text-foreground dark:text-foreground-secondary">{stat.label}</div>
           </Card>
         {/each}
@@ -555,7 +555,7 @@
     <!-- Recently Joined Verified Installers -->
     <Card class="p-[theme(--card-padding-y)] mb-8 bg-[hsl(var(--accent)/0.1)]">
       <div class="text-center mb-8">
-        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-4">Recently Joined Verified Installers</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold text-primary-strong mb-4">Recently Joined Verified Installers</h2>
         <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
@@ -591,7 +591,7 @@
                   >
                   <span>Verified</span>
                 </div>
-                <h3 class="text-lg font-semibold text-primary pr-8">{business.businessname}</h3>
+                <h3 class="text-lg font-semibold text-primary-strong pr-8">{business.businessname}</h3>
                 <div class="flex flex-col mt-auto gap-2">
                   <div class="flex items-center text-foreground dark:text-foreground-secondary text-sm gap-2">
                     <svg
@@ -665,7 +665,7 @@
     {#if showVideo}
     <Card class="text-center p-[theme(--card-padding-y)] mb-8" id="product-working">
       <div class="text-center mb-8">
-        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-4">See How It Works</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold text-primary-strong mb-4">See How It Works</h2>
         <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
@@ -712,7 +712,7 @@
     <!-- FAQs Section -->
     <Card class="p-[theme(--card-padding-y)] mb-8">
       <div class="text-center mb-8">
-        <h2 class="text-3xl md:text-4xl font-semibold text-primary mb-4">Frequently Asked Questions</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold text-primary-strong mb-4">Frequently Asked Questions</h2>
         <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
@@ -721,7 +721,7 @@
       <div class="flex flex-col items-center gap-[theme(--card-gap)] max-w-2xl mx-auto">
         {#each faqs as faq}
           <Card class="p-4 w-full">
-            <h3 class="text-lg font-semibold text-primary mb-3">{faq.question}</h3>
+            <h3 class="text-lg font-semibold text-primary-strong mb-3">{faq.question}</h3>
             <p class="text-foreground dark:text-foreground-secondary text-sm">{faq.answer}</p>
           </Card>
         {/each}
@@ -765,7 +765,7 @@
     <!-- Need Assistance Section -->
     <Card class="p-[theme(--card-padding-y)] mb-8">
       <div class="text-center mb-8">
-        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">We're Here to Help</h2>
+        <h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary-strong">We're Here to Help</h2>
         <div class="flex justify-center items-center my-4">
           <span class="w-20 h-1 bg-accent rounded"></span>
         </div>
@@ -773,7 +773,7 @@
 
       <div class="flex justify-center gap-8 flex-wrap">
         <Card class="p-4 text-center w-64">
-          <div class="text-primary mb-4 flex justify-center">
+          <div class="text-primary-strong mb-4 flex justify-center">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"
@@ -792,13 +792,13 @@
           <p class="mb-2 text-foreground dark:text-foreground-secondary">Email us at</p>
           <a
             href="mailto:admin@solarvipani.com"
-            class="block text-lg font-semibold text-primary hover:underline transition-colors"
+            class="block text-lg font-semibold text-primary-strong hover:underline transition-colors"
             rel="noopener">admin@solarvipani.com</a
           >
         </Card>
 
         <Card class="p-4 text-center w-64">
-          <div class="text-primary mb-4 flex justify-center">
+          <div class="text-primary-strong mb-4 flex justify-center">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"
@@ -815,7 +815,7 @@
             >
           </div>
           <p class="mb-2 text-foreground dark:text-foreground-secondary">Call us at</p>
-          <a href="tel:+918983066701" class="block text-lg font-semibold text-primary hover:underline transition-colors" rel="noopener"
+          <a href="tel:+918983066701" class="block text-lg font-semibold text-primary-strong hover:underline transition-colors" rel="noopener"
             >+91 8983066701</a
           >
         </Card>

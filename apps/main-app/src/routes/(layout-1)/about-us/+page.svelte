@@ -55,7 +55,7 @@
 	/>
 
 	<section>
-		<p class="text-lg font-medium text-primary mb-6">
+		<p class="text-lg font-medium text-primary-strong mb-6">
 			Going solar is a decision you live with for 25 years, and it involves a significant amount
 			of money.
 		</p>
@@ -82,11 +82,11 @@
 				<Card
 					class="p-4 border-t-[theme(--card-accent-border)] border-accent card-interactive text-center"
 				>
-					<stat.icon class="h-6 w-6 text-primary mx-auto mb-2" />
-					<div class="text-4xl font-bold text-primary mb-2">
+					<stat.icon class="h-6 w-6 text-primary-strong mx-auto mb-2" />
+					<div class="text-4xl font-bold text-primary-strong mb-2">
 						{stat.value.toLocaleString('en-IN')}+
 					</div>
-					<h2 class="text-lg font-semibold text-primary">{stat.label}</h2>
+					<h2 class="text-lg font-semibold text-primary-strong">{stat.label}</h2>
 				</Card>
 			{/each}
 		</div>
@@ -127,28 +127,28 @@
 		<PageHeader as="h2" title="What You'll Find Here" />
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-[theme(--card-gap)]">
 			<Card class="p-4 card-interactive">
-				<h3 class="text-lg font-semibold text-primary mb-3">Local installer listings</h3>
+				<h3 class="text-lg font-semibold text-primary-strong mb-3">Local installer listings</h3>
 				<p class="text-sm leading-relaxed">
 					Browse solar companies by state, district and city, see the work they have completed,
 					and request quotes from more than one before you commit.
 				</p>
 			</Card>
 			<Card class="p-4 card-interactive">
-				<h3 class="text-lg font-semibold text-primary mb-3">Guides that explain the choice</h3>
+				<h3 class="text-lg font-semibold text-primary-strong mb-3">Guides that explain the choice</h3>
 				<p class="text-sm leading-relaxed">
 					Independent writing on rooftop solar, panels, inverters, solar pumps, subsidies and
 					financing — written to educate before you spend, not to sell a brand.
 				</p>
 			</Card>
 			<Card class="p-4 card-interactive">
-				<h3 class="text-lg font-semibold text-primary mb-3">Calculators and tools</h3>
+				<h3 class="text-lg font-semibold text-primary-strong mb-3">Calculators and tools</h3>
 				<p class="text-sm leading-relaxed">
 					Size a system against your electricity bill, check what subsidy you qualify for, and
 					work out EMIs — so you can sanity-check a quote before you sign it.
 				</p>
 			</Card>
 			<Card class="p-4 card-interactive">
-				<h3 class="text-lg font-semibold text-primary mb-3">Real installation projects</h3>
+				<h3 class="text-lg font-semibold text-primary-strong mb-3">Real installation projects</h3>
 				<p class="text-sm leading-relaxed">
 					Photos, system sizes and locations from installations completed by companies on the
 					platform, published by the installers themselves.
@@ -162,7 +162,7 @@
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-[theme(--card-gap)]">
 			<Card class="p-4 card-interactive text-center">
 				<div class="text-4xl mb-4 block">🔍</div>
-				<h3 class="text-lg font-semibold text-primary mb-3">Effortless Comparisons</h3>
+				<h3 class="text-lg font-semibold text-primary-strong mb-3">Effortless Comparisons</h3>
 				<p class="text-sm leading-relaxed">
 					Comparing options is as easy as browsing. See service area, completed work and contact
 					details side by side, at a glance.
@@ -170,7 +170,7 @@
 			</Card>
 			<Card class="p-4 card-interactive text-center">
 				<div class="text-4xl mb-4 block">📊</div>
-				<h3 class="text-lg font-semibold text-primary mb-3">Built to Inform, Not to Sell</h3>
+				<h3 class="text-lg font-semibold text-primary-strong mb-3">Built to Inform, Not to Sell</h3>
 				<p class="text-sm leading-relaxed">
 					We do not manufacture or install anything, so we have no product to push. Our guides
 					describe trade-offs, including the ones that argue against going solar right now.
@@ -178,7 +178,7 @@
 			</Card>
 			<Card class="p-4 card-interactive text-center">
 				<div class="text-4xl mb-4 block">⚡</div>
-				<h3 class="text-lg font-semibold text-primary mb-3">Local, Not National</h3>
+				<h3 class="text-lg font-semibold text-primary-strong mb-3">Local, Not National</h3>
 				<p class="text-sm leading-relaxed">
 					Enquiries go to installers who actually work in your area, and to more than one of
 					them, so you get comparable quotes from people who can service what they sell you.
@@ -186,7 +186,7 @@
 			</Card>
 			<Card class="p-4 card-interactive text-center">
 				<div class="text-4xl mb-4 block">🎯</div>
-				<h3 class="text-lg font-semibold text-primary mb-3">Customer-First Support</h3>
+				<h3 class="text-lg font-semibold text-primary-strong mb-3">Customer-First Support</h3>
 				<p class="text-sm leading-relaxed">
 					Our team is here to guide you through every step, from an initial question to feedback
 					after your system is installed.

@@ -62,7 +62,7 @@
 			/>
 		{/if}
 		<div>
-			<h1 class="text-3xl md:text-4xl font-bold text-primary mb-1">{data.author.name}</h1>
+			<h1 class="text-3xl md:text-4xl font-bold text-primary-strong mb-1">{data.author.name}</h1>
 			{#if data.author.credentials}
 				<p class="text-muted-foreground font-medium mb-2">{data.author.credentials}</p>
 			{/if}
@@ -89,7 +89,7 @@
 					href={String(url)}
 					target="_blank"
 					rel="noopener noreferrer"
-					class="text-muted-foreground hover:text-primary capitalize"
+					class="text-muted-foreground hover:text-primary-strong capitalize"
 				>
 					{platform}
 				</a>
@@ -99,7 +99,7 @@
 
 	{#if allArticles.length > 0}
 		<section>
-			<h2 class="text-2xl font-semibold text-primary mb-4">Published Articles</h2>
+			<h2 class="text-2xl font-semibold text-primary-strong mb-4">Published Articles</h2>
 			<div class="space-y-3">
 				{#each allArticles as article}
 					<a

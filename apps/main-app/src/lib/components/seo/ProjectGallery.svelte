@@ -37,7 +37,7 @@
 
 {#if projects.length > 0}
 	<section class="mb-8">
-		<h2 class="text-center text-primary text-3xl font-semibold mb-6">
+		<h2 class="text-center text-primary-strong text-3xl font-semibold mb-6">
 			Recent Solar Installations in {locationName}
 		</h2>
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
@@ -71,7 +71,7 @@
 						</div>
 
 						<Card.Content class="pt-4">
-							<h3 class="line-clamp-2 text-primary font-semibold text-lg mb-3">
+							<h3 class="line-clamp-2 text-primary-strong font-semibold text-lg mb-3">
 								{project.title}
 							</h3>
 							<div class="text-muted-foreground flex flex-col gap-1 text-sm">

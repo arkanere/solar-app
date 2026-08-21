@@ -140,7 +140,7 @@
 
     <!-- Why Contribute Section -->
     <section class="mb-[theme(--card-gap)]">
-      <h2 class="text-2xl md:text-3xl font-bold mb-[theme(--card-gap)] text-primary">Why Contribute to Solar Vipani?</h2>
+      <h2 class="text-2xl md:text-3xl font-bold mb-[theme(--card-gap)] text-primary-strong">Why Contribute to Solar Vipani?</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[theme(--card-gap)]">
         {#each benefits as benefit}
           <Card class="card-interactive text-center">
@@ -156,7 +156,7 @@
 
     <!-- Who We're Looking For -->
     <section class="mb-[theme(--card-gap)]">
-      <h2 class="text-2xl md:text-3xl font-bold mb-[theme(--card-gap)] text-primary">Who We're Looking For</h2>
+      <h2 class="text-2xl md:text-3xl font-bold mb-[theme(--card-gap)] text-primary-strong">Who We're Looking For</h2>
       <Card>
         <CardContent class="pt-[theme(--card-padding-y)]">
           <p class="text-base md:text-lg mb-[theme(--card-gap)] text-foreground-secondary">We welcome contributions from credentialed professionals in the solar and renewable energy industry:</p>
@@ -210,7 +210,7 @@
 
     <!-- Topics We Accept -->
     <section class="mb-[theme(--card-gap)]">
-      <h2 class="text-2xl md:text-3xl font-bold mb-[theme(--card-gap)] text-primary">What Topics We Accept</h2>
+      <h2 class="text-2xl md:text-3xl font-bold mb-[theme(--card-gap)] text-primary-strong">What Topics We Accept</h2>
       <p class="text-base md:text-lg leading-relaxed mb-[theme(--card-gap)] text-foreground-secondary">
         We publish expert content that educates, informs, and empowers our audience. Here are some topic areas we're interested in:
       </p>
@@ -218,7 +218,7 @@
         {#each acceptedTopics as topic}
           <Card class="border-l-4 border-primary">
             <CardContent class="pt-3">
-              <h3 class="text-lg font-semibold mb-2 text-primary">{topic.title}</h3>
+              <h3 class="text-lg font-semibold mb-2 text-primary-strong">{topic.title}</h3>
               <p class="text-sm text-foreground-secondary"><strong>Examples:</strong> {topic.examples}</p>
             </CardContent>
           </Card>
@@ -233,7 +233,7 @@
 
     <!-- Editorial Guidelines -->
     <section class="mb-[theme(--card-gap)]">
-      <h2 class="text-2xl md:text-3xl font-bold mb-[theme(--card-gap)] text-primary">Editorial Guidelines</h2>
+      <h2 class="text-2xl md:text-3xl font-bold mb-[theme(--card-gap)] text-primary-strong">Editorial Guidelines</h2>
       <p class="text-base md:text-lg leading-relaxed mb-[theme(--card-gap)] text-foreground-secondary">
         To maintain the highest quality standards, all submissions must meet these requirements:
       </p>
@@ -251,7 +251,7 @@
 
     <!-- Link Policy -->
     <section class="mb-[theme(--card-gap)]">
-      <h2 class="text-2xl md:text-3xl font-bold mb-[theme(--card-gap)] text-primary">Link Policy</h2>
+      <h2 class="text-2xl md:text-3xl font-bold mb-[theme(--card-gap)] text-primary-strong">Link Policy</h2>
       <div class="space-y-[theme(--card-gap)]">
         <Card class="border-l-4 border-success">
           <CardContent class="pt-[theme(--card-padding-y)]">
@@ -305,7 +305,7 @@
 
     <!-- Submission Process -->
     <section class="mb-[theme(--card-gap)]">
-      <h2 class="text-2xl md:text-3xl font-bold mb-[theme(--card-gap)] text-primary">How to Submit</h2>
+      <h2 class="text-2xl md:text-3xl font-bold mb-[theme(--card-gap)] text-primary-strong">How to Submit</h2>
       <div class="space-y-[theme(--card-gap)]">
         {#each [
           {num: 1, title: 'Send a Pitch', content: `Email us at <a href="mailto:${submissionEmail}">${submissionEmail}</a> with:`, items: ['Proposed article title and brief outline (3-5 bullet points)', 'Your credentials and relevant experience', 'Links to previous published work (if available)']},
@@ -335,7 +335,7 @@
 
     <!-- Important Disclaimers -->
     <section class="mb-[theme(--card-gap)]">
-      <h2 class="text-2xl md:text-3xl font-bold mb-[theme(--card-gap)] text-primary">Important Notes</h2>
+      <h2 class="text-2xl md:text-3xl font-bold mb-[theme(--card-gap)] text-primary-strong">Important Notes</h2>
       <Card>
         <CardContent class="pt-[theme(--card-padding-y)]">
           <ul class="space-y-3 divide-y divide-border">

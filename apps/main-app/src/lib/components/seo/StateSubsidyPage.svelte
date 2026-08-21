@@ -28,7 +28,7 @@
 		{ name: subsidy.state_name, href: '' }
 	]} />
 
-	<h1 class="text-3xl md:text-4xl font-bold text-primary mb-4">
+	<h1 class="text-3xl md:text-4xl font-bold text-primary-strong mb-4">
 		Solar Subsidy in {subsidy.state_name}
 	</h1>
 
@@ -37,20 +37,20 @@
 		{#if subsidy.central_subsidy_rate}
 			<div class="bg-accent/10 rounded-lg p-4">
 				<p class="text-sm text-muted-foreground">Central Subsidy</p>
-				<p class="text-lg font-semibold text-primary">{subsidy.central_subsidy_rate}</p>
+				<p class="text-lg font-semibold text-primary-strong">{subsidy.central_subsidy_rate}</p>
 			</div>
 		{/if}
 		{#if subsidy.state_topup_rate}
 			<div class="bg-accent/10 rounded-lg p-4">
 				<p class="text-sm text-muted-foreground">State Top-up</p>
-				<p class="text-lg font-semibold text-primary">{subsidy.state_topup_rate}</p>
+				<p class="text-lg font-semibold text-primary-strong">{subsidy.state_topup_rate}</p>
 			</div>
 		{/if}
 	</div>
 
 	{#if subsidy.eligibility}
 		<section class="mb-8">
-			<h2 class="text-2xl font-semibold text-primary mb-3">Eligibility</h2>
+			<h2 class="text-2xl font-semibold text-primary-strong mb-3">Eligibility</h2>
 			<div class="text-muted-foreground leading-relaxed prose prose-sm max-w-none">
 				{@html subsidy.eligibility}
 			</div>
@@ -59,7 +59,7 @@
 
 	{#if subsidy.application_process}
 		<section class="mb-8">
-			<h2 class="text-2xl font-semibold text-primary mb-3">Application Process</h2>
+			<h2 class="text-2xl font-semibold text-primary-strong mb-3">Application Process</h2>
 			<div class="text-muted-foreground leading-relaxed prose prose-sm max-w-none">
 				{@html subsidy.application_process}
 			</div>
@@ -73,7 +73,7 @@
 		<p class="text-sm text-muted-foreground mb-2">Ready to install solar with subsidy benefits?</p>
 		<a
 			href={`${geoUrl(country, subsidy.state_slug)}/`}
-			class="text-primary font-semibold hover:underline"
+			class="text-primary-strong font-semibold hover:underline"
 		>
 			Find verified solar installers in {subsidy.state_name} →
 		</a>
@@ -81,7 +81,7 @@
 
 	{#if discoms.length > 0}
 		<section class="mb-8">
-			<h2 class="text-2xl font-semibold text-primary mb-4">DISCOMs in {subsidy.state_name}</h2>
+			<h2 class="text-2xl font-semibold text-primary-strong mb-4">DISCOMs in {subsidy.state_name}</h2>
 			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 				{#each discoms as discom}
 					<a
@@ -97,7 +97,7 @@
 
 	<!-- Related guides -->
 	<section class="mb-8">
-		<h2 class="text-lg font-semibold text-primary mb-3">Related Guides</h2>
+		<h2 class="text-lg font-semibold text-primary-strong mb-3">Related Guides</h2>
 		<div class="flex flex-wrap gap-2">
 			<a href={contentUrl('/solar-subsidy/state-wise/')} class="bg-muted hover:bg-accent/20 text-sm rounded-lg px-3 py-1.5 transition-colors">
 				State-wise Subsidy Comparison

@@ -14,7 +14,7 @@
 
 {#if districts.length > 0}
 	<section class="mb-8 bg-accent/10 rounded-lg p-6">
-		<h2 class="text-xl font-semibold text-primary mb-3">Find Installers in Your City</h2>
+		<h2 class="text-xl font-semibold text-primary-strong mb-3">Find Installers in Your City</h2>
 		<p class="text-sm text-muted-foreground mb-4">
 			Ready to go solar? Browse verified installers in top districts across India.
 		</p>

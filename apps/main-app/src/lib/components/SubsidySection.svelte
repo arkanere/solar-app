@@ -39,7 +39,7 @@
 
 <section id="subsidy-section" class="mb-8 rounded-[theme(--radius-lg)] bg-card p-[theme(--card-padding-y)] shadow-[theme(--shadow-md)]">
 	<div class="text-center mb-8">
-		<h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary">
+		<h2 class="text-3xl md:text-4xl font-semibold mb-4 text-primary-strong">
 			Solar Subsidy in {city} — PM Surya Ghar Yojana
 		</h2>
 		<div class="flex justify-center items-center my-4">
@@ -67,7 +67,7 @@
 					<Table.Body>
 						{#each subsidyRows as row, idx}
 							<Table.Row class={idx % 2 === 0 ? 'bg-muted' : ''}>
-								<Table.Cell class="font-semibold text-primary">{row.size}</Table.Cell>
+								<Table.Cell class="font-semibold text-primary-strong">{row.size}</Table.Cell>
 								<Table.Cell>{row.grossCost}</Table.Cell>
 								<Table.Cell class="font-semibold text-success">{row.centralSubsidy}</Table.Cell>
 								<Table.Cell class="font-semibold">{row.netCost}</Table.Cell>
@@ -94,7 +94,7 @@
 
 	<div class="grid grid-cols-1 md:grid-cols-2 gap-[theme(--card-gap)] mb-8">
 		<div class="rounded-[theme(--radius-md)] bg-[hsl(var(--accent)/0.1)] p-4">
-			<strong class="block text-base font-semibold text-primary mb-2">How the Subsidy Works</strong>
+			<strong class="block text-base font-semibold text-primary-strong mb-2">How the Subsidy Works</strong>
 			<ul class="text-sm text-foreground dark:text-foreground-secondary space-y-1 list-disc list-inside leading-relaxed">
 				<li>Subsidy is ₹30,000/kW for first 2 kW</li>
 				<li>Additional ₹18,000 for capacity between 2–3 kW</li>
@@ -104,7 +104,7 @@
 			</ul>
 		</div>
 		<div class="rounded-[theme(--radius-md)] bg-[hsl(var(--accent)/0.1)] p-4">
-			<strong class="block text-base font-semibold text-primary mb-2">Steps to Get the Subsidy</strong>
+			<strong class="block text-base font-semibold text-primary-strong mb-2">Steps to Get the Subsidy</strong>
 			<ol class="text-sm text-foreground dark:text-foreground-secondary space-y-1 list-decimal list-inside leading-relaxed">
 				<li>Register at <strong>pmsuryaghar.gov.in</strong></li>
 				<li>Get feasibility approval from your DISCOM</li>

@@ -93,8 +93,8 @@
 	<!-- Breadcrumb -->
 	<nav class="text-sm text-muted-foreground mb-6" aria-label="Breadcrumb">
 		<ol class="flex flex-wrap gap-1">
-			<li><a href="/{cc}/" class="hover:text-primary">Home</a> /</li>
-			<li><a href="/{cc}/solar/" class="hover:text-primary">Solar</a> /</li>
+			<li><a href="/{cc}/" class="hover:text-primary-strong">Home</a> /</li>
+			<li><a href="/{cc}/solar/" class="hover:text-primary-strong">Solar</a> /</li>
 			<li class="text-foreground font-medium">{b.businessname}</li>
 		</ol>
 	</nav>
@@ -102,7 +102,7 @@
 	<!-- Header -->
 	<header class="mb-8">
 		<div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
-			<h1 class="text-3xl md:text-4xl font-bold text-primary">{b.businessname}</h1>
+			<h1 class="text-3xl md:text-4xl font-bold text-primary-strong">{b.businessname}</h1>
 			{#if b.tag && b.tag !== 'Blank'}
 				<Badge variant="secondary" class="whitespace-nowrap self-start">
 					<span class="inline-flex items-center justify-center w-4 h-4 mr-1 rounded-full text-success-foreground bg-success text-xs font-bold">
@@ -114,7 +114,7 @@
 		</div>
 
 		<div class="flex items-center text-muted-foreground gap-2 mb-4">
-			<MapPin class="w-4 h-4 text-primary shrink-0" />
+			<MapPin class="w-4 h-4 text-primary-strong shrink-0" />
 			<span>{b.address || `${b.city}, ${b.district}, ${b.state}`}</span>
 		</div>
 
@@ -143,7 +143,7 @@
 	<!-- About -->
 	{#if b.description}
 		<section class="mb-8">
-			<h2 class="text-xl font-semibold text-primary mb-3">About</h2>
+			<h2 class="text-xl font-semibold text-primary-strong mb-3">About</h2>
 			<p class="text-foreground leading-relaxed">{b.description}</p>
 		</section>
 	{/if}
@@ -152,10 +152,10 @@
 	{#if (b.services?.length > 0) || (b.brands?.length > 0)}
 		<section class="mb-8">
 			{#if b.services?.length > 0}
-				<h2 class="text-xl font-semibold text-primary mb-3">Services</h2>
+				<h2 class="text-xl font-semibold text-primary-strong mb-3">Services</h2>
 				<div class="flex flex-wrap gap-2 mb-6">
 					{#each b.services as serviceId}
-						<span class="bg-accent/10 text-primary px-3 py-1 rounded-md text-sm font-medium border border-accent/30">
+						<span class="bg-accent/10 text-primary-strong px-3 py-1 rounded-md text-sm font-medium border border-accent/30">
 							{SERVICE_MAPPING[serviceId] || 'Unknown Service'}
 						</span>
 					{/each}
@@ -163,10 +163,10 @@
 			{/if}
 
 			{#if b.brands?.length > 0}
-				<h2 class="text-xl font-semibold text-primary mb-3">Brands</h2>
+				<h2 class="text-xl font-semibold text-primary-strong mb-3">Brands</h2>
 				<div class="flex flex-wrap gap-2">
 					{#each b.brands as brandId}
-						<span class="bg-accent/10 text-primary px-3 py-1 rounded-md text-sm font-medium border border-accent/30">
+						<span class="bg-accent/10 text-primary-strong px-3 py-1 rounded-md text-sm font-medium border border-accent/30">
 							{BRAND_MAPPING[brandId] || 'Unknown Brand'}
 						</span>
 					{/each}
@@ -178,12 +178,12 @@
 	<!-- Service Areas -->
 	{#if serviceAreas.length > 0}
 		<section class="mb-8">
-			<h2 class="text-xl font-semibold text-primary mb-3">Service Areas</h2>
+			<h2 class="text-xl font-semibold text-primary-strong mb-3">Service Areas</h2>
 			<div class="flex flex-wrap gap-2">
 				{#each serviceAreas as area}
 					<a
 						href="/{cc}/solar/{area.state_slug}/{area.district_slug}/{area.city_slug}/"
-						class="bg-muted px-3 py-1.5 rounded-lg text-sm font-medium hover:text-primary hover:bg-muted/80 transition-colors"
+						class="bg-muted px-3 py-1.5 rounded-lg text-sm font-medium hover:text-primary-strong hover:bg-muted/80 transition-colors"
 					>
 						{area.city}
 					</a>
@@ -195,7 +195,7 @@
 	<!-- Projects Gallery -->
 	{#if projects.length > 0}
 		<section class="mb-8">
-			<h2 class="text-xl font-semibold text-primary mb-4">
+			<h2 class="text-xl font-semibold text-primary-strong mb-4">
 				Recent Projects ({projects.length})
 			</h2>
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -224,7 +224,7 @@
 								{/if}
 							</div>
 							<Card.Content class="pt-4">
-								<h3 class="line-clamp-2 text-primary font-semibold text-lg mb-2">{project.title}</h3>
+								<h3 class="line-clamp-2 text-primary-strong font-semibold text-lg mb-2">{project.title}</h3>
 								<div class="text-muted-foreground text-sm space-y-1">
 									{#if project.pincode}<p>Pincode: {project.pincode}</p>{/if}
 									<p>Completed: {formatDate(project.project_date)}</p>
@@ -239,40 +239,40 @@
 
 	<!-- Contact & Location -->
 	<section class="mb-8">
-		<h2 class="text-xl font-semibold text-primary mb-4">Contact & Location</h2>
+		<h2 class="text-xl font-semibold text-primary-strong mb-4">Contact & Location</h2>
 		<Card.Root>
 			<Card.Content class="pt-6">
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
 					{#if b.phonenumber}
 						<div class="flex items-start gap-3">
-							<Phone class="w-5 h-5 text-primary shrink-0 mt-0.5" />
+							<Phone class="w-5 h-5 text-primary-strong shrink-0 mt-0.5" />
 							<div>
 								<p class="text-sm text-muted-foreground font-medium">Phone</p>
-								<a href="tel:{b.phonenumber}" class="text-primary hover:underline">{b.phonenumber}</a>
+								<a href="tel:{b.phonenumber}" class="text-primary-strong hover:underline">{b.phonenumber}</a>
 							</div>
 						</div>
 					{/if}
 					{#if b.email}
 						<div class="flex items-start gap-3">
-							<Mail class="w-5 h-5 text-primary shrink-0 mt-0.5" />
+							<Mail class="w-5 h-5 text-primary-strong shrink-0 mt-0.5" />
 							<div>
 								<p class="text-sm text-muted-foreground font-medium">Email</p>
-								<a href="mailto:{b.email}" class="text-primary hover:underline break-all">{b.email}</a>
+								<a href="mailto:{b.email}" class="text-primary-strong hover:underline break-all">{b.email}</a>
 							</div>
 						</div>
 					{/if}
 					{#if b.website}
 						<div class="flex items-start gap-3">
-							<Globe class="w-5 h-5 text-primary shrink-0 mt-0.5" />
+							<Globe class="w-5 h-5 text-primary-strong shrink-0 mt-0.5" />
 							<div>
 								<p class="text-sm text-muted-foreground font-medium">Website</p>
-								<a href={b.website} target="_blank" rel="noopener noreferrer" class="text-primary hover:underline break-all">{b.website}</a>
+								<a href={b.website} target="_blank" rel="noopener noreferrer" class="text-primary-strong hover:underline break-all">{b.website}</a>
 							</div>
 						</div>
 					{/if}
 					{#if b.address}
 						<div class="flex items-start gap-3">
-							<MapPin class="w-5 h-5 text-primary shrink-0 mt-0.5" />
+							<MapPin class="w-5 h-5 text-primary-strong shrink-0 mt-0.5" />
 							<div>
 								<p class="text-sm text-muted-foreground font-medium">Address</p>
 								<span>{b.address}</span>
@@ -281,10 +281,10 @@
 					{/if}
 					{#if mapUrl}
 						<div class="flex items-start gap-3">
-							<ExternalLink class="w-5 h-5 text-primary shrink-0 mt-0.5" />
+							<ExternalLink class="w-5 h-5 text-primary-strong shrink-0 mt-0.5" />
 							<div>
 								<p class="text-sm text-muted-foreground font-medium">Map</p>
-								<a href={mapUrl} target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">View on Google Maps</a>
+								<a href={mapUrl} target="_blank" rel="noopener noreferrer" class="text-primary-strong hover:underline">View on Google Maps</a>
 							</div>
 						</div>
 					{/if}
@@ -308,7 +308,7 @@
 	<!-- Back link -->
 	{#if stateSlug && districtSlug}
 		<div class="mt-8">
-			<a href="/{cc}/solar/{stateSlug}/{districtSlug}/" class="text-primary hover:underline text-sm">
+			<a href="/{cc}/solar/{stateSlug}/{districtSlug}/" class="text-primary-strong hover:underline text-sm">
 				← All installers in {b.district}
 			</a>
 		</div>

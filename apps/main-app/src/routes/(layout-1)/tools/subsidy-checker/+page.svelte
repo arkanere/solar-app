@@ -149,7 +149,7 @@
 		]}
 	/>
 
-	<h1 class="text-3xl md:text-4xl font-bold text-primary mb-4">Solar Subsidy Checker</h1>
+	<h1 class="text-3xl md:text-4xl font-bold text-primary-strong mb-4">Solar Subsidy Checker</h1>
 	<p class="text-muted-foreground mb-8 max-w-2xl">
 		Check your eligibility and subsidy amount under the PM Surya Ghar Yojana — the Government of
 		India's national rooftop solar subsidy scheme.
@@ -157,7 +157,7 @@
 
 	<!-- Calculator Form -->
 	<div class="rounded-lg border bg-card p-6 shadow-[theme(--shadow-xs)] mb-8">
-		<h2 class="text-lg font-semibold text-primary mb-4">Check Your Subsidy Eligibility</h2>
+		<h2 class="text-lg font-semibold text-primary-strong mb-4">Check Your Subsidy Eligibility</h2>
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 			<!-- State -->
 			<div class="flex flex-col gap-2">
@@ -226,7 +226,7 @@
 			<div class="flex flex-col gap-2 md:col-span-2">
 				<div class="flex justify-between items-baseline">
 					<Label for="size">System Size</Label>
-					<span class="text-primary text-lg font-semibold">{systemSizeKw} kW</span>
+					<span class="text-primary-strong text-lg font-semibold">{systemSizeKw} kW</span>
 				</div>
 				<Slider
 					id="size"
@@ -251,7 +251,7 @@
 	<!-- Results -->
 	{#if hasChecked}
 		<div class="rounded-lg border bg-card p-6 shadow-[theme(--shadow-xs)] mb-8">
-			<h2 class="text-2xl font-semibold text-primary mb-6">Subsidy Details</h2>
+			<h2 class="text-2xl font-semibold text-primary-strong mb-6">Subsidy Details</h2>
 
 			<!-- Eligibility Status -->
 			<div
@@ -260,7 +260,7 @@
 					: 'border-red-600/30 bg-red-600/10'}"
 			>
 				{#if isEligibleCentral}
-					<CheckCircle class="w-5 h-5 text-primary shrink-0 mt-0.5" />
+					<CheckCircle class="w-5 h-5 text-primary-strong shrink-0 mt-0.5" />
 					<div>
 						<p class="font-semibold text-foreground">
 							Eligible for PM Surya Ghar Subsidy
@@ -302,13 +302,13 @@
 				</div>
 				<div class="flex justify-between text-sm border-t pt-2">
 					<span class="font-semibold">Net Cost (after subsidy)</span>
-					<span class="font-bold text-primary">{formatCurrency(netCost)}</span>
+					<span class="font-bold text-primary-strong">{formatCurrency(netCost)}</span>
 				</div>
 			</div>
 
 			<!-- PM Surya Ghar Yojana Info -->
 			<div class="mt-6 rounded-lg border p-4">
-				<h3 class="font-semibold text-primary mb-2">PM Surya Ghar Yojana — Subsidy Slabs</h3>
+				<h3 class="font-semibold text-primary-strong mb-2">PM Surya Ghar Yojana — Subsidy Slabs</h3>
 				<p class="text-sm text-muted-foreground mb-3">
 					Central government scheme providing direct subsidy for residential rooftop solar. Applicable to on-grid systems installed by registered vendors.
 				</p>
@@ -330,7 +330,7 @@
 
 			<!-- State Subsidies — Coming Soon -->
 			<div class="mt-6 flex items-start gap-3 rounded-lg bg-muted p-4">
-				<Info class="w-5 h-5 text-primary shrink-0 mt-0.5" />
+				<Info class="w-5 h-5 text-primary-strong shrink-0 mt-0.5" />
 				<div>
 					<p class="font-semibold text-sm">{selectedState} State Subsidy</p>
 					<p class="text-sm text-muted-foreground">
@@ -368,11 +368,11 @@
 
 			<!-- Related tools -->
 			<div class="mt-4 flex flex-wrap gap-3 text-sm">
-				<a href={contentUrl("/tools/solar-calculator/")} class="text-primary hover:underline">
+				<a href={contentUrl("/tools/solar-calculator/")} class="text-primary-strong hover:underline">
 					Calculate system size & cost
 				</a>
 				<span class="text-muted-foreground">|</span>
-				<a href={contentUrl("/tools/emi-calculator/")} class="text-primary hover:underline">
+				<a href={contentUrl("/tools/emi-calculator/")} class="text-primary-strong hover:underline">
 					Calculate EMI
 				</a>
 			</div>
@@ -381,11 +381,11 @@
 
 	<!-- Authority links -->
 	<div class="flex flex-wrap gap-3 text-sm mb-8">
-		<a href={contentUrl("/solar-subsidy/how-to-apply/")} class="text-primary hover:underline">
+		<a href={contentUrl("/solar-subsidy/how-to-apply/")} class="text-primary-strong hover:underline">
 			How to Apply for Solar Subsidy
 		</a>
 		<span class="text-muted-foreground">|</span>
-		<a href={geoUrl("in")} class="text-primary hover:underline">Browse Installers</a>
+		<a href={geoUrl("in")} class="text-primary-strong hover:underline">Browse Installers</a>
 	</div>
 
 	<FAQ items={faqs} />

@@ -36,7 +36,7 @@
 		{ name: pillarData.h1, href: '' }
 	]} />
 
-	<h1 class="text-3xl md:text-4xl font-bold text-primary mb-4">{pillarData.h1}</h1>
+	<h1 class="text-3xl md:text-4xl font-bold text-primary-strong mb-4">{pillarData.h1}</h1>
 
 	{#if stats.installerCount || stats.stateCount}
 		<div class="flex flex-wrap gap-4 mb-8 text-sm">
@@ -53,7 +53,7 @@
 
 	{#if clusters.length > 0}
 		<section class="mb-8">
-			<h2 class="text-2xl font-semibold text-primary mb-4">Explore Topics</h2>
+			<h2 class="text-2xl font-semibold text-primary-strong mb-4">Explore Topics</h2>
 			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 				{#each clusters as cluster}
 					<a
@@ -71,7 +71,7 @@
 
 	{#if entitySection && entitySection.items.length > 0}
 		<section class="mb-8">
-			<h2 class="text-2xl font-semibold text-primary mb-4">{entitySection.title}</h2>
+			<h2 class="text-2xl font-semibold text-primary-strong mb-4">{entitySection.title}</h2>
 			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 				{#each entitySection.items as item}
 					<a
@@ -87,7 +87,7 @@
 
 	{#if siblingPillars.length > 0 || toolLink}
 		<section class="mb-8 bg-accent/10 rounded-lg p-6">
-			<h2 class="text-lg font-semibold text-primary mb-3">Related Resources</h2>
+			<h2 class="text-lg font-semibold text-primary-strong mb-3">Related Resources</h2>
 			<div class="flex flex-wrap gap-3">
 				{#each siblingPillars as sibling}
 					<a
@@ -112,7 +112,7 @@
 	<!-- Geographic funnel bridge -->
 	<section class="mb-8 bg-accent/10 rounded-lg p-6">
 		<p class="text-sm text-muted-foreground mb-2">Ready to go solar?</p>
-		<a href={`${geoUrl(country)}/`} class="text-primary font-semibold hover:underline">
+		<a href={`${geoUrl(country)}/`} class="text-primary-strong font-semibold hover:underline">
 			Find verified solar installers across India →
 		</a>
 	</section>

@@ -243,15 +243,15 @@
 						<h3 class="mb-2 text-sm font-semibold text-muted-foreground">{pillar.name}</h3>
 						<ul class="space-y-0.5">
 							<li>
-								<a href={pillar.pillar.href} class="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline">
+								<a href={pillar.pillar.href} class="inline-flex items-center gap-2 text-sm font-medium text-primary-strong hover:underline">
 									<span class="font-mono text-xs text-muted-foreground">{pillar.pillar.href}</span>
 									<span>{pillar.pillar.label}</span>
-									<span class="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">pillar</span>
+									<span class="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary-strong">pillar</span>
 								</a>
 							</li>
 							{#each pillar.clusters as route}
 								<li class="ml-4">
-									<a href={route.href} class="inline-flex items-center gap-2 text-sm hover:text-primary hover:underline">
+									<a href={route.href} class="inline-flex items-center gap-2 text-sm hover:text-primary-strong hover:underline">
 										<span class="font-mono text-xs text-muted-foreground">{route.href}</span>
 										<span class="text-foreground">{route.label}</span>
 										{#if route.type === 'redirect'}
@@ -268,7 +268,7 @@
 							{#if pillar.dynamic}
 								{#each pillar.dynamic as route}
 									<li class="ml-4">
-										<a href={route.href} class="inline-flex items-center gap-2 text-sm hover:text-primary hover:underline">
+										<a href={route.href} class="inline-flex items-center gap-2 text-sm hover:text-primary-strong hover:underline">
 											<span class="font-mono text-xs text-muted-foreground">{route.href}</span>
 											<span class="text-foreground">{route.label}</span>
 											<span class="rounded bg-blue-500/10 px-1.5 py-0.5 text-[10px] font-medium text-blue-600">{route.type}</span>
@@ -285,7 +285,7 @@
 				<ul class="ml-2 space-y-0.5">
 					{#each section.routes as route}
 						<li>
-							<a href={route.href} class="inline-flex items-center gap-2 text-sm hover:text-primary hover:underline">
+							<a href={route.href} class="inline-flex items-center gap-2 text-sm hover:text-primary-strong hover:underline">
 								<span class="font-mono text-xs text-muted-foreground">{route.href}</span>
 								<span class="text-foreground">{route.label}</span>
 							</a>

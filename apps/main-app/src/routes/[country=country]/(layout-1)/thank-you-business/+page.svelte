@@ -57,7 +57,7 @@
 			<p class="text-xl md:text-2xl">
 				If you'd like to speak with us right away, feel free to give us a call at <a
 					href="tel:+918983066701"
-					class="text-primary hover:opacity-80 transition-opacity">+91 8983066701</a
+					class="text-primary-strong hover:opacity-80 transition-opacity">+91 8983066701</a
 				>
 			</p>
 		{:else}

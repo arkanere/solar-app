@@ -86,7 +86,7 @@
 		]}
 	/>
 
-	<h1 class="text-3xl md:text-4xl font-bold text-primary mb-4">Solar EMI Calculator</h1>
+	<h1 class="text-3xl md:text-4xl font-bold text-primary-strong mb-4">Solar EMI Calculator</h1>
 	<p class="text-muted-foreground mb-8 max-w-2xl">
 		Calculate monthly EMI for your solar panel loan. Adjust loan amount, tenure, and interest rate
 		to find the best financing option.
@@ -99,7 +99,7 @@
 			<div class="flex flex-col gap-2 md:col-span-2">
 				<div class="flex justify-between items-baseline">
 					<Label for="loan">Loan Amount</Label>
-					<span class="text-primary text-lg font-semibold">
+					<span class="text-primary-strong text-lg font-semibold">
 						Rs {loanAmount.toLocaleString('en-IN')}
 					</span>
 				</div>
@@ -118,7 +118,7 @@
 			<div class="flex flex-col gap-2">
 				<div class="flex justify-between items-baseline">
 					<Label for="interest">Interest Rate (% p.a.)</Label>
-					<span class="text-primary text-lg font-semibold">{interestRate.toFixed(1)}%</span>
+					<span class="text-primary-strong text-lg font-semibold">{interestRate.toFixed(1)}%</span>
 				</div>
 				<Slider
 					id="interest"
@@ -160,22 +160,22 @@
 	<!-- Results -->
 	{#if hasCalculated}
 		<div class="rounded-lg border bg-card p-6 shadow-[theme(--shadow-xs)] mb-8">
-			<h2 class="text-2xl font-semibold text-primary mb-6">EMI Breakdown</h2>
+			<h2 class="text-2xl font-semibold text-primary-strong mb-6">EMI Breakdown</h2>
 
 			<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
 				<div class="rounded-lg bg-muted p-4 text-center">
-					<IndianRupee class="w-6 h-6 text-primary mx-auto mb-2" />
-					<p class="text-2xl font-bold text-primary">Rs {emi.toLocaleString('en-IN')}</p>
+					<IndianRupee class="w-6 h-6 text-primary-strong mx-auto mb-2" />
+					<p class="text-2xl font-bold text-primary-strong">Rs {emi.toLocaleString('en-IN')}</p>
 					<p class="text-xs text-muted-foreground">Monthly EMI</p>
 				</div>
 				<div class="rounded-lg bg-muted p-4 text-center">
-					<Percent class="w-6 h-6 text-primary mx-auto mb-2" />
-					<p class="text-2xl font-bold text-primary">Rs {totalInterest.toLocaleString('en-IN')}</p>
+					<Percent class="w-6 h-6 text-primary-strong mx-auto mb-2" />
+					<p class="text-2xl font-bold text-primary-strong">Rs {totalInterest.toLocaleString('en-IN')}</p>
 					<p class="text-xs text-muted-foreground">Total Interest</p>
 				</div>
 				<div class="rounded-lg bg-muted p-4 text-center">
-					<Calendar class="w-6 h-6 text-primary mx-auto mb-2" />
-					<p class="text-2xl font-bold text-primary">Rs {totalPayment.toLocaleString('en-IN')}</p>
+					<Calendar class="w-6 h-6 text-primary-strong mx-auto mb-2" />
+					<p class="text-2xl font-bold text-primary-strong">Rs {totalPayment.toLocaleString('en-IN')}</p>
 					<p class="text-xs text-muted-foreground">Total Payment</p>
 				</div>
 			</div>
@@ -212,7 +212,7 @@
 		<!-- Bank Comparison -->
 		{#if bankComparisons.length > 0}
 			<div class="rounded-lg border bg-card p-6 shadow-[theme(--shadow-xs)] mb-8">
-				<h2 class="text-2xl font-semibold text-primary mb-4">Compare Bank Schemes</h2>
+				<h2 class="text-2xl font-semibold text-primary-strong mb-4">Compare Bank Schemes</h2>
 				<p class="text-sm text-muted-foreground mb-4">
 					EMI comparison for Rs {loanAmount.toLocaleString('en-IN')} over {tenure} months.
 				</p>
@@ -232,7 +232,7 @@
 									<td class="py-2.5 pr-4">
 										<a
 											href={contentUrl(`/solar-financing/${bank.slug}/`)}
-											class="text-primary hover:underline font-medium"
+											class="text-primary-strong hover:underline font-medium"
 										>
 											{bank.name}
 										</a>
@@ -269,10 +269,10 @@
 
 	<!-- Authority links -->
 	<div class="flex flex-wrap gap-3 text-sm mb-8">
-		<a href={contentUrl("/tools/solar-calculator/")} class="text-primary hover:underline">Solar Calculator</a>
+		<a href={contentUrl("/tools/solar-calculator/")} class="text-primary-strong hover:underline">Solar Calculator</a>
 		<span class="text-muted-foreground">|</span>
-		<a href={contentUrl("/solar-financing/")} class="text-primary hover:underline">Solar Financing Guide</a>
+		<a href={contentUrl("/solar-financing/")} class="text-primary-strong hover:underline">Solar Financing Guide</a>
 		<span class="text-muted-foreground">|</span>
-		<a href={geoUrl("in")} class="text-primary hover:underline">Browse Installers</a>
+		<a href={geoUrl("in")} class="text-primary-strong hover:underline">Browse Installers</a>
 	</div>
 </div>

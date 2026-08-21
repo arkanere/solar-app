@@ -77,7 +77,7 @@
 		<div class="grid grid-cols-2 gap-4">
 			{#each stats as stat (stat.label)}
 				<div class="flex flex-col items-center gap-2 rounded-lg bg-muted p-4 text-center">
-					<stat.icon class="h-6 w-6 text-primary" />
+					<stat.icon class="h-6 w-6 text-primary-strong" />
 					<span class="text-2xl font-bold text-foreground md:text-3xl">{stat.value.toLocaleString('en-IN')}+</span>
 					<span class="text-sm text-muted-foreground">{stat.label}</span>
 				</div>
@@ -95,7 +95,7 @@
 						target="_blank"
 						rel="noopener noreferrer"
 						aria-label={link.label}
-						class="flex items-center gap-[theme(--form-element-field-gap)] text-primary transition-all duration-[theme(--duration-default)] hover:-translate-y-[theme(--hover-lift-sm)]"
+						class="flex items-center gap-[theme(--form-element-field-gap)] text-primary-strong transition-all duration-[theme(--duration-default)] hover:-translate-y-[theme(--hover-lift-sm)]"
 					>
 						<link.icon size={20} />
 						<span class="text-sm font-medium">{link.label}</span>

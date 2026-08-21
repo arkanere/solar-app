@@ -33,7 +33,7 @@
 		this={as}
 		class="{as === 'h1'
 			? 'text-4xl md:text-5xl'
-			: 'text-3xl md:text-4xl'} font-semibold mb-4 text-primary"
+			: 'text-3xl md:text-4xl'} font-semibold mb-4 text-primary-strong"
 	>
 		{title}
 	</svelte:element>

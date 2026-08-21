@@ -64,7 +64,7 @@
 	<Card class="w-full max-w-sm text-center">
 		<CardContent class="pt-[theme(--card-padding-y)] px-[theme(--card-padding-y)]">
 			{#if isConfirming}
-				<h1 class="text-3xl font-display mb-6 text-primary">
+				<h1 class="text-3xl font-display mb-6 text-primary-strong">
 					Confirm Unsubscription
 				</h1>
 
@@ -105,7 +105,7 @@
 					</svg>
 				</div>
 
-				<h1 class="text-3xl font-display mb-6 text-primary">
+				<h1 class="text-3xl font-display mb-6 text-primary-strong">
 					Unsubscription was successful!
 				</h1>
 

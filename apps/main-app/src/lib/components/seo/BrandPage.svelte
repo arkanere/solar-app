@@ -35,7 +35,7 @@
 		{#if brand.logo_url}
 			<img src={brand.logo_url} alt="{brand.name} logo" class="h-12 w-auto" />
 		{/if}
-		<h1 class="text-3xl md:text-4xl font-bold text-primary">{brand.name} — {pillarName}</h1>
+		<h1 class="text-3xl md:text-4xl font-bold text-primary-strong">{brand.name} — {pillarName}</h1>
 	</div>
 
 	{#if brand.description}
@@ -44,7 +44,7 @@
 
 	{#if products.length > 0}
 		<section class="mb-8">
-			<h2 class="text-2xl font-semibold text-primary mb-4">{brand.name} Products</h2>
+			<h2 class="text-2xl font-semibold text-primary-strong mb-4">{brand.name} Products</h2>
 			<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 				{#each products as product}
 					<a

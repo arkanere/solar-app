@@ -48,14 +48,14 @@
 	<!-- Breadcrumb -->
 	<nav class="text-sm text-muted-foreground mb-6" aria-label="Breadcrumb">
 		<ol class="flex flex-wrap gap-1">
-			<li><a href="/{cc}/" class="hover:text-primary">Home</a> /</li>
-			<li><a href="/{cc}/solar/" class="hover:text-primary">Solar</a> /</li>
+			<li><a href="/{cc}/" class="hover:text-primary-strong">Home</a> /</li>
+			<li><a href="/{cc}/solar/" class="hover:text-primary-strong">Solar</a> /</li>
 			<li class="text-foreground font-medium">{data.level1}</li>
 		</ol>
 	</nav>
 
 	<!-- Hero -->
-	<h1 class="text-3xl md:text-4xl font-bold text-primary mb-4">
+	<h1 class="text-3xl md:text-4xl font-bold text-primary-strong mb-4">
 		Solar Panel Installers in {data.level1}
 	</h1>
 
@@ -70,11 +70,11 @@
 	<!-- State coverage -->
 	<div class="bg-accent/10 rounded-lg p-4 mb-8">
 		<p class="text-sm">
-			<strong class="text-primary">Coverage in {data.level1}:</strong>
+			<strong class="text-primary-strong">Coverage in {data.level1}:</strong>
 			{data.installerCount} verified installers across {data.level2Count} of the state's
 			{data.totalLevel2Count}
 			{level2Label.plural.toLowerCase()} ({level2Coverage}%).
-			<a href="/{cc}/solar/" class="text-primary hover:underline ml-1">See nationwide coverage →</a>
+			<a href="/{cc}/solar/" class="text-primary-strong hover:underline ml-1">See nationwide coverage →</a>
 		</p>
 	</div>
 
@@ -82,8 +82,8 @@
 	{#if country.features.subsidy && data.subsidy}
 		<div class="bg-accent/10 rounded-lg p-4 mb-8">
 			<p class="text-sm">
-				<strong class="text-primary">{data.level1} Solar Subsidy:</strong> Residents can avail the PM Surya Ghar Yojana subsidy of up to ₹78,000.
-				<a href={contentUrl(`/solar-subsidy/${data.subsidy.state_slug}/`)} class="text-primary hover:underline ml-1">View details →</a>
+				<strong class="text-primary-strong">{data.level1} Solar Subsidy:</strong> Residents can avail the PM Surya Ghar Yojana subsidy of up to ₹78,000.
+				<a href={contentUrl(`/solar-subsidy/${data.subsidy.state_slug}/`)} class="text-primary-strong hover:underline ml-1">View details →</a>
 			</p>
 		</div>
 	{/if}
@@ -106,7 +106,7 @@
 	<!-- FAQ -->
 	{#if faqItems.length > 0}
 		<section class="mb-8">
-			<h2 class="text-2xl font-semibold text-primary mb-4">
+			<h2 class="text-2xl font-semibold text-primary-strong mb-4">
 				Frequently Asked Questions — Solar in {data.level1}
 			</h2>
 			<div class="space-y-4">
