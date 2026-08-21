@@ -4,6 +4,7 @@
   import { capture } from "$lib/posthog";
   import type { CountryConfig } from "$lib/countries";
   import { contentUrl } from "$lib/countries/urls";
+  import { Globe, Sun, Moon, Smartphone, Monitor, Lightbulb } from "@lucide/svelte";
 
   // `country` is optional: the country-less route tree renders this header with
   // no country, in which case every per-country link and CTA is hidden.
@@ -67,7 +68,10 @@
 <nav class="flex flex-wrap items-center w-full justify-between border-b border-border bg-background text-foreground p-[theme(--container-padding)] gap-4 transition-colors duration-[theme(--transition-default)]">
   <!-- Left: brand + learn/find dropdowns -->
   <div class="flex items-center gap-6 flex-wrap">
-    <a href={country ? `/${cc}` : "/"} class="no-underline text-lg font-semibold transition-colors duration-[theme(--transition-default)] hover:text-primary-strong whitespace-nowrap">Solar Vipani</a>
+    <!-- Always `/`: the country homes merged into the root page on 2026-08-22
+         and `/in` and `/us` now 301 there, so linking per country would send
+         the brand link through a redirect. -->
+    <a href="/" class="no-underline text-lg font-semibold transition-colors duration-[theme(--transition-default)] hover:text-primary-strong whitespace-nowrap">Solar Vipani</a>
 
     <!-- Solar Guide Dropdown (per-country trees gate it on the content flag) -->
     {#if !country || features?.seoContentFamilies}
@@ -170,9 +174,9 @@
       <div class="relative">
         <button
           onclick={() => showTranslateDropdown = !showTranslateDropdown}
-          class="border border-border cursor-pointer whitespace-nowrap text-foreground hover:bg-muted px-[theme(--button-padding-x-sm)] py-[theme(--button-padding-y-sm)] text-sm rounded-[theme(--radius-md)] transition-all duration-[theme(--transition-default)]"
+          class="inline-flex items-center gap-2 border border-border cursor-pointer whitespace-nowrap text-foreground hover:bg-muted px-[theme(--button-padding-x-sm)] py-[theme(--button-padding-y-sm)] text-sm rounded-[theme(--radius-md)] transition-all duration-[theme(--transition-default)]"
         >
-          🌐 Translate
+          <Globe class="h-4 w-4" /> Translate
         </button>
 
         {#if showTranslateDropdown}
@@ -202,8 +206,8 @@
       </div>
     {/if}
 
-    <button onclick={toggleTheme} class="border border-border cursor-pointer whitespace-nowrap text-foreground hover:bg-muted px-[theme(--button-padding-x-sm)] py-[theme(--button-padding-y-sm)] text-sm rounded-[theme(--radius-md)] transition-all duration-[theme(--transition-default)]">
-      {$isDarkMode ? "☀️ Light mode" : "🌙 Dark mode"}
+    <button onclick={toggleTheme} class="inline-flex items-center gap-2 border border-border cursor-pointer whitespace-nowrap text-foreground hover:bg-muted px-[theme(--button-padding-x-sm)] py-[theme(--button-padding-y-sm)] text-sm rounded-[theme(--radius-md)] transition-all duration-[theme(--transition-default)]">
+      {#if $isDarkMode}<Sun class="h-4 w-4" /> Light mode{:else}<Moon class="h-4 w-4" /> Dark mode{/if}
     </button>
   </div>
 </nav>
@@ -212,12 +216,12 @@
 <Dialog.Root bind:open={showTranslationModal}>
   <Dialog.Content class="max-w-[500px]">
     <Dialog.Header>
-      <Dialog.Title>🌐 How to translate to {selectedLanguage}</Dialog.Title>
+      <Dialog.Title class="flex items-center gap-2"><Globe class="h-5 w-5" />How to translate to {selectedLanguage}</Dialog.Title>
     </Dialog.Header>
 
     <div class="space-y-[theme(--card-gap)]">
       <div>
-        <h4 class="text-base font-semibold text-primary-strong mb-3">📱 On Mobile:</h4>
+        <h4 class="flex items-center gap-2 text-base font-semibold text-primary-strong mb-3"><Smartphone class="h-4 w-4" />On Mobile:</h4>
         <div class="space-y-4">
           {#each ["Tap the three dots menu (⋮) in your browser", "Look for \"Translate\" option", "Select your language"] as step, i}
             <div class="flex items-start gap-4">
@@ -231,7 +235,7 @@
       </div>
 
       <div>
-        <h4 class="text-base font-semibold text-primary-strong mb-3">💻 On Desktop:</h4>
+        <h4 class="flex items-center gap-2 text-base font-semibold text-primary-strong mb-3"><Monitor class="h-4 w-4" />On Desktop:</h4>
         <div class="space-y-4">
           {#each ["Right-click anywhere on this page", "Look for \"Translate\" option", "Click to translate"] as step, i}
             <div class="flex items-start gap-4">
@@ -245,9 +249,9 @@
       </div>
 
       <div class="border-t border-border pt-4">
-        <h4 class="text-base font-semibold mb-2">💡 Alternative methods:</h4>
+        <h4 class="flex items-center gap-2 text-base font-semibold mb-2"><Lightbulb class="h-4 w-4" />Alternative methods:</h4>
         <div class="space-y-1 text-sm text-foreground-secondary">
-          <p><strong>Chrome users:</strong> Look for the translate icon 🌐 in your address bar</p>
+          <p><strong>Chrome users:</strong> Look for the translate icon <Globe class="inline-block h-4 w-4 align-text-bottom" /> in your address bar</p>
           <p><strong>Safari (iPhone/iPad):</strong> Tap the "aA" button in address bar</p>
           <p><strong>Other browsers:</strong> Check browser settings for translation options</p>
         </div>

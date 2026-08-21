@@ -2,7 +2,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
-	import { Phone, MessageCircle, MapPin, Mail, Globe, ExternalLink } from '@lucide/svelte';
+	import { Phone, MessageCircle, MapPin, Mail, Globe, ExternalLink, Check } from '@lucide/svelte';
 	import { makeCall, openWhatsApp } from '$lib/constants/businessTracking';
 	import { formatDate } from '$lib/constants/projectFormatters';
 	import { breadcrumbLD, localBusinessLD } from '$lib/seo';
@@ -93,7 +93,7 @@
 	<!-- Breadcrumb -->
 	<nav class="text-sm text-muted-foreground mb-6" aria-label="Breadcrumb">
 		<ol class="flex flex-wrap gap-1">
-			<li><a href="/{cc}/" class="hover:text-primary-strong">Home</a> /</li>
+			<li><a href="/" class="hover:text-primary-strong">Home</a> /</li>
 			<li><a href="/{cc}/solar/" class="hover:text-primary-strong">Solar</a> /</li>
 			<li class="text-foreground font-medium">{b.businessname}</li>
 		</ol>
@@ -105,9 +105,7 @@
 			<h1 class="text-3xl md:text-4xl font-bold text-primary-strong">{b.businessname}</h1>
 			{#if b.tag && b.tag !== 'Blank'}
 				<Badge variant="secondary" class="whitespace-nowrap self-start">
-					<span class="inline-flex items-center justify-center w-4 h-4 mr-1 rounded-full text-success-foreground bg-success text-xs font-bold">
-						✓
-					</span>
+					<Check class="inline-block w-4 h-4 mr-1 p-0.5 rounded-full text-success-foreground bg-success" />
 					{b.tag}
 				</Badge>
 			{/if}

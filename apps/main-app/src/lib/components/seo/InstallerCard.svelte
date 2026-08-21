@@ -2,7 +2,7 @@
 	import * as Card from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
-	import { Phone, MessageCircle, MapPin } from '@lucide/svelte';
+	import { Phone, MessageCircle, MapPin, Check } from '@lucide/svelte';
 	import { makeCall, openWhatsApp } from '$lib/constants/businessTracking';
 	import { capture } from '$lib/posthog';
 	import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
@@ -31,9 +31,7 @@
 					</h3>
 					{#if business.tag}
 						<Badge variant="secondary" class="whitespace-nowrap">
-							<span class="inline-flex items-center justify-center w-4 h-4 mr-1 rounded-full text-success-foreground bg-success text-xs font-bold">
-								✓
-							</span>
+							<Check class="inline-block w-4 h-4 mr-1 p-0.5 rounded-full text-success-foreground bg-success" />
 							{business.tag}
 						</Badge>
 					{/if}

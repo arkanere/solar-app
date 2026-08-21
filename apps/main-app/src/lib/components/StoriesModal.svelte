@@ -6,7 +6,7 @@
   import { Card, CardContent, CardHeader, CardTitle } from "$lib/components/ui/card";
   import { Skeleton } from "$lib/components/ui/skeleton";
   import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "$lib/components/ui/tooltip";
-  import { X, ChevronLeft, ChevronRight } from "@lucide/svelte";
+  import { X, ChevronLeft, ChevronRight, ImageOff, MapPin, CalendarCheck } from "@lucide/svelte";
   import { PUBLIC_CLOUDINARY_CLOUD_NAME } from "$env/static/public";
   import {
     storiesModalOpen,
@@ -242,7 +242,7 @@
             />
           {:else}
             <div class="flex flex-col items-center justify-center gap-2 text-white/80">
-              <span class="text-5xl">📸</span>
+              <ImageOff class="h-12 w-12" />
               <p>No image available</p>
             </div>
           {/if}
@@ -253,10 +253,10 @@
           <h2 class="text-white text-lg font-semibold mb-2">{$storiesData[currentStoryIndex].title}</h2>
           <div class="flex flex-wrap gap-1">
             <Badge variant="secondary" class="bg-white/20 text-white border-white/30 hover:bg-white/30">
-              📍 {$storiesData[currentStoryIndex].pincode || "N/A"}
+              <MapPin class="h-3.5 w-3.5 mr-1" />{$storiesData[currentStoryIndex].pincode || "N/A"}
             </Badge>
             <Badge variant="secondary" class="bg-white/20 text-white border-white/30 hover:bg-white/30">
-              📅 {formatDate(String($storiesData[currentStoryIndex]?.project_date || ''))}
+              <CalendarCheck class="h-3.5 w-3.5 mr-1" />{formatDate(String($storiesData[currentStoryIndex]?.project_date || ''))}
             </Badge>
           </div>
         </div>

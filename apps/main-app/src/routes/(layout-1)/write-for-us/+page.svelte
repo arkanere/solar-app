@@ -4,6 +4,7 @@
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
   import { Alert, AlertDescription } from '$lib/components/ui/alert';
   import { Badge } from '$lib/components/ui/badge';
+  import { Users, Trophy, Link2, ChartColumn, Check, X, TriangleAlert } from '@lucide/svelte';
 
   // Email for submissions
   const submissionEmail = "admin@solarvipani.com";
@@ -83,22 +84,22 @@
   // Contributor benefits
   const benefits = [
     {
-      icon: "👥",
+      icon: Users,
       title: "Reach Qualified Audience",
       description: "Connect with thousands of homeowners and businesses actively researching solar solutions"
     },
     {
-      icon: "🏆",
+      icon: Trophy,
       title: "Build Authority",
       description: "Establish yourself as a thought leader in India's growing renewable energy sector"
     },
     {
-      icon: "🔗",
+      icon: Link2,
       title: "Professional Visibility",
       description: "Author bio with link to your professional profile or company website"
     },
     {
-      icon: "📊",
+      icon: ChartColumn,
       title: "Share Impact",
       description: "Educate the market and accelerate India's solar adoption journey"
     }
@@ -145,7 +146,7 @@
         {#each benefits as benefit}
           <Card class="card-interactive text-center">
             <CardContent class="pt-[theme(--card-padding-y)]">
-              <div class="text-4xl mb-3">{benefit.icon}</div>
+              <benefit.icon class="h-10 w-10 text-primary-strong mb-3 mx-auto block" />
               <h3 class="text-lg font-semibold mb-3 text-foreground">{benefit.title}</h3>
               <p class="text-sm leading-relaxed text-foreground-secondary">{benefit.description}</p>
             </CardContent>
@@ -162,42 +163,42 @@
           <p class="text-base md:text-lg mb-[theme(--card-gap)] text-foreground-secondary">We welcome contributions from credentialed professionals in the solar and renewable energy industry:</p>
           <div class="space-y-[theme(--card-gap)]">
           <div class="flex gap-4 items-start">
-            <span class="text-xl font-bold text-success flex-shrink-0">✓</span>
+            <Check class="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
             <div>
               <strong class="block mb-1 text-foreground">Solar Installation Professionals</strong>
               <p class="text-sm text-foreground-secondary">Licensed installers with hands-on experience in residential and commercial projects</p>
             </div>
           </div>
           <div class="flex gap-4 items-start">
-            <span class="text-xl font-bold text-success flex-shrink-0">✓</span>
+            <Check class="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
             <div>
               <strong class="block mb-1 text-foreground">Electrical & Solar Engineers</strong>
               <p class="text-sm text-foreground-secondary">Technical experts in PV systems, inverters, batteries, and grid integration</p>
             </div>
           </div>
           <div class="flex gap-4 items-start">
-            <span class="text-xl font-bold text-success flex-shrink-0">✓</span>
+            <Check class="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
             <div>
               <strong class="block mb-1 text-foreground">Energy Consultants & Advisors</strong>
               <p class="text-sm text-foreground-secondary">Professionals guiding customers on system design, financing, and ROI</p>
             </div>
           </div>
           <div class="flex gap-4 items-start">
-            <span class="text-xl font-bold text-success flex-shrink-0">✓</span>
+            <Check class="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
             <div>
               <strong class="block mb-1 text-foreground">Researchers & Academics</strong>
               <p class="text-sm text-foreground-secondary">Scientists studying solar technology, efficiency, sustainability, or policy</p>
             </div>
           </div>
           <div class="flex gap-4 items-start">
-            <span class="text-xl font-bold text-success flex-shrink-0">✓</span>
+            <Check class="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
             <div>
               <strong class="block mb-1 text-foreground">Policy & Regulatory Experts</strong>
               <p class="text-sm text-foreground-secondary">Professionals with deep knowledge of solar subsidies, net metering, and compliance</p>
             </div>
           </div>
           <div class="flex gap-4 items-start">
-            <span class="text-xl font-bold text-success flex-shrink-0">✓</span>
+            <Check class="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
             <div>
               <strong class="block mb-1 text-foreground">Sustainability Professionals</strong>
               <p class="text-sm text-foreground-secondary">Corporate sustainability managers, ESG consultants, and clean energy advocates</p>
@@ -255,48 +256,48 @@
       <div class="space-y-[theme(--card-gap)]">
         <Card class="border-l-4 border-success">
           <CardContent class="pt-[theme(--card-padding-y)]">
-            <h3 class="text-lg font-semibold mb-3 text-foreground">✓ What We Allow</h3>
+            <h3 class="flex items-center gap-2 text-lg font-semibold mb-3 text-foreground"><Check class="h-5 w-5 text-success" />What We Allow</h3>
             <ul class="space-y-2">
               <li class="text-sm pl-3 text-foreground-secondary">
-                <span class="inline-block mr-2 text-success font-bold">✓</span>Links to credible research papers, government resources, or industry reports
+                <Check class="inline-block mr-2 h-4 w-4 text-success" />Links to credible research papers, government resources, or industry reports
               </li>
               <li class="text-sm pl-3 text-foreground-secondary">
-                <span class="inline-block mr-2 text-success font-bold">✓</span>References to relevant technical standards or certification bodies
+                <Check class="inline-block mr-2 h-4 w-4 text-success" />References to relevant technical standards or certification bodies
               </li>
               <li class="text-sm pl-3 text-foreground-secondary">
-                <span class="inline-block mr-2 text-success font-bold">✓</span>Author bio with one link to your professional LinkedIn or company website
+                <Check class="inline-block mr-2 h-4 w-4 text-success" />Author bio with one link to your professional LinkedIn or company website
               </li>
               <li class="text-sm pl-3 text-foreground-secondary">
-                <span class="inline-block mr-2 text-success font-bold">✓</span>Links that genuinely add value to the reader's understanding
+                <Check class="inline-block mr-2 h-4 w-4 text-success" />Links that genuinely add value to the reader's understanding
               </li>
             </ul>
           </CardContent>
         </Card>
         <Card class="border-l-4 border-destructive">
           <CardContent class="pt-[theme(--card-padding-y)]">
-            <h3 class="text-lg font-semibold mb-3 text-foreground">✗ What We Reject</h3>
+            <h3 class="flex items-center gap-2 text-lg font-semibold mb-3 text-foreground"><X class="h-5 w-5 text-destructive" />What We Reject</h3>
             <ul class="space-y-2">
               <li class="text-sm pl-3 text-foreground-secondary">
-                <span class="inline-block mr-2 text-destructive font-bold">✗</span>Promotional links to products, services, or unrelated websites
+                <X class="inline-block mr-2 h-4 w-4 text-destructive" />Promotional links to products, services, or unrelated websites
               </li>
               <li class="text-sm pl-3 text-foreground-secondary">
-                <span class="inline-block mr-2 text-destructive font-bold">✗</span>Affiliate links or commercial referral URLs
+                <X class="inline-block mr-2 h-4 w-4 text-destructive" />Affiliate links or commercial referral URLs
               </li>
               <li class="text-sm pl-3 text-foreground-secondary">
-                <span class="inline-block mr-2 text-destructive font-bold">✗</span>Excessive self-promotion or company advertising within content
+                <X class="inline-block mr-2 h-4 w-4 text-destructive" />Excessive self-promotion or company advertising within content
               </li>
               <li class="text-sm pl-3 text-foreground-secondary">
-                <span class="inline-block mr-2 text-destructive font-bold">✗</span>Link exchanges, paid links, or SEO link-building schemes
+                <X class="inline-block mr-2 h-4 w-4 text-destructive" />Link exchanges, paid links, or SEO link-building schemes
               </li>
               <li class="text-sm pl-3 text-foreground-secondary">
-                <span class="inline-block mr-2 text-destructive font-bold">✗</span>Links to low-quality or irrelevant sources
+                <X class="inline-block mr-2 h-4 w-4 text-destructive" />Links to low-quality or irrelevant sources
               </li>
             </ul>
           </CardContent>
         </Card>
         <Alert class="bg-warning/10 border-l-4 border-warning">
           <AlertDescription>
-            <strong>⚠️ Important:</strong> We are not a platform for link building or SEO backlinks.
+            <strong class="inline-flex items-center gap-2"><TriangleAlert class="h-4 w-4 text-warning" />Important:</strong> We are not a platform for link building or SEO backlinks.
             Articles submitted primarily for link placement will be rejected immediately. Our focus is educational value, not search rankings.
           </AlertDescription>
         </Alert>

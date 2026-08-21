@@ -4,6 +4,7 @@
   import { Alert } from "$lib/components/ui/alert";
   import { Button } from "$lib/components/ui/button";
   import { countryUrl, projectUrl } from "$lib/countries/urls";
+  import { Building2, CalendarCheck, MapPin, Zap } from "@lucide/svelte";
 
   /** @type {import('./$types').PageData} */
   const { data } = $props();
@@ -275,21 +276,21 @@
                 {project.title}
               </h3>
 
-              <p class="text-sm text-foreground dark:text-foreground-secondary">
-                📍 Pincode: {project.pincode || "N/A"}
+              <p class="flex items-center gap-2 text-sm text-foreground dark:text-foreground-secondary">
+                <MapPin class="h-4 w-4 flex-shrink-0" />Pincode: {project.pincode || "N/A"}
               </p>
 
-              <p class="text-sm text-foreground dark:text-foreground-secondary">
-                📅 Completed: {formatDate(project.project_date)}
+              <p class="flex items-center gap-2 text-sm text-foreground dark:text-foreground-secondary">
+                <CalendarCheck class="h-4 w-4 flex-shrink-0" />Completed: {formatDate(project.project_date)}
               </p>
 
-              <p class="text-sm text-foreground dark:text-foreground-secondary">
-                🏢 Installer: <span class="font-medium text-primary-strong">{formatBusinessName(project.business_slug)}</span>
+              <p class="flex items-center gap-2 text-sm text-foreground dark:text-foreground-secondary">
+                <Building2 class="h-4 w-4 flex-shrink-0" />Installer: <span class="font-medium text-primary-strong">{formatBusinessName(project.business_slug)}</span>
               </p>
 
               {#if project.system_size}
-                <p class="text-sm text-foreground dark:text-foreground-secondary">
-                  ⚡ System Size: <span class="font-medium text-primary-strong">{project.system_size} kW</span>
+                <p class="flex items-center gap-2 text-sm text-foreground dark:text-foreground-secondary">
+                  <Zap class="h-4 w-4 flex-shrink-0" />System Size: <span class="font-medium text-primary-strong">{project.system_size} kW</span>
                 </p>
               {/if}
             </div>

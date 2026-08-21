@@ -4,7 +4,7 @@
 	import PageShell from '$lib/components/layout/PageShell.svelte';
 	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import { SOCIAL_LINKS } from '$lib/constants/social';
-	import { Users, MapPin, TrendingUp, Github } from '@lucide/svelte';
+	import { Users, MapPin, TrendingUp, Github, Scale, BookOpen, LifeBuoy } from '@lucide/svelte';
 
 	let { data } = $props();
 
@@ -161,7 +161,7 @@
 		<PageHeader as="h2" title="Why Choose Solar Vipani?" />
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-[theme(--card-gap)]">
 			<Card class="p-4 card-interactive text-center">
-				<div class="text-4xl mb-4 block">🔍</div>
+				<Scale class="h-10 w-10 text-primary-strong mb-4 mx-auto block" />
 				<h3 class="text-lg font-semibold text-primary-strong mb-3">Effortless Comparisons</h3>
 				<p class="text-sm leading-relaxed">
 					Comparing options is as easy as browsing. See service area, completed work and contact
@@ -169,7 +169,7 @@
 				</p>
 			</Card>
 			<Card class="p-4 card-interactive text-center">
-				<div class="text-4xl mb-4 block">📊</div>
+				<BookOpen class="h-10 w-10 text-primary-strong mb-4 mx-auto block" />
 				<h3 class="text-lg font-semibold text-primary-strong mb-3">Built to Inform, Not to Sell</h3>
 				<p class="text-sm leading-relaxed">
 					We do not manufacture or install anything, so we have no product to push. Our guides
@@ -177,7 +177,7 @@
 				</p>
 			</Card>
 			<Card class="p-4 card-interactive text-center">
-				<div class="text-4xl mb-4 block">⚡</div>
+				<MapPin class="h-10 w-10 text-primary-strong mb-4 mx-auto block" />
 				<h3 class="text-lg font-semibold text-primary-strong mb-3">Local, Not National</h3>
 				<p class="text-sm leading-relaxed">
 					Enquiries go to installers who actually work in your area, and to more than one of
@@ -185,7 +185,7 @@
 				</p>
 			</Card>
 			<Card class="p-4 card-interactive text-center">
-				<div class="text-4xl mb-4 block">🎯</div>
+				<LifeBuoy class="h-10 w-10 text-primary-strong mb-4 mx-auto block" />
 				<h3 class="text-lg font-semibold text-primary-strong mb-3">Customer-First Support</h3>
 				<p class="text-sm leading-relaxed">
 					Our team is here to guide you through every step, from an initial question to feedback
