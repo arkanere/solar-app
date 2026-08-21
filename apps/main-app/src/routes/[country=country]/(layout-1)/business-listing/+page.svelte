@@ -172,11 +172,10 @@
   // the page that country was served by before the merge. `brandName` is
   // already 'Solar Vipani' for IN and 'Solar Vipani USA' for US.
   const brand = $derived(data.country.brandName);
-  // The IN Organization and breadcrumb Home point at the country-less root;
-  // the US ones pointed at /us. Both are preserved as they were.
-  const orgUrl = $derived(
-    cc === "us" ? "https://solarvipani.com/us" : "https://solarvipani.com",
-  );
+  // Both countries point the Organization and breadcrumb Home at the
+  // country-less root. The US one used to point at /us, which 301s to `/` since
+  // the homepages merged on 2026-08-22 — schema.org URLs should not redirect.
+  const orgUrl = "https://solarvipani.com";
   const orgDescription = $derived(
     cc === "us"
       ? "America's leading solar panel installer directory connecting customers with verified solar installation services"

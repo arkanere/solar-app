@@ -39,7 +39,10 @@ const BASE_URL = 'https://solarvipani.com';
 function staticPages(country: CountryConfig): SitemapEntry[] {
 	const c = country.code;
 	const pages: SitemapEntry[] = [
-		{ loc: `${BASE_URL}/${c}`, lastmod: '', changefreq: 'monthly', priority: '1.0' },
+		// No `/{c}` entry: the country home 301s to `/` since the homepages
+		// merged (2026-08-22), and a sitemap must not list a redirecting URL.
+		// `/` moved to contentStaticPages(), which lists it once for the whole
+		// site rather than once per country.
 		{ loc: `${BASE_URL}/${c}/solar`, lastmod: '', changefreq: 'weekly', priority: '1.0' },
 		{
 			loc: `${BASE_URL}/${c}/business-listing`,
@@ -213,6 +216,11 @@ function contentStaticPages(): SitemapEntry[] {
 		priority
 	});
 	return [
+		// The homepage. It moved here from staticPages() on 2026-08-22: it used
+		// to be listed per country as `/{c}`, which now 301s to `/`. Listed once
+		// here so it appears in content-sitemap.xml exactly once, rather than
+		// once per country in each country sitemap.
+		at('/', '1.0', 'weekly'),
 		at('/about-us', '0.8'),
 		at('/terms-of-use', '0.8'),
 		at('/privacy-policy', '0.8'),

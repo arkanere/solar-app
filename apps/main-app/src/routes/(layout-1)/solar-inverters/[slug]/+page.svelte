@@ -10,7 +10,7 @@
 	const isBrand = $derived(d.pageType === 'brand');
 
 	const breadcrumb = $derived(breadcrumbLD([
-		{ name: 'Home', url: 'https://solarvipani.com/in' },
+		{ name: 'Home', url: 'https://solarvipani.com' },
 		{ name: 'Solar Inverters', url: 'https://solarvipani.com/solar-inverters' },
 		{
 			name: isCluster ? d.clusterData.h1 : d.brand.name,

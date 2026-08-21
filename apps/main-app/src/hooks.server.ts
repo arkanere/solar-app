@@ -23,6 +23,19 @@ const MOVED_TO_ROOT_FROM = ['in', 'us'];
 function legacyRedirect(pathname: string): string | null {
 	const clean = pathname.replace(/\/+$/, '');
 
+	// The three homepages merged into one thin page at `/` (2026-08-22), and the
+	// country home route was deleted with them. This is what makes /in and /us
+	// answer at all — without it they 404, because `[country]/(layout-1)` has no
+	// `+page.svelte` any more.
+	//
+	// Exact match only, so the whole marketplace tree below is untouched:
+	// /in/solar, /us/installer/… and the rest still route normally. `clean` has
+	// already had trailing slashes stripped, so /in/ lands here too.
+	//
+	// ⚠️ Every rule below that targets a bare `/{country}` must return `/`
+	// instead, or it becomes a 301 chain through this one.
+	if (clean === '/in' || clean === '/us') return '/';
+
 	if (clean === '/us/state') return '/us/solar';
 
 	const stateMatch = clean.match(/^\/us\/state\/solar-panel-installers-in-([a-z0-9-]+)$/);
@@ -33,9 +46,10 @@ function legacyRedirect(pathname: string): string | null {
 	const installerMatch = clean.match(/^\/us\/solar-panel-installer\/([^/]+)$/);
 	if (installerMatch) return `/us/installer/${installerMatch[1]}`;
 
-	// Blogs feature removed 2026-07: send indexed blog URLs to the country home.
-	const blogsMatch = clean.match(/^\/(in|us)\/blogs(\/.*)?$/);
-	if (blogsMatch) return `/${blogsMatch[1]}`;
+	// Blogs feature removed 2026-07: send indexed blog URLs to the home. That
+	// used to be the country home; it is `/` since the homepages merged, and
+	// returning `/${blogsMatch[1]}` here would now chain through the rule above.
+	if (/^\/(in|us)\/blogs(\/.*)?$/.test(clean)) return '/';
 
 	// Marketplace routes that moved from /in into the shared [country] tree
 	// (stage 11 of docs/migration-plan-in-country.md) but whose loaders still read
@@ -53,8 +67,10 @@ function legacyRedirect(pathname: string): string | null {
 	// docs/migration-plan-delete-us.md settled the question instead: a real
 	// /us/partners is a US partner-acquisition funnel and a real /us/get-quotes is
 	// a US consumer lead funnel. Both are **new product surface, not migration
-	// work**, and neither is in scope. /us captures consumer leads through
-	// LeadFormBusiness on the home instead (stage 9).
+	// work**, and neither is in scope. /us used to capture consumer leads through
+	// LeadFormBusiness on its home (stage 9); that form went when the homepages
+	// merged on 2026-08-22, so **US has no consumer lead path at all now** — it
+	// had produced 4 leads ever, the last on 2026-07-19.
 	//
 	// ⚠️ **Before adding a third country to COUNTRIES, grep this file.** After the
 	// /us tree was deleted (stage 11) these rules are the *only* thing protecting
@@ -63,7 +79,7 @@ function legacyRedirect(pathname: string): string | null {
 	// loader here immediately. A rule matching a hardcoded '/us/' will not fire for
 	// it, and the loader will answer with Indian rows.
 	if (clean === '/us/partners' || clean.startsWith('/us/partners/')) return '/us/business-listing';
-	if (clean === '/us/get-quotes') return '/us';
+	if (clean === '/us/get-quotes') return '/';
 
 	// Content that has moved out from under the country prefix — see
 	// docs/migration-plan-in-country.md. **Append a family here in the same commit

@@ -11,7 +11,7 @@
 
 	const breadcrumb = $derived(
 		breadcrumbLD([
-			{ name: 'Home', url: `https://solarvipani.com/${cc}` },
+			{ name: 'Home', url: `https://solarvipani.com` },
 			{ name: 'Solar', url: `https://solarvipani.com/${cc}/solar` }
 		])
 	);
@@ -40,7 +40,7 @@
 	<!-- Breadcrumb -->
 	<nav class="text-sm text-muted-foreground mb-6" aria-label="Breadcrumb">
 		<ol class="flex flex-wrap gap-1">
-			<li><a href="/{cc}" class="hover:text-primary-strong">Home</a> /</li>
+			<li><a href="/" class="hover:text-primary-strong">Home</a> /</li>
 			<li class="text-foreground font-medium">Solar</li>
 		</ol>
 	</nav>

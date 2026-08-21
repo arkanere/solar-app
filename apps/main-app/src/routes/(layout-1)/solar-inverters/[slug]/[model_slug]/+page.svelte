@@ -5,7 +5,7 @@
 	let { data } = $props();
 
 	const breadcrumb = $derived(breadcrumbLD([
-		{ name: 'Home', url: 'https://solarvipani.com/in' },
+		{ name: 'Home', url: 'https://solarvipani.com' },
 		{ name: 'Solar Inverters', url: 'https://solarvipani.com/solar-inverters' },
 		{ name: data.brand.name, url: `https://solarvipani.com/solar-inverters/${data.brand.slug}` },
 		{ name: data.product.name, url: `https://solarvipani.com/solar-inverters/${data.brand.slug}/${data.product.model_slug}` }

@@ -24,7 +24,7 @@
 	);
 
 	const breadcrumb = $derived(breadcrumbLD([
-		{ name: 'Home', url: `https://solarvipani.com/${cc}` },
+		{ name: 'Home', url: `https://solarvipani.com` },
 		{ name: 'Solar', url: `https://solarvipani.com/${cc}/solar` },
 		{ name: data.level1, url: `https://solarvipani.com/${cc}/solar/${data.level1Slug}` },
 		{ name: data.level2, url: `https://solarvipani.com/${cc}/solar/${data.level1Slug}/${data.level2Slug}` }
@@ -101,7 +101,7 @@
 	<!-- Breadcrumb -->
 	<nav class="text-sm text-muted-foreground mb-6" aria-label="Breadcrumb">
 		<ol class="flex flex-wrap gap-1">
-			<li><a href="/{cc}" class="hover:text-primary-strong">Home</a> /</li>
+			<li><a href="/" class="hover:text-primary-strong">Home</a> /</li>
 			<li><a href="/{cc}/solar" class="hover:text-primary-strong">Solar</a> /</li>
 			<li><a href="/{cc}/solar/{data.level1Slug}" class="hover:text-primary-strong">{data.level1}</a> /</li>
 			<li class="text-foreground font-medium">{data.level2}</li>

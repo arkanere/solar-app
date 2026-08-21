@@ -22,7 +22,7 @@
 	const canonicalSlug = $derived(isCluster ? d.clusterData.slug : d.bank.slug);
 
 	const breadcrumb = $derived(breadcrumbLD([
-		{ name: 'Home', url: 'https://solarvipani.com/in' },
+		{ name: 'Home', url: 'https://solarvipani.com' },
 		{ name: 'Solar Financing', url: 'https://solarvipani.com/solar-financing' },
 		{
 			name: isCluster ? d.clusterData.h1 : d.bank.name,

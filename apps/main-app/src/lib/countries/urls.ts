@@ -15,7 +15,16 @@ export function toSlug(value: string): string {
 	return value.toLowerCase().replace(/\s+/g, '-');
 }
 
+// The country home is the country-less root. `/in` and `/us` 301 to `/`
+// (hooks.server.ts) since the three homepages merged into one thin page, so the
+// root path is special-cased here rather than at ~15 breadcrumb call sites —
+// same reasoning as contentUrl() below, and it keeps the redirect and the links
+// from drifting apart.
+//
+// Only the bare root collapses. Every deeper path stays country-scoped:
+// countryUrl('in', '/get-quotes/') is still '/in/get-quotes/'.
 export function countryUrl(country: CountryCode, path = ''): string {
+	if (path === '' || path === '/') return '/';
 	return `/${country}${path}`;
 }
 

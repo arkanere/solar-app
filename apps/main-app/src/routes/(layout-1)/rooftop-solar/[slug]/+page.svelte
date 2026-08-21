@@ -5,7 +5,7 @@
 	let { data } = $props();
 
 	const breadcrumb = $derived(breadcrumbLD([
-		{ name: 'Home', url: 'https://solarvipani.com/in' },
+		{ name: 'Home', url: 'https://solarvipani.com' },
 		{ name: 'Rooftop Solar', url: 'https://solarvipani.com/rooftop-solar' },
 		{ name: data.clusterData.h1, url: `https://solarvipani.com/rooftop-solar/${data.clusterData.slug}` }
 	]));

@@ -37,7 +37,7 @@
 	const faqItems = $derived(isCity ? (faqFor(cc)?.generateFAQ(d.city) ?? []) : []);
 
 	const breadcrumb = $derived(breadcrumbLD([
-		{ name: 'Home', url: `https://solarvipani.com/${cc}` },
+		{ name: 'Home', url: `https://solarvipani.com` },
 		{ name: 'Solar', url: `https://solarvipani.com/${cc}/solar` },
 		{ name: d.level1, url: `https://solarvipani.com/${cc}/solar/${d.level1Slug}` },
 		{ name: d.level2, url: `https://solarvipani.com/${cc}/solar/${d.level1Slug}/${d.level2Slug}` },
@@ -118,7 +118,7 @@
 	<!-- Breadcrumb -->
 	<nav class="text-sm text-muted-foreground mb-6" aria-label="Breadcrumb">
 		<ol class="flex flex-wrap gap-1">
-			<li><a href="/{cc}" class="hover:text-primary-strong">Home</a> /</li>
+			<li><a href="/" class="hover:text-primary-strong">Home</a> /</li>
 			<li><a href="/{cc}/solar" class="hover:text-primary-strong">Solar</a> /</li>
 			<li><a href="/{cc}/solar/{d.level1Slug}" class="hover:text-primary-strong">{d.level1}</a> /</li>
 			<li><a href="/{cc}/solar/{d.level1Slug}/{d.level2Slug}" class="hover:text-primary-strong">{d.level2}</a> /</li>

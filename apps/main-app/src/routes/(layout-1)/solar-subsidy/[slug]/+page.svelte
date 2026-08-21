@@ -31,7 +31,7 @@
 
 	const breadcrumbItems = $derived.by(() => {
 		const items = [
-			{ name: 'Home', url: 'https://solarvipani.com/in' },
+			{ name: 'Home', url: 'https://solarvipani.com' },
 			{ name: 'Solar Subsidy', url: 'https://solarvipani.com/solar-subsidy' }
 		];
 		if (isDiscom && d.stateSubsidy) {
