@@ -60,7 +60,7 @@
   }
 
   const WELCOME_MESSAGE =
-    "<p>Hi! I'm the Solar Vipani assistant. Ask me anything about going solar — costs, subsidies, system sizing, or brands.</p>";
+    "<p>Hi! I'm the Solar Vipani expert agent. Ask me anything about going solar — costs, subsidies, system sizing, or brands.</p>";
 
   // Opening questions offered before the user's first message, so the empty state
   // suggests what the assistant is good at. These send as ordinary messages.
@@ -598,8 +598,8 @@
 
 <div class="flex flex-col w-full h-full rounded-[theme(--radius-lg)] border border-[hsl(var(--border))] bg-[hsl(var(--card))] overflow-hidden">
   <!-- Header -->
-  <div class="flex items-center justify-between p-[theme(--card-padding-y)] border-b border-[hsl(var(--border))] bg-[hsl(var(--primary))]">
-    <h3 class="text-lg font-semibold text-[hsl(var(--primary-foreground))]">Solar Assistant</h3>
+  <div class="flex items-center justify-between p-[theme(--card-padding-y)] border-b border-[hsl(var(--border))] bg-[hsl(var(--card))]">
+    <h3 class="text-lg font-semibold text-[hsl(var(--foreground))]">Solar Expert Agent</h3>
     <div class="flex items-center gap-[theme(--form-element-field-gap)]">
       <Button variant="ghost" size="sm" onclick={copyConversation} title={copied ? "Copied!" : "Copy conversation"} aria-label="Copy conversation" class="rounded-[theme(--badge-radius)] w-[2rem] h-[2rem] p-0">
         {#if copied}

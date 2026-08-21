@@ -41,21 +41,10 @@
 </script>
 
 <div class="flex gap-[theme(--form-element-field-gap)] {isAssistant ? 'justify-start' : 'justify-end'}">
-  {#if isAssistant}
-    <img
-      src="https://api.dicebear.com/9.x/bottts/svg?seed=SolarBot"
-      alt=""
-      aria-hidden="true"
-      class="w-[2rem] h-[2rem] rounded-[theme(--badge-radius)] flex-shrink-0 mt-[theme(--form-element-field-gap)]"
-    />
-  {/if}
-
   <div class="flex flex-col max-w-[85%] gap-[0.25rem] group">
-    <Card class="{isAssistant ? 'bg-[hsl(var(--card))]' : 'bg-[hsl(var(--primary))]'} border {message.error ? 'border-[hsl(var(--destructive))]' : 'border-[hsl(var(--border))]'}">
-      <CardContent class="pt-[theme(--card-padding-y)] text-sm {isAssistant ? 'text-[hsl(var(--foreground))]' : 'text-[hsl(var(--primary-foreground))]'}">
-        <div class="break-words [&_ul]:list-disc [&_ul]:pl-[1.25rem] [&_ol]:list-decimal [&_ol]:pl-[1.25rem] [&_li]:my-[0.125rem] [&_h4]:font-semibold [&_p]:my-[0.25rem] [&_a]:underline [&_strong]:font-semibold {isAssistant
-          ? '[&_a]:text-[hsl(var(--primary-strong))]'
-          : '[&_a]:text-[hsl(var(--primary-foreground))]'}">
+    <Card class="{isAssistant ? 'bg-[hsl(var(--card))]' : 'bg-[hsl(var(--accent-muted))]'} border {message.error ? 'border-[hsl(var(--destructive))]' : 'border-[hsl(var(--border))]'}">
+      <CardContent class="pt-[theme(--card-padding-y)] text-sm text-[hsl(var(--foreground))]">
+        <div class="break-words [&_ul]:list-disc [&_ul]:pl-[1.25rem] [&_ol]:list-decimal [&_ol]:pl-[1.25rem] [&_li]:my-[0.125rem] [&_h4]:font-semibold [&_p]:my-[0.25rem] [&_a]:underline [&_strong]:font-semibold [&_a]:text-[hsl(var(--primary-strong))]">
           {@html renderMessage(message.content)}
         </div>
 

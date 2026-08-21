@@ -21,9 +21,9 @@
   onclick={onopen}
   onpointerenter={() => onpreload?.()}
   onfocus={() => onpreload?.()}
-  aria-label="Open Solar Assistant chat"
+  aria-label="Open Solar Expert Agent chat"
   class="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] right-[1.25rem] z-40 flex items-center gap-[0.5rem] rounded-[theme(--badge-radius)] bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] shadow-lg p-[0.875rem] sm:px-[1.25rem] sm:py-[0.875rem] transition-transform duration-[var(--duration-fast)] hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--ring))] focus-visible:ring-offset-2"
 >
   <MessageCircle class="w-[1.5rem] h-[1.5rem] shrink-0" />
-  <span class="hidden sm:inline text-sm font-semibold whitespace-nowrap">Solar Assistant</span>
+  <span class="hidden sm:inline text-sm font-semibold whitespace-nowrap">Solar Expert Agent</span>
 </button>
