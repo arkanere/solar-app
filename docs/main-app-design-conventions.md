@@ -61,8 +61,14 @@ role* in dark mode. If a colour looks wrong in one theme, **fix the token, not t
 
 ## 3. Colour
 
-Orange headings are correct here — `PageHeader` applies `text-primary` for you. Hierarchy comes
-from size and weight as well as colour.
+Orange headings are correct here — `PageHeader` applies `text-primary-strong` for you. Hierarchy
+comes from size and weight as well as colour.
+
+**There are two oranges, and the split matters.** `--primary` (#FF6600) is the brand colour and is
+for *surfaces* — button fills, table header rows, the divider. `--primary-strong` (#B84900 in light,
+identical to `--primary` in dark) is for *orange text on a light surface*, because the brand orange
+is only 2.77:1 on the cream background and fails AA. **Any orange lettering uses
+`text-primary-strong`; `text-primary` on a light background is a bug.**
 
 ### Accent surfaces are for buttons and large text only
 
@@ -84,14 +90,21 @@ follow:
 | `bg-card` | `text-muted-foreground` | 4.70:1 | 6.99:1 |
 | `bg-background` | `text-muted-foreground` | **4.44:1** | 7.65:1 |
 | `bg-accent` | `text-foreground` | 5.94:1 | **2.53:1** |
+| `bg-primary` (button) | `text-primary-foreground` | 5.94:1 | 6.50:1 |
+| `bg-success` | `text-success-foreground` | 6.19:1 | 7.93:1 |
+| `bg-background` | `text-primary-strong` | 4.97:1 | 7.12:1 |
+| `bg-background` | `text-primary` | **2.77:1** | 7.12:1 |
 
 **Body copy is `text-foreground`.** `text-muted-foreground` is for captions and helper text only
 — on the page background it is marginally under AA in light mode.
 
-Known gap, not yet fixed: `bg-primary` + `text-primary-foreground` — the default `Button` variant
-and every CTA on the site — is **2.94:1 light / 2.68:1 dark**. Fixing it means moving `--primary`
-or the button foreground, which is a sitewide change. Don't work around it per-page; use the
-`Button` component and let the eventual token fix reach everything at once.
+`--primary-foreground` and `--secondary-foreground` are a warm near-black, not white: white on the
+brand orange is 2.94:1 and white on the brand green is 2.82:1, both failing. If you want white text
+over a hero photo, say `text-white` — that is what it means. Using `text-primary-foreground` for it
+broke when the token was corrected.
+
+Known gap: `bg-destructive` + white is **3.78:1** — under AA for normal text, over the 3:1
+large-text threshold. Not yet fixed.
 
 ---
 
@@ -116,9 +129,10 @@ Note `prose` / `prose-sm` classes appearing in some older components are **inert
 1. Wrapped in `PageShell`, with no hand-written `<main>` or `max-w-*`.
 2. Headings via `PageHeader`; no inline divider spans.
 3. Zero `dark:` classes.
-4. No body text on `bg-accent` — use `bg-accent-muted`.
-5. Body copy `text-foreground`; `text-muted-foreground` only for captions.
-6. `.text-link` / `.card-interactive` / `Button` instead of re-rolled utilities.
+4. Orange lettering uses `text-primary-strong`, never `text-primary`.
+5. No body text on `bg-accent` — use `bg-accent-muted`.
+6. Body copy `text-foreground`; `text-muted-foreground` only for captions.
+7. `.text-link` / `.card-interactive` / `Button` instead of re-rolled utilities.
 
 ---
 
