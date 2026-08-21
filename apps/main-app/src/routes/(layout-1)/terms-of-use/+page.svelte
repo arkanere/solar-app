@@ -1,4 +1,6 @@
-<script>
+<script lang="ts">
+	import PageShell from '$lib/components/layout/PageShell.svelte';
+	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 </script>
 
 <svelte:head>
@@ -9,9 +11,9 @@
 	/>
 </svelte:head>
 
-<main class="flex flex-col items-center px-[theme(--container-padding)] md:px-[theme(--container-padding)] py-8 transition-colors var(--transition-default) bg-background text-foreground">
-	<div class="max-w-2xl w-full">
-		<h1 class="text-3xl md:text-4xl font-semibold mb-6">Terms of Use</h1>
+<PageShell width="doc">
+	<div>
+		<PageHeader title="Terms of Use" />
 
 		<section class="mb-8">
 			<p class="text-base md:text-lg leading-relaxed text-foreground-secondary">
@@ -151,4 +153,4 @@
 			</div>
 		</section>
 	</div>
-</main>
+</PageShell>

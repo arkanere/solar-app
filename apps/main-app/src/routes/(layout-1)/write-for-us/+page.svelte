@@ -1,4 +1,6 @@
 <script>
+  import PageShell from '$lib/components/layout/PageShell.svelte';
+  import PageHeader from '$lib/components/layout/PageHeader.svelte';
   import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
   import { Alert, AlertDescription } from '$lib/components/ui/alert';
   import { Badge } from '$lib/components/ui/badge';
@@ -122,13 +124,11 @@
   <meta property="og:type" content="website" />
 </svelte:head>
 
-<main class="bg-background text-foreground">
-  <div class="max-w-5xl mx-auto px-[theme(--container-padding)] sm:px-[theme(--container-padding)] md:px-[theme(--container-padding)]">
+<PageShell>
+  <div>
     <!-- Hero Section -->
-    <section class="py-[theme(--card-padding-y)] text-center">
-      <h1 class="text-3xl md:text-4xl font-bold mb-3 text-primary">
-        Contribute as a Solar Expert
-      </h1>
+    <section class="text-center">
+      <PageHeader title="Contribute as a Solar Expert" />
       <p class="text-lg md:text-xl font-semibold mb-3 text-foreground-secondary">
         Share Your Knowledge. Shape India's Solar Future.
       </p>
@@ -371,4 +371,4 @@
       </p>
     </section>
   </div>
-</main>
+</PageShell>

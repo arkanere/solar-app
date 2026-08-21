@@ -1,4 +1,7 @@
-<script>
+<script lang="ts">
+	import PageShell from '$lib/components/layout/PageShell.svelte';
+	import PageHeader from '$lib/components/layout/PageHeader.svelte';
+
 	const lastUpdated = 'June 2026';
 </script>
 
@@ -10,9 +13,9 @@
 	/>
 </svelte:head>
 
-<main class="flex flex-col items-center px-[theme(--container-padding)] md:px-[theme(--container-padding)] py-8 transition-colors duration-300 bg-background text-foreground">
-	<div class="max-w-3xl w-full">
-		<h1 class="text-3xl md:text-4xl font-semibold mb-2 text-center">Privacy Policy</h1>
+<PageShell width="doc">
+	<div>
+		<PageHeader title="Privacy Policy" />
 		<p class="text-sm text-foreground-secondary text-center mb-6">Last updated: {lastUpdated}</p>
 
 		<p class="text-base md:text-lg leading-relaxed text-foreground-secondary mb-8">
@@ -255,4 +258,4 @@
 			</p>
 		</section>
 	</div>
-</main>
+</PageShell>
