@@ -416,13 +416,13 @@
     <div class="absolute top-0 left-0 w-full h-full z-10 bg-black/55"></div>
     <div class="relative z-20 max-w-3xl px-6">
       {#if isUs}
-        <h1 class="text-4xl md:text-5xl font-bold mb-6 text-primary-foreground leading-tight drop-shadow-lg">
+        <h1 class="text-4xl md:text-5xl font-bold mb-6 text-white leading-tight drop-shadow-lg">
           Connect with Verified Solar Panel Installers Near You
         </h1>
-        <h2 class="text-2xl md:text-3xl font-medium mb-6 text-primary-foreground leading-snug drop-shadow-lg">
+        <h2 class="text-2xl md:text-3xl font-medium mb-6 text-white leading-snug drop-shadow-lg">
           Get Free Quotes from 2-3 Verified Solar Installers in Your Area
         </h2>
-        <p class="text-lg mb-6 text-primary-foreground/90 max-w-2xl mx-auto drop-shadow-lg">
+        <p class="text-lg mb-6 text-white/90 max-w-2xl mx-auto drop-shadow-lg">
           Compare quotes, find trusted installers, and save up to 90% on
           electricity bills with 30% federal tax credit and state incentives.
         </p>
@@ -435,10 +435,10 @@
           </span>
         </div>
       {:else}
-        <h1 class="text-4xl md:text-5xl font-bold mb-6 text-primary-foreground leading-tight drop-shadow-lg">
+        <h1 class="text-4xl md:text-5xl font-bold mb-6 text-white leading-tight drop-shadow-lg">
           Get 2-3 Free Quotes from Verified Installers in Your Area
         </h1>
-        <h2 class="text-2xl md:text-3xl font-medium mb-6 text-primary-foreground leading-snug drop-shadow-lg">
+        <h2 class="text-2xl md:text-3xl font-medium mb-6 text-white leading-snug drop-shadow-lg">
           Save 10-20% on installation costs with competitive solar quotations online
         </h2>
       {/if}

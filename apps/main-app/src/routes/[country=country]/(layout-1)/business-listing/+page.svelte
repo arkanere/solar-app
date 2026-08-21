@@ -420,10 +420,10 @@
     />
     <div class="absolute top-0 left-0 w-full h-full z-10 bg-black/55"></div>
     <div class="relative z-20 max-w-3xl px-6">
-      <h1 class="text-4xl md:text-5xl font-bold mb-6 text-primary-foreground leading-tight drop-shadow-lg">
+      <h1 class="text-4xl md:text-5xl font-bold mb-6 text-white leading-tight drop-shadow-lg">
         Grow Your Solar Business
       </h1>
-      <h2 class="text-2xl md:text-3xl font-medium mb-6 text-primary-foreground leading-snug drop-shadow-lg">
+      <h2 class="text-2xl md:text-3xl font-medium mb-6 text-white leading-snug drop-shadow-lg">
         {cc === "us"
           ? "Get Discovered on Google & ChatGPT"
           : "Get discovered by customers researching online"}
@@ -431,7 +431,7 @@
       {#if cc === "us"}
         <!-- Subhead and hero CTA carried over from the /us page, which led with
              both; the /in hero has never had them. -->
-        <p class="text-lg mb-8 text-primary-foreground/90 drop-shadow-lg">
+        <p class="text-lg mb-8 text-white/90 drop-shadow-lg">
           Connect directly with customers seeking solar installation services in
           your area
         </p>
@@ -574,7 +574,7 @@
               class="no-underline text-inherit block transition-transform duration-[theme(--transition-default)]"
             >
               <Card class="relative h-full flex flex-col overflow-hidden p-4">
-                <div class="absolute flex items-center text-primary-foreground text-xs font-semibold bg-success top-1 right-1 gap-1 px-2 py-1 rounded-full">
+                <div class="absolute flex items-center text-success-foreground text-xs font-semibold bg-success top-1 right-1 gap-1 px-2 py-1 rounded-full">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="18"

@@ -51,11 +51,11 @@
 
   <div class="absolute top-0 left-0 w-full h-full z-10 bg-black/55"></div>
   <div class="relative z-20 max-w-3xl px-6">
-    <h1 class="text-4xl md:text-5xl font-bold mb-6 text-primary-foreground leading-tight drop-shadow-lg">
+    <h1 class="text-4xl md:text-5xl font-bold mb-6 text-white leading-tight drop-shadow-lg">
       {title}
     </h1>
     {#if subtitle}
-      <h2 class="text-2xl md:text-3xl font-medium mb-6 text-primary-foreground leading-snug drop-shadow-lg">
+      <h2 class="text-2xl md:text-3xl font-medium mb-6 text-white leading-snug drop-shadow-lg">
         {subtitle}
       </h2>
     {/if}

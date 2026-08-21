@@ -674,7 +674,12 @@
 
   /* Primary - Sun Orange (brand identity) */
   --primary: 24 100% 50%;           /* #FF6600 */
-  --primary-foreground: 0 0% 100%;
+  /* Text that sits ON a primary (orange) surface — buttons, table headers.
+     Was white, which is only 2.94:1 against #FF6600 and fails WCAG AA. The warm
+     near-black is 5.94:1 in light and 6.50:1 in dark, and keeps the brand orange
+     itself untouched. Places that used --primary-foreground to mean "white over
+     a hero photo" now say text-white, which is what they meant. */
+  --primary-foreground: 30 8% 10%;
   --primary-hover: hsl(var(--primary) / 0.9);
 
   /* Accent = Primary (single brand color) */
@@ -685,7 +690,8 @@
 
   /* Secondary - Hill Green (eco, sustainability) */
   --secondary: 122 39% 49%;         /* #4CAF50 */
-  --secondary-foreground: 0 0% 100%;
+  /* White on this green is 2.82:1 and fails AA; the warm near-black is 6.19:1. */
+  --secondary-foreground: 30 8% 10%;
   --secondary-hover: hsl(var(--secondary) / 0.8);
   --secondary-muted: 122 39% 92%;   /* #E8F5E9 */
 
@@ -744,7 +750,7 @@
   /* Secondary - Hill Green (brighter in dark mode) */
   --secondary: 122 50% 55%;         /* #5DC060 - Brighter green */
   --secondary-hover: 122 50% 50%;
-  --secondary-foreground: 0 0% 100%;
+  --secondary-foreground: 30 8% 10%;
   --secondary-muted: 122 40% 18%;   /* #1A3D1B - Dark green bg */
   /* success inherits --secondary via var() */
 
@@ -758,7 +764,8 @@
 
   /* Primary brand color - brighter in dark */
   --primary: 24 100% 55%;
-  --primary-foreground: 0 0% 100%;
+  /* Dark text on the orange here too: 6.50:1 against #FF751A. */
+  --primary-foreground: 30 8% 10%;
   /* ring inherits --primary via var() */
 
   /* Component surfaces */

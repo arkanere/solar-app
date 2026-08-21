@@ -229,11 +229,11 @@
 		<div class="absolute inset-0 bg-black/55"></div>
 		<div class="relative z-10 max-w-3xl px-6">
 			<h1
-				class="mb-4 text-4xl font-bold leading-tight text-primary-foreground drop-shadow-lg md:text-5xl"
+				class="mb-4 text-4xl font-bold leading-tight text-white drop-shadow-lg md:text-5xl"
 			>
 				Grow Your Solar Business
 			</h1>
-			<p class="mb-6 text-xl text-primary-foreground/90 drop-shadow-lg md:text-2xl">
+			<p class="mb-6 text-xl text-white/90 drop-shadow-lg md:text-2xl">
 				Join {data.installerCount.toLocaleString('en-IN')}+ verified installers — completely
 				<span class="font-bold text-amber-300">FREE</span>
 			</p>
