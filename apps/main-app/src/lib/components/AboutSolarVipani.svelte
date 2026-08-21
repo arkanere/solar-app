@@ -20,11 +20,13 @@
 
 	let { installerCount, leadsGenerated }: Props = $props();
 
-	// The label used to read "Leads Generated Across India". That was already
-	// wrong on /us/solar/** and /us/installer/**: the [country] layout counts
-	// `leads WHERE country_code = $1`, so those pages showed a US number under
-	// an Indian label. The count is always scoped to the country whose page you
-	// are on, so naming a country added nothing and could only be wrong.
+	// The label used to read "Leads Generated Across India", which was wrong on
+	// /us/solar/** and /us/installer/** — the [country] layout counted
+	// `leads WHERE country_code = $1` back then, so those pages showed a US
+	// number under an Indian label.
+	//
+	// Both counts are platform-wide totals now (2026-08-21), so naming any one
+	// country in either label would be wrong again.
 	const stats = $derived(
 		installerCount === undefined || leadsGenerated === undefined
 			? []

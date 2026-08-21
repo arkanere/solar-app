@@ -13,10 +13,10 @@ import { count, eq } from 'drizzle-orm';
 // identical to that file's is what made the numbers on a moved page match the
 // numbers it showed before it moved.
 //
-// **This is now the only legacy-table reader of these counts.** The country tree
-// counts unified businesses/leads by country_code instead, which is why /in shows
-// 3196 where this shows 3199 (§8 — expected, not a bug). The unified-table
-// cutover owns switching this one over; when it does, the two trees agree again.
+// The country tree used to count by country_code here, which is why /in and
+// this page showed different numbers (3196 vs 3199). Since 2026-08-21 the
+// [country] layout counts platform-wide totals like this one does, so the two
+// trees agree; keep the three readers of these counts in step.
 //
 // Nothing anywhere in the app is prerendered any more (stage 10 of
 // docs/migration-plan-delete-us.md), so this cannot couple a build to the DB;

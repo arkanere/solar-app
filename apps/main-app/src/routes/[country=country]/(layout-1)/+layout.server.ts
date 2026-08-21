@@ -1,10 +1,18 @@
 import type { LayoutServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { businessAccounts, businessProfiles, leaddata } from '@solar/db/schema';
-import { accountOfProfile, businessInCountry } from '$lib/server/businessCountry';
-import { and, count, eq } from 'drizzle-orm';
+import { businessProfiles, leaddata } from '@solar/db/schema';
+import { count, eq } from 'drizzle-orm';
 import { getCountry } from '$lib/countries';
 
+// Both counts are platform-wide totals, not per-country. They were scoped to
+// params.country until 2026-08-21, which made /us advertise its own 6
+// installers and 4 leads as if that were the whole platform. The other two
+// readers of these numbers — routes/(layout-1)/+layout.server.ts and
+// partners/+page.server.ts — were already counting platform-wide, so scoping
+// here was also what made the three disagree.
+//
+// `country` is still resolved and returned: everything else under this layout
+// is country-specific, only these two headline stats are not.
 export const load: LayoutServerLoad = async ({ params }) => {
 	const country = getCountry(params.country);
 
@@ -12,9 +20,8 @@ export const load: LayoutServerLoad = async ({ params }) => {
 		db
 			.select({ count: count() })
 			.from(businessProfiles)
-			.innerJoin(businessAccounts, accountOfProfile)
-			.where(and(businessInCountry(country.code), eq(businessProfiles.isvisible, true))),
-		db.select({ count: count() }).from(leaddata).where(eq(leaddata.countryCode, country.code))
+			.where(eq(businessProfiles.isvisible, true)),
+		db.select({ count: count() }).from(leaddata)
 	]);
 
 	return {
