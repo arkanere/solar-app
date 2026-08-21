@@ -4,6 +4,7 @@
   import { storiesModalOpen } from "$lib/storiesStore.js";
   import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
   import { page } from "$app/stores";
+  import ChatDock from "$lib/components/chat/ChatDock.svelte";
   import StoriesModal from "$lib/components/StoriesModal.svelte";
   import AboutSolarVipani from "$lib/components/AboutSolarVipani.svelte";
   import SiteHeader from "$lib/components/chrome/SiteHeader.svelte";
@@ -216,6 +217,12 @@
 </div>
 
 <SiteFooter />
+
+<!-- Chatbot: launcher, lazy popup and scroll auto-open. Added 2026-08-22 — this
+     tree had no chat at all, so the homepage lost it when the three homes
+     merged into `/`. Ungated: there is no country here, and both countries
+     have the capability. -->
+<ChatDock />
 
 <!-- Stories Modal -->
 <StoriesModal />
