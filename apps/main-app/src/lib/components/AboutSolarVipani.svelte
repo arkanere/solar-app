@@ -50,9 +50,9 @@
 		<!-- About Container -->
 		<div class="flex flex-col items-center text-center md:flex-row md:items-center md:text-left gap-[theme(--card-gap)]">
 			<img
-				src="/logo.webp"
+				src="/logo-transparent.webp"
 				alt="Solarvipani Logo"
-				class="w-48 h-auto rounded-[theme(--radius-lg)] shadow-[theme(--shadow-sm)]"
+				class="w-48 h-auto"
 				loading="lazy"
 			/>
 

@@ -49,11 +49,11 @@
   <section class="bg-gradient-to-br from-background to-background-secondary px-8 py-16 md:px-8 md:py-20 text-center">
     <div class="flex flex-col items-center">
       <img
-        src="/logo.webp"
+        src="/logo-transparent.webp"
         alt="Solar Vipani Logo"
         class="mb-6 max-w-[150px] w-auto h-auto object-contain"
         width="200"
-        height="100"
+        height="121"
       />
       <h1 class="text-4xl md:text-5xl font-bold mb-4">Solar Vipani</h1>
       <p class="text-xl md:text-2xl mb-2 text-accent">
