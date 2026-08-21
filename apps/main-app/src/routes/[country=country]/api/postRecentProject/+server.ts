@@ -176,7 +176,13 @@ export const POST: RequestHandler = async ({ request, params }) => {
 					imageData = await uploadFileToCloudinary(projectImage);
 					console.log('Multipart image uploaded successfully');
 				} catch (imageError: any) {
+					// Previously this was logged and swallowed, so the project was
+					// inserted without an image and the caller was told it succeeded.
 					console.error('Error uploading multipart image:', imageError);
+					return json(
+						{ success: false, error: 'Image upload failed. Please try again.' },
+						{ status: 502 }
+					);
 				}
 			}
 		} else if (contentType.includes('application/json')) {
@@ -200,6 +206,10 @@ export const POST: RequestHandler = async ({ request, params }) => {
 					console.log('Base64 image uploaded successfully');
 				} catch (imageError: any) {
 					console.error('Error uploading base64 image:', imageError);
+					return json(
+						{ success: false, error: 'Image upload failed. Please try again.' },
+						{ status: 502 }
+					);
 				}
 			}
 		} else {
@@ -216,6 +226,11 @@ export const POST: RequestHandler = async ({ request, params }) => {
 				},
 				{ status: 400 }
 			);
+		}
+
+		if (!imageData) {
+			console.log('Validation failed: Missing project image');
+			return json({ success: false, error: 'Project image is required' }, { status: 400 });
 		}
 
 		// Validate pincode format (numbers only)
@@ -259,10 +274,8 @@ export const POST: RequestHandler = async ({ request, params }) => {
 			// Now we directly use the business_slug instead of looking up the business_id
 			console.log('Using business slug:', business_slug);
 
-			// The dynamically built column/RETURNING lists became conditional
-			// spreads (the Phase 5 pattern). Spreading rather than always
-			// selecting the image columns keeps the response shape identical:
-			// without an image, those keys were absent, not null.
+			// The image columns are unconditional now that a project cannot be
+			// created without one.
 			const inserted = await db
 				.insert(projects)
 				.values({
@@ -272,15 +285,11 @@ export const POST: RequestHandler = async ({ request, params }) => {
 					pincode,
 					district,
 					projectDate,
-					...(imageData
-						? {
-								imageUrl: imageData.url,
-								cloudinaryPublicId: imageData.publicId,
-								imageWidth: imageData.width,
-								imageHeight: imageData.height,
-								imageFormat: imageData.format
-							}
-						: {})
+					imageUrl: imageData.url,
+					cloudinaryPublicId: imageData.publicId,
+					imageWidth: imageData.width,
+					imageHeight: imageData.height,
+					imageFormat: imageData.format
 				})
 				.returning({
 					id: projects.id,
@@ -291,15 +300,11 @@ export const POST: RequestHandler = async ({ request, params }) => {
 					district: projects.district,
 					project_date: projects.projectDate,
 					created_at: projects.createdAt,
-					...(imageData
-						? {
-								image_url: projects.imageUrl,
-								cloudinary_public_id: projects.cloudinaryPublicId,
-								image_width: projects.imageWidth,
-								image_height: projects.imageHeight,
-								image_format: projects.imageFormat
-							}
-						: {})
+					image_url: projects.imageUrl,
+					cloudinary_public_id: projects.cloudinaryPublicId,
+					image_width: projects.imageWidth,
+					image_height: projects.imageHeight,
+					image_format: projects.imageFormat
 				});
 
 			console.log('Project inserted successfully:', inserted[0]);

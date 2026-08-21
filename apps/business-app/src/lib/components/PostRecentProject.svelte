@@ -130,6 +130,51 @@
 		'image/svg+xml'
 	];
 
+	// Absolute ceiling. Anything under this is downscaled rather than rejected —
+	// phone camera apps (GPS Map Camera in particular) routinely write 10MB+
+	// JPEGs, and the old hard 10MB reject silently cleared the file input.
+	const maxImageSize = 25 * 1024 * 1024; // 25MB
+
+	// Downscale above this, so the request body stays small. Cloudinary resizes
+	// to 1200px wide anyway, so nothing is lost by doing it here first.
+	const downscaleThreshold = 2 * 1024 * 1024; // 2MB
+	const maxImageDimension = 1600;
+
+	/**
+	 * Shrink an oversized photo in the browser before upload. Returns the
+	 * original file untouched if it is already small, or if the browser cannot
+	 * decode it — the server is the backstop either way.
+	 */
+	async function downscaleImage(file: File): Promise<File> {
+		if (file.size <= downscaleThreshold || file.type === 'image/svg+xml') return file;
+
+		try {
+			const bitmap = await createImageBitmap(file);
+			const scale = Math.min(1, maxImageDimension / Math.max(bitmap.width, bitmap.height));
+
+			const canvas = document.createElement('canvas');
+			canvas.width = Math.round(bitmap.width * scale);
+			canvas.height = Math.round(bitmap.height * scale);
+
+			const ctx = canvas.getContext('2d');
+			if (!ctx) return file;
+			ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+			bitmap.close();
+
+			const blob = await new Promise<Blob | null>((resolve) =>
+				canvas.toBlob(resolve, 'image/jpeg', 0.85)
+			);
+			if (!blob || blob.size >= file.size) return file;
+
+			return new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', {
+				type: 'image/jpeg'
+			});
+		} catch (error) {
+			console.error('Image downscale failed, uploading original:', error);
+			return file;
+		}
+	}
+
 	// Function to fetch district by pincode
 	async function fetchDistrictByPincode(pincodeValue: string) {
 		if (!pincodeValue || pincodeValue.length !== 6) {
@@ -215,10 +260,8 @@
 				return;
 			}
 
-			// Validate file size (limit to 10MB)
-			const maxSize = 10 * 1024 * 1024; // 10MB in bytes
-			if (file.size > maxSize) {
-				toast.error('Image file size must be less than 10MB');
+			if (file.size > maxImageSize) {
+				toast.error('Image file size must be less than 25MB');
 				target.value = ''; // Clear the input
 				return;
 			}
@@ -272,20 +315,24 @@
 				return;
 			}
 
-			// Validate image if provided
-			if (formData.projectImage) {
-				if (!allowedImageTypes.includes(formData.projectImage.type)) {
-					errorMessage = 'Please upload a valid image file (JPG, PNG, WebP, GIF, BMP, TIFF, SVG)';
-					isSubmitting = false;
-					return;
-				}
+			// A project without a photo is not useful on the public listing, and
+			// until now nothing stopped one being posted.
+			if (!formData.projectImage) {
+				errorMessage = 'Project image is required';
+				isSubmitting = false;
+				return;
+			}
 
-				const maxSize = 10 * 1024 * 1024; // 10MB
-				if (formData.projectImage.size > maxSize) {
-					errorMessage = 'Image file size must be less than 10MB';
-					isSubmitting = false;
-					return;
-				}
+			if (!allowedImageTypes.includes(formData.projectImage.type)) {
+				errorMessage = 'Please upload a valid image file (JPG, PNG, WebP, GIF, BMP, TIFF, SVG)';
+				isSubmitting = false;
+				return;
+			}
+
+			if (formData.projectImage.size > maxImageSize) {
+				errorMessage = 'Image file size must be less than 25MB';
+				isSubmitting = false;
+				return;
 			}
 
 			// Create FormData object for file upload
@@ -297,10 +344,7 @@
 			formDataToSend.append('projectDate', formData.projectDate);
 			formDataToSend.append('business_slug', businessSlug);
 
-			// Add the file if it exists
-			if (formData.projectImage) {
-				formDataToSend.append('projectImage', formData.projectImage);
-			}
+			formDataToSend.append('projectImage', await downscaleImage(formData.projectImage));
 
 			console.log('Submitting project data with image');
 
@@ -455,12 +499,12 @@
 				<Input
 					id="projectImage"
 					type="file"
-					accept=".jpg,.jpeg,.png,.webp,.gif,.bmp,.tiff,.svg,image/*"
+					accept=".jpg,.jpeg,.png,.webp,.gif,.bmp,.tiff,.svg"
 					onchange={handleImageChange}
 					disabled={isSubmitting}
 				/>
 				<small class="text-muted-foreground italic text-xs">
-					Accepted formats: JPG, PNG, WebP, GIF, BMP, TIFF, SVG (Max: 10MB)
+					Accepted formats: JPG, PNG, WebP, GIF, BMP, TIFF, SVG (Max: 25MB)
 				</small>
 				{#if imagePreview}
 					<div class="mt-2 border border-dashed p-2 rounded">

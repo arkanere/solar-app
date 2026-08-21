@@ -159,7 +159,13 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 					imageData = await uploadFileToCloudinary(projectImage);
 					console.log('Multipart image uploaded successfully');
 				} catch (imageError) {
+					// Previously this was logged and swallowed, so the project was
+					// inserted without an image and the caller was told it succeeded.
 					console.error('Error uploading multipart image:', imageError);
+					return json(
+						{ success: false, error: 'Image upload failed. Please try again.' },
+						{ status: 502 }
+					);
 				}
 			}
 		} else if (contentType.includes('application/json')) {
@@ -181,6 +187,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 					console.log('Base64 image uploaded successfully');
 				} catch (imageError) {
 					console.error('Error uploading base64 image:', imageError);
+					return json(
+						{ success: false, error: 'Image upload failed. Please try again.' },
+						{ status: 502 }
+					);
 				}
 			}
 		} else {
@@ -196,6 +206,11 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				},
 				{ status: 400 }
 			);
+		}
+
+		if (!imageData) {
+			console.log('Validation failed: Missing project image');
+			return json({ success: false, error: 'Project image is required' }, { status: 400 });
 		}
 
 		if (!/^\d+$/.test(pincode)) {
@@ -243,8 +258,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			console.log('Using business slug:', business_slug);
 
 			// Returned keys are aliased to snake_case so the JSON response shape is
-			// unchanged; the image columns are only included when an image was
-			// uploaded, matching the old dynamic RETURNING list.
+			// unchanged. The image columns are unconditional now that a project
+			// cannot be created without one.
 			const [project] = await db
 				.insert(projects)
 				.values({
@@ -254,15 +269,11 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 					pincode,
 					district,
 					projectDate,
-					...(imageData
-						? {
-								imageUrl: imageData.url,
-								cloudinaryPublicId: imageData.publicId,
-								imageWidth: imageData.width,
-								imageHeight: imageData.height,
-								imageFormat: imageData.format
-							}
-						: {})
+					imageUrl: imageData.url,
+					cloudinaryPublicId: imageData.publicId,
+					imageWidth: imageData.width,
+					imageHeight: imageData.height,
+					imageFormat: imageData.format
 				})
 				.returning({
 					id: projects.id,
@@ -273,15 +284,11 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 					district: projects.district,
 					project_date: projects.projectDate,
 					created_at: projects.createdAt,
-					...(imageData
-						? {
-								image_url: projects.imageUrl,
-								cloudinary_public_id: projects.cloudinaryPublicId,
-								image_width: projects.imageWidth,
-								image_height: projects.imageHeight,
-								image_format: projects.imageFormat
-							}
-						: {})
+					image_url: projects.imageUrl,
+					cloudinary_public_id: projects.cloudinaryPublicId,
+					image_width: projects.imageWidth,
+					image_height: projects.imageHeight,
+					image_format: projects.imageFormat
 				});
 
 			console.log('Project inserted successfully:', project);

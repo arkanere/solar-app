@@ -30,6 +30,7 @@ export default defineConfig({
 		alias: [
 			{ find: /^\$lib\/server\/db$/, replacement: `${tests}/setup/testDb.ts` },
 			{ find: /^\$env\/static\/private$/, replacement: `${tests}/setup/env.ts` },
+			{ find: /^\$env\/static\/public$/, replacement: `${tests}/setup/envPublic.ts` },
 			{ find: /^\$env\/dynamic\/private$/, replacement: `${tests}/setup/envDynamic.ts` },
 			{ find: /^\$lib/, replacement: src + '/lib' },
 			{ find: /^\$app\/environment$/, replacement: `${tests}/setup/appEnvironment.ts` }
