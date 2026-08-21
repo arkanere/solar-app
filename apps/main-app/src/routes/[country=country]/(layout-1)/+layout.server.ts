@@ -1,6 +1,6 @@
 import type { LayoutServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { businessProfiles, leaddata } from '@solar/db/schema';
+import { businessAccounts, leaddata } from '@solar/db/schema';
 import { count, eq } from 'drizzle-orm';
 import { getCountry } from '$lib/countries';
 
@@ -11,6 +11,11 @@ import { getCountry } from '$lib/countries';
 // partners/+page.server.ts — were already counting platform-wide, so scoping
 // here was also what made the three disagree.
 //
+// The installer count is one row per *business*: business_accounts.is_active.
+// It used to count business_profiles, which is one row per location — 6,710
+// rows across 6,507 accounts — so a multi-branch installer was counted once
+// per branch and the headline read 646 instead of 470.
+//
 // `country` is still resolved and returned: everything else under this layout
 // is country-specific, only these two headline stats are not.
 export const load: LayoutServerLoad = async ({ params }) => {
@@ -19,8 +24,8 @@ export const load: LayoutServerLoad = async ({ params }) => {
 	const [installerRows, leadRows] = await Promise.all([
 		db
 			.select({ count: count() })
-			.from(businessProfiles)
-			.where(eq(businessProfiles.isvisible, true)),
+			.from(businessAccounts)
+			.where(eq(businessAccounts.isActive, true)),
 		db.select({ count: count() }).from(leaddata)
 	]);
 

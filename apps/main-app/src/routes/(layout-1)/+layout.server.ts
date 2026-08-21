@@ -1,6 +1,6 @@
 import type { LayoutServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { businessProfiles, leaddata } from '@solar/db/schema';
+import { businessAccounts, leaddata } from '@solar/db/schema';
 import { count, eq } from 'drizzle-orm';
 
 // Content pages at the country-less root (destination A of
@@ -25,8 +25,8 @@ export const load: LayoutServerLoad = async () => {
 	const [installerRows, leadRows] = await Promise.all([
 		db
 			.select({ count: count() })
-			.from(businessProfiles)
-			.where(eq(businessProfiles.isvisible, true)),
+			.from(businessAccounts)
+			.where(eq(businessAccounts.isActive, true)),
 		db.select({ count: count() }).from(leaddata)
 	]);
 
