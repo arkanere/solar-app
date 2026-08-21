@@ -10,5 +10,5 @@
 
 <div class="flex justify-between gap-[theme(--form-element-field-gap)] text-sm">
   <span class="text-[hsl(var(--muted-foreground))]">{label}</span>
-  <span class="{strong ? 'font-bold' : 'font-semibold'} text-right {accent ? 'text-[hsl(var(--primary))]' : 'text-[hsl(var(--foreground))]'}">{value}</span>
+  <span class="{strong ? 'font-bold' : 'font-semibold'} text-right {accent ? 'text-[hsl(var(--primary-strong))]' : 'text-[hsl(var(--foreground))]'}">{value}</span>
 </div>

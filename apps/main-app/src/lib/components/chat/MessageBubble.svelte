@@ -53,7 +53,9 @@
   <div class="flex flex-col max-w-[85%] gap-[0.25rem] group">
     <Card class="{isAssistant ? 'bg-[hsl(var(--card))]' : 'bg-[hsl(var(--primary))]'} border {message.error ? 'border-[hsl(var(--destructive))]' : 'border-[hsl(var(--border))]'}">
       <CardContent class="pt-[theme(--card-padding-y)] text-sm {isAssistant ? 'text-[hsl(var(--foreground))]' : 'text-[hsl(var(--primary-foreground))]'}">
-        <div class="break-words [&_ul]:list-disc [&_ul]:pl-[1.25rem] [&_ol]:list-decimal [&_ol]:pl-[1.25rem] [&_li]:my-[0.125rem] [&_h4]:font-semibold [&_p]:my-[0.25rem] [&_a]:underline [&_a]:text-[hsl(var(--primary))] [&_strong]:font-semibold">
+        <div class="break-words [&_ul]:list-disc [&_ul]:pl-[1.25rem] [&_ol]:list-decimal [&_ol]:pl-[1.25rem] [&_li]:my-[0.125rem] [&_h4]:font-semibold [&_p]:my-[0.25rem] [&_a]:underline [&_strong]:font-semibold {isAssistant
+          ? '[&_a]:text-[hsl(var(--primary-strong))]'
+          : '[&_a]:text-[hsl(var(--primary-foreground))]'}">
           {@html renderMessage(message.content)}
         </div>
 
@@ -77,7 +79,7 @@
           <div class="mt-[theme(--card-gap)] pt-[theme(--form-element-field-gap)] border-t border-[hsl(var(--border))] flex flex-col gap-[theme(--form-element-field-gap)]">
             <span class="text-xs font-medium text-[hsl(var(--muted-foreground))]">Sources</span>
             {#each message.sources as src}
-              <a href={src.url} target="_blank" rel="noopener noreferrer" class="text-xs text-[hsl(var(--primary))] hover:underline break-words">
+              <a href={src.url} target="_blank" rel="noopener noreferrer" class="text-xs text-[hsl(var(--primary-strong))] hover:underline break-words">
                 {src.title}
               </a>
             {/each}

@@ -56,7 +56,7 @@
     <div class="flex flex-col gap-[theme(--form-element-field-gap)] p-[theme(--form-element-field-gap)] rounded-[theme(--radius-md)] bg-[hsl(var(--card))] border border-[hsl(var(--border))]">
       <div class="flex justify-between items-center">
         <span class="text-sm font-semibold text-[hsl(var(--foreground))]">Roof utilisation</span>
-        <span class="text-base font-bold text-[hsl(var(--primary))]">{data.utilization.percent}%</span>
+        <span class="text-base font-bold text-[hsl(var(--primary-strong))]">{data.utilization.percent}%</span>
       </div>
       <p class="text-xs text-[hsl(var(--muted-foreground))]">
         Using {data.utilization.area_used}m² of {data.utilization.area_total}m² available

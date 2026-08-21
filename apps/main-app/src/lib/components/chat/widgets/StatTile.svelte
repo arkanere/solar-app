@@ -9,5 +9,5 @@
 
 <div class="p-[theme(--form-element-field-gap)] rounded-[theme(--radius-md)] bg-[hsl(var(--card))] border border-[hsl(var(--border))]">
   <p class="text-xs text-[hsl(var(--muted-foreground))] mb-[0.125rem]">{label}</p>
-  <p class="text-lg font-bold {accent ? 'text-[hsl(var(--primary))]' : 'text-[hsl(var(--foreground))]'}">{value}</p>
+  <p class="text-lg font-bold {accent ? 'text-[hsl(var(--primary-strong))]' : 'text-[hsl(var(--foreground))]'}">{value}</p>
 </div>
