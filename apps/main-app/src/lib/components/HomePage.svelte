@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from "svelte";
   import { COUNTRIES } from "$lib/countries";
   import { contentUrl, geoUrl } from "$lib/countries/urls";
   import PageShell from "$lib/components/layout/PageShell.svelte";
@@ -19,6 +20,41 @@
   // would be false, and printing the true one would need a query this page
   // otherwise does not make.
   const markets = Object.values(COUNTRIES);
+
+  let videoLoaded = $state(false);
+  let videoRef = $state(null);
+
+  onMount(() => {
+    // Progressive enhancement: the hero video (~4.5MB) is decorative and fades
+    // in over the static AVIF (the LCP element). We defer its download until the
+    // browser is idle so it never competes with the LCP image for bandwidth.
+    //
+    // This was IN-only before the three homepages merged, because the /us home
+    // had never had it. The page no longer knows which country it is on, so the
+    // video now plays on all three URLs.
+    if (!videoRef) return;
+
+    videoRef.addEventListener("loadeddata", () => {
+      videoLoaded = true;
+    });
+
+    videoRef.addEventListener("error", () => {
+      console.log("Video failed to load, using static image");
+    });
+
+    const startVideoLoad = () => {
+      videoRef.src = "/video/installation-video.mp4";
+      videoRef.load();
+    };
+
+    // requestIdleCallback runs after the page is interactive and the LCP image
+    // has had the connection to itself; setTimeout is the Safari fallback.
+    if ("requestIdleCallback" in window) {
+      requestIdleCallback(startVideoLoad, { timeout: 3000 });
+    } else {
+      setTimeout(startVideoLoad, 2000);
+    }
+  });
 
   const pillars = [
     { href: contentUrl("/rooftop-solar"), title: "Rooftop Solar", desc: "System sizing, costs, and what to expect from a rooftop installation", icon: House },
@@ -73,6 +109,14 @@
   <meta name="description" content={description} />
   <link rel="canonical" href="https://solarvipani.com" />
 
+  <!-- Preload the hero image: it is the LCP element. -->
+  <link
+    rel="preload"
+    as="image"
+    href="/header/header.avif"
+    fetchpriority="high"
+  />
+
   <meta property="og:type" content="website" />
   <meta property="og:title" content={title} />
   <meta property="og:description" content={description} />
@@ -87,12 +131,50 @@
   {@html structuredData}
 </svelte:head>
 
-<PageShell>
-  <PageHeader
-    title="Find Verified Solar Installers"
-    lede="Browse installers by state, compare quotes, and go solar. Free to use, no spam."
+<!--
+  Hero Banner. Sits outside PageShell because it is full-bleed and PageShell
+  owns the max-width container — it carries the <h1>, so the sections below use
+  PageHeader at h2.
+-->
+<div class="relative w-full h-[theme(--height-lg)] flex items-center justify-center text-center overflow-hidden md:h-[42rem]">
+  <!-- Static image — always visible initially, fades out when the video loads. -->
+  <img
+    class="absolute top-0 left-0 w-full h-full object-cover object-center z-0 transition-opacity duration-1000"
+    class:opacity-0={videoLoaded}
+    src="/header/header.avif"
+    alt="Residential Solar Panel Installation"
+    width="1920"
+    height="600"
+    fetchpriority="high"
+    decoding="async"
   />
 
+  <!-- Video — src is attached after idle (see onMount), then fades in once loaded. -->
+  <video
+    bind:this={videoRef}
+    class="absolute top-0 left-0 w-full h-full object-cover object-center z-0 transition-opacity duration-1000"
+    class:opacity-0={!videoLoaded}
+    autoplay
+    muted
+    loop
+    playsinline
+    preload="none"
+  ></video>
+
+  <!-- The overlay and its copy are white-on-dark in both themes by design: this
+       is text over a photograph, not over a token surface. -->
+  <div class="absolute top-0 left-0 w-full h-full z-10 bg-black/55"></div>
+  <div class="relative z-20 max-w-3xl px-6">
+    <h1 class="text-4xl md:text-5xl font-bold mb-6 text-white leading-tight drop-shadow-lg">
+      Get 2-3 Free Quotes from Verified Installers in Your Area
+    </h1>
+    <h2 class="text-2xl md:text-3xl font-medium mb-6 text-white leading-snug drop-shadow-lg">
+      Save 10-20% on installation costs with competitive solar quotations online
+    </h2>
+  </div>
+</div>
+
+<PageShell>
   <section>
     <PageHeader as="h2" title="Browse Installers" />
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-[theme(--card-gap)]">
