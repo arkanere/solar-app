@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
+	import { Card, CardContent, CardHeader } from '$lib/components/ui/card';
+	import PageHeader from '$lib/components/layout/PageHeader.svelte';
 	import { SOCIAL_LINKS } from '$lib/constants/social';
 	import { Users, TrendingUp } from '@lucide/svelte';
 
@@ -36,25 +37,13 @@
 				]
 	);
 
-	let hoveredLink: string | null = $state(null);
-
-	function handleSocialHover(url: string) {
-		hoveredLink = url;
-	}
-
-	function handleSocialLeave() {
-		hoveredLink = null;
-	}
 </script>
 
 <Card class="w-full border-0 mt-8 mb-[theme(--card-gap)] shadow-[theme(--shadow-md)]">
-	<CardHeader class="text-center">
-		<CardTitle class="text-3xl md:text-4xl font-semibold mb-4 text-primary">
-			About Solarvipani
-		</CardTitle>
-		<div class="flex justify-center items-center my-4">
-			<span class="w-[theme(--divider-line-width)] h-[theme(--divider-line-height)] bg-accent rounded"></span>
-		</div>
+	<CardHeader>
+		<!-- PageHeader rather than CardTitle: CardTitle renders a <div>, so this
+		     heading was not a heading to a screen reader — on every page. -->
+		<PageHeader as="h2" title="About Solarvipani" />
 	</CardHeader>
 
 	<CardContent class="px-[theme(--card-padding-y)] gap-[theme(--card-gap)] flex flex-col">
@@ -106,10 +95,7 @@
 						target="_blank"
 						rel="noopener noreferrer"
 						aria-label={link.label}
-						class="flex items-center gap-[theme(--form-element-field-gap)] text-primary transition-all duration-[theme(--duration-default)]"
-						class:hover-lift-sm={hoveredLink === link.url}
-						onmouseenter={() => handleSocialHover(link.url)}
-						onmouseleave={handleSocialLeave}
+						class="flex items-center gap-[theme(--form-element-field-gap)] text-primary transition-all duration-[theme(--duration-default)] hover:-translate-y-[theme(--hover-lift-sm)]"
 					>
 						<link.icon size={20} />
 						<span class="text-sm font-medium">{link.label}</span>
