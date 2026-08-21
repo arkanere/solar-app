@@ -100,6 +100,21 @@ EDB binaries instead; the recipe is in next-steps.md under Phase 6 (port 5544, t
 `loc_key(...)` expression indexes, so a pull from there silently drops them. Pull from live only
 (`apps/main-app/.env.local` has `POSTGRES_URL_NON_POOLING`, which is the one to use for DDL).
 
+## Design
+
+Each app has its own `src/app.css` with a full token layer — there is no shared UI package. The
+tokens are good; drift comes from using them without rules, so two docs carry those rules. **Read
+the one for the app you are touching before writing markup:**
+
+- `docs/main-app-design-conventions.md` — the public marketing site. Pages use `PageShell` +
+  `PageHeader` from `$lib/components/layout/`; orange headings are correct; **never write `dark:`**
+  (the tokens already flip, and authoring the two themes separately is what made them drift);
+  never put body copy on `bg-accent` (2.53:1 in dark — use `bg-accent-muted`).
+- `docs/business-app-design-conventions.md` — the logged-in dashboard. Different rules on purpose:
+  there colour means "you can interact with this", so headings are `text-foreground`, not accent.
+
+Don't port rules between the two.
+
 ## About Solar-app
 
 This is a open source project.
