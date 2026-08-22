@@ -33,6 +33,6 @@
 
 		<Button type="submit">Login</Button>
 
-		<a href="/forgot-password" class="text-sm text-center mt-4 underline">Forgot your password?</a>
+		<a href="/forgot-password" class="text-sm text-center mt-4 underline">Forgot your password, request magic link</a>
 	</form>
 </main>
