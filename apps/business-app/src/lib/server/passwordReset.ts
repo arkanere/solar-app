@@ -14,6 +14,7 @@ import { db } from '$lib/server/db';
 import { businessAccounts, businessProfiles } from '@solar/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { TokenSecurity } from '$lib/auth/business';
+import { MAGIC_LINK_TTL_DAYS } from '$lib/server/magicLink';
 import type { AuthCountry } from '$lib/auth/business/countryTables';
 
 /** How long a reset link stays valid. */
@@ -124,11 +125,33 @@ export function resetPasswordUrl(slug: string, rawToken: string): string {
 	return `https://business.solarvipani.com/${slug}/reset-password/${rawToken}`;
 }
 
-/** Subject + HTML body for the reset email. */
+/**
+ * Subject + HTML body for the reset email.
+ *
+ * Carries two links, because /forgot-password is the one page a locked-out
+ * partner reaches and the two ways back in have different costs: the reset link
+ * is short-lived and single-use, the sign-in link gets them in now and lets them
+ * change the password from inside. `signInUrl` is nullable — minting it can fail
+ * independently of the reset token, and a reset-only email is still useful, so
+ * the section is simply omitted rather than the whole mail withheld.
+ */
 export function resetPasswordEmail(
 	businessname: string | null,
-	url: string
+	url: string,
+	signInUrl: string | null = null
 ): { subject: string; message: string } {
+	const signInSection = signInUrl
+		? `
+    <p>Or skip the reset and sign in directly:</p>
+
+    <p style="margin-bottom: 2rem;">
+        <a href="${signInUrl}" style="color: blue; text-decoration: underline;">Sign in to Solar Vipani</a>
+    </p>
+
+    <p>The sign-in link expires in ${MAGIC_LINK_TTL_DAYS} days. Once you are in, you can set a new password from your account.</p>
+`
+		: '';
+
 	return {
 		subject: 'Reset Your Password - Solar Vipani',
 		message: `
@@ -140,7 +163,8 @@ export function resetPasswordEmail(
     </p>
 
     <p>This link expires in ${RESET_TTL_HOURS} hour${RESET_TTL_HOURS === 1 ? '' : 's'} and can be used once.</p>
-    <p>If you did not request this, you can ignore this email — your password will not change.</p>
+${signInSection}
+    <p>If you did not request either link, you can ignore this email — your password will not change.</p>
 
     <p>Best Regards,</p>
     <p><strong>Solar Vipani Team</strong></p>

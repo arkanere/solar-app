@@ -1,4 +1,5 @@
-// Issue a password-reset link. This is the entry point `resetPassword` always
+// Issue a password-reset link, and a sign-in (magic) link alongside it, in one
+// email. This is the entry point `resetPassword` always
 // needed: before it existed, nothing in the app ever set `reset_token`, so the
 // reset flow could not be started by a user at all.
 //
@@ -17,6 +18,7 @@ import {
 	resetPasswordEmail,
 	resetPasswordUrl
 } from '$lib/server/passwordReset';
+import { mintBusinessTokenById, signInLinkUrl } from '$lib/server/magicLink';
 import { countryForLoginEmail } from '$lib/server/resolveCountry';
 import { forgotPasswordSchema, parseBody } from '@solar/validation';
 
@@ -25,7 +27,7 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 	// from an unregistered one.
 	const genericSuccess = {
 		success: true,
-		message: 'If that email is registered, a reset link is on its way.'
+		message: 'If that email is registered, a reset link and a sign-in link are on their way.'
 	};
 
 	try {
@@ -70,7 +72,20 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 		if (!rawToken) return json(genericSuccess);
 
 		const url = resetPasswordUrl(target.slug, rawToken);
-		const { subject, message } = resetPasswordEmail(target.businessname, url);
+
+		// A sign-in link alongside the reset link, so a partner who cannot manage a
+		// password change on a phone still gets in. Minted after the same rate-limit
+		// check the reset token is — this endpoint is the only public way to ask for
+		// one, so its 5-per-IP-per-15-minutes bucket covers both links, and there is
+		// no second endpoint that could be used to get around it.
+		//
+		// Null when the mint matched no row (a profile whose account is missing).
+		// That is not a reason to withhold the reset link, so the email drops the
+		// sign-in section and goes out anyway.
+		const signInToken = await mintBusinessTokenById(target.businessId);
+		const signInUrl = signInToken ? signInLinkUrl(target.slug, signInToken) : null;
+
+		const { subject, message } = resetPasswordEmail(target.businessname, url, signInUrl);
 
 		// Only to the account holder: unlike the allotment mails, this one is not
 		// copied to admin@, because the link in it resets a password.

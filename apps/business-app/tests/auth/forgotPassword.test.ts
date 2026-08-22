@@ -13,6 +13,7 @@ import { createBusiness, createUsBusiness, resetDatabase } from '../helpers/fixt
 import { jsonRequest } from '../helpers/request';
 import { countryForLoginEmail } from '$lib/server/resolveCountry';
 import { PasswordManager } from '$lib/auth/business/PasswordManager';
+import { TokenManager } from '$lib/auth/business/TokenManager';
 import type { Business } from '$lib/types/auth';
 
 // Parameters are named so `sendEmail.mock.calls[i][n]` type-checks; a bare
@@ -57,6 +58,26 @@ function tokenFromEmail(): string {
 	const match = message.match(/reset-password\/([a-f0-9]+)/);
 	if (!match) throw new Error(`no reset link in email:\n${message}`);
 	return match[1];
+}
+
+/** The sign-in link out of the most recent email. Magic tokens are uuids, so
+ * this cannot collide with the hex reset token above. */
+function signInTokenFromEmail(): string {
+	const message = sendEmail.mock.calls.at(-1)?.[2] as unknown as string;
+	const match = message.match(/signin-link\/([0-9a-f-]{36})/);
+	if (!match) throw new Error(`no sign-in link in email:\n${message}`);
+	return match[1];
+}
+
+async function storedMagic(businessId: number, country = 'in') {
+	const { rows } = await pool.query<{
+		magic_link_token: string | null;
+		magic_link_token_expires_at: Date | null;
+	}>(
+		'SELECT magic_link_token, magic_link_token_expires_at FROM business_accounts WHERE source_id = $1 AND country_code = $2',
+		[businessId, country]
+	);
+	return rows[0];
 }
 
 async function storedReset(businessId: number) {
@@ -261,6 +282,57 @@ describe('POST /api/forgotPassword', () => {
 		expect(sendEmail).not.toHaveBeenCalled();
 	});
 
+	it('emails a sign-in link alongside the reset link, and stores it hashed', async () => {
+		await forgot({ email: loginEmail });
+
+		// One email, both links — not two mails.
+		expect(sendEmail).toHaveBeenCalledTimes(1);
+		const message = sendEmail.mock.calls[0][2];
+		expect(message).toContain('business.solarvipani.com/pune-solar/reset-password/');
+		expect(message).toContain('business.solarvipani.com/pune-solar/signin-link/');
+
+		const stored = await storedMagic(businessId);
+		expect(stored.magic_link_token).toBeTruthy();
+		expect(stored.magic_link_token_expires_at!.getTime()).toBeGreaterThan(Date.now());
+		expect(stored.magic_link_token).not.toBe(signInTokenFromEmail());
+	});
+
+	it('the sign-in link it emails actually signs the account in', async () => {
+		await forgot({ email: loginEmail });
+
+		const result = await new TokenManager('in').validateMagicLinkToken(
+			signInTokenFromEmail(),
+			'pune-solar'
+		);
+
+		expect(result.success).toBe(true);
+	});
+
+	it('issues a sign-in link for a US account too', async () => {
+		const usEmail = 'owner@oakland-solar.test';
+		const usBusinessId = await createUsBusiness({ slug: 'oakland-solar', loginEmail: usEmail });
+
+		await forgot({ email: usEmail });
+
+		expect(sendEmail.mock.calls[0][2]).toContain(
+			'business.solarvipani.com/oakland-solar/signin-link/'
+		);
+		expect((await storedMagic(usBusinessId, 'us')).magic_link_token).toBeTruthy();
+
+		const result = await new TokenManager('us').validateMagicLinkToken(
+			signInTokenFromEmail(),
+			'oakland-solar'
+		);
+		expect(result.success).toBe(true);
+	});
+
+	it('mints no sign-in token for an unregistered address', async () => {
+		await forgot({ email: 'nobody@example.test' });
+
+		expect(sendEmail).not.toHaveBeenCalled();
+		expect((await storedMagic(businessId)).magic_link_token).toBeNull();
+	});
+
 	it('rate limits after 5 requests from one IP', async () => {
 		for (let i = 0; i < 5; i++) {
 			expect((await forgot({ email: loginEmail })).status).toBe(200);
@@ -269,6 +341,21 @@ describe('POST /api/forgotPassword', () => {
 		const sixth = await forgot({ email: loginEmail });
 		expect(sixth.status).toBe(429);
 		expect(sixth.body.success).toBe(false);
+	});
+
+	it('the rate limit covers the sign-in link too — a blocked request mints nothing', async () => {
+		// The sign-in link is minted on the same endpoint, after the same check,
+		// so there is no second door to walk through once the bucket is spent.
+		for (let i = 0; i < 5; i++) await forgot({ email: loginEmail });
+		const lastIssued = (await storedMagic(businessId)).magic_link_token;
+		sendEmail.mockClear();
+
+		const sixth = await forgot({ email: loginEmail });
+
+		expect(sixth.status).toBe(429);
+		expect(sendEmail).not.toHaveBeenCalled();
+		// Unchanged: no fresh token, so no new link exists to have been emailed.
+		expect((await storedMagic(businessId)).magic_link_token).toBe(lastIssued);
 	});
 });
 

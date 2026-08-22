@@ -38,14 +38,14 @@
 </script>
 
 <svelte:head>
-	<title>Reset Your Password - Solar Vipani</title>
+	<title>Get Back Into Your Account - Solar Vipani</title>
 	<meta name="robots" content="noindex" />
 </svelte:head>
 
 <main
 	class="min-h-screen w-full flex flex-col items-center justify-center p-8 bg-background text-foreground transition-colors duration-300"
 >
-	<h1 class="text-2xl font-semibold mb-4 text-foreground">Reset Your Password</h1>
+	<h1 class="text-2xl font-semibold mb-4 text-foreground">Get Back Into Your Account</h1>
 
 	<form
 		onsubmit={handleSubmit}
@@ -54,11 +54,13 @@
 		{#if sentMessage}
 			<p class="text-sm mb-4">{sentMessage}</p>
 			<p class="text-muted-foreground text-xs mb-4">
-				The link expires in one hour and can be used once.
+				The reset link expires in one hour and can be used once. The sign-in link expires in 15
+				days.
 			</p>
 		{:else}
 			<p class="text-muted-foreground text-sm mb-6">
-				Enter the email address you log in with and we'll send you a reset link.
+				Enter the email address you log in with. We'll email you a link to reset your password,
+				and a sign-in link you can use to get straight in.
 			</p>
 
 			<Label for="email" class="mb-2 font-medium">Email:</Label>
@@ -69,7 +71,7 @@
 			{/if}
 
 			<Button type="submit" disabled={isLoading}>
-				{isLoading ? 'Sending…' : 'Send reset link'}
+				{isLoading ? 'Sending…' : 'Email me a link'}
 			</Button>
 		{/if}
 

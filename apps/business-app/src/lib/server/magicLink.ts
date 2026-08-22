@@ -8,7 +8,8 @@ import { eq, inArray, sql } from 'drizzle-orm';
 // Emitters mint a fresh token, persist its hash, and email/return the raw token.
 // Each table holds a single token column, so minting invalidates any previously
 // issued link for that account (last-write-wins, by design).
-const TOKEN_TTL_MS = 15 * 24 * 60 * 60 * 1000;
+export const MAGIC_LINK_TTL_DAYS = 15;
+const TOKEN_TTL_MS = MAGIC_LINK_TTL_DAYS * 24 * 60 * 60 * 1000;
 
 export function newMagicToken() {
 	const raw = uuidv4();
@@ -84,4 +85,15 @@ export async function mintUserToken(
 		});
 
 	return raw;
+}
+
+/**
+ * The sign-in link a minted business token belongs in.
+ *
+ * Same shape claimLead builds inline; named here because /api/forgotPassword
+ * needs it too. business-app URLs carry no country segment — the slug implies
+ * one — so this matches resetPasswordUrl in lib/server/passwordReset.ts.
+ */
+export function signInLinkUrl(slug: string, rawToken: string): string {
+	return `https://business.solarvipani.com/${slug}/signin-link/${rawToken}`;
 }
