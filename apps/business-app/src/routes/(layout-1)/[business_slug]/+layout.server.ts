@@ -54,20 +54,16 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 		SessionManager.getSessionFromCookie(cookies) ?? undefined;
 	const { business_slug } = params;
 
-	// Check if the URL matches claim, login, reset-password, or magic-link routes
+	// The pages under [business_slug] that a visitor with no session may reach.
+	// There is no per-business login page: /{slug}/login was a stub rendering
+	// `<p>Hello</p>` and is gone. Signing in happens at /login, which takes an
+	// email and resolves the slug from the account.
 	const isClaimPage = url.pathname === `/${business_slug}/claim`;
-	const isLoginPage = url.pathname === `/${business_slug}/login`;
 	const isResetPasswordPage = url.pathname.startsWith(`/${business_slug}/reset-password`);
 	const isMagicLinkPage = url.pathname.startsWith(`/${business_slug}/signin-link`);
 
 	// If no session and not on an allowed page, redirect to login
-	if (
-		!sessionData &&
-		!isLoginPage &&
-		!isClaimPage &&
-		!isResetPasswordPage &&
-		!isMagicLinkPage
-	) {
+	if (!sessionData && !isClaimPage && !isResetPasswordPage && !isMagicLinkPage) {
 		throw redirect(302, '/login');
 	}
 

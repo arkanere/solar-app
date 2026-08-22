@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 	// "your link is invalid" message inside the *dashboard* shell — sidebar,
 	// Logout and all — for someone who is by definition not signed in. The only
 	// way on from there was a link to /{slug}/login, a stub page whose whole
-	// content is <p>Hello</p>.
+	// content was <p>Hello</p> — since deleted.
 	let reason: 'expired-link' | 'signin-error';
 
 	try {
@@ -32,8 +32,8 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 		reason = 'signin-error';
 	}
 
-	// /login rather than /{slug}/login: the country-less page is the real one,
-	// and it carries the link on to /forgot-password for a fresh sign-in link.
+	// /login is the only sign-in page there is, and it carries the link on to
+	// /forgot-password for a fresh sign-in link.
 	// The slug is deliberately not passed along — it names a business, and this
 	// request just proved the sender does not hold a valid token for it.
 	throw redirect(302, `/login?reason=${reason}`);

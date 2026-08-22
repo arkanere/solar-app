@@ -3,7 +3,9 @@
 // under [business_slug], that message came wrapped in the logged-in dashboard
 // shell — sidebar, Dashboard/Leads/Branches, a Logout button — shown to someone
 // who by definition has no session. The only way on was a link to
-// /{slug}/login, a stub page whose entire content is `<p>Hello</p>`.
+// /{slug}/login, a stub page whose entire content was `<p>Hello</p>` (deleted
+// along with this fix; the assertion below outlives it, since the layout guard
+// would otherwise be free to allowlist such a page again).
 //
 // Now every path out of the load is a redirect, and the failure paths carry a
 // `reason` that /login turns into a notice.
@@ -59,10 +61,11 @@ describe('an invalid sign-in link redirects instead of rendering in the dashboar
 		expect(location).toBe('/login?reason=expired-link');
 	});
 
-	it('does not send the visitor to the /{slug}/login stub', async () => {
+	it('does not send the visitor to a per-business login page', async () => {
 		const { location } = await loadRedirect(slug, 'not-a-real-token');
 
-		// That page renders `<p>Hello</p>` and offers no way to get a new link.
+		// There is no such page — /{slug}/login is deleted — so a redirect there
+		// would be a 404 rather than a way to get a new link.
 		expect(location).not.toContain(`/${slug}/login`);
 	});
 
