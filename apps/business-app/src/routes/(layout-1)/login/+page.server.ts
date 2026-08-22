@@ -3,7 +3,17 @@ import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { BusinessAuthService } from '$lib/in/auth/business';
 
-export const load: PageServerLoad = async ({ cookies }) => {
+/**
+ * Why the visitor was sent here, when something sent them. Keyed rather than
+ * free text: the message must not be attacker-controlled, since anything in the
+ * query string ends up rendered on a login form.
+ */
+const NOTICES: Record<string, string> = {
+	'expired-link': 'That sign-in link has expired or is no longer valid. Sign in below, or request a new link.',
+	'signin-error': 'Something went wrong signing you in. Please try again.'
+};
+
+export const load: PageServerLoad = async ({ cookies, url }) => {
 	const authService = new BusinessAuthService();
 
 	// Check if already logged in
@@ -16,7 +26,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 	}
 
 	// Allow access to the login page if not logged in
-	return {};
+	return { notice: NOTICES[url.searchParams.get('reason') ?? ''] ?? null };
 };
 
 export const actions: Actions = {

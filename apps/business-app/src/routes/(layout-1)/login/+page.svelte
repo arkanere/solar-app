@@ -6,15 +6,24 @@
 
 	export type PageProps = {
 		form?: any | null;
+		data: { notice: string | null };
 	};
 
-	let { form = null }: PageProps = $props();
+	let { form = null, data }: PageProps = $props();
 </script>
 
 <main
 	class="min-h-screen w-full flex flex-col items-center justify-center p-8 bg-background text-foreground transition-colors duration-300"
 >
 	<h1 class="text-2xl font-semibold mb-4 text-foreground">Business Login</h1>
+
+	{#if data.notice}
+		<!-- Amber, not red: an expired link is an attention state, not a failed
+		     action by this visitor. See docs/business-app-design-conventions.md. -->
+		<p class="w-[300px] mb-4 p-3 rounded-md bg-warning-muted text-foreground text-sm">
+			{data.notice}
+		</p>
+	{/if}
 
 	<form
 		method="POST"
