@@ -297,6 +297,19 @@ describe('POST /api/forgotPassword', () => {
 		expect(stored.magic_link_token).not.toBe(signInTokenFromEmail());
 	});
 
+	it('does not promise a password change the dashboard cannot do', async () => {
+		// The first version of this email said "once you are in, you can set a new
+		// password from your account". Nothing in the dashboard does that:
+		// /api/resetPassword is the only writer of login_password and it takes a
+		// token, not a session, so a signed-in partner cannot reach it. The copy
+		// now points back at the reset link instead.
+		await forgot({ email: loginEmail });
+		const message = sendEmail.mock.calls[0][2];
+
+		expect(message).not.toMatch(/from your account/i);
+		expect(message).toContain('does not change your password');
+	});
+
 	it('the sign-in link it emails actually signs the account in', async () => {
 		await forgot({ email: loginEmail });
 

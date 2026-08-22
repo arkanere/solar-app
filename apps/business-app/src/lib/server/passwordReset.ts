@@ -130,8 +130,15 @@ export function resetPasswordUrl(slug: string, rawToken: string): string {
  *
  * Carries two links, because /forgot-password is the one page a locked-out
  * partner reaches and the two ways back in have different costs: the reset link
- * is short-lived and single-use, the sign-in link gets them in now and lets them
- * change the password from inside. `signInUrl` is nullable — minting it can fail
+ * is short-lived and single-use, the sign-in link gets them in now but leaves
+ * the password alone.
+ *
+ * The copy must not tell them to set a password after signing in. There is no
+ * screen in the dashboard that does that — /api/resetPassword is the only thing
+ * that writes login_password, and it takes a token rather than a session, so a
+ * signed-in partner has no way to reach it without the emailed reset link.
+ *
+ * `signInUrl` is nullable — minting it can fail
  * independently of the reset token, and a reset-only email is still useful, so
  * the section is simply omitted rather than the whole mail withheld.
  */
@@ -148,7 +155,7 @@ export function resetPasswordEmail(
         <a href="${signInUrl}" style="color: blue; text-decoration: underline;">Sign in to Solar Vipani</a>
     </p>
 
-    <p>The sign-in link expires in ${MAGIC_LINK_TTL_DAYS} days. Once you are in, you can set a new password from your account.</p>
+    <p>The sign-in link expires in ${MAGIC_LINK_TTL_DAYS} days and does not change your password. If you want a new password, use the reset link above while it is still valid — you can always request a fresh one.</p>
 `
 		: '';
 
