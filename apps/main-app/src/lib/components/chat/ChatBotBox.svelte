@@ -1,6 +1,7 @@
 <script lang="ts">
   import { tick } from "svelte";
   import { writable, get } from "svelte/store";
+  import { page } from "$app/stores";
   import { Button } from "$lib/components/ui/button";
   import { Textarea } from "$lib/components/ui/textarea";
   import { Badge } from "$lib/components/ui/badge";
@@ -330,11 +331,20 @@
     try {
       // The server folds leadProfile into the system prompt itself, so the whole
       // profile goes up every turn — the LLM is stateless per request.
+      //
+      // pagePath tells the backend where the visitor is reading from. It carries
+      // the country prefix ("/us/..." vs an unprefixed root path), which is the
+      // only country signal the chatbot has: the AI endpoints are reached through
+      // apiUrl(), not through a country route, so nothing else in the request
+      // says which of the two trees the visitor is in. Read per turn rather than
+      // captured on open, because the transcript outlives SPA navigations.
+      // Pathname only — query strings carry tracking params we have no use for.
       const requestPayload: Record<string, any> = {
         userMessage: text,
         leadProfile: leadProfile,
         history: history,
         sessionId: sessionId,
+        pagePath: get(page).url.pathname,
       };
 
       const response = await fetch(apiUrl("/api/chatbot"), {
