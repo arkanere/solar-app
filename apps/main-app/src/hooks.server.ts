@@ -12,9 +12,8 @@ const MOVED_TO_ROOT_FROM = ['in', 'us'];
 // Legacy URL rewrites that need no DB lookup. Suffix-parsing redirects that DO
 // need geo data live as +server.ts shims under
 // routes/[country=country]/{county/[county_slug], solar-panel-installer-directory/[city]}.
-// They moved there from routes/us/ in stage 4 of
-// docs/migration-plan-delete-us.md and are gated to US — the suffix parsing is
-// US state-abbreviation data ("orange-ca"), so an IN request 404s rather than
+// They moved there from routes/us/ when that tree was deleted, and are gated
+// to US — the suffix parsing is US state-abbreviation data ("orange-ca"), so an IN request 404s rather than
 // falling through to a bare-slug lookup against Indian rows.
 //
 // ⚠️ Those shims redirect from their route handlers, *after* routing, so unlike
@@ -63,8 +62,8 @@ function legacyRedirect(pathname: string): string | null {
 	// ⚠️ **These two rules stay. Deliberately.** An earlier version of this comment
 	// promised that stage 15c would delete them "in the same commit that makes the
 	// page country-aware". Stage 15c shipped without doing so — it merged
-	// *components*, not these pages — and stage 12 of
-	// docs/migration-plan-delete-us.md settled the question instead: a real
+	// *components*, not these pages — and the /us deletion settled the question
+	// instead: a real
 	// /us/partners is a US partner-acquisition funnel and a real /us/get-quotes is
 	// a US consumer lead funnel. Both are **new product surface, not migration
 	// work**, and neither is in scope. /us used to capture consumer leads through
@@ -106,9 +105,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 	if (redirectTarget) {
 		// This used to read `building ? '' : event.url.search`, because
 		// `url.search` is unreadable while prerendering and the crawler followed
-		// links from the prerendered /us home into these legacy paths. Stage 10
-		// of docs/migration-plan-delete-us.md dropped it: nothing in the app is
-		// prerendered any more, so there is no crawler and `handle` never runs
+		// links from the prerendered /us home into these legacy paths. It was
+		// dropped when prerendering went: nothing in the app is prerendered any more, so there is no crawler and `handle` never runs
 		// at build time. This is a build-time simplification only — at request
 		// time `building` was always false, so query strings survived a legacy
 		// redirect before and after.

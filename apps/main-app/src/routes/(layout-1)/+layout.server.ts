@@ -18,8 +18,8 @@ import { count, eq } from 'drizzle-orm';
 // [country] layout counts platform-wide totals like this one does, so the two
 // trees agree; keep the three readers of these counts in step.
 //
-// Nothing anywhere in the app is prerendered any more (stage 10 of
-// docs/migration-plan-delete-us.md), so this cannot couple a build to the DB;
+// Nothing anywhere in the app is prerendered any more, so this cannot couple a
+// build to the DB;
 // the ISR configs on the pages under this layout cache the result.
 export const load: LayoutServerLoad = async () => {
 	const [installerRows, leadRows] = await Promise.all([

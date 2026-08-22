@@ -2,9 +2,8 @@
 // its page is a static shell around <BusinessForm>, and the level2 dropdown is
 // populated client-side from /[country]/api/getLevel2s.
 //
-// /us/business-form was prerendered until stage 3 of
-// docs/migration-plan-delete-us.md deleted its `prerender = true`, and
-// /in/business-form has never been cached at all. Stage 10 gives both the same
+// /us/business-form was prerendered until its `prerender = true` was deleted,
+// and /in/business-form has never been cached at all. Both now get the same
 // 15-day ISR window every other [country] page uses, rather than leaving the
 // one page in the tree served by an uncached function on every request.
 export const config = {

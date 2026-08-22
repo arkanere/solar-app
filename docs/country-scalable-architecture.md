@@ -21,8 +21,8 @@
 > untouched and still the only outstanding slice.
 >
 > **UPDATE 2026-08-01 — `routes/us/` dissolved too; the route surface is now final.**
-> `docs/migration-plan-delete-us.md` (stages 1, 3–13; stage 2 deleted as its premise did
-> not hold) merged every `/us` page into `routes/[country=country]/` and deleted the tree.
+> A 13-stage plan (stage 2 dropped as its premise did not hold) merged every `/us` page
+> into `routes/[country=country]/` and deleted the tree.
 > Route surface is now exactly **`routes/(layout-1)/` + `routes/[country=country]/`** —
 > two trees, no per-country literals anywhere. `$lib/us/` is gone as well. The two legacy
 > US geo shims (`county/[county_slug]`, `solar-panel-installer-directory/[city]`) live
@@ -151,8 +151,8 @@ routes/[country=country]/sitemap.xml/+server.ts
 >
 > ~~Per §3.3 of the migration plan, `routes/us/` is deliberately **not** deleted — merging
 > the remaining `/in`↔`/us` page twins was out of scope.~~ **Superseded 2026-08-01.** That
-> exclusion was reversed on the user's instruction and carried out as
-> `docs/migration-plan-delete-us.md`: the nine page twins were merged into `[country]`
+> exclusion was reversed on the user's instruction and carried out: the nine page twins
+> were merged into `[country]`
 > (gated per country, with the copy reconciled section by section) and `routes/us/` was
 > deleted. The legacy US 301 shims that lived there now sit under `[country]`, gated to US.
 

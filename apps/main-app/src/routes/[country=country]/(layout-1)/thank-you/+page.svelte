@@ -70,8 +70,7 @@
 	     business_profiles, both IN-only tables, and US leads live in
 	     us_leaddata. The /us page has only ever shown this headline, and this
 	     preserves that exactly. Giving /us a real lead-detail page means
-	     reading us_leaddata — a behaviour addition, deliberately not done here
-	     (see S6 of docs/migration-plan-delete-us.md). -->
+	     reading us_leaddata — a behaviour addition, deliberately not done here. -->
 	{#if cc !== 'in'}
 		<h1 class="text-2xl md:text-4xl font-bold mb-4">Thank you for submitting your details.</h1>
 	{:else if error}

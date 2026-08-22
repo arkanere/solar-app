@@ -157,8 +157,7 @@
 
   // Structured data and locale metadata were hardcoded to India. Everything
   // here is derivable from CountryConfig; the marketing copy is not, and was
-  // reconciled against the US page's own copy in stage 8 of
-  // docs/migration-plan-delete-us.md.
+  // reconciled against the US page's own copy when the two pages merged.
   const ogLocale = $derived(data.country.locale.replace("-", "_"));
   const areaServed = $derived(data.country.name);
   const priceCurrency = $derived(data.country.currency);

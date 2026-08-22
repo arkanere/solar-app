@@ -134,8 +134,8 @@ export const usUpdateBusinessDetailsSchema = updateBusinessDetailsSchema.omit({
  * enforced client-side by BusinessForm.svelte and are not reproduced here, so
  * this cannot start rejecting submissions the endpoint used to accept.
  *
- * Country-parameterized when the two submitBusiness endpoints merged (stage 7
- * of docs/migration-plan-delete-us.md). The old US endpoint validated nothing,
+ * Country-parameterized when the two submitBusiness endpoints merged. The old
+ * US endpoint validated nothing,
  * so the US variant adds presence checks only — the discipline this file's
  * header states — and must not require what the US form never sends.
  * ---------------------------------------------------------------------- */

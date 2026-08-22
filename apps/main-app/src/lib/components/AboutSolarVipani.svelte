@@ -10,8 +10,8 @@
 		// prerendering constraint (stage 3 of the /in plan: a DB call would have
 		// coupled the build to the database).
 		//
-		// Both of those reasons are gone: nothing is prerendered, and stage 11 of
-		// docs/migration-plan-delete-us.md deleted that layout, so /us now gets
+		// Both of those reasons are gone: nothing is prerendered, and that layout
+		// was deleted with routes/us/, so /us now gets
 		// the stats from [country]/(layout-1)/ like every other page. **Every
 		// remaining call site passes both props** — the optionality is vestigial
 		// and these could be made required.

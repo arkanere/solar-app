@@ -1,7 +1,6 @@
 // US state name <-> abbreviation maps. The legacy US redirect shims need them
 // to translate suffix slugs ("orange-ca") into the /us/solar/{state}/{county}
-// scheme. Sole home for this data since $lib/us/ was deleted in stage 1 of
-// docs/migration-plan-delete-us.md.
+// scheme. Sole home for this data since $lib/us/ was deleted.
 
 export const stateToAbbr: Record<string, string> = {
 	Alabama: 'al',
