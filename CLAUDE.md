@@ -65,7 +65,7 @@ grep `COMPLETED n FILES x ERRORS`, not `found x errors`. A change passes if the 
 | --- | --- | --- |
 | main-app | 9 | 1 |
 | business-app | 32 | 0 |
-| user-app | 0 | 2 |
+| user-app | 0 | 0 |
 
 **business-app's check now covers everything.** `--no-tsconfig --ignore "src/lib/components/ui"` was
 dropped on 2026-08-05, so its `.ts` files are type-checked for the first time and the run went from
@@ -123,16 +123,25 @@ extracting a shared file. Change a brand token in one app and change it in all t
   never put body copy on `bg-accent` (2.53:1 in dark — use `bg-accent-muted`).
 - `docs/business-app-design-conventions.md` — the logged-in dashboard. Different rules on purpose:
   there colour means "you can interact with this", so headings are `text-foreground`, not accent.
+- `docs/user-app-design-conventions.md` — the customer-facing tracker. It *follows* the
+  business-app doc (it is a product surface, not marketing) and only records where user-app
+  differs, so read both.
 
-Don't port rules between the two.
+Don't port rules between the marketing doc and the other two.
 
-`user-app` has no doc of its own. It got the token layer on 2026-08-23 (copied from main-app's, minus
-the shadcn component tokens it has no components for) but is styled with per-file scoped `<style>`
-blocks reading `hsl(var(--token))`, not Tailwind utilities — so there is nothing shared to port into
-it. Two of its files declare `:root` *inside* a scoped `<style>`; Svelte does not scope `:root`, so
-those declarations leak app-wide. They alias onto the shared tokens and deliberately skip any name
-`app.css` already owns (`--shadow-*`, `--transition-fast`/`-slow`, `--primary-hover`). If you add a
-local alias there, check the name is not already a shared token.
+`user-app` was converted to Tailwind utilities on 2026-08-23 and now has a small local UI kit in
+`src/lib/components/ui/` (`AppShell`, `Card`, `Badge`, `Button`, `Field`, `Alert`, `EmptyState`) —
+hand-written, no shadcn and no `bits-ui`/`tailwind-merge`, so the `class` prop appends rather than
+merges. Three things to know before writing markup there:
+
+- Its token layer came from **main-app**, so business-app's `--accent-strong` does not exist —
+  write `text-primary-strong`. `text-accent-strong` renders as nothing, silently.
+- The scoped `<style>` blocks and the two leaked `:root` alias blocks are gone from `/in`,
+  `/in/thank-you`, `/in/feedback` and `BillUpload`. `src/routes/+page.svelte` (region picker) and
+  `signin-link/[token]` are still on bespoke scoped CSS.
+- Tailwind v4's `@theme` z-index namespace is `--z-index-*`, not `--z-*`, so `z-sticky` and
+  friends generate nothing. `AppShell` sets `style="z-index: var(--z-sticky)"` instead. The same
+  trap applies in business-app's `Sidebar.svelte` (`z-sidebar`).
 
 ## About Solar-app
 

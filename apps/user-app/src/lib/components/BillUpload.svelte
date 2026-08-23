@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Alert from '$lib/components/ui/Alert.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
 	/**
 	 * Electricity bill upload, reusable on the thank-you page (pass `leadRef`)
 	 * and the logged-in dashboard (pass `leadId`).
@@ -117,9 +119,9 @@
 	}
 </script>
 
-<div class="bill-upload">
-	<h3>Your Recent Electricity Bill</h3>
-	<p class="bill-intro">
+<div class="text-left">
+	<h3 class="text-base font-semibold text-foreground">Your Recent Electricity Bill</h3>
+	<p class="mt-1 text-sm text-muted-foreground">
 		{#if hasBill}
 			Your electricity bill is on file. Uploading a new file will replace it.
 		{:else}
@@ -129,181 +131,67 @@
 	</p>
 
 	{#if hasBill}
-		<div class="current-bill">
+		<div class="mt-3">
 			{#if billIsPdf}
-				<a href={billUrl} target="_blank" rel="noopener" class="bill-link">📄 View uploaded bill (PDF)</a>
+				<a
+					href={billUrl}
+					target="_blank"
+					rel="noopener"
+					class="text-sm font-medium text-primary-strong hover:underline"
+				>
+					📄 View uploaded bill (PDF)
+				</a>
 			{:else}
-				<a href={billUrl} target="_blank" rel="noopener" class="bill-thumb-link">
-					<img src={billUrl} alt="Uploaded electricity bill" class="bill-thumb" loading="lazy" />
+				<a href={billUrl} target="_blank" rel="noopener" class="inline-block">
+					<img
+						src={billUrl}
+						alt="Uploaded electricity bill"
+						loading="lazy"
+						class="h-24 w-auto rounded-md border border-border object-cover"
+					/>
 				</a>
 			{/if}
 		</div>
 	{/if}
 
 	{#if errorMessage}
-		<div class="message error">{errorMessage}</div>
+		<Alert variant="destructive" class="mt-3">{errorMessage}</Alert>
 	{/if}
 	{#if successMessage}
-		<div class="message success">{successMessage}</div>
+		<Alert variant="success" class="mt-3">{successMessage}</Alert>
 	{/if}
 
-	<div class="upload-controls">
+	<div class="mt-4 space-y-2">
 		<input
 			bind:this={fileInput}
 			type="file"
 			accept=".jpg,.jpeg,.png,.webp,.gif,.bmp,.tiff,.pdf,image/*,application/pdf"
 			onchange={handleFileChange}
 			disabled={isUploading}
+			class="block w-full text-sm text-foreground-secondary file:mr-3 file:cursor-pointer file:rounded-md file:border file:border-border file:bg-card file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground hover:file:bg-background-tertiary disabled:opacity-50"
 		/>
-		<small class="hint">Accepted formats: JPG, PNG, WebP, GIF, BMP, TIFF, PDF (Max: 10MB)</small>
+		<p class="text-xs text-muted-foreground">
+			Accepted formats: JPG, PNG, WebP, GIF, BMP, TIFF, PDF (Max: 10MB)
+		</p>
 
 		{#if imagePreview}
-			<div class="preview">
-				<img src={imagePreview} alt="Bill preview" />
+			<div>
+				<img
+					src={imagePreview}
+					alt="Bill preview"
+					class="h-32 w-auto rounded-md border border-border object-cover"
+				/>
 			</div>
 		{:else if selectedFile}
-			<p class="selected-file">Selected: {selectedFile.name}</p>
+			<p class="text-sm font-medium text-foreground">Selected: {selectedFile.name}</p>
 		{/if}
 
 		{#if selectedFile}
-			<button type="button" class="upload-btn" onclick={uploadBill} disabled={isUploading}>
-				{isUploading ? 'Uploading...' : hasBill ? 'Replace Bill' : 'Upload Bill'}
-			</button>
+			<div class="pt-1">
+				<Button type="button" size="sm" onclick={uploadBill} disabled={isUploading}>
+					{isUploading ? 'Uploading...' : hasBill ? 'Replace Bill' : 'Upload Bill'}
+				</Button>
+			</div>
 		{/if}
 	</div>
 </div>
-
-<style>
-	.bill-upload {
-		background: hsl(var(--card));
-		border: 1px solid hsl(var(--border));
-		border-radius: 8px;
-		box-shadow: var(--shadow-sm);
-		padding: 1.25rem;
-		margin: 1.5rem 0;
-		text-align: left;
-	}
-
-	h3 {
-		font-size: 1.1rem;
-		font-weight: 600;
-		margin: 0 0 0.5rem;
-		color: hsl(var(--primary-strong));
-	}
-
-	.bill-intro {
-		font-size: 0.9rem;
-		color: hsl(var(--foreground-secondary));
-		line-height: 1.6;
-		margin: 0 0 1rem;
-	}
-
-	.current-bill {
-		margin-bottom: 1rem;
-	}
-
-	.bill-link {
-		color: hsl(var(--primary-strong));
-		font-weight: 500;
-		font-size: 0.95rem;
-		text-decoration: underline;
-	}
-
-	.bill-link:hover {
-		text-decoration: none;
-	}
-
-	.bill-thumb-link {
-		display: inline-block;
-		border: 1px dashed hsl(var(--border-hover));
-		border-radius: 6px;
-		padding: 0.4rem;
-	}
-
-	.bill-thumb {
-		display: block;
-		max-width: 100%;
-		max-height: 180px;
-		object-fit: contain;
-		border-radius: 4px;
-	}
-
-	.message {
-		padding: 0.6rem 0.9rem;
-		border-radius: 6px;
-		font-size: 0.9rem;
-		margin-bottom: 1rem;
-	}
-
-	.message.error {
-		background: hsl(var(--destructive-muted));
-		color: hsl(var(--foreground));
-		border-left: 4px solid hsl(var(--destructive));
-	}
-
-	.message.success {
-		background: hsl(var(--success-muted));
-		color: hsl(var(--foreground));
-		border-left: 4px solid hsl(var(--success));
-	}
-
-	.upload-controls {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-	}
-
-	input[type='file'] {
-		font-size: 0.9rem;
-		color: hsl(var(--foreground-secondary));
-	}
-
-	.hint {
-		font-size: 0.8rem;
-		color: hsl(var(--muted-foreground));
-		font-style: italic;
-	}
-
-	.preview {
-		border: 1px dashed hsl(var(--border-hover));
-		border-radius: 6px;
-		padding: 0.5rem;
-		margin-top: 0.5rem;
-	}
-
-	.preview img {
-		display: block;
-		max-width: 100%;
-		max-height: 200px;
-		object-fit: contain;
-	}
-
-	.selected-file {
-		font-size: 0.9rem;
-		color: hsl(var(--foreground-secondary));
-		margin: 0.25rem 0 0;
-	}
-
-	.upload-btn {
-		align-self: flex-start;
-		margin-top: 0.5rem;
-		padding: 0.55rem 1.5rem;
-		background: hsl(var(--primary));
-		color: hsl(var(--primary-foreground));
-		border: none;
-		border-radius: 6px;
-		font-size: 0.95rem;
-		font-weight: 600;
-		cursor: pointer;
-		transition: opacity 0.2s ease;
-	}
-
-	.upload-btn:hover:not(:disabled) {
-		opacity: 0.9;
-	}
-
-	.upload-btn:disabled {
-		opacity: 0.6;
-		cursor: not-allowed;
-	}
-</style>
