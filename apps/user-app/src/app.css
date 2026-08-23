@@ -58,6 +58,10 @@
   --z-tooltip: 1300;
   --z-toast: 1400;
 
+  /* Heading divider (the short orange rule under a heading, as on main-app) */
+  --divider-line-width: 5rem;
+  --divider-line-height: 0.25rem;
+
   /* Shared interactive tokens */
   --ring-width: 3px;
   --ring-offset-width: 2px;

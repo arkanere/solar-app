@@ -336,28 +336,44 @@
 	}
 
 	/* Welcome section with gradient background */
+	/* No orange fill and no gradient here: main-app opens a page with the heading
+	   and a short orange rule sitting straight on the cream background, and a
+	   full-bleed orange block is the one thing it never does. */
 	.welcome-section {
 		text-align: center;
-		padding: 3rem 2rem;
-		background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-strong)));
-		color: hsl(var(--primary-foreground));
-		border-radius: var(--border-radius-lg);
-		box-shadow: var(--shadow-md);
+		padding: 2.5rem 2rem 2rem;
 	}
 
 	h1 {
 		font-size: 2.5rem;
 		font-weight: 600;
 		margin-bottom: 0.75rem;
-		color: hsl(var(--primary-foreground));
+		color: hsl(var(--primary-strong));
 		line-height: var(--heading-line-height);
+	}
+
+	/* The heading divider main-app draws with PageHeader; user-app has no such
+	   component, so it is a pseudo-element here. */
+	.welcome-section h1::after,
+	.dashboard-content h2::after {
+		content: '';
+		display: block;
+		width: var(--divider-line-width);
+		height: var(--divider-line-height);
+		margin: 1rem auto 0;
+		background: hsl(var(--accent));
+		border-radius: var(--radius-xs);
+	}
+
+	.dashboard-content h2::after {
+		margin-left: 0;
+		margin-right: 0;
 	}
 
 	.email {
 		font-size: 1.1rem;
-		opacity: 0.9;
 		margin: 0;
-		color: hsl(var(--primary-foreground) / 0.8);
+		color: hsl(var(--foreground-secondary));
 	}
 
 	.logout-form {
@@ -365,9 +381,9 @@
 	}
 
 	.logout-btn {
-		background: hsl(var(--primary-foreground) / 0.12);
-		color: hsl(var(--primary-foreground));
-		border: 1px solid hsl(var(--primary-foreground) / 0.4);
+		background: hsl(var(--card));
+		color: hsl(var(--foreground));
+		border: 1px solid hsl(var(--border));
 		padding: 0.45rem 1.25rem;
 		border-radius: var(--border-radius-sm);
 		font-size: 0.9rem;
@@ -377,27 +393,30 @@
 	}
 
 	.logout-btn:hover {
-		background: hsl(var(--primary-foreground) / 0.22);
+		background: hsl(var(--background-tertiary));
 	}
 
 	/* Dashboard content section */
+	/* main-app's cards are flat and bordered, not shadowed — --shadow-card is
+	   `none` in light and a soft lift in dark, so this flips with the theme. */
 	.dashboard-content {
 		padding: var(--section-padding);
 		border-radius: var(--border-radius-lg);
 		background-color: var(--light-card-bg);
-		box-shadow: var(--shadow-md);
+		border: 1px solid hsl(var(--border));
+		box-shadow: var(--shadow-card);
 		transition: box-shadow var(--transition-medium);
 	}
 
 	.dashboard-content:hover {
-		box-shadow: var(--shadow-lg);
+		box-shadow: var(--shadow-card-hover);
 	}
 
 	h2 {
 		font-size: 1.8rem;
 		font-weight: 600;
 		margin-bottom: 1rem;
-		color: var(--primary-color);
+		color: hsl(var(--primary-strong));
 	}
 
 	p {
@@ -460,8 +479,9 @@
 
 	/* Lead card header */
 	.lead-header {
-		background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-strong)));
-		color: hsl(var(--primary-foreground));
+		background: hsl(var(--background-secondary));
+		color: hsl(var(--foreground));
+		border-bottom: 1px solid hsl(var(--border));
 		padding: 1rem 1.5rem;
 		display: flex;
 		justify-content: center;
@@ -471,7 +491,7 @@
 	.lead-date {
 		font-size: 1rem;
 		font-weight: 500;
-		color: hsl(var(--primary-foreground));
+		color: hsl(var(--foreground-secondary));
 	}
 
 	/* Lead details section */
@@ -543,8 +563,9 @@
 	}
 
 	.interest-group-header {
-		background: linear-gradient(135deg, hsl(var(--success)), hsl(var(--success) / 0.75));
-		color: hsl(var(--secondary-foreground));
+		background: hsl(var(--success-muted));
+		color: hsl(var(--foreground));
+		border-bottom: 1px solid hsl(var(--success) / 0.35);
 		padding: 1rem 1.5rem;
 		display: flex;
 		justify-content: space-between;
@@ -561,7 +582,7 @@
 	}
 
 	.interest-count-badge {
-		background-color: hsl(var(--secondary-foreground) / 0.15);
+		background-color: hsl(var(--success));
 		color: hsl(var(--secondary-foreground));
 		padding: 0.3rem 0.8rem;
 		border-radius: 20px;
@@ -700,7 +721,7 @@
 	.view-profile-btn {
 		display: inline-block;
 		padding: 0.6rem 1.25rem;
-		background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-strong)));
+		background: hsl(var(--primary));
 		color: hsl(var(--primary-foreground));
 		text-decoration: none;
 		border-radius: var(--border-radius-sm);

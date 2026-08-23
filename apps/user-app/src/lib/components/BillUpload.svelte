@@ -288,7 +288,7 @@
 		align-self: flex-start;
 		margin-top: 0.5rem;
 		padding: 0.55rem 1.5rem;
-		background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-strong)));
+		background: hsl(var(--primary));
 		color: hsl(var(--primary-foreground));
 		border: none;
 		border-radius: 6px;

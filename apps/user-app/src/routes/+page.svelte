@@ -53,7 +53,7 @@
 		align-items: center;
 		text-align: center;
 		padding: 4rem 2rem 3rem;
-		background: linear-gradient(135deg, hsl(var(--background)), hsl(var(--accent-muted)));
+		background: hsl(var(--background));
 	}
 
 	.logo {
