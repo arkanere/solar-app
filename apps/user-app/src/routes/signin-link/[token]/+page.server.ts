@@ -13,7 +13,7 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 
 		if (result.success) {
 			// Redirect to the user dashboard
-			throw redirect(302, '/in');
+			throw redirect(302, '/');
 		} else {
 			return {
 				error: result.error || 'Invalid or expired magic link. Please request a new one.'

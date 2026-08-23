@@ -18,7 +18,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 	const response = await resolve(event);
 
-	if (origin && ALLOWED_ORIGINS.includes(origin) && event.url.pathname.startsWith('/in/api/')) {
+	if (origin && ALLOWED_ORIGINS.includes(origin) && event.url.pathname.startsWith('/api/')) {
 		response.headers.set('Access-Control-Allow-Origin', origin);
 	}
 

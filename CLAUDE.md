@@ -136,9 +136,9 @@ merges. Three things to know before writing markup there:
 
 - Its token layer came from **main-app**, so business-app's `--accent-strong` does not exist —
   write `text-primary-strong`. `text-accent-strong` renders as nothing, silently.
-- The scoped `<style>` blocks and the two leaked `:root` alias blocks are gone from `/in`,
-  `/in/thank-you`, `/in/feedback` and `BillUpload`. `src/routes/+page.svelte` (region picker) and
-  `signin-link/[token]` are still on bespoke scoped CSS.
+- The scoped `<style>` blocks and the two leaked `:root` alias blocks are gone from `/`,
+  `/thank-you`, `/feedback` and `BillUpload`. Only `signin-link/[token]` is still on bespoke
+  scoped CSS.
 - Tailwind v4's `@theme` z-index namespace is `--z-index-*`, not `--z-*`, so `z-sticky` and
   friends generate nothing. `AppShell` sets `style="z-index: var(--z-sticky)"` instead. The same
   trap applies in business-app's `Sidebar.svelte` (`z-sidebar`).

@@ -45,12 +45,12 @@ Add to the kit rather than hand-rolling a second card or badge in a page.
 
 There is no nav rail. `AppShell` is a sticky logo bar plus a centred content container, and it is
 used **explicitly by each page** rather than dropped into `+layout.svelte`, because
-`/in/thank-you` has no session to pass a `user` from.
+`/thank-you` has no session to pass a `user` from.
 
 - `maxWidth` is `'5xl'` (default) or `'3xl'` (forms and the thank-you page). It is a lookup, not
   string interpolation, so Tailwind's scanner can see the class names — keep it that way.
-- **Sign Out posts to `/in?/logout`, absolute.** The logout action lives on the `/in` page, so a
-  relative `?/logout` silently misses it from `/in/feedback`.
+- **Sign Out posts to `/?/logout`, absolute.** The logout action lives on the dashboard page at
+  `/`, so a relative `?/logout` silently misses it from `/feedback`.
 - Pages emit only their `<header>` and content; the container lives in the shell.
 
 ## 4. No `dark:` variants
@@ -80,6 +80,18 @@ don't cover the token: the z-index scale (`--z-sticky` and friends are not `--z-
 
 ## 7. Scope
 
-Converted: `/in`, `/in/thank-you`, `/in/feedback`, and `BillUpload`. **Still on bespoke scoped
-CSS:** `src/routes/+page.svelte` (the region picker) and `src/routes/signin-link/[token]`.
-Bring them across when you next touch them.
+Converted: `/`, `/thank-you`, `/feedback`, and `BillUpload`. **Still on bespoke scoped CSS:**
+`src/routes/signin-link/[token]`. Bring it across when you next touch it.
+
+Routes carry no country segment. `/in` was dropped on 2026-08-23 — see §8.
+
+## 8. No country in the URL
+
+user-app URLs have **no `/in` or `/us` prefix** (dropped 2026-08-23, matching business-app's
+Phase 7). The dashboard is `/`, not `/in`. There was never a `/us` tree here; the region picker
+that linked to one was deleted with the move.
+
+The app is still India-only in its data — the `eq(..., 'in')` predicates in the page loaders and
+API routes are deliberate and were left untouched. Country is a query filter, not a route.
+
+Only **main-app** URLs still carry a country, so a cross-app link into main-app keeps its prefix.

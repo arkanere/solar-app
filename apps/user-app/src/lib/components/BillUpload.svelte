@@ -94,7 +94,7 @@
 				formData.append('leadId', String(leadId));
 			}
 
-			const response = await fetch('/in/api/uploadBill', {
+			const response = await fetch('/api/uploadBill', {
 				method: 'POST',
 				body: formData
 			});

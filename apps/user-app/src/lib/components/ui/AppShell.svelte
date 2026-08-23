@@ -2,7 +2,7 @@
 	import type { Snippet } from 'svelte';
 
 	// The shared page shell. Used explicitly by each page rather than dropped into
-	// a +layout.svelte, because /in/thank-you has no session to pass a user from.
+	// a +layout.svelte, because /thank-you has no session to pass a user from.
 	let {
 		user = null,
 		maxWidth = '5xl',
@@ -23,7 +23,7 @@
 		<div
 			class="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-3 md:px-6"
 		>
-			<a href="/in" class="flex shrink-0 items-center">
+			<a href="/" class="flex shrink-0 items-center">
 				<img
 					src="https://solarvipani.com/logo.webp"
 					alt="Solar Vipani"
@@ -41,9 +41,9 @@
 							<p class="text-xs leading-tight text-muted-foreground">{user.email}</p>
 						{/if}
 					</div>
-					<!-- The logout action lives on the /in page, so this must be absolute:
-					     a relative ?/logout would miss it from /in/feedback. -->
-					<form method="POST" action="/in?/logout">
+					<!-- The logout action lives on the dashboard page at /, so this must be absolute:
+					     a relative ?/logout would miss it from /feedback. -->
+					<form method="POST" action="/?/logout">
 						<button
 							type="submit"
 							class="inline-flex h-8 items-center justify-center rounded-md border border-border bg-card px-3 text-xs font-medium text-foreground transition-colors duration-150 hover:bg-background-tertiary"

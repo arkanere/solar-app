@@ -41,7 +41,7 @@
 		if (isValid) {
 			isSubmitting = true;
 
-			window.location.href = `https://user.solarvipani.com/in/thank-you?pincode=${encodeURIComponent(pinCode)}`;
+			window.location.href = `https://user.solarvipani.com/thank-you?pincode=${encodeURIComponent(pinCode)}`;
 
 			fetch('/in/api/submitLead', {
 				method: 'POST',

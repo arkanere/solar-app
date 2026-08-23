@@ -78,7 +78,7 @@
 					homeowners go solar with confidence.
 				</p>
 				<div class="mt-6">
-					<Button href="/in" variant="outline" size="sm">Back to dashboard</Button>
+					<Button href="/" variant="outline" size="sm">Back to dashboard</Button>
 				</div>
 			</Card>
 		</div>

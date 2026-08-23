@@ -76,7 +76,7 @@
     // India keeps its original user-app lead flow; other countries submit to
     // the unified same-site endpoint.
     const submitUrl = isIndia
-      ? 'https://user.solarvipani.com/in/api/submitLead'
+      ? 'https://user.solarvipani.com/api/submitLead'
       : `/${country!.code}/api/submitLead`;
 
     fetch(submitUrl, {
@@ -97,7 +97,7 @@
     });
 
     window.location.href = isIndia
-      ? `https://user.solarvipani.com/in/thank-you?pincode=${encodeURIComponent(pinCode)}`
+      ? `https://user.solarvipani.com/thank-you?pincode=${encodeURIComponent(pinCode)}`
       : `/${country!.code}/thank-you`;
   }
 </script>

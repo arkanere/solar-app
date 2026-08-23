@@ -196,6 +196,6 @@ export const load: PageServerLoad = async ({ cookies }) => {
 export const actions: Actions = {
 	logout: async ({ cookies }) => {
 		SessionManager.clearSession(cookies);
-		throw redirect(302, '/in');
+		throw redirect(302, '/');
 	}
 };

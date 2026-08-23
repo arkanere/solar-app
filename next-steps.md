@@ -69,11 +69,20 @@ named. `isvisible` is carried by **both** halves and both must be written when h
 to it, so an endpoint doing only those needs no country-bound `BusinessAuthService`. Only `login`
 and `signin-link` genuinely need one.
 
-**business-app URLs carry no country; main-app URLs still do.** A business belongs to exactly one
-country, so `[business_slug]` implies it and business-app's own paths are country-less. main-app is
-still under `[country=country]`, so every link leaving business-app needs the **resolved** country —
-use `$lib/mainAppUrls.ts`, and take the country from `[business_slug]/+layout.server.ts`'s data
-rather than from a literal.
+**business-app and user-app URLs carry no country; main-app URLs still do.** A business belongs to
+exactly one country, so `[business_slug]` implies it and business-app's own paths are country-less.
+main-app is still under `[country=country]`, so every link leaving business-app needs the
+**resolved** country — use `$lib/mainAppUrls.ts`, and take the country from
+`[business_slug]/+layout.server.ts`'s data rather than from a literal.
+
+**user-app dropped its `/in` prefix on 2026-08-23**, the same clean break with no legacy redirects.
+It was a much thinner job than business-app's Phase 7: user-app never had a `/us` tree (the region
+picker offering one linked to a 404 and was deleted), and it has no `[country]` param, no country
+cookie and no `resolveCountry` equivalent — country is a literal `'in'` in six query predicates,
+all left untouched. The dashboard is `/`, its API is `/api/*`. main-app's `LeadForm` and
+`LeadFormModal` were updated in the same commit; note `LeadFormModal`'s relative
+`fetch('/in/api/submitLead')` is **main-app's own** `[country=country]` endpoint and correctly
+still carries the prefix.
 
 **Do not switch the `[business_slug]` page loads to the `US_*` selections.** The dashboard, `/crm`
 and `/recent-projects` select `IN_*` unconditionally, which looks like it would label a US county
