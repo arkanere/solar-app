@@ -162,7 +162,7 @@
 						>
 							<div class="flex justify-between items-start gap-4 mb-2">
 								<h2 class="text-base font-semibold flex-1">{branch.city || branch.businessname}</h2>
-								<Badge variant="outline" class="bg-accent-muted text-accent border-transparent">Branch Office</Badge>
+								<Badge variant="outline" class="bg-accent-muted text-accent-strong border-transparent">Branch Office</Badge>
 							</div>
 							<div class="flex-1 space-y-3 text-sm">
 								<div>

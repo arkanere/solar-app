@@ -183,20 +183,21 @@
 </main>
 
 <style>
+	/* Local aliases onto the shared token layer in src/app.css. Svelte does not
+	   scope :root, so these leak globally — --primary-hover and --shadow-md are
+	   deliberately not redefined here, because app.css already owns those names. */
 	:root {
-		--primary-color: #0056b3;
-		--primary-hover: #004494;
-		--primary-light: #e6f0ff;
-		--accent-color: #ffc107;
-		--text-dark: #2c3e50;
-		--text-medium: #546e7a;
-		--light-bg-color: #f8f9fa;
-		--light-card-bg: #ffffff;
-		--border-radius-sm: 4px;
-		--border-radius-md: 8px;
-		--border-radius-lg: 16px;
-		--shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-		--font-family: 'Poppins', 'Helvetica Neue', Arial, sans-serif;
+		--primary-color: hsl(var(--primary));
+		--primary-light: hsl(var(--accent-muted));
+		--accent-color: hsl(var(--warning));
+		--text-dark: hsl(var(--foreground));
+		--text-medium: hsl(var(--foreground-secondary));
+		--light-bg-color: hsl(var(--background));
+		--light-card-bg: hsl(var(--card));
+		--border-radius-sm: var(--radius-sm);
+		--border-radius-md: var(--radius-md);
+		--border-radius-lg: var(--radius-lg);
+		--font-family: var(--font-sans);
 	}
 
 	* {
@@ -253,8 +254,9 @@
 	}
 
 	.error {
-		color: #c0392b;
-		background: #fdecea;
+		color: hsl(var(--foreground));
+		background: hsl(var(--destructive-muted));
+		border-left: 4px solid hsl(var(--destructive));
 		border-radius: var(--border-radius-sm);
 		padding: 0.75rem 1rem;
 		font-size: 0.9rem;
@@ -289,7 +291,7 @@
 		align-items: center;
 		gap: 0.5rem;
 		padding: 0.6rem 1.5rem;
-		border: 1px solid #d0d7de;
+		border: 1px solid hsl(var(--border));
 		border-radius: var(--border-radius-md);
 		cursor: pointer;
 		transition: all 0.2s ease;
@@ -301,9 +303,9 @@
 	}
 
 	.yes-no-option.selected {
-		background: var(--primary-light);
-		border-color: var(--primary-color);
-		color: var(--primary-color);
+		background: hsl(var(--accent-muted));
+		border-color: hsl(var(--primary));
+		color: hsl(var(--primary-strong));
 		font-weight: 600;
 	}
 
@@ -317,7 +319,7 @@
 		border: none;
 		font-size: 2.2rem;
 		line-height: 1;
-		color: #d0d7de;
+		color: hsl(var(--border-hover));
 		cursor: pointer;
 		transition: color 0.15s ease, transform 0.15s ease;
 		padding: 0.1rem;
@@ -341,7 +343,7 @@
 	textarea {
 		width: 100%;
 		padding: 0.75rem;
-		border: 1px solid #d0d7de;
+		border: 1px solid hsl(var(--border));
 		border-radius: var(--border-radius-md);
 		font-family: var(--font-family);
 		font-size: 0.95rem;
@@ -354,8 +356,8 @@
 	}
 
 	.submit-btn {
-		background: var(--primary-color);
-		color: #ffffff;
+		background: hsl(var(--primary));
+		color: hsl(var(--primary-foreground));
 		border: none;
 		border-radius: var(--border-radius-md);
 		padding: 0.85rem 2.5rem;
@@ -387,7 +389,7 @@
 	.back-link {
 		display: inline-block;
 		margin-top: 1rem;
-		color: var(--primary-color);
+		color: hsl(var(--primary-strong));
 		font-weight: 600;
 		text-decoration: none;
 	}

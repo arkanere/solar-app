@@ -30,26 +30,26 @@
 		align-items: center;
 		min-height: 100vh;
 		padding: 2rem;
-		background-color: #f5f5f5;
+		background-color: hsl(var(--background));
 	}
 
 	.error-box {
-		background: white;
+		background: hsl(var(--card));
 		padding: 3rem;
 		border-radius: 8px;
-		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+		box-shadow: var(--shadow-lg);
 		text-align: center;
 		max-width: 500px;
 	}
 
 	h1 {
-		color: #d32f2f;
+		color: hsl(var(--destructive));
 		margin-bottom: 1rem;
 		font-size: 2rem;
 	}
 
 	.error-message {
-		color: #666;
+		color: hsl(var(--muted-foreground));
 		margin-bottom: 2rem;
 		line-height: 1.6;
 	}
@@ -57,15 +57,15 @@
 	.btn-home {
 		display: inline-block;
 		padding: 0.75rem 2rem;
-		background-color: #ff3e00;
-		color: white;
+		background-color: hsl(var(--primary));
+		color: hsl(var(--primary-foreground));
 		text-decoration: none;
 		border-radius: 4px;
 		transition: background-color 0.2s;
 	}
 
 	.btn-home:hover {
-		background-color: #ff5722;
+		background-color: var(--primary-hover);
 	}
 
 	.loading-container {
@@ -74,12 +74,12 @@
 		justify-content: center;
 		align-items: center;
 		min-height: 100vh;
-		background-color: #f5f5f5;
+		background-color: hsl(var(--background));
 	}
 
 	.spinner {
-		border: 4px solid #f3f3f3;
-		border-top: 4px solid #ff3e00;
+		border: 4px solid hsl(var(--border));
+		border-top: 4px solid hsl(var(--primary));
 		border-radius: 50%;
 		width: 50px;
 		height: 50px;
@@ -97,7 +97,7 @@
 	}
 
 	.loading-container p {
-		color: #666;
+		color: hsl(var(--muted-foreground));
 		font-size: 1.2rem;
 	}
 </style>

@@ -138,8 +138,8 @@
 		margin: 0 auto;
 		padding: 2rem 1rem;
 		min-height: 100vh;
-		font-family: 'Poppins', 'Helvetica Neue', Arial, sans-serif;
-		color: #2c3e50;
+		font-family: var(--font-sans);
+		color: hsl(var(--foreground));
 		text-align: center;
 	}
 
@@ -147,14 +147,14 @@
 		font-size: 1.8rem;
 		font-weight: 600;
 		margin-bottom: 1.5rem;
-		color: #2c3e50;
+		color: hsl(var(--foreground));
 	}
 
 	h2 {
 		font-size: 1.4rem;
 		font-weight: 600;
 		margin: 2rem 0 1rem;
-		color: #0056b3;
+		color: hsl(var(--primary-strong));
 	}
 
 	h3 {
@@ -166,12 +166,12 @@
 	p {
 		font-size: 1rem;
 		line-height: 1.6;
-		color: #546e7a;
+		color: hsl(var(--foreground-secondary));
 		margin-bottom: 0.75rem;
 	}
 
 	a {
-		color: #0056b3;
+		color: hsl(var(--primary-strong));
 		text-decoration: underline;
 	}
 
@@ -180,10 +180,10 @@
 	}
 
 	.details-card {
-		background: #ffffff;
-		border: 1px solid #e2e8f0;
+		background: hsl(var(--card));
+		border: 1px solid hsl(var(--border));
 		border-radius: 8px;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+		box-shadow: var(--shadow-sm);
 		padding: 1.25rem;
 		margin-bottom: 1.5rem;
 		text-align: left;
@@ -194,7 +194,7 @@
 		justify-content: space-between;
 		align-items: flex-start;
 		padding: 0.6rem 0;
-		border-bottom: 1px solid #f1f5f9;
+		border-bottom: 1px solid hsl(var(--border));
 	}
 
 	.detail-row:last-child {
@@ -203,7 +203,7 @@
 
 	.label {
 		font-weight: 600;
-		color: #475569;
+		color: hsl(var(--foreground-secondary));
 		min-width: 140px;
 		flex-shrink: 0;
 		font-size: 0.9rem;
@@ -211,7 +211,7 @@
 
 	.value {
 		font-weight: 500;
-		color: #1e293b;
+		color: hsl(var(--foreground));
 		text-align: right;
 		flex-grow: 1;
 		margin-left: 1rem;
@@ -227,8 +227,8 @@
 	}
 
 	.installer-card {
-		background: #ffffff;
-		border: 1px solid #e2e8f0;
+		background: hsl(var(--card));
+		border: 1px solid hsl(var(--border));
 		border-radius: 8px;
 		padding: 1rem 1.25rem;
 		text-align: left;
@@ -238,12 +238,12 @@
 	}
 
 	.installer-address {
-		color: #666;
+		color: hsl(var(--muted-foreground));
 		font-size: 0.875rem;
 	}
 
 	.installer-phone {
-		color: #0056b3;
+		color: hsl(var(--primary-strong));
 		font-size: 0.875rem;
 		font-weight: 500;
 	}

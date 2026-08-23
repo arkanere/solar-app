@@ -297,7 +297,7 @@
 								<strong>Showing 5 of {leads.length} leads.</strong>
 								<a
 									href="/{businessSlug}/crm"
-									class="text-accent underline font-semibold hover:opacity-80 ml-1"
+									class="text-accent-strong underline font-semibold hover:opacity-80 ml-1"
 								>
 									View all in CRM
 								</a>

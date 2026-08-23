@@ -42,9 +42,9 @@
 <style>
 	main {
 		min-height: 100vh;
-		font-family: 'Poppins', 'Helvetica Neue', Arial, sans-serif;
-		background: #f8f9fa;
-		color: #2c3e50;
+		font-family: var(--font-sans);
+		background: hsl(var(--background));
+		color: hsl(var(--foreground));
 	}
 
 	.hero {
@@ -53,7 +53,7 @@
 		align-items: center;
 		text-align: center;
 		padding: 4rem 2rem 3rem;
-		background: linear-gradient(135deg, #f8f9fa, #e8f4fd);
+		background: linear-gradient(135deg, hsl(var(--background)), hsl(var(--accent-muted)));
 	}
 
 	.logo {
@@ -65,19 +65,19 @@
 		font-size: 2.8rem;
 		font-weight: 700;
 		margin: 0 0 0.75rem;
-		color: #2c3e50;
+		color: hsl(var(--foreground));
 	}
 
 	.tagline {
 		font-size: 1.25rem;
-		color: #0056b3;
+		color: hsl(var(--primary-strong));
 		font-weight: 500;
 		margin: 0 0 0.5rem;
 	}
 
 	.sub {
 		font-size: 1rem;
-		color: #546e7a;
+		color: hsl(var(--foreground-secondary));
 		max-width: 520px;
 		margin: 0;
 		line-height: 1.6;
@@ -93,7 +93,7 @@
 	h2 {
 		font-size: 2rem;
 		font-weight: 600;
-		color: #0056b3;
+		color: hsl(var(--primary-strong));
 		margin: 0 0 2.5rem;
 	}
 
@@ -104,8 +104,8 @@
 	}
 
 	.region-card {
-		background: #ffffff;
-		border: 2px solid #e2e8f0;
+		background: hsl(var(--card));
+		border: 2px solid hsl(var(--border));
 		border-radius: 16px;
 		padding: 2.5rem 1.5rem;
 		cursor: pointer;
@@ -118,8 +118,8 @@
 
 	.region-card:hover {
 		transform: scale(1.05);
-		box-shadow: 0 8px 24px rgba(0, 86, 179, 0.15);
-		border-color: #0056b3;
+		box-shadow: 0 8px 24px hsl(var(--primary) / 0.15);
+		border-color: hsl(var(--primary-strong));
 	}
 
 	.flag {
@@ -130,7 +130,7 @@
 	.region-name {
 		font-size: 1.3rem;
 		font-weight: 600;
-		color: #0056b3;
+		color: hsl(var(--primary-strong));
 	}
 
 	@media (max-width: 480px) {

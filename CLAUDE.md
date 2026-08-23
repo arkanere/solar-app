@@ -106,6 +106,17 @@ Each app has its own `src/app.css` with a full token layer — there is no share
 tokens are good; drift comes from using them without rules, so two docs carry those rules. **Read
 the one for the app you are touching before writing markup:**
 
+**All three apps share one brand hue as of 2026-08-23: Solar Orange `#FF6600`.** business-app was
+Tailwind's `blue-500` default and user-app a hand-rolled `#0056b3`; both were accidental, not a
+deliberate marketing-vs-product split. Two consequences worth knowing before you write markup:
+orange is *light*, so text on `bg-accent` is the near-black `text-accent-foreground`, never white
+(2.94:1); and orange lettering on a light surface needs `text-accent-strong` / `text-primary-strong`
+(`#B84900`), because plain `text-accent` is 2.77:1 there. `--accent-strong` resolves back to
+`--accent` in dark mode, so the one class is right in both themes.
+
+There are now **three** copies of the token layer, kept in sync by hand — a deliberate call to defer
+extracting a shared file. Change a brand token in one app and change it in all three.
+
 - `docs/main-app-design-conventions.md` — the public marketing site. Pages use `PageShell` +
   `PageHeader` from `$lib/components/layout/`; orange headings are correct; **never write `dark:`**
   (the tokens already flip, and authoring the two themes separately is what made them drift);
@@ -114,6 +125,14 @@ the one for the app you are touching before writing markup:**
   there colour means "you can interact with this", so headings are `text-foreground`, not accent.
 
 Don't port rules between the two.
+
+`user-app` has no doc of its own. It got the token layer on 2026-08-23 (copied from main-app's, minus
+the shadcn component tokens it has no components for) but is styled with per-file scoped `<style>`
+blocks reading `hsl(var(--token))`, not Tailwind utilities — so there is nothing shared to port into
+it. Two of its files declare `:root` *inside* a scoped `<style>`; Svelte does not scope `:root`, so
+those declarations leak app-wide. They alias onto the shared tokens and deliberately skip any name
+`app.css` already owns (`--shadow-*`, `--transition-fast`/`-slow`, `--primary-hover`). If you add a
+local alias there, check the name is not already a shared token.
 
 ## About Solar-app
 

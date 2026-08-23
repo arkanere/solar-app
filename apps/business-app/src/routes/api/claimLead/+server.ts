@@ -540,11 +540,11 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
         <li><strong>Name:</strong> ${business.businessname}</li>
         <li><strong>Phone:</strong> ${business.phonenumber || 'N/A'}</li>
         <li><strong>Email:</strong> ${business.email || 'N/A'}</li>
-        <li><strong>View Profile:</strong> <a href="${profileLink}" style="color: #0056b3;">${business.businessname}</a></li>
+        <li><strong>View Profile:</strong> <a href="${profileLink}" style="color: #B84900;">${business.businessname}</a></li>
     </ul>
     <p>One of our verified installers will reach out to you shortly to discuss your solar energy needs.</p>
     <p style="margin-top: 20px;"><strong>Track your inquiry:</strong></p>
-    <p><a href="${customerAccountLink}" style="display: inline-block; padding: 10px 20px; background-color: #0056b3; color: #ffffff; text-decoration: none; border-radius: 5px;">View Your Account</a></p>
+    <p><a href="${customerAccountLink}" style="display: inline-block; padding: 10px 20px; background-color: #FF6600; color: #171717; text-decoration: none; border-radius: 5px;">View Your Account</a></p>
     <p style="font-size: 12px; color: #666;">This link is unique to you and gives you access to your Solar Vipani customer account.</p>
     <p>If you have any questions, feel free to contact us at <a href="mailto:admin@solarvipani.com">admin@solarvipani.com</a>.</p>
     <p>Best Regards,<br><strong>Solar Vipani Team</strong></p>

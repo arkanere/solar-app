@@ -107,7 +107,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 					<td style="padding:8px 4px;">
 						<strong>${b.businessname}</strong>
 						${b.address ? `<br><span style="color:#666; font-size:13px;">${b.address}</span>` : ''}
-						${b.phonenumber ? `<br><a href="tel:${b.phonenumber}" style="color:#0056b3; font-size:13px;">${b.phonenumber}</a>` : ''}
+						${b.phonenumber ? `<br><a href="tel:${b.phonenumber}" style="color:#B84900; font-size:13px;">${b.phonenumber}</a>` : ''}
 					</td>
 				</tr>`).join('')}
 			</table>
@@ -147,7 +147,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 				</ul>
 				${magicLinkUrl ? `
 				<p><strong>Track Your Solar Journey:</strong></p>
-				<p>Access your personalized dashboard to track your installation progress and view interested installers: <a href="${magicLinkUrl}" style="color: #0056b3; font-weight: bold;">Click here to access your dashboard</a></p>
+				<p>Access your personalized dashboard to track your installation progress and view interested installers: <a href="${magicLinkUrl}" style="color: #B84900; font-weight: bold;">Click here to access your dashboard</a></p>
 				` : ''}
 				${installersHtml}
 				${installers.length > 0 ? `

@@ -18,13 +18,13 @@
 
 		<Dialog.Description class="text-center space-y-2 py-4">
 			<p class="leading-relaxed">
-				<a href="mailto:admin@solarvipani.com" class="text-accent no-underline hover:underline">
+				<a href="mailto:admin@solarvipani.com" class="text-accent-strong no-underline hover:underline">
 					admin@solarvipani.com
 				</a>
 				<br />
 				or call us at
 				<br />
-				<a href="tel:+918983066701" class="text-accent no-underline hover:underline">
+				<a href="tel:+918983066701" class="text-accent-strong no-underline hover:underline">
 					+91 8983066701
 				</a>
 			</p>

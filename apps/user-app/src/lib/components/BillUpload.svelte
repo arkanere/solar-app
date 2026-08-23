@@ -175,10 +175,10 @@
 
 <style>
 	.bill-upload {
-		background: #ffffff;
-		border: 1px solid #e2e8f0;
+		background: hsl(var(--card));
+		border: 1px solid hsl(var(--border));
 		border-radius: 8px;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+		box-shadow: var(--shadow-sm);
 		padding: 1.25rem;
 		margin: 1.5rem 0;
 		text-align: left;
@@ -188,12 +188,12 @@
 		font-size: 1.1rem;
 		font-weight: 600;
 		margin: 0 0 0.5rem;
-		color: #0056b3;
+		color: hsl(var(--primary-strong));
 	}
 
 	.bill-intro {
 		font-size: 0.9rem;
-		color: #546e7a;
+		color: hsl(var(--foreground-secondary));
 		line-height: 1.6;
 		margin: 0 0 1rem;
 	}
@@ -203,7 +203,7 @@
 	}
 
 	.bill-link {
-		color: #0056b3;
+		color: hsl(var(--primary-strong));
 		font-weight: 500;
 		font-size: 0.95rem;
 		text-decoration: underline;
@@ -215,7 +215,7 @@
 
 	.bill-thumb-link {
 		display: inline-block;
-		border: 1px dashed #cbd5e1;
+		border: 1px dashed hsl(var(--border-hover));
 		border-radius: 6px;
 		padding: 0.4rem;
 	}
@@ -236,15 +236,15 @@
 	}
 
 	.message.error {
-		background: #fdecea;
-		color: #c0392b;
-		border-left: 4px solid #c0392b;
+		background: hsl(var(--destructive-muted));
+		color: hsl(var(--foreground));
+		border-left: 4px solid hsl(var(--destructive));
 	}
 
 	.message.success {
-		background: #e8f5e9;
-		color: #2e7d32;
-		border-left: 4px solid #2e7d32;
+		background: hsl(var(--success-muted));
+		color: hsl(var(--foreground));
+		border-left: 4px solid hsl(var(--success));
 	}
 
 	.upload-controls {
@@ -255,17 +255,17 @@
 
 	input[type='file'] {
 		font-size: 0.9rem;
-		color: #475569;
+		color: hsl(var(--foreground-secondary));
 	}
 
 	.hint {
 		font-size: 0.8rem;
-		color: #94a3b8;
+		color: hsl(var(--muted-foreground));
 		font-style: italic;
 	}
 
 	.preview {
-		border: 1px dashed #cbd5e1;
+		border: 1px dashed hsl(var(--border-hover));
 		border-radius: 6px;
 		padding: 0.5rem;
 		margin-top: 0.5rem;
@@ -280,7 +280,7 @@
 
 	.selected-file {
 		font-size: 0.9rem;
-		color: #475569;
+		color: hsl(var(--foreground-secondary));
 		margin: 0.25rem 0 0;
 	}
 
@@ -288,8 +288,8 @@
 		align-self: flex-start;
 		margin-top: 0.5rem;
 		padding: 0.55rem 1.5rem;
-		background: linear-gradient(135deg, #0056b3, #0a4b9e);
-		color: white;
+		background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-strong)));
+		color: hsl(var(--primary-foreground));
 		border: none;
 		border-radius: 6px;
 		font-size: 0.95rem;

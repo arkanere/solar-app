@@ -221,36 +221,35 @@
 </main>
 
 <style>
-	/* Root variables using custom properties */
+	/* Local aliases onto the shared token layer in src/app.css. Svelte does not
+	   scope :root, so these leak globally — --shadow-sm/md/lg and --transition-fast
+	   /-slow are deliberately not redefined here, because app.css already owns
+	   those names and redefining them would override the shared values app-wide. */
 	:root {
 		/* Colors */
-		--primary-color: #0056b3;
-		--primary-hover: #004494;
-		--primary-light: #e6f0ff;
-		--secondary-color: #4caf50;
-		--accent-color: #ffc107;
+		--primary-color: hsl(var(--primary));
+		--primary-light: hsl(var(--accent-muted));
+		--secondary-color: hsl(var(--secondary));
+		--accent-color: hsl(var(--warning));
 
 		/* Text colors */
-		--text-dark: #2c3e50;
-		--text-medium: #546e7a;
-		--text-light: #ecf0f1;
+		--text-dark: hsl(var(--foreground));
+		--text-medium: hsl(var(--foreground-secondary));
+		--text-light: hsl(var(--primary-foreground));
 
 		/* Theme colors */
-		--light-bg-color: #f8f9fa;
-		--dark-bg-color: #1a202c;
-		--light-card-bg: #ffffff;
-		--dark-card-bg: #2d3748;
+		--light-bg-color: hsl(var(--background));
+		--dark-bg-color: hsl(var(--background));
+		--light-card-bg: hsl(var(--card));
+		--dark-card-bg: hsl(var(--card));
 
 		/* UI elements */
-		--border-radius-sm: 4px;
-		--border-radius-md: 8px;
-		--border-radius-lg: 16px;
-		--shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-		--shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-		--shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+		--border-radius-sm: var(--radius-sm);
+		--border-radius-md: var(--radius-md);
+		--border-radius-lg: var(--radius-lg);
 
 		/* Typography */
-		--font-family: 'Poppins', 'Helvetica Neue', Arial, sans-serif;
+		--font-family: var(--font-sans);
 		--heading-line-height: 1.2;
 		--body-line-height: 1.6;
 
@@ -259,10 +258,8 @@
 		--container-width: 1140px;
 		--grid-gap: 1.5rem;
 
-		/* Transitions */
-		--transition-fast: 0.2s ease;
+		/* Transitions (--transition-fast/-slow come from app.css) */
 		--transition-medium: 0.3s ease;
-		--transition-slow: 0.5s ease;
 	}
 
 	/* Base styles */
@@ -322,7 +319,7 @@
 
 	.login-card h1 {
 		font-size: 1.8rem;
-		color: var(--primary-color);
+		color: hsl(var(--primary-strong));
 		margin-bottom: 0.75rem;
 	}
 
@@ -342,8 +339,8 @@
 	.welcome-section {
 		text-align: center;
 		padding: 3rem 2rem;
-		background: linear-gradient(135deg, var(--primary-color), #0a4b9e);
-		color: white;
+		background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-strong)));
+		color: hsl(var(--primary-foreground));
 		border-radius: var(--border-radius-lg);
 		box-shadow: var(--shadow-md);
 	}
@@ -352,7 +349,7 @@
 		font-size: 2.5rem;
 		font-weight: 600;
 		margin-bottom: 0.75rem;
-		color: white;
+		color: hsl(var(--primary-foreground));
 		line-height: var(--heading-line-height);
 	}
 
@@ -360,7 +357,7 @@
 		font-size: 1.1rem;
 		opacity: 0.9;
 		margin: 0;
-		color: rgba(255, 255, 255, 0.9);
+		color: hsl(var(--primary-foreground) / 0.8);
 	}
 
 	.logout-form {
@@ -368,9 +365,9 @@
 	}
 
 	.logout-btn {
-		background: rgba(255, 255, 255, 0.15);
-		color: white;
-		border: 1px solid rgba(255, 255, 255, 0.5);
+		background: hsl(var(--primary-foreground) / 0.12);
+		color: hsl(var(--primary-foreground));
+		border: 1px solid hsl(var(--primary-foreground) / 0.4);
 		padding: 0.45rem 1.25rem;
 		border-radius: var(--border-radius-sm);
 		font-size: 0.9rem;
@@ -380,7 +377,7 @@
 	}
 
 	.logout-btn:hover {
-		background: rgba(255, 255, 255, 0.28);
+		background: hsl(var(--primary-foreground) / 0.22);
 	}
 
 	/* Dashboard content section */
@@ -447,7 +444,7 @@
 		background-color: var(--light-card-bg);
 		border-radius: var(--border-radius-md);
 		box-shadow: var(--shadow-sm);
-		border: 1px solid #e2e8f0;
+		border: 1px solid hsl(var(--border));
 		transition:
 			box-shadow var(--transition-medium),
 			transform var(--transition-medium);
@@ -463,8 +460,8 @@
 
 	/* Lead card header */
 	.lead-header {
-		background: linear-gradient(135deg, var(--primary-color), #0a4b9e);
-		color: white;
+		background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-strong)));
+		color: hsl(var(--primary-foreground));
 		padding: 1rem 1.5rem;
 		display: flex;
 		justify-content: center;
@@ -474,7 +471,7 @@
 	.lead-date {
 		font-size: 1rem;
 		font-weight: 500;
-		color: white;
+		color: hsl(var(--primary-foreground));
 	}
 
 	/* Lead details section */
@@ -491,7 +488,7 @@
 		justify-content: space-between;
 		align-items: flex-start;
 		padding: 0.75rem 0;
-		border-bottom: 1px solid #f1f5f9;
+		border-bottom: 1px solid hsl(var(--border));
 	}
 
 	.detail-row:last-child {
@@ -500,7 +497,7 @@
 
 	.label {
 		font-weight: 600;
-		color: #475569;
+		color: hsl(var(--foreground-secondary));
 		min-width: 140px;
 		flex-shrink: 0;
 		font-size: 0.95rem;
@@ -508,7 +505,7 @@
 
 	.value {
 		font-weight: 500;
-		color: #1e293b;
+		color: hsl(var(--foreground));
 		text-align: right;
 		flex-grow: 1;
 		word-wrap: break-word;
@@ -538,16 +535,16 @@
 
 	/* Interest Group */
 	.interest-group {
-		border: 1px solid #e2e8f0;
+		border: 1px solid hsl(var(--border));
 		border-radius: var(--border-radius-md);
 		overflow: hidden;
-		background-color: #f8fafc;
+		background-color: hsl(var(--background-secondary));
 		box-shadow: var(--shadow-sm);
 	}
 
 	.interest-group-header {
-		background: linear-gradient(135deg, #4caf50, #388e3c);
-		color: white;
+		background: linear-gradient(135deg, hsl(var(--success)), hsl(var(--success) / 0.75));
+		color: hsl(var(--secondary-foreground));
 		padding: 1rem 1.5rem;
 		display: flex;
 		justify-content: space-between;
@@ -560,12 +557,12 @@
 		font-size: 1.1rem;
 		font-weight: 600;
 		margin: 0;
-		color: white;
+		color: hsl(var(--secondary-foreground));
 	}
 
 	.interest-count-badge {
-		background-color: rgba(255, 255, 255, 0.2);
-		color: white;
+		background-color: hsl(var(--secondary-foreground) / 0.15);
+		color: hsl(var(--secondary-foreground));
 		padding: 0.3rem 0.8rem;
 		border-radius: 20px;
 		font-size: 0.85rem;
@@ -583,8 +580,8 @@
 
 	/* Business Claim Card */
 	.business-claim-card {
-		background-color: white;
-		border: 1px solid #e2e8f0;
+		background-color: hsl(var(--card));
+		border: 1px solid hsl(var(--border));
 		border-radius: var(--border-radius-md);
 		overflow: hidden;
 		transition:
@@ -599,7 +596,7 @@
 
 	.business-claim-header {
 		padding: 1.25rem;
-		border-bottom: 1px solid #f1f5f9;
+		border-bottom: 1px solid hsl(var(--border));
 		display: flex;
 		justify-content: space-between;
 		align-items: flex-start;
@@ -613,7 +610,7 @@
 	.business-name {
 		font-size: 1.2rem;
 		font-weight: 600;
-		color: var(--primary-color);
+		color: hsl(var(--primary-strong));
 		margin: 0 0 0.5rem 0;
 	}
 
@@ -651,7 +648,7 @@
 
 	.status-label {
 		font-weight: 600;
-		color: #475569;
+		color: hsl(var(--foreground-secondary));
 		font-size: 0.9rem;
 	}
 
@@ -660,28 +657,30 @@
 		border-radius: 12px;
 		font-size: 0.85rem;
 		font-weight: 600;
-		color: white;
+		color: hsl(var(--primary-foreground));
 	}
 
 	.status-badge.stage-0 {
-		background-color: #17a2b8;
+		background-color: hsl(var(--foreground-secondary));
+		color: hsl(var(--background));
 	}
 
 	.status-badge.stage-1 {
-		background-color: #ffc107;
-		color: #333;
+		background-color: hsl(var(--warning));
+		color: hsl(var(--warning-foreground));
 	}
 
 	.status-badge.stage-2 {
-		background-color: #0056b3;
+		background-color: hsl(var(--primary));
 	}
 
 	.status-badge.stage-3 {
-		background-color: #28a745;
+		background-color: hsl(var(--success));
+		color: hsl(var(--secondary-foreground));
 	}
 
 	.business-contact-link {
-		color: var(--primary-color);
+		color: hsl(var(--primary-strong));
 		text-decoration: none;
 		font-weight: 600;
 		font-size: 0.95rem;
@@ -689,7 +688,7 @@
 	}
 
 	.business-contact-link:hover {
-		color: var(--primary-hover);
+		color: hsl(var(--primary));
 		text-decoration: underline;
 	}
 
@@ -701,8 +700,8 @@
 	.view-profile-btn {
 		display: inline-block;
 		padding: 0.6rem 1.25rem;
-		background: linear-gradient(135deg, var(--primary-color), #0a4b9e);
-		color: white;
+		background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-strong)));
+		color: hsl(var(--primary-foreground));
 		text-decoration: none;
 		border-radius: var(--border-radius-sm);
 		font-weight: 600;

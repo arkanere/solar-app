@@ -332,7 +332,7 @@
 						<Mail size={16} class="text-muted-foreground shrink-0" />
 						<a
 							href="mailto:{lead.email}"
-							class="font-medium text-accent no-underline hover:underline">{lead.email}</a
+							class="font-medium text-accent-strong no-underline hover:underline">{lead.email}</a
 						>
 					</div>
 				{/if}
@@ -374,7 +374,7 @@
 							/>
 							<span>Internal Notes</span>
 							{#if lead.business_notes}
-								<span class="ml-auto text-accent text-lg">•</span>
+								<span class="ml-auto text-accent-strong text-lg">•</span>
 							{/if}
 						</Button>
 						{#if !notesCollapsed}

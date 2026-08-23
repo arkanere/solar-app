@@ -233,7 +233,7 @@
 											class={cn(
 												'flex items-center gap-3 py-3 px-4 mx-2 rounded-md no-underline transition-colors',
 												'text-foreground hover:bg-muted',
-												isActive(section.href) && 'bg-accent/10 text-accent dark:bg-accent/20'
+												isActive(section.href) && 'bg-accent/10 text-accent-strong dark:bg-accent/20'
 											)}
 										>
 											<section.icon class="shrink-0" size={20} strokeWidth={2} />
@@ -283,7 +283,7 @@
 														class={cn(
 															'flex items-center gap-3 py-3 pr-4 pl-10 mx-2 rounded-md no-underline transition-colors text-sm opacity-90',
 															'text-foreground hover:bg-muted',
-															isActive(item.href) && 'bg-accent/10 text-accent dark:bg-accent/20'
+															isActive(item.href) && 'bg-accent/10 text-accent-strong dark:bg-accent/20'
 														)}
 													>
 														<item.icon class="shrink-0" size={18} strokeWidth={2} />
@@ -384,7 +384,7 @@
 										'flex items-center gap-3 py-3 px-4 mx-2 rounded-md no-underline transition-colors',
 										'text-foreground hover:bg-muted',
 										!expanded && 'justify-center px-3',
-										isActive(section.href) && 'bg-accent/10 text-accent dark:bg-accent/20'
+										isActive(section.href) && 'bg-accent/10 text-accent-strong dark:bg-accent/20'
 									)}
 									title={expanded ? '' : section.label}
 								>
@@ -446,7 +446,7 @@
 												class={cn(
 													'flex items-center gap-3 py-3 pr-4 pl-10 mx-2 rounded-md no-underline transition-colors text-sm opacity-90',
 													'text-foreground hover:bg-muted',
-													isActive(item.href) && 'bg-accent/10 text-accent dark:bg-accent/20'
+													isActive(item.href) && 'bg-accent/10 text-accent-strong dark:bg-accent/20'
 												)}
 												title={item.label}
 											>

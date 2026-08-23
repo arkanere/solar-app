@@ -113,7 +113,7 @@
 						<p class="mb-2">Please contact us to request a new password reset link:</p>
 						<a
 							href="mailto:admin@solarvipani.com"
-							class="text-primary hover:underline font-semibold"
+							class="text-primary-strong hover:underline font-semibold"
 						>
 							admin@solarvipani.com
 						</a>

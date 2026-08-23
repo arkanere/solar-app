@@ -16,7 +16,7 @@
 	// SVG Drawing Colours (aligned with design system)
 	const SVG_COLORS = {
 		background: '#f8f9fa',
-		title: '#3B82F6',
+		title: '#B84900',
 		text: '#171717',
 		textMuted: '#737373',
 		textSecondary: '#525252',

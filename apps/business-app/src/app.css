@@ -122,6 +122,7 @@
   /* Primary */
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-strong: hsl(var(--primary-strong));
 
   /* Secondary */
   --color-secondary: hsl(var(--secondary));
@@ -134,6 +135,7 @@
   /* Accent */
   --color-accent: hsl(var(--accent));
   --color-accent-hover: hsl(var(--accent-hover));
+  --color-accent-strong: hsl(var(--accent-strong));
   --color-accent-foreground: hsl(var(--accent-foreground));
   --color-accent-muted: hsl(var(--accent-muted));
 
@@ -278,11 +280,19 @@
   --border: 0 0% 90%;               /* #E5E5E5 - Default borders */
   --border-hover: 0 0% 83%;         /* #D4D4D4 - Hover state borders */
 
-  /* Accent - Trust Blue (professional, sky, clean energy) */
-  --accent: 221 83% 53%;            /* #3B82F6 - Primary accent */
-  --accent-hover: 221 83% 45%;      /* #2563EB - Accent hover */
-  --accent-foreground: 0 0% 100%;   /* White text on accent */
-  --accent-muted: 214 95% 93%;      /* #DBEAFE - Light accent bg */
+  /* Accent - Solar Orange (brand identity, shared with the marketing site).
+     Was Trust Blue #3B82F6, which was Tailwind's blue-500 default rather than a
+     chosen colour; the orange/blue split across the apps was accidental. */
+  --accent: 24 100% 50%;            /* #FF6600 - Primary accent */
+  --accent-hover: 24 100% 45%;      /* #E65C00 - Accent hover */
+  /* Text that sits ON an orange surface. White is only 2.94:1 against #FF6600
+     and fails WCAG AA; this near-black is 7.15:1. Same call main-app made. */
+  --accent-foreground: 0 0% 9%;     /* Dark text on accent */
+  --accent-muted: 30 100% 93%;      /* #FFECD9 - Light accent bg */
+  /* Orange TEXT on a light surface. #FF6600 is 2.77:1 against #FAFAFA and fails
+     even the 3:1 large-text bar, so orange lettering and icons use this darker
+     orange (4.97:1). --accent stays #FF6600 for surfaces and the logo. */
+  --accent-strong: 24 100% 36%;     /* #B84900 */
 
   /* Secondary - Neutral gray (secondary actions, badges; use --warning for amber) */
   --secondary: 0 0% 96%;            /* #F5F5F5 - Neutral surface */
@@ -315,11 +325,12 @@
 
   /* Form elements */
   --input: 0 0% 90%;                /* Input borders */
-  --ring: 221 83% 53%;              /* Focus ring color - Trust Blue */
+  --ring: var(--accent);            /* Focus ring color - Solar Orange */
 
   /* Primary (shadcn compatibility - same as accent) */
-  --primary: 221 83% 53%;
-  --primary-foreground: 0 0% 100%;
+  --primary: var(--accent);
+  --primary-foreground: var(--accent-foreground);
+  --primary-strong: var(--accent-strong);
 
   /* ===== CRM STATUS COLOURS ===== */
 
@@ -376,10 +387,12 @@
   --border-hover: 0 0% 25%;         /* #404040 - Hover borders */
 
   /* Accent - Trust Blue (brighter in dark mode) */
-  --accent: 217 91% 60%;            /* #60A5FA - Brighter blue */
-  --accent-hover: 217 91% 55%;
-  --accent-foreground: 0 0% 100%;
-  --accent-muted: 221 47% 25%;      /* #1E3A5F - Dark accent bg */
+  --accent: 24 100% 55%;            /* #FF751A - Brighter orange */
+  --accent-hover: 24 100% 50%;
+  --accent-foreground: 0 0% 9%;     /* Dark text on orange: 6.50:1 */
+  --accent-muted: 24 60% 20%;       /* #522600 - Dark orange bg */
+  /* No darkening needed in dark mode - the brand orange is 7.12:1 there. */
+  --accent-strong: var(--accent);
 
   /* Secondary - Neutral gray (secondary actions, badges; use --warning for amber) */
   --secondary: 0 0% 16%;            /* #292929 - Neutral surface */
@@ -410,11 +423,12 @@
 
   /* Form elements */
   --input: 0 0% 18%;
-  --ring: 217 91% 60%;              /* Trust Blue */
+  --ring: var(--accent);            /* Solar Orange */
 
   /* Primary (shadcn compatibility) */
-  --primary: 217 91% 60%;
-  --primary-foreground: 0 0% 100%;
+  --primary: var(--accent);
+  --primary-foreground: var(--accent-foreground);
+  --primary-strong: var(--accent-strong);
 
   /* ===== CRM STATUS COLOURS (Dark Mode) ===== */
   /* Lead Categories - slightly brighter for dark mode */

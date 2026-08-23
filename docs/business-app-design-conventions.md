@@ -13,14 +13,31 @@ meaning (action, state, danger), don't use it — use foreground/muted neutrals.
 
 ## 1. Colour usage rules
 
-### Accent blue (`accent` / `primary`)
-Blue means **"you can interact with this."** Nothing else is blue.
+### Accent orange (`accent` / `primary`)
+Orange means **"you can interact with this."** Nothing else is orange.
+
+This was Trust Blue (`#3B82F6`) until 2026-08-23. The blue was Tailwind's
+`blue-500` default rather than a chosen colour, and the orange/blue split
+against the marketing site was accidental, so all three apps now share
+main-app's `#FF6600`. The *rule* below is unchanged — only the hue is.
 
 - Primary action buttons (one per view/card — see §2)
-- Links (`text-accent`)
+- Links (`text-accent-strong` — see below)
 - Active nav item, selected tab, focus ring
 - **Never** on static headings, labels, or decorative text. Headings are
   `text-foreground`; hierarchy comes from size and weight, not colour.
+
+**Orange as a surface vs orange as text.** Orange is a light colour, so unlike
+the old blue it cannot be used both ways:
+
+- `bg-accent` / `bg-primary` use `#FF6600`, and text on them is
+  `text-accent-foreground` — a near-black. **Never white:** white on `#FF6600`
+  is 2.94:1 and fails AA.
+- Orange *lettering or icons on a light surface* use `text-accent-strong` /
+  `text-primary-strong` (`#B84900`, 4.97:1). Plain `text-accent` on the page
+  background is 2.77:1 and fails even the 3:1 large-text bar — don't use it.
+  In dark mode `--accent-strong` resolves back to `--accent`, so one class is
+  correct in both themes.
 
 ### Success green (`success`)
 Green means **"this succeeded / this is in a good state."** It is a *state*
@@ -29,7 +46,7 @@ colour, not an *action* colour.
 - Success toasts, "Claimed ✓" confirmations, completed-step indicators,
   progress bars that represent completion
 - **Never** on buttons asking the user to do something. "Claim Now" is a
-  primary action → accent blue, not green.
+  primary action → accent orange, not green.
 
 ### Warning amber (`warning`)
 Pending/attention states: "awaiting decision", expiring soon, incomplete setup.
@@ -139,7 +156,7 @@ how much content each card has:
 - Two-column field grid on `md+` (`grid md:grid-cols-2 gap-4`), full-width
   fields (address, notes) span both columns.
 - Section headings inside a form follow §3 (`h2`, `text-foreground` — not
-  accent blue).
+  accent orange).
 - Submit button: `default` variant, right-aligned at the form footer (or
   full-width if the form is `max-w-md` or narrower).
 
