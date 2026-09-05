@@ -1,0 +1,9 @@
+export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  return (
+    <main>
+      <h1>/solar-financing/[slug]</h1>
+      <pre>{JSON.stringify({ slug }, null, 2)}</pre>
+    </main>
+  );
+}
