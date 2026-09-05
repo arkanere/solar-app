@@ -1,17 +1,287 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
-/* Light only. No dark mode anywhere in this app — the tokens never flip, so
-   `dark:` must never be written. */
+/* Built-in themes off. The one theme this app has is defined below, from the
+   token set in design-foundation.md. */
 @plugin "daisyui" {
-  themes: light --default;
+  themes: false;
 }
 
 @plugin "@tailwindcss/typography";
 
-:root {
-  color-scheme: light;
+/* ===========================================================================
+   TOKEN LAYER
+   ---------------------------------------------------------------------------
+   Every value here is derived, not picked by eye. Colour steps were solved to
+   a contrast target against the background they actually sit on, and all 17
+   pairings the archetypes use are verified. See design-foundation.md for the
+   argument and `npm run check:contrast` to re-verify after any change.
+
+   The three rules the colour set exists to enforce:
+     1. Headings are ink. Size and weight carry hierarchy, never colour.
+     2. Teal means "you can act on this" — links, buttons, focus. Nothing else.
+     3. Amber is identity only. It never carries text and never means status.
+   `static` is load-bearing: without it Tailwind 4 tree-shakes any token no
+   utility happens to reference, and the layout primitives read several of these
+   through plain var(). Five tokens silently vanished from the build before this
+   was added.
+   =========================================================================== */
+@theme static {
+  /* --- surfaces: warm-neutral paper, hue 75 --------------------------- */
+  --color-canvas: oklch(98.5% 0.003 75);
+  --color-surface: oklch(100% 0 75);
+  --color-surface-sunken: oklch(96.2% 0.005 75);
+
+  /* --- ink: solved against surface-sunken, the darkest ground they sit on,
+         so a table stripe can never drop a step under AA ---------------- */
+  --color-ink: oklch(23.3% 0.002 75); /* 16.13:1 on canvas */
+  --color-ink-muted: oklch(43.8% 0.006 75); /*  7.05:1 on sunken */
+  --color-ink-subtle: oklch(53.7% 0.008 75); /*  4.61:1 on sunken */
+
+  /* --- lines ---------------------------------------------------------- */
+  --color-line: oklch(88.6% 0.006 75); /* decorative hairline */
+  --color-line-strong: oklch(65.1% 0.011 75); /*  3.11:1 — inputs, rules */
+
+  /* --- interaction: teal, hue 195. One token is both link colour and
+         button fill; they were solving the same constraint from opposite
+         sides and landed one hex apart. --------------------------------- */
+  --color-action: oklch(48% 0.074 195); /*  6.07:1 on canvas */
+  --color-action-hover: oklch(38.5% 0.059 195);
+  --color-action-ink: oklch(100% 0 75); /*  6.33:1 on action */
+  --color-accent-surface: oklch(96.7% 0.025 195);
+
+  /* --- brand: amber, hue 65. Identity only — fills, marks, rules.
+         Never text on light, never a status. ---------------------------- */
+  --color-brand: oklch(78% 0.161 65); /*  8.15:1 with ink on top */
+  --color-brand-surface: oklch(95.6% 0.016 65);
+
+  /* --- status: only what the pages need. There is no warning and no info
+         token because no archetype has a use for one yet. ---------------- */
+  --color-success: oklch(52.8% 0.117 155);
+  --color-success-surface: oklch(96.5% 0.029 155);
+  --color-danger: oklch(56.4% 0.206 25);
+  --color-danger-surface: oklch(96.8% 0.008 25);
+
+  /* --- type -----------------------------------------------------------
+     Sans carries the directory surface (90% of URLs) and all UI. Serif is
+     loaded only under the editorial route group; see app/(layout-1)/layout.tsx. */
+  /* The fallback INSIDE each var() is load-bearing. next/font only defines
+     --font-source-serif under the editorial route group, and a bare
+     var(--font-source-serif) on any other page is invalid at computed-value
+     time — which kills the whole declaration, so the `, Georgia, serif` tail
+     never gets a chance and the text silently renders in the inherited sans.
+     Caught on the specimen sheet; it is the same failure class as user-app's
+     text-accent-strong rendering as nothing. */
+  --font-sans: var(--font-inter, ui-sans-serif), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif: var(--font-source-serif, ui-serif), Georgia, 'Times New Roman', serif;
+
+  /* A tuned scale, not a pure ratio: tight where the directory needs density,
+     open where the editorial surface needs air. Mobile values; only the two
+     display steps go fluid. */
+  --text-2xs: 0.75rem; /* 12 — legal, dense table meta */
+  --text-2xs--line-height: 1.45;
+  --text-xs: 0.8125rem; /* 13 — listing meta */
+  --text-xs--line-height: 1.5;
+  --text-sm: 0.875rem; /* 14 — UI secondary */
+  --text-sm--line-height: 1.55;
+  --text-base: 1rem; /* 16 — UI body */
+  --text-base--line-height: 1.6;
+  --text-prose: 1.0625rem; /* 17 — article body only */
+  --text-prose--line-height: 1.7;
+  --text-lg: 1.25rem; /* 20 — h3, lead */
+  --text-lg--line-height: 1.45;
+  --text-xl: 1.5rem; /* 24 — h2 */
+  --text-xl--line-height: 1.3;
+  --text-2xl: clamp(1.75rem, 1.5rem + 1.2vw, 2.25rem); /* h1 */
+  --text-2xl--line-height: 1.2;
+  --text-3xl: clamp(2.25rem, 1.8rem + 2.2vw, 3rem); /* display */
+  --text-3xl--line-height: 1.12;
+
+  /* --- vertical rhythm -------------------------------------------------
+     One scale, 4px-based. Layout primitives apply these; pages do not.
+     The numeric Tailwind scale stays enabled because daisyUI's own CSS
+     depends on --spacing; the lint rule that bans hand-applied spacing
+     lands with the primitives. */
+  --spacing-2xs: 0.25rem; /*  4 */
+  --spacing-xs: 0.5rem; /*  8 */
+  --spacing-sm: 0.75rem; /* 12 */
+  --spacing-md: 1rem; /* 16 */
+  --spacing-lg: 1.5rem; /* 24 */
+  --spacing-xl: 2rem; /* 32 */
+  --spacing-2xl: 3rem; /* 48 */
+  --spacing-3xl: 4rem; /* 64 */
+  --spacing-section: clamp(3rem, 2rem + 5vw, 5rem); /* between page sections */
+
+  /* --- measure --------------------------------------------------------- */
+  --container-prose: 68ch; /* article body */
+  --container-narrow: 44rem; /* forms, legal */
+  --container-content: 72rem; /* directory pages */
+
+  /* --- radius: restrained. This is a reference site, not a consumer app. */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+
+  /* --- elevation: two levels, both for things that float over content.
+         Everything on the page itself is separated by a line, not a shadow. */
+  --shadow-raised: 0 1px 2px oklch(23.3% 0.002 75 / 0.06), 0 2px 8px oklch(23.3% 0.002 75 / 0.08);
+  --shadow-overlay: 0 4px 12px oklch(23.3% 0.002 75 / 0.1), 0 12px 32px oklch(23.3% 0.002 75 / 0.14);
+
+  /* --- motion: CSS transitions only. No JS animation libraries — the lint
+         rule in eslint.config.mjs enforces that. */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
 }
 
-/* The token layer — type scale, spacing, colour, elevation, motion — is decided
-   as one set in the design foundation step and lands in an @theme block here.
-   Nothing above is a design decision; it is only the stack wired up. */
+/* daisyUI reads its own variable names. Map them onto the tokens above so
+   there is exactly one source of truth — change a value in @theme only. */
+@plugin "daisyui/theme" {
+  name: 'solar';
+  default: true;
+  color-scheme: light;
+
+  --color-base-100: var(--color-surface);
+  --color-base-200: var(--color-canvas);
+  --color-base-300: var(--color-surface-sunken);
+  --color-base-content: var(--color-ink);
+
+  --color-primary: var(--color-action);
+  --color-primary-content: var(--color-action-ink);
+  --color-secondary: var(--color-ink);
+  --color-secondary-content: var(--color-surface);
+  --color-accent: var(--color-brand);
+  --color-accent-content: var(--color-ink);
+  --color-neutral: var(--color-ink);
+  --color-neutral-content: var(--color-surface);
+
+  /* info and warning are mapped rather than invented, so a stray `btn-info`
+     is not broken — but neither is part of the documented system. */
+  --color-info: var(--color-action);
+  --color-info-content: var(--color-action-ink);
+  /* --color-success is NOT restated here: @theme already defines that exact
+     variable name, and `--color-success: var(--color-success)` is a circular
+     reference that resolves to nothing. daisyUI reads the @theme value. */
+  --color-success-content: var(--color-surface);
+  --color-warning: var(--color-brand);
+  --color-warning-content: var(--color-ink);
+  --color-error: var(--color-danger);
+  --color-error-content: var(--color-surface);
+
+  --radius-selector: 0.375rem;
+  --radius-field: 0.375rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+/* ===========================================================================
+   BASE
+   =========================================================================== */
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Rule 1 made structural: a heading gets its hierarchy from size and weight.
+     Nothing here sets a colour, so a heading inherits ink and cannot silently
+     become brand-coloured the way it did in the SvelteKit app (126 of them). */
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-weight: 650;
+    letter-spacing: -0.011em;
+    text-wrap: balance;
+  }
+
+  /* Rule 2 made structural. Teal alone cannot carry "link": against ink it is
+     only 2.66:1, well under the 3:1 needed to be told apart from body text. So
+     the underline is the primary signal and the colour is secondary. This is
+     also why no <a> anywhere needs a colour class. */
+  a {
+    color: var(--color-action);
+    text-decoration-line: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.16em;
+    text-decoration-color: color-mix(in oklch, var(--color-action) 40%, transparent);
+    transition: color var(--duration-fast) var(--ease-standard),
+      text-decoration-color var(--duration-fast) var(--ease-standard);
+  }
+
+  /* --font-serif is declared on :root, but next/font puts --font-source-serif on
+     the editorial layout's own element, deeper in the tree. A custom property is
+     resolved where it is DECLARED, so the :root value collapses to Georgia and
+     then inherits down already collapsed — the real serif could never win.
+     Re-declaring the token on the editorial wrapper is what actually binds it. */
+  [data-editorial] {
+    --font-serif: var(--font-source-serif, ui-serif), Georgia, 'Times New Roman', serif;
+  }
+
+  a:hover {
+    color: var(--color-action-hover);
+    text-decoration-color: currentColor;
+  }
+
+  /* Navigation, cards and buttons are the exceptions: they are already
+     identifiable as interactive by position and shape, so they opt out. */
+  nav a,
+  a.btn,
+  a.card,
+  a[data-unstyled] {
+    text-decoration-line: none;
+    color: inherit;
+  }
+
+  nav a:hover,
+  a[data-unstyled]:hover {
+    text-decoration-line: underline;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-action);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* A brand-filled chip is only 1.98:1 against canvas, so its edge needs a
+     line to be findable. Text on it is fine at 8.15:1. */
+  [data-brand-chip] {
+    background-color: var(--color-brand);
+    color: var(--color-ink);
+    border: 1px solid color-mix(in oklch, var(--color-brand) 70%, var(--color-ink));
+  }
+
+  ::selection {
+    background-color: var(--color-brand-surface);
+    color: var(--color-ink);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

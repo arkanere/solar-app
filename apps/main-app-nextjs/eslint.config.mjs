@@ -147,6 +147,12 @@ export default [
     }
   },
 
+  // Reporting CLIs. stdout IS the output here, so no-console is the wrong rule.
+  {
+    files: ['scripts/**/*.mjs'],
+    rules: { 'no-console': 'off' }
+  },
+
   {
     ignores: ['.next/**', 'node_modules/**', 'next-env.d.ts']
   }

@@ -65,3 +65,9 @@ Based on the routes create archetype
 0. **Scaffold — done (0be12f8).** Empty Next 15 app, 49 pages + 19 route handlers,
    route list diffs clean against the SvelteKit app both ways. See `routes.md` and
    `archetype.md`.
+
+1. **Design foundation — done.** Token set decided as one argument and verified:
+   type, spacing, colour, radius, elevation, motion. Interaction and identity are
+   separate hues on purpose. Approve it at `/specimen` (dev only). The argument,
+   the reference survey and three traps worth re-reading are in
+   `design-foundation.md`; `npm run check:contrast` re-verifies the 17 pairings.
