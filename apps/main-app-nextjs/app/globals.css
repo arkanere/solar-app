@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+/* Light only. No dark mode anywhere in this app — the tokens never flip, so
+   `dark:` must never be written. */
+@plugin "daisyui" {
+  themes: light --default;
+}
+
+@plugin "@tailwindcss/typography";
+
+:root {
+  color-scheme: light;
+}
+
+/* The token layer — type scale, spacing, colour, elevation, motion — is decided
+   as one set in the design foundation step and lands in an @theme block here.
+   Nothing above is a design decision; it is only the stack wired up. */
