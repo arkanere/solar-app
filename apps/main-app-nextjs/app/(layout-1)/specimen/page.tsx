@@ -88,10 +88,20 @@ export default function Specimen() {
               ['text-2xs', 'legal / dense meta', 'Prices exclude GST and net-metering charges.']
             ] as const
           ).map(([cls, role, sample]) => (
-            <div key={cls} className="grid grid-cols-[7rem_9rem_1fr] items-baseline gap-md py-sm">
+            // Two columns on mobile with the sample on its own row, three on sm+.
+            // A grid item defaults to min-width:auto, so a fixed 3-column track
+            // list cannot shrink the sample below its min-content width and the
+            // display sizes push the page sideways. minmax(0,1fr) lifts that
+            // floor; the mobile stack is what actually makes the row fit.
+            <div
+              key={cls}
+              className="grid grid-cols-[7rem_1fr] items-baseline gap-x-md gap-y-2xs py-sm sm:grid-cols-[7rem_9rem_minmax(0,1fr)]"
+            >
               <code className="text-2xs text-ink-subtle">{cls}</code>
               <span className="text-2xs text-ink-subtle">{role}</span>
-              <span className={cls === 'text-prose' ? `${cls} font-serif` : cls}>{sample}</span>
+              <span className={`col-span-2 sm:col-span-1 ${cls === 'text-prose' ? `${cls} font-serif` : cls}`}>
+                {sample}
+              </span>
             </div>
           ))}
         </div>
@@ -312,7 +322,7 @@ function Rule({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-line bg-surface p-md">
+    <div className="min-w-0 rounded-lg border border-line bg-surface p-md">
       <h3 className="text-base font-semibold">{rule}</h3>
       <p className="mt-2xs text-sm text-ink-muted">{body}</p>
       <div className="mt-md border-t border-line pt-md">{children}</div>
@@ -322,15 +332,24 @@ function Rule({
 
 function Swatches({ heading, items }: { heading: string; items: readonly (readonly string[])[] }) {
   return (
-    <div className="rounded-lg border border-line bg-surface p-md">
+    <div className="min-w-0 rounded-lg border border-line bg-surface p-md">
       <h3 className="mb-sm text-base font-semibold">{heading}</h3>
       <div className="divide-y divide-line">
         {items.map(([cls, name, use, ratio]) => (
-          <div key={name} className="flex items-center gap-sm py-xs">
+          // min-w-0 is the fix that matters: a flex item also defaults to
+          // min-width:auto, so without it the description will not shrink and the
+          // card overflows under ~370px. Do NOT add `truncate` here — nowrap makes
+          // the card's min-content the whole unbroken string, which grows the
+          // outer grid track instead and overflows far worse.
+          <div key={name} className="flex flex-wrap items-center gap-x-sm gap-y-2xs py-xs">
             <span className={`size-7 shrink-0 rounded-sm border border-line ${cls}`} />
-            <code className="w-36 shrink-0 text-2xs">{name}</code>
-            <span className="flex-1 text-2xs text-ink-subtle">{use}</span>
-            <span className="text-2xs tabular-nums text-ink-muted">{ratio ? `${ratio}:1` : '—'}</span>
+            <code className="w-28 shrink-0 text-2xs">{name}</code>
+            <span className="order-last w-full min-w-0 text-2xs text-ink-subtle sm:order-none sm:w-auto sm:flex-1">
+              {use}
+            </span>
+            <span className="ml-auto shrink-0 text-2xs tabular-nums text-ink-muted">
+              {ratio ? `${ratio}:1` : '—'}
+            </span>
           </div>
         ))}
       </div>
