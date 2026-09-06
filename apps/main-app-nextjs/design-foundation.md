@@ -65,44 +65,63 @@ conventions in a document that markup can quietly ignore.
 
 1. **Headings are ink.** Hierarchy is size and weight. The base layer sets no colour on
    `h1`–`h4`, so a heading inherits ink and cannot silently take a brand colour.
-2. **Teal means "you can act on this."** Links, buttons, focus rings. Nothing decorative is
-   teal. The base layer styles bare `<a>`, so no link needs a colour class.
-3. **Amber is identity only.** Fills, marks, bands. It never sets type on a light ground and it
-   never means status.
+2. **Sky means "you can act on this."** Links, buttons, focus rings. Nothing decorative is
+   sky. The base layer styles bare `<a>`, so no link needs a colour class.
+3. **Sunlight is identity only.** Fills, marks, bands. It never sets type on a light ground and
+   it never means status.
 
 ## 5. Colour
 
-**Hue choice.** Interaction and identity are deliberately different hues, because one hue
-cannot do both jobs well. A warm hue cannot carry a link — solar orange `#FF6600` is 2.94:1 on
-white, which is why the SvelteKit app needed a second `-strong` token to patch it. So:
+**Where the hues come from.** Each is a real object tied to one of the product values, and each
+object gets exactly one job. Interaction and identity are deliberately different hues, because
+one hue cannot do both well — a warm hue cannot carry a link, which is why the SvelteKit app
+needed a second `-strong` token to patch its `#FF6600` at 2.94:1 on white.
 
-- **Interaction: teal, hue 195.** Reads as a link, has room to darken for AA, and — unlike
-  green — does not collide with the success semantic. Blue was the safe alternative and was
-  rejected as generic and as what business-app had by accident.
-- **Identity: amber, hue 65.** Reads as sun. Distinct from the old `#FF6600`, which sits at
-  hue 55 and reads more traffic-cone than sunlight. Carries dark text at 8.12:1.
-- **Neutrals: warm, hue 75.** A faintly warm paper ground rather than pure grey, so the amber
-  feels native rather than applied.
+| Value | Object | Role | Hue |
+| --- | --- | --- | ---: |
+| Trust | Clear midday sky | `action` — links, buttons, focus | 240 |
+| Transparency | Glass and clean light | `canvas`, `surface` — the ground | 78, a trace |
+| Prudence | Wet slate | `ink`, lines, structure | 250 |
+| Convenience | Sunlight | `brand` — fills and marks | 78 |
+
+- **Interaction: sky, hue 240.** Blue-as-link is the most over-learned convention on the web,
+  and being unsurprising is the point on a directory where the scan is link-vs-not-link
+  hundreds of times a session. It is also ten degrees from the slate ink, so the type and the
+  links read as one family and the sunlight is the thing that deliberately is not.
+- **Identity: sunlight, hue 78.** Golden rather than orange — it reads as light on a surface
+  rather than as a warning. Carries dark text at 8.93:1.
+- **Neutrals: wet slate, hue 250, on faintly warm paper, hue 78.** The ink is cool because
+  "prudence" is; the ground carries a trace of the sunlight hue so the page is not clinical and
+  the brand feels native to it. Cool ink on warm paper is the print pairing, not a conflict.
+  The warmth is close to free: every ratio moves by under 0.05 across the chroma range that was
+  in play, so it could be tuned last without re-deriving anything.
+
+**Convenience does not carry the CTA.** That is the one role assignment made against the brief
+this came from. Sunlight is 1.82:1 on canvas — a button survives it, because the text sits on
+the fill, but a link and a focus ring do not. Making it the CTA colour would have meant sky
+links *and* sunlight buttons: two colours both meaning "you can act on this", which is exactly
+the fault in §2. The brief's own principle, one colour one job, is what rules it out.
 
 **Method.** No step was picked by eye. Each was solved for a contrast ratio against the
 background it actually sits on, in OKLCH so the ramp is perceptually even. `oklch → sRGB → WCAG`
 is implemented in `scripts/check-contrast.mjs`, verified against known values (`#767676` = 4.54:1).
 
-This mattered. The first pass had **four failures**, all from solving against the wrong
-background: the three ink steps were solved against `canvas` but get used on `surface-sunken`
-table stripes, and both status colours were solved against white but get used on their own
-tinted surface. All four are now solved against the darkest ground they appear on.
+"Against the background it actually sits on" is the load-bearing half of that, and it is easy
+to get wrong: the three ink steps are solved against `surface-sunken` rather than `canvas`,
+because that is where a table stripe puts them, and both status colours are solved against
+their own tinted surface rather than white. Solve any of those against the lighter ground and
+it passes the check while failing on the page.
 
 All 17 pairings the archetypes use pass. Two are close and worth knowing: `ink-subtle` on a
-stripe is 4.59:1, and `line-strong` is 3.09:1. Neither has room to be lightened.
+stripe is 4.57:1, and `line-strong` is 3.14:1. Neither has room to be lightened.
 
 **Two results that became structural rules rather than tokens:**
 
-- Teal against ink is **2.65:1** — under the 3:1 needed to tell a link from body text. Colour
+- Sky against ink is **2.68:1** — under the 3:1 needed to tell a link from body text. Colour
   alone therefore cannot carry "link", so the underline is the primary signal. This is not a
   compromise; it is the GOV.UK answer and it is more robust.
-- Amber against canvas is **1.99:1**, so a brand-filled chip needs a border to define its edge.
-  Text on it is fine at 8.12:1.
+- Sunlight against canvas is **1.82:1**, so a brand-filled chip needs a border to define its
+  edge. Text on it is fine at 8.93:1.
 
 **No `warning` and no `info` token.** No archetype has a use for either yet. daisyUI's own
 `warning`/`info` variables are mapped to existing values so a stray `btn-info` is not broken,

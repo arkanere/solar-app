@@ -18,48 +18,53 @@
 
    The three rules the colour set exists to enforce:
      1. Headings are ink. Size and weight carry hierarchy, never colour.
-     2. Teal means "you can act on this" — links, buttons, focus. Nothing else.
-     3. Amber is identity only. It never carries text and never means status.
+     2. Sky means "you can act on this" — links, buttons, focus. Nothing else.
+     3. Sunlight is identity only. It never carries text and never means status.
    `static` is load-bearing: without it Tailwind 4 tree-shakes any token no
    utility happens to reference, and the layout primitives read several of these
    through plain var(). Five tokens silently vanished from the build before this
    was added.
    =========================================================================== */
 @theme static {
-  /* --- surfaces: warm-neutral paper, hue 75 --------------------------- */
-  --color-canvas: oklch(98.5% 0.003 75);
-  --color-surface: oklch(100% 0 75);
-  --color-surface-sunken: oklch(96.2% 0.005 75);
+  /* --- surfaces: glass on paper. The ground carries a trace of the sunlight
+         hue so the page is faintly warm; `surface` stays pure white, so a card
+         reads as the clear pane and the page as the paper. The warmth is free —
+         every ratio below moves by under 0.05 across this chroma range. ---- */
+  --color-canvas: oklch(98.6% 0.005 78);
+  --color-surface: oklch(100% 0 78);
+  --color-surface-sunken: oklch(96.3% 0.008 78);
 
-  /* --- ink: solved against surface-sunken, the darkest ground they sit on,
-         so a table stripe can never drop a step under AA ---------------- */
-  --color-ink: oklch(23.3% 0.002 75); /* 16.13:1 on canvas */
-  --color-ink-muted: oklch(43.8% 0.006 75); /*  7.05:1 on sunken */
-  --color-ink-subtle: oklch(53.7% 0.008 75); /*  4.61:1 on sunken */
+  /* --- ink: wet slate, hue 250. Cool ink on warm paper is the print pairing,
+         not a conflict. Solved against surface-sunken, the darkest ground they
+         sit on, so a table stripe can never drop a step under AA --------- */
+  --color-ink: oklch(23% 0.012 250); /* 16.25:1 on canvas */
+  --color-ink-muted: oklch(43.8% 0.012 250); /*  6.99:1 on sunken */
+  --color-ink-subtle: oklch(53.7% 0.014 250); /*  4.57:1 on sunken */
 
-  /* --- lines ---------------------------------------------------------- */
-  --color-line: oklch(88.6% 0.006 75); /* decorative hairline */
-  --color-line-strong: oklch(65.1% 0.011 75); /*  3.11:1 — inputs, rules */
+  /* --- lines: slate, so the structure belongs to the ink rather than
+         splitting the neutral ramp across two hues ---------------------- */
+  --color-line: oklch(88.8% 0.007 250); /* decorative hairline */
+  --color-line-strong: oklch(64.8% 0.014 250); /*  3.14:1 — inputs, rules */
 
-  /* --- interaction: teal, hue 195. One token is both link colour and
-         button fill; they were solving the same constraint from opposite
-         sides and landed one hex apart. --------------------------------- */
-  --color-action: oklch(48% 0.074 195); /*  6.07:1 on canvas */
-  --color-action-hover: oklch(38.5% 0.059 195);
-  --color-action-ink: oklch(100% 0 75); /*  6.33:1 on action */
-  --color-accent-surface: oklch(96.7% 0.025 195);
+  /* --- interaction: clear midday sky, hue 240. One token is both link colour
+         and button fill. Ten degrees from the slate ink, so the text and the
+         links are one family and the sunlight is the thing that is not. --- */
+  --color-action: oklch(47.5% 0.155 240); /*  6.07:1 on canvas */
+  --color-action-hover: oklch(36.8% 0.13 240);
+  --color-action-ink: oklch(100% 0 250); /*  6.33:1 on action */
+  --color-accent-surface: oklch(96.4% 0.021 240);
 
-  /* --- brand: amber, hue 65. Identity only — fills, marks, rules.
+  /* --- brand: sunlight, hue 78. Identity only — fills, marks, rules.
          Never text on light, never a status. ---------------------------- */
-  --color-brand: oklch(78% 0.161 65); /*  8.15:1 with ink on top */
-  --color-brand-surface: oklch(95.6% 0.016 65);
+  --color-brand: oklch(80% 0.152 78); /*  8.93:1 with ink on top */
+  --color-brand-surface: oklch(96.4% 0.032 78);
 
   /* --- status: only what the pages need. There is no warning and no info
          token because no archetype has a use for one yet. ---------------- */
-  --color-success: oklch(52.8% 0.117 155);
+  --color-success: oklch(52% 0.115 155);
   --color-success-surface: oklch(96.5% 0.029 155);
-  --color-danger: oklch(56.4% 0.206 25);
-  --color-danger-surface: oklch(96.8% 0.008 25);
+  --color-danger: oklch(55% 0.2 25);
+  --color-danger-surface: oklch(96.6% 0.01 25);
 
   /* --- type -----------------------------------------------------------
      Sans carries the directory surface (90% of URLs) and all UI. Serif is
@@ -123,8 +128,8 @@
 
   /* --- elevation: two levels, both for things that float over content.
          Everything on the page itself is separated by a line, not a shadow. */
-  --shadow-raised: 0 1px 2px oklch(23.3% 0.002 75 / 0.06), 0 2px 8px oklch(23.3% 0.002 75 / 0.08);
-  --shadow-overlay: 0 4px 12px oklch(23.3% 0.002 75 / 0.1), 0 12px 32px oklch(23.3% 0.002 75 / 0.14);
+  --shadow-raised: 0 1px 2px oklch(23% 0.012 250 / 0.06), 0 2px 8px oklch(23% 0.012 250 / 0.08);
+  --shadow-overlay: 0 4px 12px oklch(23% 0.012 250 / 0.1), 0 12px 32px oklch(23% 0.012 250 / 0.14);
 
   /* --- motion: CSS transitions only. No JS animation libraries — the lint
          rule in eslint.config.mjs enforces that. */
@@ -212,8 +217,8 @@
     text-wrap: balance;
   }
 
-  /* Rule 2 made structural. Teal alone cannot carry "link": against ink it is
-     only 2.66:1, well under the 3:1 needed to be told apart from body text. So
+  /* Rule 2 made structural. Sky alone cannot carry "link": against ink it is
+     only 2.68:1, well under the 3:1 needed to be told apart from body text. So
      the underline is the primary signal and the colour is secondary. This is
      also why no <a> anywhere needs a colour class. */
   a {
@@ -261,8 +266,8 @@
     border-radius: var(--radius-sm);
   }
 
-  /* A brand-filled chip is only 1.98:1 against canvas, so its edge needs a
-     line to be findable. Text on it is fine at 8.15:1. */
+  /* A brand-filled chip is only 1.82:1 against canvas, so its edge needs a
+     line to be findable. Text on it is fine at 8.93:1. */
   [data-brand-chip] {
     background-color: var(--color-brand);
     color: var(--color-ink);

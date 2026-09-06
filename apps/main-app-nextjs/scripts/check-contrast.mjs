@@ -5,9 +5,10 @@
  * pairing the archetypes actually use. Run it after changing any colour token:
  *   npm run check:contrast -w main-app-nextjs
  *
- * The pairings are not decorative. Four of them failed on the first pass of the
- * palette — ink-subtle on a table stripe, and both status colours on their own
- * tinted surface — because each had been solved against the wrong background.
+ * The pairings are not decorative, and "against the background it actually sits
+ * on" is the load-bearing half: ink-subtle is checked on a table stripe and each
+ * status colour on its own tinted surface, not on canvas. Check those against the
+ * lighter ground and they pass here while failing on the page.
  */
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
