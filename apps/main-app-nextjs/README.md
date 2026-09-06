@@ -71,3 +71,16 @@ Based on the routes create archetype
    separate hues on purpose. Approve it at `/specimen` (dev only). The argument,
    the reference survey and three traps worth re-reading are in
    `design-foundation.md`; `npm run check:contrast` re-verifies the 17 pairings.
+
+2. **Archetypes — done.** Scoped to the three that are 90.5% of the site: installer
+   profile (649), geo listing (601), geo index (29). Everything else is a port, not a
+   design problem. Specs in `archetype/`, grounded on live-database measurements in
+   `archetype/data.md` — which found that the badge, score, description and service
+   chips are constants across the whole directory, and that the district sort is a
+   no-op. Three decisions block the build; they are listed at the end of `archetype.md`.
+
+2. **Archetypes — done.** Scoped to the three that are 90.5% of the site: installer
+   profile (649), geo listing (601), geo index (29). Everything else is a port. Specs in
+   `archetype/`, grounded on live measurements in `archetype/data.md` — which found the
+   badge, score, description and service chips are constants across the directory, and
+   that the district sort is a no-op. Approve visually at `/specimen/archetypes`.

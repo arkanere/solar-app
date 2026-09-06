@@ -1,54 +1,119 @@
 # Archetypes
 
-Templated pages only — routes that render many pages from one design. Single pages
-(`/about-us`, legal, `/seo-index`) are excluded; they are one-offs, not archetypes.
+An archetype is a route that renders many pages from one design **and** is worth
+designing rather than porting. Both halves matter: the design work goes where the pages
+are, and everything else gets carried across as-is.
 
-Counts from the live sitemaps, 2026-09-05. Ordered by how much of the site each covers.
+Counts from the live sitemaps (2026-09-05) and the live database (2026-09-06).
 
-## Directory surface — `[country=country]`
+## The three that matter
 
-| # | Archetype | Pattern | Pages |
-| --- | --- | --- | ---: |
-| 1 | **Installer profile** | `/{cc}/installer/{slug}` | 649 |
-| 2 | **Geo city page** | `/{cc}/solar/{state}/{district}/{city}` | 356 |
-| 3 | **Geo district page** | `/{cc}/solar/{state}/{district}` | 245 |
-| 4 | **Geo state hub** | `/{cc}/solar/{state}` | 27 |
+**The directory surface is 1,279 of 1,414 URLs — 90.5% of the site.** It is three
+archetypes:
 
-These four are **1,277 of 1,414 URLs — 90% of the site.**
+| # | Archetype | Pattern | Pages | Share | Spec |
+| --- | --- | --- | ---: | ---: | --- |
+| 1 | **Installer profile** | `/{cc}/installer/{slug}` | 649 | 46% | `archetype/installer-profile.md` |
+| 2 | **Geo listing** | `/{cc}/solar/{state}/{district}` + `…/{slug}` | 601 | 42% | `archetype/geo-listing.md` |
+| 3 | **Geo index** | `/{cc}/solar` + `/{cc}/solar/{state}` | 29 | 2% | `archetype/geo-index.md` |
 
-Archetypes 2–4 are the same shape at three zoom levels (state → district → city): a geo
-header, a list of child locations, a list of businesses. Decide whether they are one
-archetype with a depth parameter or three designs.
+`archetype/data.md` measures what is actually in these pages and grounds all three.
+**Read it first** — several sections of the current pages turn out to render constants
+or dead code, and none of that is visible from the source.
 
-## Editorial surface — `(layout-1)`
+Archetype 2 carries sitemap priority 1.0, the highest on the site, and produces the
+installer row that renders on all 601 of its pages. Build it first.
 
-| # | Archetype | Pattern | Pages |
-| --- | --- | --- | ---: |
-| 5 | **SEO cluster article** | `/{pillar}/{slug}` | ~111 combined with 6 |
-| 6 | **Brand page** | `/solar-{category}/{slug}` | (same route as 5) |
-| 7 | **Pillar landing** | `/{pillar}` | 7 |
-| 8 | **State subsidy / discom** | `/solar-subsidy/{slug}` | 14 |
-| 9 | **Bank financing page** | `/solar-financing/{slug}` | 12 |
-| 10 | **Product model** | `/solar-{category}/{brand}/{model}` | not sitemapped |
-| 11 | **Author profile** | `/authors/{slug}` | 0 rows live |
+## Everything else is a port
 
-5 and 6 share one route and are separated at runtime by a slug resolver, so the sitemap
-count cannot split them. They are still two archetypes: an article and a product-brand page.
+The remaining ~135 URLs are the editorial surface (cluster articles, pillar landings,
+subsidy and financing pages, product models) plus the long tail (project detail, the
+paginated project list, author profiles). They are real pages and they still need to
+work — but they are **assembly from the components archetypes 1–3 produce**, not
+design problems of their own, and they do not justify their own specs.
 
-## Not sitemapped, still templated
+Port them straight, reusing whatever the three archetypes have already established.
+Two exceptions worth knowing when the time comes:
 
-| # | Archetype | Pattern |
-| --- | --- | --- |
-| 12 | **Project detail** | `/{cc}/project/{project_id}` |
-| 13 | **Paginated project list** | `/{cc}/recent-solar-installation-projects/{page_slug}` |
-| 14 | **Partner join by district** | `/{cc}/partners/join/{district_slug}` | - NOT REQUIRED
-| 15 | **Legacy geo shims** | `/{cc}/district/{slug}`, `/{cc}/county/{slug}`, `/{cc}/solar-panel-installer-directory/{city}` | - NOT REQUIRED
+- The **editorial body is database HTML** rendered through `prose`. The Next app has
+  `@tailwindcss/typography` installed where the SvelteKit app does not, so
+  `ContentSections.svelte`'s hand-rolled table CSS — and the comment explaining that
+  `prose` is inert — can go.
+- `/{pillar}/{slug}` and `/solar-subsidy/{slug}` are **polymorphic**: each resolves a
+  slug at runtime against two different tables (cluster vs brand; state subsidy vs
+  discom). A port that assumes one shape per route will silently 404 a whole content
+  family.
 
-## Where to concentrate
+## Two structural facts the source and data reading turned up
 
-1. **Installer profile** and the **geo pages** — 90% of URLs, highest sitemap priority
-   (district pages are 1.0). Cards, listing density and imagery decide the site.
-2. **SEO cluster article** and **brand page** — the editorial surface. Typography and
-   `prose`, since the body is database HTML.
-3. Everything else is long-tail.
+**The geo split is by what a page lists, not by depth.** The old open question was
+whether state → district → city was one archetype with a depth parameter or three
+designs. It is neither. Country and state hubs list *child locations* and show no
+businesses; district pages and city leaves list *businesses* and demote locations to a
+chip row. So the country hub groups with the state hub, and the city leaf with the
+district — across the depth boundary, not along it.
 
+**The geo leaf route is polymorphic, with a dormant third branch.**
+`resolveLeafSlug()` resolves a slug to a `city`, a `brand`, or a `{n}kw-solar-system`
+**size** page. `solar_brands` is currently empty — a provision built ahead of need, to
+be populated as the directory grows — so today the leaf is **city or size**. No design
+work is owed to the brand variant now, but the component must dispatch on variant rather
+than special-case two types onto a city page, or the provision costs a rewrite later.
+
+## Decisions taken, 2026-09-06
+
+| # | Decision | Effect |
+| ---: | --- | --- |
+| 1 | **`rscore` stays as the ranking signal** and will be populated later. Add `businessname ASC` as a final tiebreaker | Order becomes stable and explicable today; the row reserves a metric slot `rscore` will fill |
+| 2 | **The "Verified Business" badge is removed**, and not replaced | Frees the top-right of the identity block and a line of every listing row. It was constant on 100% of profiles |
+| 3 | **`CALL NOW` and `WHATSAPP` both become `action`** — filled primary and outlined secondary — instead of `bg-destructive` / `bg-success` | Status colours stop doing the work of actions; rule 2 holds |
+
+## Still open
+
+Narrower, but each shapes a whole section:
+
+- **The city chip row.** A typical district page shows 9 chips of which 1 is a link, the
+  rest identically-styled dead spans. Show only linked, style inert differently, or drop
+  below a threshold?
+- **The video hero** on all 601 geo-listing pages — keep, or replace with a typographic
+  header?
+- **The About section** on installer profiles, where 608 of 643 render the boilerplate
+  string "Solar panel installer" under a heading saying About.
+
+Approve these visually at `/specimen/archetypes` (dev only).
+
+## Seeing them
+
+`/specimen/archetypes` (dev only, alongside `/specimen`) renders all three against real
+rows pulled from live — real business names up to seventy characters, real blank
+addresses, real photographs, real geography.
+
+It shows **only the proposed design**. It deliberately does not render the current
+implementation anywhere: putting "today" beside "proposed" turns the question into
+keep-or-tweak, and the question worth asking on 90% of the site is what these pages
+should be.
+
+It sits outside the `(layout-1)` route group on purpose: that group loads the editorial
+serif, and the directory surface never uses it.
+
+### What the design argues
+
+1. **Lead with the work.** Rooftop solar is a visual product and the photographs are
+   already in Cloudinary. They anchor every listing row and fill the top of a profile.
+   Where a business has none, initials hold the slot so the column keeps one rhythm.
+2. **One entity per row, one reading order** — anchor, name, place, services, with the
+   comparable number right-aligned and tabular so twenty-two rows scan as a column.
+3. **A number appears only when it means something.** A blank reads as "not measured";
+   a zero reads as "measured, and bad".
+4. **Nothing is shown on every page.** A marker every result carries is a logo, not a
+   signal, and it costs the most valuable position on the card.
+5. **Say what the coverage actually is** — ratios, not bare counts.
+6. **One installer is an answer, not an empty list.** Half of all district pages have
+   exactly one; that state gets its own treatment and a route to more choice.
+
+### What the design needs from the data
+
+It degrades to today's data without breaking and improves as these land: `rscore`
+populated (the sort is built around it), more project photographs (two of Pune's
+twenty-two have one), real descriptions (608 of 643 are a two-word placeholder), and
+panel brands.
