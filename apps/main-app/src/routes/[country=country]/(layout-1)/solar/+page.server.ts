@@ -27,12 +27,19 @@ export const load: PageServerLoad = async ({ params }) => {
 		// A CTE plus COUNT(*) FILTER plus a correlated scalar subquery: kept
 		// verbatim on the sql escape hatch rather than rebuilt with $with, since
 		// the coverage arithmetic is what the page displays.
+		//
+		// Being raw SQL, this is the one place 079's refactor could not reach by
+		// following `businessProfiles.countryCode` call sites — the country
+		// filter is spelled out below rather than expressed with
+		// `businessInCountry`. Both subqueries therefore carry the account join
+		// by hand; see $lib/server/businessCountry.
 		db.execute<Level1Row>(sql`
 			WITH level2s AS (
 			  SELECT g.level1, g.level1_slug, g.level2,
 			         EXISTS (
 			           SELECT 1 FROM business_profiles b
-			           WHERE b.country_code = ${country.code}
+			           JOIN business_accounts a ON a.source_id = b.account_business_id
+			           WHERE a.country_code = ${country.code}
 			             AND LOWER(b.level1) = LOWER(g.level1)
 			             AND LOWER(b.level2) = LOWER(g.level2)
 			             AND b.isvisible = true
@@ -45,7 +52,8 @@ export const load: PageServerLoad = async ({ params }) => {
 			       COUNT(*) as level2_count,
 			       COUNT(*) FILTER (WHERE covered) as covered_level2_count,
 			       (SELECT COUNT(*) FROM business_profiles b
-			        WHERE b.country_code = ${country.code}
+			        JOIN business_accounts a ON a.source_id = b.account_business_id
+			        WHERE a.country_code = ${country.code}
 			          AND LOWER(b.level1) = LOWER(level2s.level1) AND b.isvisible = true) as installer_count
 			FROM level2s
 			GROUP BY level1, level1_slug

@@ -67,6 +67,29 @@
 -- the account works whether or not this has run, which is why the code goes
 -- first.
 --
+-- ** READERS: ALL REPOINTED, 2026-09-08. ** This file is now waiting on a deploy
+-- and a manual run, not on code. What that took, because the count was wrong
+-- twice:
+--
+--   - main-app: every Drizzle call site was converted with businessCountry.ts,
+--     but TWO raw subqueries in `[country=country]/(layout-1)/solar` still
+--     filtered b.country_code. A refactor following businessProfiles.countryCode
+--     cannot see a filter written as SQL text. Grep the TABLE name across
+--     sql`` blocks, not just the column accessor.
+--   - admin-app (solar-app-internal): 18 files, not the "two routes" its own
+--     spec recorded. That figure came from grepping the qualified column name,
+--     which misses an unqualified `country_code` inside FROM business_profiles
+--     — six routes had a copy-pasted subquery of exactly that shape — and
+--     misses a shared projection helper that selected the column for every one
+--     of its consumers. Its businessColumns() now requires the account alias
+--     and throws without it.
+--
+-- Verified by building this file's end state as a view in a rolled-back
+-- transaction and PREPAREing all 95 of admin-app's extracted statements against
+-- it; next-steps.md has the recipe. The rewrites return identical counts
+-- (coverage 174, statewise 644, branches 71, profiles 6716; main-app coverage
+-- 220, installers 644).
+--
 -- The three places a code grep of src/ misses (see next-steps.md):
 --   - replayed migrations: this one IS on POST_BASELINE_MIGRATIONS, and has to
 --     be. 063 is replayed and it creates business_profiles_country_code_fkey and

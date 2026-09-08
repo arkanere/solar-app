@@ -112,11 +112,42 @@ either repo had noticed. That is the argument for making the check routine rathe
 **Verifying that repo needs a different tool, because it has no tests and no typecheck.** A `.js`
 app's `npm run build` cannot see inside a SQL string, so it proves nothing about a schema change.
 What works: extract every `pool.query` string, resolve the column-list constants, and run each one
-through `EXPLAIN (GENERIC_PLAN)` against live inside a read-only, rolled-back transaction. That
-parses *and analyses* each statement — catching every missing table and column — without executing
-anything, and it handles `$1` placeholders, which is why `PREPARE` is the worse choice. On the
-2026-08-10 pass that was 91 of 99 statements clean; the other 8 build their `WHERE` dynamically and
-cannot be reassembled, so they still need reading by eye.
+through `EXPLAIN (GENERIC_PLAN)` — or `PREPARE`, which also takes `$1` placeholders — against live
+inside a rolled-back transaction. Either parses every statement without executing it.
+
+**But against live it only proves the query works on the schema you still have.** For a *drop*, that
+is the wrong question: every statement passes right up until the column goes, which is precisely the
+failure the check exists to prevent. 079's pass (2026-09-08) closed that gap by building the end
+state first, inside the same rolled-back transaction:
+
+```sql
+BEGIN;
+CREATE SCHEMA probe;
+CREATE VIEW probe.business_profiles AS SELECT <every column except the dropped one> FROM public.business_profiles;
+SET LOCAL search_path = probe, public;
+-- PREPARE each extracted statement here; a surviving reader errors
+ROLLBACK;                      -- the schema never existed
+```
+
+DDL is transactional in Postgres, so this leaves no trace on production — verified afterwards by
+looking for the schema. Two details that cost time: take a **SAVEPOINT per statement**, or the first
+parse error aborts the transaction and hides every finding behind it; and run it on
+`POSTGRES_URL_NON_POOLING`, because the pooler is PgBouncer in transaction mode and keeps prepared
+statements alive on the backend between sessions, so a second run collides with the first one's
+statement names.
+
+That pass was 95 of 97 statements. The dynamic ones no longer need reading by eye either — bind the
+spliced fragments (`whereClause`, `baseWhere`, a table name) to harmless dummies (`''`, `'TRUE'`)
+and they parse like the rest; only two, which build `$n` placeholders in a loop, still resisted, and
+neither touches the table being changed.
+
+**A fifth place, and it is in this repo: raw `sql` escape hatches.** 079 converted every Drizzle
+call site by following `businessProfiles.countryCode`, which is exactly what a typed refactor can
+see — and missed two subqueries inside a `db.execute(sql\`...\`)` block on main-app's public
+`/solar` page, where the same filter is spelled out as text. They were found on 2026-09-08, a month
+after the rest, by grepping for the *table* rather than for the column accessor. **When a column
+moves, grep for the table name across `sql\`` blocks too**; the schema type no longer mentions the
+column, so nothing else will point at them.
 
 **admin-app's id vocabulary is not this repo's.** It reads the same two stores, but the tables it
 used to read were keyed by `(country_code, source_id)` — unique only as a pair — while the survivors
