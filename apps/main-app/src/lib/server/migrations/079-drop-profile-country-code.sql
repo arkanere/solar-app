@@ -1,8 +1,18 @@
 -- Drop business_profiles.country_code (2026-08-11).
 --
--- ** NOT YET APPLIED. **
+-- ** APPLIED TO PRODUCTION 2026-09-08, after both apps were deployed. **
 --
--- ** MUST FOLLOW THE CODE DEPLOY, NOT PRECEDE IT. **
+-- Preconditions re-measured immediately before the run: 0 rows of drift, 0
+-- profiles without an account, 6,716 profiles splitting 6,704 in / 12 us. No
+-- view, matview, function, trigger or inbound FK depended on the column. After:
+-- column absent, split unchanged, indexes as described below.
+--
+-- It ships no rollback of its own. One was written before the run and lives
+-- outside the repos, in Developer/solar/079-backup/ — a CSV of every
+-- (business_id, country_code) pair and a 079-rollback.sql.
+--
+-- ** MUST FOLLOW THE CODE DEPLOY, NOT PRECEDE IT. ** (Kept because this file is
+-- replayed against test databases, where the ordering still applies.)
 --
 -- Country is a fact about a *business*, not about each of its locations: a
 -- business has one login, one country, and one or more addresses. It has been
