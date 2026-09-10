@@ -16,6 +16,7 @@
 	let comment = $state('');
 	let email = $state('');
 	let isSubmitting = $state(false);
+	let submitError = $state('');
 	let errors = $state<any>({});
 
 	const consultationTypes = [
@@ -40,25 +41,48 @@
 
 		if (isValid) {
 			isSubmitting = true;
+			submitError = '';
+
+			// Read the response before claiming anything, and do not start
+			// navigating until it has confirmed the write. This used to set
+			// window.location.href FIRST and then fire the request without
+			// `keepalive`, so the navigation could abort an in-flight submit and
+			// the visitor still landed on the thank-you page. LeadForm carried the
+			// same "always show success" bug, which is how a 404 on the submit URL
+			// went unnoticed for 19 days from 2026-08-23.
+			//
+			// Same-site, unlike LeadForm's India branch: this posts to main-app's
+			// own /[country]/api/submitLead, so there is no CORS hop to lose.
+			try {
+				const response = await fetch('/in/api/submitLead', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						name,
+						phone,
+						pinCode,
+						type,
+						comment,
+						email,
+						urlParam: `/solar-panel-installer/${businessSlug}`,
+						businessName
+					})
+				});
+
+				const body = await response.json().catch(() => null);
+
+				if (!response.ok || !body?.success) {
+					throw new Error(body?.error ?? `submitLead returned ${response.status}`);
+				}
+			} catch (error) {
+				console.error('Error submitting form:', error);
+				submitError =
+					'We could not submit your details just now. Please check your connection and try again.';
+				isSubmitting = false;
+				return;
+			}
 
 			window.location.href = `https://user.solarvipani.com/thank-you?pincode=${encodeURIComponent(pinCode)}`;
-
-			fetch('/in/api/submitLead', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					name,
-					phone,
-					pinCode,
-					type,
-					comment,
-					email,
-					urlParam: `/solar-panel-installer/${businessSlug}`,
-					businessName
-				})
-			}).catch((error) => {
-				console.error('Error submitting form:', error);
-			});
 		}
 	}
 </script>
@@ -158,6 +182,12 @@
 			</Alert>
 		{/if}
 	</div>
+
+	{#if submitError}
+		<Alert variant="destructive">
+			<AlertDescription>{submitError}</AlertDescription>
+		</Alert>
+	{/if}
 
 	<!-- Submit Button -->
 	<Button type="submit" disabled={isSubmitting} class="w-full">
