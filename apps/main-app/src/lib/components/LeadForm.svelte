@@ -75,8 +75,14 @@
 
     // India keeps its original user-app lead flow; other countries submit to
     // the unified same-site endpoint.
+    //
+    // This URL is owned by user-app and must exist there before this ships:
+    // user-app serves it at src/routes/in/api/submitLead. The two are deployed
+    // separately, so user-app goes first — pointing this at a path user-app has
+    // not deployed yet is a silent outage, because the submit below never reads
+    // its own response.
     const submitUrl = isIndia
-      ? 'https://user.solarvipani.com/api/submitLead'
+      ? 'https://user.solarvipani.com/in/api/submitLead'
       : `/${country!.code}/api/submitLead`;
 
     fetch(submitUrl, {
