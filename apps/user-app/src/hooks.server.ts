@@ -18,7 +18,14 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 	const response = await resolve(event);
 
-	if (origin && ALLOWED_ORIGINS.includes(origin) && event.url.pathname.startsWith('/api/')) {
+	// Both prefixes, deliberately. submitLead answers at /in/api/, the rest at
+	// /api/, and this header is what lets main-app read the response at all.
+	// Miss it and the POST still inserts the lead — only the reply is unreadable
+	// — so the bug hides behind a form that ignores its own response.
+	const isApi =
+		event.url.pathname.startsWith('/api/') || event.url.pathname.startsWith('/in/api/');
+
+	if (origin && ALLOWED_ORIGINS.includes(origin) && isApi) {
 		response.headers.set('Access-Control-Allow-Origin', origin);
 	}
 
