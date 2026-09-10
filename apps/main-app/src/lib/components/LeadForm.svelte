@@ -39,6 +39,7 @@
   let comment = $state('');
   let consent = $state(false);
   let isSubmitting = $state(false);
+  let submitError = $state('');
 
   let errors = $state({
     name: '',
@@ -70,37 +71,58 @@
     if (!validateForm() || !consent) return;
 
     isSubmitting = true;
+    submitError = '';
 
     capture('quote_submitted', { source_url: urlParam });
 
     // India keeps its original user-app lead flow; other countries submit to
     // the unified same-site endpoint.
     //
-    // This URL is owned by user-app and must exist there before this ships:
-    // user-app serves it at src/routes/in/api/submitLead. The two are deployed
-    // separately, so user-app goes first — pointing this at a path user-app has
-    // not deployed yet is a silent outage, because the submit below never reads
-    // its own response.
+    // This URL is owned by user-app, which serves it at
+    // src/routes/in/api/submitLead. The two apps deploy separately, so user-app
+    // goes first.
     const submitUrl = isIndia
       ? 'https://user.solarvipani.com/in/api/submitLead'
       : `/${country!.code}/api/submitLead`;
 
-    fetch(submitUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      keepalive: true,
-      body: JSON.stringify({
-        name,
-        phone,
-        pinCode,
-        email,
-        comment,
-        urlParam,
-        marketing_consent: consent
-      })
-    }).catch((error) => {
+    // Read the response before claiming anything. This form used to fire the
+    // request and navigate to the thank-you page unconditionally: when user-app
+    // moved this URL on 2026-08-23 and main-app was not redeployed, every
+    // submission 404'd and every visitor still saw a confirmation. Nobody
+    // noticed for 19 days. `keepalive` went with that pattern — it existed to
+    // outlive the immediate navigation, and there is no longer one to outlive.
+    //
+    // For India this is a cross-origin read, so it depends on user-app's
+    // Access-Control-Allow-Origin header (apps/user-app/src/hooks.server.ts).
+    // Without it the row still inserts and this still throws, which is the
+    // honest outcome: we cannot confirm what we cannot read.
+    try {
+      const response = await fetch(submitUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          phone,
+          pinCode,
+          email,
+          comment,
+          urlParam,
+          marketing_consent: consent
+        })
+      });
+
+      const body = await response.json().catch(() => null);
+
+      if (!response.ok || !body?.success) {
+        throw new Error(body?.error ?? `submitLead returned ${response.status}`);
+      }
+    } catch (error) {
       console.error('Error submitting form:', error);
-    });
+      submitError =
+        'We could not submit your details just now. Please check your connection and try again.';
+      isSubmitting = false;
+      return;
+    }
 
     window.location.href = isIndia
       ? `https://user.solarvipani.com/thank-you?pincode=${encodeURIComponent(pinCode)}`
@@ -218,6 +240,12 @@
             </span>
           </label>
 
+          {#if submitError}
+            <Alert.Root variant="destructive">
+              <Alert.Description>{submitError}</Alert.Description>
+            </Alert.Root>
+          {/if}
+
           <!-- Submit Button -->
           <Button
             type="submit"
@@ -333,6 +361,12 @@
         installers in my area to follow up on my inquiry.
       </span>
     </label>
+
+    {#if submitError}
+      <Alert.Root variant="destructive">
+        <Alert.Description>{submitError}</Alert.Description>
+      </Alert.Root>
+    {/if}
 
     <!-- Submit Button -->
     <Button
