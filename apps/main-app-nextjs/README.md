@@ -95,26 +95,17 @@ Based on the routes create archetype
    chips show linked cities only, the video hero is replaced by a typographic header,
    both CTAs are `action`.
 
-5. **@solar/db wired — done (f2fd815).** `lib/server/db.ts` holds the pool, same
-   arrangement as the SvelteKit app; `lib/directory/data.ts` is the real loader. The
-   seam held — no component or page markup changed. Needs `POSTGRES_URL` in
-   `.env.local` (copy it from `apps/main-app/.env.local`). Three deliberate
-   differences from the loader it was ported from are commented in the file; the one
-   that matters outside it is that **`level1` is part of the district match**, without
-   which the Arizona Yuma installer lists on the Colorado Yuma page.
+5. **@solar/db wired — done (f2fd815).** `lib/server/db.ts` holds the pool;
+   `lib/directory/data.ts` is the real loader. The seam held — no component or page
+   markup changed.
 
 ## Open items
 
-- The rest of the district page — lead form, gallery, subsidy, FAQ. All feature-gated,
-  so `lib/countries/` has to be ported first. `data.ts` has a one-line
-  `PROJECTS_ENABLED` set standing in for `features.projects` until then.
-- **The SvelteKit district loader still has the level1 bug.** Port the predicate back,
-  or accept that the two apps list different installers on 438 US districts.
-- The city/size leaf, 356 pages. Reuses this slice plus the polymorphic dispatch.
-- **The directory routes sit inside `(layout-1)`, which loads the editorial serif** that
-  `archetype.md` says the directory surface never uses. Moving them is safe — route
-  groups do not change URLs — but check whether the font actually downloads first.
-- Imagery policy (`design-foundation.md` §9) beyond the hero. The row thumbnail uses a
-  plain `<img>` because `next/image` takes its loader as a function prop, which cannot
-  cross the server boundary; see `components/directory/WorkThumb.tsx`.
-- Archetypes 1 and 3.
+6. **The rest of the district page** — lead form, gallery, subsidy, FAQ. Feature-gated,
+   so `lib/countries/` ports first. `geo-listing.md` §5.
+7. **The city/size leaf**, 356 pages. `geo-listing.md` §4.
+8. **The directory routes sit in `(layout-1)`**, which loads the editorial serif.
+   `archetype.md`, "Seeing them".
+9. **Imagery policy beyond the hero.** `design-foundation.md` §9;
+   `components/directory/WorkThumb.tsx`.
+10. **Archetypes 1 and 3.** `archetype/installer-profile.md`, `archetype/geo-index.md`.
