@@ -99,13 +99,19 @@ Based on the routes create archetype
    `lib/directory/data.ts` is the real loader. The seam held — no component or page
    markup changed.
 
+6. **The rest of the district page — done.** `lib/countries/` ported first, because
+   every remaining section is gated on it: one file now renders 6 sections for a US
+   county and all 17 for an Indian district. `geo-listing.md` §12 has no open questions
+   left. **The lead form deliberately does not submit** — see `LeadForm.tsx` for why and
+   for where it will point.
+
 ## Open items
 
-6. **The rest of the district page** — lead form, gallery, subsidy, FAQ. Feature-gated,
-   so `lib/countries/` ports first. `geo-listing.md` §5.
-7. **The city/size leaf**, 356 pages. `geo-listing.md` §4.
-8. **The directory routes sit in `(layout-1)`**, which loads the editorial serif.
+7. **The submit path.** `/{cc}/api/submitLead` is a 501 stub; wiring the lead form is
+   gated on it. `LeadForm.tsx`.
+8. **The city/size leaf**, 356 pages. `geo-listing.md` §4.
+9. **The directory routes sit in `(layout-1)`**, which loads the editorial serif.
    `archetype.md`, "Seeing them".
-9. **Imagery policy beyond the hero.** `design-foundation.md` §9;
-   `components/directory/WorkThumb.tsx`.
-10. **Archetypes 1 and 3.** `archetype/installer-profile.md`, `archetype/geo-index.md`.
+10. **Imagery policy beyond the hero.** `design-foundation.md` §9;
+    `WorkThumb.tsx`, `ProjectGallery.tsx`.
+11. **Archetypes 1 and 3.** `archetype/installer-profile.md`, `archetype/geo-index.md`.

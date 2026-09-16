@@ -11,12 +11,14 @@
  * nothing to link to the section disappears entirely — which is the honest
  * outcome for a page with no onward navigation, not a gap to fill.
  *
- * Chips are `nav a`, so globals.css already strips the underline: they are
- * identifiable as interactive by shape and position, which is the exception
- * rule 2 allows.
+ * The chips themselves are ChipList, shared with the two IN-only chip rows.
+ * What stays here is the `<nav>` and the filter — this is the one chip row on
+ * the page that is genuinely navigation down, and the one that had a decision
+ * to make about what to show.
  */
 import { geoUrl } from '@/lib/directory/urls';
 import type { CityLink } from '@/lib/directory/types';
+import { ChipList } from './ChipList';
 
 export function CityChips({
   cities,
@@ -36,19 +38,13 @@ export function CityChips({
 
   return (
     <nav aria-label={`Cities in ${level2}`}>
-      <h2 className="text-lg">Cities in {level2}</h2>
-      <ul className="mt-md flex flex-wrap gap-xs">
-        {linked.map((c) => (
-          <li key={c.slug}>
-            <a
-              href={geoUrl(country, level1Slug, level2Slug, c.slug)}
-              className="inline-block rounded-md border border-line bg-surface px-sm py-2xs text-sm text-ink transition-colors duration-fast ease-standard hover:border-line-strong"
-            >
-              {c.name}
-            </a>
-          </li>
-        ))}
-      </ul>
+      <ChipList
+        heading={`Cities in ${level2}`}
+        chips={linked.map((c) => ({
+          label: c.name,
+          href: geoUrl(country, level1Slug, level2Slug, c.slug)
+        }))}
+      />
     </nav>
   );
 }

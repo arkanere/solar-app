@@ -202,6 +202,12 @@ renders nothing rather than a zero when there is no signal — an empty cell rea
 `resolveLevel2()` for the 404, then six parallel queries: businesses
 (`BUSINESS_CARD_SELECTION`), recent projects (limit 6), cities with a `hasBusiness`
 flag, subsidy row, one postal code, lead count. Then
+
+> **The subsidy row is dead.** The SvelteKit loader selects it and never passes it to
+> anything — `SubsidySection.svelte` takes `city` and `pageUrl` only, and its content is
+> hardcoded PM Surya Ghar copy. The Next port runs five queries, not six. If the section
+> ever needs a per-state row, the query comes back with the code that reads it.
+
 `getTopProjectsPerBusiness(slugs)` — `ROW_NUMBER() OVER (PARTITION BY business_slug)`,
 top 3 each, on the `sql` escape hatch.
 
@@ -246,9 +252,22 @@ body stays a server component.
 ~~1. Sort order~~ — **decided: `rscore` stays, `businessname ASC` tiebreaker** (§3).
 ~~2. Badge~~ — **decided: dropped, not replaced** (§7).
 ~~3. CTA colour~~ — **decided: both `action`** (§8).
+~~4. City chip row~~ — **decided: only linked cities render** (§6). Takes p50 from 9 chips
+to 1, and the section disappears on a district with nothing to link to.
+~~5. Video hero~~ — **decided: replaced by a typographic header** (§8), `PlaceHeader`.
+~~6. Sections 12, 13 and 16~~ — **decided 2026-09-16: three separate sections.** The
+heading is what tells three visually identical chip rows apart, and "guides to read" and
+"places to go next" are genuinely different offers; one box asserting otherwise is
+shorter, not clearer. The recommended-systems table is content rather than navigation
+and would have sat badly inside a "related" block either way.
 
-1. **City chip row** — show only linked, style inert differently, or drop below a
-   threshold? A typical district shows 9 chips of which 1 is a link (§6).
-2. **Keep the video hero?** (§8)
-3. Sections 12, 13 and 16 are IN-only SEO surface — keep as three blocks, or fold into
-   one "related" section?
+None open. Two things this slice decided that were not on the list:
+
+- **The lead form does not submit yet**, deliberately. It renders and validates; the
+  button is disabled and the panel says so. The SvelteKit form's worst bug was claiming
+  a submission it had not made for 19 days, and a form that visibly does not submit is a
+  smaller failure than one that lies. Where it points when it is wired is recorded in
+  `components/directory/LeadForm.tsx`.
+- **The sample-quotation PDF is not ported.** Both tables (§5 sections 10 and 13) had a
+  per-row button that lazy-loaded jsPDF; porting it would have turned two tables of
+  constants into client leaves. It comes across as its own piece of work or not at all.

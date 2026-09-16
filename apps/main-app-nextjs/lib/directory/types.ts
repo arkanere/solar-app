@@ -34,6 +34,31 @@ export type CityLink = {
   linked: boolean;
 };
 
+/**
+ * One tile in the district's project gallery (geo-listing.md §5 section 9).
+ *
+ * `businessSlug` is the only name the gallery has for the installer — the old
+ * card title-cases the slug rather than joining to business_profiles, and that
+ * is carried across rather than widened, because the join would cost a query
+ * to render a name the row beneath it already shows.
+ *
+ * Both image fields are nullable and a project can have neither: `imageUrl` is
+ * the pre-Cloudinary path and `cloudinaryPublicId` the current one, so a tile
+ * prefers the second, falls back to the first, and has a no-image state.
+ */
+export type ProjectCard = {
+  id: number;
+  slug: string;
+  businessSlug: string;
+  title: string;
+  /** NOT NULL in the schema — every project has one. */
+  pincode: string;
+  /** NOT NULL in the schema. A date column, so a 'YYYY-MM-DD' string. */
+  projectDate: string;
+  cloudinaryPublicId: string | null;
+  imageUrl: string | null;
+};
+
 export type DistrictPageData = {
   country: string;
   level1: string;
@@ -42,4 +67,18 @@ export type DistrictPageData = {
   level2Slug: string;
   installers: InstallerRowData[];
   cities: CityLink[];
+  /** Up to 6, newest first. Empty where `features.projects` is off. */
+  projects: ProjectCard[];
+  /**
+   * Leads from this district, for the social-proof line. Shown only at 3 or
+   * more — geo-listing.md §8 keeps that floor, and it silences the line on
+   * 113 of 221 pages.
+   */
+  leadCount: number;
+  /**
+   * One postal code in the district, for LocalBusiness structured data. Null
+   * where `features.pincodeLookup` is off, which is every US page —
+   * pincode_mapping is IN-only.
+   */
+  postalCode: string | null;
 };

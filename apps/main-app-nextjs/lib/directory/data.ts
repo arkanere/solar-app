@@ -4,10 +4,16 @@
  * Now wired to the live database through @solar/db. Ported from
  * apps/main-app/src/routes/[country=country]/(layout-1)/solar/[state]/[district]/+page.server.ts
  * and the three `$lib/server` helpers it calls (`geo.ts`, `businesses.ts`,
- * `projects.ts`), trimmed to the sections the sparse district page actually
- * renders — geo-listing.md §5. The subsidy row, the postal code, the lead
- * count and the six-project gallery are not read here because nothing on the
- * page renders them yet; they come back with the sections that need them.
+ * `projects.ts`).
+ *
+ * The postal code, the lead count and the six-project gallery arrived with the
+ * sections that render them (geo-listing.md §5 sections 4, 9 and the
+ * LocalBusiness structured data in §10). The **subsidy row did not, and that
+ * is deliberate**: the SvelteKit loader selects a `state_subsidies` row for
+ * this page and never passes it to anything — `SubsidySection.svelte` takes
+ * `city` and `pageUrl` only, and its content is hardcoded PM Surya Ghar copy.
+ * It is a dead query, so it is not ported. If the section ever needs the row,
+ * it comes back with a section that reads it.
  *
  * Nothing above this file knows where the rows come from, which was the point
  * of the seam: the page, the components and the sort are unchanged.
@@ -21,10 +27,18 @@
  *  - counts key on LOWER(level2) and LOWER(city), because geo_locations and
  *    business_profiles disagree on casing.
  */
-import { and, eq, inArray, sql } from 'drizzle-orm';
-import { businessAccounts, businessProfiles, geoLocations, projects } from '@solar/db/schema';
+import { and, count, desc, eq, inArray, sql } from 'drizzle-orm';
+import {
+  businessAccounts,
+  businessProfiles,
+  geoLocations,
+  leaddata,
+  pincodeMapping,
+  projects
+} from '@solar/db/schema';
 import { db } from '@/lib/server/db';
-import type { CityLink, DistrictPageData, InstallerRowData } from './types';
+import { getCountry } from '@/lib/countries';
+import type { CityLink, DistrictPageData, InstallerRowData, ProjectCard } from './types';
 
 /**
  * 079 moved country off business_profiles: a location's country is its
@@ -35,14 +49,6 @@ import type { CityLink, DistrictPageData, InstallerRowData } from './types';
  * the other.
  */
 const accountOfProfile = eq(businessAccounts.sourceId, businessProfiles.accountBusinessId);
-
-/**
- * Countries where `projects` is on. The SvelteKit app reads this from
- * `$lib/countries` (`features.projects` — true for IN, false for US), which
- * this app has not ported yet. One constant until it does; the port replaces
- * this line and nothing else in the file.
- */
-const PROJECTS_ENABLED = new Set(['in']);
 
 /**
  * geo-listing.md §3, decided 2026-09-06: projects DESC, then rscore DESC NULLS
@@ -71,6 +77,10 @@ export async function getDistrict(
   level1Slug: string,
   level2Slug: string
 ): Promise<DistrictPageData | null> {
+  // Throws on an unknown code. The page narrows with `isCountry` before
+  // calling, so this is the internal invariant rather than the route guard.
+  const { features } = getCountry(country);
+
   const place = await resolveLevel2(country, level1Slug, level2Slug);
   if (!place) return null;
 
@@ -94,7 +104,7 @@ export async function getDistrict(
     eq(businessProfiles.isvisible, true)
   );
 
-  const [businessRows, cities] = await Promise.all([
+  const [businessRows, cities, projectRows, leadCount, postalCode] = await Promise.all([
     db
       .select({
         // businessname, slug and city are nullable in the schema but every
@@ -113,11 +123,14 @@ export async function getDistrict(
       .from(businessProfiles)
       .innerJoin(businessAccounts, accountOfProfile)
       .where(inLevel2),
-    getCities(country, level1Slug, level2Slug, inLevel2)
+    getCities(country, level1Slug, level2Slug, inLevel2),
+    features.projects ? getRecentProjects(level2) : Promise.resolve([]),
+    getLeadCount(country, level2),
+    features.pincodeLookup ? getPostalCode(level2) : Promise.resolve(null)
   ]);
 
   const slugs = businessRows.map((b) => b.slug).filter((s): s is string => s !== null);
-  const projectsBySlug = PROJECTS_ENABLED.has(country)
+  const projectsBySlug = features.projects
     ? await getProjectSummaries(slugs)
     : new Map<string, ProjectSummary>();
 
@@ -148,7 +161,10 @@ export async function getDistrict(
     level2,
     level2Slug,
     installers,
-    cities
+    cities,
+    projects: projectRows,
+    leadCount,
+    postalCode
   };
 }
 
@@ -212,6 +228,71 @@ async function getCities(
     slug: c.citySlug,
     linked: linked.has(c.city.toLowerCase())
   }));
+}
+
+/**
+ * The district's six most recent installations, for the gallery.
+ *
+ * Note this keys on `projects.district`, a denormalised name on the project
+ * row, not on the installers this page lists — so a project can appear here
+ * whose business is not in the column above, and vice versa. That is the
+ * SvelteKit behaviour and it is the right one for the section: it is "recent
+ * work in this district", not "recent work by these installers".
+ *
+ * LOWER() on both sides for the usual casing reason. `level1` is NOT part of
+ * the match, because the projects table has no state column to match on — a
+ * project in Washington County, Oregon can surface on the Washington County,
+ * Utah page. It affects the US only (features.projects is IN-only today) and
+ * fixing it needs a column, not a predicate, so it is recorded rather than
+ * papered over.
+ */
+async function getRecentProjects(level2: string): Promise<ProjectCard[]> {
+  const rows = await db
+    .select({
+      id: projects.id,
+      // business_slug and project_slug are nullable in the schema; the card
+      // needs both, so rows missing either are dropped below rather than the
+      // type widened. Same call CLAUDE.md asks for on the business columns.
+      slug: projects.projectSlug,
+      businessSlug: projects.businessSlug,
+      title: projects.title,
+      pincode: projects.pincode,
+      projectDate: projects.projectDate,
+      cloudinaryPublicId: projects.cloudinaryPublicId,
+      imageUrl: projects.imageUrl
+    })
+    .from(projects)
+    .where(and(sql`LOWER(${projects.district}) = LOWER(${level2})`, eq(projects.isvisible, true)))
+    .orderBy(desc(projects.projectDate), desc(projects.createdAt))
+    .limit(6);
+
+  return rows.filter(
+    (r): r is ProjectCard => r.slug !== null && r.businessSlug !== null
+  );
+}
+
+/**
+ * Leads submitted from this district, for the social-proof line. Counted for
+ * every country — the line is not feature-gated, only floored at 3.
+ */
+async function getLeadCount(country: string, level2: string): Promise<number> {
+  const rows = await db
+    .select({ total: count() })
+    .from(leaddata)
+    .where(
+      and(eq(leaddata.countryCode, country), sql`LOWER(${leaddata.level2}) = LOWER(${level2})`)
+    );
+  return rows[0]?.total ?? 0;
+}
+
+/** One postal code in the district, for LocalBusiness structured data. */
+async function getPostalCode(level2: string): Promise<string | null> {
+  const rows = await db
+    .select({ pincode: pincodeMapping.pincode })
+    .from(pincodeMapping)
+    .where(sql`LOWER(${pincodeMapping.district}) = LOWER(${level2})`)
+    .limit(1);
+  return rows[0]?.pincode ?? null;
 }
 
 type ProjectSummary = {

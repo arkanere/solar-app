@@ -1,15 +1,25 @@
 /**
  * The directory surface — archetypes 1–3, 90.5% of the site's URLs.
  *
- * All server components. The only interactive leaves the geo listing needs are
- * the lead form (not yet ported) and nothing else: the contact buttons are
- * anchors, so they render on the server like the rest of the row.
+ * Server components with one exception: `LeadForm`, five controlled fields
+ * validating on blur, which `LeadFormSection` wraps so that only the fields
+ * cross the client boundary. Everything else renders on the server — the
+ * contact buttons are anchors and the FAQ is native `<details>`, so neither
+ * needs JavaScript.
  */
 export { Breadcrumb, type Crumb } from './Breadcrumb';
+export { ChipList, type Chip } from './ChipList';
 export { CityChips } from './CityChips';
 export { CallButton, WhatsAppButton } from './ContactButtons';
+export { FAQ } from './FAQ';
 export { InstallerList } from './InstallerList';
 export { InstallerRow } from './InstallerRow';
+export { LeadFormSection } from './LeadFormSection';
 export { PlaceHeader } from './PlaceHeader';
+export { ProjectGallery } from './ProjectGallery';
+export { QuoteCTA } from './QuoteCTA';
+export { RecommendedSystems } from './RecommendedSystems';
+export { SocialProof } from './SocialProof';
 export { SoleInstaller } from './SoleInstaller';
+export { SubsidySection } from './SubsidySection';
 export { WorkThumb } from './WorkThumb';
