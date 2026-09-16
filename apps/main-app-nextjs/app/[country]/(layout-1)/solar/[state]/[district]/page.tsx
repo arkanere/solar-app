@@ -17,6 +17,13 @@ import { Breadcrumb, CityChips, InstallerList, PlaceHeader } from '@/components/
 import { getDistrict } from '@/lib/directory/data';
 import { geoUrl, installerUrl } from '@/lib/directory/urls';
 
+/**
+ * 15 days, the same window as the SvelteKit page's
+ * `config.isr.expiration = 1296000`. The directory changes when an installer
+ * is added, not by the hour.
+ */
+export const revalidate = 1296000;
+
 export default async function Page({
   params
 }: {

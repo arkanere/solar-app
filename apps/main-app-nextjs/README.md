@@ -88,6 +88,39 @@ Based on the routes create archetype
    no numeric Tailwind spacing anywhere. Both specimen sheets were converted to
    `Container`, which is what proved the rules catch real markup.
 
-4. Build archetype 2 (geo listing) next, not 1 — archetype.md says to build it first since it carries the highest sitemap priority and produces the installer row reused across all 601 pages. This is also the natural point to decide imagery treatment, since design-foundation.md says that decision "belongs with the district page slice, where there are real images to judge."
+4. **Archetype 2, district page — done (cdc05d8).** `/{cc}/solar/{state}/{district}`,
+   with both density treatments and the installer row that renders on all 601 geo
+   pages. Scoped to the sparse page (`geo-listing.md` §5); everything else is gated on
+   a country feature flag. `geo-listing.md` §12's three questions are decided: city
+   chips show linked cities only, the video hero is replaced by a typographic header,
+   both CTAs are `action`.
 
-5. Wire @solar/db in alongside step 2 — someone has to actually query business_profiles/business_accounts the way archetype/data.md did manually via psql, so the geo-listing page can render real installer rows instead of fixtures.
+5. **@solar/db wired — done.** `lib/server/db.ts` holds the pool (same arrangement as
+   the SvelteKit app, reading `POSTGRES_URL` from `.env.local` instead of
+   `$env/static/private`), and `lib/directory/data.ts` is the real loader. The seam
+   held: no component or page changed. Three deliberate differences from the SvelteKit
+   loader, all noted in the file:
+   - **level1 is part of the district match.** Without it the Arizona Yuma installer
+     lists on the Colorado Yuma page; 438 US district names occur in more than one
+     state. Verified on live that adding it drops no rows. **The SvelteKit loader still
+     has this bug.**
+   - **The project count is the real count, not capped at 3.** The old row rendered up
+     to three thumbnails so `getTopProjectsPerBusiness()` was enough; the new row
+     renders one number, and businesses have up to 14 projects.
+   - The thumbnail is the newest *photographed* project, not the newest project.
+
+## Open items
+
+- The rest of the district page — lead form, gallery, subsidy, FAQ. All feature-gated,
+  so `lib/countries/` has to be ported first. `data.ts` has a one-line
+  `PROJECTS_ENABLED` set standing in for `features.projects` until then.
+- **Port the level1 predicate back to the SvelteKit district loader**, or accept that
+  the two apps list different installers on 438 US districts.
+- The city/size leaf, 356 pages. Reuses this slice plus the polymorphic dispatch.
+- **The directory routes sit inside `(layout-1)`, which loads the editorial serif** that
+  `archetype.md` says the directory surface never uses. Moving them is safe — route
+  groups do not change URLs — but check whether the font actually downloads first.
+- Imagery policy (`design-foundation.md` §9) beyond the hero. The row thumbnail uses a
+  plain `<img>` because `next/image` takes its loader as a function prop, which cannot
+  cross the server boundary; see `components/directory/WorkThumb.tsx`.
+- Archetypes 1 and 3.
