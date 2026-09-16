@@ -15,17 +15,14 @@
  * Aggregate measurements behind the design choices are in archetype/data.md.
  */
 
-export type Installer = {
-  name: string;
-  address: string | null;
-  city: string;
-  phone: string | null;
-  slug: string;
-  services: number[];
-  projects: number;
-  /** Newest project photo, when the business has one. */
-  thumb: string | null;
-};
+/**
+ * The row shape now lives in lib/directory/types.ts, because the real page
+ * renders it too and the fixtures exist to stand in for the database, not to
+ * define it. Aliased rather than renamed so the specimen sheets keep reading
+ * the way they were approved.
+ */
+export type { InstallerRowData as Installer } from '@/lib/directory/types';
+import type { InstallerRowData as Installer } from '@/lib/directory/types';
 
 /** Pune district — 22 installers. The density the directory is growing into. */
 export const PUNE: Installer[] = [
@@ -799,14 +796,8 @@ export const PROFILE_AREAS: string[] = [
 /** The description 608 of 643 profiles carry verbatim. */
 export const BOILERPLATE_DESCRIPTION = 'Solar panel installer';
 
-export const SERVICE_NAMES: Record<number, string> = {
-  1: 'Panel installation',
-  2: 'Net metering',
-  3: 'Subsidy paperwork',
-  4: 'Financing',
-  5: 'Panel cleaning',
-  6: 'Agricultural solar'
-};
+/** Moved to lib/directory/services.ts — it is a real lookup, not sample data. */
+export { SERVICE_NAMES } from '@/lib/directory/services';
 
 export const BRAND_NAMES: Record<number, string> = {
   1: 'Waaree Energies',

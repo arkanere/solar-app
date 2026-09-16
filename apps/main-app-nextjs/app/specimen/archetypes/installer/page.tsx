@@ -8,7 +8,7 @@ import {
   PROFILE_PROJECTS,
   SERVICE_NAMES,
   thumbUrl
-} from '../fixtures';
+} from '@/lib/fixtures/directory';
 import {
   Breadcrumb,
   CallButton,

@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { Container } from '@/components/layout';
-import { STATES, TOP_DISTRICTS } from '../fixtures';
+import { STATES, TOP_DISTRICTS } from '@/lib/fixtures/directory';
 import { Breadcrumb, Frame, Lede, Section } from '../parts';
 
 /**

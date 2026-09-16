@@ -1,5 +1,5 @@
 import { Phone, MessageCircle, MapPin, Globe, Mail, ArrowUpRight } from 'lucide-react';
-import { initials, SERVICE_NAMES, thumbUrl, type Installer } from './fixtures';
+import { initials, SERVICE_NAMES, thumbUrl, type Installer } from '@/lib/fixtures/directory';
 
 /**
  * The proposal. Not a comparison with what exists — a design for what these

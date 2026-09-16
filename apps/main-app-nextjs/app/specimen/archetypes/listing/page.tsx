@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { Container } from '@/components/layout';
-import { LONE, PUNE, PUNE_CITIES, TOP_DISTRICTS } from '../fixtures';
+import { LONE, PUNE, PUNE_CITIES, TOP_DISTRICTS } from '@/lib/fixtures/directory';
 import { Breadcrumb, Frame, InstallerRow, Lede, Section, SoleInstaller } from '../parts';
 
 /**
