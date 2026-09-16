@@ -95,27 +95,21 @@ Based on the routes create archetype
    chips show linked cities only, the video hero is replaced by a typographic header,
    both CTAs are `action`.
 
-5. **@solar/db wired — done.** `lib/server/db.ts` holds the pool (same arrangement as
-   the SvelteKit app, reading `POSTGRES_URL` from `.env.local` instead of
-   `$env/static/private`), and `lib/directory/data.ts` is the real loader. The seam
-   held: no component or page changed. Three deliberate differences from the SvelteKit
-   loader, all noted in the file:
-   - **level1 is part of the district match.** Without it the Arizona Yuma installer
-     lists on the Colorado Yuma page; 438 US district names occur in more than one
-     state. Verified on live that adding it drops no rows. **The SvelteKit loader still
-     has this bug.**
-   - **The project count is the real count, not capped at 3.** The old row rendered up
-     to three thumbnails so `getTopProjectsPerBusiness()` was enough; the new row
-     renders one number, and businesses have up to 14 projects.
-   - The thumbnail is the newest *photographed* project, not the newest project.
+5. **@solar/db wired — done (f2fd815).** `lib/server/db.ts` holds the pool, same
+   arrangement as the SvelteKit app; `lib/directory/data.ts` is the real loader. The
+   seam held — no component or page markup changed. Needs `POSTGRES_URL` in
+   `.env.local` (copy it from `apps/main-app/.env.local`). Three deliberate
+   differences from the loader it was ported from are commented in the file; the one
+   that matters outside it is that **`level1` is part of the district match**, without
+   which the Arizona Yuma installer lists on the Colorado Yuma page.
 
 ## Open items
 
 - The rest of the district page — lead form, gallery, subsidy, FAQ. All feature-gated,
   so `lib/countries/` has to be ported first. `data.ts` has a one-line
   `PROJECTS_ENABLED` set standing in for `features.projects` until then.
-- **Port the level1 predicate back to the SvelteKit district loader**, or accept that
-  the two apps list different installers on 438 US districts.
+- **The SvelteKit district loader still has the level1 bug.** Port the predicate back,
+  or accept that the two apps list different installers on 438 US districts.
 - The city/size leaf, 356 pages. Reuses this slice plus the polymorphic dispatch.
 - **The directory routes sit inside `(layout-1)`, which loads the editorial serif** that
   `archetype.md` says the directory surface never uses. Moving them is safe — route
