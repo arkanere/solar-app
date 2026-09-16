@@ -78,9 +78,16 @@ Based on the routes create archetype
    `archetype/data.md` — which found that the badge, score, description and service
    chips are constants across the whole directory, and that the district sort is a
    no-op. Three decisions block the build; they are listed at the end of `archetype.md`.
+   Approve visually at `/specimen/archetypes`.
 
-2. **Archetypes — done.** Scoped to the three that are 90.5% of the site: installer
-   profile (649), geo listing (601), geo index (29). Everything else is a port. Specs in
-   `archetype/`, grounded on live measurements in `archetype/data.md` — which found the
-   badge, score, description and service chips are constants across the directory, and
-   that the district sort is a no-op. Approve visually at `/specimen/archetypes`.
+3. **Layout primitives — done.** Four in `components/layout/`: `PageShell` (the
+   `<main>`, and the only place `--spacing-section` is applied), `Section` (one
+   section, at a measure, with the page gutter), `Container` (measure + gutter) and
+   `Stack` (vertical rhythm from the spacing scale). The two lint rules that were
+   blocked on them landed with them: no `mx-auto` outside `components/layout/`, and
+   no numeric Tailwind spacing anywhere. Both specimen sheets were converted to
+   `Container`, which is what proved the rules catch real markup.
+
+4. Build archetype 2 (geo listing) next, not 1 — archetype.md says to build it first since it carries the highest sitemap priority and produces the installer row reused across all 601 pages. This is also the natural point to decide imagery treatment, since design-foundation.md says that decision "belongs with the district page slice, where there are real images to judge."
+
+5. Wire @solar/db in alongside step 2 — someone has to actually query business_profiles/business_accounts the way archetype/data.md did manually via psql, so the geo-listing page can render real installer rows instead of fixtures.

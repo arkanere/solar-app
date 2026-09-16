@@ -169,8 +169,21 @@ Three that will bite again:
 
 ## 9. Not decided here
 
-- Layout primitives. They are the next step, and two lint rules are blocked on them: "no
-  hand-rolled containers" and spacing-scale enforcement.
+- ~~Layout primitives~~ — **done**, in `components/layout/`, and both lint rules landed with
+  them. Two things decided while building them:
+
+  - The container lint rule tests for `mx-auto` alone, not for `max-w-*`. A container is a
+    column centred in the viewport, so every hand-rolled one centres; a bare `max-w-*` capping
+    a paragraph inside a wider section is typography, and routing it through `Container` would
+    add a second page gutter.
+  - **The gutter is added to the measure, not taken out of it.** Tailwind boxes are
+    `border-box`, so `max-w-content px-lg` would have made the text column 1152 − 48 = 1104px
+    — the gutter quietly paid for out of the measure, leaving `--container-content: 72rem` no
+    longer the number it names. `Container` uses
+    `max-w-[calc(var(--container-*)+2*var(--page-gutter))]`, so the column is exactly 72rem and
+    the gutter is space beside it. `--page-gutter` lives on `:root` rather than in `@theme`,
+    because it is read twice per container — as padding and inside that calc — and those two
+    have to move together at the breakpoint.
 - Imagery treatment — aspect ratios, Cloudinary transforms, `next/image` policy. It belongs
   with the district page slice, where there are real images to judge.
 - Whether state/district/city is one archetype or three.

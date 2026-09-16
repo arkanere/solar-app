@@ -190,6 +190,25 @@
 @layer base {
   :root {
     color-scheme: light;
+
+    /* The page gutter. Declared here rather than as a Tailwind class on the
+       Container so the responsive step is one decision in one place: it is
+       read TWICE per container — once as padding, once inside the max-width —
+       and those two have to move together or the measure stops meaning what
+       --container-* says it means.
+
+       It is not in @theme because it is not a scale a utility should generate:
+       there is no `p-page-gutter` worth having. Container reads it through
+       var() and nothing else should. */
+    --page-gutter: var(--spacing-md);
+  }
+
+  /* Matches Tailwind's `sm` (40rem). Kept as a bare media query because the
+     variable has to change for both of Container's uses at once. */
+  @media (width >= 40rem) {
+    :root {
+      --page-gutter: var(--spacing-lg);
+    }
   }
 
   html {

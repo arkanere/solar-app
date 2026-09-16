@@ -17,13 +17,9 @@ import reactHooks from 'eslint-plugin-react-hooks';
  *     from the first commit rather than retrofitted — which is exactly what went
  *     wrong in the SvelteKit app.
  *
- * The design rules below are only the ones decidable today. Two more are named
- * in the README and deliberately absent, because they cannot be written yet:
- *  - "no hand-rolled containers" needs the layout primitives to exist before
- *    there is a named thing to require instead.
- *  - spacing/type scale enforcement needs the token set, which is decided as one
- *    argument in the design foundation step.
- * Add both here as they land.
+ * The two rules the README named as blocked on the layout primitives — "no
+ * hand-rolled containers" and spacing-scale enforcement — landed with them and
+ * are `primitiveRestrictions` below.
  */
 
 /** Colour literals belong in the token layer, never inline in a component. */
@@ -32,30 +28,87 @@ const HEX_COLOUR = String.raw`(^|[\s:(,;])#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9
 /** No dark mode exists in this app; :root pins color-scheme: light. */
 const DARK_VARIANT = String.raw`(^|[\s"'\x60])dark:`;
 
-const designRules = {
-  'no-restricted-syntax': [
-    'error',
-    {
-      selector: `Literal[value=/${DARK_VARIANT}/]`,
-      message:
-        'No dark mode in this app — :root pins color-scheme: light, so `dark:` has nothing to flip. Authoring two themes separately is what made the SvelteKit tokens drift.'
-    },
-    {
-      selector: `TemplateElement[value.raw=/${DARK_VARIANT}/]`,
-      message:
-        'No dark mode in this app — :root pins color-scheme: light, so `dark:` has nothing to flip.'
-    },
-    {
-      selector: `Literal[value=/${HEX_COLOUR}/]`,
-      message:
-        'No raw hex outside the token layer. Use a token from globals.css (or a daisyUI colour class) so the palette stays changeable in one place.'
-    },
-    {
-      selector: `TemplateElement[value.raw=/${HEX_COLOUR}/]`,
-      message: 'No raw hex outside the token layer. Use a token from globals.css.'
-    }
-  ],
+/**
+ * A hand-rolled container. `mx-auto` alone is the whole test: a container is a
+ * column centred in the viewport, so every hand-rolled one centres, and
+ * nothing else on a page has a reason to.
+ *
+ * A bare `max-w-*` with no centring is deliberately NOT caught. Capping a
+ * paragraph or a form at a readable width inside a wider section is a
+ * typographic decision, and routing it through Container would be wrong — a
+ * nested Container would add a second page gutter.
+ */
+const HAND_ROLLED_CONTAINER = String.raw`(^|[\s"'\x60])mx-auto(?![\w-])`;
 
+/**
+ * Tailwind's numeric spacing scale. The token scale is 2xs…3xl, so anything
+ * ending in a bare number is off-scale by construction. The lookahead is what
+ * keeps `gap-2xs` and `mt-3xl` out of this — without it, the digit in `2xs`
+ * matches and every token use is a false positive.
+ */
+const NUMERIC_SPACING = String.raw`(^|[\s"'\x60])-?([mp][trblxyse]?|gap(-[xy])?|space-[xy])-\d+(\.\d+)?(?![\w-])`;
+
+/** Applies everywhere, including inside the layout primitives. */
+const baseRestrictions = [
+  {
+    selector: `Literal[value=/${DARK_VARIANT}/]`,
+    message:
+      'No dark mode in this app — :root pins color-scheme: light, so `dark:` has nothing to flip. Authoring two themes separately is what made the SvelteKit tokens drift.'
+  },
+  {
+    selector: `TemplateElement[value.raw=/${DARK_VARIANT}/]`,
+    message:
+      'No dark mode in this app — :root pins color-scheme: light, so `dark:` has nothing to flip.'
+  },
+  {
+    selector: `Literal[value=/${HEX_COLOUR}/]`,
+    message:
+      'No raw hex outside the token layer. Use a token from globals.css (or a daisyUI colour class) so the palette stays changeable in one place.'
+  },
+  {
+    selector: `TemplateElement[value.raw=/${HEX_COLOUR}/]`,
+    message: 'No raw hex outside the token layer. Use a token from globals.css.'
+  }
+];
+
+/**
+ * Everywhere EXCEPT components/layout, which is the code these two rules point
+ * at. The primitives have to write `mx-auto` and the gutter themselves; the
+ * whole point is that nothing else does.
+ */
+const primitiveRestrictions = [
+  {
+    selector: `Literal[value=/${HAND_ROLLED_CONTAINER}/]`,
+    message:
+      'No hand-rolled containers. Use <Section>, <Container> or <PageShell> from @/components/layout — measure and page gutter are one decision, made once, not re-typed per page.'
+  },
+  {
+    selector: `TemplateElement[value.raw=/${HAND_ROLLED_CONTAINER}/]`,
+    message: 'No hand-rolled containers. Use <Section> or <Container> from @/components/layout.'
+  },
+  {
+    selector: `Literal[value=/${NUMERIC_SPACING}/]`,
+    message:
+      "Off the spacing scale. Use a token step — 2xs xs sm md lg xl 2xl 3xl — e.g. `mt-lg`, not `mt-6`. Vertical rhythm between blocks belongs to <Stack> rather than to margins at all."
+  },
+  {
+    selector: `TemplateElement[value.raw=/${NUMERIC_SPACING}/]`,
+    message: 'Off the spacing scale. Use a token step (2xs…3xl), e.g. `mt-lg`, not `mt-6`.'
+  }
+];
+
+/**
+ * RSC is the default. Every 'use client' is a deliberate exception at an
+ * interactive leaf, so each one has to be disabled explicitly — the
+ * eslint-disable comment is where the justification gets written down.
+ */
+const USE_CLIENT_RESTRICTION = {
+  selector: 'ExpressionStatement > Literal[value="use client"]',
+  message:
+    'Server components are the default. If this really is an interactive leaf, keep the directive and add an eslint-disable-next-line comment saying why.'
+};
+
+const designRules = {
   'no-restricted-imports': [
     'error',
     {
@@ -119,17 +172,23 @@ export default [
 
       ...designRules,
 
-      // RSC is the default. Every 'use client' is a deliberate exception at an
-      // interactive leaf, so each one has to be disabled explicitly — the
-      // eslint-disable comment is where the justification gets written down.
       'no-restricted-syntax': [
-        ...designRules['no-restricted-syntax'],
-        {
-          selector: 'ExpressionStatement > Literal[value="use client"]',
-          message:
-            "Server components are the default. If this really is an interactive leaf, keep the directive and add an eslint-disable-next-line comment saying why."
-        }
+        'error',
+        ...baseRestrictions,
+        ...primitiveRestrictions,
+        USE_CLIENT_RESTRICTION
       ]
+    }
+  },
+
+  // The layout primitives are the code the two rules above point at, so they
+  // are the one place allowed to write `mx-auto` and the page gutter. Every
+  // other restriction still applies here — hence the list is restated minus
+  // primitiveRestrictions, rather than the whole rule being switched off.
+  {
+    files: ['components/layout/**/*.tsx'],
+    rules: {
+      'no-restricted-syntax': ['error', ...baseRestrictions, USE_CLIENT_RESTRICTION]
     }
   },
 

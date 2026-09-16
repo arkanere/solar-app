@@ -238,6 +238,9 @@ export function Fact({
 }) {
   return (
     <div className="flex items-start gap-sm">
+      {/* eslint-disable-next-line no-restricted-syntax -- 2px optical alignment of the
+          icon to the label's cap height, not vertical rhythm. The scale starts at 4px
+          and there is no token for this; snapping to mt-2xs visibly drops the icon. */}
       <span className="mt-0.5 shrink-0 text-ink-subtle">{icon}</span>
       <div className="min-w-0">
         <dt className="text-2xs uppercase tracking-widest text-ink-subtle">{label}</dt>
