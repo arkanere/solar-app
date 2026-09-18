@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { toast } from 'svelte-sonner';
+	import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -7,9 +8,21 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import * as Select from '$lib/components/ui/select';
 
+	export type EditableProject = {
+		id: number;
+		title: string;
+		pincode?: string;
+		district?: string;
+		city?: string;
+		project_date?: string;
+		cloudinary_public_id?: string;
+	};
+
 	export type PostRecentProjectProps = {
 		show?: boolean;
 		businessSlug?: string;
+		/** When set, the dialog edits this project instead of creating a new one. */
+		project?: EditableProject | null;
 		onClose?: () => void;
 		onPosted?: (project?: unknown) => void;
 	};
@@ -17,9 +30,20 @@
 	let {
 		show = $bindable(false),
 		businessSlug = '',
+		project = null,
 		onClose = () => {},
 		onPosted = () => {}
 	}: PostRecentProjectProps = $props();
+
+	let isEditing = $derived(project !== null);
+
+	// In edit mode the existing photo is kept unless a new one is picked, so the
+	// image is only mandatory when creating.
+	let existingImageUrl = $derived(
+		project?.cloudinary_public_id
+			? `https://res.cloudinary.com/${PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_limit,w_400,q_auto,f_auto/${project.cloudinary_public_id}`
+			: null
+	);
 
 	// Form data
 	let formData = $state({
@@ -42,6 +66,11 @@
 	let isCitiesLoading = $state(false);
 	let lastFetchedPincode = $state('');
 	let lastFetchedDistrict = $state('');
+	// fetchCitiesByDistrict clears the selection whenever a district loads, which
+	// would discard the city prefilled from the project being edited. Hold it here
+	// and reapply once the list arrives. Null on the create path, so that is
+	// unaffected.
+	let pendingCity: string | null = $state(null);
 
 	// Suggested project names for consistency
 	const suggestedNames = [
@@ -85,17 +114,20 @@
 
 	function resetForm() {
 		formData = {
-			projectTitle: '',
-			pincode: '',
-			district: '',
-			city: '',
-			projectDate: formatDate(new Date()),
+			projectTitle: project?.title ?? '',
+			pincode: project?.pincode ?? '',
+			district: project?.district ?? '',
+			city: project?.city ?? '',
+			projectDate: project?.project_date ?? formatDate(new Date()),
 			projectImage: null
 		};
 		imagePreview = null;
 		cities = [];
-		lastFetchedPincode = '';
+		// Seeded so the pincode/district effects do not immediately refetch and
+		// wipe the values just prefilled from the existing project.
+		lastFetchedPincode = project?.pincode ?? '';
 		lastFetchedDistrict = '';
+		pendingCity = project?.city ?? null;
 		isDistrictLoading = false;
 		isCitiesLoading = false;
 	}
@@ -233,7 +265,8 @@
 			if (data.cities && data.cities.length > 0) {
 				cities = data.cities;
 				// Reset city selection when district changes
-				formData.city = '';
+				formData.city = pendingCity && data.cities.includes(pendingCity) ? pendingCity : '';
+				pendingCity = null;
 			} else {
 				console.log('Cities not found for district:', districtValue);
 				cities = [];
@@ -303,7 +336,11 @@
 				return;
 			}
 
-			if (!formData.city.trim()) {
+			// Not required when editing. The city dropdown cannot populate — the
+			// getCities endpoint requires a `state` this component does not send —
+			// and `city` is NULL on every existing project, so demanding it here
+			// would make every edit unsaveable. The create path is left as-is.
+			if (!isEditing && !formData.city.trim()) {
 				errorMessage = 'City is required';
 				isSubmitting = false;
 				return;
@@ -316,23 +353,27 @@
 			}
 
 			// A project without a photo is not useful on the public listing, and
-			// until now nothing stopped one being posted.
-			if (!formData.projectImage) {
+			// until now nothing stopped one being posted. When editing, the existing
+			// photo is kept unless a new one is picked, so a file is only required
+			// if the project somehow has none.
+			if (!formData.projectImage && !existingImageUrl) {
 				errorMessage = 'Project image is required';
 				isSubmitting = false;
 				return;
 			}
 
-			if (!allowedImageTypes.includes(formData.projectImage.type)) {
-				errorMessage = 'Please upload a valid image file (JPG, PNG, WebP, GIF, BMP, TIFF, SVG)';
-				isSubmitting = false;
-				return;
-			}
+			if (formData.projectImage) {
+				if (!allowedImageTypes.includes(formData.projectImage.type)) {
+					errorMessage = 'Please upload a valid image file (JPG, PNG, WebP, GIF, BMP, TIFF, SVG)';
+					isSubmitting = false;
+					return;
+				}
 
-			if (formData.projectImage.size > maxImageSize) {
-				errorMessage = 'Image file size must be less than 25MB';
-				isSubmitting = false;
-				return;
+				if (formData.projectImage.size > maxImageSize) {
+					errorMessage = 'Image file size must be less than 25MB';
+					isSubmitting = false;
+					return;
+				}
 			}
 
 			// Create FormData object for file upload
@@ -344,14 +385,23 @@
 			formDataToSend.append('projectDate', formData.projectDate);
 			formDataToSend.append('business_slug', businessSlug);
 
-			formDataToSend.append('projectImage', await downscaleImage(formData.projectImage));
+			if (formData.projectImage) {
+				formDataToSend.append('projectImage', await downscaleImage(formData.projectImage));
+			}
 
-			console.log('Submitting project data with image');
+			if (isEditing && project) {
+				formDataToSend.append('projectId', String(project.id));
+			}
 
-			const response = await fetch(`/api/postRecentProject`, {
-				method: 'POST',
-				body: formDataToSend // Using FormData instead of JSON.stringify
-			});
+			console.log(isEditing ? 'Submitting project update' : 'Submitting project data with image');
+
+			const response = await fetch(
+				isEditing ? `/api/updateRecentProject` : `/api/postRecentProject`,
+				{
+					method: isEditing ? 'PUT' : 'POST',
+					body: formDataToSend // Using FormData instead of JSON.stringify
+				}
+			);
 
 			console.log('Response status:', response.status);
 			const result = await response.json();
@@ -361,7 +411,7 @@
 				onPosted(result.project);
 				// Use a timeout to prevent race conditions
 				setTimeout(() => {
-					toast.success('Project posted successfully!');
+					toast.success(isEditing ? 'Project updated successfully!' : 'Project posted successfully!');
 					isSubmitting = false;
 					show = false; // Close the modal after toast
 					// Redirect to the recent projects page after a short delay
@@ -370,13 +420,16 @@
 					}, 1500);
 				}, 100);
 			} else {
-				errorMessage = result.error || 'Failed to post project';
+				errorMessage = result.error || (isEditing ? 'Failed to update project' : 'Failed to post project');
 				toast.error(errorMessage);
 				isSubmitting = false;
 			}
 		} catch (error) {
-			console.error('Error posting project:', error);
-			errorMessage = error instanceof Error ? error.message : 'An error occurred while posting the project';
+			console.error(isEditing ? 'Error updating project:' : 'Error posting project:', error);
+			errorMessage =
+				error instanceof Error
+					? error.message
+					: `An error occurred while ${isEditing ? 'updating' : 'posting'} the project`;
 			toast.error(errorMessage);
 			isSubmitting = false;
 		}
@@ -386,7 +439,7 @@
 <Dialog.Root open={show} onOpenChange={handleOpenChange}>
 	<Dialog.Content class="max-w-[500px] max-h-[90vh] overflow-y-auto overflow-x-hidden">
 		<Dialog.Header>
-			<Dialog.Title>Post Recent Project</Dialog.Title>
+			<Dialog.Title>{isEditing ? 'Edit Project' : 'Post Recent Project'}</Dialog.Title>
 		</Dialog.Header>
 
 		<form
@@ -415,6 +468,7 @@
 				/>
 			</div>
 
+			{#if !isEditing}
 			<div class="p-4 bg-secondary rounded-lg border">
 				<p class="font-medium text-sm text-muted-foreground mb-3">
 					Suggested project titles:
@@ -434,6 +488,7 @@
 					{/each}
 				</div>
 			</div>
+			{/if}
 
 			<div class="flex flex-col gap-2">
 				<Label for="pincode">Pincode:</Label>
@@ -464,6 +519,7 @@
 				{/if}
 			</div>
 
+			{#if !isEditing}
 			<div class="flex flex-col gap-2">
 				<Label for="city">City:</Label>
 				<Select.Root type="single" bind:value={formData.city} disabled={isSubmitting || !formData.district || isCitiesLoading}>
@@ -483,6 +539,7 @@
 					<small class="text-destructive italic text-xs">No cities found for this district</small>
 				{/if}
 			</div>
+			{/if}
 
 			<div class="flex flex-col gap-2">
 				<Label for="projectDate">Project Date:</Label>
@@ -495,7 +552,7 @@
 			</div>
 
 			<div class="flex flex-col gap-2">
-				<Label for="projectImage">Project Image:</Label>
+				<Label for="projectImage">{isEditing ? 'Project Image (optional):' : 'Project Image:'}</Label>
 				<Input
 					id="projectImage"
 					type="file"
@@ -504,8 +561,21 @@
 					disabled={isSubmitting}
 				/>
 				<small class="text-muted-foreground italic text-xs">
-					Accepted formats: JPG, PNG, WebP, GIF, BMP, TIFF, SVG (Max: 25MB)
+					{isEditing
+						? 'Leave empty to keep the current photo. Accepted formats: JPG, PNG, WebP, GIF, BMP, TIFF, SVG (Max: 25MB)'
+						: 'Accepted formats: JPG, PNG, WebP, GIF, BMP, TIFF, SVG (Max: 25MB)'}
 				</small>
+				{#if !imagePreview && existingImageUrl}
+					<div class="mt-2 border border-dashed p-2 rounded">
+						<p class="text-xs text-muted-foreground mb-2">Current photo:</p>
+						<img
+							src={existingImageUrl}
+							alt="Current project"
+							loading="lazy"
+							class="max-w-full max-h-[200px] object-contain"
+						/>
+					</div>
+				{/if}
 				{#if imagePreview}
 					<div class="mt-2 border border-dashed p-2 rounded">
 						<img
@@ -527,7 +597,11 @@
 					disabled={isSubmitting}
 					class="bg-success text-success-foreground hover:bg-success/90 max-sm:w-full"
 				>
-					{isSubmitting ? 'Posting...' : 'Post Project'}
+					{#if isEditing}
+						{isSubmitting ? 'Saving...' : 'Save Changes'}
+					{:else}
+						{isSubmitting ? 'Posting...' : 'Post Project'}
+					{/if}
 				</Button>
 			</Dialog.Footer>
 		</form>

@@ -20,6 +20,7 @@ interface Project {
 	title: string;
 	pincode?: string;
 	district?: string;
+	city?: string;
 	project_date?: string;
 	created_at: string;
 	image_url?: string;
@@ -113,6 +114,7 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 				title: projectsTable.title,
 				pincode: projectsTable.pincode,
 				district: projectsTable.district,
+				city: projectsTable.city,
 				project_date: projectsTable.projectDate,
 				created_at: projectsTable.createdAt,
 				image_url: projectsTable.imageUrl,

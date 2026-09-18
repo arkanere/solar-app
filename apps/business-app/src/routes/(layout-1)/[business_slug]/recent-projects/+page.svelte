@@ -33,12 +33,30 @@
 	// State for delete - track which project is being deleted
 	let deletingProjectId = $state(null);
 
-	// State for post project modal
+	// State for post project modal. editingProject is null when posting a new
+	// project and holds the row being edited otherwise; the same modal serves both.
 	let showPostRecentProject = $state(false);
+	let editingProject = $state<any>(null);
+
+	function openPostProject() {
+		editingProject = null;
+		showPostRecentProject = true;
+	}
+
+	function openEditProject(project: any) {
+		editingProject = project;
+		showPostRecentProject = true;
+	}
+
+	function closePostProject() {
+		showPostRecentProject = false;
+		editingProject = null;
+	}
 
 	// Handle project posted
 	function handleProjectPosted() {
 		showPostRecentProject = false;
+		editingProject = null;
 		window.location.reload();
 	}
 
@@ -86,7 +104,7 @@
 			<h1 class="text-2xl font-semibold text-foreground">Project Portfolio</h1>
 			<p class="mt-1 text-sm text-muted-foreground">Manage your completed solar installation projects</p>
 		</div>
-		<Button onclick={() => (showPostRecentProject = true)} class="whitespace-nowrap w-full md:w-auto">
+		<Button onclick={openPostProject} class="whitespace-nowrap w-full md:w-auto">
 			Post Recent Project
 		</Button>
 	</header>
@@ -139,13 +157,22 @@
 							</div>
 							<div class="flex gap-2">
 								<Button
+									variant="outline"
+									size="sm"
+									class="flex-1"
+									onclick={() => openEditProject(project)}
+									disabled={deletingProjectId === project.id}
+								>
+									Edit
+								</Button>
+								<Button
 									variant="destructive"
 									size="sm"
-									class="w-full"
+									class="flex-1"
 									onclick={() => handleDeleteProject(project)}
 									disabled={deletingProjectId === project.id}
 								>
-									{deletingProjectId === project.id ? 'Deleting...' : 'Delete Project'}
+									{deletingProjectId === project.id ? 'Deleting...' : 'Delete'}
 								</Button>
 							</div>
 						</div>
@@ -156,12 +183,15 @@
 	</section>
 </div>
 
-<!-- Post Recent Project Modal -->
+<!-- Post / Edit Recent Project Modal -->
 {#if showPostRecentProject}
-	<PostRecentProject
-		bind:show={showPostRecentProject}
-		{businessSlug}
-		onClose={() => (showPostRecentProject = false)}
-		onPosted={handleProjectPosted}
-	/>
+	{#key editingProject?.id ?? 'new'}
+		<PostRecentProject
+			bind:show={showPostRecentProject}
+			{businessSlug}
+			project={editingProject}
+			onClose={closePostProject}
+			onPosted={handleProjectPosted}
+		/>
+	{/key}
 {/if}
