@@ -66,6 +66,30 @@ Code worth knowing before editing:
   own title and description. Only the five built directory pages call it; the 44 route
   stubs fall back to the root layout, which is also where `metadataBase` lives.
 
+## Next steps
+
+Five steps, in order, planned 2026-09-18. Re-plan after the last one lands.
+
+1. **Site chrome.** `SiteHeader` + `SiteFooter` into the root layout, plus `robots.txt`,
+   favicon and the OG image. Ported from the SvelteKit `lib/components/chrome/`. Nothing
+   built so far reads as a finished page without it — every directory page currently
+   floats with no nav and no footer.
+2. **Archetype 4 — the editorial page.** `/`, the 7 pillar landings and
+   `/{pillar}/{slug}`. The work is the polymorphic resolver (cluster whitelist first,
+   then brand — `routes.md`) and one `prose` body for the database HTML;
+   `@tailwindcss/typography` is already installed, so `ContentSections.svelte`'s
+   hand-rolled table CSS does not come across. ~90 URLs, the largest block left.
+3. **The long tail.** Product model pages, `/solar-subsidy/{slug}` (state subsidy vs
+   discom — polymorphic again), project detail, the paginated project list, authors,
+   `/seo-index`, the legal pages and the 3 tools. Assembly from step 2's parts.
+4. **Forms and handlers.** `business-form`, `get-quotes`, `partners/join`, the
+   thank-you pages, the 10 API routes still answering 501, and the legacy 301s from
+   `hooks.server.ts` into `middleware.ts`. Open item 1 below belongs here. The write
+   path is stubbed apart from `submitLead`.
+5. **Sitemaps, metadata, a smoke harness.** The 3 sitemap handlers (501 today),
+   `pageMetadata` on every page — 5 call it — and a test that fetches one URL of each
+   route shape and asserts 200. 49 pages with no coverage is the standing risk.
+
 ## Open items
 
 1. **A phone number of `+` plus 16 digits is a 500.** `@solar/validation`'s `phone`
