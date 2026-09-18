@@ -2,4 +2,6 @@
 
 Do not commit without asking.
 
-Always reply in simple technical english. 
+Always reply very very briefly.
+
+Always reply in simple technical english.
