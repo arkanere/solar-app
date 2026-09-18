@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { PUBLIC_CLOUDINARY_CLOUD_NAME } from '$env/static/public';
 	import PostRecentProject from '$lib/components/PostRecentProject.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
@@ -9,6 +10,15 @@
 	let businessSlug = $derived($page.params.business_slug ?? '');
 	let projects = $derived($page.data.projects || []);
 	let errorMessage = $derived($page.data.errorMessage);
+
+	// Build the delivery URL from the public id rather than using the stored
+	// image_url, which is the untransformed original. Phone uploads are HEIC,
+	// which Chrome cannot decode, so the raw URL renders as a broken image.
+	// f_auto makes Cloudinary transcode per the browser's Accept header. Same
+	// transform as the public installer page.
+	function getProjectImageUrl(cloudinaryId: string): string {
+		return `https://res.cloudinary.com/${PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_fill,w_300,h_300,q_auto,f_auto/${cloudinaryId}`;
+	}
 
 	// Format date for display
 	function formatDate(dateString: string) {
@@ -98,10 +108,10 @@
 					<div
 						class="bg-card rounded-lg overflow-hidden border border-border shadow-card hover:shadow-card-hover transition-shadow duration-300"
 					>
-						{#if project.image_url}
+						{#if project.cloudinary_public_id}
 							<div class="w-full h-[200px] overflow-hidden">
 								<img
-									src={project.image_url}
+									src={getProjectImageUrl(project.cloudinary_public_id)}
 									alt={project.title}
 									class="w-full h-full object-cover"
 								/>
