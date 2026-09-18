@@ -9,13 +9,6 @@ sharing `@solar/db` and `@solar/validation`. SvelteKit and Next coexist in the w
 
 ## Principles
 
-The site is a content and directory site, not a component showcase. Most of the pixels are
-type, whitespace, images and tables. Buttons and dialogs are a rounding error — so density
-and hierarchy on the data pages is where the impression of quality forms, and imagery
-beats any component restyle.
-
-Standing rules for anything new:
-
 - Mobile-first sizing, semantic HTML.
 - Spacing comes from the layout primitives, never by hand.
 - CSS transitions via Tailwind. No JS animation libraries.
@@ -29,14 +22,14 @@ Standing rules for anything new:
 - Tailwind 4, with daisyUI as a plugin (`app/globals.css`).
 - `@tailwindcss/typography` (prose), `lucide-react` icons.
 - Free / MIT only. No paid libraries.
-- No Radix yet. It is the plan for real interactive things — dialog/drawer, combobox —
-  but the FAQ is native `<details>` and the contact buttons are anchors, so nothing has
-  needed one.
+- No Radix yet. It is the plan for dialog/drawer and combobox, when one is needed.
 
 ## Where things are
 
-**The directory surface is complete — all three archetypes are built, 1,279 of 1,414
-URLs.** Reasoning lives in the doc or the file header, never here; `git log` is the record.
+Reasoning lives in the doc or the file header, never here; `git log` is the record.
+
+Built: the directory surface, all three archetypes, 1,279 of 1,414 URLs — 5 page files.
+Stubbed: 44 pages, and 16 of the 19 route handlers answer 501.
 
 | Doc | Covers |
 | --- | --- |
@@ -68,27 +61,23 @@ Code worth knowing before editing:
 
 ## Next steps
 
-Five steps, in order, planned 2026-09-18. Re-plan after the last one lands.
+Five, in order, planned 2026-09-18. Re-plan after the last one lands.
 
 1. **Site chrome.** `SiteHeader` + `SiteFooter` into the root layout, plus `robots.txt`,
-   favicon and the OG image. Ported from the SvelteKit `lib/components/chrome/`. Nothing
-   built so far reads as a finished page without it — every directory page currently
-   floats with no nav and no footer.
+   favicon and the OG image. Ported from the SvelteKit `lib/components/chrome/`. Every
+   page built so far renders with no nav and no footer.
 2. **Archetype 4 — the editorial page.** `/`, the 7 pillar landings and
-   `/{pillar}/{slug}`. The work is the polymorphic resolver (cluster whitelist first,
-   then brand — `routes.md`) and one `prose` body for the database HTML;
-   `@tailwindcss/typography` is already installed, so `ContentSections.svelte`'s
-   hand-rolled table CSS does not come across. ~90 URLs, the largest block left.
+   `/{pillar}/{slug}`: the polymorphic resolver (cluster whitelist first, then brand —
+   `routes.md`) and one `prose` body for the database HTML. ~90 URLs, the largest block
+   left.
 3. **The long tail.** Product model pages, `/solar-subsidy/{slug}` (state subsidy vs
    discom — polymorphic again), project detail, the paginated project list, authors,
    `/seo-index`, the legal pages and the 3 tools. Assembly from step 2's parts.
 4. **Forms and handlers.** `business-form`, `get-quotes`, `partners/join`, the
-   thank-you pages, the 10 API routes still answering 501, and the legacy 301s from
-   `hooks.server.ts` into `middleware.ts`. Open item 1 below belongs here. The write
-   path is stubbed apart from `submitLead`.
-5. **Sitemaps, metadata, a smoke harness.** The 3 sitemap handlers (501 today),
-   `pageMetadata` on every page — 5 call it — and a test that fetches one URL of each
-   route shape and asserts 200. 49 pages with no coverage is the standing risk.
+   thank-you pages, the 10 API routes and 2 US legacy shims answering 501, and the
+   legacy 301s from `hooks.server.ts` into `middleware.ts`. Open item 1 belongs here.
+5. **Sitemaps, metadata, a smoke harness.** The 3 sitemap handlers, `pageMetadata` on
+   every page, and a test that fetches one URL of each route shape and asserts 200.
 
 ## Open items
 
