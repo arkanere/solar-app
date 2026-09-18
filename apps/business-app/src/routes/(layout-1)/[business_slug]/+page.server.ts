@@ -194,17 +194,38 @@ export const load: PageServerLoad<PageData> = async ({ params, parent }) => {
 			phone: maskPhone(lead.phone)
 		}));
 
-		// ✅ Merge all lead lists and sort by latest first
+		// ✅ Merge all lead lists and sort by latest first.
+		//
+		// The three source lists overlap, so the merge has to de-duplicate rather
+		// than concatenate. A lead submitted from this business's own installer
+		// page matches `exclusiveLeads` on urlparams whatever its category, and
+		// the claimed copy inherits those urlparams from the original — so a
+		// claimed non-exclusive lead came out as *two* cards (the claimed copy
+		// twice) plus a third "Claim Now" card for the original, because the
+		// claimed-original filter above only ran over `nonExclusiveLeads`.
+		//
+		// Drop originals that this business has already claimed, then keep the
+		// first copy of each id. Order matters: `exclusiveLeads` comes first, so
+		// a lead that arrived through this business's own page keeps its
+		// unmasked contact details instead of the masked copy.
+		const seenLeadIds = new Set<number>();
 		const allLeads = [
 			...exclusiveLeads,
 			...maskedNonExclusiveLeads,
 			...nonExclusiveClaimedLeads
-		].sort((a: Lead, b: Lead) => {
-			// Sort by created_at date in descending order (latest first)
-			const dateA = new Date(a.created_at || a.id);
-			const dateB = new Date(b.created_at || b.id);
-			return dateB.getTime() - dateA.getTime();
-		});
+		]
+			.filter((lead: Lead) => {
+				if (claimedOriginalIds.has(lead.id)) return false;
+				if (seenLeadIds.has(lead.id)) return false;
+				seenLeadIds.add(lead.id);
+				return true;
+			})
+			.sort((a: Lead, b: Lead) => {
+				// Sort by created_at date in descending order (latest first)
+				const dateA = new Date(a.created_at || a.id);
+				const dateB = new Date(b.created_at || b.id);
+				return dateB.getTime() - dateA.getTime();
+			});
 
 		// ✅ Query setup-progress counts (projects, proposals)
 		const [projectsRes, proposalsRes] = await Promise.all([

@@ -317,6 +317,8 @@ export interface LeadOptions {
 	claimCount?: number;
 	businessId?: number | null;
 	createdAt?: string | null;
+	urlparams?: string | null;
+	originalId?: number | null;
 }
 
 let leadSeq = 0;
@@ -337,14 +339,16 @@ export async function createLead(options: LeadOptions = {}): Promise<number> {
 		isvisible = true,
 		claimCount = 0,
 		businessId = null,
-		createdAt = null
+		createdAt = null,
+		urlparams = null,
+		originalId = null
 	} = options;
 
 	const { rows } = await pool.query<{ id: number }>(
 		`INSERT INTO leaddata
 		   (name, phone, email, postal_code, level2, level1, category, stage, status,
-		    isvisible, claim_count, business_id, created_at)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12, COALESCE($13::timestamptz, NOW()))
+		    isvisible, claim_count, business_id, created_at, urlparams, original_id)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12, COALESCE($13::timestamptz, NOW()), $14, $15)
 		 RETURNING id`,
 		[
 			name,
@@ -359,7 +363,9 @@ export async function createLead(options: LeadOptions = {}): Promise<number> {
 			isvisible,
 			claimCount,
 			businessId,
-			createdAt
+			createdAt,
+			urlparams,
+			originalId
 		]
 	);
 	return rows[0].id;
