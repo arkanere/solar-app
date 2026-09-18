@@ -24,6 +24,25 @@ interface CloudinaryUploadResult {
 }
 
 /**
+ * Generate a URL-friendly slug from project title with random suffix
+ */
+function generateProjectSlug(title: string): string {
+	let slug = title.toLowerCase();
+	slug = slug.replace(/\./g, '_');
+	slug = slug.replace(/[^a-z0-9_]/g, '-');
+	slug = slug.replace(/-+/g, '-');
+	slug = slug.replace(/^-+|-+$/g, '');
+
+	const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+	let randomString = '';
+	for (let i = 0; i < 6; i++) {
+		randomString += characters.charAt(Math.floor(Math.random() * characters.length));
+	}
+
+	return slug + '-' + randomString;
+}
+
+/**
  * Upload file to Cloudinary
  */
 async function uploadToCloudinary(file: File): Promise<CloudinaryUploadResult> {
@@ -220,12 +239,22 @@ const { SessionManager } = await import('$lib/auth/business');
 				console.error('Error looking up district for pincode', pincode, ':', districtError);
 			}
 
-			// The slug is deliberately NOT regenerated when the title changes. It is
-			// the public URL of the project on main-app (/project/[project_id],
-			// which carries a canonical link), so rewriting it on an edit would
-			// orphan an already-indexed page. Slugs are generated once, at creation.
+			// The slug is regenerated when the title changes, so it keeps the
+			// title's keywords. This is a deliberate trade, made knowingly: the
+			// slug is the public URL on main-app (/project/[project_id] resolves
+			// by project_slug and error(404)s on a miss), so the previous URL dies
+			// and is delisted rather than redirecting. Accepted because title
+			// edits are rare. If they stop being rare, the fix is to keep the old
+			// slugs and 301 them, not to freeze the slug.
+			let projectSlug = existingProject.projectSlug;
+			if (projectTitle !== existingProject.title) {
+				projectSlug = generateProjectSlug(projectTitle);
+				console.log('Generated new project slug:', projectSlug);
+			}
+
 			const updateValues: Partial<typeof projects.$inferInsert> = {
 				title: projectTitle,
+				projectSlug,
 				pincode,
 				district,
 				projectDate
