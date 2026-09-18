@@ -27,7 +27,7 @@
  *  - counts key on LOWER(level2) and LOWER(city), because geo_locations and
  *    business_profiles disagree on casing.
  */
-import { and, count, desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, sql } from 'drizzle-orm';
 import {
   businessAccounts,
   businessProfiles,
@@ -40,12 +40,16 @@ import { db } from '@/lib/server/db';
 import { getCountry } from '@/lib/countries';
 import type {
   CityLink,
+  CountryHubData,
   DistrictPageData,
   InstallerProfile,
   InstallerRowData,
   LeafLoad,
+  Level1Card,
   ProjectCard,
-  ServiceArea
+  ServiceArea,
+  StateHubData,
+  TopLevel2
 } from './types';
 
 /**
@@ -669,4 +673,311 @@ async function getServiceAreas(
     )
     .orderBy(geoLocations.city)
     .limit(20);
+}
+
+/* ------------------------------------------------------------------------- *
+ * Archetype 3 — the geo index. archetype/geo-index.md §6.
+ *
+ * Ported from apps/main-app/src/routes/[country=country]/(layout-1)/solar/
+ * +page.server.ts and solar/[state]/+page.server.ts.
+ *
+ * Three things did NOT come across, each for a reason worth keeping:
+ *
+ *  - **`lastUpdated`.** The state loader computes a real `max()` over installer
+ *    and project dates; the country loader sets `new Date().toISOString()`,
+ *    which is "now", not a last-updated date. Neither page has ever rendered
+ *    it. §9 question 5 asked compute-or-drop, and dropping is what the data
+ *    supports — it takes the state hub's fifth query with it.
+ *  - **The subsidy row.** §3 lists a subsidy callout on the state hub, gated on
+ *    `features.subsidy` plus a published `state_subsidies` row. The table is
+ *    EMPTY on live — 0 rows in any status, verified 2026-09-18 — so the gate
+ *    can never open and the query would run on all 27 state pages to render
+ *    nothing. Not ported, exactly as the district page's dead subsidy query
+ *    was not (see the header of this file). It comes back with a populated
+ *    table.
+ *  - **The state hub's aggregate count query.** It returned `count()` over the
+ *    same rows the per-level2 grouped query already covers, so the total is
+ *    that query's counts summed. One query instead of two, same number.
+ * ------------------------------------------------------------------------- */
+
+/** Shape of the raw CTE below. Postgres COUNT(*) arrives as a string. */
+type Level1Row = {
+  level1: string;
+  level1_slug: string;
+  level2_count: string;
+  covered_level2_count: string;
+  installer_count: string;
+};
+
+/**
+ * The country hub: every state with installers, plus the page's own totals.
+ *
+ * No null return and no 404 — `isCountry` in the page is the whole gate, since
+ * a country either exists in the registry or it does not. A country with no
+ * installers at all renders an empty grid rather than 404ing; that is a real
+ * state of the directory, not a missing page.
+ */
+export async function getCountryHub(country: string): Promise<CountryHubData> {
+  // Throws on an unknown code, like every other function here. The page
+  // narrows with `isCountry` first.
+  getCountry(country);
+
+  const [level1Result, totalRows, topLevel2s] = await Promise.all([
+    // A CTE, COUNT(*) FILTER and a correlated scalar subquery: kept verbatim
+    // on the `sql` escape hatch rather than rebuilt with `$with`, because the
+    // coverage arithmetic IS what the page displays (§2). CLAUDE.md asks for
+    // each use of the hatch to be noted; this is the largest one in the app.
+    //
+    // `covered` is per level2 and `installer_count` per level1, which is why
+    // the two cannot collapse into one aggregate: the first counts PLACES with
+    // at least one installer, the second counts INSTALLERS.
+    //
+    // Both subqueries carry the account join by hand. Being raw SQL, this is
+    // the one place the country predicate cannot be expressed through the
+    // shared `accountOfProfile` helper above.
+    db.execute<Level1Row>(sql`
+      WITH level2s AS (
+        SELECT g.level1, g.level1_slug, g.level2,
+               EXISTS (
+                 SELECT 1 FROM business_profiles b
+                 JOIN business_accounts a ON a.source_id = b.account_business_id
+                 WHERE a.country_code = ${country}
+                   AND LOWER(b.level1) = LOWER(g.level1)
+                   AND LOWER(b.level2) = LOWER(g.level2)
+                   AND b.isvisible = true
+               ) as covered
+        FROM geo_locations g
+        WHERE g.country_code = ${country}
+        GROUP BY g.level1, g.level1_slug, g.level2
+      )
+      SELECT level1, level1_slug,
+             COUNT(*) as level2_count,
+             COUNT(*) FILTER (WHERE covered) as covered_level2_count,
+             (SELECT COUNT(*) FROM business_profiles b
+              JOIN business_accounts a ON a.source_id = b.account_business_id
+              WHERE a.country_code = ${country}
+                AND LOWER(b.level1) = LOWER(level2s.level1) AND b.isvisible = true) as installer_count
+      FROM level2s
+      GROUP BY level1, level1_slug
+      ORDER BY level1 ASC
+    `),
+    db
+      .select({ total: count() })
+      .from(businessProfiles)
+      .innerJoin(businessAccounts, accountOfProfile)
+      .where(
+        and(eq(businessAccounts.countryCode, country), eq(businessProfiles.isvisible, true))
+      ),
+    getTopLevel2s(country)
+  ]);
+
+  const rows = level1Result.rows;
+
+  // Zero-installer states are dropped from the grid but stay in the totals:
+  // `totalLevel1Count` is the denominator of "22 of 36", so it has to count
+  // the states that are not shown. Same for the two level2 sums.
+  const level1s: Level1Card[] = rows
+    .filter((r) => parseInt(r.installer_count) > 0)
+    .map((r) => ({
+      name: r.level1,
+      slug: r.level1_slug,
+      level2Count: parseInt(r.level2_count),
+      coveredLevel2Count: parseInt(r.covered_level2_count),
+      installerCount: parseInt(r.installer_count)
+    }));
+
+  const sum = (key: 'level2_count' | 'covered_level2_count') =>
+    rows.reduce((total, r) => total + parseInt(r[key]), 0);
+
+  return {
+    country,
+    level1s,
+    topLevel2s,
+    totalInstallers: totalRows[0]?.total ?? 0,
+    level1Count: level1s.length,
+    totalLevel1Count: rows.length,
+    coveredLevel2Count: sum('covered_level2_count'),
+    totalLevel2Count: sum('level2_count')
+  };
+}
+
+/**
+ * The districts with the deepest choice nationally — the country hub's second
+ * way in, for a reader who does not know their state but wants somewhere with
+ * real options.
+ *
+ * **Returns empty where the block would lie.** On US every covered county has
+ * exactly one installer (verified on live 2026-09-18: six counties, all at 1),
+ * so "where choice is deepest" would be six ties at one — a heading making a
+ * claim the rows disprove. Districts at 1 are therefore dropped and the block
+ * needs three survivors to exist at all. This is the same call §2 of the spec
+ * makes about coverage generally: report it honestly or not at all.
+ *
+ * Grouping happens on LOWER() in SQL rather than in JS, because the sum across
+ * casings has to be complete BEFORE the limit — business_profiles holds several
+ * casings of one district name, and taking the top 8 of the unmerged rows would
+ * split a district's installers across two entries and rank both too low.
+ *
+ * The slugs are a second query matched in JS on the level1+level2 pair, not on
+ * level2 alone: 'jasper' is a county in Indiana, Illinois AND Missouri, so the
+ * pair is the only key that identifies a place. The usual trap, one level up.
+ */
+async function getTopLevel2s(country: string): Promise<TopLevel2[]> {
+  const level1Key = sql<string>`LOWER(${businessProfiles.level1})`;
+  const level2Key = sql<string>`LOWER(${businessProfiles.level2})`;
+
+  const counted = await db
+    .select({ level1: level1Key, level2: level2Key, installerCount: count() })
+    .from(businessProfiles)
+    .innerJoin(businessAccounts, accountOfProfile)
+    .where(
+      and(eq(businessAccounts.countryCode, country), eq(businessProfiles.isvisible, true))
+    )
+    .groupBy(level1Key, level2Key)
+    .having(sql`COUNT(*) > 1`)
+    .orderBy(sql`COUNT(*) DESC`, level2Key)
+    .limit(8);
+
+  if (counted.length < 3) return [];
+
+  // Both display names and both slugs, for the pairs that survived. geo rows
+  // are per city, so this groups to one row per district.
+  const geo = await db
+    .select({
+      level1: geoLocations.level1,
+      level1Slug: geoLocations.level1Slug,
+      level2: geoLocations.level2,
+      level2Slug: geoLocations.level2Slug
+    })
+    .from(geoLocations)
+    .where(
+      and(
+        eq(geoLocations.countryCode, country),
+        inArray(
+          sql`LOWER(${geoLocations.level2})`,
+          counted.map((r) => r.level2)
+        )
+      )
+    )
+    .groupBy(
+      geoLocations.level1,
+      geoLocations.level1Slug,
+      geoLocations.level2,
+      geoLocations.level2Slug
+    );
+
+  const bySlugPair = new Map(
+    geo.map((g) => [`${g.level1.toLowerCase()}|${g.level2.toLowerCase()}`, g])
+  );
+
+  return counted.flatMap((r) => {
+    const place = bySlugPair.get(`${r.level1}|${r.level2}`);
+    // No geo row means no slug, and a guessed slug is a 404. The district is
+    // dropped rather than linked to one — the same call `getInstaller` makes
+    // about its back link.
+    if (!place) return [];
+    return [
+      {
+        name: place.level2,
+        slug: place.level2Slug,
+        level1: place.level1,
+        level1Slug: place.level1Slug,
+        installerCount: r.installerCount
+      }
+    ];
+  });
+}
+
+/**
+ * The state hub: every district with installers, deepest first, plus the
+ * coverage ratio the page states and draws.
+ *
+ * Returns null where the SvelteKit loader 404s — an unknown state slug. Note
+ * this does NOT 404 a state with no installers, unlike the district page:
+ * `/in/solar/sikkim` is a real place in the geography with an honest empty
+ * answer, where a district page with no businesses is a thin page (§4 of
+ * geo-listing.md). The empty state renders as a stated zero, not a 404.
+ */
+export async function getStateHub(
+  country: string,
+  level1Slug: string
+): Promise<StateHubData | null> {
+  getCountry(country);
+
+  const level1 = await resolveLevel1(country, level1Slug);
+  if (!level1) return null;
+
+  const [level2Rows, countRows] = await Promise.all([
+    db
+      .select({ level2: geoLocations.level2, level2Slug: geoLocations.level2Slug })
+      .from(geoLocations)
+      .where(
+        and(eq(geoLocations.countryCode, country), eq(geoLocations.level1Slug, level1Slug))
+      )
+      // geo rows are per city; this is the district list.
+      .groupBy(geoLocations.countryCode, geoLocations.level2, geoLocations.level2Slug)
+      .orderBy(asc(geoLocations.level2)),
+    // A SEPARATE grouped query, not a correlated subquery in the select list
+    // above. §6 records what happens otherwise: Drizzle renders an interpolated
+    // column unqualified, so the correlation resolved inside business_profiles
+    // and became `b.level2 = b.level2` — every district reported the state
+    // total and the `> 0` filter stopped filtering.
+    //
+    // level1 is part of the match because district names repeat across states.
+    db
+      .select({ level2: businessProfiles.level2, installerCount: count() })
+      .from(businessProfiles)
+      .innerJoin(businessAccounts, accountOfProfile)
+      .where(
+        and(
+          eq(businessAccounts.countryCode, country),
+          sql`LOWER(${businessProfiles.level1}) = LOWER(${level1})`,
+          eq(businessProfiles.isvisible, true)
+        )
+      )
+      .groupBy(businessProfiles.level2)
+  ]);
+
+  // Keyed on LOWER(level2) because geo_locations and business_profiles do not
+  // agree on casing, and SUMMED because business_profiles holds several
+  // casings of one name — two rows that are one district.
+  const countByLevel2 = new Map<string, number>();
+  for (const row of countRows) {
+    if (!row.level2) continue;
+    const key = row.level2.toLowerCase();
+    countByLevel2.set(key, (countByLevel2.get(key) ?? 0) + row.installerCount);
+  }
+
+  const level2s = level2Rows
+    .map((r) => ({
+      name: r.level2,
+      slug: r.level2Slug,
+      installerCount: countByLevel2.get(r.level2.toLowerCase()) ?? 0
+    }))
+    .filter((r) => r.installerCount > 0)
+    .sort((a, b) => b.installerCount - a.installerCount || a.name.localeCompare(b.name));
+
+  return {
+    country,
+    level1,
+    level1Slug,
+    level2s,
+    // Summed over the RAW rows, not over `level2s`: a business whose level2
+    // matches no geo row is still an installer in this state, and it would
+    // vanish from the headline number if the cards were the source. This is
+    // exactly what the aggregate query the port dropped used to return.
+    installerCount: countRows.reduce((total, r) => total + r.installerCount, 0),
+    level2Count: level2s.length,
+    totalLevel2Count: level2Rows.length
+  };
+}
+
+/** The 404 gate for the state hub: does this country/state exist in geo_locations? */
+async function resolveLevel1(country: string, level1Slug: string): Promise<string | null> {
+  const rows = await db
+    .select({ level1: geoLocations.level1 })
+    .from(geoLocations)
+    .where(and(eq(geoLocations.countryCode, country), eq(geoLocations.level1Slug, level1Slug)))
+    .limit(1);
+  return rows[0]?.level1 ?? null;
 }

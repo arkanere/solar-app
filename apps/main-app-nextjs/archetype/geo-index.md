@@ -141,11 +141,56 @@ optional coverage bar), `ChipList`, `FAQ`, `QuoteCTA`. All shared with archetype
 No client components at all. This archetype is entirely static — `FAQ` is native
 `<details>`, every card is an anchor.
 
-## 9. Open questions
+## 9. Open questions — RESOLVED 2026-09-18
 
-1. **Chips or callout — which carries the coverage numbers?** (§4)
-2. **Add the coverage bar to the state hub?** The numbers already exist; it would need
-   no new query.
-3. Country hub has intro copy, state hub has none. Add one, or drop both?
-4. CTA placement differs between the two levels (§3). Confirm: below the grid.
-5. `lastUpdated` on the country hub is `now()`. Compute properly, or drop the field?
+All five settled when the archetype was built. The answers are in the page files;
+this records the calls and why.
+
+1. **Chips or callout — which carries the coverage numbers?** (§4) → **Neither.**
+   One sentence under the `h1` carries them, at both levels: "646 installers listed
+   in 220 of 785 districts, across 22 of 36 states." The three `bg-muted` chips and
+   the tinted `bg-accent/10` band both go. That is what the approved specimen
+   renders, and it removes the tinted-callout collision §5 flagged as well.
+2. **Add the coverage bar to the state hub?** → **Yes.** At page scale, under the
+   header, not per card: a state has one ratio to report where the country hub has
+   one per state. No new query, as predicted.
+3. **Country hub has intro copy, state hub has none. Add one, or drop both?** →
+   **Both dropped.** The stat sentence replaced the marketing intro; the generic
+   "browse by state to compare quotes and go solar with confidence" said nothing the
+   page does not show.
+4. **CTA placement** → **below the grid at both levels**, as §3 recommended.
+5. **`lastUpdated`** → **dropped.** Never rendered at either level, and `now()` on
+   the country hub was not a last-updated date. Dropping it also takes the state
+   hub's fifth query (latest project date) with it.
+
+Two things settled that were not on this list:
+
+6. **"Where choice is deepest"** — the top-8 districts nationally, above the state
+   grid. In the approved specimen but not §3's anatomy; **built**, because the page
+   has two kinds of visitor and a 36-card alphabetical grid only serves one.
+   It suppresses itself where it would lie — see `getTopLevel2s`.
+7. **District card order on the state hub** → **installer count descending**, name
+   breaking ties, not alphabetical. §7 assumed alphabetical when it called the order
+   "well defined"; the specimen's argument won. The `ItemList` describes the order
+   the grid actually renders.
+
+## 10. What shipped differently from this spec
+
+- **The subsidy callout (§3 section 5) is not built.** `state_subsidies` is empty on
+  live in every status, verified 2026-09-18, so `features.subsidy && a published row`
+  can never both be true. Same call `lib/directory/data.ts` already made about the
+  district page's dead subsidy query. It comes back with a populated table.
+- **No pin icons on the cards** (§5 assumed they stay, recoloured). Thirty-six
+  identical pins beside thirty-six place names is decoration in the most valuable
+  position on the card.
+- **`ItemList` is emitted at both levels** (§7 said it "would be reasonable"), and
+  omitted rather than emitted empty on a state with no coverage.
+- **A state with no installers renders an honest empty page**, not a 404 — unlike a
+  district page with no businesses, which does 404. `/in/solar/sikkim` is the live
+  case. Its generated FAQ is suppressed there too: the generator answers "listed
+  across 0 districts", which reads as a bug and which `FAQPage` markup would publish.
+- **The country hub's stat sentence drops the possessive on the country name.**
+  `config.name` is a bare "United States", so "of United States's 3,207 counties" is
+  what that construction produces. The `h1` still reads "Solar installers across
+  United States" — an article would need a new field on `CountryConfig`, which is a
+  shared-type change, and the SvelteKit page live today has the same wording.

@@ -211,3 +211,89 @@ export type InstallerProfile = {
   projects: ProjectCard[];
   serviceAreas: ServiceArea[];
 };
+
+/* ------------------------------------------------------------------------- *
+ * Archetype 3 — the geo index. archetype/geo-index.md.
+ *
+ * Two levels, one archetype: both pages list CHILD LOCATIONS and show no
+ * businesses, which is the split §1 of that spec argues for — grouping across
+ * the depth boundary rather than along it.
+ *
+ * Every count here is a number, not a string. The country hub's coverage
+ * arithmetic comes back from a raw `sql` CTE where Postgres `COUNT(*)` arrives
+ * as a string, so the seam parses it once rather than leaving `parseInt` calls
+ * scattered through a component — same call as everywhere else in this file:
+ * the page renders the contract, it does not repair it.
+ * ------------------------------------------------------------------------- */
+
+/** One state card on the country hub. Carries the coverage ratio the bar draws. */
+export type Level1Card = {
+  name: string;
+  slug: string;
+  /** Every level2 in the state, covered or not. p50 20, max 75. */
+  level2Count: number;
+  /** Those with at least one visible installer. This over the above is the bar. */
+  coveredLevel2Count: number;
+  installerCount: number;
+};
+
+/** One district card on the state hub. No bar — a district has no child ratio. */
+export type Level2Card = {
+  name: string;
+  slug: string;
+  installerCount: number;
+};
+
+/**
+ * One entry in the country hub's "where choice is deepest" block.
+ *
+ * Carries both slugs because the link is two levels deep
+ * (/{cc}/solar/{level1}/{level2}) and the block is not scoped to one state.
+ * A district whose name matches no geo_locations row is dropped rather than
+ * linked to a guessed slug.
+ */
+export type TopLevel2 = {
+  name: string;
+  slug: string;
+  level1: string;
+  level1Slug: string;
+  installerCount: number;
+};
+
+export type CountryHubData = {
+  country: string;
+  /** Alphabetical. States with no installers are filtered out. */
+  level1s: Level1Card[];
+  /**
+   * Up to 8, deepest first. Empty where the country has no real spread —
+   * see `getTopLevel2s`, which is why this is a list and not a promise that
+   * the section renders.
+   */
+  topLevel2s: TopLevel2[];
+  totalInstallers: number;
+  /** States WITH installers: 22 on IN, 5 on US. */
+  level1Count: number;
+  /** Every state in geo_locations: 36 on IN, 52 on US. */
+  totalLevel1Count: number;
+  coveredLevel2Count: number;
+  totalLevel2Count: number;
+};
+
+export type StateHubData = {
+  country: string;
+  level1: string;
+  level1Slug: string;
+  /**
+   * Ordered by installer count descending, name breaking ties — DECIDED
+   * 2026-09-18, geo-index.md §9 question 2. Someone browsing a state is
+   * looking for somewhere with options, not for a name they could have
+   * searched. Districts with no installers are filtered out.
+   */
+  level2s: Level2Card[];
+  /** The state total, including any business whose level2 matches no geo row. */
+  installerCount: number;
+  /** Districts WITH installers — `level2s.length`, named for the ratio it forms. */
+  level2Count: number;
+  /** Every district in the state. The denominator of the coverage bar. */
+  totalLevel2Count: number;
+};

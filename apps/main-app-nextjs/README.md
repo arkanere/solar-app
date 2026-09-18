@@ -55,22 +55,31 @@ is the record.
 8. **Imagery policy** — `next/image` through `images.loaderFile`;
    `lib/cloudinary-loader.ts` is the only place a transform is written.
    `design-foundation.md` §9.
+9. **Archetype 3, geo index** — the two hubs, 29 pages. `archetype/geo-index.md` §9
+   and §10 record the five open questions it closed and the five places it shipped
+   differently. `getCountryHub` / `getStateHub` in `lib/directory/data.ts`.
+   **The directory surface is now complete: all three archetypes are built.**
 
 ## Open items
 
-1. **Archetype 3, the geo index.** `/{cc}/solar` and `/{cc}/solar/{state}` — 29 pages,
-   the two hubs that list child locations rather than businesses.
-   `archetype/geo-index.md`.
-2. **No page metadata anywhere.** Nothing in this app emits a title, description,
+1. **No page metadata anywhere.** Nothing in this app emits a title, description,
    canonical or OG tag. Wants one `generateMetadata` helper across the page types, not a
    per-page fix — and it must not copy the profile's meta description, which interpolates
    a description that is boilerplate on 608 of 643 rows.
-3. **The lead confirmation email.** `/{cc}/api/sendLeadSubmissionConfirmation` is a 501
+2. **The lead confirmation email.** `/{cc}/api/sendLeadSubmissionConfirmation` is a 501
    stub and `submitLead` deliberately does not call it, so a lead is captured but the
    visitor gets no email. Porting it pulls in `sendEmail`, `internalAuth` and
    `generateUserMagicLink`.
-4. **A phone number of `+` plus 16 digits is a 500.** `@solar/validation`'s `phone`
+3. **A phone number of `+` plus 16 digits is a 500.** `@solar/validation`'s `phone`
    primitive allows 17 characters; `leaddata.phone` is `varchar(16)`. Pre-existing and
    shared with main-app live, so narrowing the primitive is a cross-app change.
-5. **The installer specimen is out of date.** `/specimen/archetypes/installer` still
+4. **The installer specimen is out of date.** `/specimen/archetypes/installer` still
    hides the boilerplate About; the shipped page renders it.
+5. **`state_subsidies` is empty on live**, in every status. It gates the state hub's
+   subsidy callout (`archetype/geo-index.md` §3 section 5), which is therefore not
+   built — the gate can never open. Same shape as `solar_brands`, which blocks the
+   leaf route's brand variant: a provisioned table with no rows.
+6. **`CountryConfig.name` has no article.** It is a bare "United States", so
+   `/us/solar`'s `h1` reads "Solar installers across United States". Wants a field on
+   the config, which is a shared-type change; the SvelteKit page live today has the
+   same wording.
