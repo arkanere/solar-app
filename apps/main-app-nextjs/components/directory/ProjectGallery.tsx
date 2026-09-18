@@ -11,21 +11,29 @@
  * as one caption line, because "who did this and when" is the only question a
  * photograph of someone else's roof raises.
  *
- * Tiles are square and `g_auto`, for the reason lib/directory/cloudinary.ts
- * records: these are rooftop photographs, so a top crop is sky and a centre
- * crop cuts through the watermarks installers bake along the bottom edge.
+ * TILES ARE 4:3. They were square, and that was wrong: archetype/data.md
+ * surveyed the real files and found field-documentation photographs carrying
+ * marketing watermarks and GPS camera stamps along their edges, concluding
+ * never to crop tighter than 4:3 because the overlays eat the edges. A square
+ * is tighter. `g_auto` is load-bearing for the same survey — a top crop of a
+ * rooftop photo is pure sky and a centre crop cuts through the overlays.
  *
  * A project with no image renders no tile at all rather than a "No Image"
  * placeholder. A gallery is a claim about work that can be seen; a grey box
  * saying the picture is missing is not a smaller version of that claim.
  *
- * Plain <img> for the same reason as WorkThumb — next/image is a client
- * component and cannot take a loader from a server component, Cloudinary is
- * already the optimiser, and the box is a fixed aspect ratio so there is no
- * layout shift to prevent. The broader next/image policy is still open
- * (design-foundation.md §9, README item 9).
+ * `sizes` describes the grid, not the file: two columns of the page gutter's
+ * width, three from `sm`, capped once the container stops growing at 72rem.
+ * Without it next/image assumes 100vw and every phone downloads a desktop tile.
+ *
+ * The legacy `imageUrl` branch is `unoptimized`. It is dead code on live data —
+ * all 130 visible projects have a `cloudinaryPublicId` — and those URLs are not
+ * on Cloudinary, so the loader passes them through unchanged; asking for a
+ * srcset would emit the same URL at six widths.
  */
-import { thumbUrl } from '@/lib/directory/cloudinary';
+import Image from 'next/image';
+
+import { cloudinarySrc } from '@/lib/directory/cloudinary';
 import { projectUrl } from '@/lib/directory/urls';
 import type { ProjectCard } from '@/lib/directory/types';
 
@@ -75,17 +83,18 @@ export function ProjectGallery({
         {withImage.map((p) => (
           <li key={p.id}>
             <a href={`${projectUrl(country, p.slug)}/`} data-unstyled className="group block">
-              {/* eslint-disable-next-line @next/next/no-img-element -- Cloudinary is the optimiser; next/image cannot take a loader from a server component. See WorkThumb. */}
-              <img
+              <Image
                 src={
-                  p.cloudinaryPublicId ? thumbUrl(p.cloudinaryPublicId, 600, 600) : p.imageUrl!
+                  p.cloudinaryPublicId
+                    ? cloudinarySrc(p.cloudinaryPublicId, '4:3')
+                    : p.imageUrl!
                 }
                 alt={`${p.title} — solar installation in ${place}`}
-                width={300}
+                width={400}
                 height={300}
-                loading="lazy"
-                decoding="async"
-                className="aspect-square w-full rounded-lg border border-line object-cover"
+                sizes="(min-width: 1152px) 384px, (min-width: 640px) 33vw, 50vw"
+                unoptimized={!p.cloudinaryPublicId}
+                className="aspect-[4/3] w-full rounded-lg border border-line object-cover"
               />
               <h3 className="mt-sm text-sm leading-snug group-hover:underline">{p.title}</h3>
               <p className="mt-2xs text-xs text-ink-subtle">

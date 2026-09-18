@@ -184,6 +184,35 @@ Three that will bite again:
     the gutter is space beside it. `--page-gutter` lives on `:root` rather than in `@theme`,
     because it is read twice per container — as padding and inside that calc — and those two
     have to move together at the breakpoint.
-- Imagery treatment — aspect ratios, Cloudinary transforms, `next/image` policy. It belongs
-  with the district page slice, where there are real images to judge.
+- ~~Imagery treatment~~ — **decided**, now that there are real images to judge. Three
+  parts, and one lesson that generalises:
+
+  - **Two aspect ratios, both measured rather than chosen.** `4:3` for every photograph a
+    reader is meant to look at — both galleries — because `archetype/data.md` surveyed
+    the real files and found field-documentation photos with marketing watermarks and GPS
+    camera stamps living on their edges, so anything tighter clips them. The district
+    gallery was shipping square tiles against that finding and is now 4:3. `1:1` is the
+    single exception: the 64px listing-row anchor, which is a mark saying where a row
+    begins rather than a photograph anyone reads, and which has to match the initials
+    square it stands in for.
+  - **Cloudinary stays the optimiser, and the transform chain lives in one file.**
+    `f_auto,q_auto` negotiate from the request headers, which a build-time optimiser
+    cannot do at all. `c_fill,g_auto` is load-bearing and not a default — `g_north`
+    returned pure sky and rendered blank white tiles on the specimen. `ar_` carries the
+    ratio, so no height is ever computed in a component.
+  - **`next/image` everywhere, through `images.loaderFile`.** The loader function cannot
+    be a prop — it would have to cross the server boundary — so `loaderFile` is what
+    makes `<Image>` usable from the server components that render almost everything here.
+    It buys a real `srcset`, `priority` for archetype 1's eventual hero, and one place to
+    change the chain. Next's own optimiser is out of the path entirely, so there are no
+    `remotePatterns` and nothing is fetched at build time. Because the loader is global,
+    it passes anything not on `res.cloudinary.com` through untouched — that is the
+    `projects.image_url` legacy path and any future asset under `public/`.
+
+  The lesson: **`sizes` is not a free improvement.** Writing `sizes="64px"` on the fixed
+  64px thumb, which reads as obviously correct, switched `next/image` into fluid mode and
+  emitted the entire device-width ladder — 16 srcset entries out to `w_3840` for a 64px
+  square, with `src` falling back to the largest. Omitting it gives exactly `1x` and `2x`.
+  `sizes` belongs only on something genuinely fluid, like the gallery grid. Same failure
+  class as the rest of §8: it rendered as *nothing visibly wrong*.
 - Whether state/district/city is one archetype or three.

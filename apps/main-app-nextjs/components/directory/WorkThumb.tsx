@@ -10,38 +10,37 @@
  * Only ~6% of rows have a photograph (archetype/data.md), so the initials path
  * is the common one and has to look deliberate rather than like a failure.
  *
- * WHY A PLAIN <img> AND NOT next/image. next/image is a client component and
- * takes its loader as a function prop, which cannot cross the server boundary —
- * passing `loader={squareLoader}` from this server component fails at render
- * with "Functions cannot be passed directly to Client Components". The ways
- * round it are a global `loaderFile` in next.config.ts, or making every row
- * thumbnail a client component.
+ * SQUARE, AND THE ONLY SQUARE IN THE APP. The galleries are 4:3, because
+ * archetype/data.md found watermarks and GPS stamps living on the edges of
+ * these photographs. This box is the deliberate exception: at 64px it is a mark
+ * saying where a row begins, not a photograph anyone reads, and the initials
+ * fallback it has to match is a square by nature. `g_auto` keeps the subject in
+ * frame; see lib/cloudinary-loader.ts.
  *
- * Neither is worth it here, and next/image would buy nothing this does not
- * already have: Cloudinary does the resizing and format negotiation, the box is
- * a fixed 64px square so width and height are known and no layout shift is
- * possible, and `loading="lazy"` is one attribute. A global loaderFile is also
- * a decision that belongs with the imagery policy design-foundation.md §9 still
- * defers — it would have to serve the profile gallery's 4:3 crops too, and
- * those are archetype 1.
+ * NO `sizes` PROP, DELIBERATELY. It looks like the right thing to write on a
+ * fixed 64px box and it is the opposite: `sizes` puts next/image into fluid
+ * mode, where the srcset is the whole device-width ladder — 16 entries out to
+ * w_3840 for a 64px square, with `src` falling back to the largest of them.
+ * That is ~16KB of extra markup on a 22-row page, and a 3840px download in any
+ * client that ignores `sizes`. Left off, next/image emits exactly two entries,
+ * 1x and 2x, from `width` — which is what the old hand-rolled <img> hardcoded
+ * as `size * 2`, now chosen by the device's pixel ratio instead of assumed.
  *
- * The 2x source is deliberate: these are small and the directory's readers are
- * overwhelmingly on phones.
+ * The gallery keeps its `sizes` because its tiles really are fluid.
  */
-import { initials, thumbUrl } from '@/lib/directory/cloudinary';
+import Image from 'next/image';
+
+import { cloudinarySrc, initials } from '@/lib/directory/cloudinary';
 import type { InstallerRowData } from '@/lib/directory/types';
 
 export function WorkThumb({ b, size = 64 }: { b: InstallerRowData; size?: number }) {
   if (b.thumb) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element -- see the note above: Cloudinary is the optimiser, and next/image cannot take a loader from a server component.
-      <img
-        src={thumbUrl(b.thumb, size * 2, size * 2)}
+      <Image
+        src={cloudinarySrc(b.thumb, '1:1')}
         alt=""
         width={size}
         height={size}
-        loading="lazy"
-        decoding="async"
         className="shrink-0 rounded-md border border-line object-cover"
         style={{ width: size, height: size }}
       />
