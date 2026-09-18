@@ -38,7 +38,13 @@ import {
 } from '@solar/db/schema';
 import { db } from '@/lib/server/db';
 import { getCountry } from '@/lib/countries';
-import type { CityLink, DistrictPageData, InstallerRowData, ProjectCard } from './types';
+import type {
+  CityLink,
+  DistrictPageData,
+  InstallerRowData,
+  LeafLoad,
+  ProjectCard
+} from './types';
 
 /**
  * 079 moved country off business_profiles: a location's country is its
@@ -104,53 +110,13 @@ export async function getDistrict(
     eq(businessProfiles.isvisible, true)
   );
 
-  const [businessRows, cities, projectRows, leadCount, postalCode] = await Promise.all([
-    db
-      .select({
-        // businessname, slug and city are nullable in the schema but every
-        // consumer treats them as required, and the row type says so. CLAUDE.md
-        // prefers restating the existing contract over widening components, so
-        // they are restated here — `sql<T>` renders as the bare column, leaving
-        // the SQL unchanged. Rows with a null slug are dropped below instead,
-        // because the slug is a URL.
-        name: sql<string>`${businessProfiles.businessname}`,
-        slug: sql<string | null>`${businessProfiles.slug}`,
-        address: businessProfiles.address,
-        city: sql<string>`${businessProfiles.city}`,
-        phone: businessProfiles.phonenumber,
-        services: businessProfiles.services
-      })
-      .from(businessProfiles)
-      .innerJoin(businessAccounts, accountOfProfile)
-      .where(inLevel2),
+  const [installers, cities, projectRows, leadCount, postalCode] = await Promise.all([
+    loadInstallers(inLevel2, features.projects),
     getCities(country, level1Slug, level2Slug, inLevel2),
     features.projects ? getRecentProjects(level2) : Promise.resolve([]),
     getLeadCount(country, level2),
     features.pincodeLookup ? getPostalCode(level2) : Promise.resolve(null)
   ]);
-
-  const slugs = businessRows.map((b) => b.slug).filter((s): s is string => s !== null);
-  const projectsBySlug = features.projects
-    ? await getProjectSummaries(slugs)
-    : new Map<string, ProjectSummary>();
-
-  const installers = sortInstallers(
-    businessRows
-      .filter((b): b is typeof b & { slug: string } => b.slug !== null)
-      .map((b) => {
-        const summary = projectsBySlug.get(b.slug);
-        return {
-          name: b.name,
-          slug: b.slug,
-          address: b.address,
-          city: b.city,
-          phone: b.phone,
-          services: b.services ?? [],
-          projects: summary?.count ?? 0,
-          thumb: summary?.thumb ?? null
-        };
-      })
-  );
 
   if (installers.length === 0) return null;
 
@@ -166,6 +132,210 @@ export async function getDistrict(
     leadCount,
     postalCode
   };
+}
+
+/**
+ * The district's visible installers, ready to render, newest-work first.
+ *
+ * Extracted from `getDistrict` when the leaf page arrived, because the leaf
+ * needs exactly this with one extra predicate — `LOWER(city) = LOWER(?)` for
+ * the city variant, nothing for the size variant. `where` is the whole
+ * predicate rather than an addition to a base one, so a caller cannot get the
+ * country scoping by accident and then wonder why it is there.
+ *
+ * `withProjects` is `features.projects`: where it is off there is no project
+ * table to summarise, so every row reports 0 and no thumbnail, which is what
+ * the US rows already did.
+ */
+async function loadInstallers(
+  where: ReturnType<typeof and>,
+  withProjects: boolean
+): Promise<InstallerRowData[]> {
+  const rows = await db
+    .select({
+      // businessname, slug and city are nullable in the schema but every
+      // consumer treats them as required, and the row type says so. CLAUDE.md
+      // prefers restating the existing contract over widening components, so
+      // they are restated here — `sql<T>` renders as the bare column, leaving
+      // the SQL unchanged. Rows with a null slug are dropped below instead,
+      // because the slug is a URL.
+      name: sql<string>`${businessProfiles.businessname}`,
+      slug: sql<string | null>`${businessProfiles.slug}`,
+      address: businessProfiles.address,
+      city: sql<string>`${businessProfiles.city}`,
+      phone: businessProfiles.phonenumber,
+      services: businessProfiles.services
+    })
+    .from(businessProfiles)
+    .innerJoin(businessAccounts, accountOfProfile)
+    .where(where);
+
+  const slugs = rows.map((b) => b.slug).filter((x): x is string => x !== null);
+  const projectsBySlug = withProjects
+    ? await getProjectSummaries(slugs)
+    : new Map<string, ProjectSummary>();
+
+  return sortInstallers(
+    rows
+      .filter((b): b is typeof b & { slug: string } => b.slug !== null)
+      .map((b) => {
+        const summary = projectsBySlug.get(b.slug);
+        return {
+          name: b.name,
+          slug: b.slug,
+          address: b.address,
+          city: b.city,
+          phone: b.phone,
+          services: b.services ?? [],
+          projects: summary?.count ?? 0,
+          thumb: summary?.thumb ?? null
+        };
+      })
+  );
+}
+
+/**
+ * The polymorphic leaf under a district — 356 pages. geo-listing.md §4.
+ *
+ * Resolution order is the SvelteKit `resolveLeafSlug`: city, then brand, then
+ * the `{n}kw-solar-system` pattern, with the last two gated on
+ * `features.seoContentFamilies` so a US slug can only ever be a city.
+ *
+ * **The brand step is not implemented**, deliberately, and it is not an
+ * oversight to fix silently. `solar_brands` is empty on live — the table is a
+ * provision — so the branch would query nothing 356 times a build to render a
+ * page that has no design. `LeafLoad` names where it goes; adding it is a case
+ * in that union plus a branch here, which is the whole reason this returns a
+ * discriminated union instead of a city shape with flags.
+ *
+ * Returns `{ kind: 'redirect' }` rather than redirecting itself: this module
+ * is the data seam and knows nothing about Next. The page turns it into a 301.
+ */
+export async function getLeaf(
+  country: string,
+  level1Slug: string,
+  level2Slug: string,
+  slug: string
+): Promise<LeafLoad> {
+  const { features } = getCountry(country);
+
+  const place = await resolveLevel2(country, level1Slug, level2Slug);
+  if (!place) return { kind: 'missing' };
+
+  const { level1, level2 } = place;
+
+  // Country + BOTH levels, for the reason getDistrict records: 438 US district
+  // names occur in more than one state, so matching on level2 alone puts the
+  // Arizona Yuma installer on the Colorado Yuma page. The SvelteKit leaf
+  // loader has the same gap as the district loader had.
+  const inLevel2 = and(
+    eq(businessAccounts.countryCode, country),
+    sql`LOWER(${businessProfiles.level1}) = LOWER(${level1})`,
+    sql`LOWER(${businessProfiles.level2}) = LOWER(${level2})`,
+    eq(businessProfiles.isvisible, true)
+  );
+
+  const common = { country, level1, level1Slug, level2, level2Slug };
+
+  const city = await resolveCity(country, level1Slug, level2Slug, slug);
+  if (city) {
+    const inCity = and(inLevel2, sql`LOWER(${businessProfiles.city}) = LOWER(${city})`);
+
+    const [installers, projectRows, postalCode] = await Promise.all([
+      loadInstallers(inCity, features.projects),
+      features.projects ? getRecentProjects(level2) : Promise.resolve([]),
+      features.pincodeLookup ? getPostalCode(level2) : Promise.resolve(null)
+    ]);
+
+    // The city exists but has nothing of its own to list. 301 to the district,
+    // which is the canonical listing — NOT a 404, and not a thin page.
+    if (installers.length === 0) return { kind: 'redirect' };
+
+    return {
+      kind: 'city',
+      ...common,
+      city,
+      citySlug: slug,
+      installers,
+      projects: projectRows,
+      postalCode,
+      siblingCities: await getSiblingCities(inLevel2, city)
+    };
+  }
+
+  if (!features.seoContentFamilies) return { kind: 'missing' };
+
+  // `brand` resolves here, between city and size. See the note above.
+
+  const sizeMatch = slug.match(/^(\d+)kw-solar-system$/);
+  if (sizeMatch) {
+    const [installers, postalCode] = await Promise.all([
+      // The size page lists the whole district: a 3 kW system is not a thing
+      // an installer is filtered by, and the original does not pretend it is.
+      loadInstallers(inLevel2, features.projects),
+      features.pincodeLookup ? getPostalCode(level2) : Promise.resolve(null)
+    ]);
+
+    // A size page with no installers 404s rather than redirecting. There is no
+    // "this size elsewhere" to send the reader to, and the district link in
+    // the breadcrumb is the same destination a 301 would pick.
+    if (installers.length === 0) return { kind: 'missing' };
+
+    return { kind: 'size', ...common, sizeKw: Number(sizeMatch[1]), installers, postalCode };
+  }
+
+  return { kind: 'missing' };
+}
+
+/** Does this city slug exist in this district? Its display name if so. */
+async function resolveCity(
+  country: string,
+  level1Slug: string,
+  level2Slug: string,
+  citySlug: string
+): Promise<string | null> {
+  const rows = await db
+    .select({ city: geoLocations.city })
+    .from(geoLocations)
+    .where(
+      and(
+        eq(geoLocations.countryCode, country),
+        eq(geoLocations.level1Slug, level1Slug),
+        eq(geoLocations.level2Slug, level2Slug),
+        eq(geoLocations.citySlug, citySlug)
+      )
+    )
+    .limit(1);
+  return rows[0]?.city ?? null;
+}
+
+/**
+ * Up to 5 other cities in the district that have an installer, for the
+ * "nearby areas" chips.
+ *
+ * Every chip is a link by construction — the query returns only cities with
+ * businesses — so this needs none of the filtering §6 forced on the district's
+ * chip row. The slug is derived from the business's city name rather than
+ * joined back to geo_locations, which is what the SvelteKit original does; a
+ * business city that has no geo_locations row therefore produces a chip
+ * pointing at a slug that 404s. Carried across rather than fixed here: it
+ * wants a join, and the join belongs with a measurement of how often it bites.
+ */
+async function getSiblingCities(
+  inLevel2: ReturnType<typeof and>,
+  currentCity: string
+): Promise<{ name: string; slug: string }[]> {
+  const rows = await db
+    .selectDistinct({ city: sql<string>`${businessProfiles.city}` })
+    .from(businessProfiles)
+    .innerJoin(businessAccounts, accountOfProfile)
+    .where(and(inLevel2, sql`LOWER(${businessProfiles.city}) != LOWER(${currentCity})`))
+    .orderBy(businessProfiles.city)
+    .limit(5);
+
+  return rows
+    .filter((r) => r.city)
+    .map((r) => ({ name: r.city, slug: r.city.toLowerCase().replace(/\s+/g, '-') }));
 }
 
 /** The 404 gate: does this country/state/district exist in geo_locations? */

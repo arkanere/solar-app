@@ -24,45 +24,12 @@
  *
  * Money is tabular-nums and right-aligned so the four cost columns scan
  * down rather than across, which is the whole reason this is a table.
+ *
+ * The rows moved to `lib/directory/pricing.ts` when the size leaf arrived —
+ * that page shows one of them as tiles, and the same five constants in two
+ * files is how they drift.
  */
-
-const ROWS = [
-  {
-    size: '1 kW',
-    gross: '₹65,000 – ₹80,000',
-    subsidy: '₹30,000',
-    net: '₹35,000 – ₹50,000',
-    savings: '~₹7,000'
-  },
-  {
-    size: '2 kW',
-    gross: '₹1,30,000 – ₹1,60,000',
-    subsidy: '₹60,000',
-    net: '₹70,000 – ₹1,00,000',
-    savings: '~₹14,000'
-  },
-  {
-    size: '3 kW',
-    gross: '₹1,80,000 – ₹2,20,000',
-    subsidy: '₹78,000',
-    net: '₹1,02,000 – ₹1,42,000',
-    savings: '~₹21,000'
-  },
-  {
-    size: '5 kW',
-    gross: '₹2,80,000 – ₹3,50,000',
-    subsidy: '₹78,000',
-    net: '₹2,02,000 – ₹2,72,000',
-    savings: '~₹35,000'
-  },
-  {
-    size: '10 kW',
-    gross: '₹5,50,000 – ₹7,00,000',
-    subsidy: '₹78,000',
-    net: '₹4,72,000 – ₹6,22,000',
-    savings: '~₹70,000'
-  }
-];
+import { PRICING } from '@/lib/directory/pricing';
 
 const HOW_IT_WORKS = [
   'Subsidy is ₹30,000/kW for the first 2 kW',
@@ -118,7 +85,7 @@ export function SubsidySection({ place }: { place: string }) {
             </tr>
           </thead>
           <tbody>
-            {ROWS.map((r) => (
+            {PRICING.map((r) => (
               <tr key={r.size} className="border-b border-line last:border-b-0">
                 <th scope="row" className={`${CELL} text-left font-semibold`}>
                   {r.size}

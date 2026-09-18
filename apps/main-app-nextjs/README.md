@@ -124,9 +124,32 @@ Based on the routes create archetype
    input is a 500. It is shared with main-app live; narrowing the primitive is a cross-app
    change and belongs in its own commit.
 
+8. **The city/size leaf — done.** `/{cc}/solar/{state}/{district}/{slug}`, 356 pages.
+   The route is polymorphic, so `getLeaf` returns a discriminated `LeafLoad` and the page
+   dispatches on `kind` — which is what `geo-listing.md` §4 asks for, and what makes brand
+   an added case rather than a rewrite. **Brand is not implemented**: `solar_brands` is
+   empty on live, so the branch would query nothing 356 times to render a page that has no
+   design. It is named in `LeafLoad` and in `getLeaf` where it goes.
+
+   Both failure modes are live and they differ on purpose: an unresolvable slug 404s, a
+   city with no installers of its own redirects to the district. Three new components —
+   `LeafHeader` (dispatches on variant), `SizePricing`, `BackLink` — and the five hardcoded
+   price rows moved out of `SubsidySection` to `lib/directory/pricing.ts`, because the size
+   tiles show one row of the same table and the SvelteKit app kept two copies of those
+   numbers. `getDistrict`'s installer query became `loadInstallers`, shared by both pages.
+
+   Verified against live: a Pune city leaf renders gallery, subsidy, FAQ and sibling chips;
+   a US leaf renders the sparse set; `3kw-solar-system` prices and `4kw-solar-system` falls
+   back; a city with no installers redirects; a nonsense slug 404s. Arizona Yuma shows the
+   Arizona installer, so the level1 predicate `getDistrict` added is carried across.
+
+   **One divergence from the spec:** §4 says 301 and this emits **308**. Next's App Router
+   has no 301 — `permanentRedirect` is 308 and so is a `next.config` permanent redirect.
+   Search engines treat them the same; the difference is that 308 forbids method rewriting,
+   which does not arise on a GET-only page.
+
 ## Open items
 
-8. **The city/size leaf**, 356 pages. `geo-listing.md` §4.
 9. **The directory routes sit in `(layout-1)`**, which loads the editorial serif.
    `archetype.md`, "Seeing them".
 10. **Imagery policy beyond the hero.** `design-foundation.md` §9;
@@ -136,3 +159,7 @@ Based on the routes create archetype
     501 stub and `submitLead` deliberately does not call it, so a lead is captured but the
     visitor gets no email. Porting it pulls in `sendEmail`, `internalAuth` and
     `generateUserMagicLink`.
+13. **No page metadata anywhere.** Nothing in this app emits a title, description,
+    canonical or OG tag — not the leaf, not the district page at sitemap priority 1.0.
+    The SvelteKit pages emit all four. Wants one `generateMetadata` helper applied across
+    the page types, not a per-page fix.

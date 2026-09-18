@@ -91,6 +91,11 @@ Two consequences:
 listing. Do not lose that redirect — it is what keeps thin pages out of the index.
 The district page instead **404s** when it has no businesses. Different on purpose.
 
+Built 2026-09-18: `lib/directory/data.ts` `getLeaf` returns a discriminated `LeafLoad`,
+and the page dispatches on `kind`. Brand is a named case with no implementation, for the
+reason above — the table is empty. Note the redirect is **308, not 301**: Next's App
+Router has no 301, and search engines treat the two the same.
+
 ## 5. Anatomy
 
 | # | Section | District | City | Size | Notes |
@@ -263,11 +268,12 @@ and would have sat badly inside a "related" block either way.
 
 None open. Two things this slice decided that were not on the list:
 
-- **The lead form does not submit yet**, deliberately. It renders and validates; the
-  button is disabled and the panel says so. The SvelteKit form's worst bug was claiming
-  a submission it had not made for 19 days, and a form that visibly does not submit is a
-  smaller failure than one that lies. Where it points when it is wired is recorded in
-  `components/directory/LeadForm.tsx`.
+- **The lead form shipped without a submit path**, deliberately, and was wired on
+  2026-09-18. It posts to this app's own `/{cc}/api/submitLead` for both countries rather
+  than sending IN cross-origin to user-app, and confirms in place instead of redirecting
+  to the `/{cc}/thank-you` stub. The rule it is built around is the one the SvelteKit
+  form learned the hard way: read the response and check `body.success` before claiming
+  anything.
 - **The sample-quotation PDF is not ported.** Both tables (§5 sections 10 and 13) had a
   per-row button that lazy-loaded jsPDF; porting it would have turned two tables of
   constants into client leaves. It comes across as its own piece of work or not at all.

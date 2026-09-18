@@ -7,6 +7,7 @@
  * contact buttons are anchors and the FAQ is native `<details>`, so neither
  * needs JavaScript.
  */
+export { BackLink } from './BackLink';
 export { Breadcrumb, type Crumb } from './Breadcrumb';
 export { ChipList, type Chip } from './ChipList';
 export { CityChips } from './CityChips';
@@ -14,11 +15,13 @@ export { CallButton, WhatsAppButton } from './ContactButtons';
 export { FAQ } from './FAQ';
 export { InstallerList } from './InstallerList';
 export { InstallerRow } from './InstallerRow';
+export { LeafHeader } from './LeafHeader';
 export { LeadFormSection } from './LeadFormSection';
 export { PlaceHeader } from './PlaceHeader';
 export { ProjectGallery } from './ProjectGallery';
 export { QuoteCTA } from './QuoteCTA';
 export { RecommendedSystems } from './RecommendedSystems';
+export { SizePricing } from './SizePricing';
 export { SocialProof } from './SocialProof';
 export { SoleInstaller } from './SoleInstaller';
 export { SubsidySection } from './SubsidySection';
