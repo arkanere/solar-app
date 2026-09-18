@@ -117,6 +117,7 @@ const { SessionManager } = await import('$lib/auth/business');
 		let projectTitle: string | null = null;
 		let pincode: string | null = null;
 		let projectDate: string | null = null;
+		let city: string | null = null;
 		let business_slug: string | null = null;
 		let removeImage = false;
 		let imageData: CloudinaryUploadResult | null = null;
@@ -127,6 +128,7 @@ const { SessionManager } = await import('$lib/auth/business');
 			projectTitle = formData.get('projectTitle') as string | null;
 			pincode = formData.get('pincode') as string | null;
 			projectDate = formData.get('projectDate') as string | null;
+			city = formData.get('city') as string | null;
 			business_slug = formData.get('business_slug') as string | null;
 			const projectImage = formData.get('projectImage') as File | null;
 			removeImage = formData.get('removeImage') === 'true';
@@ -154,6 +156,7 @@ const { SessionManager } = await import('$lib/auth/business');
 			projectTitle = requestBody.projectTitle;
 			pincode = requestBody.pincode;
 			projectDate = requestBody.projectDate;
+			city = requestBody.city ?? null;
 			business_slug = requestBody.business_slug;
 			removeImage = requestBody.removeImage;
 		}
@@ -260,6 +263,12 @@ const { SessionManager } = await import('$lib/auth/business');
 				projectDate
 			};
 
+			// Only written when one was picked. City is optional on edit, and an
+			// empty field must not blank a city the project already has.
+			if (city && city.trim()) {
+				updateValues.city = city.trim();
+			}
+
 			const oldPublicId = existingProject.cloudinaryPublicId;
 
 			// The old dynamic RETURNING list included the image columns only when a
@@ -303,6 +312,7 @@ const { SessionManager } = await import('$lib/auth/business');
 					project_slug: projects.projectSlug,
 					pincode: projects.pincode,
 					district: projects.district,
+					city: projects.city,
 					project_date: projects.projectDate,
 					created_at: projects.createdAt,
 					...(includeImageFields

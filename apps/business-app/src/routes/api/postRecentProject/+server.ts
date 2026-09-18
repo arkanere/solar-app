@@ -141,6 +141,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		let projectTitle: string | null = null;
 		let pincode: string | null = null;
 		let projectDate: string | null = null;
+		let city: string | null = null;
 		let business_slug: string | null = null;
 		let imageData: CloudinaryUploadResult | null = null;
 
@@ -151,6 +152,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			projectTitle = formData.get('projectTitle') as string | null;
 			pincode = formData.get('pincode') as string | null;
 			projectDate = formData.get('projectDate') as string | null;
+			city = formData.get('city') as string | null;
 			business_slug = formData.get('business_slug') as string | null;
 			const projectImage = formData.get('projectImage') as File | null;
 
@@ -175,6 +177,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			projectTitle = requestBody.projectTitle;
 			pincode = requestBody.pincode;
 			projectDate = requestBody.projectDate;
+			city = requestBody.city ?? null;
 			business_slug = requestBody.business_slug;
 
 			if (requestBody.image && requestBody.image.data) {
@@ -268,6 +271,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 					projectSlug,
 					pincode,
 					district,
+					city,
 					projectDate,
 					imageUrl: imageData.url,
 					cloudinaryPublicId: imageData.publicId,
@@ -282,6 +286,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 					project_slug: projects.projectSlug,
 					pincode: projects.pincode,
 					district: projects.district,
+					city: projects.city,
 					project_date: projects.projectDate,
 					created_at: projects.createdAt,
 					image_url: projects.imageUrl,

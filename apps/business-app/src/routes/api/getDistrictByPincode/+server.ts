@@ -20,15 +20,19 @@ export const POST: RequestHandler = async ({ request }) => {
 		}
 
 
+		// The state comes back too: getCities requires it, because district names
+		// repeat across states. Without it the city lookup 400s and the caller's
+		// dropdown stays permanently empty.
 		const rows = await db
-			.select({ district: pincodeMapping.district })
+			.select({ district: pincodeMapping.district, state: pincodeMapping.state })
 			.from(pincodeMapping)
 			.where(eq(pincodeMapping.pincode, pincode.trim()));
 
 		if (rows.length > 0) {
 			return json({
 				success: true,
-				district: rows[0].district
+				district: rows[0].district,
+				state: rows[0].state
 			});
 		} else {
 			return json({

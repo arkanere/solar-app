@@ -71,6 +71,10 @@
 	// and reapply once the list arrives. Null on the create path, so that is
 	// unaffected.
 	let pendingCity: string | null = $state(null);
+	// getCities needs the state as well as the district, because district names
+	// repeat across states. It is not a form field — it comes back from the
+	// pincode lookup alongside the district.
+	let projectState = $state('');
 
 	// Suggested project names for consistency
 	const suggestedNames = [
@@ -107,7 +111,7 @@
 
 	// Fetch cities when district changes
 	$effect(() => {
-		if (formData.district && formData.district !== lastFetchedDistrict) {
+		if (formData.district && projectState && formData.district !== lastFetchedDistrict) {
 			fetchCitiesByDistrict(formData.district);
 		}
 	});
@@ -123,11 +127,14 @@
 		};
 		imagePreview = null;
 		cities = [];
-		// Seeded so the pincode/district effects do not immediately refetch and
-		// wipe the values just prefilled from the existing project.
-		lastFetchedPincode = project?.pincode ?? '';
+		// Deliberately not seeded from the project: letting the pincode effect run
+		// is what fetches the state, which the city lookup needs. It re-derives
+		// the same district from the same pincode, and pendingCity below restores
+		// the stored city once the list arrives.
+		lastFetchedPincode = '';
 		lastFetchedDistrict = '';
 		pendingCity = project?.city ?? null;
+		projectState = '';
 		isDistrictLoading = false;
 		isCitiesLoading = false;
 	}
@@ -228,13 +235,18 @@
 			const data = await res.json();
 
 			if (data.success) {
+				// Set before the district, so the effect that reacts to the district
+				// and fetches cities already has a state to send.
+				projectState = data.state ?? '';
 				formData.district = data.district;
 			} else {
+				projectState = '';
 				formData.district = ''; // Clear district if not found
 				console.log('District not found for pincode:', pincodeValue);
 			}
 		} catch (error) {
 			console.error('Error fetching district by pincode:', error);
+			projectState = '';
 			formData.district = ''; // Clear district on error
 		} finally {
 			isDistrictLoading = false;
@@ -258,7 +270,10 @@
 			const res = await fetch('/api/getCities', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ district: districtValue })
+				// Country is left to the endpoint's 'in' default: projects are
+				// India-only (main-app gates them on features.projects) and the
+				// pincode field validates a 6-digit Indian PIN.
+				body: JSON.stringify({ district: districtValue, state: projectState })
 			});
 			const data = await res.json();
 
@@ -336,10 +351,9 @@
 				return;
 			}
 
-			// Not required when editing. The city dropdown cannot populate — the
-			// getCities endpoint requires a `state` this component does not send —
-			// and `city` is NULL on every existing project, so demanding it here
-			// would make every edit unsaveable. The create path is left as-is.
+			// Required when posting, optional when editing: city is NULL on every
+			// project created before it was persisted, so demanding one here would
+			// block edits on all of them. It is saved when picked.
 			if (!isEditing && !formData.city.trim()) {
 				errorMessage = 'City is required';
 				isSubmitting = false;
@@ -519,9 +533,8 @@
 				{/if}
 			</div>
 
-			{#if !isEditing}
 			<div class="flex flex-col gap-2">
-				<Label for="city">City:</Label>
+				<Label for="city">{isEditing ? 'City (optional):' : 'City:'}</Label>
 				<Select.Root type="single" bind:value={formData.city} disabled={isSubmitting || !formData.district || isCitiesLoading}>
 					<Select.Trigger id="city" class="w-full">
 						{formData.city || 'Select a city'}
@@ -539,7 +552,6 @@
 					<small class="text-destructive italic text-xs">No cities found for this district</small>
 				{/if}
 			</div>
-			{/if}
 
 			<div class="flex flex-col gap-2">
 				<Label for="projectDate">Project Date:</Label>
