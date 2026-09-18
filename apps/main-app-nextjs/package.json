@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@solar/db": "*",
+    "@solar/validation": "*",
     "@vercel/postgres": "^0.10.0",
     "drizzle-orm": "^0.45.2",
     "lucide-react": "^1.41.0",

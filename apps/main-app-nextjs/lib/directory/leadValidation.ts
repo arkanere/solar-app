@@ -13,9 +13,25 @@
  * The postal rule DOES come from the country config, because that one the
  * original already dispatches on — 6 digits for IN, 5 for US.
  *
- * Kept out of the component so it is testable and so the shape is available to
- * a server-side check when the submit endpoint is ported. Right now nothing
- * submits (see LeadForm).
+ * **Client-side only.** The server does not call this: `/{cc}/api/submitLead`
+ * validates with `@solar/validation`'s `leadSchema`, which is the canonical
+ * rule set and the authoritative one. This exists separately because it is
+ * synchronous and per-field, which is what blur-time messages need and what a
+ * zod issue list does not give cleanly.
+ *
+ * Two implementations is the cost of that. It is safe in one direction only —
+ * this one may be STRICTER than the server, never looser, so the worst case is
+ * a field the form rejects and the endpoint would have taken. Two such gaps
+ * exist on purpose:
+ *
+ *  - `comment` is required here and optional in `leadSchema` (the live
+ *    endpoint has always accepted a lead without one);
+ *  - US postal is the config's `^\d{5}$` here and `^\d{5}(-\d{4})?$` in
+ *    `leadSchema`, so ZIP+4 is refused at the form. The input's `maxLength`
+ *    already prevents typing it.
+ *
+ * Drift in the other direction shows up as a 400 from the endpoint, not a bad
+ * row, so it fails loudly.
  */
 import type { CountryConfig } from '@/lib/countries';
 

@@ -102,16 +102,37 @@ Based on the routes create archetype
 6. **The rest of the district page — done.** `lib/countries/` ported first, because
    every remaining section is gated on it: one file now renders 6 sections for a US
    county and all 17 for an Indian district. `geo-listing.md` §12 has no open questions
-   left. **The lead form deliberately does not submit** — see `LeadForm.tsx` for why and
-   for where it will point.
+   left. The lead form was built here without a submit path; step 7 wired it.
+
+7. **The submit path — done.** `POST /{cc}/api/submitLead` inserts `leaddata` through
+   `lib/server/leads.ts`, and `LeadForm.tsx` posts to it. Three decisions: both countries
+   post **local** (the SvelteKit split, where IN goes cross-origin to user-app, is not
+   carried across); success **confirms in place** rather than redirecting to the
+   `/{cc}/thank-you` stub; and the endpoint **enforces** `@solar/validation`'s `leadSchema`
+   through `parseBody`, instead of the original's log-only `inspectBody` (safe here because
+   this app's own form is the only caller — re-read that if another one is ever pointed at
+   it). `lib/directory/leadValidation.ts` stays, client-side only, for blur-time messages;
+   it is allowed to be stricter than the server, never looser, and the two known gaps are
+   listed in its header.
+
+   Verified against live: over-long name and malformed JSON now 400 rather than 500, an IN
+   row resolved 560001 → Bengaluru Urban / Karnataka, a US row took a ZIP+4 with no comment
+   and null levels. All test rows deleted after.
+
+   **Known gap, not introduced here and not fixed here:** the canonical `phone` rule allows
+   `+` plus 16 digits (17 characters) but `leaddata.phone` is `varchar(16)`, so that one
+   input is a 500. It is shared with main-app live; narrowing the primitive is a cross-app
+   change and belongs in its own commit.
 
 ## Open items
 
-7. **The submit path.** `/{cc}/api/submitLead` is a 501 stub; wiring the lead form is
-   gated on it. `LeadForm.tsx`.
 8. **The city/size leaf**, 356 pages. `geo-listing.md` §4.
 9. **The directory routes sit in `(layout-1)`**, which loads the editorial serif.
    `archetype.md`, "Seeing them".
 10. **Imagery policy beyond the hero.** `design-foundation.md` §9;
     `WorkThumb.tsx`, `ProjectGallery.tsx`.
 11. **Archetypes 1 and 3.** `archetype/installer-profile.md`, `archetype/geo-index.md`.
+12. **The lead confirmation email.** `/{cc}/api/sendLeadSubmissionConfirmation` is still a
+    501 stub and `submitLead` deliberately does not call it, so a lead is captured but the
+    visitor gets no email. Porting it pulls in `sendEmail`, `internalAuth` and
+    `generateUserMagicLink`.

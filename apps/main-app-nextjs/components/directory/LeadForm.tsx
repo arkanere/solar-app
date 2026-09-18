@@ -1,35 +1,42 @@
-/* eslint-disable-next-line no-restricted-syntax -- Interactive leaf. Five controlled fields, per-field validation on blur and a consent checkbox that gates the submit: all of it is local state reacting to typing, which is the one thing a server component cannot do. It is the only 'use client' on the district page. */
+/* eslint-disable-next-line no-restricted-syntax -- Interactive leaf. Five controlled fields, per-field validation on blur, a consent checkbox that gates the submit, and the submit itself: all of it is local state reacting to typing, which is the one thing a server component cannot do. It is the only 'use client' on the district page. */
 'use client';
 
 /**
  * The lead form. geo-listing.md §5 section 7, §11 ("client leaf").
  *
- * ⚠️ NOT WIRED. Decided 2026-09-16: this slice builds the markup and the
- * validation, and submits nowhere. The submit button is disabled and the form
- * says so above it, in plain words, where a visitor reads it.
+ * WIRED 2026-09-18 (README open item 7). It posts to this app's own
+ * `/{cc}/api/submitLead` for BOTH countries. The SvelteKit original sends IN
+ * cross-origin to https://user.solarvipani.com/in/api/submitLead and only
+ * non-IN to the local endpoint; that split is not carried across, so there is
+ * one code path here and no dependency on another app's
+ * Access-Control-Allow-Origin allowlist. The row written is the same either
+ * way — both handlers insert `leaddata` with country_code 'in'.
  *
- * The reason is worth writing down, because "finish it later" is how the
- * SvelteKit version acquired its worst bug. That form fired the request and
- * navigated to the thank-you page unconditionally; when the endpoint moved on
- * 2026-08-23 and main-app was not redeployed, every submission 404'd and every
- * visitor still saw a confirmation. Nobody noticed for 19 days. A form that
- * visibly does not submit is a smaller failure than a form that claims to.
+ * Two rules this form is built around, both learned the hard way:
  *
- * Where it will point when it is wired, from the SvelteKit original:
- *  - IN posts cross-origin to https://user.solarvipani.com/in/api/submitLead,
- *    which user-app owns. That is a cross-origin *read*, so it depends on
- *    user-app's Access-Control-Allow-Origin header.
- *  - Everything else posts to /{cc}/api/submitLead, which in this app is still
- *    a 501 stub.
- * Whichever lands first, the rule the SvelteKit form learned applies: read the
- * response and check `body.success` before claiming anything.
+ *  - **Read the response before claiming anything.** The SvelteKit form used
+ *    to fire the request and navigate to the thank-you page unconditionally.
+ *    When the endpoint moved on 2026-08-23 and main-app was not redeployed,
+ *    every submission 404'd and every visitor still saw a confirmation.
+ *    Nobody noticed for 19 days. So success here is gated on `body.success`,
+ *    not on the request having been sent.
+ *  - **Confirm in place, do not redirect.** `/{cc}/thank-you` is still a
+ *    scaffold stub in this app, and sending someone to a stub is worse than
+ *    confirming where they are. The panel replaces the form on success.
  *
- * Validation runs on blur rather than on submit, because with the submit
- * disabled there is no submit event to hang it on — and on a five-field form
- * blur is the better moment anyway: the reader finds out about a bad phone
- * number while they are still looking at the phone number.
+ * No confirmation email is sent yet: `/{cc}/api/sendLeadSubmissionConfirmation`
+ * is still a 501 stub here and the endpoint deliberately does not call it, so
+ * the success copy promises follow-up from installers and not an email.
+ *
+ * Validation runs on blur as well as on submit — on a five-field form blur is
+ * the better moment: the reader finds out about a bad phone number while they
+ * are still looking at the phone number. `validateLead` is a CLIENT-SIDE
+ * convenience only; the endpoint validates independently with
+ * `@solar/validation`'s `leadSchema`, so a client bypass does not get a row
+ * in. See `leadValidation.ts` for where the two deliberately differ.
  */
 import { useId, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import type { CountryConfig } from '@/lib/countries';
 import { validateLead, type LeadErrors, type LeadFields } from '@/lib/directory/leadValidation';
 
@@ -40,9 +47,13 @@ const FIELD =
 
 export function LeadForm({ country }: { country: CountryConfig }) {
   const formId = useId();
+  const pathname = usePathname();
   const [values, setValues] = useState<LeadFields>(EMPTY);
   const [errors, setErrors] = useState<LeadErrors>({});
   const [consent, setConsent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   /** Validate the whole form but surface only the field being left, so a
    *  reader is not told about fields they have not reached yet. */
@@ -61,12 +72,60 @@ export function LeadForm({ country }: { country: CountryConfig }) {
     }
   }
 
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+
+    // On submit every error surfaces at once, unlike blur: at this point the
+    // reader has been through the whole form, so there is nothing to protect
+    // them from.
+    const all = validateLead(values, country);
+    setErrors(all);
+    if (Object.keys(all).some((key) => all[key as keyof LeadFields]) || !consent) return;
+
+    setSubmitting(true);
+    setSubmitError('');
+
+    try {
+      const response = await fetch(`/${country.code}/api/submitLead`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: values.name,
+          phone: values.phone,
+          postalCode: values.postalCode,
+          email: values.email,
+          comment: values.comment,
+          // `urlParam` is the page the lead came from — the pathname only,
+          // matching the SvelteKit form. It is what tells a claimed lead which
+          // district page produced it.
+          urlParam: pathname,
+          marketing_consent: consent
+        })
+      });
+
+      const body = await response.json().catch(() => null);
+
+      if (!response.ok || !body?.success) {
+        throw new Error(body?.error ?? `submitLead returned ${response.status}`);
+      }
+
+      setSubmitted(true);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setSubmitError(
+        'We could not submit your details just now. Please check your connection and try again.'
+      );
+      setSubmitting(false);
+    }
+  }
+
   function field(
     name: keyof LeadFields,
     label: string,
     input: (props: {
       id: string;
       value: string;
+      disabled: boolean;
       'aria-invalid': boolean | undefined;
       'aria-describedby': string | undefined;
       onChange: (e: { target: { value: string } }) => void;
@@ -84,9 +143,7 @@ export function LeadForm({ country }: { country: CountryConfig }) {
           {input({
             id,
             value: values[name],
-            // The fields stay enabled although the submit is not: the whole
-            // point of this slice is that the validation can be exercised and
-            // reviewed. It is the BUTTON that must not claim anything.
+            disabled: submitting,
             'aria-invalid': error ? true : undefined,
             'aria-describedby': error ? `${id}-error` : undefined,
             onChange: (e) => set(name, e.target.value),
@@ -104,14 +161,22 @@ export function LeadForm({ country }: { country: CountryConfig }) {
 
   const consentId = `${formId}-consent`;
 
+  // The form is replaced rather than hidden, so there is nothing left to
+  // resubmit and no second row from a double click.
+  if (submitted) {
+    return (
+      <div role="status" className="rounded-md border border-line bg-surface-sunken p-md">
+        <p className="text-base font-semibold">Your request is in.</p>
+        <p className="mt-xs text-sm text-ink-muted">
+          Installers who cover your area will call you on the number you gave. Keep an eye on your
+          phone over the next couple of working days.
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <form
-      className="flex flex-col gap-md"
-      // No action and no onSubmit. `noValidate` would normally be here to let
-      // the code own the messages; with nothing to submit, the browser never
-      // gets the chance to validate either way.
-      onSubmit={(e) => e.preventDefault()}
-    >
+    <form className="flex flex-col gap-md" noValidate onSubmit={handleSubmit}>
       {field('name', 'Name', (p) => (
         <input {...p} type="text" autoComplete="name" placeholder="Your name" className={FIELD} />
       ))}
@@ -163,6 +228,7 @@ export function LeadForm({ country }: { country: CountryConfig }) {
           id={consentId}
           type="checkbox"
           checked={consent}
+          disabled={submitting}
           onChange={(e) => setConsent(e.target.checked)}
           className="mt-2xs size-4 shrink-0 accent-[var(--color-action)]"
         />
@@ -172,17 +238,21 @@ export function LeadForm({ country }: { country: CountryConfig }) {
         </span>
       </label>
 
-      <p role="status" className="rounded-md border border-line bg-surface-sunken px-sm py-xs text-sm text-ink-muted">
-        This form is not connected yet — nothing you type here is sent or stored. Call an installer
-        below in the meantime.
-      </p>
+      {submitError ? (
+        <p role="alert" className="text-sm text-danger">
+          {submitError}
+        </p>
+      ) : null}
 
       <button
         type="submit"
-        disabled
+        // Gated on consent only. Leaving it enabled with invalid fields is
+        // deliberate: the submit handler surfaces every error at once, which
+        // tells the reader what is wrong. A disabled button tells them nothing.
+        disabled={!consent || submitting}
         className="rounded-md bg-action px-md py-sm text-base font-semibold text-action-ink transition-colors duration-fast ease-standard hover:bg-action-hover disabled:cursor-not-allowed disabled:opacity-50"
       >
-        Get free quotes
+        {submitting ? 'Sending…' : 'Get free quotes'}
       </button>
     </form>
   );
