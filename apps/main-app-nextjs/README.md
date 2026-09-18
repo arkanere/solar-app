@@ -4,11 +4,6 @@
 2. Keep most content as it is!
 3. Design system, component library is the major opportunity that we want to exploit with React/Nextjs ecosystem.
 
-## Problems with the SvelteKit app
-
-1. Buttons, links and headings are indistinguishable.
-2. A retrofitted design system, with components and tokens bolted into `app.css`.
-
 ## Principles
 
 The site is a content and directory site, not a component showcase. Most of the pixels are
@@ -31,68 +26,51 @@ Standing rules for anything new:
 - Tailwind 4, with daisyUI as a plugin (`app/globals.css`).
 - `@tailwindcss/typography` (prose), `lucide-react` icons.
 - Free / MIT only. No paid libraries.
+- No Radix yet. It is the plan for real interactive things — dialog/drawer, combobox —
+  but the FAQ is native `<details>` and the contact buttons are anchors, so nothing has
+  needed one.
 
-Radix primitives (headless) are the plan for the few genuinely interactive things —
-dialog/drawer for mobile navigation, combobox for the location selects — because they give
-focus traps, keyboard navigation, ARIA and portals without any visuals of their own.
-**Nothing has needed one yet**: the FAQ is native `<details>` and the contact buttons are
-anchors, so Radix is not a dependency.
-
-## Location
-
-`solar-app/apps/main-app-nextjs`, inside the existing monorepo, sharing `@solar/db` and
-`@solar/validation`. SvelteKit and Next will coexist in the workspace for months.
+In `solar-app/apps/main-app-nextjs`, sharing `@solar/db` and `@solar/validation`.
+SvelteKit and Next coexist in the workspace.
 
 ## Done
 
-Reasoning lives in the file each line points at, or in the header comment of the code it
-produced. This is a pointer list; `git log` is the record.
+A pointer list. Reasoning lives in the doc or the file header each line names; `git log`
+is the record.
 
-1. **Scaffold** — 49 pages + 19 route handlers, diffed clean against the SvelteKit route
-   list both ways. `routes.md`.
-2. **Design foundation** — type, spacing, colour, radius, elevation and motion decided as
-   one set. `design-foundation.md`; approve at `/specimen`; `npm run check:contrast`
-   re-verifies the 17 pairings.
-3. **Archetypes** — the three that are 90.5% of the site: installer profile (649), geo
-   listing (601), geo index (29). `archetype.md`, specs in `archetype/`, grounded on live
-   measurements in `archetype/data.md`. Approve at `/specimen/archetypes`.
-4. **Layout primitives** — `PageShell`, `Section`, `Container`, `Stack` in
-   `components/layout/`, plus the two lint rules they unblocked: no `mx-auto` outside that
-   folder, no numeric Tailwind spacing anywhere.
-5. **Archetype 2, complete on real data** — the district page and the city/size leaf, 601
-   + 356 pages, loaded by `lib/directory/data.ts` over `@solar/db`. `lib/countries/` gates
-   every section: one file renders 6 for a US county and all 17 for an Indian district. The
-   leaf route is polymorphic, so `getLeaf` returns a discriminated `LeafLoad`; brand is
-   deliberately unimplemented (`solar_brands` is empty). Reasons in the page headers.
-6. **The submit path** — `POST /{cc}/api/submitLead` writes `leaddata` and `LeadForm.tsx`
-   posts to it. Both countries post local, success confirms in place, `@solar/validation`'s
-   `leadSchema` is enforced at the endpoint. Reasons in the route header.
-7. **Imagery policy** — `next/image` everywhere through `images.loaderFile`, which is what
-   makes `<Image>` work from a server component; `lib/cloudinary-loader.ts` is the only
-   place a transform is written. Galleries are 4:3, the 64px row anchor 1:1, both numbers
-   from `archetype/data.md`'s survey of the real photographs. `design-foundation.md` §9,
-   including why `sizes` on a fixed-size image is a trap.
-8. **Archetype 1, the installer profile** — 649 pages, the largest archetype, on real
-   data. Two columns from `lg`, with the work high and contact stuck beside it;
-   `getInstaller` in `lib/directory/data.ts`. Reasons in the page header, decisions in
-   `archetype/installer-profile.md` §§11–12. It also carries the `google_maps_link` fix:
-   a bare place name was a relative href that 404ed.
+1. **Scaffold** — 49 pages + 19 route handlers. `routes.md`.
+2. **Design foundation** — type, spacing, colour, radius, elevation, motion as one set.
+   `design-foundation.md`; approve at `/specimen`; `npm run check:contrast`.
+3. **Archetypes** — the three that are 90.5% of the site. `archetype.md`, specs in
+   `archetype/`, live measurements in `archetype/data.md`. Approve at
+   `/specimen/archetypes`.
+4. **Layout primitives** — `components/layout/`, plus the two lint rules they unblocked:
+   no `mx-auto` outside that folder, no numeric Tailwind spacing anywhere.
+5. **Archetype 2, geo listing** — district page and city/size leaf, 957 pages.
+   `archetype/geo-listing.md`, `lib/directory/data.ts`, gated by `lib/countries/`.
+6. **Archetype 1, installer profile** — 649 pages, the largest archetype.
+   `archetype/installer-profile.md`, `getInstaller` in `lib/directory/data.ts`.
+7. **The submit path** — `POST /{cc}/api/submitLead` writes `leaddata`; `LeadForm.tsx`
+   posts to it and `@solar/validation` is enforced at the endpoint.
+8. **Imagery policy** — `next/image` through `images.loaderFile`;
+   `lib/cloudinary-loader.ts` is the only place a transform is written.
+   `design-foundation.md` §9.
 
 ## Open items
 
 1. **Archetype 3, the geo index.** `/{cc}/solar` and `/{cc}/solar/{state}` — 29 pages,
    the two hubs that list child locations rather than businesses.
    `archetype/geo-index.md`.
-2. **The lead confirmation email.** `/{cc}/api/sendLeadSubmissionConfirmation` is a 501 stub
-   and `submitLead` deliberately does not call it, so a lead is captured but the visitor
-   gets no email. Porting it pulls in `sendEmail`, `internalAuth` and
+2. **No page metadata anywhere.** Nothing in this app emits a title, description,
+   canonical or OG tag. Wants one `generateMetadata` helper across the page types, not a
+   per-page fix — and it must not copy the profile's meta description, which interpolates
+   a description that is boilerplate on 608 of 643 rows.
+3. **The lead confirmation email.** `/{cc}/api/sendLeadSubmissionConfirmation` is a 501
+   stub and `submitLead` deliberately does not call it, so a lead is captured but the
+   visitor gets no email. Porting it pulls in `sendEmail`, `internalAuth` and
    `generateUserMagicLink`.
-3. **No page metadata anywhere.** Nothing in this app emits a title, description, canonical
-   or OG tag — not the leaf, not the installer profile, not the district page at sitemap
-   priority 1.0. The SvelteKit pages emit all four. Wants one `generateMetadata` helper
-   across the page types, not a per-page fix. Note what it must not copy: the profile's
-   meta description interpolates `description`, which is boilerplate on 608 of 643 rows,
-   so those pages ship near-identical descriptions (`installer-profile.md` §7).
 4. **A phone number of `+` plus 16 digits is a 500.** `@solar/validation`'s `phone`
    primitive allows 17 characters; `leaddata.phone` is `varchar(16)`. Pre-existing and
    shared with main-app live, so narrowing the primitive is a cross-app change.
+5. **The installer specimen is out of date.** `/specimen/archetypes/installer` still
+   hides the boilerplate About; the shipped page renders it.
