@@ -124,7 +124,7 @@
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 				{#each projects as project}
 					<div
-						class="bg-card rounded-lg overflow-hidden border border-border shadow-card hover:shadow-card-hover transition-shadow duration-300"
+						class="bg-card rounded-lg overflow-hidden border border-border shadow-card hover:shadow-card-hover transition-shadow duration-300 flex flex-col h-full"
 					>
 						{#if project.cloudinary_public_id}
 							<div class="w-full h-[200px] overflow-hidden">
@@ -135,14 +135,14 @@
 								/>
 							</div>
 						{/if}
-						<div class="p-6">
+						<div class="p-6 flex flex-col flex-1">
 							<h3 class="text-xl font-semibold mb-2">{project.title}</h3>
 							{#if project.description}
 								<p class="text-sm text-foreground-secondary mb-4 leading-relaxed">
 									{project.description}
 								</p>
 							{/if}
-							<div class="flex flex-wrap gap-3 mb-4">
+							<div class="flex flex-wrap gap-3 mb-4 empty:mb-0">
 								{#if project.capacity}
 									<Badge variant="secondary" class="text-xs">{project.capacity} kW</Badge>
 								{/if}
@@ -155,7 +155,7 @@
 									>
 								{/if}
 							</div>
-							<div class="flex gap-2">
+							<div class="flex gap-2 mt-auto pt-2">
 								<Button
 									variant="outline"
 									size="sm"
