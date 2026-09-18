@@ -200,20 +200,52 @@ Two improvements available from data already loaded: `postalCode` is passed as `
 though `business_profiles.postal_code` exists, and `aggregateRating` should **not** be
 emitted from `rscore` while it is uniformly 0.
 
-## 11. Components
+## 11. Components — BUILT 2026-09-18
 
-`Breadcrumb`, `PageHeader`, `ActionRow` (client leaf), `ChipList` (static and link
-variants), `ProjectGallery`, `DefinitionList`, `QuoteCTA`, `BackLink`.
+What shipped, against what this section planned:
 
-Only `ActionRow` needs `'use client'` — `makeCall`/`openWhatsApp` plus PostHog capture.
-Everything else is a server component.
+| Planned | Built | Note |
+| --- | --- | --- |
+| `Breadcrumb` | `Breadcrumb` | Reused from archetype 2, unchanged |
+| `PageHeader` | — | The header is nine lines in the page. It is not shared with anything, and a component per page section is what made the old app hard to read |
+| `ActionRow` (client leaf) | `CallButton` / `WhatsAppButton` | **Not a client component.** They are anchors with `tel:` and `wa.me` hrefs; `makeCall`/`openWhatsApp` only wrapped a PostHog capture this app does not have yet. The whole page is a server component |
+| `ChipList` (static + link variants) | — | Services and brands stopped being chips (§6), so there is no static variant to build. Service areas are plain links, deliberately outside a `<nav>` so they keep the underline that tells them from the labels above |
+| `ProjectGallery` | `InstallerProjects` | A separate component from archetype 2's gallery. The district one captions "who did this and when"; here the who is the page, so it captions where and when. They share the date rule through `lib/directory/format.ts` |
+| `DefinitionList` | `ContactPanel` | The `<dl>` plus the desktop action row, sticky beside the page |
+| `QuoteCTA`, `BackLink` | both | Reused from archetype 2, unchanged |
+
+`SERVICE_MAPPING` and `BRAND_MAPPING` came out of the component into
+`lib/directory/services.ts` and `lib/directory/brands.ts`, and the `'Unknown Service'`
+fallback went with them: an id the site cannot name renders as nothing rather than
+printing the word Unknown into the page.
 
 ## 12. Open questions
 
 ~~1. Badge~~ — **decided: dropped, not replaced** (§5).
 ~~2. CTA colour~~ — **decided: both are `action`** (§6).
 
-1. **Hide the About section when the description is boilerplate?** (§7) — 608 of 643
-   pages currently render the words "Solar panel installer" under a heading saying About.
-2. Render `instagram_id` (15.2% coverage), or drop it from the selection?
-3. Where do `SERVICE_MAPPING` / `BRAND_MAPPING` live — constants module or database?
+~~3. About when boilerplate~~ — **decided 2026-09-18: always render it.** §7 proposed
+hiding it and the specimen hides it; the call is to show whatever the description says,
+including the two words 608 profiles carry. README rule 2 is "keep most content as it
+is", and this is content. It renders as a plain paragraph under the place line, with no
+"About" heading — a heading over two words is what made it read as an empty section.
+
+~~4. `instagram_id`~~ — **decided 2026-09-18: render it**, as a row in the contact panel.
+
+~~5. `SERVICE_MAPPING` / `BRAND_MAPPING`~~ — **decided 2026-09-18: constants module.**
+`lib/directory/services.ts` and `lib/directory/brands.ts`. A table would be right if they
+were editable or if anything joined on them; neither is true, and the business form can
+import the same files instead of keeping its own copy.
+
+**Two numbers in §2 and in data.md are wrong**, found while wiring this page and measured
+on live 2026-09-18:
+
+| Field | data.md says | Live, visible IN profiles |
+| --- | --- | --- |
+| `instagram_id` | 546 missing, 15.2% present | present on **9 of 646** (1.4%) |
+| `google_maps_link` | 546 missing, 15.2% present | present on **31 of 646** (4.8%) |
+
+The identical "546 / 15.2%" on both rows looks like the table repeating a row. Neither
+number changes a decision here — both fields were already treated as genuinely optional —
+but the Instagram row is on 9 pages, not ~98, which is worth knowing before anyone
+designs around it.

@@ -72,18 +72,27 @@ produced. This is a pointer list; `git log` is the record.
    place a transform is written. Galleries are 4:3, the 64px row anchor 1:1, both numbers
    from `archetype/data.md`'s survey of the real photographs. `design-foundation.md` §9,
    including why `sizes` on a fixed-size image is a trap.
+8. **Archetype 1, the installer profile** — 649 pages, the largest archetype, on real
+   data. Two columns from `lg`, with the work high and contact stuck beside it;
+   `getInstaller` in `lib/directory/data.ts`. Reasons in the page header, decisions in
+   `archetype/installer-profile.md` §§11–12. It also carries the `google_maps_link` fix:
+   a bare place name was a relative href that 404ed.
 
 ## Open items
 
-1. **Archetypes 1 and 3.** `archetype/installer-profile.md`, `archetype/geo-index.md`.
+1. **Archetype 3, the geo index.** `/{cc}/solar` and `/{cc}/solar/{state}` — 29 pages,
+   the two hubs that list child locations rather than businesses.
+   `archetype/geo-index.md`.
 2. **The lead confirmation email.** `/{cc}/api/sendLeadSubmissionConfirmation` is a 501 stub
    and `submitLead` deliberately does not call it, so a lead is captured but the visitor
    gets no email. Porting it pulls in `sendEmail`, `internalAuth` and
    `generateUserMagicLink`.
 3. **No page metadata anywhere.** Nothing in this app emits a title, description, canonical
-   or OG tag — not the leaf, not the district page at sitemap priority 1.0. The SvelteKit
-   pages emit all four. Wants one `generateMetadata` helper across the page types, not a
-   per-page fix.
+   or OG tag — not the leaf, not the installer profile, not the district page at sitemap
+   priority 1.0. The SvelteKit pages emit all four. Wants one `generateMetadata` helper
+   across the page types, not a per-page fix. Note what it must not copy: the profile's
+   meta description interpolates `description`, which is boilerplate on 608 of 643 rows,
+   so those pages ship near-identical descriptions (`installer-profile.md` §7).
 4. **A phone number of `+` plus 16 digits is a 500.** `@solar/validation`'s `phone`
    primitive allows 17 characters; `leaddata.phone` is `varchar(16)`. Pre-existing and
    shared with main-app live, so narrowing the primitive is a cross-app change.

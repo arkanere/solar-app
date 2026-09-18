@@ -799,15 +799,8 @@ export const BOILERPLATE_DESCRIPTION = 'Solar panel installer';
 /** Moved to lib/directory/services.ts — it is a real lookup, not sample data. */
 export { SERVICE_NAMES } from '@/lib/directory/services';
 
-export const BRAND_NAMES: Record<number, string> = {
-  1: 'Waaree Energies',
-  2: 'Adani Solar',
-  3: 'Tata Power Solar',
-  4: 'Vikram Solar',
-  5: 'Goldi Solar',
-  6: 'RenewSys',
-  7: 'Loom Solar'
-};
+/** Moved to lib/directory/brands.ts with the profile page — same call as SERVICE_NAMES. */
+export { BRAND_NAMES } from '@/lib/directory/brands';
 
 /**
  * The cloud name is public — it is in every image URL the live site serves. The

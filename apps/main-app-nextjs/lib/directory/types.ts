@@ -146,3 +146,68 @@ export type SizeLeaf = {
   /** 1, 2, 3, 5 or 10 in practice — the sizes the chip rows link to. */
   sizeKw: number;
 };
+
+/**
+ * One city an installer covers — a chip on the profile linking to the city
+ * leaf. Up to 20 per page (installer-profile.md §3 section 8).
+ *
+ * The slugs come from `geo_locations` rather than being derived from the city
+ * name, so every link points at a leaf that exists. The same rows also carry
+ * the district's own slugs, which is what the profile's back link uses.
+ */
+export type ServiceArea = {
+  city: string;
+  level1Slug: string;
+  level2Slug: string;
+  citySlug: string;
+};
+
+/**
+ * Archetype 1 — one installer profile. 649 pages, 46% of the site.
+ * installer-profile.md §8.
+ *
+ * What the SvelteKit loader selects and this does NOT:
+ *
+ *  - `tag`, `'Verified Business'` on 100% of visible profiles. The badge is
+ *    dropped (§5) and nothing else reads the column, so it is not selected.
+ *  - `rscore`, uniformly 0. It orders the query — a stable choice among
+ *    duplicate slugs — but no component can render it and §10 is explicit
+ *    that an aggregateRating must not be built from it while it is flat.
+ *  - `businessfilled`, which the page selects and never reads.
+ *
+ * Nullability is the real nullability from archetype/data.md: 280 of 643 have
+ * no website, 19 no address, 11 no phone — and the phone is what both CTAs
+ * depend on, so `null` is a case the page renders rather than an edge case.
+ */
+export type InstallerProfile = {
+  country: string;
+  name: string;
+  slug: string;
+  /** Boilerplate on 94.6% of pages. Rendered anyway — decided 2026-09-18. */
+  description: string | null;
+  /** Missing on 11 of 643. Both CTAs depend on it. */
+  phone: string | null;
+  email: string | null;
+  /** Missing on 280 of 643. Must not anchor a layout. */
+  website: string | null;
+  /** Missing on 19 of 643, and 482 distinct across 643 — not an identifier. */
+  address: string | null;
+  city: string;
+  level2: string;
+  level1: string;
+  /** The district's slug, for the back link. Null when no geo row matches. */
+  level2Slug: string | null;
+  level1Slug: string | null;
+  /** From business_profiles.postal_code, for LocalBusiness (§10). */
+  postalCode: string | null;
+  services: number[];
+  /** Empty on 93% of profiles. A real differentiator on the other 44. */
+  brands: number[];
+  /** Raw column value; `instagram()` in urls.ts turns it into a link. */
+  instagramId: string | null;
+  /** Raw column value; `mapsUrl()` in urls.ts turns it into a link. */
+  googleMapsLink: string | null;
+  /** Up to 12, newest first. Only 5.9% of profiles have any. */
+  projects: ProjectCard[];
+  serviceAreas: ServiceArea[];
+};

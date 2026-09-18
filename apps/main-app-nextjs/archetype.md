@@ -77,8 +77,9 @@ Narrower, but each shapes a whole section:
   below a threshold?
 - **The video hero** on all 601 geo-listing pages — keep, or replace with a typographic
   header?
-- **The About section** on installer profiles, where 608 of 643 render the boilerplate
-  string "Solar panel installer" under a heading saying About.
+- ~~**The About section** on installer profiles~~ — **decided 2026-09-18: it renders,
+  boilerplate and all**, as a plain paragraph with no "About" heading over it. A heading
+  over two words is what made it read as an empty section.
 
 Approve these visually at `/specimen/archetypes` (dev only).
 

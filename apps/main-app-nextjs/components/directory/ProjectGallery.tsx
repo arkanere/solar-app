@@ -34,6 +34,7 @@
 import Image from 'next/image';
 
 import { cloudinarySrc } from '@/lib/directory/cloudinary';
+import { formatDate } from '@/lib/directory/format';
 import { projectUrl } from '@/lib/directory/urls';
 import type { ProjectCard } from '@/lib/directory/types';
 
@@ -46,20 +47,6 @@ function businessName(slug: string): string {
     .split('-')
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ');
-}
-
-/** The date column is a plain `date`, so it arrives as 'YYYY-MM-DD' with no
- *  zone. Formatting it through the locale is safe; parsing it as a Date and
- *  reading local parts would not be — CLAUDE.md's timestamp trap, one table
- *  over. */
-function formatDate(value: string, locale: string): string {
-  const [y, m, d] = value.split('-').map(Number);
-  if (!y || !m || !d) return value;
-  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(locale, {
-    year: 'numeric',
-    month: 'short',
-    timeZone: 'UTC'
-  });
 }
 
 export function ProjectGallery({

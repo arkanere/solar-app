@@ -41,9 +41,11 @@ import { getCountry } from '@/lib/countries';
 import type {
   CityLink,
   DistrictPageData,
+  InstallerProfile,
   InstallerRowData,
   LeafLoad,
-  ProjectCard
+  ProjectCard,
+  ServiceArea
 } from './types';
 
 /**
@@ -512,4 +514,159 @@ async function getProjectSummaries(slugs: string[]): Promise<Map<string, Project
     byBusiness.set(row.businessSlug, { count: Number(row.total), thumb: row.thumb });
   }
   return byBusiness;
+}
+
+/**
+ * Archetype 1 — one installer profile. installer-profile.md §8.
+ *
+ * Ported from
+ * apps/main-app/src/routes/[country=country]/(layout-1)/installer/[installer_slug]/+page.server.ts:
+ * one query for the business, then projects and service areas in parallel.
+ *
+ * Returns null where the SvelteKit loader throws 404 — the page turns it into
+ * `notFound()`, for the same reason `getLeaf` returns `{ kind: 'redirect' }`
+ * rather than redirecting: this module is the data seam and knows nothing
+ * about Next.
+ *
+ * `postal_code` is selected here and is NOT the district lookup the geo pages
+ * use: the business carries its own, which is what §10 asks for — the old page
+ * passed `postalCode: ''` to LocalBusiness while the column sat in the table.
+ */
+export async function getInstaller(
+  country: string,
+  slug: string
+): Promise<InstallerProfile | null> {
+  const { features } = getCountry(country);
+
+  const rows = await db
+    .select({
+      // businessname, slug, city, services and brands are nullable in the
+      // schema and restated non-null here, as the SvelteKit loader does:
+      // every consumer treats them as required. `sql<T>` renders as the bare
+      // column, so the SQL is unchanged. CLAUDE.md prefers restating the
+      // existing contract over widening the components.
+      name: sql<string>`${businessProfiles.businessname}`,
+      slug: sql<string>`${businessProfiles.slug}`,
+      description: businessProfiles.description,
+      phone: businessProfiles.phonenumber,
+      email: businessProfiles.email,
+      website: businessProfiles.website,
+      address: businessProfiles.address,
+      city: sql<string>`${businessProfiles.city}`,
+      level2: sql<string>`${businessProfiles.level2}`,
+      level1: sql<string>`${businessProfiles.level1}`,
+      postalCode: businessProfiles.postalCode,
+      services: sql<number[]>`${businessProfiles.services}`,
+      brands: sql<number[]>`${businessProfiles.brands}`,
+      instagramId: businessProfiles.instagramId,
+      googleMapsLink: businessProfiles.googleMapsLink
+    })
+    .from(businessProfiles)
+    .innerJoin(businessAccounts, accountOfProfile)
+    .where(
+      and(
+        eq(businessAccounts.countryCode, country),
+        eq(businessProfiles.slug, slug),
+        eq(businessProfiles.isvisible, true)
+      )
+    )
+    // rscore is 0 on every row today, so this ordering picks arbitrarily among
+    // duplicate slugs and the choice changes between deploys. businessname is
+    // the tiebreaker that makes it stable — the same decision §8 and
+    // `sortInstallers` above both record, for the same reason.
+    .orderBy(sql`${businessProfiles.rscore} DESC NULLS LAST`, businessProfiles.businessname)
+    .limit(1);
+
+  const business = rows[0];
+  if (!business) return null;
+
+  // A branch office shows the parent company's work: `acme-solar-branch-12`
+  // reads projects filed under `acme-solar`. Ported exactly — projects are
+  // filed against the parent slug, so without this every branch page renders
+  // an empty gallery.
+  const mainSlug = slug.replace(/-branch-[a-zA-Z0-9]+$/, '');
+
+  const [projectRows, serviceAreas] = await Promise.all([
+    features.projects ? getBusinessProjects(mainSlug) : Promise.resolve([]),
+    getServiceAreas(country, business.level1, business.level2)
+  ]);
+
+  return {
+    country,
+    ...business,
+    services: business.services ?? [],
+    brands: business.brands ?? [],
+    // The district's own slugs, taken from the service-area rows rather than
+    // derived from the name. Every one of those rows is in this district, so
+    // they all carry the same pair, and they are the real slugs the geo routes
+    // answer on. The SvelteKit page lowercases the district name and replaces
+    // spaces instead, which is a guess that happens to be right most of the
+    // time; null here means no geo row matched and the back link is simply not
+    // rendered, rather than pointing at a 404.
+    level1Slug: serviceAreas[0]?.level1Slug ?? null,
+    level2Slug: serviceAreas[0]?.level2Slug ?? null,
+    projects: projectRows,
+    serviceAreas
+  };
+}
+
+/**
+ * This installer's most recent work, up to 12. Gated on `features.projects`
+ * by the caller, which is IN-only today.
+ *
+ * Unlike the district gallery this keys on `business_slug`, so it really is
+ * "work by this company" rather than "work in this place".
+ */
+async function getBusinessProjects(businessSlug: string): Promise<ProjectCard[]> {
+  const rows = await db
+    .select({
+      id: projects.id,
+      // Nullable in the schema, and the card needs both — rows missing either
+      // are dropped rather than the type widened, as getRecentProjects does.
+      slug: projects.projectSlug,
+      businessSlug: projects.businessSlug,
+      title: projects.title,
+      pincode: projects.pincode,
+      projectDate: projects.projectDate,
+      cloudinaryPublicId: projects.cloudinaryPublicId,
+      imageUrl: projects.imageUrl
+    })
+    .from(projects)
+    .where(and(eq(projects.businessSlug, businessSlug), eq(projects.isvisible, true)))
+    .orderBy(desc(projects.projectDate), desc(projects.createdAt))
+    .limit(12);
+
+  return rows.filter((r): r is ProjectCard => r.slug !== null && r.businessSlug !== null);
+}
+
+/**
+ * Up to 20 cities in the installer's district, each linking to its city leaf.
+ *
+ * LOWER() on both sides of both names, because geo_locations and
+ * business_profiles disagree on casing — the usual trap at the top of this
+ * file. level1 is part of the match as well as level2, for the reason
+ * `getDistrict` records: 438 US district names occur in more than one state.
+ */
+async function getServiceAreas(
+  country: string,
+  level1: string,
+  level2: string
+): Promise<ServiceArea[]> {
+  return db
+    .selectDistinct({
+      city: geoLocations.city,
+      level1Slug: geoLocations.level1Slug,
+      level2Slug: geoLocations.level2Slug,
+      citySlug: geoLocations.citySlug
+    })
+    .from(geoLocations)
+    .where(
+      and(
+        eq(geoLocations.countryCode, country),
+        sql`LOWER(${geoLocations.level1}) = LOWER(${level1})`,
+        sql`LOWER(${geoLocations.level2}) = LOWER(${level2})`
+      )
+    )
+    .orderBy(geoLocations.city)
+    .limit(20);
 }
