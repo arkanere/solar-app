@@ -72,24 +72,26 @@ it produced. This list is a pointer, not a record.
 8. **The city/size leaf** (`b531f4a`) — 356 pages. The route is polymorphic, so `getLeaf`
    returns a discriminated `LeafLoad` and the page dispatches on `kind`. Brand is
    deliberately unimplemented (`solar_brands` is empty). Reasons in the page header.
+9. **The directory group flattened** — `app/[country]/(layout-1)/` is gone; its routes
+   sit directly under `app/[country]/`. The serif was never leaking: that group was a
+   sibling of the editorial `app/(layout-1)/`, not a child, and its own layout was an
+   empty pass-through. Route groups are URL-transparent, so no URL moved.
 
 **Archetype 2 is complete.** Both its page types run on real data.
 
 ## Open items
 
-9. **The directory routes sit in `(layout-1)`**, which loads the editorial serif.
-   `archetype.md`, "Seeing them".
-10. **Imagery policy beyond the hero.** `design-foundation.md` §9; `WorkThumb.tsx`,
-    `ProjectGallery.tsx`.
-11. **Archetypes 1 and 3.** `archetype/installer-profile.md`, `archetype/geo-index.md`.
-12. **The lead confirmation email.** `/{cc}/api/sendLeadSubmissionConfirmation` is a 501
+9. **Imagery policy beyond the hero.** `design-foundation.md` §9; `WorkThumb.tsx`,
+   `ProjectGallery.tsx`.
+10. **Archetypes 1 and 3.** `archetype/installer-profile.md`, `archetype/geo-index.md`.
+11. **The lead confirmation email.** `/{cc}/api/sendLeadSubmissionConfirmation` is a 501
     stub and `submitLead` deliberately does not call it, so a lead is captured but the
     visitor gets no email. Porting it pulls in `sendEmail`, `internalAuth` and
     `generateUserMagicLink`.
-13. **No page metadata anywhere.** Nothing in this app emits a title, description,
+12. **No page metadata anywhere.** Nothing in this app emits a title, description,
     canonical or OG tag — not the leaf, not the district page at sitemap priority 1.0.
     The SvelteKit pages emit all four. Wants one `generateMetadata` helper across the page
     types, not a per-page fix.
-14. **A phone number of `+` plus 16 digits is a 500.** `@solar/validation`'s `phone`
+13. **A phone number of `+` plus 16 digits is a 500.** `@solar/validation`'s `phone`
     primitive allows 17 characters; `leaddata.phone` is `varchar(16)`. Pre-existing and
     shared with main-app live, so narrowing the primitive is a cross-app change.
