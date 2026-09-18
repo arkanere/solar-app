@@ -57,20 +57,21 @@ Code worth knowing before editing:
   no `mx-auto` outside that folder, no numeric Tailwind spacing anywhere.
 - `lib/countries/` — the per-country gate. Labels and features are data, never hardcoded.
 - `lib/cloudinary-loader.ts` — the only place an image transform is written.
+- `lib/server/` — the server-only modules: `db`, `leads`, `email` (Brevo),
+  `magicLink` (mints customer sign-in tokens, IN-only), `leadConfirmation` (the email
+  body, shared by `submitLead` and its own route). Needs `BREVO_API_KEY` and
+  `INTERNAL_API_SECRET` in `.env.local`; `USER_APP_URL` is optional and defaults to
+  production.
 - `lib/metadata.ts` — the one metadata builder. It owns the tag set; each page owns its
   own title and description. Only the five built directory pages call it; the 44 route
   stubs fall back to the root layout, which is also where `metadataBase` lives.
 
 ## Open items
 
-1. **The lead confirmation email.** `/{cc}/api/sendLeadSubmissionConfirmation` is a 501
-   stub and `submitLead` deliberately does not call it, so a lead is captured but the
-   visitor gets no email. Porting it pulls in `sendEmail`, `internalAuth` and
-   `generateUserMagicLink`.
-2. **A phone number of `+` plus 16 digits is a 500.** `@solar/validation`'s `phone`
+1. **A phone number of `+` plus 16 digits is a 500.** `@solar/validation`'s `phone`
    primitive allows 17 characters; `leaddata.phone` is `varchar(16)`. Pre-existing and
    shared with main-app live, so narrowing the primitive is a cross-app change.
-3. **The installer specimen is out of date.** `/specimen/archetypes/installer` still
+2. **The installer specimen is out of date.** `/specimen/archetypes/installer` still
    hides the boilerplate About; the shipped page renders it.
 
 ### Blocked on data, not code

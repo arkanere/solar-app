@@ -24,12 +24,16 @@
  * enforces. If another form is ever pointed at this endpoint, re-read that
  * reasoning before assuming enforcement is still safe.
  *
- * It also does NOT call sendLeadSubmissionConfirmation — still a 501 stub in
- * this app, README open item 12. The lead is captured; no email is sent.
+ * It now sends the confirmation email (README open item 1, closed 2026-09-18).
+ * The SvelteKit handler reaches its own /{cc}/api/sendLeadSubmissionConfirmation
+ * over `event.fetch`; this one calls `sendLeadConfirmation` directly, because a
+ * second HTTP request and a second cold start to run code already in this
+ * process buys nothing. The route still exists for outside callers.
  */
 import { leadSchema, parseBody } from '@solar/validation';
 import { getCountry, isCountry } from '@/lib/countries';
 import { insertLead } from '@/lib/server/leads';
+import { sendLeadConfirmation } from '@/lib/server/leadConfirmation';
 
 /** Lead rows are written per request; nothing here may be cached or prerendered. */
 export const dynamic = 'force-dynamic';
@@ -71,6 +75,26 @@ export async function POST(
       email: data.email,
       marketingConsent: data.marketing_consent === true
     });
+
+    // The row is already committed, so a mail failure must not turn a captured
+    // lead into a 500 — it is logged and the visitor still gets a success.
+    // Awaited rather than floated: on a serverless invocation a promise left
+    // running after the response is not guaranteed to finish. `email` is
+    // optional in `leadSchema`, and there is nobody to confirm to without one.
+    if (data.email) {
+      try {
+        await sendLeadConfirmation(country, {
+          name: data.name,
+          phone: data.phone,
+          email: data.email,
+          postalCode,
+          comment: data.comment,
+          urlParam: data.urlParam
+        });
+      } catch (mailError) {
+        console.error('Lead confirmation mail failed:', mailError);
+      }
+    }
 
     return Response.json({
       success: true,

@@ -24,9 +24,11 @@
  *    scaffold stub in this app, and sending someone to a stub is worse than
  *    confirming where they are. The panel replaces the form on success.
  *
- * No confirmation email is sent yet: `/{cc}/api/sendLeadSubmissionConfirmation`
- * is still a 501 stub here and the endpoint deliberately does not call it, so
- * the success copy promises follow-up from installers and not an email.
+ * The confirmation email is live as of 2026-09-18 (README open item 1), so the
+ * success copy may now mention it — but only when an address was actually
+ * given. `email` is optional in `leadSchema` and `submitLead` skips the mail
+ * without one; promising an email to someone who left the field blank is the
+ * same class of mistake as the unconditional redirect above.
  *
  * Validation runs on blur as well as on submit — on a five-field form blur is
  * the better moment: the reader finds out about a bad phone number while they
@@ -170,6 +172,7 @@ export function LeadForm({ country }: { country: CountryConfig }) {
         <p className="mt-xs text-sm text-ink-muted">
           Installers who cover your area will call you on the number you gave. Keep an eye on your
           phone over the next couple of working days.
+          {values.email ? ` A confirmation is on its way to ${values.email}.` : ''}
         </p>
       </div>
     );
