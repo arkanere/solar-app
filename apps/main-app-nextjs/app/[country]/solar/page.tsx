@@ -29,6 +29,7 @@
  * No client components. Every card is an anchor; there is nothing here that
  * needs JavaScript.
  */
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { PageShell, Section, Stack } from '@/components/layout';
 import {
@@ -42,6 +43,7 @@ import { getCountry, isCountry } from '@/lib/countries';
 import { getCountryHub } from '@/lib/directory/data';
 import { contentUrl, geoUrl } from '@/lib/directory/urls';
 import { BASE_URL, breadcrumbLD } from '@/lib/directory/structuredData';
+import { pageMetadata, pluralise } from '@/lib/metadata';
 
 /** 15 days, matching the SvelteKit page's `config.isr.expiration`. */
 export const revalidate = 1296000;
@@ -58,6 +60,47 @@ const GUIDES = [
   { label: 'Solar financing', href: contentUrl('/solar-financing/') },
   { label: 'Solar panels', href: contentUrl('/solar-panels/') }
 ];
+
+/**
+ * Ported from the SvelteKit head, which emitted a title, a description and a
+ * canonical here and no OG tags at all. `pageMetadata` adds the rest, so this
+ * page shares its shape with the other four.
+ *
+ * `getCountryHub` is memoised per request, so the page below re-reads the
+ * same result rather than running the coverage CTE a second time.
+ */
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ country: string }>;
+}): Promise<Metadata> {
+  const { country } = await params;
+  // The page 404s on the same check. Metadata for a page that will not render
+  // is the site default, which is what an empty object falls back to.
+  if (!isCountry(country)) return {};
+
+  const { name, levels, locale } = getCountry(country);
+  const { totalInstallers, level1Count } = await getCountryHub(country);
+
+  return pageMetadata({
+    title: `Solar Panel Installers in ${name} — Browse by ${levels.level1.singular}`,
+    description:
+      `Find ${pluralise(
+        totalInstallers,
+        'verified solar panel installer',
+        'verified solar panel installers',
+        locale
+      )} across ${pluralise(
+        level1Count,
+        levels.level1.singular.toLowerCase(),
+        levels.level1.plural.toLowerCase()
+      )} in ${name}. Browse by ${levels.level1.singular.toLowerCase()} and ` +
+      `${levels.level2.singular.toLowerCase()} to compare quotes and get the best solar deals.`,
+    path: geoUrl(country),
+    locale,
+    imageAlt: `Solar panel installers in ${name}`
+  });
+}
 
 export default async function Page({ params }: { params: Promise<{ country: string }> }) {
   const { country } = await params;

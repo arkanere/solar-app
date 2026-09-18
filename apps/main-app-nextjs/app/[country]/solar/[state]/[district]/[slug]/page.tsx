@@ -25,12 +25,11 @@
  *    redirect is what would put 350-odd thin pages back in the index. The
  *    district page does the opposite and 404s when empty.
  *
- * No `generateMetadata` — the SvelteKit leaf emits title, description,
- * canonical and OG tags, and nothing in this app emits any of them yet, not
- * even the district page at sitemap priority 1.0. Adding it to one page type
- * would make the gap harder to see, so it is README open item 13 covering all
- * of them.
+ * `generateMetadata` is below, through the shared builder in lib/metadata.ts
+ * — the whole directory surface got its head tags at once rather than one
+ * page type at a time.
  */
+import type { Metadata } from 'next';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { PageShell, Section, Stack } from '@/components/layout';
 import {
@@ -52,9 +51,63 @@ import { getLeaf } from '@/lib/directory/data';
 import { COMMON_SIZES } from '@/lib/directory/pricing';
 import { contentUrl, geoUrl } from '@/lib/directory/urls';
 import { breadcrumbLD, faqLD, itemListLD, localBusinessLD } from '@/lib/directory/structuredData';
+import { pageMetadata, pluralise } from '@/lib/metadata';
 
 /** 15 days, matching the district page and the SvelteKit `isr.expiration`. */
 export const revalidate = 1296000;
+
+/**
+ * Ported from the SvelteKit head, and it dispatches on the leaf variant the
+ * same way the page does — a city and a 3 kW system are different subjects
+ * and the original wrote them different copy.
+ *
+ * The two non-page results return `{}`: a `missing` leaf 404s and a
+ * `redirect` leaf 301s, and neither renders a head. The canonical for a page
+ * that does render is its own URL, never the district's — the redirect is
+ * what carries a thin city to the district, not a canonical pointing away
+ * from a page that has installers of its own.
+ */
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ country: string; state: string; district: string; slug: string }>;
+}): Promise<Metadata> {
+  const { country, state, district, slug } = await params;
+  if (!isCountry(country)) return {};
+
+  const { locale } = getCountry(country);
+  const level1Slug = state.toLowerCase();
+  const level2Slug = district.toLowerCase();
+
+  const leaf = await getLeaf(country, level1Slug, level2Slug, slug.toLowerCase());
+  if (leaf.kind === 'missing' || leaf.kind === 'redirect') return {};
+
+  const { level1, level2, installers } = leaf;
+  const place = leaf.kind === 'city' ? leaf.city : level2;
+
+  return pageMetadata({
+    title:
+      leaf.kind === 'city'
+        ? `Solar Panel Installers in ${leaf.city}, ${level2}`
+        : `${leaf.sizeKw}kW Solar System in ${level2}, ${level1}`,
+    description:
+      leaf.kind === 'city'
+        ? `Find ${pluralise(installers.length, 'solar installer', 'solar installers')} in ` +
+          `${leaf.city}, ${level2}. Compare quotes and view recent projects.`
+        : `Get ${leaf.sizeKw}kW solar system installed in ${level2}, ${level1}. Compare ` +
+          `${pluralise(installers.length, 'verified installer', 'verified installers')}.`,
+    // `leaf.citySlug` rather than the requested slug on a city: the loader
+    // resolves the slug against geo_locations, so this is the spelling the
+    // district's own chips link to. A canonical is the wrong place to echo
+    // whatever the visitor typed.
+    path: `${geoUrl(country, level1Slug, level2Slug)}/${
+      leaf.kind === 'city' ? leaf.citySlug : `${leaf.sizeKw}kw-solar-system`
+    }`,
+    locale,
+    imageAlt: `Solar panel installers in ${place}`,
+    geo: { region: country.toUpperCase(), placename: `${place}, ${level1}` }
+  });
+}
 
 export default async function Page({
   params

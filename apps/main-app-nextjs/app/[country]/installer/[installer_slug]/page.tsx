@@ -45,12 +45,11 @@
  *    like that table repeating the google_maps_link row. That row is wrong
  *    too — live says 31 of 646, not 15.2%.
  *
- * No `generateMetadata`. The SvelteKit page emits title, description,
- * canonical and OG tags and nothing in this app emits any of them yet;
- * adding it to one page type would make the gap harder to see. README open
- * item 3, which also carries §7's finding that the old meta description
- * interpolates the description and so ships near-identical on 608 pages.
+ * `generateMetadata` is below. It is the one page that does not port the
+ * SvelteKit description: §7's finding is that the old one interpolates
+ * `description` and so ships near-identical on 608 pages.
  */
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { MapPin } from 'lucide-react';
 
@@ -68,11 +67,80 @@ import { getCountry, isCountry } from '@/lib/countries';
 import { BRAND_NAMES } from '@/lib/directory/brands';
 import { getInstaller } from '@/lib/directory/data';
 import { SERVICE_NAMES } from '@/lib/directory/services';
-import { geoUrl } from '@/lib/directory/urls';
+import { geoUrl, installerUrl } from '@/lib/directory/urls';
 import { breadcrumbLD, localBusinessLD } from '@/lib/directory/structuredData';
+import { clampDescription, pageMetadata } from '@/lib/metadata';
 
 /** 15 days, matching the SvelteKit page's `config.isr.expiration`. */
 export const revalidate = 1296000;
+
+/**
+ * The one page whose description is NOT the SvelteKit one.
+ *
+ * The original was `${name} is a solar panel installer in ${city},
+ * ${district}. ${description.slice(0, 120)}` — and `description` is the
+ * string 'Solar panel installer' on 608 of 643 rows (archetype/data.md), so
+ * 608 profiles shipped a meta description that differed only in the place
+ * name. installer-profile.md §7 asks for one built from facts that vary, and
+ * this is it.
+ *
+ * What varies per row, in the order it is worth saying: where the business
+ * is, the brands it fits (44 of 643 — rare, so it is the strongest signal
+ * when present) and how many installations it has listed. Sentences are added
+ * while they fit inside 160 characters, so a profile with only a location
+ * still reads as a whole sentence rather than a truncated one.
+ *
+ * `serviceAreas` is deliberately NOT in it. It reads like per-installer
+ * coverage and is not: `getServiceAreas` returns the cities of the
+ * installer's DISTRICT, capped at 20, so every profile in Pune would claim
+ * "covers 20 cities" — the same boilerplate this description exists to get
+ * away from, with a LIMIT quoted as a fact on top.
+ *
+ * The canonical drops the SvelteKit trailing slash: this app serves
+ * `/{cc}/installer/{slug}`, and `next.config.ts` redirects the slashed form.
+ */
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ country: string; installer_slug: string }>;
+}): Promise<Metadata> {
+  const { country, installer_slug } = await params;
+  if (!isCountry(country)) return {};
+
+  const { locale, installerNoun } = getCountry(country);
+  const business = await getInstaller(country, installer_slug.toLowerCase());
+  if (!business) return {};
+
+  const { name, city, level2, level1, brands, projects } = business;
+  const displayName = name.trim();
+
+  // city and level2 are the same word on a district headquarters — "in Pune,
+  // Pune, Maharashtra" is what the unfiltered join produces.
+  const where = [city, level2, level1]
+    .filter(Boolean)
+    .filter((part, i, all) => all.findIndex((p) => p.toLowerCase() === part.toLowerCase()) === i)
+    .join(', ');
+
+  const brandNames = brands.map((id) => BRAND_NAMES[id]).filter(Boolean);
+
+  const description = clampDescription([
+    `${displayName} is a ${installerNoun} in ${where}.`,
+    ...(brandNames.length > 0 ? [`Fits ${brandNames.slice(0, 2).join(' and ')}.`] : []),
+    ...(projects.length > 0
+      ? [`${projects.length} recent installation${projects.length === 1 ? '' : 's'} listed.`]
+      : []),
+    'Compare quotes on Solar Vipani.'
+  ]);
+
+  return pageMetadata({
+    title: `${displayName} - Solar Installer in ${city}, ${level1}`,
+    description,
+    path: installerUrl(country, business.slug),
+    locale,
+    imageAlt: `${displayName}, ${installerNoun} in ${city}`,
+    geo: { region: country.toUpperCase(), placename: `${city}, ${level1}` }
+  });
+}
 
 export default async function Page({
   params

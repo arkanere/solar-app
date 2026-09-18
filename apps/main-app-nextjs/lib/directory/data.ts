@@ -27,6 +27,7 @@
  *  - counts key on LOWER(level2) and LOWER(city), because geo_locations and
  *    business_profiles disagree on casing.
  */
+import { cache } from 'react';
 import { and, asc, count, desc, eq, inArray, sql } from 'drizzle-orm';
 import {
   businessAccounts,
@@ -63,6 +64,24 @@ import type {
 const accountOfProfile = eq(businessAccounts.sourceId, businessProfiles.accountBusinessId);
 
 /**
+ * The five page loaders, memoised for the life of one request.
+ *
+ * Every one of them is now called twice per page: once by `generateMetadata`
+ * for the title and description, once by the page for the markup. React's
+ * `cache` is what makes that one query rather than two — it keys on the
+ * arguments and both callers pass the same ones, which is why the country and
+ * slugs are lower-cased in the page before the call and not in here.
+ *
+ * Only these five are wrapped. The helpers below them are called once, from
+ * inside one of these, so a second entry would be a cache that never hits.
+ */
+export const getDistrict = cache(loadDistrict);
+export const getLeaf = cache(loadLeaf);
+export const getInstaller = cache(loadInstaller);
+export const getCountryHub = cache(loadCountryHub);
+export const getStateHub = cache(loadStateHub);
+
+/**
  * geo-listing.md §3, decided 2026-09-06: projects DESC, then rscore DESC NULLS
  * LAST, then businessname ASC.
  *
@@ -84,7 +103,7 @@ export function sortInstallers(rows: InstallerRowData[]): InstallerRowData[] {
  * and 301s to the district — that difference is deliberate, and it is the leaf
  * route's job when it is built.
  */
-export async function getDistrict(
+async function loadDistrict(
   country: string,
   level1Slug: string,
   level2Slug: string
@@ -217,7 +236,7 @@ async function loadInstallers(
  * Returns `{ kind: 'redirect' }` rather than redirecting itself: this module
  * is the data seam and knows nothing about Next. The page turns it into a 301.
  */
-export async function getLeaf(
+async function loadLeaf(
   country: string,
   level1Slug: string,
   level2Slug: string,
@@ -536,7 +555,7 @@ async function getProjectSummaries(slugs: string[]): Promise<Map<string, Project
  * use: the business carries its own, which is what §10 asks for — the old page
  * passed `postalCode: ''` to LocalBusiness while the column sat in the table.
  */
-export async function getInstaller(
+async function loadInstaller(
   country: string,
   slug: string
 ): Promise<InstallerProfile | null> {
@@ -717,7 +736,7 @@ type Level1Row = {
  * installers at all renders an empty grid rather than 404ing; that is a real
  * state of the directory, not a missing page.
  */
-export async function getCountryHub(country: string): Promise<CountryHubData> {
+async function loadCountryHub(country: string): Promise<CountryHubData> {
   // Throws on an unknown code, like every other function here. The page
   // narrows with `isCountry` first.
   getCountry(country);
@@ -898,7 +917,7 @@ async function getTopLevel2s(country: string): Promise<TopLevel2[]> {
  * answer, where a district page with no businesses is a thin page (§4 of
  * geo-listing.md). The empty state renders as a stated zero, not a 404.
  */
-export async function getStateHub(
+async function loadStateHub(
   country: string,
   level1Slug: string
 ): Promise<StateHubData | null> {

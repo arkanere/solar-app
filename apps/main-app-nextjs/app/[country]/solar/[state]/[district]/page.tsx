@@ -18,6 +18,7 @@
  *
  * ⚠️ The lead form does not submit. See components/directory/LeadForm.tsx.
  */
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { PageShell, Section, Stack } from '@/components/layout';
 import {
@@ -39,6 +40,7 @@ import { faqFor } from '@/lib/countries/faq';
 import { getDistrict } from '@/lib/directory/data';
 import { contentUrl, geoUrl } from '@/lib/directory/urls';
 import { breadcrumbLD, faqLD, itemListLD, localBusinessLD } from '@/lib/directory/structuredData';
+import { pageMetadata, pluralise } from '@/lib/metadata';
 
 /**
  * 15 days, the same window as the SvelteKit page's
@@ -60,6 +62,49 @@ const GUIDES = [
   { label: 'PM Surya Ghar subsidy', href: contentUrl('/solar-subsidy/pm-surya-ghar/') },
   { label: 'Installation process', href: contentUrl('/solar-installation/process/') }
 ];
+
+/**
+ * Ported from the SvelteKit head, which is the fullest of the five — title,
+ * description, canonical, eight OG tags, five Twitter tags and the two geo
+ * ones. `pageMetadata` emits that set for every page now, so this one only
+ * supplies the copy.
+ *
+ * `getDistrict` is memoised per request, so this and the page below share one
+ * set of queries.
+ */
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ country: string; state: string; district: string }>;
+}): Promise<Metadata> {
+  const { country, state, district } = await params;
+  if (!isCountry(country)) return {};
+
+  const { locale } = getCountry(country);
+  const level1Slug = state.toLowerCase();
+  const level2Slug = district.toLowerCase();
+
+  const data = await getDistrict(country, level1Slug, level2Slug);
+  // The page 404s on the same null — an empty district is a thin page (§4).
+  if (!data) return {};
+
+  const { level1, level2, installers } = data;
+
+  return pageMetadata({
+    title: `Top Solar Panel Installers in ${level2}, ${level1}`,
+    description:
+      `Find ${pluralise(
+        installers.length,
+        'verified solar panel installer',
+        'verified solar panel installers'
+      )} in ${level2}, ${level1}. Compare quotes, view recent projects, and get the best ` +
+      `solar installation deals.`,
+    path: geoUrl(country, level1Slug, level2Slug),
+    locale,
+    imageAlt: `Solar panel installers in ${level2}`,
+    geo: { region: country.toUpperCase(), placename: `${level2}, ${level1}` }
+  });
+}
 
 export default async function Page({
   params

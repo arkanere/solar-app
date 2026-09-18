@@ -143,6 +143,13 @@ The meta description is a related problem: it interpolates `description` truncat
 120 chars, so **608 profiles ship near-identical meta descriptions**. Build it from
 name, city, district and — where present — project count instead.
 
+**DONE 2026-09-18**, in this page's `generateMetadata`. It is name, place, the brands
+where there are any (44 of 643, so the strongest signal when present) and the listed
+installation count, clipped to the last whole sentence inside 160 characters. Service
+areas are *not* in it, though they look like the obvious third fact: `getServiceAreas`
+returns the cities of the installer's district capped at `LIMIT 20`, so every profile
+in Pune would have claimed "covers 20 cities" — the same boilerplate one table over.
+
 ## 8. Data contract
 
 One query for the business, then two in parallel.

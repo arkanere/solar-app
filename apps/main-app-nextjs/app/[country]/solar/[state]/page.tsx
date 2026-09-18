@@ -33,6 +33,7 @@
  * No client components: the FAQ is native `<details>` and every card is an
  * anchor.
  */
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { PageShell, Section, Stack } from '@/components/layout';
 import { Breadcrumb, CoverageBar, FAQ, LocationGrid, QuoteCTA } from '@/components/directory';
@@ -41,9 +42,60 @@ import { faqFor } from '@/lib/countries/faq';
 import { getStateHub } from '@/lib/directory/data';
 import { geoUrl } from '@/lib/directory/urls';
 import { BASE_URL, breadcrumbLD, faqLD } from '@/lib/directory/structuredData';
+import { pageMetadata, pluralise } from '@/lib/metadata';
 
 /** 15 days, matching the SvelteKit page's `config.isr.expiration`. */
 export const revalidate = 1296000;
+
+/**
+ * Ported from the SvelteKit head — title, description, canonical, no OG.
+ *
+ * One change: **a state with no installers gets a different description.**
+ * The original interpolates the counts unconditionally, so `/in/solar/sikkim`
+ * ships "Find 0 verified solar installers across 0 districts in Sikkim" —
+ * the same class of bug as the generated FAQ the page suppresses there, and
+ * the meta description is the copy that reaches the search result. The empty
+ * case states the fact instead and points at the country hub, which is what
+ * the page body does.
+ */
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ country: string; state: string }>;
+}): Promise<Metadata> {
+  const { country, state } = await params;
+  if (!isCountry(country)) return {};
+
+  const { levels, locale, name: countryName } = getCountry(country);
+  const level1Slug = state.toLowerCase();
+  const data = await getStateHub(country, level1Slug);
+  if (!data) return {};
+
+  const { level1, installerCount, level2Count } = data;
+  const level2 = levels.level2;
+
+  return pageMetadata({
+    title: `Solar Panel Installers in ${level1} — ${level2.plural} & Cities`,
+    description:
+      installerCount === 0
+        ? `No solar installers are listed in ${level1} yet. See where Solar Vipani has ` +
+          `coverage across ${countryName} and get quotes from verified installers nearby.`
+        : `Find ${pluralise(
+            installerCount,
+            'verified solar installer',
+            'verified solar installers',
+            locale
+          )} across ${pluralise(
+            level2Count,
+            level2.singular.toLowerCase(),
+            level2.plural.toLowerCase()
+          )} in ${level1}. Browse by ${level2.singular.toLowerCase()} to compare quotes ` +
+          `and get the best solar deals.`,
+    path: geoUrl(country, level1Slug),
+    locale,
+    imageAlt: `Solar panel installers in ${level1}`
+  });
+}
 
 export default async function Page({
   params
