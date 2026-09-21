@@ -30,8 +30,8 @@ Reasoning lives in the doc or the file header, never here; `git log` is the reco
 
 **Built:** the directory surface, the editorial surface, the four static pages, the
 projects surface, the homepage, the tools, the legacy redirects, the lead forms and
-the two compliance pages — 1,412 of the 1,413 advertised URLs. 39 of 47 page files;
-the other 8 are stubs. 3 of the 16 route handlers answer 501, and all three are
+the two compliance pages — 1,412 of the 1,413 advertised URLs. 40 of 47 page files;
+the other 7 are stubs. 3 of the 16 route handlers answer 501, and all three are
 sitemaps. (`/{cc}/district/{district_slug}` stopped being a page when it shipped: it
 always redirected, so it is a route handler now.)
 
@@ -142,14 +142,16 @@ build error, so that upgrade reworks all 15 files.
 
 ## Next steps
 
-Two left, in order. Re-plan after the last one lands.
+Five left, in order. Re-plan after the last one lands. Every one of them lands in
+this app — the Meta Pixel and the two cutover repointings are launch blockers but
+not this list's work; they stay under **Open items** and **State**.
 
-> ~~**1. The lead forms.**~~ **Done 2026-09-21.** The seven pages and the four
+> ~~**The lead forms.**~~ **Done 2026-09-21.** The seven pages and the four
 > handlers shipped; `lib/forms/` is the seam and `components/forms/BusinessForm.tsx`
 > the one client leaf. Its prerequisite, phone length, shipped with it. What the step
 > did NOT carry across is the Meta Pixel — see the open item below.
 
-> ~~**2. The remaining handlers.**~~ **Done 2026-09-21.** `/data-access` and
+> ~~**The remaining handlers.**~~ **Done 2026-09-21.** `/data-access` and
 > `/data-deletion` are real pages now — the step's note that they were already built
 > was wrong, they were 7-line stubs — and `submitDataAccess`, `submitDataDeletion`
 > and `/api/stories` answer. The step shrank as it ran: `postRecentProject`,
@@ -157,23 +159,60 @@ Two left, in order. Re-plan after the last one lands.
 > deleted rather than ported (see **State**). `internalAuth.ts` therefore has no new
 > caller, and no cron schedule needed deciding.
 
-1. **Sitemaps and metadata.** The 3 sitemap handlers (`/sitemap.xml`,
-   `/content-sitemap.xml`, `/{cc}/sitemap.xml`), which closes **robots.txt points at a
-   501**. Then `pageMetadata` on every page that still falls back to the root layout.
-   The 117 editorial pages are the exception: `lib/metadata.ts` passes `meta_title` and
-   `meta_description` through unaltered and must keep doing so, so **editorial metadata
-   is too long** stays a CMS pass and is not in this step's scope.
+> ~~**Metadata on every built page.**~~ **Done, and never tracked as a step.** The
+> old step 1 paired this with the sitemaps; it was already true when it was written.
+> All 40 built pages carry a title and description through `lib/metadata.ts` — 26
+> call it directly, the other 14 through `lib/editorial/routes.tsx` and
+> `lib/directory/projectRoutes.tsx`. The only pages falling back to the root layout
+> are the 7 stubs, which get theirs when they are built. Nothing to do; the sitemaps
+> stand alone as step 1.
 
-2. **A smoke harness.** One URL of each of the 76 route shapes, asserting 200, plus
+1. **The 3 sitemap handlers.** `/sitemap.xml`, `/content-sitemap.xml` and
+   `/{cc}/sitemap.xml` are the last three 501s in the app, and building them closes
+   **robots.txt points at a 501**. They are the one place that needs the full URL list
+   rather than a page of it, so they query `lib/directory/data.ts` and
+   `lib/editorial/data.ts` for slugs only — not the page queries, which select far more
+   than a sitemap needs. Decide the `revalidate` per file, not once: the country
+   sitemap changes when an installer lands, the content sitemap when the CMS publishes.
+   The 117 editorial pages are in `/content-sitemap.xml`; **editorial metadata is too
+   long** stays a CMS pass and is not in scope here.
+
+2. **The three stubs that no empty table blocks.** `/{cc}/unsubscribe`,
+   `/{cc}/partners` and `/{cc}/business-listing` are 9-line stubs for no reason but
+   ordering — unlike the other four, which wait on `authors` and `solar_products`.
+   `/{cc}/unsubscribe` goes first and is the only one with a real consequence: this app
+   sends lead and signup mail through `lib/server/email.ts`, and an opt-out link that
+   404s after cutover is the kind of thing that costs a sending domain. Port each from
+   its SvelteKit page, metadata included.
+
+3. **A smoke harness.** One URL of each of the 76 route shapes, asserting 200, plus
    `x-nextjs-cache` on the 15 ISR shapes — Next sets it to `HIT`/`STALE`/`MISS`/
    `REVALIDATED`, so the assertion that keeps ISR from silently regressing is a header
    check, not a timing heuristic. `NEXT_PRIVATE_DEBUG_CACHE=1` logs hits and misses.
-   Add a shape in the same commit that adds a route.
+   Add a shape in the same commit that adds a route. Sequenced after 1 and 2 so it is
+   written once, against the full 76, rather than amended twice.
 
-Not in these two, and deliberately: everything under **Blocked on data, not code**,
-plus the specimen, lead-count and editorial-metadata items below. The lead count is a
-one-line fix in `lib/stats.ts` either way, but it is a business decision — ask before
-launch, not at the end.
+4. **Prove the data-blocked gates open.** Five of the seven entries under **Blocked
+   on data, not code** are a belief, not a test: `state_subsidies`,
+   `solar_financing_banks`, `solar_brands`, `solar_products` and `authors` are empty,
+   so the branch each one feeds has never run. Seed one row per table into a local
+   fixture, walk the gate, and record the result per entry — a gate that does not open is
+   a bug found now rather than on the day the business lands its first row. This is a
+   verification pass, not a feature: no gate gets rewritten unless it is broken, and
+   the fixture is dev-only and never shipped.
+
+5. **Next 16 readiness.** Two known breaks, both recorded above and neither urgent
+   until the upgrade. Under Cache Components an empty `generateStaticParams` return is
+   a build error, so all 15 dynamic routes need reworking together. And the same empty
+   return leaves the ISR key space unbounded, which is parity with SvelteKit today but
+   still worth a rate limit before a public cutover. Do them in one pass: they are the
+   same 15 files.
+
+Not in these five, and deliberately: the Meta Pixel and the two cutover repointings
+(not this app's code), the two unreachable thank-you pages and the lead count (content
+and business decisions), and **editorial metadata is too long** (a CMS pass). The lead
+count is a one-line fix in `lib/stats.ts` either way — ask before launch, not at the
+end.
 
 ## Open items
 
