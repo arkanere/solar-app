@@ -2,6 +2,7 @@
  * The public project gallery, page 1.
  * Everything is in lib/directory/projectRoutes.tsx; this route adds nothing.
  */
+import { countryParams } from '@/lib/countries';
 import { projectListRoute } from '@/lib/directory/projectRoutes';
 
 /**
@@ -13,13 +14,13 @@ import { projectListRoute } from '@/lib/directory/projectRoutes';
  */
 export const revalidate = 86400;
 /**
- * Empty on purpose: this is what turns ISR on, and it is the port of
- * `config.isr` from the SvelteKit load. Do not "tidy" it into a list of real
- * params — that is the variant that couples a ~1,380-page build to the
- * database. See "ISR needs `generateStaticParams` too" in the README.
+ * IN only, from the same `features.projects` gate the route itself enforces.
+ * `[country]` is the only dynamic segment, so no query enumerates it — see
+ * `countryParams` for why this route returns real params where the
+ * data-driven project routes return `[]`.
  */
 export async function generateStaticParams() {
-  return [];
+  return countryParams((config) => config.features.projects);
 }
 
 export const generateMetadata = projectListRoute.generateMetadata;

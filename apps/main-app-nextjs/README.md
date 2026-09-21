@@ -55,11 +55,24 @@ constant fails it. `lib/editorial/routes.tsx` has the measurements.
 
 **ISR needs `generateStaticParams` too.** `revalidate` alone does nothing on a route
 with a dynamic segment — without the function Next renders it `ƒ` and re-queries the
-database on every request. It returns `[]` in all 16 built dynamic routes, so nothing
-is prerendered and each path caches on first visit. Returning real params is what
-couples a ~1,380-page build to the database. Two consequences: 404s cache with the
-same `s-maxage` and the key space is unbounded (parity with SvelteKit's `config.isr`);
-and under Next 16's Cache Components an empty return is a build error.
+database on every request. **There are 24 such routes, not the 16 this section used to
+claim**; all 24 also export `revalidate`.
+
+The 24 split by what their dynamic segment is, and the two halves want opposite things:
+
+- **10 are `[country]` and nothing else.** The registry enumerates the set with no
+  query, so they return real params — `countryParams` in `lib/countries/index.ts`.
+  15 prerendered URLs, `●` in the build output with each URL under it.
+- **14 have a second, data-driven segment.** These still return `[]`, which is what
+  couples a ~1,380-page build to the database if changed. Two consequences while they
+  stay empty: 404s cache with the same `s-maxage` and the key space is unbounded
+  (parity with SvelteKit's `config.isr`); and under Next 16's Cache Components an empty
+  return is a build error.
+
+**Real params make the build need the database.** With everything empty the build
+opened no connection at all. The 10 country-only pages read data seams in their bodies
+— `sitemap.xml` reads five — so the build now renders them for real. That is the same
+kind of coupling the 14 are held back from, at 15 renders instead of 1,380.
 
 ## Where things are
 
@@ -111,7 +124,7 @@ Code worth knowing before editing. Every one of these has a header that says mor
 
 ## Next steps
 
-Two left, in order. Re-plan after the last one lands.
+One left, and it is half done. Re-plan after it lands.
 
 1. ~~**The two stubs that no empty table blocks.**~~ — **done 2026-09-21.**
    `/{cc}/partners` and `/{cc}/business-listing` are ported, metadata included.
@@ -177,14 +190,29 @@ Two left, in order. Re-plan after the last one lands.
    redirect pointing elsewhere, and a dynamic route tagged ISR — and confirming each
    one fails the run.
 
-3. **Prove the data-blocked gates open.** Five of the entries below are a belief, not
-   a test: the branch each empty table feeds has never run. Seed one row per table into
-   a dev-only fixture, walk the gate, record the result. A verification pass, not a
-   feature — no gate gets rewritten unless it is broken.
-
-4. **Next 16 readiness.** Under Cache Components an empty `generateStaticParams` is a
+3. **Next 16 readiness.** Under Cache Components an empty `generateStaticParams` is a
    build error, and the same empty return leaves the ISR key space unbounded (worth a
-   rate limit before a public cutover). One pass: they are the same 16 files.
+   rate limit before a public cutover).
+
+   **This entry was wrong about the count, and the files are not one pass.** It said 16
+   files; there are 24, and they do not want the same fix. The 10 whose only dynamic
+   segment is `[country]` are **done 2026-09-22** — `countryParams` in
+   `lib/countries/index.ts`, real params, 15 prerendered URLs, build clean. Four of
+   them are IN only because `middleware.ts` 301s `/us/get-quotes` and `/us/partners/*`;
+   there is no feature flag behind that rule, so those four write the literal and cite
+   it. `recent-solar-installation-projects` is IN only from `features.projects`.
+
+   **The remaining 14 are the decision, and it is a deploy decision, not a code one.**
+   Each has a second segment that comes from a table, so real params is what prerenders
+   ~1,380 pages and makes every deploy wait on the database. Staying empty is a Next 16
+   build error. Decide the deploy shape — full prerender, or a top-N slice with the
+   tail left to on-demand ISR — before writing any of them.
+
+   Verified by `npm run smoke` against a local `next start`, before and after: 46
+   failures both times, the identical set. They are local-vs-Vercel artifacts — every
+   dynamic-segment route is uncached under `next start`, untouched ones included — so
+   the harness is measuring nothing here. **Its real target is production**, per its
+   own header.
 
 Deliberately not in the list: the Meta Pixel and the two cutover repointings, the two
 unreachable thank-you pages, the lead count, and the editorial metadata — see below.

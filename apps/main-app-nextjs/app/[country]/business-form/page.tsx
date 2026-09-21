@@ -24,7 +24,7 @@ import { notFound } from 'next/navigation';
 import { PageShell, Section, Stack } from '@/components/layout';
 import { Breadcrumb } from '@/components/directory';
 import { BusinessForm } from '@/components/forms';
-import { getCountry, isCountry } from '@/lib/countries';
+import { countryParams, getCountry, isCountry } from '@/lib/countries';
 import { breadcrumbLD } from '@/lib/directory/structuredData';
 import { pageMetadata } from '@/lib/metadata';
 
@@ -32,11 +32,12 @@ import { pageMetadata } from '@/lib/metadata';
 export const revalidate = 1296000;
 
 /**
- * Empty on purpose: this is what turns ISR on. See "ISR needs
- * `generateStaticParams` too" in the README.
+ * Both countries. `[country]` is the only dynamic segment, so the registry
+ * enumerates the set with no query — see `countryParams` for why these routes
+ * return real params where the data-driven ones return `[]`.
  */
 export async function generateStaticParams() {
-  return [];
+  return countryParams();
 }
 
 export async function generateMetadata({

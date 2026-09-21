@@ -57,7 +57,7 @@ import {
 } from 'lucide-react';
 import { Container, PageShell, Section, Stack } from '@/components/layout';
 import { Breadcrumb, FAQ, type FaqEntry } from '@/components/directory';
-import { getCountry, isCountry, type CountryCode } from '@/lib/countries';
+import { countryParams, getCountry, isCountry, type CountryCode } from '@/lib/countries';
 import { listRecentBusinesses } from '@/lib/directory/data';
 import { BASE_URL, breadcrumbLD, faqLD } from '@/lib/directory/structuredData';
 import { installerUrl } from '@/lib/directory/urls';
@@ -67,9 +67,13 @@ import { getPlatformStats } from '@/lib/stats';
 /** 15 days, matching the SvelteKit page's `config.isr.expiration`. */
 export const revalidate = 1296000;
 
-/** Empty on purpose — see "ISR needs `generateStaticParams` too" in the README. */
+/**
+ * Both countries. `[country]` is the only dynamic segment, so the registry
+ * enumerates the set with no query — see `countryParams` for why these routes
+ * return real params where the data-driven ones return `[]`.
+ */
 export async function generateStaticParams() {
-  return [];
+  return countryParams();
 }
 
 type Benefit = { icon: typeof Compass; title: string; body: string[] };

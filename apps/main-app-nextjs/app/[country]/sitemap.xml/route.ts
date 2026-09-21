@@ -14,7 +14,7 @@
  * from a crash — the same reasoning the district page's header records.
  */
 import { notFound } from 'next/navigation';
-import { getCountry, isCountry } from '@/lib/countries';
+import { countryParams, getCountry, isCountry } from '@/lib/countries';
 import { listSitemapGeo } from '@/lib/directory/data';
 import { BASE_URL } from '@/lib/directory/structuredData';
 import { geoUrl, installerUrl } from '@/lib/directory/urls';
@@ -32,14 +32,12 @@ import type { SitemapEntry } from '@/lib/sitemap';
 export const revalidate = 86400;
 
 /**
- * Empty on purpose, and this is what turns ISR on: `revalidate` alone does
- * nothing on a route with a dynamic segment. Returning the two real country
- * codes instead would prerender both at build time, which runs four geo
- * queries during `next build` — the database-free build is the thing the
- * empty return buys. See "ISR needs `generateStaticParams` too" in the README.
+ * Both countries. `[country]` is the only dynamic segment, so the registry
+ * enumerates the set with no query — see `countryParams` for why these routes
+ * return real params where the data-driven ones return `[]`.
  */
 export async function generateStaticParams() {
-  return [];
+  return countryParams();
 }
 
 export async function GET(

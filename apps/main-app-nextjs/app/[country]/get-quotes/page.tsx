@@ -41,9 +41,14 @@ import { pageMetadata } from '@/lib/metadata';
  */
 export const revalidate = 1296000;
 
-/** Empty on purpose — see "ISR needs `generateStaticParams` too" in the README. */
+/**
+ * IN only. `middleware.ts` 301s `/us/get-quotes` — the loaders here read IN-only
+ * legacy tables, and a real US funnel is new product surface. There is no
+ * feature flag behind that rule, so the literal is written out and cites it;
+ * `dynamicParams` stays true, so a third country would still render on demand.
+ */
 export async function generateStaticParams() {
-  return [];
+  return [{ country: 'in' }];
 }
 
 /**

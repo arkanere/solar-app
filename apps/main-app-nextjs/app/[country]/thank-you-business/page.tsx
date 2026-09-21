@@ -22,15 +22,19 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { CheckCircle } from 'lucide-react';
 import { PageShell, Section, Stack } from '@/components/layout';
-import { getCountry, isCountry } from '@/lib/countries';
+import { countryParams, getCountry, isCountry } from '@/lib/countries';
 import { pageMetadata } from '@/lib/metadata';
 
 /** 15 days. Static copy; the window is the tree's default. */
 export const revalidate = 1296000;
 
-/** Empty on purpose — see "ISR needs `generateStaticParams` too" in the README. */
+/**
+ * Both countries. `[country]` is the only dynamic segment, so the registry
+ * enumerates the set with no query — see `countryParams` for why these routes
+ * return real params where the data-driven ones return `[]`.
+ */
 export async function generateStaticParams() {
-  return [];
+  return countryParams();
 }
 
 export async function generateMetadata({
