@@ -29,16 +29,37 @@ sharing `@solar/db` and `@solar/validation`. SvelteKit and Next coexist in the w
 Reasoning lives in the doc or the file header, never here; `git log` is the record.
 
 **Built:** the directory surface, the editorial surface, the four static pages, the
-projects surface, the homepage, the tools, the legacy redirects and the lead forms —
-1,410 of the 1,413 advertised URLs. 37 of 47 page files; the other 10 are stubs. 9 of
-the 19 route handlers answer 501. (`/{cc}/district/{district_slug}` stopped being a
-page when it shipped: it always redirected, so it is a route handler now.)
+projects surface, the homepage, the tools, the legacy redirects, the lead forms and
+the two compliance pages — 1,412 of the 1,413 advertised URLs. 39 of 47 page files;
+the other 8 are stubs. 3 of the 16 route handlers answer 501, and all three are
+sitemaps. (`/{cc}/district/{district_slug}` stopped being a page when it shipped: it
+always redirected, so it is a route handler now.)
+
+**Three routes are deliberately not ported**, which is why the handler count fell
+from 19 to 16. `postRecentProject` and `updateRecentProject` are duplicates —
+`business-app` already owns both, and a project is posted from there, not from the
+marketing site. `/api/cron/purge-old-leads` belongs to admin-app, which is
+live but in a different repo — `solar-app-internal`, at
+`~/Developer/solar/solar-app-internal` (**not** the `~/Developer/svelte/…` path
+`next-steps.md` still records). Decided 2026-09-21; the work is queued there, in
+`admin-app-nextjs/spec/README.md` under **What is left**.
+
+Two consequences worth holding. This app never needs the Cloudinary **admin** SDK
+— delivery URLs are built by `lib/cloudinary-loader.ts` and need no credentials.
+And the six-month retention purge that `privacy-policy` §6 promises is served by
+SvelteKit main-app only: its caller is a monthly Cronicle job that POSTs
+`https://solarvipani.com/api/cron/purge-old-leads`, so **cutover 404s that job
+silently** until admin-app hosts it.
+
+**Cutover is blocked on two repointings, neither of them code here:** that purge
+job, and whatever posts projects to main-app today — SvelteKit's
+`postRecentProject` has a JSON branch marked "Android App".
 
 ## Where things are
 
 | Doc | Covers |
 | --- | --- |
-| `routes.md` | Every route: 48 pages + 19 handlers. |
+| `routes.md` | Every route: 48 pages + 16 handlers. |
 | `design-foundation.md` | Type, spacing, colour, radius, elevation, motion, imagery. Approve at `/specimen`; re-verify with `npm run check:contrast`. |
 | `archetype.md` | Why there are four archetypes. `archetype/data.md` has the live measurements they are designed against. |
 | `archetype/geo-listing.md` | Archetype 2 — district page and city/size leaf, 957 pages. |
@@ -94,6 +115,12 @@ Code worth knowing before editing:
   the placeholder-then-UPDATE that 075 forces), `businessConfirmation.ts` the email.
   `components/forms/BusinessForm.tsx` is the one client leaf, shared by all three
   signup pages.
+- `lib/server/dataRequests.ts` — the two DPDP compliance writes, access and deletion.
+  One module because they are one shape; the endpoints stay two because the URLs are
+  two. Neither request is fulfilled in code — a row is a work item the team acts on by
+  hand, and nothing reads either table back. `components/forms/DataRequestForm.tsx` is
+  the client leaf both pages render; the long copy around it stays in the two server
+  components. Its header records why there is no client-side validation module.
 - `lib/metadata.ts` — the one metadata builder. It owns the tag set; each page owns its
   own title and description. Built pages call it; the stubs fall back to the root
   layout, which is also where `metadataBase` lives.
@@ -115,34 +142,35 @@ build error, so that upgrade reworks all 15 files.
 
 ## Next steps
 
-Three left, in order. Re-plan after the last one lands.
+Two left, in order. Re-plan after the last one lands.
 
 > ~~**1. The lead forms.**~~ **Done 2026-09-21.** The seven pages and the four
 > handlers shipped; `lib/forms/` is the seam and `components/forms/BusinessForm.tsx`
 > the one client leaf. Its prerequisite, phone length, shipped with it. What the step
 > did NOT carry across is the Meta Pixel — see the open item below.
 
-1. **The remaining handlers.** `/data-access` and `/data-deletion` — both pages are
-   built and both post to a 501, so they are the shortest path to two working pages —
-   plus `submitDataAccess`, `submitDataDeletion`, `/api/stories`, `postRecentProject`,
-   `updateRecentProject` and `/api/cron/purge-old-leads`. The three write routes are
-   internal: they go through `lib/server/internalAuth.ts`, and the cron route needs its
-   schedule decided as well as its body.
+> ~~**2. The remaining handlers.**~~ **Done 2026-09-21.** `/data-access` and
+> `/data-deletion` are real pages now — the step's note that they were already built
+> was wrong, they were 7-line stubs — and `submitDataAccess`, `submitDataDeletion`
+> and `/api/stories` answer. The step shrank as it ran: `postRecentProject`,
+> `updateRecentProject` and `purge-old-leads` are not this app's, so they were
+> deleted rather than ported (see **State**). `internalAuth.ts` therefore has no new
+> caller, and no cron schedule needed deciding.
 
-2. **Sitemaps and metadata.** The 3 sitemap handlers (`/sitemap.xml`,
+1. **Sitemaps and metadata.** The 3 sitemap handlers (`/sitemap.xml`,
    `/content-sitemap.xml`, `/{cc}/sitemap.xml`), which closes **robots.txt points at a
    501**. Then `pageMetadata` on every page that still falls back to the root layout.
    The 117 editorial pages are the exception: `lib/metadata.ts` passes `meta_title` and
    `meta_description` through unaltered and must keep doing so, so **editorial metadata
    is too long** stays a CMS pass and is not in this step's scope.
 
-3. **A smoke harness.** One URL of each of the 76 route shapes, asserting 200, plus
+2. **A smoke harness.** One URL of each of the 76 route shapes, asserting 200, plus
    `x-nextjs-cache` on the 15 ISR shapes — Next sets it to `HIT`/`STALE`/`MISS`/
    `REVALIDATED`, so the assertion that keeps ISR from silently regressing is a header
    check, not a timing heuristic. `NEXT_PRIVATE_DEBUG_CACHE=1` logs hits and misses.
    Add a shape in the same commit that adds a route.
 
-Not in these three, and deliberately: everything under **Blocked on data, not code**,
+Not in these two, and deliberately: everything under **Blocked on data, not code**,
 plus the specimen, lead-count and editorial-metadata items below. The lead count is a
 one-line fix in `lib/stats.ts` either way, but it is a business decision — ask before
 launch, not at the end.
@@ -177,6 +205,20 @@ exists — treat any such number as a hint, not an address.
   `src/lib/constants/formValidation.ts`, which still reads `/^\+?\d{10,16}$/`. A
   17-character phone is therefore still a 500 there. Not touched: it is live SvelteKit
   and outside the port. One regex, whenever that app is next opened.
+- **The deletion table is narrower than the schema that writes to it.**
+  `dataRequestSchema` allows a 40-character phone and puts no ceiling on an email,
+  but `data_deletion_requests` types them `varchar(20)` and `varchar(255)` —
+  so a 21-character phone is a database error and a 500 on `/api/submitDataDeletion`.
+  `data_access_requests` types both `text` and is unaffected. Live SvelteKit has the
+  same hole. Not fixed in the port: the ceiling belongs to `@solar/validation`, which
+  main-app and business-app also validate against, so narrowing it is a change to live
+  behaviour. One line in `primitives.ts` or one migration, whichever the data says.
+- **Nothing tells the team a deletion request landed.** `submitDataAccess` mails
+  admin@solarvipani.com a copy of its acknowledgement, so the access queue is visible
+  in a mailbox. `submitDataDeletion` sends no mail at all — carried across as
+  SvelteKit has it — so the erasure queue exists only as rows in
+  `data_deletion_requests`, which nothing in any app reads back. Worth closing when
+  someone owns that queue.
 - **`robots.txt` points at a 501.** `/sitemap.xml` is still a stub; next step 2 builds
   it. The declaration is correct for where the file is going, not for today.
 - **The installer specimen is out of date.** `/specimen/archetypes/installer` still

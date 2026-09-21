@@ -28,7 +28,7 @@
  *    business_profiles disagree on casing.
  */
 import { cache } from 'react';
-import { and, asc, count, desc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, isNotNull, or, sql } from 'drizzle-orm';
 import {
   businessAccounts,
   businessProfiles,
@@ -1216,4 +1216,70 @@ export async function findCity(
     )
     .limit(1);
   return rows[0] ?? null;
+}
+
+/* -------------------------------------------------------------------------
+ * `/api/stories`.
+ *
+ * The five newest visible projects, as JSON. It reads `projects`, so it lives
+ * with the other project queries rather than in a seam of its own.
+ *
+ * TWO THINGS IT DOES NOT SHARE WITH THE GALLERIES ABOVE, both because it is a
+ * published JSON contract rather than a view model:
+ *
+ *  - the row is snake_case and carries the four image dimension columns the
+ *    cards have no use for. That is the shape the endpoint has always
+ *    returned, and principle 2 keeps it;
+ *  - it is not wrapped in `cache()`. React's `cache` dedupes within one render
+ *    pass, and a route handler has no render pass to dedupe across.
+ *
+ * `isNotNull(businessSlug)` and the image `or(...)` are the original's: a
+ * story is a photograph attributed to an installer, and a row missing either
+ * is not one.
+ * ------------------------------------------------------------------------- */
+
+/** Five, from the SvelteKit handler. A stories reel, not a listing. */
+const STORIES_LIMIT = 5;
+
+export type StoryRow = {
+  id: number;
+  business_slug: string | null;
+  title: string | null;
+  pincode: string | null;
+  project_date: string | null;
+  created_at: string | null;
+  image_url: string | null;
+  cloudinary_public_id: string | null;
+  image_width: number | null;
+  image_height: number | null;
+  image_format: string | null;
+  project_slug: string | null;
+};
+
+export async function listStories(): Promise<StoryRow[]> {
+  return db
+    .select({
+      id: projects.id,
+      business_slug: projects.businessSlug,
+      title: projects.title,
+      pincode: projects.pincode,
+      project_date: projects.projectDate,
+      created_at: projects.createdAt,
+      image_url: projects.imageUrl,
+      cloudinary_public_id: projects.cloudinaryPublicId,
+      image_width: projects.imageWidth,
+      image_height: projects.imageHeight,
+      image_format: projects.imageFormat,
+      project_slug: projects.projectSlug
+    })
+    .from(projects)
+    .where(
+      and(
+        eq(projects.isvisible, true),
+        isNotNull(projects.businessSlug),
+        or(isNotNull(projects.cloudinaryPublicId), isNotNull(projects.imageUrl))
+      )
+    )
+    .orderBy(desc(projects.projectDate))
+    .limit(STORIES_LIMIT);
 }

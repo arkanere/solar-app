@@ -78,8 +78,14 @@ These exist and are database-backed, but are not advertised.
 ## Non-page routes to port
 
 - `/sitemap.xml`, `/content-sitemap.xml`, `/{cc}/sitemap.xml`
-- `/{cc}/api/*` — 9 endpoints
-- `/api/stories`, `/api/submitDataAccess`, `/api/submitDataDeletion`, `/api/cron/purge-old-leads`
+- `/{cc}/api/*` — 7 endpoints
+- ~~`/api/stories`, `/api/submitDataAccess`, `/api/submitDataDeletion`~~ — ported
+  2026-09-21 with the two compliance pages
+- ~~`/api/cron/purge-old-leads`, `/{cc}/api/postRecentProject`,
+  `/{cc}/api/updateRecentProject`~~ — **not ported, deliberately.** The two project
+  writes are duplicates of routes `business-app` already owns; the purge belongs to an
+  admin app. README **State** has the reasoning. This is the one place the port does
+  not keep a route, so the handler total is 16, not 19.
 - ~~`hooks.server.ts` — legacy 301s and rewrites~~ — ported to `middleware.ts`, 2026-09-21
 - ~~`/{cc}/api/submitBusiness`, `sendBusinessSubmissionConfirmation`, `getCities`,
   `getLevel2s`~~ — ported 2026-09-21 with the lead forms
