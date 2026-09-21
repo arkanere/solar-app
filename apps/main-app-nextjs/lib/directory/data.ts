@@ -28,7 +28,7 @@
  *    business_profiles disagree on casing.
  */
 import { cache } from 'react';
-import { and, asc, count, desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, isNotNull, sql } from 'drizzle-orm';
 import {
   businessAccounts,
   businessProfiles,
@@ -48,6 +48,8 @@ import type {
   LeafLoad,
   Level1Card,
   ProjectCard,
+  ProjectDetail,
+  ProjectListPage,
   ServiceArea,
   StateHubData,
   TopLevel2
@@ -72,7 +74,7 @@ const accountOfProfile = eq(businessAccounts.sourceId, businessProfiles.accountB
  * arguments and both callers pass the same ones, which is why the country and
  * slugs are lower-cased in the page before the call and not in here.
  *
- * Only these five are wrapped. The helpers below them are called once, from
+ * Only these are wrapped. The helpers below them are called once, from
  * inside one of these, so a second entry would be a cache that never hits.
  */
 export const getDistrict = cache(loadDistrict);
@@ -80,6 +82,8 @@ export const getLeaf = cache(loadLeaf);
 export const getInstaller = cache(loadInstaller);
 export const getCountryHub = cache(loadCountryHub);
 export const getStateHub = cache(loadStateHub);
+export const getProjectPage = cache(loadProjectPage);
+export const getProjectList = cache(loadProjectList);
 
 /**
  * geo-listing.md §3, decided 2026-09-06: projects DESC, then rscore DESC NULLS
@@ -461,9 +465,7 @@ async function getRecentProjects(level2: string): Promise<ProjectCard[]> {
     .orderBy(desc(projects.projectDate), desc(projects.createdAt))
     .limit(6);
 
-  return rows.filter(
-    (r): r is ProjectCard => r.slug !== null && r.businessSlug !== null
-  );
+  return rows.filter((r): r is ProjectCard => r.slug !== null && r.businessSlug !== null);
 }
 
 /**
@@ -555,10 +557,7 @@ async function getProjectSummaries(slugs: string[]): Promise<Map<string, Project
  * use: the business carries its own, which is what §10 asks for — the old page
  * passed `postalCode: ''` to LocalBusiness while the column sat in the table.
  */
-async function loadInstaller(
-  country: string,
-  slug: string
-): Promise<InstallerProfile | null> {
+async function loadInstaller(country: string, slug: string): Promise<InstallerProfile | null> {
   const { features } = getCountry(country);
 
   const rows = await db
@@ -784,9 +783,7 @@ async function loadCountryHub(country: string): Promise<CountryHubData> {
       .select({ total: count() })
       .from(businessProfiles)
       .innerJoin(businessAccounts, accountOfProfile)
-      .where(
-        and(eq(businessAccounts.countryCode, country), eq(businessProfiles.isvisible, true))
-      ),
+      .where(and(eq(businessAccounts.countryCode, country), eq(businessProfiles.isvisible, true))),
     getTopLevel2s(country)
   ]);
 
@@ -849,9 +846,7 @@ async function getTopLevel2s(country: string): Promise<TopLevel2[]> {
     .select({ level1: level1Key, level2: level2Key, installerCount: count() })
     .from(businessProfiles)
     .innerJoin(businessAccounts, accountOfProfile)
-    .where(
-      and(eq(businessAccounts.countryCode, country), eq(businessProfiles.isvisible, true))
-    )
+    .where(and(eq(businessAccounts.countryCode, country), eq(businessProfiles.isvisible, true)))
     .groupBy(level1Key, level2Key)
     .having(sql`COUNT(*) > 1`)
     .orderBy(sql`COUNT(*) DESC`, level2Key)
@@ -917,10 +912,7 @@ async function getTopLevel2s(country: string): Promise<TopLevel2[]> {
  * answer, where a district page with no businesses is a thin page (§4 of
  * geo-listing.md). The empty state renders as a stated zero, not a 404.
  */
-async function loadStateHub(
-  country: string,
-  level1Slug: string
-): Promise<StateHubData | null> {
+async function loadStateHub(country: string, level1Slug: string): Promise<StateHubData | null> {
   getCountry(country);
 
   const level1 = await resolveLevel1(country, level1Slug);
@@ -930,9 +922,7 @@ async function loadStateHub(
     db
       .select({ level2: geoLocations.level2, level2Slug: geoLocations.level2Slug })
       .from(geoLocations)
-      .where(
-        and(eq(geoLocations.countryCode, country), eq(geoLocations.level1Slug, level1Slug))
-      )
+      .where(and(eq(geoLocations.countryCode, country), eq(geoLocations.level1Slug, level1Slug)))
       // geo rows are per city; this is the district list.
       .groupBy(geoLocations.countryCode, geoLocations.level2, geoLocations.level2Slug)
       .orderBy(asc(geoLocations.level2)),
@@ -999,4 +989,153 @@ async function resolveLevel1(country: string, level1Slug: string): Promise<strin
     .where(and(eq(geoLocations.countryCode, country), eq(geoLocations.level1Slug, level1Slug)))
     .limit(1);
   return rows[0]?.level1 ?? null;
+}
+
+/* ------------------------------------------------------------------------- *
+ * The projects surface.
+ *
+ * Ported from apps/main-app/src/lib/server/projects.ts (`listVisibleProjects`)
+ * and the project detail loader. Both live here rather than in a seam of
+ * their own: they read `projects`, which this file already reads twice for
+ * the two galleries, and the row they return is the same `ProjectCard`.
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Nine per page, from the SvelteKit loaders. At 144 visible rows that is 16
+ * pages. It is exported because the route builds `generateStaticParams` and
+ * the pager from the same number, and two copies of a page size is how an
+ * off-by-one page appears at the end of a list.
+ */
+export const PROJECTS_PER_PAGE = 9;
+
+/**
+ * Visible projects with a business, newest first.
+ *
+ * `isNotNull(businessSlug)` is in the predicate rather than a filter after
+ * the fact, and that matters here in a way it does not for the galleries: the
+ * count query has to apply the same rule as the page query, or the last page
+ * of the pager is short or empty. The galleries drop such rows in JS because
+ * they take a fixed six and have no total to agree with.
+ */
+async function loadProjectList(page: number): Promise<ProjectListPage> {
+  const visible = and(eq(projects.isvisible, true), isNotNull(projects.businessSlug));
+
+  const [rows, countRows] = await Promise.all([
+    db
+      .select({
+        id: projects.id,
+        slug: projects.projectSlug,
+        businessSlug: projects.businessSlug,
+        title: projects.title,
+        pincode: projects.pincode,
+        projectDate: projects.projectDate,
+        cloudinaryPublicId: projects.cloudinaryPublicId,
+        imageUrl: projects.imageUrl
+      })
+      .from(projects)
+      .where(visible)
+      // createdAt breaks the tie, as the galleries do. project_date is a date
+      // with no time, so same-day rows are otherwise in whatever order
+      // Postgres returns — which reshuffles the pager between deploys.
+      .orderBy(desc(projects.projectDate), desc(projects.createdAt))
+      .limit(PROJECTS_PER_PAGE)
+      .offset((page - 1) * PROJECTS_PER_PAGE),
+    db.select({ total: count() }).from(projects).where(visible)
+  ]);
+
+  const total = countRows[0]!.total;
+
+  return {
+    // projectSlug is nullable in the schema and the card needs it. The
+    // predicate above cannot express that without also changing the count, so
+    // the rows are narrowed here; a project with no slug has no URL to be a
+    // link to, so there is nothing to render anyway.
+    projects: rows.filter((r): r is ProjectCard => r.slug !== null && r.businessSlug !== null),
+    page,
+    totalPages: Math.ceil(total / PROJECTS_PER_PAGE),
+    total
+  };
+}
+
+/** "Maharashtra" -> "maharashtra", "Pimpri Chinchwad" -> "pimpri-chinchwad". */
+function slugify(value: string | null): string | null {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed.toLowerCase().replace(/\s+/g, '-') : null;
+}
+
+/**
+ * One project and the installer that built it.
+ *
+ * An inner join on `business_slug`, and both sides must be visible: a project
+ * whose installer has been hidden is not a project the site can attribute, and
+ * the page is almost entirely attribution.
+ */
+async function loadProjectPage(slug: string): Promise<ProjectDetail | null> {
+  const rows = await db
+    .select({
+      id: projects.id,
+      slug: projects.projectSlug,
+      businessSlug: projects.businessSlug,
+      title: projects.title,
+      pincode: projects.pincode,
+      projectDate: projects.projectDate,
+      cloudinaryPublicId: projects.cloudinaryPublicId,
+      imageUrl: projects.imageUrl,
+      projectDistrict: projects.district,
+      projectCity: projects.city,
+      businessName: businessProfiles.businessname,
+      businessCity: businessProfiles.city,
+      businessLevel1: businessProfiles.level1,
+      businessLevel2: businessProfiles.level2
+    })
+    .from(projects)
+    .innerJoin(businessProfiles, eq(projects.businessSlug, businessProfiles.slug))
+    .where(
+      and(
+        eq(projects.projectSlug, slug),
+        eq(projects.isvisible, true),
+        eq(businessProfiles.isvisible, true)
+      )
+    )
+    .limit(1);
+
+  const row = rows[0];
+  // `businessname` is nullable in the schema, and this page is almost entirely
+  // attribution — the h1 credits it, the breadcrumb names it and two links
+  // point at its profile. A row without one has no page to render, so it 404s
+  // rather than the type being widened to let "null" reach the markup. The
+  // SvelteKit loader forced it with `sql<string>` instead, which is the same
+  // trap CLAUDE.md's note on the business columns warns about.
+  if (!row || row.slug === null || row.businessSlug === null || row.businessName === null) {
+    return null;
+  }
+
+  // The project's own district where it has one, the installer's otherwise —
+  // the SvelteKit loader's fallback. The geo links below are built from the
+  // BUSINESS's state either way, because `projects` has no state column.
+  const district = row.projectDistrict || row.businessLevel2;
+
+  return {
+    project: {
+      id: row.id,
+      slug: row.slug,
+      businessSlug: row.businessSlug,
+      title: row.title,
+      pincode: row.pincode,
+      projectDate: row.projectDate,
+      cloudinaryPublicId: row.cloudinaryPublicId,
+      imageUrl: row.imageUrl,
+      district,
+      city: row.projectCity
+    },
+    business: {
+      name: row.businessName,
+      slug: row.businessSlug,
+      city: row.businessCity,
+      level1: row.businessLevel1,
+      level2: row.businessLevel2
+    },
+    level1Slug: slugify(row.businessLevel1),
+    level2Slug: slugify(district)
+  };
 }

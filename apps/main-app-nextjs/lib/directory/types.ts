@@ -297,3 +297,47 @@ export type StateHubData = {
   /** Every district in the state. The denominator of the coverage bar. */
   totalLevel2Count: number;
 };
+
+/* ------------------------------------------------------------------------- *
+ * The projects surface — `/{cc}/recent-solar-installation-projects` and
+ * `/{cc}/project/{slug}`. 144 rows, IN only (`features.projects`).
+ *
+ * Not an archetype. It has no spec of its own because it is three pages over
+ * one table, and the card it lists is the one archetypes 1 and 2 already
+ * render in their galleries — `ProjectCard` above, reused unchanged.
+ * ------------------------------------------------------------------------- */
+
+/** One page of the public gallery, plus what the pager needs to draw itself. */
+export type ProjectListPage = {
+  projects: ProjectCard[];
+  /** 1-based. The unpaginated route is page 1. */
+  page: number;
+  /** `ceil(total / PROJECTS_PER_PAGE)`; 0 when the table is empty. */
+  totalPages: number;
+  total: number;
+};
+
+/**
+ * The project detail page: the row, plus the installer it belongs to.
+ *
+ * `district` and `city` are the project's own where it has them and the
+ * business's where it does not — the SvelteKit loader's `||` fallback, kept,
+ * because 'district' is the link target for the geo breadcrumb and a project
+ * with a blank one would lose the link entirely.
+ */
+export type ProjectDetail = {
+  project: ProjectCard & {
+    district: string | null;
+    city: string | null;
+  };
+  business: {
+    name: string;
+    slug: string;
+    city: string | null;
+    level1: string | null;
+    level2: string | null;
+  };
+  /** Slugified from the business's state/district, for the geo links. */
+  level1Slug: string | null;
+  level2Slug: string | null;
+};

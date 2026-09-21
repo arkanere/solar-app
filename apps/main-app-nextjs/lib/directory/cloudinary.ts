@@ -15,6 +15,11 @@
  *        without checking, because the overlays eat the edges. Square gallery
  *        tiles were shipping against that finding; they are now 4:3.
  *
+ *   none the project detail hero, and only that. It is the subject of its
+ *        page rather than a tile in a grid, so it keeps the photographer's
+ *        frame — the survey's warning about watermarked edges is an argument
+ *        against CROPPING, and not cropping at all cannot violate it.
+ *
  *   1:1  the 64px listing-row anchor only. At that size it is a mark telling
  *        the eye where a row starts, not a photograph anyone reads, and the
  *        column's rhythm depends on every row being the same square whether it
@@ -29,9 +34,14 @@ export type Ratio = '4:3' | '1:1';
  * The bare delivery URL for a public id, plus the box it should fill. The
  * loader turns this into the real URL; see lib/cloudinary-loader.ts for why
  * the ratio travels as a query parameter.
+ *
+ * Omitting `ratio` asks for no crop: the loader emits f_auto/q_auto/w_ and
+ * nothing else, so the image keeps its own aspect. One caller does that, the
+ * project detail hero.
  */
-export function cloudinarySrc(publicId: string, ratio: Ratio): string {
-  return `https://res.cloudinary.com/${CLOUD}/image/upload/${publicId}?ar=${ratio}`;
+export function cloudinarySrc(publicId: string, ratio?: Ratio): string {
+  const base = `https://res.cloudinary.com/${CLOUD}/image/upload/${publicId}`;
+  return ratio ? `${base}?ar=${ratio}` : base;
 }
 
 /** Initials, for the ~94% of rows with no photograph yet. */

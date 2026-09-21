@@ -1,9 +1,16 @@
-export default async function Page({ params }: { params: Promise<{ country: string }> }) {
-  const { country } = await params;
-  return (
-    <main>
-      <h1>/[country]/recent-solar-installation-projects</h1>
-      <pre>{JSON.stringify({ country }, null, 2)}</pre>
-    </main>
-  );
-}
+/**
+ * The public project gallery, page 1.
+ * Everything is in lib/directory/projectRoutes.tsx; this route adds nothing.
+ */
+import { projectListRoute } from '@/lib/directory/projectRoutes';
+
+/**
+ * The ISR window, restated rather than re-exported from projectRoutes.tsx.
+ * Next's build reads this field by STATIC ANALYSIS of the route file, and it
+ * cannot see through `export { revalidate } from '...'` — it warns "can't
+ * recognize the exported `revalidate` field" and falls back to the default.
+ * The 14 editorial routes re-export theirs and carry that warning today.
+ */
+export const revalidate = 86400;
+export const generateMetadata = projectListRoute.generateMetadata;
+export default projectListRoute.Page;
