@@ -29,8 +29,8 @@ sharing `@solar/db` and `@solar/validation`. SvelteKit and Next coexist in the w
 Reasoning lives in the doc or the file header, never here; `git log` is the record.
 
 **Built:** the directory surface, the editorial surface, the four static pages, the
-projects surface and the homepage — 1,404 of the 1,413 advertised URLs. 27 of 48 page
-files; the other 21 are stubs. 16 of the 19 route handlers answer 501.
+projects surface, the homepage and the tools — 1,408 of the 1,413 advertised URLs. 31 of
+48 page files; the other 17 are stubs. 16 of the 19 route handlers answer 501.
 
 ## Where things are
 
@@ -54,6 +54,8 @@ Code worth knowing before editing:
   (casing, correlated subqueries, composite keys).
 - `components/layout/` — the layout primitives, and the two lint rules they unblocked:
   no `mx-auto` outside that folder, no numeric Tailwind spacing anywhere.
+  `PageShell`'s `hero` slot is the one full-bleed exception, and `/` is its only
+  caller — read the comment there before adding a second.
 - `lib/countries/` — the per-country gate. Labels and features are data, never
   hardcoded. `moved-content.ts` is the list of families that live at the root.
 - `lib/cloudinary-loader.ts` — the only place an image transform is written.
@@ -72,6 +74,13 @@ Code worth knowing before editing:
 - `lib/directory/projectRoutes.tsx` — the two project-list routes written once, the
   gallery and its pager. `components/directory/Pager.tsx` is the only pagination in
   the app.
+- `lib/tools/` — the calculators' seam. `data.ts` is the three queries (the IN district
+  tree, the visible-installer count, the financing banks), `estimate.ts` is the
+  arithmetic — the PM Surya Ghar slabs and the cost-per-kW ladder live there because
+  two of the three pages quote them and two copies of a published money figure drift.
+  `components/tools/` is the shared furniture: `Panel`, `StatTile`, `BreakdownRow` and
+  the two controls. The controls are native `<input type="range">` and `<select>`, not
+  Radix — `Field.tsx` records why.
 - `lib/metadata.ts` — the one metadata builder. It owns the tag set; each page owns its
   own title and description. Built pages call it; the stubs fall back to the root
   layout, which is also where `metadataBase` lives.
@@ -83,21 +92,22 @@ imported constant fails the build. `lib/editorial/routes.tsx` has the measuremen
 
 ## Next steps
 
-Three left, in order. Re-plan after the last one lands.
+Two left, in order. Re-plan after the last one lands.
 
-1. **The long tail.** Left: `/tools` and the 3 calculators. Everything else this
-   step once listed is blocked on empty tables rather than on code — see below.
-   `/` shipped 2026-09-21 against `archetype/home.md`; its §12 records what changed.
-   The 3 calculators are a straight port with two things already settled: there is no PostHog in this app,
-   so the `capture` calls drop, and `solar-calculator`'s `state_subsidies` query is dead
-   in the original — the page never reads it.
-2. **Forms and handlers.** `business-form`, `get-quotes`, `partners/join`, the
+> **Step 1, the long tail, is done.** `/` shipped 2026-09-21 against `archetype/home.md`
+> (§12 records what changed); `/tools` and the 3 calculators shipped 2026-09-21. They got
+> no spec: unlike the homepage the copy, the routes and the arithmetic were all settled,
+> so the only open questions were the controls and the component split, and both are
+> recorded in the file headers. Everything else this step once listed is blocked on
+> empty tables rather than on code — see below.
+
+1. **Forms and handlers.** `business-form`, `get-quotes`, `partners/join`, the
    thank-you pages, the 10 API routes and 2 US legacy shims answering 501, and the
    legacy 301s from `hooks.server.ts` into `middleware.ts` — including
    `/solar-pumps/kusum-scheme` to `kusum-yojana`. `/data-access` and `/data-deletion`
    belong here too: both look static and both post to a handler that answers 501.
    The phone-length item below belongs here.
-3. **Sitemaps, metadata, a smoke harness.** The 3 sitemap handlers, `pageMetadata` on
+2. **Sitemaps, metadata, a smoke harness.** The 3 sitemap handlers, `pageMetadata` on
    every page, and a test that fetches one URL of each route shape and asserts 200.
 
 ## Open items
@@ -105,7 +115,7 @@ Three left, in order. Re-plan after the last one lands.
 1. **A phone number of `+` plus 16 digits is a 500.** `@solar/validation`'s `phone`
    primitive allows 17 characters; `leaddata.phone` is `varchar(16)`. Pre-existing and
    shared with main-app live, so narrowing the primitive is a cross-app change.
-2. **`robots.txt` points at a 501.** `/sitemap.xml` is still a stub; step 3 builds it.
+2. **`robots.txt` points at a 501.** `/sitemap.xml` is still a stub; step 2 builds it.
    The declaration is correct for where the file is going, not for today.
 3. **The installer specimen is out of date.** `/specimen/archetypes/installer` still
    hides the boilerplate About; the shipped page renders it.
@@ -145,6 +155,9 @@ All verified 2026-09-21.
 
 - **`state_subsidies` is empty** in every status, so the state hub's subsidy callout is
   not built — the gate can never open.
+- **`solar_financing_banks` is empty**, so `/tools/emi-calculator`'s bank comparison
+  never renders. The calculator itself is unaffected — it is arithmetic on the sliders —
+  and the table is built and waiting, so the section appears the day a row lands.
 - **`solar_brands` is empty**, so the leaf route has no brand variant.
 - **`solar_products` is empty**, so the three product model routes
   (`/{pillar}/{brand}/{model}`) are not built.

@@ -48,6 +48,31 @@ export function faqLD(items: FAQItem[]) {
   };
 }
 
+/**
+ * `WebApplication` for the three calculators. Ported from
+ * apps/main-app/src/lib/seo.ts.
+ *
+ * It is the one piece of markup those pages have that says what they are: a
+ * free tool you operate, not an article you read. `offers` at price 0 is the
+ * part that earns its place — it is how "free" becomes machine-readable, and
+ * free is the claim the tool pages make in their titles.
+ *
+ * `path` is origin-relative like every other builder here; the absolute form
+ * is made below, because structured data is read off-site.
+ */
+export function webApplicationLD(tool: { name: string; description: string; path: string }) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: tool.name,
+    description: tool.description,
+    url: `${BASE_URL}${tool.path}`,
+    applicationCategory: 'UtilitiesApplication',
+    operatingSystem: 'All',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' }
+  };
+}
+
 export function localBusinessLD(
   business: {
     name: string;
