@@ -40,6 +40,11 @@ URL inventory taken from the live sitemaps on 2026-09-05.
 Single pages: `/`, `/about-us`, `/terms-of-use`, `/privacy-policy`, `/data-deletion`,
 `/data-access`, `/write-for-us`, `/seo-index`, plus `/tools`.
 
+> The counts above are the 2026-09-05 sitemap snapshot and are left as measured.
+> One has moved since: `solar-pumps/kusum-scheme` was set to `draft` on 2026-09-21
+> (an empty duplicate of `kusum-yojana` — `archetype/editorial.md` §2), so
+> `/solar-pumps/*` is 22 and the editorial total is 117.
+
 ### `/{pillar}/{slug}` is polymorphic
 
 One route serves two different page types. `solar-panels/[slug]/+page.server.ts` checks a

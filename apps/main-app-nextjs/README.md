@@ -39,6 +39,7 @@ Stubbed: 44 pages, and 16 of the 19 route handlers answer 501.
 | `archetype/geo-listing.md` | Archetype 2 — district page and city/size leaf, 957 pages. |
 | `archetype/installer-profile.md` | Archetype 1 — 649 pages, the largest. |
 | `archetype/geo-index.md` | Archetype 3 — country and state hubs, 29 pages. §9 and §10 record what it decided and where it shipped differently from spec. |
+| `archetype/editorial.md` | Archetype 4 — the 7 pillar landings and 110 cluster articles, 117 pages. Its own §2 holds the `seo_pages` measurements; `data.md` does not cover that table. |
 
 Approve the page designs at `/specimen/archetypes` (dev only).
 
@@ -95,6 +96,12 @@ Five, in order, planned 2026-09-18. Re-plan after the last one lands. Step 1 is 
    The declaration is correct for where the file is going, not for today.
 3. **The installer specimen is out of date.** `/specimen/archetypes/installer` still
    hides the boilerplate About; the shipped page renders it.
+4. **Every editorial `meta_title` and `meta_description` is too long.** `meta_title`
+   runs to 98 characters against Google's ~60, `meta_description` to 188 against ~155 —
+   on all 117 pillar and cluster pages, not a handful. So most of the editorial surface
+   is truncated in the results page, including the part that carries the keyword.
+   Content, not code: `lib/metadata.ts` passes both through unaltered and should keep
+   doing so. The fix is a CMS pass over `seo_pages`. `archetype/editorial.md` §2.
 
 ### Blocked on data, not code
 

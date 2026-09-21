@@ -4,12 +4,17 @@ import { Container } from '@/components/layout';
 /**
  * Archetype specimen index. Dev-only, like /specimen.
  *
- * /specimen approves the token layer. This approves the three page designs
- * those tokens have to carry — 1,279 of 1,414 URLs, 90.5% of the site.
+ * /specimen approves the token layer. This approves the four page designs
+ * those tokens have to carry — 1,396 of 1,413 URLs, 98.8% of the site.
  *
  * It deliberately does NOT show the current implementation anywhere. Putting
  * "today" beside "proposed" turns the question into keep-or-tweak, and the
  * question worth asking is what these pages should be.
+ *
+ * Archetype 4 is the exception, and says so in its own header: its spec has an
+ * open question rather than a proposal, so that sheet shows three candidate
+ * table treatments side by side. None of the three is what the site does today,
+ * so the rule above still holds.
  *
  * It sits outside (layout-1) on purpose: that route group loads the editorial
  * serif, and the directory surface never uses it.
@@ -22,7 +27,7 @@ export default function ArchetypeIndex() {
       <Container width="narrow">
         <header className="border-b border-line pb-lg">
           <p className="text-xs uppercase tracking-widest text-ink-subtle">Archetypes</p>
-          <h1 className="mt-xs text-2xl">Three page designs, 90.5% of the site</h1>
+          <h1 className="mt-xs text-2xl">Four page designs, 98.8% of the site</h1>
           <p className="mt-sm text-ink-muted">
             Rendered against real rows from live — real business names up to seventy
             characters, real blank addresses, real photographs, real geography. A layout
@@ -45,6 +50,13 @@ export default function ArchetypeIndex() {
               name: 'Installer profile',
               pages: '649 pages · 46%',
               note: 'A portfolio page. The work is the argument; contact stays within reach the whole way down.'
+            },
+            {
+              href: '/specimen/archetypes/editorial',
+              n: '4',
+              name: 'Editorial',
+              pages: '117 pages · 8%',
+              note: 'A reading page — and a table problem. 112 of the 117 carry one, half of them four columns or wider, inside a 68ch measure.'
             },
             {
               href: '/specimen/archetypes/geo',
