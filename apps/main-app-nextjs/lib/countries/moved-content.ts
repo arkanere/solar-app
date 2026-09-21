@@ -21,7 +21,6 @@ export const MOVED_TO_ROOT = [
   'about-us',
   'data-access',
   'write-for-us',
-  'seo-index',
   'data-deletion',
 
   // stage 7a — first two content pillars
@@ -40,7 +39,13 @@ export const MOVED_TO_ROOT = [
   // stage 8 — tools
   'tools',
 
-  // stage 9 — authors ('seo-index' is already listed above: its route moved
-  // early with stage 4, only its hrefs were deferred to this stage)
+  // stage 9 — authors
+  //
+  // 'seo-index' used to sit in stage 4 above. Its route was RETIRED on
+  // 2026-09-21 rather than ported: nothing linked to it, it emitted
+  // `noindex, nofollow` while the sitemap advertised it, and its ~200 lines
+  // of hand-written links had drifted from the tables they duplicate. Removed
+  // from this list in the same commit that deleted the route, so the 301s
+  // step 2 builds from here cannot point at a page that no longer exists.
   'authors'
 ];
