@@ -55,17 +55,24 @@ Code worth knowing before editing:
   body, shared by `submitLead` and its own route). Needs `BREVO_API_KEY` and
   `INTERNAL_API_SECRET` in `.env.local`; `USER_APP_URL` is optional and defaults to
   production.
+- `components/chrome/` — `SiteHeader`, `SiteFooter` and `Chrome`. Read Chrome.tsx first:
+  it records why chrome is not in the root layout. `NavMenu` is the only client leaf.
 - `lib/metadata.ts` — the one metadata builder. It owns the tag set; each page owns its
   own title and description. Only the five built directory pages call it; the 44 route
   stubs fall back to the root layout, which is also where `metadataBase` lives.
 
 ## Next steps
 
-Five, in order, planned 2026-09-18. Re-plan after the last one lands.
+Five, in order, planned 2026-09-18. Re-plan after the last one lands. Step 1 is done.
 
-1. **Site chrome.** `SiteHeader` + `SiteFooter` into the root layout, plus `robots.txt`,
-   favicon and the OG image. Ported from the SvelteKit `lib/components/chrome/`. Every
-   page built so far renders with no nav and no footer.
+1. ~~**Site chrome.**~~ Landed 2026-09-21. `components/chrome/` — header, footer and the
+   `Chrome` wrapper that mounts them. Not in the root layout: the links are
+   country-scoped and a root layout has no params, so chrome mounts one level down, in
+   `app/[country]/layout.tsx` and `app/(layout-1)/layout.tsx`. `/specimen` renders bare.
+   Also `app/robots.ts`, the three favicon files in `app/`, and OG/Twitter defaults on
+   the root layout for the 44 stubs. Three things did not come across: the theme toggle
+   (no dark mode), the Translate dropdown and its modal (wants the Radix dialog), and
+   the PostHog `capture` (no analytics in this app).
 2. **Archetype 4 — the editorial page.** `/`, the 7 pillar landings and
    `/{pillar}/{slug}`: the polymorphic resolver (cluster whitelist first, then brand —
    `routes.md`) and one `prose` body for the database HTML. ~90 URLs, the largest block
@@ -84,7 +91,9 @@ Five, in order, planned 2026-09-18. Re-plan after the last one lands.
 1. **A phone number of `+` plus 16 digits is a 500.** `@solar/validation`'s `phone`
    primitive allows 17 characters; `leaddata.phone` is `varchar(16)`. Pre-existing and
    shared with main-app live, so narrowing the primitive is a cross-app change.
-2. **The installer specimen is out of date.** `/specimen/archetypes/installer` still
+2. **`robots.txt` points at a 501.** `/sitemap.xml` is still a stub; step 5 builds it.
+   The declaration is correct for where the file is going, not for today.
+3. **The installer specimen is out of date.** `/specimen/archetypes/installer` still
    hides the boilerplate About; the shipped page renders it.
 
 ### Blocked on data, not code

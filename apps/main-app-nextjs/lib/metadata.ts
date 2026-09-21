@@ -38,8 +38,11 @@ export const SITE_NAME = 'Solar Vipani';
  * The same logo the live site puts on every share card. It is 1107x955 — a
  * logo, not a 1200x630 card — and stays so: replacing it is a design decision
  * about the whole site, not part of wiring the tags up.
+ *
+ * Exported because the root layout needs the same card for the pages that
+ * have no metadata of their own.
  */
-const OG_IMAGE = {
+export const OG_IMAGE = {
   url: `${BASE_URL}/logo.webp`,
   width: 1107,
   height: 955
