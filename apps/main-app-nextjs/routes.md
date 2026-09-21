@@ -43,8 +43,8 @@ Single pages: `/`, `/about-us`, `/terms-of-use`, `/privacy-policy`, `/data-delet
 > `/seo-index` was the ninth. **Retired 2026-09-21, not ported**: nothing linked to it,
 > it emitted `noindex, nofollow` while the sitemap advertised it at priority 0.5, its
 > title said "| Dev", and its ~200 hand-written links had drifted — three pointed at
-> `authors`, `solar_brands` and `solar_products` rows that do not exist. `/specimen`
-> and this file already cover what it was for. **The advertised total is 1,413.**
+> `authors`, `solar_brands` and `solar_products` rows that do not exist. This file
+> already covers what it was for. **The advertised total is 1,413.**
 
 > The counts above are the 2026-09-05 sitemap snapshot and are left as measured.
 > One has moved since: `solar-pumps/kusum-scheme` was set to `draft` on 2026-09-21
@@ -97,7 +97,7 @@ These exist and are database-backed, but are not advertised.
 - ~~`/api/cron/purge-old-leads`, `/{cc}/api/postRecentProject`,
   `/{cc}/api/updateRecentProject`~~ — **not ported, deliberately.** The two project
   writes are duplicates of routes `business-app` already owns; the purge belongs to an
-  admin app. README **State** has the reasoning. This is the one place the port does
+  admin app. `OPEN-ITEMS.md` has the reasoning. This is the one place the port does
   not keep a route.
 - ~~`hooks.server.ts` — legacy 301s and rewrites~~ — ported to `middleware.ts`, 2026-09-21
 - ~~`/{cc}/api/submitBusiness`, `sendBusinessSubmissionConfirmation`, `getCities`,

@@ -1,5 +1,5 @@
 /**
- * POST /{cc}/api/sendLeadSubmissionConfirmation — README open item 1, closed.
+ * POST /{cc}/api/sendLeadSubmissionConfirmation.
  *
  * Unified replacement for the two legacy handlers, exactly as the SvelteKit
  * port was: they differed only in brand name, postal-code label and whether a

@@ -4,7 +4,7 @@
 /**
  * The lead form. geo-listing.md §5 section 7, §11 ("client leaf").
  *
- * WIRED 2026-09-18 (README open item 7). It posts to this app's own
+ * It posts to this app's own
  * `/{cc}/api/submitLead` for BOTH countries. The SvelteKit original sends IN
  * cross-origin to https://user.solarvipani.com/in/api/submitLead and only
  * non-IN to the local endpoint; that split is not carried across, so there is
@@ -24,7 +24,7 @@
  *    scaffold stub in this app, and sending someone to a stub is worse than
  *    confirming where they are. The panel replaces the form on success.
  *
- * The confirmation email is live as of 2026-09-18 (README open item 1), so the
+ * The confirmation email is live, so the
  * success copy may now mention it — but only when an address was actually
  * given. `email` is optional in `leadSchema` and `submitLead` skips the mail
  * without one; promising an email to someone who left the field blank is the

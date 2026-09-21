@@ -5,8 +5,8 @@ The token set, and the argument for it. Decided as one set, on 2026-09-06.
 Nothing here was inherited from the SvelteKit app. Its token layer, its brand hue and its
 conventions docs were all set aside deliberately.
 
-Approve this from `/specimen` (dev only, inside `(layout-1)`). Re-verify colour with
-`npm run check:contrast` after changing any value.
+Re-verify colour with `npm run check:contrast` after changing any value. The
+`/specimen` route this was approved at is deleted; this document is the record.
 
 ## 1. What the system has to hold
 

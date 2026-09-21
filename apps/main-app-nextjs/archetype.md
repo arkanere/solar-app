@@ -81,13 +81,12 @@ Narrower, but each shapes a whole section:
   boilerplate and all**, as a plain paragraph with no "About" heading over it. A heading
   over two words is what made it read as an empty section.
 
-Approve these visually at `/specimen/archetypes` (dev only).
-
 ## Seeing them
 
-`/specimen/archetypes` (dev only, alongside `/specimen`) renders all three against real
-rows pulled from live — real business names up to seventy characters, real blank
-addresses, real photographs, real geography.
+The specimen routes are deleted. They rendered the proposed designs against real rows
+pulled from live — real business names up to seventy characters, real blank addresses,
+real photographs, real geography — and each archetype doc's "what shipped" section
+carries what they settled.
 
 It shows **only the proposed design**. It deliberately does not render the current
 implementation anywhere: putting "today" beside "proposed" turns the question into

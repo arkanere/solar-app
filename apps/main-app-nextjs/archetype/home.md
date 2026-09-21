@@ -11,8 +11,7 @@ Figures measured against the live database and `next dev` on **2026-09-21**.
 
 `archetype.md` sets the bar: an archetype is a route that renders many pages from one
 design **and** is worth designing rather than porting. This is one page, so it fails the
-first half outright, and the README files it under "the long tail" — the pile that gets
-carried across as-is.
+first half outright: it is a long-tail page, one of the pile carried across as-is.
 
 It gets a spec because of the second half. Every other long-tail page could be ported
 straight because **the design it was porting did not contradict the design system**. This
@@ -154,8 +153,8 @@ never lazy.
 | 4 | Learn about solar | `content` | 7 pillar cards |
 | 5 | Tools | `content` | 3 calculator links |
 
-Section 5 is new. The 3 calculators are reachable today only from the footer, and they
-are the next thing the README's step 1 builds.
+Section 5 is new. The 3 calculators were reachable only from the footer when this was
+written; they are built and linked from here now.
 
 ## 8. Design direction
 
@@ -184,7 +183,8 @@ Read from each: `totalInstallers`, `coveredLevel2Count`, `totalLevel2Count`,
 ignored here — they are the country hub's own page.
 
 `export const revalidate = 1296000` — 15 days, matching `config.isr` on the SvelteKit
-root loader, and a literal in the route file per the README's Route Segment Config note.
+root loader, and a literal in the route file per the README's "Two rules that break
+the build".
 
 The counts move. Without the revalidate they are read once at build and the page's
 coverage claim silently ages.
@@ -224,8 +224,8 @@ the page or in `SiteFooter` links to.
 ## 12. What shipped
 
 Built 2026-09-21 as `app/(layout-1)/page.tsx`. Static (`○`) at `next build`, with
-`s-maxage=1296000` measured against `next start` — so it is one of the 27 routes where
-`revalidate` genuinely applies (README open item 5).
+`s-maxage=1296000` measured against `next start` — so it is a route where `revalidate`
+genuinely applies, being static with no dynamic segment.
 
 Everything in §7 shipped, in that order, with the figures §4 measured: 646 installers,
 220 of 785 districts, 22 of 36 states. Three notes on how:

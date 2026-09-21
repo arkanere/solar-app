@@ -59,8 +59,8 @@ import type { PillarSlug } from './pillars';
  * genuinely cache at 1296000; the seven `[slug]` cluster routes have no
  * `generateStaticParams`, so they are dynamic and re-render on every request
  * — `/rooftop-solar/cost` serves `Cache-Control: private, no-cache, no-store`.
- * Pre-existing and app-wide, not specific to this surface. README open item 5
- * has the measurements and the three ways out.
+ * Pre-existing and app-wide, not specific to this surface. The README's "Two
+ * rules that break the build" has the detail.
  */
 
 /**

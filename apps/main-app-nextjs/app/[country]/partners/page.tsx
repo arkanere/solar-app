@@ -35,7 +35,7 @@
  * SvelteKit loader counted cities off `geo_locations` (~8,043) where that
  * helper counts places with a visible business (~356) — see its header for
  * why the smaller number is the true one. The `+2000` lead offset comes with
- * it, and so does the README open item that says nothing in the database
+ * it, and so does the OPEN-ITEMS.md entry saying nothing in the database
  * supports it.
  */
 import type { Metadata } from 'next';

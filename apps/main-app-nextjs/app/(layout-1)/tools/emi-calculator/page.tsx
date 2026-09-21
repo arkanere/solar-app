@@ -13,7 +13,7 @@
  * means "cache forever, never revalidate". The equivalent here is simply not
  * exporting `revalidate` at all on a page whose only query is the bank list —
  * but the bank list IS the thing that changes, so this takes the 15 days the
- * rest of the app uses instead. Note README open item 5: this page is static
+ * rest of the app uses instead. Per the README's ISR rule, this page is static
  * (no dynamic segment), so the header is real here.
  */
 import type { Metadata } from 'next';

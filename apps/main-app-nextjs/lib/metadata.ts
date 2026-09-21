@@ -1,5 +1,5 @@
 /**
- * The one page-metadata builder. README open item 1.
+ * The one page-metadata builder.
  *
  * Nothing in this app emitted a title, description, canonical or OG tag until
  * now — not even the district page at sitemap priority 1.0. The gap was left

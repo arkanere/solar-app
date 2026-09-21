@@ -1,5 +1,5 @@
 /**
- * POST /{cc}/api/submitLead — README open item 7.
+ * POST /{cc}/api/submitLead.
  *
  * Both countries post here. The SvelteKit form sends IN cross-origin to
  * user-app (user.solarvipani.com/in/api/submitLead) and only non-IN here;
@@ -24,7 +24,7 @@
  * enforces. If another form is ever pointed at this endpoint, re-read that
  * reasoning before assuming enforcement is still safe.
  *
- * It now sends the confirmation email (README open item 1, closed 2026-09-18).
+ * It now sends the confirmation email.
  * The SvelteKit handler reaches its own /{cc}/api/sendLeadSubmissionConfirmation
  * over `event.fetch`; this one calls `sendLeadConfirmation` directly, because a
  * second HTTP request and a second cold start to run code already in this

@@ -2,7 +2,7 @@
  * Header, page, footer — and the reason the footer sits at the bottom of a
  * short page instead of half way up it.
  *
- * Why this is not in the root layout, which is where README step 1 put it:
+ * Why this is not in the root layout, which is where it started:
  * the header and footer links are country-scoped, and a root layout has no
  * route params. The three ways to get the country there were a client
  * component reading usePathname (ships the country registry to the browser),

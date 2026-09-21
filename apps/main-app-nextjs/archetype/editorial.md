@@ -92,8 +92,8 @@ zero external, zero absolute, zero with a trailing slash.
 
 All seven pillars and `tools` are in `MOVED_TO_ROOT`. The bodies were written before
 that migration and were never rewritten; in SvelteKit they survive only because
-`hooks.server.ts` 301s `/{cc}/<family>/**` to `/<family>/**`. Those 301s have not come
-across yet — they are README step 4. §6.
+`hooks.server.ts` 301s `/{cc}/<family>/**` to `/<family>/**`. That rule is carried
+across as `MOVED_TO_ROOT_PATTERN` in `middleware.ts`. §6.
 
 ### Two rows that are not like the others
 
@@ -174,9 +174,9 @@ Four blocks of the SvelteKit components do **not** come across:
   passes a sibling, and it passes exactly one, hardcoded in the page. That is a
   navigation job the site header already does.
 - **The tool CTA** on the cluster, whose target is picked by regex over the slug
-  (`/cost|price|\d+kw-system/` → solar calculator, and so on). The three tools are
-  README step 3 and are stubs today; a CTA to a 501 is worse than no CTA. It comes back
-  with the tools.
+  (`/cost|price|\d+kw-system/` → solar calculator, and so on). It was dropped because
+  the three tools were stubs and a CTA to a 501 is worse than no CTA. **The tools are
+  built now, so that reason has expired** — whether the CTA returns is an open call.
 - **The `{n}kW prices by city` chip row**, which fires on `^(\d+)kw-system$` and links
   into district size-leaf URLs. Those leaves exist, so this one is real — but it serves
   5 of 110 clusters and depends on `getTopDistricts()`. Deferred; noted in §10.
@@ -281,8 +281,8 @@ pages link to, not about what answers.
 
 **One 301 to add.** `/solar-pumps/kusum-scheme` was in the live sitemap until
 2026-09-21 and is likely indexed, so it needs a redirect to `/solar-pumps/kusum-yojana`
-— the page it was a stub of. That belongs in `middleware.ts` with the rest of the
-legacy 301s (README step 4), and is noted there.
+— the page it was a stub of. **Added**, in `middleware.ts` with the rest of the
+legacy 301s.
 
 **Sanitizing.** The HTML is first-party CMS content and goes in with
 `dangerouslySetInnerHTML`. **No sanitizer, decided 2026-09-21:** `seo_pages` is a
@@ -356,7 +356,7 @@ All six were decided in one pass. Nothing here is open.
    symptom and no reason to ride along inside the port. When it lands, the rewrite stops
    matching anything and can be deleted.
 6. ~~**The 98-char `meta_title`s.**~~ Content, not code. `lib/metadata.ts` passes them
-   through unaltered. Raised in the README's open items so it is not lost.
+   through unaltered. Raised in `OPEN-ITEMS.md` so it is not lost.
 
 And the one thing §6 flagged without listing here:
 
@@ -422,10 +422,10 @@ thing to change, not the shape.
 
 **Not built, and still open:**
 
-- `/` — out of scope by §"Scope", and the only part of README step 2 not covered here.
-  It shares the route group and nothing else.
+- `/` — out of scope by §"Scope"; `archetype/home.md` covers it. It shares the route
+  group and nothing else.
 - `/solar-subsidy/{slug}` serves clusters only. The state-subsidy and discom variants
   `routes.md` describes are blocked on `state_subsidies` being empty, the same call
   §3 made for brands.
-- The `/solar-pumps/kusum-scheme` 301 (§6) — it belongs in `middleware.ts` with the
-  other legacy redirects, README step 4.
+- ~~The `/solar-pumps/kusum-scheme` 301 (§6)~~ — built, in `middleware.ts` with the
+  other legacy redirects.

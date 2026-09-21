@@ -1,6 +1,6 @@
 /**
- * Archetype 2 — geo listing, leaf level. 356 pages. README open item 8,
- * spec archetype/geo-listing.md §4.
+ * Archetype 2 — geo listing, leaf level. 356 pages.
+ * Spec: archetype/geo-listing.md §4.
  *
  * **The route is polymorphic.** One slug resolves against a city, then a
  * brand, then the `{n}kw-solar-system` pattern, and the page dispatches on

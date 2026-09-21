@@ -5,9 +5,9 @@
  * archetype/editorial.md §6: 885 of the 1,020 links inside these bodies point
  * at `/in/<family>/…` for families that have since moved to the country-less
  * root. They were written before that migration and never rewritten; in the
- * SvelteKit app they survive only because hooks.server.ts 301s them. Those
- * 301s are README step 4 and have not come across, so today every one of the
- * 885 is a 404.
+ * SvelteKit app they survive only because hooks.server.ts 301s them. That rule
+ * is carried across as MOVED_TO_ROOT_PATTERN in middleware.ts, so the 885 land
+ * on a 301 rather than a 404 — this rewrite saves them the hop.
  *
  * This is `contentUrl()` run backwards, keyed off the same MOVED_TO_ROOT list,
  * so the two can never disagree: a family that has moved gets its prefix

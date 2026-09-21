@@ -27,7 +27,7 @@
  * database error and therefore a 500 on the deletion endpoint only. Live
  * SvelteKit has the same hole. Not fixed here: the ceiling belongs to
  * `@solar/validation`, which both apps share, and narrowing it is a change to
- * live behaviour rather than to this port. README open item.
+ * live behaviour rather than to this port. Recorded in OPEN-ITEMS.md.
  */
 import { dataAccessRequests, dataDeletionRequests } from '@solar/db/schema';
 import { db } from '@/lib/server/db';

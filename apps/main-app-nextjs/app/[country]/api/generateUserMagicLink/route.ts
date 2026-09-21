@@ -1,5 +1,5 @@
 /**
- * POST /{cc}/api/generateUserMagicLink — README open item 1, closed.
+ * POST /{cc}/api/generateUserMagicLink.
  *
  * A token-minting endpoint: it returns a working sign-in link, so it is
  * guarded by the shared internal secret and fails closed when the secret is
