@@ -45,7 +45,6 @@ import {
   ArrowRight,
   BarChart3,
   Building2,
-  CheckCircle2,
   Compass,
   Images,
   LayoutDashboard,
@@ -289,15 +288,9 @@ export default async function Page({ params }: { params: Promise<{ country: stri
                     href={installerUrl(country, business.slug)}
                     className="flex h-full flex-col rounded-lg border border-line bg-surface p-md text-ink no-underline transition-shadow duration-fast ease-standard hover:shadow-raised"
                   >
-                    <div className="flex items-start justify-between gap-sm">
-                      <h3 className="text-base leading-snug text-action underline decoration-action/40 underline-offset-2">
-                        {business.name}
-                      </h3>
-                      <span className="inline-flex shrink-0 items-center gap-2xs rounded-full bg-success-surface px-xs py-2xs text-xs font-semibold text-ink">
-                        <CheckCircle2 aria-hidden className="size-3.5 text-success" />
-                        Verified
-                      </span>
-                    </div>
+                    <h3 className="text-base leading-snug text-action underline decoration-action/40 underline-offset-2">
+                      {business.name}
+                    </h3>
                     <div className="mt-sm flex flex-col gap-2xs text-sm text-ink-muted">
                       {business.city ? (
                         <span className="flex items-center gap-xs">
