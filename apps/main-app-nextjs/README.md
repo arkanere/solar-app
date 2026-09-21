@@ -98,13 +98,32 @@ imported constant fails the build. `lib/editorial/routes.tsx` has the measuremen
 
 ## Next steps
 
-Four left, in order. Re-plan after the last one lands.
+Three left, in order. Re-plan after the last one lands.
 
 > **Step 1, the redirects, is done.** The legacy 301s landed in
 > `middleware.ts` and the four shims answer real redirects, all 2026-09-21. Verified
 > against `next build && next start`. Note `/us/` now takes two hops — Next normalizes
 > the trailing slash with its own 308 before middleware runs, where SvelteKit reached
 > `/` in one. That is Next's behaviour on every URL, not something these rules added.
+>
+> **Step 5, ISR, is done** — taken ahead of steps 2–4 because it shapes the data
+> seams they build on. `export async function generateStaticParams() { return []; }`
+> in the 15 dynamic route files, 2026-09-21. That is the whole change; no data-seam
+> code moved.
+>
+> **The README used to say `generateStaticParams` "couples the build to the
+> database". That was wrong, and it is why this sat open.** The function may return
+> an empty array — Next's documented "all paths at runtime" — which prerenders
+> nothing at build time and caches each path on first visit. Empty is not a
+> degenerate case: the docs say you *must* return `[]` (or set
+> `dynamic = 'force-static'`) to get ISR on paths at runtime, and a route with no
+> `generateStaticParams` at all is dynamically rendered. So the build stays
+> database-free **and** the responses are cached. There was never a trade to make.
+>
+> `unstable_cache` around the two data seams — the option this README recommended
+> for a month — was tried first and reverted the same day. With real ISR the origin
+> renders a URL once per revalidate window, so caching the query underneath buys
+> almost nothing and adds a second TTL to keep in sync with `revalidate`.
 >
 > **The old step 1, the long tail, is done.** `/` shipped 2026-09-21 against `archetype/home.md`
 > (§12 records what changed); `/tools` and the 3 calculators shipped 2026-09-21. They got
@@ -148,16 +167,14 @@ land while the form work is still in review.
    `meta_title` and `meta_description` through unaltered and must keep doing so, so open
    item 6 stays a CMS pass and is not in this step's scope.
 
-5. **ISR, then a smoke harness.** Open item 5: ~1,380 of 1,413 URLs re-query the
-   database on every request. **Take the decision now, before step 1 starts** — it
-   changes how the data seams are written, and steps 2–4 build on them. The
-   recommendation is `unstable_cache` around `lib/directory/data.ts` and
-   `lib/editorial/data.ts`: it keeps the build database-free, it is two files rather
-   than per-route work across 49 routes, and it is the only option that does not couple
-   a ~1,380-page build to the database. `generateStaticParams` restores true ISR but
-   pays that coupling. Then the harness: one URL of each of the 76 route shapes,
-   asserting 200 — and, once ISR is in, asserting the `Cache-Control` the table in open
-   item 5 measures, so this cannot silently regress again.
+5. ~~**ISR.**~~ Done 2026-09-21, ahead of steps 2–4. See open item 5.
+
+   **Still open: the smoke harness.** One URL of each of the 76 route shapes,
+   asserting 200, plus `x-nextjs-cache` on the 15 ISR shapes — Next sets that header
+   to `HIT`/`STALE`/`MISS`/`REVALIDATED`, so the assertion that keeps ISR from
+   silently regressing is a header check, not a timing heuristic.
+   `NEXT_PRIVATE_DEBUG_CACHE=1` logs hits and misses if the harness needs to debug.
+   Add a shape to the harness in the same commit that adds a route.
 
 Not in these five, and deliberately: everything under **Blocked on data, not code**,
 and open items 3, 4 and 6. Open item 4 (`/about-us` printing a lead count 2,000 higher
@@ -177,23 +194,40 @@ business decision — ask before launch, not at the end.
    `+ 2000` from the SvelteKit loader across verbatim, named `LEADS_BEFORE_LEADDATA`.
    Nothing in the database supports it, so "3,269+ Leads Generated" is 1,269 real rows
    plus a number no one here can source. Either the business confirms it or it comes out.
-5. **ISR is not actually running on 49 of the 76 routes — ~1,380 of the 1,413 URLs.**
-   `export const revalidate` only applies to pages Next statically generates. A `[slug]`
-   route with no `generateStaticParams` is `ƒ` — re-rendered on every request, querying
-   the database each time. Measured 2026-09-21 against `next build && next start`:
+5. ~~**ISR is not running on 49 of the 76 routes.**~~ **Fixed 2026-09-21.** The 15
+   built dynamic routes each export `generateStaticParams` returning `[]`. They are
+   `●` in the build output and serve `s-maxage` with `x-nextjs-cache: HIT`. The
+   other 34 `ƒ` routes are the unbuilt stubs and the route handlers; each gets ISR
+   with the same two lines when it is built.
 
-   | URL | `Cache-Control` |
-   | --- | --- |
-   | `/rooftop-solar` (static) | `s-maxage=1296000, stale-while-revalidate=30240000` |
-   | `/rooftop-solar/cost` (dynamic) | `private, no-cache, no-store, max-age=0` |
+   Measured against `next build && next start`, replacing the table this item used
+   to carry:
 
-   It covers the 110 cluster articles, the 649 installer profiles, the 957 geo pages
-   and the 3 project routes. Pre-existing, and a porting gap rather than a bug in any
-   one file: SvelteKit's `config.isr` gave ISR to dynamic routes *without* prerendering
-   them, and Next has no equivalent. Three ways out, none free — `generateStaticParams`
-   per route (restores ISR, couples the build to the database for ~1,380 pages);
-   `unstable_cache` around the two data seams (caches the queries, keeps the build
-   DB-free); or accept it. **Deferred deliberately; decide before launch, not after.**
+   | URL | before | after |
+   | --- | --- | --- |
+   | `/in/solar/maharashtra/pune` | `private, no-cache, no-store` | `s-maxage=1296000, swr=30240000`, HIT, 5ms |
+   | `/rooftop-solar/cost` | `private, no-cache, no-store` | `s-maxage=1296000, swr=30240000`, HIT |
+   | `/in/recent-solar-installation-projects` | `private, no-cache, no-store` | `s-maxage=86400, swr=31449600`, HIT |
+
+   Three things worth knowing, all verified the same day:
+
+   - **Middleware still runs.** Next's docs warn that middleware is skipped for
+     on-demand ISR requests, which matters here because `middleware.ts` holds every
+     legacy 301. It is skipped only for the internal regeneration fetch, not for the
+     inbound request: `/in/rooftop-solar/cost`, `/solar-pumps/kusum-scheme`,
+     `/us/state/solar-panel-installers-in-california`, `/in/blogs/*`, `/business/*`
+     and `/in` all still 301, and the two that land on an ISR route follow through
+     to 200.
+   - **404s are cached too, and the key space is unbounded.** `/in/installer/does-not-exist`
+     returns 404 with the same `s-maxage`. Spraying junk slugs fills the cache.
+     SvelteKit's `config.isr` had the identical exposure, so this is parity, not a
+     regression — but it is now worth a rate limit if it is ever abused.
+   - **This is a Next 15 shape.** Under Next 16's Cache Components an empty
+     `generateStaticParams` is a build error, and `revalidate`, `dynamicParams` and
+     `dynamic` are removed entirely. Cache Components is opt-in, so a plain 16
+     upgrade is safe; enabling it is a rework of all 15 files and wants
+     `ISR with Cache Components` read first.
+
 6. **Every editorial `meta_title` and `meta_description` is too long.** `meta_title`
    runs to 98 characters against Google's ~60, `meta_description` to 188 against ~155 —
    on all 117 pillar and cluster pages. Content, not code: `lib/metadata.ts` passes both
