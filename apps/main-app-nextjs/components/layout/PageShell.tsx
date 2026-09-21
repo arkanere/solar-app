@@ -14,13 +14,28 @@
  * The top space is xl rather than a full section step: the first heading
  * should sit close enough to the site header to read as belonging to it.
  * The bottom is a full 3xl so the last section never collides with a footer.
+ *
+ * `hero` is the one exception to "children are Sections": a full-bleed band
+ * rendered inside <main>, above the stack, with no gutter and no top space.
+ * It exists because the homepage carries its <h1> on a photograph that runs
+ * edge to edge (archetype/home.md §6), and the <h1> is primary content — a
+ * hero above <main> means "skip to content" skips the page's own headline.
+ * The top padding drops when a hero is present so the band sits flush under
+ * the site header; the section gap below it is the Stack's, as for any child.
  */
 import { Stack } from './Stack';
 
-export function PageShell({ children }: { children: React.ReactNode }) {
+export function PageShell({
+  hero,
+  children
+}: {
+  hero?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="pb-3xl pt-xl">
+    <div className={hero ? 'pb-3xl' : 'pb-3xl pt-xl'}>
       <Stack as="main" gap="section">
+        {hero}
         {children}
       </Stack>
     </div>

@@ -220,3 +220,24 @@ the page or in `SiteFooter` links to.
    card is the weakest thing this page will print.
 4. **The deployed page has an About band the repo does not** (§2). Worth confirming
    nothing else has drifted before `/` is cut over.
+
+## 12. What shipped
+
+Built 2026-09-21 as `app/(layout-1)/page.tsx`. Static (`○`) at `next build`, with
+`s-maxage=1296000` measured against `next start` — so it is one of the 27 routes where
+`revalidate` genuinely applies (README open item 5).
+
+Everything in §7 shipped, in that order, with the figures §4 measured: 646 installers,
+220 of 785 districts, 22 of 36 states. Three notes on how:
+
+- **The hero slot landed on `PageShell` as described in §6** — a `hero` prop rendered
+  inside `<main>` above the section stack, and the `pt-xl` drops when one is present so
+  the band sits flush under the site header. It is the only caller.
+- **The pillar and tool cards are a local `IconCard` in the page file**, not a shared
+  component. It is `LocationGrid`'s card minus the count, and these two grids are the
+  only icon cards in the app — a second call site would be the time to lift it out.
+- **`/tools` and the 3 calculators are still stubs**, so section 5's three links point
+  at pages that render a placeholder `h1` today. They are the next thing step 1 builds.
+
+§11 question 4 is still open: the deployed About band was not re-checked before this
+landed, and nothing else was compared against the live page.

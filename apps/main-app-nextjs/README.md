@@ -28,9 +28,9 @@ sharing `@solar/db` and `@solar/validation`. SvelteKit and Next coexist in the w
 
 Reasoning lives in the doc or the file header, never here; `git log` is the record.
 
-**Built:** the directory surface, the editorial surface, the four static pages and the
-projects surface — 1,403 of the 1,413 advertised URLs. 26 of 48 page files; the other
-22 are stubs. 16 of the 19 route handlers answer 501.
+**Built:** the directory surface, the editorial surface, the four static pages, the
+projects surface and the homepage — 1,404 of the 1,413 advertised URLs. 27 of 48 page
+files; the other 21 are stubs. 16 of the 19 route handlers answer 501.
 
 ## Where things are
 
@@ -43,7 +43,7 @@ projects surface — 1,403 of the 1,413 advertised URLs. 26 of 48 page files; th
 | `archetype/installer-profile.md` | Archetype 1 — 649 pages, the largest. |
 | `archetype/geo-index.md` | Archetype 3 — country and state hubs, 29 pages. §9 and §10 record what it decided and where it shipped differently from spec. |
 | `archetype/editorial.md` | Archetype 4 — the 7 pillar landings and 110 cluster articles, 117 pages. Its own §2 holds the `seo_pages` measurements; `data.md` does not cover that table. §11 is what shipped. |
-| `archetype/home.md` | Not an archetype — one page, `/`. §1 says why it gets a spec anyway: it is the only long-tail page whose source design contradicts the design system. Written, not yet built. |
+| `archetype/home.md` | Not an archetype — one page, `/`. §1 says why it gets a spec anyway: it is the only long-tail page whose source design contradicts the design system. §12 is what shipped. |
 
 Approve the page designs at `/specimen/archetypes` (dev only).
 
@@ -85,12 +85,10 @@ imported constant fails the build. `lib/editorial/routes.tsx` has the measuremen
 
 Three left, in order. Re-plan after the last one lands.
 
-1. **The long tail.** Left: `/`, `/tools` and the 3 calculators. Everything else this
+1. **The long tail.** Left: `/tools` and the 3 calculators. Everything else this
    step once listed is blocked on empty tables rather than on code — see below.
-   **`/` is specced but not built: read `archetype/home.md` first.** It is the one page
-   here that is not a straight port — §3 is the five ways the live homepage contradicts
-   the design system, and §6 is the hero slot it needs on `PageShell`. The 3 calculators
-   are a straight port with two things already settled: there is no PostHog in this app,
+   `/` shipped 2026-09-21 against `archetype/home.md`; its §12 records what changed.
+   The 3 calculators are a straight port with two things already settled: there is no PostHog in this app,
    so the `capture` calls drop, and `solar-calculator`'s `state_subsidies` query is dead
    in the original — the page never reads it.
 2. **Forms and handlers.** `business-form`, `get-quotes`, `partners/join`, the
