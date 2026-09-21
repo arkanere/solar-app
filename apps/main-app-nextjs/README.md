@@ -85,8 +85,14 @@ imported constant fails the build. `lib/editorial/routes.tsx` has the measuremen
 
 Three left, in order. Re-plan after the last one lands.
 
-1. **The long tail.** Left: `/` and the 3 tools. Everything else this step once listed
-   is blocked on empty tables rather than on code — see below.
+1. **The long tail.** Left: `/`, `/tools` and the 3 calculators. Everything else this
+   step once listed is blocked on empty tables rather than on code — see below.
+   **`/` is specced but not built: read `archetype/home.md` first.** It is the one page
+   here that is not a straight port — §3 is the five ways the live homepage contradicts
+   the design system, and §6 is the hero slot it needs on `PageShell`. The 3 calculators
+   are a straight port with two things already settled: there is no PostHog in this app,
+   so the `capture` calls drop, and `solar-calculator`'s `state_subsidies` query is dead
+   in the original — the page never reads it.
 2. **Forms and handlers.** `business-form`, `get-quotes`, `partners/join`, the
    thank-you pages, the 10 API routes and 2 US legacy shims answering 501, and the
    legacy 301s from `hooks.server.ts` into `middleware.ts` — including
