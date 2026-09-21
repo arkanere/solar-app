@@ -22,6 +22,14 @@
  * the eye scans down (§5), and proportional digits make a 1 and a 2 different
  * widths in a column that is meant to line up.
  *
+ * `locale` groups the digits, as every other figure on the directory surface
+ * does. It arrived with the homepage, which is the first page to put a
+ * four-figure number on this card — "6 of 3207 counties" beside a sentence
+ * reading "220 of 785 districts". Grouping is `CountryConfig.locale`'s job
+ * rather than a fixed separator, because en-IN and en-US part company at five
+ * digits; optional because no count below 1,000 renders differently either
+ * way, so the two geo pages read identically before and after.
+ *
  * The whole card is the anchor rather than just the name — a card is one
  * target, and a 200px box with a 60px hit area is a worse version of the same
  * link. The name still carries the link styling so the target is legible as
@@ -42,7 +50,14 @@ export type LocationCardData = {
   coverage?: { covered: number; total: number; label: string };
 };
 
-export function LocationGrid({ items }: { items: LocationCardData[] }) {
+export function LocationGrid({
+  items,
+  locale
+}: {
+  items: LocationCardData[];
+  /** `CountryConfig.locale`, e.g. 'en-IN'. Groups every count on the card. */
+  locale?: string;
+}) {
   if (items.length === 0) return null;
 
   return (
@@ -57,7 +72,9 @@ export function LocationGrid({ items }: { items: LocationCardData[] }) {
               {item.name}
             </h3>
             <p className="mt-2xs text-sm tabular-nums text-ink-muted">
-              <span className="font-semibold text-ink">{item.installerCount}</span>{' '}
+              <span className="font-semibold text-ink">
+                {item.installerCount.toLocaleString(locale)}
+              </span>{' '}
               {item.installerCount === 1 ? 'installer' : 'installers'}
             </p>
             {item.coverage ? (
@@ -73,7 +90,8 @@ export function LocationGrid({ items }: { items: LocationCardData[] }) {
                   />
                 </div>
                 <p className="mt-2xs text-xs tabular-nums text-ink-subtle">
-                  {item.coverage.covered} of {item.coverage.total} {item.coverage.label}
+                  {item.coverage.covered.toLocaleString(locale)} of{' '}
+                  {item.coverage.total.toLocaleString(locale)} {item.coverage.label}
                 </p>
               </>
             ) : null}

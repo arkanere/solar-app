@@ -107,7 +107,7 @@ export default async function Page({
   if (!isCountry(country)) notFound();
 
   const config = getCountry(country);
-  const { levels, name: countryName } = config;
+  const { levels, locale, name: countryName } = config;
   const level1Slug = state.toLowerCase();
 
   const data = await getStateHub(country, level1Slug);
@@ -194,6 +194,7 @@ export default async function Page({
           <nav aria-label={`Solar installers by ${levels.level2.singular.toLowerCase()}`}>
             <h2 className="text-xl">Browse by {levels.level2.singular.toLowerCase()}</h2>
             <LocationGrid
+              locale={locale}
               items={level2s.map((d) => ({
                 name: d.name,
                 href: geoUrl(country, level1Slug, d.slug),

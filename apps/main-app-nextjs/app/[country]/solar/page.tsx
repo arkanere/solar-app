@@ -177,6 +177,7 @@ export default async function Page({ params }: { params: Promise<{ country: stri
           <nav aria-label={`Solar installers by ${levels.level1.singular.toLowerCase()}`}>
             <h2 className="text-xl">Browse by {levels.level1.singular.toLowerCase()}</h2>
             <LocationGrid
+              locale={locale}
               items={data.level1s.map((s) => ({
                 name: s.name,
                 href: geoUrl(country, s.slug),
