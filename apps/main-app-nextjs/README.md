@@ -24,16 +24,19 @@ sharing `@solar/db` and `@solar/validation`. SvelteKit and Next coexist in the w
 - Free / MIT only. No paid libraries.
 - No Radix yet. It is the plan for dialog/drawer and combobox, when one is needed.
 
-## Where things are
+## State
 
 Reasoning lives in the doc or the file header, never here; `git log` is the record.
 
-Built: the directory surface and the editorial surface — all four archetypes, 1,396 of
-1,414 URLs, 19 page files. Stubbed: 30 pages, and 16 of the 19 route handlers answer 501.
+**Built:** the directory surface, the editorial surface, the four static pages and the
+projects surface — 1,403 of the 1,413 advertised URLs. 26 of 48 page files; the other
+22 are stubs. 16 of the 19 route handlers answer 501.
+
+## Where things are
 
 | Doc | Covers |
 | --- | --- |
-| `routes.md` | Every route: 49 pages + 19 handlers. |
+| `routes.md` | Every route: 48 pages + 19 handlers. |
 | `design-foundation.md` | Type, spacing, colour, radius, elevation, motion, imagery. Approve at `/specimen`; re-verify with `npm run check:contrast`. |
 | `archetype.md` | Why there are four archetypes. `archetype/data.md` has the live measurements they are designed against. |
 | `archetype/geo-listing.md` | Archetype 2 — district page and city/size leaf, 957 pages. |
@@ -45,11 +48,13 @@ Approve the page designs at `/specimen/archetypes` (dev only).
 
 Code worth knowing before editing:
 
-- `lib/directory/data.ts` — the single data seam. Every directory query lives here, each
-  with the trap it avoids written above it (casing, correlated subqueries, composite keys).
+- `lib/directory/data.ts` — the single data seam for the directory and projects
+  surfaces. Every query lives here, each with the trap it avoids written above it
+  (casing, correlated subqueries, composite keys).
 - `components/layout/` — the layout primitives, and the two lint rules they unblocked:
   no `mx-auto` outside that folder, no numeric Tailwind spacing anywhere.
-- `lib/countries/` — the per-country gate. Labels and features are data, never hardcoded.
+- `lib/countries/` — the per-country gate. Labels and features are data, never
+  hardcoded. `moved-content.ts` is the list of families that live at the root.
 - `lib/cloudinary-loader.ts` — the only place an image transform is written.
 - `lib/server/` — the server-only modules: `db`, `leads`, `email` (Brevo),
   `magicLink` (mints customer sign-in tokens, IN-only), `leadConfirmation` (the email
@@ -63,24 +68,30 @@ Code worth knowing before editing:
   `body.ts` rewrites the 885 body links that point at a family which has since moved
   to the root. `components/editorial/ArticleBody.tsx` holds the table treatment, which
   is the design problem of that archetype.
+- `lib/directory/projectRoutes.tsx` — the two project-list routes written once, the
+  gallery and its pager. `components/directory/Pager.tsx` is the only pagination in
+  the app.
 - `lib/metadata.ts` — the one metadata builder. It owns the tag set; each page owns its
-  own title and description. The nineteen built pages call it; the 30 route stubs
-  fall back to the root layout, which is also where `metadataBase` lives.
+  own title and description. Built pages call it; the stubs fall back to the root
+  layout, which is also where `metadataBase` lives.
+
+**Route Segment Config must be a literal in the route file.** `export const
+revalidate = N`, never re-exported from a shared module and never an imported
+constant: Next reads it by static analysis, so a re-export warns on every build and an
+imported constant fails the build. `lib/editorial/routes.tsx` has the measurements.
 
 ## Next steps
 
-Planned 2026-09-18 as five. Site chrome and archetype 4 landed 2026-09-21; what they
-decided is in `components/chrome/Chrome.tsx` and `archetype/editorial.md` §11, and
-`git log` is the record. Three left, in order. Re-plan after the last one lands.
+Three left, in order. Re-plan after the last one lands.
 
-1. **The long tail.** `/`, product model pages, `/solar-subsidy/{slug}`'s state-subsidy
-   and discom variants (blocked on `state_subsidies`, below — the cluster articles at
-   that path already ship), project detail, the paginated project list, authors,
-   `/seo-index`, the legal pages and the 3 tools. Assembly from archetype 4's parts.
+1. **The long tail.** Left: `/` and the 3 tools. Everything else this step once listed
+   is blocked on empty tables rather than on code — see below.
 2. **Forms and handlers.** `business-form`, `get-quotes`, `partners/join`, the
    thank-you pages, the 10 API routes and 2 US legacy shims answering 501, and the
    legacy 301s from `hooks.server.ts` into `middleware.ts` — including
-   `/solar-pumps/kusum-scheme` to `kusum-yojana`. Open item 1 belongs here.
+   `/solar-pumps/kusum-scheme` to `kusum-yojana`. `/data-access` and `/data-deletion`
+   belong here too: both look static and both post to a handler that answers 501.
+   The phone-length item below belongs here.
 3. **Sitemaps, metadata, a smoke harness.** The 3 sitemap handlers, `pageMetadata` on
    every page, and a test that fetches one URL of each route shape and asserts 200.
 
@@ -93,18 +104,47 @@ decided is in `components/chrome/Chrome.tsx` and `archetype/editorial.md` §11, 
    The declaration is correct for where the file is going, not for today.
 3. **The installer specimen is out of date.** `/specimen/archetypes/installer` still
    hides the boilerplate About; the shipped page renders it.
-4. **Every editorial `meta_title` and `meta_description` is too long.** `meta_title`
+4. **`/about-us` adds 2,000 to the lead count it prints.** `lib/stats.ts` carries the
+   `+ 2000` from the SvelteKit loader across verbatim, named `LEADS_BEFORE_LEADDATA`.
+   Nothing in the database supports it, so "3,269+ Leads Generated" is 1,269 real rows
+   plus a number no one here can source. Either the business confirms it or it comes out.
+5. **ISR is not actually running on 49 of the 76 routes — ~1,380 of the 1,413 URLs.**
+   `export const revalidate` only applies to pages Next statically generates. A `[slug]`
+   route with no `generateStaticParams` is `ƒ` — re-rendered on every request, querying
+   the database each time. Measured 2026-09-21 against `next build && next start`:
+
+   | URL | `Cache-Control` |
+   | --- | --- |
+   | `/rooftop-solar` (static) | `s-maxage=1296000, stale-while-revalidate=30240000` |
+   | `/rooftop-solar/cost` (dynamic) | `private, no-cache, no-store, max-age=0` |
+
+   It covers the 110 cluster articles, the 649 installer profiles, the 957 geo pages
+   and the 3 project routes. Pre-existing, and a porting gap rather than a bug in any
+   one file: SvelteKit's `config.isr` gave ISR to dynamic routes *without* prerendering
+   them, and Next has no equivalent. Three ways out, none free — `generateStaticParams`
+   per route (restores ISR, couples the build to the database for ~1,380 pages);
+   `unstable_cache` around the two data seams (caches the queries, keeps the build
+   DB-free); or accept it. **Deferred deliberately; decide before launch, not after.**
+6. **Every editorial `meta_title` and `meta_description` is too long.** `meta_title`
    runs to 98 characters against Google's ~60, `meta_description` to 188 against ~155 —
-   on all 117 pillar and cluster pages, not a handful. So most of the editorial surface
-   is truncated in the results page, including the part that carries the keyword.
-   Content, not code: `lib/metadata.ts` passes both through unaltered and should keep
-   doing so. The fix is a CMS pass over `seo_pages`. `archetype/editorial.md` §2.
+   on all 117 pillar and cluster pages. Content, not code: `lib/metadata.ts` passes both
+   through unaltered and should keep doing so. The fix is a CMS pass over `seo_pages`.
+   `archetype/editorial.md` §2.
+
+> Several file headers cite "README open item N" against an older numbering and no
+> longer line up. Treat the number as a hint, not an address.
 
 ### Blocked on data, not code
 
+All verified 2026-09-21.
+
 - **`state_subsidies` is empty** in every status, so the state hub's subsidy callout is
-  not built — the gate can never open. Same shape as **`solar_brands`**, which is why the
-  leaf route has no brand variant: a provisioned table with no rows.
+  not built — the gate can never open.
+- **`solar_brands` is empty**, so the leaf route has no brand variant.
+- **`solar_products` is empty**, so the three product model routes
+  (`/{pillar}/{brand}/{model}`) are not built.
+- **`authors` is empty**, so `/authors/{slug}` is not built. `features.authors` is on
+  for IN and the route is in `MOVED_TO_ROOT`, so the gate opens the moment a row lands.
 - **`rscore` is 0 on all 643 rows**, so the installer sort falls back to its tiebreakers.
 - **`CountryConfig.name` has no article**, so `/us/solar`'s `h1` reads "Solar installers
   across United States". Wants a field on the config, which is a shared-type change.

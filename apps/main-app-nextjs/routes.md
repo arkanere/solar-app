@@ -38,7 +38,13 @@ URL inventory taken from the live sitemaps on 2026-09-05.
 | Single pages | 8 |
 
 Single pages: `/`, `/about-us`, `/terms-of-use`, `/privacy-policy`, `/data-deletion`,
-`/data-access`, `/write-for-us`, `/seo-index`, plus `/tools`.
+`/data-access`, `/write-for-us`, plus `/tools`.
+
+> `/seo-index` was the ninth. **Retired 2026-09-21, not ported**: nothing linked to it,
+> it emitted `noindex, nofollow` while the sitemap advertised it at priority 0.5, its
+> title said "| Dev", and its ~200 hand-written links had drifted — three pointed at
+> `authors`, `solar_brands` and `solar_products` rows that do not exist. `/specimen`
+> and this file already cover what it was for. **The advertised total is 1,413.**
 
 > The counts above are the 2026-09-05 sitemap snapshot and are left as measured.
 > One has moved since: `solar-pumps/kusum-scheme` was set to `draft` on 2026-09-21
@@ -62,7 +68,7 @@ These exist and are database-backed, but are not advertised.
 | `/solar-inverters/{brand}/{model}` | `solarProducts`, ISR |
 | `/solar-pumps/{brand}/{model}` | `solarProducts`, ISR |
 | `/{cc}/project/{project_id}` | projects |
-| `/{cc}/recent-solar-installation-projects/{page_slug}` | pagination |
+| `/{cc}/recent-solar-installation-projects/{page_slug}` | pagination — 15 pages at 9 per page, 130 visible rows |
 | `/{cc}/district/{district_slug}` | geo shim |
 | `/{cc}/partners/join/{district_slug}` | geo |
 | `/{cc}/county/{county_slug}` | US legacy shim |
