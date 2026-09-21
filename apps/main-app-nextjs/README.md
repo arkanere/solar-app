@@ -43,6 +43,7 @@ projects surface — 1,403 of the 1,413 advertised URLs. 26 of 48 page files; th
 | `archetype/installer-profile.md` | Archetype 1 — 649 pages, the largest. |
 | `archetype/geo-index.md` | Archetype 3 — country and state hubs, 29 pages. §9 and §10 record what it decided and where it shipped differently from spec. |
 | `archetype/editorial.md` | Archetype 4 — the 7 pillar landings and 110 cluster articles, 117 pages. Its own §2 holds the `seo_pages` measurements; `data.md` does not cover that table. §11 is what shipped. |
+| `archetype/home.md` | Not an archetype — one page, `/`. §1 says why it gets a spec anyway: it is the only long-tail page whose source design contradicts the design system. Written, not yet built. |
 
 Approve the page designs at `/specimen/archetypes` (dev only).
 
