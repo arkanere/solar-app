@@ -67,3 +67,16 @@ export function getStateName(abbr: string): string {
   if (!abbr) return '';
   return ABBR_TO_STATE[abbr.toLowerCase()] ?? '';
 }
+
+/**
+ * Every US state name, for the business form's state select. Derived from the
+ * map above rather than written out a second time — the two would drift, and
+ * the shims and the form must agree on what counts as a state.
+ *
+ * The map's insertion order is alphabetical by ABBREVIATION, which is not
+ * alphabetical by name ("dc: District of Columbia" sits between Delaware and
+ * Florida), so this sorts by name: the select is read, not keyed.
+ */
+export const US_STATE_NAMES: string[] = Object.values(ABBR_TO_STATE).sort((a, b) =>
+  a.localeCompare(b)
+);

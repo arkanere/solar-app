@@ -59,13 +59,24 @@ export const blankToNull = <T extends z.ZodType>(rule: T) =>
 export const optionalEmail = blankToNull(email);
 
 /**
- * Permissive phone, matching `/^\+?\d{10,16}$/` — the rule the public lead
- * forms use. Digits only, optional leading `+`.
+ * Permissive phone for the public lead forms. Digits only, optional leading
+ * `+`, and never more than 16 characters in total.
+ *
+ * The 16 is `leaddata.phone`, which is `varchar(16)`. The rule used to be
+ * `/^\+?\d{10,16}$/`, which accepts `+` plus 16 digits — 17 characters, one
+ * more than the column holds, so that value was a 500 on insert rather than a
+ * field error. Capping the total at 16 cannot reject a value that ever saved,
+ * because a 17-character phone could never have been stored.
+ *
+ * The digit floor stays at 10: `+` plus 10-to-15 digits, or 10-to-16 bare.
  */
 export const phone = z
 	.string({ error: 'Phone number is required' })
 	.trim()
-	.regex(/^\+?\d{10,16}$/, 'Phone number must be 10 to 16 digits, optionally starting with +');
+	.regex(
+		/^(\+\d{10,15}|\d{10,16})$/,
+		'Phone number must be 10 to 16 digits, optionally starting with +'
+	);
 
 export const optionalPhone = blankToNull(phone);
 

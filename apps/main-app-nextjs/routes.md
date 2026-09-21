@@ -81,3 +81,9 @@ These exist and are database-backed, but are not advertised.
 - `/{cc}/api/*` — 9 endpoints
 - `/api/stories`, `/api/submitDataAccess`, `/api/submitDataDeletion`, `/api/cron/purge-old-leads`
 - ~~`hooks.server.ts` — legacy 301s and rewrites~~ — ported to `middleware.ts`, 2026-09-21
+- ~~`/{cc}/api/submitBusiness`, `sendBusinessSubmissionConfirmation`, `getCities`,
+  `getLevel2s`~~ — ported 2026-09-21 with the lead forms
+
+> `/us/get-quotes` and `/us/partners/*` are advertised above but answer a 301
+> (`middleware.ts`): both read IN-only tables, and a real US funnel is new product
+> surface rather than porting work. `/us/business-form` is a real page.

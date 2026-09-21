@@ -10,6 +10,11 @@
  * the config describes, and narrowing it here would start rejecting numbers
  * the live site takes today.
  *
+ * One tightening on top of the original: the total length is capped at 16, so
+ * `+` plus 16 digits is refused. `leaddata.phone` is `varchar(16)`, so that
+ * value was never storable — it was a 500, not a saved row. This mirrors
+ * `@solar/validation`'s `phone`, which was narrowed the same way.
+ *
  * The postal rule DOES come from the country config, because that one the
  * original already dispatches on — 6 digits for IN, 5 for US.
  *
@@ -51,7 +56,7 @@ export function validateLead(values: LeadFields, country: CountryConfig): LeadEr
 
   if (!values.name.trim()) errors.name = 'Name is required';
 
-  if (!/^\+?\d{10,16}$/.test(values.phone.trim())) {
+  if (!/^(\+\d{10,15}|\d{10,16})$/.test(values.phone.trim())) {
     errors.phone = 'Enter a phone number of 10 to 16 digits';
   }
 

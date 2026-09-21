@@ -29,10 +29,10 @@ sharing `@solar/db` and `@solar/validation`. SvelteKit and Next coexist in the w
 Reasoning lives in the doc or the file header, never here; `git log` is the record.
 
 **Built:** the directory surface, the editorial surface, the four static pages, the
-projects surface, the homepage, the tools and the legacy redirects — 1,408 of the 1,413
-advertised URLs. 30 of 47 page files; the other 17 are stubs. 13 of the 19 route
-handlers answer 501. (`/{cc}/district/{district_slug}` stopped being a page when it
-shipped: it always redirected, so it is a route handler now.)
+projects surface, the homepage, the tools, the legacy redirects and the lead forms —
+1,410 of the 1,413 advertised URLs. 37 of 47 page files; the other 10 are stubs. 9 of
+the 19 route handlers answer 501. (`/{cc}/district/{district_slug}` stopped being a
+page when it shipped: it always redirected, so it is a route handler now.)
 
 ## Where things are
 
@@ -87,6 +87,13 @@ Code worth knowing before editing:
   `components/tools/` is the shared furniture: `Panel`, `StatTile`, `BreakdownRow` and
   the two controls. The controls are native `<input type="range">` and `<select>`, not
   Radix — `Field.tsx` records why.
+- `lib/forms/` — the lead-forms surface's seam. `data.ts` is the geo lookups the two
+  cascading selects fetch, the get-quotes counts, the partner-district figures and the
+  `/{cc}/thank-you` receipt; `businessValidation.ts` is the client-side field rules.
+  `lib/server/business.ts` is the two-row write a signup is (profile + account, and
+  the placeholder-then-UPDATE that 075 forces), `businessConfirmation.ts` the email.
+  `components/forms/BusinessForm.tsx` is the one client leaf, shared by all three
+  signup pages.
 - `lib/metadata.ts` — the one metadata builder. It owns the tag set; each page owns its
   own title and description. Built pages call it; the stubs fall back to the root
   layout, which is also where `metadataBase` lives.
@@ -108,40 +115,34 @@ build error, so that upgrade reworks all 15 files.
 
 ## Next steps
 
-Four left, in order. Re-plan after the last one lands.
+Three left, in order. Re-plan after the last one lands.
 
-1. **The lead forms.** `get-quotes`, `business-form` and `partners/join` (plus its
-   `{district_slug}` variant), their three thank-you pages, and the four handlers
-   behind them: `submitBusiness`, `sendBusinessSubmissionConfirmation`, `getCities`
-   and `getLevel2s`. `lib/server/` already has `leads`, `email`, `leadConfirmation`
-   and `internalAuth`, so this is the form UI, the validation wiring and the district
-   tree the two selects need — `lib/tools/data.ts` already queries that tree, so read
-   it before writing a second copy. **Phone length is a prerequisite, not a
-   follow-up:** a 17-character phone is a 500 on the first real submission. Narrowing
-   `@solar/validation`'s `phone` primitive is a cross-app change — agree it with
-   main-app live before this step starts, or clamp at the Next boundary and record why.
+> ~~**1. The lead forms.**~~ **Done 2026-09-21.** The seven pages and the four
+> handlers shipped; `lib/forms/` is the seam and `components/forms/BusinessForm.tsx`
+> the one client leaf. Its prerequisite, phone length, shipped with it. What the step
+> did NOT carry across is the Meta Pixel — see the open item below.
 
-2. **The remaining handlers.** `/data-access` and `/data-deletion` — both pages are
+1. **The remaining handlers.** `/data-access` and `/data-deletion` — both pages are
    built and both post to a 501, so they are the shortest path to two working pages —
    plus `submitDataAccess`, `submitDataDeletion`, `/api/stories`, `postRecentProject`,
    `updateRecentProject` and `/api/cron/purge-old-leads`. The three write routes are
    internal: they go through `lib/server/internalAuth.ts`, and the cron route needs its
    schedule decided as well as its body.
 
-3. **Sitemaps and metadata.** The 3 sitemap handlers (`/sitemap.xml`,
+2. **Sitemaps and metadata.** The 3 sitemap handlers (`/sitemap.xml`,
    `/content-sitemap.xml`, `/{cc}/sitemap.xml`), which closes **robots.txt points at a
    501**. Then `pageMetadata` on every page that still falls back to the root layout.
    The 117 editorial pages are the exception: `lib/metadata.ts` passes `meta_title` and
    `meta_description` through unaltered and must keep doing so, so **editorial metadata
    is too long** stays a CMS pass and is not in this step's scope.
 
-4. **A smoke harness.** One URL of each of the 76 route shapes, asserting 200, plus
+3. **A smoke harness.** One URL of each of the 76 route shapes, asserting 200, plus
    `x-nextjs-cache` on the 15 ISR shapes — Next sets it to `HIT`/`STALE`/`MISS`/
    `REVALIDATED`, so the assertion that keeps ISR from silently regressing is a header
    check, not a timing heuristic. `NEXT_PRIVATE_DEBUG_CACHE=1` logs hits and misses.
    Add a shape in the same commit that adds a route.
 
-Not in these four, and deliberately: everything under **Blocked on data, not code**,
+Not in these three, and deliberately: everything under **Blocked on data, not code**,
 plus the specimen, lead-count and editorial-metadata items below. The lead count is a
 one-line fix in `lib/stats.ts` either way, but it is a business decision — ask before
 launch, not at the end.
@@ -152,11 +153,31 @@ Named, not numbered. The numbers used to drift every time an item closed, and so
 file headers still cite "README open item N" against a numbering that no longer
 exists — treat any such number as a hint, not an address.
 
-- **Phone length.** A phone of `+` plus 16 digits is a 500. `@solar/validation`'s
-  `phone` primitive allows 17 characters; `leaddata.phone` is `varchar(16)`.
-  Pre-existing and shared with main-app live, so narrowing the primitive is a
-  cross-app change. Blocks next step 1.
-- **`robots.txt` points at a 501.** `/sitemap.xml` is still a stub; next step 3 builds
+- **The Meta Pixel is not ported.** The SvelteKit `business-form`, `partners/join`,
+  `thank-you` and `thank-you-business` heads each inject `fbq` inline — a `PageView`
+  on the two forms and a **`Lead` conversion** on the two confirmations. None came
+  across: a third-party tracker belongs behind a consent decision and a
+  `next/script` strategy, and neither has been made. **The ad account's conversion
+  reporting is blind on this app until it lands**, which makes it a launch blocker
+  rather than a nicety.
+- **Two confirmation pages, one reachable.** `BusinessForm` sends every successful
+  signup to `/{cc}/thank-you-business`, from all three pages that render it — so
+  `/{cc}/partners/join/thank-you` is built, advertised and routed to by nothing. It
+  also promises something different (48 hours, vs a call). Carried across as the
+  SvelteKit form has it. Which one a partner signup should land on is a content
+  decision.
+- **`/{cc}/thank-you` is not routed to from this app either.** `LeadForm` confirms in
+  place rather than redirecting — its header says why, and the reasoning still holds
+  now the page is real. The page is reached from the confirmation email's link. Worth
+  deciding deliberately rather than by default.
+- **main-app's own phone rule is still the old one.** Closing the phone-length item
+  narrowed `@solar/validation`'s `phone` primitive to 16 characters total, which fixes
+  the Next app because it validates with `parseBody`. main-app live calls
+  `inspectBody` on the same schema — log-only — so its real guard is its own copy in
+  `src/lib/constants/formValidation.ts`, which still reads `/^\+?\d{10,16}$/`. A
+  17-character phone is therefore still a 500 there. Not touched: it is live SvelteKit
+  and outside the port. One regex, whenever that app is next opened.
+- **`robots.txt` points at a 501.** `/sitemap.xml` is still a stub; next step 2 builds
   it. The declaration is correct for where the file is going, not for today.
 - **The installer specimen is out of date.** `/specimen/archetypes/installer` still
   hides the boilerplate About; the shipped page renders it.
