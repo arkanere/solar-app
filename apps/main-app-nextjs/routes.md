@@ -69,7 +69,7 @@ These exist and are database-backed, but are not advertised.
 | `/solar-pumps/{brand}/{model}` | `solarProducts`, ISR |
 | `/{cc}/project/{project_id}` | projects |
 | `/{cc}/recent-solar-installation-projects/{page_slug}` | pagination — 15 pages at 9 per page, 130 visible rows |
-| `/{cc}/district/{district_slug}` | geo shim |
+| `/{cc}/district/{district_slug}` | geo shim — a 301 route handler, never a page |
 | `/{cc}/partners/join/{district_slug}` | geo |
 | `/{cc}/county/{county_slug}` | US legacy shim |
 | `/{cc}/solar-panel-installer-directory/{city}` | US legacy shim |
@@ -80,4 +80,4 @@ These exist and are database-backed, but are not advertised.
 - `/sitemap.xml`, `/content-sitemap.xml`, `/{cc}/sitemap.xml`
 - `/{cc}/api/*` — 9 endpoints
 - `/api/stories`, `/api/submitDataAccess`, `/api/submitDataDeletion`, `/api/cron/purge-old-leads`
-- `hooks.server.ts` — legacy 301s and rewrites, to become `middleware.ts`
+- ~~`hooks.server.ts` — legacy 301s and rewrites~~ — ported to `middleware.ts`, 2026-09-21

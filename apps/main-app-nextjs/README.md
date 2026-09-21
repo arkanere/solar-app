@@ -29,8 +29,10 @@ sharing `@solar/db` and `@solar/validation`. SvelteKit and Next coexist in the w
 Reasoning lives in the doc or the file header, never here; `git log` is the record.
 
 **Built:** the directory surface, the editorial surface, the four static pages, the
-projects surface, the homepage and the tools — 1,408 of the 1,413 advertised URLs. 31 of
-48 page files; the other 17 are stubs. 16 of the 19 route handlers answer 501.
+projects surface, the homepage, the tools and the legacy redirects — 1,408 of the 1,413
+advertised URLs. 30 of 47 page files; the other 17 are stubs. 13 of the 19 route
+handlers answer 501. (`/{cc}/district/{district_slug}` stopped being a page when it
+shipped: it always redirected, so it is a route handler now.)
 
 ## Where things are
 
@@ -64,6 +66,10 @@ Code worth knowing before editing:
   body, shared by `submitLead` and its own route). Needs `BREVO_API_KEY` and
   `INTERNAL_API_SECRET` in `.env.local`; `USER_APP_URL` is optional and defaults to
   production.
+- `middleware.ts` — the legacy 301s, ported from SvelteKit's `hooks.server.ts`. They
+  run before routing, which is why they are the rules that keep the query string. The
+  four shims that need a geo lookup are route handlers instead and do not — read
+  `lib/redirects.ts` before adding a fifth.
 - `components/chrome/` — `SiteHeader`, `SiteFooter` and `Chrome`. Read Chrome.tsx first:
   it records why chrome is not in the root layout. `NavMenu` is the only client leaf.
 - `lib/editorial/` — the editorial surface's seam. `data.ts` is the three queries,
@@ -92,9 +98,15 @@ imported constant fails the build. `lib/editorial/routes.tsx` has the measuremen
 
 ## Next steps
 
-Five left, in order. Re-plan after the last one lands.
+Four left, in order. Re-plan after the last one lands.
 
-> **Step 1, the long tail, is done.** `/` shipped 2026-09-21 against `archetype/home.md`
+> **Step 1, the redirects, is done.** The legacy 301s landed in
+> `middleware.ts` and the four shims answer real redirects, all 2026-09-21. Verified
+> against `next build && next start`. Note `/us/` now takes two hops — Next normalizes
+> the trailing slash with its own 308 before middleware runs, where SvelteKit reached
+> `/` in one. That is Next's behaviour on every URL, not something these rules added.
+>
+> **The old step 1, the long tail, is done.** `/` shipped 2026-09-21 against `archetype/home.md`
 > (§12 records what changed); `/tools` and the 3 calculators shipped 2026-09-21. They got
 > no spec: unlike the homepage the copy, the routes and the arithmetic were all settled,
 > so the only open questions were the controls and the component split, and both are
@@ -106,15 +118,10 @@ blocker. Redirects need no database, the forms need Brevo and a live `leaddata`
 write, and the leftover handlers need neither. Splitting them means the SEO work can
 land while the form work is still in review.
 
-1. **Redirects and the legacy shims.** The 301s from SvelteKit's `hooks.server.ts`
-   into `middleware.ts`, including `/solar-pumps/kusum-scheme` to `kusum-yojana` —
-   which is not in that file, it is indexed and its row is now `draft`. Then the three
-   handlers that are redirects wearing a route handler's clothes and answer 501 today:
-   `/{cc}/county/{county_slug}` and `/{cc}/solar-panel-installer-directory/{city}` (the
-   US legacy shims), and `/rooftop-solar/roi`. `/{cc}/district/{district_slug}` is a
-   page stub doing the same job — it belongs here, not with the forms.
-   No database, no third party. Do this first: every day it is not done is a day of
-   indexed URLs 404ing.
+1. ~~**Redirects and the legacy shims.**~~ Done 2026-09-21. The rules live in
+   `middleware.ts`, the three US/IN geo lookups they could not do there are exported
+   from `lib/directory/data.ts`, and `lib/redirects.ts` holds the 301 and the 404 the
+   four shims share.
 
 2. **The lead forms.** `get-quotes`, `business-form` and `partners/join` (plus its
    `{district_slug}` variant), their three thank-you pages, and the four handlers

@@ -1139,3 +1139,81 @@ async function loadProjectPage(slug: string): Promise<ProjectDetail | null> {
     level2Slug: slugify(district)
   };
 }
+
+/**
+ * Geography lookups for the legacy redirect shims, ported from
+ * apps/main-app/src/lib/server/geo.ts.
+ *
+ * They live here rather than in the shims because they read geo_locations,
+ * and every query against it belongs in this seam. They are separate from
+ * `resolveLevel2` above on purpose: that one is a 404 gate and returns the
+ * display names a page prints, while these return the precomputed slugs a
+ * redirect target is built from.
+ *
+ * None are wrapped in `cache`: a redirect handler calls one of them once and
+ * then returns, so there is no second caller to hit the cache.
+ */
+
+/** The canonical slugs for a state/county pair, or null if the pair does not exist. */
+export async function findLevel2(
+  country: string,
+  level1Slug: string,
+  level2Slug: string
+): Promise<{ level1Slug: string; level2Slug: string } | null> {
+  const rows = await db
+    .select({ level1Slug: geoLocations.level1Slug, level2Slug: geoLocations.level2Slug })
+    .from(geoLocations)
+    .where(
+      and(
+        eq(geoLocations.countryCode, country),
+        eq(geoLocations.level1Slug, level1Slug),
+        eq(geoLocations.level2Slug, level2Slug)
+      )
+    )
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+/**
+ * The state for a bare level2 slug. Legacy URLs carry no state segment
+ * ("/us/county/orange"), so the first match wins — the slug is not unique
+ * across states and the old URL has no way to say which one it meant.
+ */
+export async function findLevel1ForLevel2(
+  country: string,
+  level2Slug: string
+): Promise<{ level1Slug: string; level2Slug: string } | null> {
+  const rows = await db
+    .select({ level1Slug: geoLocations.level1Slug, level2Slug: geoLocations.level2Slug })
+    .from(geoLocations)
+    .where(and(eq(geoLocations.countryCode, country), eq(geoLocations.level2Slug, level2Slug)))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+/**
+ * A city by slug, optionally scoped to a state. The legacy city directory URL
+ * never carried the county, so the full path has to be rebuilt from the row.
+ */
+export async function findCity(
+  country: string,
+  citySlug: string,
+  level1Slug?: string
+): Promise<{ level1Slug: string; level2Slug: string; citySlug: string } | null> {
+  const rows = await db
+    .select({
+      level1Slug: geoLocations.level1Slug,
+      level2Slug: geoLocations.level2Slug,
+      citySlug: geoLocations.citySlug
+    })
+    .from(geoLocations)
+    .where(
+      and(
+        eq(geoLocations.countryCode, country),
+        eq(geoLocations.citySlug, citySlug),
+        level1Slug ? eq(geoLocations.level1Slug, level1Slug) : undefined
+      )
+    )
+    .limit(1);
+  return rows[0] ?? null;
+}

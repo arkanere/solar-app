@@ -8,10 +8,16 @@
  *
  * `contentUrl` and MOVED_TO_ROOT came across with the district page's solar-
  * guides chips (geo-listing.md §5 section 12), which link into the editorial
- * families. `countryUrl` and `toSlug` did not: nothing here builds a country
- * home link or slugifies, and they come with the pages that do.
+ * families. `countryUrl` did not: nothing here builds a country home link, and
+ * it comes with the page that does. `toSlug` arrived later, with the legacy US
+ * redirect shims — they turn a state name back into the slug the geo rows carry.
  */
 import { MOVED_TO_ROOT } from '@/lib/countries/moved-content';
+
+/** The slug form geo_locations stores: lower-cased, spaces to hyphens. */
+export function toSlug(value: string): string {
+  return value.toLowerCase().replace(/\s+/g, '-');
+}
 
 export function geoUrl(
   country: string,
