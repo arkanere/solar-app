@@ -13,9 +13,12 @@
  * alternative was a second variant of the copy, which is two strings to keep
  * in step for one page.
  *
- * **The counts are not country-scoped**, matching the SvelteKit loader. See
- * `lib/forms/data.ts`, which records why narrowing them would change a
- * published figure.
+ * **The two counts come from `getPlatformStats`**, the same source /about-us
+ * and /{cc}/partners print. They used to be their own query counting visible
+ * business_profiles — branches, not companies — which printed 653 here
+ * against 476 on /{cc}/partners for the same word, "installers". The projects
+ * query was identical to the one in lib/stats.ts, so nothing else changed.
+ * Platform-wide, not country-scoped, like every other figure on those pages.
  *
  * The FAQ copy is IN-specific in the original — it says "in India" and quotes
  * rupee expectations. It is carried across as written and gated to IN rather
@@ -29,7 +32,7 @@ import { PageShell, Section, Stack } from '@/components/layout';
 import { Breadcrumb, FAQ, LeadFormSection, type FaqEntry } from '@/components/directory';
 import { StatTile } from '@/components/tools/Panel';
 import { getCountry, isCountry } from '@/lib/countries';
-import { getQuoteCounts } from '@/lib/forms/data';
+import { getPlatformStats } from '@/lib/stats';
 import { breadcrumbLD, faqLD } from '@/lib/directory/structuredData';
 import { pageMetadata } from '@/lib/metadata';
 
@@ -100,11 +103,11 @@ export async function generateMetadata({
 
   // Memoised for the request, so the page below re-reads this rather than
   // running both counts a second time.
-  const { installerCount, projectCount } = await getQuoteCounts();
+  const { installerCount, projectsCompleted } = await getPlatformStats();
 
   return pageMetadata({
     title: 'Get a Free Solar Quotation Online',
-    description: `Get a free solar quotation online from verified solar panel installers in ${config.name}. Compare 2-3 competitive quotations on price, services and reviews. ${installerCount}+ installers, ${projectCount}+ completed projects.`,
+    description: `Get a free solar quotation online from verified solar panel installers in ${config.name}. Compare 2-3 competitive quotations on price, services and reviews. ${installerCount}+ installers, ${projectsCompleted}+ completed projects.`,
     path: `/${country}/get-quotes`,
     locale: config.locale,
     imageAlt: `Get free solar quotes in ${config.name}`
@@ -116,7 +119,7 @@ export default async function Page({ params }: { params: Promise<{ country: stri
   if (!isCountry(country)) notFound();
   const config = getCountry(country);
 
-  const { installerCount, projectCount } = await getQuoteCounts();
+  const { installerCount, projectsCompleted } = await getPlatformStats();
   const faqs = country === 'in' ? FAQS_IN : [];
 
   const trail = [{ name: 'Home', href: `/${country}` }, { name: 'Get Quotes' }];
@@ -148,7 +151,7 @@ export default async function Page({ params }: { params: Promise<{ country: stri
           />
           <StatTile
             icon={FolderCheck}
-            value={`${projectCount.toLocaleString(config.locale)}+`}
+            value={`${projectsCompleted.toLocaleString(config.locale)}+`}
             label="Verified projects"
           />
         </div>

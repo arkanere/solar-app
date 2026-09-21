@@ -1,6 +1,6 @@
 /**
- * The data seam for the lead-forms surface: `/get-quotes`, `/business-form`,
- * `/partners/join` and the two thank-you pages that read a row.
+ * The data seam for the lead-forms surface: `/business-form`, `/partners/join`
+ * and the two thank-you pages that read a row.
  *
  * Its own file rather than lib/directory/data.ts for the reason lib/stats.ts
  * and lib/tools/data.ts give: that seam's header says every query in it is
@@ -9,23 +9,16 @@
  * mid-typing rather than a render — and one of them reads `leaddata`, which
  * the directory seam never writes or reads by key.
  *
- * Ported from apps/main-app/src/lib/server/geo.ts (the two level lookups),
- * the `get-quotes`, `thank-you` and `partners/join/{district_slug}` loaders.
+ * Ported from apps/main-app/src/lib/server/geo.ts (the two level lookups) and
+ * the `thank-you` and `partners/join/{district_slug}` loaders.
  *
- * Three things carried across deliberately:
+ * Two things carried across deliberately:
  *
  *  - **the level lookups are not filtered to places with installers.**
  *    `getLevel2sForLevel1` in SvelteKit takes a `withBusinessesOnly` option
  *    and the geo endpoints never pass it. A business signing up is telling us
  *    where it works; restricting the select to districts that already have a
  *    listing would make the first installer in a district unable to sign up.
- *  - **`getQuoteCounts` counts profiles, not accounts.** The get-quotes
- *    loader selects `business_profiles WHERE isvisible`, so a company with
- *    four branches counts four times. That is the number on the live page and
- *    narrowing it would change a published figure — the same call
- *    lib/tools/data.ts records for its installer count. lib/stats.ts counts
- *    ACCOUNTS for /about-us, which is why the two pages print different
- *    numbers; both are intentional.
  *  - **the partner-district counts key on LOWER().** `geo_locations` and
  *    `business_profiles` disagree on casing, the trap geo-listing.md §9
  *    records, so the nearby-district counts are a separate grouped query
@@ -33,7 +26,7 @@
  */
 import { cache } from 'react';
 import { and, asc, count, countDistinct, eq, sql } from 'drizzle-orm';
-import { businessProfiles, geoLocations, leaddata, projects } from '@solar/db/schema';
+import { businessProfiles, geoLocations, leaddata } from '@solar/db/schema';
 import { db } from '@/lib/server/db';
 
 /** A geo option as the two form endpoints return it: display name plus slug. */
@@ -76,23 +69,6 @@ export async function getCitiesForLevel2(
     )
     .orderBy(asc(geoLocations.city));
   return rows;
-}
-
-export type QuoteCounts = { installerCount: number; projectCount: number };
-
-/**
- * The two trust figures above the get-quotes form. Neither is country-scoped,
- * matching the SvelteKit loader — see the header.
- */
-async function loadQuoteCounts(): Promise<QuoteCounts> {
-  const [installerRows, projectRows] = await Promise.all([
-    db.select({ total: count() }).from(businessProfiles).where(eq(businessProfiles.isvisible, true)),
-    db.select({ total: count() }).from(projects).where(eq(projects.isvisible, true))
-  ]);
-  return {
-    installerCount: installerRows[0]?.total ?? 0,
-    projectCount: projectRows[0]?.total ?? 0
-  };
 }
 
 export type PartnerDistrict = {
@@ -297,6 +273,5 @@ async function loadLeadReceipt(referenceUuid: string): Promise<LeadReceipt | nul
  * route handlers, which call one of them once and return — a cache with no
  * second caller to hit it.
  */
-export const getQuoteCounts = cache(loadQuoteCounts);
 export const getPartnerDistrict = cache(loadPartnerDistrict);
 export const getLeadReceipt = cache(loadLeadReceipt);
