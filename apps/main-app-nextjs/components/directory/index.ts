@@ -14,7 +14,7 @@ export { CityChips } from './CityChips';
 export { CallButton, WhatsAppButton } from './ContactButtons';
 export { ContactPanel } from './ContactPanel';
 export { CoverageBar } from './CoverageBar';
-export { FAQ } from './FAQ';
+export { FAQ, type FaqEntry } from './FAQ';
 export { InstallerList } from './InstallerList';
 export { InstallerProjects } from './InstallerProjects';
 export { InstallerRow } from './InstallerRow';

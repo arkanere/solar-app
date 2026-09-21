@@ -239,7 +239,7 @@ export default async function Page({
 
       {faqItems.length > 0 ? (
         <Section>
-          <FAQ items={faqItems} place={place} />
+          <FAQ items={faqItems} heading={`Common questions about solar in ${place}`} />
         </Section>
       ) : null}
 

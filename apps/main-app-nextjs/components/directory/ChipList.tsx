@@ -13,8 +13,12 @@
  * to read" and "places to go next" are genuinely different offers, and one
  * box asserting otherwise is not clearer, only shorter.
  *
- * Every chip is a link. There is no inert variant, because the one section
- * that had inert chips — cities — dropped them (see CityChips).
+ * Every chip is a link but one: archetype/editorial.md §8 puts the same
+ * sibling list on all 110 cluster articles and keeps the current page in it,
+ * marked and not linked, because that is what tells the reader where they
+ * are in a 22-item set. `currentHref` is that one chip, and the directory
+ * surface passes nothing — the section that had inert chips there, cities,
+ * dropped them (see CityChips).
  *
  * `data-unstyled` rather than relying on the `nav a` rule in globals.css: two
  * of the three callers are not navigation, and a chip is identifiable as
@@ -26,24 +30,47 @@ export type Chip = {
   href: string;
 };
 
-export function ChipList({ heading, chips }: { heading: string; chips: Chip[] }) {
+export function ChipList({
+  heading,
+  chips,
+  currentHref
+}: {
+  heading: string;
+  chips: Chip[];
+  /** The chip for the page this list is on: rendered inert and marked. */
+  currentHref?: string;
+}) {
   if (chips.length === 0) return null;
 
   return (
     <>
       <h2 className="text-lg">{heading}</h2>
       <ul className="mt-md flex flex-wrap gap-xs">
-        {chips.map((c) => (
-          <li key={c.href}>
-            <a
-              href={c.href}
-              data-unstyled
-              className="inline-block rounded-md border border-line bg-surface px-sm py-2xs text-sm text-ink transition-colors duration-fast ease-standard hover:border-line-strong"
-            >
-              {c.label}
-            </a>
-          </li>
-        ))}
+        {chips.map((c) =>
+          c.href === currentHref ? (
+            // `aria-current` rather than a visual marker alone: the stronger
+            // border says "you are here" to a reader and nothing to a screen
+            // reader.
+            <li key={c.href}>
+              <span
+                aria-current="page"
+                className="inline-block rounded-md border border-line-strong bg-surface-sunken px-sm py-2xs text-sm font-semibold text-ink"
+              >
+                {c.label}
+              </span>
+            </li>
+          ) : (
+            <li key={c.href}>
+              <a
+                href={c.href}
+                data-unstyled
+                className="inline-block rounded-md border border-line bg-surface px-sm py-2xs text-sm text-ink transition-colors duration-fast ease-standard hover:border-line-strong"
+              >
+                {c.label}
+              </a>
+            </li>
+          )
+        )}
       </ul>
     </>
   );

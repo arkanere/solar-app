@@ -1,9 +1,12 @@
-export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  return (
-    <main>
-      <h1>/solar-financing/[slug]</h1>
-      <pre>{JSON.stringify({ slug }, null, 2)}</pre>
-    </main>
-  );
-}
+/**
+ * Archetype 4 — a solar-financing cluster article.
+ * Spec: archetype/editorial.md. Everything is in lib/editorial/routes.tsx;
+ * the pillar slug is the only thing this file knows.
+ */
+import { clusterRoute } from '@/lib/editorial/routes';
+
+const route = clusterRoute('solar-financing');
+
+export { revalidate } from '@/lib/editorial/routes';
+export const generateMetadata = route.generateMetadata;
+export default route.Page;

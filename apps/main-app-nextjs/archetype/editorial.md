@@ -366,3 +366,66 @@ And the one thing §6 flagged without listing here:
    contributors are ever given write access to `seo_pages`, this decision has to be
    reopened before that happens,** because nothing else in the render path would catch
    it.
+
+## 11. What shipped — 2026-09-21
+
+All 117 pages. `/{pillar}` and `/{pillar}/{slug}` under all seven pillars, built to
+this spec. Where the code differs from what is written above, it is recorded here.
+
+**The files.** `lib/editorial/pillars.ts` (the 7-entry name map that replaces
+`PILLAR_CONFIG`), `lib/editorial/data.ts` (the seam — three queries),
+`lib/editorial/routes.tsx` (the two routes, once), `components/editorial/`
+(`EditorialArticle` and `ArticleBody`), and fourteen six-line route files that do
+nothing but name their own pillar. `lib/editorial/body.ts` was already there.
+
+**Two edits outside the archetype, not one.** §7 predicted `FAQ.tsx`; `ChipList.tsx`
+also needed the inert current chip §8 asks for, which it had no variant for. Both are
+additive: `FAQ` takes `heading` and an opt-in `html`, and its `items` type is now
+structural rather than `FAQItem` from `lib/countries/faq.ts`; `ChipList` takes an
+optional `currentHref`. The three directory callers pass the heading they had
+hardcoded and nothing else changed.
+
+**The table breakout is a section, not a table.** §5's rule — natural width, capped at
+the content measure, scrolling past that — is implemented on the body section that
+*contains* a table, because wrapping each table individually would mean parsing the
+HTML, and §10 item 1 declined to do that. Three consequences:
+
+- `w-auto`, not the specimen's `w-full`. That is what makes the narrow six-column
+  table stay narrow and the wide five-column one take the space, which §5 found was
+  the actual distinction.
+- The breakout is `xl:` (1280px) and not lower. It works by overflowing the prose
+  column to the right by half the difference between the two measures, which lands on
+  the content container's right edge — but only once the viewport can hold 72rem plus
+  its gutters. Below that a table keeps the prose measure and scrolls.
+- The prose inside a widened section is pinned back to the measure, or the paragraph
+  either side of a table would run longer than the paragraph in the section above it.
+
+**No fading right edge.** §5 asked for one. It was written when each table was to get
+its own wrapper; the wrapper is the section, so a mask would fade the right edge of
+every paragraph in it too. Below `md` the scroll box bleeds into the page gutter
+instead, which is the same cue and costs no mask.
+
+**The site suffix is stripped from `meta_title`.** All 117 rows already end in
+" | Solar Vipani" and `pageMetadata` adds it. Removing the part `lib/metadata.ts` owns
+is not editing the copy — the 98-character overflow §10 item 6 recorded is untouched
+and still wants the CMS pass.
+
+**The FAQ and chip-list headings are serif here.** They are Inter in the directory,
+which is right there; following nine serif `h2`s a tenth in a second face reads as the
+article having ended. The questions and the chip labels stay sans.
+
+**One thing worth watching.** The chips are `h1`s, which run to 80 characters, so on a
+wide viewport the "Explore topics" list is close to one chip per line rather than the
+compact wrap §8 pictured. It is still a third of the height of the card grid it
+replaced, so the call stands, but if these lists are ever revisited the label is the
+thing to change, not the shape.
+
+**Not built, and still open:**
+
+- `/` — out of scope by §"Scope", and the only part of README step 2 not covered here.
+  It shares the route group and nothing else.
+- `/solar-subsidy/{slug}` serves clusters only. The state-subsidy and discom variants
+  `routes.md` describes are blocked on `state_subsidies` being empty, the same call
+  §3 made for brands.
+- The `/solar-pumps/kusum-scheme` 301 (§6) — it belongs in `middleware.ts` with the
+  other legacy redirects, README step 4.
