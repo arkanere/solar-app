@@ -10,12 +10,19 @@
  *  - headings are ink and left-aligned, not centred brand orange with a rule;
  *  - cards are a hairline on bg-surface and do not lift on a shadow;
  *  - the two hero buttons are new — the live front door has no call to action
- *    anywhere above the fold (§2);
+ *    anywhere above the fold (§2). They are the country choice itself, one
+ *    per market, because that is this page's first job;
  *  - the counts are new. The original's comment refused them because the true
  *    figure "would need a query this page otherwise does not make" (§4). It
- *    does now: `getCountryHub` is the country hub's own query, memoised, and
- *    this page's first job is a choice between two countries, which is
- *    exactly the choice coverage decides.
+ *    does now: `getCountryHub` is the country hub's own query, memoised.
+ *
+ * **The page no longer leads with India.** It used to open on India's coverage
+ * sentence and then offer a country grid below it, which made /in the default
+ * and /us a second thought. Both are gone: the hero offers the two markets
+ * side by side and carries the per-country installer counts under them, so
+ * the counts survive the deletion and the choice is made once. The per-country
+ * coverage ratios — districts and counties covered — are not carried over;
+ * each country hub still prints its own.
  *
  * The 4.5MB decorative hero video does not come across (§6). Without it the
  * page needs no JavaScript at all: the AVIF is the LCP element, `priority`
@@ -36,7 +43,6 @@ import {
   SolarPanel
 } from 'lucide-react';
 import { Container, PageShell, Section, Stack } from '@/components/layout';
-import { LocationGrid } from '@/components/directory';
 import { COUNTRIES, getCountry } from '@/lib/countries';
 import { getCountryHub } from '@/lib/directory/data';
 import { contentUrl, geoUrl } from '@/lib/directory/urls';
@@ -207,23 +213,39 @@ export default async function Page() {
               Save 10-20% on installation costs with competitive solar quotations online
             </p>
           </div>
-          {/* Two buttons, for the two readers: ready to buy, and still reading
-              (§8). One fill, one outline — the fill is the only sky on the
-              band, which is rule 2. */}
+          {/* The page's first job is a choice between two countries, so the
+              two buttons ARE that choice. One fill, one outline — the fill is
+              the only sky on the band, which is rule 2, and it goes to India
+              because this is an IN-first site. */}
           <div className="flex flex-wrap gap-sm">
             <a
-              href={`/${india.code}/get-quotes`}
+              href={geoUrl('in')}
               className="inline-flex items-center justify-center rounded-md bg-action px-lg py-sm text-base font-semibold text-action-ink no-underline transition-colors duration-fast ease-standard hover:bg-action-hover"
             >
-              Get free quotes
+              Installers in {india.shortName}
             </a>
             <a
-              href={geoUrl('in')}
+              href={geoUrl('us')}
               className="inline-flex items-center justify-center rounded-md border border-white px-lg py-sm text-base font-semibold text-white no-underline transition-colors duration-fast ease-standard hover:bg-white/10"
             >
-              Browse installers
+              Installers in {getCountry('us').shortName}
             </a>
           </div>
+          {/* The country-wise counts, which the two deleted sections used to
+              carry. Here because this is the band where the choice is made and
+              the count is what it turns on. `tabular-nums` so the figures read
+              as data, as on /{cc}/solar. */}
+          <p className="text-sm text-white">
+            {Object.values(COUNTRIES).map((market, i) => (
+              <span key={market.code}>
+                {i > 0 ? <span aria-hidden> · </span> : null}
+                <span className="font-semibold tabular-nums">
+                  {hubs[market.code].totalInstallers.toLocaleString(india.locale)}
+                </span>{' '}
+                in {market.shortName}
+              </span>
+            ))}
+          </p>
         </Stack>
       </Container>
     </section>
@@ -231,63 +253,6 @@ export default async function Page() {
 
   return (
     <PageShell hero={hero}>
-      {/* The country hub's coverage sentence, for India, one level up. §4: the
-          page is a country chooser and this is the fact the choice turns on.
-          Stated as ratios rather than bare counts, and tabular-nums so the
-          figures read as data inside the sentence — both as on /{cc}/solar. */}
-      <Section>
-        <p className="max-w-prose text-ink-muted">
-          <span className="font-semibold tabular-nums text-ink">
-            {inHub.totalInstallers.toLocaleString(india.locale)}
-          </span>{' '}
-          verified installers listed in{' '}
-          <span className="font-semibold tabular-nums text-ink">
-            {inHub.coveredLevel2Count.toLocaleString(india.locale)}
-          </span>{' '}
-          of{' '}
-          <span className="tabular-nums">
-            {inHub.totalLevel2Count.toLocaleString(india.locale)}
-          </span>{' '}
-          {india.levels.level2.plural.toLowerCase()}, across{' '}
-          <span className="font-semibold tabular-nums text-ink">{inHub.level1Count}</span> of{' '}
-          <span className="tabular-nums">{inHub.totalLevel1Count}</span>{' '}
-          {india.levels.level1.plural.toLowerCase()} in {india.name}.
-        </p>
-      </Section>
-
-      {/* The country cards are LocationGrid's card exactly, one level up from
-          the state cards it was written for: a name, a comparable number and
-          the coverage bar. The live page's card has a name, a sentence and an
-          arrow — the same card geo-index.md §5 rejected. */}
-      <Section>
-        <nav aria-label="Browse installers by country">
-          <h2 className="text-xl">Browse installers</h2>
-          {/* One locale for a grid holding two countries, which is the one
-              place this prop is a compromise: the grid formats per grid, not
-              per card. India's, because this is the country-less root of an
-              IN-first site — and because every figure the card can print today
-              is under 10,000, where en-IN and en-US group identically. A
-              five-figure count here would need the prop to move onto the
-              card. */}
-          <LocationGrid
-            locale={india.locale}
-            items={Object.values(COUNTRIES).map((market) => {
-              const hub = hubs[market.code];
-              return {
-                name: market.name,
-                href: geoUrl(market.code),
-                installerCount: hub.totalInstallers,
-                coverage: {
-                  covered: hub.coveredLevel2Count,
-                  total: hub.totalLevel2Count,
-                  label: market.levels.level2.plural.toLowerCase()
-                }
-              };
-            })}
-          />
-        </nav>
-      </Section>
-
       <Section>
         <nav aria-label="Solar guides">
           <h2 className="text-xl">Learn about solar</h2>

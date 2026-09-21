@@ -4,6 +4,7 @@ import type { CountryConfig } from './types';
 export const IN: CountryConfig = {
   code: 'in',
   name: 'India',
+  shortName: 'India',
   brandName: 'Solar Vipani',
   locale: 'en-IN',
   currency: 'INR',

@@ -4,6 +4,7 @@ import type { CountryConfig } from './types';
 export const US: CountryConfig = {
   code: 'us',
   name: 'United States',
+  shortName: 'USA',
   brandName: 'Solar Vipani USA',
   locale: 'en-US',
   currency: 'USD',

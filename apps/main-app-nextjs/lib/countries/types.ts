@@ -26,6 +26,13 @@ export interface LevelLabels {
 export interface CountryConfig {
   code: CountryCode;
   name: string;
+  /**
+   * The name in running copy, where the full one is too long or wants an
+   * article `name` does not carry: 'USA', not 'United States'. The homepage's
+   * country buttons and counts are the callers. Not in the SvelteKit config —
+   * added here, so the two have diverged by this one field.
+   */
+  shortName: string;
   /** Name used in outbound copy, e.g. 'Solar Vipani USA'. */
   brandName: string;
   /** e.g. 'en-IN'. */
