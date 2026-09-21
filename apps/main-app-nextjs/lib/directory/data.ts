@@ -28,7 +28,7 @@
  *    business_profiles disagree on casing.
  */
 import { cache } from 'react';
-import { and, asc, count, desc, eq, inArray, isNotNull, or, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, exists, inArray, isNotNull, or, sql } from 'drizzle-orm';
 import {
   businessAccounts,
   businessProfiles,
@@ -1282,4 +1282,122 @@ export async function listStories(): Promise<StoryRow[]> {
     )
     .orderBy(desc(projects.projectDate))
     .limit(STORIES_LIMIT);
+}
+
+/* -------------------------------------------------------------------------
+ * `/{cc}/sitemap.xml`.
+ *
+ * Slugs only. The page loaders above select the columns a page renders; a
+ * sitemap needs a path and nothing else, and this is ~1,240 rows for IN, so
+ * reusing `getCountryHub` or `getStateHub` here would fetch names, counts and
+ * postal codes to throw all of them away.
+ *
+ * The three geo queries each filter on "a visible business exists at this
+ * level", which is what keeps the sitemap from advertising an empty district.
+ * They are the SvelteKit queries unchanged — LOWER() on both sides, because
+ * geo_locations and business_profiles disagree on casing, which is the same
+ * trap the district counts above avoid.
+ *
+ * Not wrapped in `cache()`: a route handler has no render pass to dedupe
+ * across, the same reason `listStories` is not.
+ * ------------------------------------------------------------------------- */
+
+export type SitemapSlugs = {
+  installers: string[];
+  level1: { level1Slug: string }[];
+  level2: { level1Slug: string; level2Slug: string }[];
+  cities: { level1Slug: string; level2Slug: string; citySlug: string }[];
+};
+
+/**
+ * `EXISTS (... LOWER(b.col) = LOWER(g.col) ...)` compares LOWER() on both
+ * sides, which the query builder cannot express — the correlated subquery
+ * stays on the sql escape hatch.
+ */
+function businessesExistFor(...matches: ReturnType<typeof sql>[]) {
+  return exists(
+    db
+      .select({ one: sql`1` })
+      .from(businessProfiles)
+      // 079: the profile's country is its account's, so correlating to
+      // geoLocations.countryCode means joining to reach it.
+      .innerJoin(businessAccounts, accountOfProfile)
+      .where(
+        and(
+          eq(businessAccounts.countryCode, geoLocations.countryCode),
+          ...matches,
+          eq(businessProfiles.isvisible, true)
+        )
+      )
+  );
+}
+
+export async function listSitemapGeo(country: string): Promise<SitemapSlugs> {
+  const [installerRows, level1Rows, level2Rows, cityRows] = await Promise.all([
+    db
+      .select({ slug: businessProfiles.slug })
+      .from(businessProfiles)
+      .innerJoin(businessAccounts, accountOfProfile)
+      .where(
+        and(eq(businessAccounts.countryCode, country), eq(businessProfiles.isvisible, true))
+      )
+      .orderBy(asc(businessProfiles.slug)),
+    db
+      .selectDistinct({ level1: geoLocations.level1, level1Slug: geoLocations.level1Slug })
+      .from(geoLocations)
+      .where(
+        and(
+          eq(geoLocations.countryCode, country),
+          businessesExistFor(sql`LOWER(${businessProfiles.level1}) = LOWER(${geoLocations.level1})`)
+        )
+      )
+      .orderBy(asc(geoLocations.level1)),
+    db
+      .selectDistinct({
+        level1: geoLocations.level1,
+        level1Slug: geoLocations.level1Slug,
+        level2: geoLocations.level2,
+        level2Slug: geoLocations.level2Slug
+      })
+      .from(geoLocations)
+      .where(
+        and(
+          eq(geoLocations.countryCode, country),
+          businessesExistFor(sql`LOWER(${businessProfiles.level2}) = LOWER(${geoLocations.level2})`)
+        )
+      )
+      .orderBy(asc(geoLocations.level1), asc(geoLocations.level2)),
+    db
+      .selectDistinct({
+        level1: geoLocations.level1,
+        level1Slug: geoLocations.level1Slug,
+        level2: geoLocations.level2,
+        level2Slug: geoLocations.level2Slug,
+        city: geoLocations.city,
+        citySlug: geoLocations.citySlug
+      })
+      .from(geoLocations)
+      .where(
+        and(
+          eq(geoLocations.countryCode, country),
+          businessesExistFor(
+            sql`LOWER(${businessProfiles.city}) = LOWER(${geoLocations.city})`,
+            sql`LOWER(${businessProfiles.level2}) = LOWER(${geoLocations.level2})`
+          )
+        )
+      )
+      .orderBy(asc(geoLocations.level1), asc(geoLocations.level2), asc(geoLocations.city))
+  ]);
+
+  return {
+    // `slug` is nullable on the column, and a profile without one has no page.
+    installers: installerRows.map((r) => r.slug).filter((s): s is string => Boolean(s)),
+    level1: level1Rows.map((r) => ({ level1Slug: r.level1Slug })),
+    level2: level2Rows.map((r) => ({ level1Slug: r.level1Slug, level2Slug: r.level2Slug })),
+    cities: cityRows.map((r) => ({
+      level1Slug: r.level1Slug,
+      level2Slug: r.level2Slug,
+      citySlug: r.citySlug
+    }))
+  };
 }

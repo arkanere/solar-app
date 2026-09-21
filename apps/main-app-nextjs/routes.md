@@ -77,7 +77,10 @@ These exist and are database-backed, but are not advertised.
 
 ## Non-page routes to port
 
-- `/sitemap.xml`, `/content-sitemap.xml`, `/{cc}/sitemap.xml`
+- ~~`/sitemap.xml`, `/content-sitemap.xml`, `/{cc}/sitemap.xml`~~ — ported 2026-09-21.
+  The content sitemap no longer lists `/seo-index` or the brand, state-subsidy,
+  discom, financing-bank and author families: none of those routes were ported and
+  all five tables are empty. `lib/sitemap.ts` has the reasoning.
 - `/{cc}/api/*` — 7 endpoints
 - ~~`/api/stories`, `/api/submitDataAccess`, `/api/submitDataDeletion`~~ — ported
   2026-09-21 with the two compliance pages

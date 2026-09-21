@@ -148,3 +148,52 @@ async function loadClusterLinks(pillar: PillarSlug): Promise<ClusterLink[]> {
 export const getPillar = cache(loadPillar);
 export const getCluster = cache(loadCluster);
 export const getClusterLinks = cache(loadClusterLinks);
+
+/* -------------------------------------------------------------------------
+ * `/content-sitemap.xml`.
+ *
+ * Slugs and a date, for all 117 published rows at once. Not `ARTICLE`: that
+ * selects two jsonb columns holding nine content sections and six FAQs per
+ * row, none of which a sitemap prints.
+ *
+ * `updated_at` is the row's real lastmod, and it is formatted in SQL rather
+ * than in JS. The schema types the timestamptz as `mode: 'string'`, so
+ * Drizzle hands back a string that would otherwise be rendered in whatever
+ * timezone the session happens to have — `AT TIME ZONE 'UTC'` pins it.
+ *
+ * A pillar row carries its own slug and leaves `pillarSlug` NULL; only
+ * clusters populate it. Reading `pillarSlug` for a pillar is how the
+ * SvelteKit version once emitted seven literal `.../null` URLs, which is why
+ * `pageType` decides the path shape here rather than the presence of a value.
+ *
+ * Not wrapped in `cache()` — a route handler has no render pass to dedupe.
+ * ------------------------------------------------------------------------- */
+
+export type SitemapArticle = {
+  slug: string;
+  pillarSlug: string | null;
+  isPillar: boolean;
+  lastmod: string | null;
+};
+
+export async function listSitemapArticles(): Promise<SitemapArticle[]> {
+  const rows = await db
+    .select({
+      slug: seoPages.slug,
+      pillarSlug: seoPages.pillarSlug,
+      pageType: seoPages.pageType,
+      lastmod: sql<
+        string | null
+      >`to_char(${seoPages.updatedAt} AT TIME ZONE 'UTC', 'YYYY-MM-DD')`
+    })
+    .from(seoPages)
+    .where(eq(seoPages.status, 'published'))
+    .orderBy(asc(seoPages.slug));
+
+  return rows.map((r) => ({
+    slug: r.slug,
+    pillarSlug: r.pillarSlug,
+    isPillar: r.pageType === 'pillar',
+    lastmod: r.lastmod
+  }));
+}
