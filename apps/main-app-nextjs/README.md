@@ -67,6 +67,7 @@ and under Next 16's Cache Components an empty return is a build error.
 | --- | --- |
 | `routes.md` | Every route: 48 pages + 16 handlers. |
 | `design-foundation.md` | Type, spacing, colour, radius, elevation, motion, imagery. Approve at `/specimen`; re-verify with `npm run check:contrast`. |
+| `scripts/smoke.mjs` | The 89 route shapes and the sample URL of each. `npm run smoke`. |
 | `archetype.md` | Why there are four archetypes. `archetype/data.md` has the measurements. |
 | `archetype/installer-profile.md` | Archetype 1 — 649 pages. |
 | `archetype/geo-listing.md` | Archetype 2 — district page and city/size leaf, 957 pages. |
@@ -110,7 +111,7 @@ Code worth knowing before editing. Every one of these has a header that says mor
 
 ## Next steps
 
-Three left, in order. Re-plan after the last one lands.
+Two left, in order. Re-plan after the last one lands.
 
 1. ~~**The two stubs that no empty table blocks.**~~ — **done 2026-09-21.**
    `/{cc}/partners` and `/{cc}/business-listing` are ported, metadata included.
@@ -144,11 +145,37 @@ Three left, in order. Re-plan after the last one lands.
    and the 301 keeps the `?unsubscribe=` query the mailed link carries. Its POST is
    `/api/unsubscribe`, at the root for the same reason.
 
-2. **A smoke harness.** One URL of each of the 76 route shapes, asserting 200, plus
-   `x-nextjs-cache` on the 16 ISR shapes — the assertion that keeps ISR from silently
-   regressing is a header check, not a timing heuristic. `NEXT_PRIVATE_DEBUG_CACHE=1`
-   logs hits and misses. Add a shape in the same commit that adds a route. After 1, so
-   it is written once against the full 76.
+2. ~~**A smoke harness.**~~ — **done 2026-09-22.** `npm run smoke`, one URL of every
+   route shape, asserting the status each is supposed to answer with. **89 shapes, not
+   the 76 this entry estimated**: the count left out the 13 `middleware.ts` rules, and
+   a redirect that stops firing is exactly the silent regression worth catching, so
+   each one is a line. Add a shape in the same commit that adds a route.
+
+   **This entry was wrong about the header, and the target is production.** It named
+   `x-nextjs-cache`; that is what `next start` emits, and the deploy is on Vercel,
+   which emits `x-vercel-cache` and strips `s-maxage` from the response so
+   cache-control cannot be read instead. The harness accepts either header. It defaults
+   to `https://solar-app-main-app-nextjs.vercel.app`; `BASE_URL=…` points it anywhere,
+   and `NEXT_PRIVATE_DEBUG_CACHE=1` is still the way to see hits and misses locally.
+
+   Two things the first working version got wrong, both measured against production
+   and both in the file header:
+
+   - **presence of the cache header proves nothing** — a cold ISR page answers `MISS`
+     exactly like a dynamic one. The discriminator is the *second* request. And that
+     second request has to be retried: Vercel's cache write is not visible immediately,
+     so 16 of the 48 cached shapes failed a cold run before the backoff went in.
+   - **a transport retry is not optional.** Roughly one request in a few hundred fails
+     outright at this concurrency, which was enough to put two or three false failures
+     in a clean run. Network errors are retried; unexpected statuses never are.
+
+   **It never POSTs.** The default target is production, where a POST to
+   `/api/submitLead` writes a lead. The eight write endpoints are checked with a GET
+   asserting 405, which proves the handler is mounted and exercises none of it.
+
+   Verified by seeding four faults — a wrong status, a deleted row in a sample URL, a
+   redirect pointing elsewhere, and a dynamic route tagged ISR — and confirming each
+   one fails the run.
 
 3. **Prove the data-blocked gates open.** Five of the entries below are a belief, not
    a test: the branch each empty table feeds has never run. Seed one row per table into
