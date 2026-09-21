@@ -10,10 +10,12 @@
  * Next needs a real `page.tsx` per route, so the files cannot be collapsed
  * further than that; what they can do is hold no logic.
  *
+ * ONE THING IS DELIBERATELY NOT SHARED: `revalidate`. See below.
+ *
  * Why not one `/[pillar]/[slug]` dynamic route instead: the seven pillars
- * are not the only children of the root — `/about-us`, `/tools`, `/seo-index`
- * and the rest of `(layout-1)` are siblings — and a `[pillar]` segment at the
- * root would sit in front of all of them.
+ * are not the only children of the root — `/about-us`, `/tools` and the rest
+ * of `(layout-1)` are siblings — and a `[pillar]` segment at the root would
+ * sit in front of all of them.
  */
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
@@ -25,8 +27,41 @@ import { pageMetadata, SITE_NAME } from '@/lib/metadata';
 import { getCluster, getClusterLinks, getPillar, type Article } from './data';
 import type { PillarSlug } from './pillars';
 
-/** 15 days, matching `config.isr.expiration` on the SvelteKit loads. */
-export const revalidate = 1296000;
+/*
+ * `revalidate` IS NOT EXPORTED FROM HERE, and that is the one thing these
+ * fourteen routes each have to restate. The window is 15 days —
+ * `config.isr.expiration` on the SvelteKit loads — written as a literal
+ * `export const revalidate = 1296000;` in every one of the fourteen files.
+ *
+ * Next reads Route Segment Config by STATIC ANALYSIS of the route file: it
+ * parses the source with SWC without executing it. That pass cannot follow
+ * an indirection, and the two ways of sharing the number both fail:
+ *
+ *   export { revalidate } from './routes';        // ⚠ warns on every build,
+ *       "can't recognize the exported `revalidate` field ... The default
+ *       config will be used instead." The claim is FALSE — the module is
+ *       also evaluated, and .next/prerender-manifest.json showed the real
+ *       1296000 — but a warning that lies, 56 times a build, is how a build
+ *       log stops being read. And relying on an undocumented disagreement
+ *       between two passes means ISR drops to default the day it is
+ *       reconciled, silently, on 117 pages.
+ *
+ *   export const revalidate = SHARED_CONST;       // ⨯ FAILS THE BUILD,
+ *       "Unknown identifier \"SHARED_CONST\" at \"revalidate\"." Verified,
+ *       exit 1 — this is not a warning.
+ *
+ * So a literal per route file is not a style preference, it is the only
+ * form Next accepts. Change the window here and in the fourteen files
+ * together; `grep -rn 'export const revalidate' app/(layout-1)` finds them.
+ *
+ * AND ON SEVEN OF THE FOURTEEN IT DOES NOTHING. `revalidate` only applies to
+ * a page Next statically generates. The seven pillar landings are static and
+ * genuinely cache at 1296000; the seven `[slug]` cluster routes have no
+ * `generateStaticParams`, so they are dynamic and re-render on every request
+ * — `/rooftop-solar/cost` serves `Cache-Control: private, no-cache, no-store`.
+ * Pre-existing and app-wide, not specific to this surface. README open item 5
+ * has the measurements and the three ways out.
+ */
 
 /**
  * The editorial surface is `features.seoContentFamilies`, which is IN-only,
