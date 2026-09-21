@@ -1,5 +1,5 @@
 /**
- * Platform-wide counts. The only consumer today is /about-us.
+ * Platform-wide counts. Consumed by /about-us and /{cc}/partners.
  *
  * Its own file rather than lib/directory/data.ts because none of these is a
  * directory query: they are not scoped to a country, a place or a profile,
@@ -27,13 +27,20 @@
  */
 import { cache } from 'react';
 import { and, count, countDistinct, eq, isNotNull, ne } from 'drizzle-orm';
-import { businessAccounts, businessProfiles, leaddata } from '@solar/db/schema';
+import { businessAccounts, businessProfiles, leaddata, projects } from '@solar/db/schema';
 import { db } from '@/lib/server/db';
 
 export type PlatformStats = {
   installerCount: number;
   citiesServed: number;
   leadsGenerated: number;
+  /**
+   * Visible rows in `projects`. Arrived with /{cc}/partners, whose SvelteKit
+   * loader is the only one of the two that counts it — /about-us prints three
+   * figures and this is the fourth. Platform-wide like the rest: `projects`
+   * has no country column, so there is nothing to scope it by.
+   */
+  projectsCompleted: number;
 };
 
 /**
@@ -48,7 +55,7 @@ export type PlatformStats = {
 const LEADS_BEFORE_LEADDATA = 2000;
 
 async function loadPlatformStats(): Promise<PlatformStats> {
-  const [installerRows, leadRows, cityRows] = await Promise.all([
+  const [installerRows, leadRows, cityRows, projectRows] = await Promise.all([
     db.select({ count: count() }).from(businessAccounts).where(eq(businessAccounts.isActive, true)),
     db.select({ count: count() }).from(leaddata),
     db
@@ -60,13 +67,15 @@ async function loadPlatformStats(): Promise<PlatformStats> {
           isNotNull(businessProfiles.city),
           ne(businessProfiles.city, '')
         )
-      )
+      ),
+    db.select({ count: count() }).from(projects).where(eq(projects.isvisible, true))
   ]);
 
   return {
     installerCount: installerRows[0].count,
     citiesServed: cityRows[0].count,
-    leadsGenerated: leadRows[0].count + LEADS_BEFORE_LEADDATA
+    leadsGenerated: leadRows[0].count + LEADS_BEFORE_LEADDATA,
+    projectsCompleted: projectRows[0].count
   };
 }
 

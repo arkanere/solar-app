@@ -106,3 +106,8 @@ These exist and are database-backed, but are not advertised.
 > `/us/get-quotes` and `/us/partners/*` are advertised above but answer a 301
 > (`middleware.ts`): both read IN-only tables, and a real US funnel is new product
 > surface rather than porting work. `/us/business-form` is a real page.
+>
+> **`/us/business-listing` is a real page too**, and `/us/partners` 301s *to* it — so
+> it, not `/{cc}/partners`, is the US installer-acquisition surface. That is why the
+> page carries a country fork (benefits, FAQs, hero and closing CTA, video, social
+> proof) and `/{cc}/partners` does not. Ported 2026-09-21.

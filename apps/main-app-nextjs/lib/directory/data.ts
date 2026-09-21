@@ -1285,6 +1285,72 @@ export async function listStories(): Promise<StoryRow[]> {
 }
 
 /* -------------------------------------------------------------------------
+ * The "Recently Joined Verified Installers" grid, shared by /{cc}/partners and
+ * /{cc}/business-listing.
+ *
+ * One function for both, where SvelteKit had two. The two loaders differed in
+ * three ways and each difference resolves the same way:
+ *
+ *  - **the partners loader had no country predicate and no join.** Its own
+ *    comment on the business-listing side calls that a latent bug:
+ *    business_profiles has held both countries since 054, and the IN page only
+ *    avoided US rows because `submitBusiness` sets `businessfilled = country
+ *    === 'in'`. That is a mask on an unrelated column, not a guarantee. The
+ *    country-scoped version is the one that survives, and it is the join every
+ *    other country-scoped read in this file already uses (079).
+ *  - **the limits were 9 and 10.** 9, so the grid is three full rows of three
+ *    at the md and lg breakpoints both pages use. A tenth card is a widow.
+ *  - **`level2` was deliberately not selected** on the business-listing side.
+ *    Kept: the card renders name, city, state and phone, and nothing else.
+ *
+ * Rows with a null slug are dropped rather than rendered link-less: the whole
+ * card is the anchor, as in `loadInstallers` above.
+ * ------------------------------------------------------------------------- */
+
+/** Three rows of three. See the note above on why not SvelteKit's 9-and-10. */
+const RECENT_BUSINESSES_LIMIT = 9;
+
+export type RecentBusiness = {
+  name: string;
+  slug: string;
+  city: string | null;
+  state: string | null;
+  phone: string | null;
+};
+
+/**
+ * Newest first by `business_id`, which is what both SvelteKit loaders order
+ * by — the table has no joined-at column, so the surrogate key is the only
+ * proxy for recency either page has ever had.
+ *
+ * Not wrapped in `cache()`: each page calls it once, from the page body, and
+ * neither metadata builder needs it.
+ */
+export async function listRecentBusinesses(country: string): Promise<RecentBusiness[]> {
+  const rows = await db
+    .select({
+      name: sql<string>`${businessProfiles.businessname}`,
+      slug: sql<string | null>`${businessProfiles.slug}`,
+      city: businessProfiles.city,
+      state: businessProfiles.level1,
+      phone: businessProfiles.phonenumber
+    })
+    .from(businessProfiles)
+    .innerJoin(businessAccounts, accountOfProfile)
+    .where(
+      and(
+        eq(businessAccounts.countryCode, country),
+        eq(businessProfiles.isvisible, true),
+        eq(businessProfiles.businessfilled, true)
+      )
+    )
+    .orderBy(desc(businessProfiles.businessId))
+    .limit(RECENT_BUSINESSES_LIMIT);
+
+  return rows.filter((r): r is RecentBusiness => r.slug !== null);
+}
+
+/* -------------------------------------------------------------------------
  * `/{cc}/sitemap.xml`.
  *
  * Slugs only. The page loaders above select the columns a page renders; a

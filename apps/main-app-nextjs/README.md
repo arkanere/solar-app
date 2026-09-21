@@ -27,8 +27,9 @@ plan for dialog/drawer and combobox when one is needed.
 ## State
 
 **Built:** every surface — directory, editorial, projects, homepage, tools, legacy
-redirects, lead forms, compliance pages, sitemaps, the email opt-out. 1,412 of 1,413
-advertised URLs, 41 of 47 page files (6 stubs), all 17 route handlers answering.
+redirects, lead forms, compliance pages, sitemaps, the email opt-out, the two
+installer-acquisition pages. 1,412 of 1,413 advertised URLs, 43 of 47 page files
+(4 stubs), all 17 route handlers answering.
 
 **Three routes are deliberately not ported**, which is why the handler count is 17
 and not 20 — the seventeenth is `/api/unsubscribe`, new at that URL because the old
@@ -109,13 +110,33 @@ Code worth knowing before editing. Every one of these has a header that says mor
 
 ## Next steps
 
-Four left, in order. Re-plan after the last one lands.
+Three left, in order. Re-plan after the last one lands.
 
-1. **The two stubs that no empty table blocks.** `/{cc}/partners` and
-   `/{cc}/business-listing` are 9-line stubs for no reason but ordering — unlike the
-   other four, which wait on `authors` and `solar_products`. Port each from its
-   SvelteKit page, metadata included. Both read IN-only tables and both already 301
-   for US (`middleware.ts`), so neither needs a feature gate of its own.
+1. ~~**The two stubs that no empty table blocks.**~~ — **done 2026-09-21.**
+   `/{cc}/partners` and `/{cc}/business-listing` are ported, metadata included.
+
+   **This entry was wrong about US, and the fix shaped both pages.** It said both
+   301 for US. Only `/{cc}/partners` does — and it 301s *to* `/{cc}/business-listing`
+   (`middleware.ts`), which makes business-listing the US acquisition page and is why
+   `routes.md` counts it 1 IN + 1 US. So partners is IN-shaped with no country fork,
+   and business-listing carries the whole fork the SvelteKit page carried: benefits,
+   FAQs, hero CTA, closing CTA, video, social proof.
+
+   Two standalone pages, not one shared component set. They overlap on about two
+   thirds of their sections, but every benefit, FAQ and heading differs, so a shared
+   component would take a config object per section. The one genuinely shared thing
+   is the installer grid's query — `listRecentBusinesses` in `lib/directory/data.ts`,
+   which is also where SvelteKit's latent bug is fixed: the partners loader had no
+   country predicate, so it was entitled to return US rows on an Indian page.
+
+   Three deliberate departures from the SvelteKit originals, each in a file header:
+
+   - **the "500+ businesses / 5,000+ cities" band is counted live**, like `/about-us`.
+     Those two figures were never true; the real ones are 476 and 359 today.
+   - **`youtube-nocookie.com`, not `youtube.com`** for the "See How It Works" embed.
+     Same video, no profiling cookie on view.
+   - **the FAQPage JSON-LD is built from the array each page renders.** SvelteKit
+     shipped the US question set on both countries and its own comment says so.
 
    ~~`/{cc}/unsubscribe`~~ — **done 2026-09-21, and it moved to `/unsubscribe`.**
    Nothing on that page or in its table is country-specific, so it went to the
@@ -146,18 +167,27 @@ unreachable thank-you pages, the lead count, and the editorial metadata — see 
 Decisions and known holes, not work items. Named, not numbered; a file header citing
 "README open item N" is a stale hint, not an address.
 
-- **The Meta Pixel is not ported** — a `PageView` on the two forms and a **`Lead`
-  conversion** on the two confirmations. A third-party tracker needs a consent
-  decision and a `next/script` strategy, and neither has been made. **The ad
-  account's conversion reporting is blind until it lands** — a launch blocker.
+- **The Meta Pixel is not ported** — a `PageView` on the two forms and on
+  `/{cc}/partners` and `/{cc}/business-listing`, and a **`Lead` conversion** on the
+  two confirmations. A third-party tracker needs a consent decision and a
+  `next/script` strategy, and neither has been made. **The ad account's conversion
+  reporting is blind until it lands** — a launch blocker. The same decision is why
+  the one third-party embed that *was* kept, the "See How It Works" video on those
+  two pages, points at `youtube-nocookie.com`.
 - **Two confirmation pages, one reachable.** `BusinessForm` sends every signup to
   `/{cc}/thank-you-business`, so `/{cc}/partners/join/thank-you` is routed to by
   nothing and promises something different (48 hours vs a call). A content decision.
 - **`/{cc}/thank-you` is not routed to from this app either.** `LeadForm` confirms in
   place; the page is reached from the confirmation email. Worth deciding deliberately.
-- **`/about-us` adds 2,000 to the lead count it prints.** `LEADS_BEFORE_LEADDATA` in
-  `lib/stats.ts`, carried across verbatim. Nothing in the database supports it. Either
-  the business confirms it or it comes out — one line either way, ask before launch.
+- **`/us/business-listing` prints an Indian phone number.** `+91 8983066701` in the
+  contact card and in the page's `Organization` markup, carried across verbatim from
+  the SvelteKit US page, which had the same. There is no US number to put there. It
+  belongs on `CountryConfig` the day one exists — a shared-type change, like
+  `CountryConfig.name` below.
+- **`/{cc}/partners` and `/about-us` both add 2,000 to the lead count they print.**
+  `LEADS_BEFORE_LEADDATA` in `lib/stats.ts`, carried across verbatim. Nothing in the
+  database supports it. Either the business confirms it or it comes out — one line
+  either way, and it now moves two pages. Ask before launch.
 - **Editorial metadata is too long.** `meta_title` to 98 chars against Google's ~60,
   `meta_description` to 188 against ~155, on all 117 pages. A CMS pass over
   `seo_pages`; `lib/metadata.ts` should keep passing both through unaltered.
