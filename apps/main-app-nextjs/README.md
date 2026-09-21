@@ -92,7 +92,7 @@ imported constant fails the build. `lib/editorial/routes.tsx` has the measuremen
 
 ## Next steps
 
-Two left, in order. Re-plan after the last one lands.
+Five left, in order. Re-plan after the last one lands.
 
 > **Step 1, the long tail, is done.** `/` shipped 2026-09-21 against `archetype/home.md`
 > (§12 records what changed); `/tools` and the 3 calculators shipped 2026-09-21. They got
@@ -101,14 +101,61 @@ Two left, in order. Re-plan after the last one lands.
 > recorded in the file headers. Everything else this step once listed is blocked on
 > empty tables rather than on code — see below.
 
-1. **Forms and handlers.** `business-form`, `get-quotes`, `partners/join`, the
-   thank-you pages, the 10 API routes and 2 US legacy shims answering 501, and the
-   legacy 301s from `hooks.server.ts` into `middleware.ts` — including
-   `/solar-pumps/kusum-scheme` to `kusum-yojana`. `/data-access` and `/data-deletion`
-   belong here too: both look static and both post to a handler that answers 501.
-   The phone-length item below belongs here.
-2. **Sitemaps, metadata, a smoke harness.** The 3 sitemap handlers, `pageMetadata` on
-   every page, and a test that fetches one URL of each route shape and asserts 200.
+The old step 1 was one item; it is four here, because its parts do not share a
+blocker. Redirects need no database, the forms need Brevo and a live `leaddata`
+write, and the leftover handlers need neither. Splitting them means the SEO work can
+land while the form work is still in review.
+
+1. **Redirects and the legacy shims.** The 301s from SvelteKit's `hooks.server.ts`
+   into `middleware.ts`, including `/solar-pumps/kusum-scheme` to `kusum-yojana` —
+   which is not in that file, it is indexed and its row is now `draft`. Then the three
+   handlers that are redirects wearing a route handler's clothes and answer 501 today:
+   `/{cc}/county/{county_slug}` and `/{cc}/solar-panel-installer-directory/{city}` (the
+   US legacy shims), and `/rooftop-solar/roi`. `/{cc}/district/{district_slug}` is a
+   page stub doing the same job — it belongs here, not with the forms.
+   No database, no third party. Do this first: every day it is not done is a day of
+   indexed URLs 404ing.
+
+2. **The lead forms.** `get-quotes`, `business-form` and `partners/join` (plus its
+   `{district_slug}` variant), their three thank-you pages, and the four handlers
+   behind them: `submitBusiness`, `sendBusinessSubmissionConfirmation`, `getCities`
+   and `getLevel2s`. `lib/server/` already has `leads`, `email`, `leadConfirmation`
+   and `internalAuth`, so this is the form UI, the validation wiring and the district
+   tree the two selects need — `lib/tools/data.ts` already queries that tree, so read
+   it before writing a second copy. **Open item 1 is a prerequisite, not a follow-up:**
+   a 17-character phone is a 500 on the first real submission. Narrowing
+   `@solar/validation`'s `phone` primitive is a cross-app change — agree it with
+   main-app live before this step starts, or clamp at the Next boundary and record why.
+
+3. **The remaining handlers.** `/data-access` and `/data-deletion` — both pages are
+   built and both post to a 501, so they are the shortest path to two working pages —
+   plus `submitDataAccess`, `submitDataDeletion`, `/api/stories`, `postRecentProject`,
+   `updateRecentProject` and `/api/cron/purge-old-leads`. The three write routes are
+   internal: they go through `lib/server/internalAuth.ts`, and the cron route needs its
+   schedule decided as well as its body.
+
+4. **Sitemaps and metadata.** The 3 sitemap handlers (`/sitemap.xml`,
+   `/content-sitemap.xml`, `/{cc}/sitemap.xml`), which closes open item 2 — `robots.txt`
+   points at a 501 today. Then `pageMetadata` on every page that still falls back to the
+   root layout. The 117 editorial pages are the exception: `lib/metadata.ts` passes
+   `meta_title` and `meta_description` through unaltered and must keep doing so, so open
+   item 6 stays a CMS pass and is not in this step's scope.
+
+5. **ISR, then a smoke harness.** Open item 5: ~1,380 of 1,413 URLs re-query the
+   database on every request. **Take the decision now, before step 1 starts** — it
+   changes how the data seams are written, and steps 2–4 build on them. The
+   recommendation is `unstable_cache` around `lib/directory/data.ts` and
+   `lib/editorial/data.ts`: it keeps the build database-free, it is two files rather
+   than per-route work across 49 routes, and it is the only option that does not couple
+   a ~1,380-page build to the database. `generateStaticParams` restores true ISR but
+   pays that coupling. Then the harness: one URL of each of the 76 route shapes,
+   asserting 200 — and, once ISR is in, asserting the `Cache-Control` the table in open
+   item 5 measures, so this cannot silently regress again.
+
+Not in these five, and deliberately: everything under **Blocked on data, not code**,
+and open items 3, 4 and 6. Open item 4 (`/about-us` printing a lead count 2,000 higher
+than the database supports) is a one-line fix in `lib/stats.ts` either way, but it is a
+business decision — ask before launch, not at the end.
 
 ## Open items
 
