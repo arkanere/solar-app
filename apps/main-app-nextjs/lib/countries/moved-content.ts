@@ -23,6 +23,13 @@ export const MOVED_TO_ROOT = [
   'write-for-us',
   'data-deletion',
 
+  // stage 4b — the email opt-out. Not content: it moved because nothing on it
+  // is country-specific and the `unsubscribe` table has no country column.
+  // The mailed link carries `?unsubscribe=`, and the 301 built from this list
+  // keeps the query string — check that before moving anything else that is
+  // reached from an email.
+  'unsubscribe',
+
   // stage 7a — first two content pillars
   'rooftop-solar',
   'solar-installation',

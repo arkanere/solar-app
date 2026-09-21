@@ -74,6 +74,12 @@ These exist and are database-backed, but are not advertised.
 | `/{cc}/county/{county_slug}` | US legacy shim |
 | `/{cc}/solar-panel-installer-directory/{city}` | US legacy shim |
 | `/authors/{slug}` | `authors` — in the generator, 0 rows live |
+| `/unsubscribe` | the email opt-out — reached only from a mailed link, `noindex` |
+
+> `/unsubscribe` was `/{cc}/unsubscribe` in SvelteKit and **moved to the root on
+> 2026-09-21**: nothing on it is country-specific and the `unsubscribe` table has no
+> country column. `/in/unsubscribe` and `/us/unsubscribe` 301 to it via
+> `MOVED_TO_ROOT`, keeping the `?unsubscribe=` query that already-sent mail carries.
 
 ## Non-page routes to port
 
@@ -82,13 +88,17 @@ These exist and are database-backed, but are not advertised.
   discom, financing-bank and author families: none of those routes were ported and
   all five tables are empty. `lib/sitemap.ts` has the reasoning.
 - `/{cc}/api/*` — 7 endpoints
+- ~~`/{cc}/unsubscribe` POST~~ — ported 2026-09-21 as `/api/unsubscribe`. The country
+  prefix is dropped: the SvelteKit handler validated `params.country` and then never
+  read it, and the table has no country column. Same call as the two compliance
+  endpoints, so the handler total is 17.
 - ~~`/api/stories`, `/api/submitDataAccess`, `/api/submitDataDeletion`~~ — ported
   2026-09-21 with the two compliance pages
 - ~~`/api/cron/purge-old-leads`, `/{cc}/api/postRecentProject`,
   `/{cc}/api/updateRecentProject`~~ — **not ported, deliberately.** The two project
   writes are duplicates of routes `business-app` already owns; the purge belongs to an
   admin app. README **State** has the reasoning. This is the one place the port does
-  not keep a route, so the handler total is 16, not 19.
+  not keep a route.
 - ~~`hooks.server.ts` — legacy 301s and rewrites~~ — ported to `middleware.ts`, 2026-09-21
 - ~~`/{cc}/api/submitBusiness`, `sendBusinessSubmissionConfirmation`, `getCities`,
   `getLevel2s`~~ — ported 2026-09-21 with the lead forms

@@ -27,11 +27,12 @@ plan for dialog/drawer and combobox when one is needed.
 ## State
 
 **Built:** every surface — directory, editorial, projects, homepage, tools, legacy
-redirects, lead forms, compliance pages, sitemaps. 1,412 of 1,413 advertised URLs,
-40 of 47 page files (7 stubs), all 16 route handlers answering.
+redirects, lead forms, compliance pages, sitemaps, the email opt-out. 1,412 of 1,413
+advertised URLs, 41 of 47 page files (6 stubs), all 17 route handlers answering.
 
-**Three routes are deliberately not ported**, which is why the handler count is 16
-and not 19. `postRecentProject` and `updateRecentProject` are duplicates —
+**Three routes are deliberately not ported**, which is why the handler count is 17
+and not 20 — the seventeenth is `/api/unsubscribe`, new at that URL because the old
+one had a country prefix it never used. `postRecentProject` and `updateRecentProject` are duplicates —
 `business-app` owns both. `/api/cron/purge-old-leads` belongs to admin-app, in a
 different repo: `~/Developer/solar/solar-app-internal`, queued in
 `admin-app-nextjs/spec/README.md` under **What is left**.
@@ -90,7 +91,9 @@ Code worth knowing before editing. Every one of these has a header that says mor
   the queries stay in the two data seams, slug-only. Its header records the six
   families the port stopped advertising.
 - `lib/countries/` — the per-country gate. Labels and features are data, never
-  hardcoded. `moved-content.ts` lists the families that live at the root.
+  hardcoded. `moved-content.ts` lists the families that live at the root — including
+  `unsubscribe`, the one entry reached from an email rather than from a link on the
+  site, which is why that 301 keeping its query string matters.
 - `lib/metadata.ts` — the one metadata builder. It owns the tag set; each page owns
   its title and description.
 - `lib/server/` — the server-only modules. Needs `BREVO_API_KEY` and
@@ -108,12 +111,17 @@ Code worth knowing before editing. Every one of these has a header that says mor
 
 Four left, in order. Re-plan after the last one lands.
 
-1. **The three stubs that no empty table blocks.** `/{cc}/unsubscribe`,
-   `/{cc}/partners` and `/{cc}/business-listing` are 9-line stubs for no reason but
-   ordering — unlike the other four, which wait on `authors` and `solar_products`.
-   `/{cc}/unsubscribe` goes first and is the only one with a real consequence: this
-   app sends mail through `lib/server/email.ts`, and an opt-out link that 404s after
-   cutover costs a sending domain. Port each from its SvelteKit page, metadata included.
+1. **The two stubs that no empty table blocks.** `/{cc}/partners` and
+   `/{cc}/business-listing` are 9-line stubs for no reason but ordering — unlike the
+   other four, which wait on `authors` and `solar_products`. Port each from its
+   SvelteKit page, metadata included. Both read IN-only tables and both already 301
+   for US (`middleware.ts`), so neither needs a feature gate of its own.
+
+   ~~`/{cc}/unsubscribe`~~ — **done 2026-09-21, and it moved to `/unsubscribe`.**
+   Nothing on that page or in its table is country-specific, so it went to the
+   country-less root like the compliance pages; `'unsubscribe'` is in `MOVED_TO_ROOT`
+   and the 301 keeps the `?unsubscribe=` query the mailed link carries. Its POST is
+   `/api/unsubscribe`, at the root for the same reason.
 
 2. **A smoke harness.** One URL of each of the 76 route shapes, asserting 200, plus
    `x-nextjs-cache` on the 16 ISR shapes — the assertion that keeps ISR from silently
@@ -158,6 +166,14 @@ Decisions and known holes, not work items. Named, not numbered; a file header ci
   `varchar(20)`, so a 21-char phone is a 500 on `/api/submitDataDeletion`. Live
   SvelteKit has the same hole. The ceiling belongs to `@solar/validation`, which two
   other apps validate against — one line in `primitives.ts` or one migration.
+- **Nothing suppresses mail to an unsubscribed address.** `/unsubscribe` records the
+  row and no sender in this app reads `unsubscribe` back; the suppression happens in
+  Brevo. Live SvelteKit is identical, so this is carried across rather than
+  introduced — but the table is a record of intent, not an enforcement point. The
+  same table also has no unique index on `email`, so its check-then-insert can
+  duplicate under two simultaneous clicks; harmless, since the list is consumed as a
+  set, and the right fix is one migration.
+
 - **Nothing tells the team a deletion request landed.** `submitDataAccess` mails a
   copy to admin@solarvipani.com; `submitDataDeletion` sends nothing, so the erasure
   queue is rows no app reads back. Close it when someone owns that queue.
