@@ -22,6 +22,8 @@ modules in `lib/server/`. `USER_APP_URL` is optional. Database access comes from
 `@solar/db`. `NEXT_PUBLIC_POSTHOG_KEY` is optional: without it PostHog does not
 load. It is a public project key, so on the host it is config, not a secret —
 and it is baked in at build time, so changing it needs a redeploy.
+`NEXT_PUBLIC_API_BASE_URL` is the FastAPI origin for the chatbot in production.
+Leave it empty locally: `npm run dev` forwards those paths to `localhost:8000`.
 
 | Script | Does |
 | --- | --- |
@@ -106,7 +108,7 @@ record of how it got this way.
 
 What is left before the domain moves here and the SvelteKit app is retired.
 One step per commit, in order. Tick each off as it lands. Next session starts
-at step 5.
+at step 6.
 
 1. **Umami.** Done. Script on every page, not gated (cookieless). Plus the `engaged`
    event (10s visible + one interaction).
@@ -117,7 +119,7 @@ at step 5.
 4. **GA + PostHog, behind consent.** Done. Load only after Accept. PostHog also records
    a pageview on each client navigation. Hotjar, Twitter and the Meta Pixel are
    not ported.
-5. **Chatbot — API seam.** `lib/api.ts` `apiUrl()` reading
+5. **Chatbot — API seam.** Done. `lib/api.ts` `apiUrl()` reading
    `NEXT_PUBLIC_API_BASE_URL`. In dev, a `next.config.ts` rewrite sends
    `/api/chatbot`, `/api/transcribe`, `/api/speak` to FastAPI on `localhost:8000`.
 6. **Chatbot — shell.** `ChatDock` (launcher, lazy popup, 75% scroll auto-open),
