@@ -109,7 +109,7 @@ One step per commit, in order. Tick each off as it lands.
    event (10s visible + one interaction).
 2. **CallSafe.** Done. `callsafe.online/embed.js` after `load`, on every page. Umami
    events `callsafe-widget-clicked`, `callsafe-mute-clicked`, `callsafe-call-ended`.
-3. **Cookie consent banner.** Same `analytics_consent` localStorage key as
+3. **Cookie consent banner.** Done. Same `analytics_consent` localStorage key as
    SvelteKit, so a visitor's choice carries over. On every page.
 4. **GA + PostHog, behind consent.** Load only after Accept. PostHog also records
    a pageview on each client navigation. Hotjar, Twitter and the Meta Pixel are
