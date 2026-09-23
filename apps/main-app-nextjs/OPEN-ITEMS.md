@@ -13,24 +13,34 @@ Outside this app:
   until admin-app hosts it and the job is repointed.
 - **Whatever posts projects to main-app today needs repointing.** SvelteKit's
   `postRecentProject` has an "Android App" JSON branch. `business-app` owns it.
-- **FastAPI CORS** must allow the production origin(s), `www` included, if
-  SvelteKit's list does not already cover them.
 
 Deploy config:
 
-- Host env: `BREVO_API_KEY`, `INTERNAL_API_SECRET`, the database, and the two
-  build-time values `NEXT_PUBLIC_API_BASE_URL` (FastAPI on Cloud Run) and
-  `NEXT_PUBLIC_POSTHOG_KEY`.
+- `NEXT_PUBLIC_API_BASE_URL` is set on Vercel
+  (`https://solar-agent-backend-489624964901.asia-south1.run.app`, no trailing
+  slash), and the database works (smoke passes). `BREVO_API_KEY` is proven only
+  by the lead check below. `NEXT_PUBLIC_` values are build-time: change one, redeploy.
 - **The 14 data-driven `generateStaticParams` still `return []`.** Decide the
   deploy shape now: full prerender (~1,380 pages, every build waits on the
   database) or a top-N slice with the tail on on-demand ISR. The 10
   country-only routes are done.
 
-Checked only with mocks, by hand once on the deployed preview:
+The switch, in Vercel:
 
-- Chat voice input with a real mic (Safari records `audio/mp4`), and spoken replies.
-- One real lead from the chat card (writes a row, sends an email).
-- PostHog custom events arriving after Accept.
+- Remove `solarvipani.com` and `www.solarvipani.com` from the SvelteKit project,
+  add both here. Apex is primary and `www` redirects to it: canonicals,
+  sitemaps and `robots.txt` all use the apex.
+
+## Check in the first minutes after the switch
+
+These cannot be tested on `*.vercel.app`: FastAPI's CORS allows only
+`solarvipani.com` and `www`, and third-party widgets may be locked to the domain.
+
+- Chat: a text reply, voice input with a real mic (Safari records `audio/mp4`),
+  spoken replies, and one real lead from the chat card.
+- One real lead from a district page: the row lands and Brevo sends the
+  confirmation email.
+- CallSafe and Umami load; PostHog custom events arrive after Accept.
 
 ## Decisions to make
 
