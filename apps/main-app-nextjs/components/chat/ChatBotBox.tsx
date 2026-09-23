@@ -6,7 +6,7 @@
  * events arrive. The server is stateless per request, so the last few turns
  * go up as `history` every time.
  */
-import { Send, Square } from 'lucide-react';
+import { Mic, Send, Square } from 'lucide-react';
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { apiUrl } from '@/lib/api';
 import {
@@ -20,6 +20,7 @@ import {
 import { readChatEvents } from '@/lib/chat/stream';
 import type { ChatMessage } from '@/lib/chat/types';
 import { MessageBubble } from './MessageBubble';
+import { audioFileName, useAudioRecorder } from './useAudioRecorder';
 
 const HISTORY_TURNS = 8;
 
@@ -43,6 +44,8 @@ export function ChatBotBox({ messages, setMessages }: Props) {
   const [loading, setLoading] = useState(false);
   const [streaming, setStreaming] = useState(false);
   const busy = loading || streaming;
+  const recorder = useAudioRecorder();
+  const [transcribing, setTranscribing] = useState(false);
 
   const abortRef = useRef<AbortController | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -181,6 +184,30 @@ export function ChatBotBox({ messages, setMessages }: Props) {
     void runChat(text);
   };
 
+  /** Record a question, transcribe it, and send it as a normal turn. */
+  const toggleRecording = async () => {
+    if (!recorder.recording) {
+      await recorder.start();
+      return;
+    }
+    const blob = await recorder.stop();
+    if (!blob) return;
+    setTranscribing(true);
+    try {
+      const form = new FormData();
+      form.append('audio', blob, audioFileName(blob));
+      const res = await fetch(apiUrl('/api/transcribe'), { method: 'POST', body: form });
+      if (!res.ok) throw new Error('Transcription failed');
+      const { text } = (await res.json()) as { text?: string };
+      if (text?.trim()) void runChat(text.trim());
+    } catch (err) {
+      console.error('Voice transcription failed:', err);
+      recorder.setError('Could not transcribe that. Please try typing instead.');
+    } finally {
+      setTranscribing(false);
+    }
+  };
+
   /** Drop the failed turn and resend the message behind it. */
   const retry = (index: number) => {
     const text = messages[index].userMessage;
@@ -200,6 +227,7 @@ export function ChatBotBox({ messages, setMessages }: Props) {
     const controller = abortRef.current;
     abortRef.current = null;
     controller?.abort();
+    recorder.cancel();
     clearChat();
     setMessages(greeting());
     scrolledUp.current = false;
@@ -251,6 +279,11 @@ export function ChatBotBox({ messages, setMessages }: Props) {
             ))}
           </div>
         )}
+        {recorder.error && (
+          <p role="alert" className="text-xs text-danger">
+            {recorder.error}
+          </p>
+        )}
         <div className="flex items-end gap-xs">
           <textarea
             ref={inputRef}
@@ -269,6 +302,25 @@ export function ChatBotBox({ messages, setMessages }: Props) {
             disabled={busy}
             className="textarea min-h-10 max-h-30 flex-1 resize-none"
           />
+          {recorder.supported && (
+            <button
+              type="button"
+              onClick={toggleRecording}
+              disabled={busy || transcribing}
+              aria-label={recorder.recording ? 'Stop recording' : 'Record a question'}
+              title={recorder.recording ? 'Stop recording' : 'Record a question'}
+              className={`btn btn-square ${recorder.recording ? 'btn-error' : 'btn-outline'}`}
+            >
+              {transcribing ? (
+                <span className="loading loading-spinner loading-sm" aria-hidden="true" />
+              ) : (
+                <Mic
+                  className={`size-4 ${recorder.recording ? 'animate-pulse' : ''}`}
+                  aria-hidden="true"
+                />
+              )}
+            </button>
+          )}
           {busy ? (
             <button
               type="button"
