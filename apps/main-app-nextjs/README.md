@@ -1,10 +1,10 @@
 # main-app-nextjs
 
-The Next.js port of the Solar Vipani marketing and installer-directory site.
-Shares `@solar/db` and `@solar/validation` with the rest of the workspace; the
-SvelteKit `main-app` still serves production and the two coexist here.
+The Next.js port of the Solar Vipani site. It replaces the SvelteKit `main-app`,
+which serves production until the domain moves here. It shares `@solar/db` and
+`@solar/validation` with the rest of the workspace.
 
-The three rules the port follows, cited by number across the archetype docs:
+The port's three rules, cited by number in the archetype docs:
 
 1. Keep all the routes as they are.
 2. Keep most content as it is.
@@ -17,127 +17,67 @@ npm install
 npm run dev        # http://localhost:7124
 ```
 
-`.env.local` needs `BREVO_API_KEY` and `INTERNAL_API_SECRET` for the server
-modules in `lib/server/`. `USER_APP_URL` is optional. Database access comes from
-`@solar/db`. `NEXT_PUBLIC_POSTHOG_KEY` is optional: without it PostHog does not
-load. It is a public project key, so on the host it is config, not a secret —
-and it is baked in at build time, so changing it needs a redeploy.
-`NEXT_PUBLIC_API_BASE_URL` is the FastAPI origin for the chatbot in production.
-Leave it empty locally: `npm run dev` forwards those paths to `localhost:8000`.
+`.env.local`:
+
+| Variable | |
+| --- | --- |
+| `BREVO_API_KEY`, `INTERNAL_API_SECRET` | Required by `lib/server/`. |
+| `USER_APP_URL` | Optional. |
+| `NEXT_PUBLIC_POSTHOG_KEY` | Optional; without it PostHog does not load. Baked in at build time. |
+| `NEXT_PUBLIC_API_BASE_URL` | The FastAPI origin for the chatbot. Empty locally: dev forwards `/api/chatbot`, `/api/transcribe`, `/api/speak` to `localhost:8000`. Baked in at build time. |
 
 | Script | Does |
 | --- | --- |
-| `npm run dev` | Dev server on port 7124. |
-| `npm run build` | Production build. Needs the database — the country routes prerender for real. |
-| `npm run start` | Serve the build on port 7124. |
+| `npm run dev` / `start` | Dev server / built app, port 7124. |
+| `npm run build` | Production build. Needs the database. |
 | `npm run check` | `tsc --noEmit`. |
-| `npm run lint` | ESLint, including the two local layout rules. |
-| `npm run check:contrast` | Re-verify the colour tokens after changing any value. |
-| `npm run smoke` | Hit one URL of every route shape and assert its status. Targets production by default; `BASE_URL=…` points it elsewhere. |
+| `npm run lint` | ESLint, including the layout rules. |
+| `npm run check:contrast` | Re-verify the colour tokens after changing one. |
+| `npm run smoke` | One URL per route shape. Production by default; `BASE_URL=…` elsewhere. Too parallel for a dev server. |
 
-## Stack
+## Stack and conventions
 
-Next.js App Router, TypeScript strict, RSC by default — `'use client'` only at
-interactive leaves. Tailwind 4 with daisyUI (`app/globals.css`),
-`@tailwindcss/typography`, `lucide-react`. Free/MIT licences only. No Radix yet;
-it is the plan for dialog/drawer and combobox when one is needed.
+Next.js App Router, TypeScript strict, RSC by default, `'use client'` only at
+interactive leaves. Tailwind 4 + daisyUI (`app/globals.css`),
+`@tailwindcss/typography`, `lucide-react`. No Radix: the chat popup is a native
+`<dialog>`. Free/MIT licences only.
 
-## Conventions
-
-- Mobile-first sizing, semantic HTML.
-- Spacing comes from the layout primitives in `components/layout/`, never by
-  hand. Two lint rules enforce it: no `mx-auto` outside that folder, and no
-  numeric Tailwind spacing anywhere.
-- CSS transitions via Tailwind. No JS animation libraries.
+- Spacing comes from `components/layout/`. Lint bans `mx-auto` outside it and
+  numeric Tailwind spacing everywhere.
+- CSS transitions only, no JS animation libraries. No dark mode.
 - Structured data is a first-class requirement.
-- **No dark mode at all.** `:root { color-scheme: light; }`
-- Add a route and add its shape to `scripts/smoke.mjs` in the same commit.
+- A new route adds its shape to `scripts/smoke.mjs` in the same commit.
+- Prettier is not the repo root's config (tabs). This app is 2 spaces, single
+  quotes, width 100, no trailing commas.
 
-## Two rules that break the build
+**Route Segment Config must be a literal in the route file.** `export const
+revalidate = N` in the route itself, never imported or re-exported.
 
-**Route Segment Config must be a literal in the route file.** Write
-`export const revalidate = N` in the route itself — never re-exported from a
-shared module, never an imported constant. Next reads it by static analysis: a
-re-export warns on every build, an imported constant fails it.
-
-**ISR needs `generateStaticParams` too.** `revalidate` alone does nothing on a
-route with a dynamic segment; without the function Next renders it `ƒ` and
-re-queries the database on every request. 24 routes are in this shape and all 24
-export `revalidate`. The 10 whose only dynamic segment is `[country]` return real
-params from `countryParams` in `lib/countries/index.ts`. The other 14 have a
-second, data-driven segment and still return `[]` — see `OPEN-ITEMS.md`.
+**ISR needs `generateStaticParams` too.** Without it, `revalidate` on a dynamic
+route does nothing and every request hits the database.
 
 ## Layout
 
-Every file below has a header that says more than this table does.
+Every file has a header that says more than this table.
 
 | Path | Holds |
 | --- | --- |
-| `lib/directory/data.ts` | The directory and projects seam. Every query, each with the trap it avoids above it. |
-| `lib/editorial/` | The editorial seam. `routes.tsx` is both routes written once with the pillar as a parameter; `body.ts` rewrites moved body links. |
-| `lib/forms/`, `lib/server/business.ts` | The lead-forms seam. `components/forms/BusinessForm.tsx` is the one client leaf, shared by all three signup pages. |
-| `lib/tools/` | The calculators. `estimate.ts` holds the PM Surya Ghar slabs and the cost-per-kW ladder, so two pages quote one copy. |
-| `lib/sitemap.ts` | The XML serializers. No database import; the queries stay in the data seams, slug-only. |
-| `lib/countries/` | The per-country gate. Labels and features are data, never hardcoded. `moved-content.ts` lists the families that live at the root. |
-| `lib/metadata.ts` | The one metadata builder. It owns the tag set; each page owns its title and description. |
-| `lib/server/` | Server-only modules. |
-| `lib/cloudinary-loader.ts` | The only place an image transform is written. |
-| `middleware.ts` | The legacy 301s, and the only rules that keep the query string. Read `lib/redirects.ts` before adding a geo-lookup shim. |
-| `components/layout/` | The layout primitives. |
-| `components/chrome/` | Read `Chrome.tsx` first: it records why chrome is not in the root layout. |
+| `lib/directory/data.ts` | Directory and projects queries. |
+| `lib/editorial/` | Pillar and cluster routes, written once. |
+| `lib/forms/`, `lib/server/` | Lead and business forms; server-only modules. |
+| `lib/tools/` | The calculators' shared maths. |
+| `lib/countries/` | The per-country gate. Labels and features are data. |
+| `lib/metadata.ts`, `lib/sitemap.ts` | The one metadata builder; the XML sitemaps. |
+| `lib/analytics.ts`, `lib/track.ts` | GA and PostHog behind consent; `trackAttrs` for clicks on server-rendered links. |
+| `lib/chat/`, `components/chat/` | The chatbot. `ChatDock.tsx` is the entry point. |
+| `middleware.ts` | The legacy 301s. |
+| `components/chrome/` | Read `Chrome.tsx` first. |
 
 ## Docs
 
 | Doc | Covers |
 | --- | --- |
-| `routes.md` | Every route: 47 pages + 17 handlers. |
-| `design-foundation.md` | Type, spacing, colour, radius, elevation, motion, imagery. |
-| `archetype.md` | Why there are four page archetypes. `archetype/data.md` has the measurements. |
-| `archetype/installer-profile.md` | Archetype 1 — installer profiles. |
-| `archetype/geo-listing.md` | Archetype 2 — district page and city/size leaf. |
-| `archetype/geo-index.md` | Archetype 3 — country and state hubs. |
-| `archetype/editorial.md` | Archetype 4 — pillars and clusters. |
-| `archetype/home.md` | `/` alone. |
-| `scripts/smoke.mjs` | The route shapes and the sample URL of each. |
-| `OPEN-ITEMS.md` | Known holes, pending decisions, and what is blocked on empty tables. |
-
-Reasoning lives in the spec docs and the file headers, not here. `git log` is the
-record of how it got this way.
-
-## Next steps
-
-What is left before the domain moves here and the SvelteKit app is retired.
-One step per commit, in order. Tick each off as it lands. All steps are done.
-
-1. **Umami.** Done. Script on every page, not gated (cookieless). Plus the `engaged`
-   event (10s visible + one interaction).
-2. **CallSafe.** Done. `callsafe.online/embed.js` after `load`, on every page. Umami
-   events `callsafe-widget-clicked`, `callsafe-mute-clicked`, `callsafe-call-ended`.
-3. **Cookie consent banner.** Done. Same `analytics_consent` localStorage key as
-   SvelteKit, so a visitor's choice carries over. On every page.
-4. **GA + PostHog, behind consent.** Done. Load only after Accept. PostHog also records
-   a pageview on each client navigation. Hotjar, Twitter and the Meta Pixel are
-   not ported.
-5. **Chatbot — API seam.** Done. `lib/api.ts` `apiUrl()` reading
-   `NEXT_PUBLIC_API_BASE_URL`. In dev, a `next.config.ts` rewrite sends
-   `/api/chatbot`, `/api/transcribe`, `/api/speak` to FastAPI on `localhost:8000`.
-6. **Chatbot — shell.** Done. `ChatDock` (launcher, lazy popup, 75% scroll auto-open),
-   `ChatLauncher` above CallSafe, `ChatbotPopup` as a dialog with an empty body.
-   Mounted in the root layout.
-7. **Chatbot — text chat.** Done. `ChatBotBox`: input, send, NDJSON stream reader
-   (`delta`, `done`, `error`), stop button. Plain-text bubbles.
-8. **Chatbot — state.** Done. localStorage `chatMessages`, `chatSessionId`, `leadProfile`
-   (same keys as SvelteKit), sent every turn. `context` events, welcome message,
-   starter prompts, reset.
-9. **Chatbot — message UI.** Done. `MessageBubble`, markdown, `sources`, copy, retry,
-   regenerate, copy conversation, the Umami `chatbot-*` events.
-10. **Chatbot — voice input.** Done. `audioRecorder` + `/api/transcribe`.
-11. **Chatbot — voice output.** Done. `speechPlayer` + `/api/speak`, and the toggle.
-12. **Chatbot — result cards.** Done. `ToolResultDisplay`, `WidgetShell`, `StatTile`,
-    `StatRow`, and the seven display cards.
-13. **Chatbot — lead form.** Done. `LeadFormCard` wraps the site's own `LeadForm`,
-    prefilled from the chat, posting to `/{cc}/api/submitLead` as `/chatbot`.
-14. **PostHog custom events.** Done. `quote_submitted`, `get_quotes_cta_clicked`,
-    `installer_card_clicked`, `call_initiated`, `whatsapp_initiated`,
-    `solar_calculator_used`, `subsidy_checked`, plus the Umami call and WhatsApp
-    events. Server components declare clicks with `trackAttrs` (`lib/track.ts`).
+| `OPEN-ITEMS.md` | What blocks cutover, pending decisions, empty tables. |
+| `routes.md` | Every route. |
+| `design-foundation.md` | Type, spacing, colour, radius, elevation, motion. |
+| `archetype.md`, `archetype/` | The four page archetypes and `/`. |
