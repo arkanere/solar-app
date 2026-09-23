@@ -17,6 +17,7 @@
  */
 import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
+import { loadMessages } from '@/lib/chat/storage';
 import type { ChatMessage } from '@/lib/chat/types';
 import { ChatLauncher } from './ChatLauncher';
 
@@ -45,6 +46,11 @@ export function ChatDock() {
     openedByUser.current = false;
     setChatOpen(false);
   };
+
+  // localStorage is read after mount, so the server render never differs.
+  useEffect(() => {
+    setMessages(loadMessages());
+  }, []);
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | null = null;

@@ -9,10 +9,27 @@
 import { Send, Square } from 'lucide-react';
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { apiUrl } from '@/lib/api';
+import {
+  applyContextUpdates,
+  clearChat,
+  getSessionId,
+  greeting,
+  loadLeadProfile,
+  saveMessages
+} from '@/lib/chat/storage';
 import { readChatEvents } from '@/lib/chat/stream';
 import type { ChatMessage } from '@/lib/chat/types';
 
 const HISTORY_TURNS = 8;
+
+// Offered until the visitor asks something, so the empty state shows what the
+// assistant is good at. They send as ordinary messages.
+const STARTER_PROMPTS = [
+  'How much can I save with solar?',
+  'What government subsidies am I eligible for?',
+  'What size system does my home need?',
+  'How much maintenance do solar panels need?'
+];
 
 type Props = {
   messages: ChatMessage[];
@@ -35,6 +52,11 @@ export function ChatBotBox({ messages, setMessages }: Props) {
 
   // Closing the popup mid-reply stops it, keeping what already arrived.
   useEffect(() => () => abortRef.current?.abort(), []);
+
+  // Saved once a reply has finished, not on every streamed token.
+  useEffect(() => {
+    if (!busy) saveMessages(messages);
+  }, [messages, busy]);
 
   useEffect(() => {
     const list = listRef.current;
@@ -78,7 +100,13 @@ export function ChatBotBox({ messages, setMessages }: Props) {
         headers: { 'Content-Type': 'application/json' },
         // pagePath carries the country prefix, which is the only country signal
         // the backend gets. Pathname only: query strings carry tracking params.
-        body: JSON.stringify({ userMessage: text, history, pagePath: window.location.pathname }),
+        body: JSON.stringify({
+          userMessage: text,
+          history,
+          leadProfile: loadLeadProfile(),
+          sessionId: getSessionId(),
+          pagePath: window.location.pathname
+        }),
         signal: controller.signal
       });
       if (!response.ok || !response.body) throw new Error('Chatbot request failed');
@@ -91,10 +119,15 @@ export function ChatBotBox({ messages, setMessages }: Props) {
             started = true;
             setLoading(false);
             setStreaming(true);
-            setMessages((m) => [...m, { role: 'assistant', content: reply, timestamp: Date.now() }]);
+            setMessages((m) => [
+              ...m,
+              { role: 'assistant', content: reply, timestamp: Date.now() }
+            ]);
           } else {
             patchLast({ content: reply });
           }
+        } else if (event.type === 'context') {
+          applyContextUpdates(event.updates);
         } else if (event.type === 'error') {
           throw new Error('Streaming error');
         } else if (event.type === 'done') {
@@ -104,7 +137,8 @@ export function ChatBotBox({ messages, setMessages }: Props) {
       }
     } catch (err) {
       if ((err as Error).name === 'AbortError') {
-        if (started) patchLast({ stopped: true });
+        // Reset clears abortRef before aborting; its fresh transcript is not ours to mark.
+        if (started && abortRef.current === controller) patchLast({ stopped: true });
       } else {
         console.error('Error communicating with chatbot:', err);
         setMessages((m) => [
@@ -132,6 +166,18 @@ export function ChatBotBox({ messages, setMessages }: Props) {
     void runChat(text);
   };
 
+  const reset = () => {
+    // Abort first, so a late chunk cannot write into the fresh conversation.
+    const controller = abortRef.current;
+    abortRef.current = null;
+    controller?.abort();
+    clearChat();
+    setMessages(greeting());
+    scrolledUp.current = false;
+  };
+
+  const hasUserMessage = messages.some((m) => m.role === 'user');
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div
@@ -156,48 +202,70 @@ export function ChatBotBox({ messages, setMessages }: Props) {
           </p>
         ))}
         {loading && (
-          <span className="loading loading-dots loading-sm text-ink-subtle" aria-label="Assistant is typing" />
+          <span
+            className="loading loading-dots loading-sm text-ink-subtle"
+            aria-label="Assistant is typing"
+          />
         )}
       </div>
 
-      <div className="flex items-end gap-xs border-t border-line p-md">
-        <textarea
-          ref={inputRef}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            // Enter sends, Shift+Enter is a newline.
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault();
-              send();
-            }
-          }}
-          rows={1}
-          placeholder="Ask a question about solar installation..."
-          aria-label="Message"
-          disabled={busy}
-          className="textarea min-h-10 max-h-30 flex-1 resize-none"
-        />
-        {busy ? (
-          <button
-            type="button"
-            onClick={() => abortRef.current?.abort()}
-            aria-label="Stop generating"
-            className="btn btn-outline btn-square"
-          >
-            <Square className="size-4" aria-hidden="true" />
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={send}
-            disabled={!input.trim()}
-            aria-label="Send message"
-            className="btn btn-primary btn-square"
-          >
-            <Send className="size-4" aria-hidden="true" />
-          </button>
+      <div className="flex flex-col gap-xs border-t border-line p-md">
+        {!hasUserMessage && !busy && (
+          <div className="flex flex-wrap gap-xs">
+            {STARTER_PROMPTS.map((prompt) => (
+              <button
+                key={prompt}
+                type="button"
+                onClick={() => void runChat(prompt)}
+                className="btn btn-outline btn-sm h-auto py-2xs text-left font-normal whitespace-normal"
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
         )}
+        <div className="flex items-end gap-xs">
+          <textarea
+            ref={inputRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              // Enter sends, Shift+Enter is a newline.
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                send();
+              }
+            }}
+            rows={1}
+            placeholder="Ask a question about solar installation..."
+            aria-label="Message"
+            disabled={busy}
+            className="textarea min-h-10 max-h-30 flex-1 resize-none"
+          />
+          {busy ? (
+            <button
+              type="button"
+              onClick={() => abortRef.current?.abort()}
+              aria-label="Stop generating"
+              className="btn btn-outline btn-square"
+            >
+              <Square className="size-4" aria-hidden="true" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={send}
+              disabled={!input.trim()}
+              aria-label="Send message"
+              className="btn btn-primary btn-square"
+            >
+              <Send className="size-4" aria-hidden="true" />
+            </button>
+          )}
+        </div>
+        <button type="button" onClick={reset} className="btn btn-ghost btn-xs self-center">
+          Reset chat
+        </button>
       </div>
     </div>
   );
