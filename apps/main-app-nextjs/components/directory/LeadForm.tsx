@@ -47,10 +47,22 @@ const EMPTY: LeadFields = { name: '', phone: '', postalCode: '', email: '', comm
 const FIELD =
   'w-full rounded-md border border-line-strong bg-surface px-sm py-xs text-base transition-colors duration-fast ease-standard placeholder:text-ink-subtle disabled:opacity-60';
 
-export function LeadForm({ country }: { country: CountryConfig }) {
+/**
+ * `prefill` and `urlParam` are for the chatbot's lead card, which fills in what
+ * the conversation already established and reports its leads as `/chatbot`.
+ */
+export function LeadForm({
+  country,
+  prefill,
+  urlParam
+}: {
+  country: CountryConfig;
+  prefill?: Partial<LeadFields>;
+  urlParam?: string;
+}) {
   const formId = useId();
   const pathname = usePathname();
-  const [values, setValues] = useState<LeadFields>(EMPTY);
+  const [values, setValues] = useState<LeadFields>({ ...EMPTY, ...prefill });
   const [errors, setErrors] = useState<LeadErrors>({});
   const [consent, setConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -100,7 +112,7 @@ export function LeadForm({ country }: { country: CountryConfig }) {
           // `urlParam` is the page the lead came from — the pathname only,
           // matching the SvelteKit form. It is what tells a claimed lead which
           // district page produced it.
-          urlParam: pathname,
+          urlParam: urlParam ?? pathname,
           marketing_consent: consent
         })
       });
