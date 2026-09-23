@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { BASE_URL } from '@/lib/directory/structuredData';
 import { OG_IMAGE, SITE_NAME } from '@/lib/metadata';
+import { CallSafe } from '@/components/analytics/CallSafe';
 import { Umami } from '@/components/analytics/Umami';
 import './globals.css';
 
@@ -60,6 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {children}
         <Umami />
+        <CallSafe />
       </body>
     </html>
   );

@@ -20,11 +20,11 @@ Neither is code in this app.
 
 - **The Meta Pixel is not ported** — a `PageView` on the two forms and on
   `/{cc}/partners` and `/{cc}/business-listing`, and a **`Lead` conversion** on the
-  two confirmations. A third-party tracker needs a consent decision and a
-  `next/script` strategy, and neither has been made. **The ad account's conversion
-  reporting is blind until it lands** — a launch blocker. The same decision is why
-  the one third-party embed that *was* kept, the "See How It Works" video on those
-  two pages, points at `youtube-nocookie.com`.
+  two confirmations. Decided: it stays out, with Hotjar and Twitter (README, Next
+  steps). No longer a launch blocker, but **the ad account's conversion reporting
+  is blind after cutover** — say so to whoever runs Meta ads. The "See How It
+  Works" video on those two pages points at `youtube-nocookie.com` for the same
+  reason.
 - **Two confirmation pages, one reachable.** `BusinessForm` sends every signup to
   `/{cc}/thank-you-business`, so `/{cc}/partners/join/thank-you` is routed to by
   nothing and promises something different (48 hours vs a call). A content decision.

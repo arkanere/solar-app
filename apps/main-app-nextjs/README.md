@@ -105,9 +105,9 @@ record of how it got this way.
 What is left before the domain moves here and the SvelteKit app is retired.
 One step per commit, in order. Tick each off as it lands.
 
-1. **Umami.** Script on every page, not gated (cookieless). Plus the `engaged`
+1. **Umami.** Done. Script on every page, not gated (cookieless). Plus the `engaged`
    event (10s visible + one interaction).
-2. **CallSafe.** `callsafe.online/embed.js` after `load`, on every page. Umami
+2. **CallSafe.** Done. `callsafe.online/embed.js` after `load`, on every page. Umami
    events `callsafe-widget-clicked`, `callsafe-mute-clicked`, `callsafe-call-ended`.
 3. **Cookie consent banner.** Same `analytics_consent` localStorage key as
    SvelteKit, so a visitor's choice carries over. On every page.
