@@ -13,20 +13,31 @@
  * and closing on a backdrop click.
  */
 import { X } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
+import type { ChatMessage } from '@/lib/chat/types';
+import { ChatBotBox } from './ChatBotBox';
 
-export default function ChatbotPopup({ onClose }: { onClose: () => void }) {
+type Props = {
+  messages: ChatMessage[];
+  setMessages: Dispatch<SetStateAction<ChatMessage[]>>;
+  onClose: () => void;
+};
+
+export default function ChatbotPopup({ messages, setMessages, onClose }: Props) {
   const ref = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
     const dialog = ref.current;
     if (!dialog) return;
-    dialog.showModal();
+    if (!dialog.open) dialog.showModal();
     const overflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    // No dialog.close() here: unmounting removes the element, which already
+    // leaves the top layer. close() would also queue a `close` event, and under
+    // StrictMode's mount-unmount-mount that event lands after the remount and
+    // shuts the popup the visitor just opened.
     return () => {
       document.body.style.overflow = overflow;
-      dialog.close();
     };
   }, []);
 
@@ -55,8 +66,7 @@ export default function ChatbotPopup({ onClose }: { onClose: () => void }) {
             <X className="size-5" aria-hidden="true" />
           </button>
         </header>
-        {/* The message list and input land in the next step. */}
-        <div className="flex-1" />
+        <ChatBotBox messages={messages} setMessages={setMessages} />
       </div>
     </dialog>
   );

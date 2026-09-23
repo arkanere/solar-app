@@ -17,6 +17,7 @@
  */
 import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
+import type { ChatMessage } from '@/lib/chat/types';
 import { ChatLauncher } from './ChatLauncher';
 
 const SCROLL_TRIGGER = 0.75;
@@ -27,6 +28,8 @@ const ChatbotPopup = dynamic(loadPopup, { ssr: false });
 
 export function ChatDock() {
   const [chatOpen, setChatOpen] = useState(false);
+  // Held here, not in the popup, so the transcript survives closing it.
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   // Refs, not state: the scroll handler reads them and nothing renders from them.
   const openedByUser = useRef(false);
   const autoOpenFired = useRef(false);
@@ -90,7 +93,7 @@ export function ChatDock() {
   }, []);
 
   return chatOpen ? (
-    <ChatbotPopup onClose={closeChat} />
+    <ChatbotPopup messages={messages} setMessages={setMessages} onClose={closeChat} />
   ) : (
     <ChatLauncher onOpen={openChat} onPreload={loadPopup} />
   );
