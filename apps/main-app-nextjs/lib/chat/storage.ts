@@ -107,3 +107,15 @@ export function clearChat(): void {
   window.localStorage.removeItem(PROFILE_KEY);
   window.localStorage.removeItem(SESSION_KEY);
 }
+
+// Voice output is off by default so the widget never talks first, and
+// remembered so the choice survives a reload. Reset does not clear it.
+const VOICE_KEY = 'chatVoiceOutput';
+
+export function loadVoiceOutput(): boolean {
+  return window.localStorage.getItem(VOICE_KEY) === '1';
+}
+
+export function saveVoiceOutput(on: boolean): void {
+  window.localStorage.setItem(VOICE_KEY, on ? '1' : '0');
+}

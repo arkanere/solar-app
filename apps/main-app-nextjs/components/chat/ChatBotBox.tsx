@@ -6,7 +6,7 @@
  * events arrive. The server is stateless per request, so the last few turns
  * go up as `history` every time.
  */
-import { Mic, Send, Square } from 'lucide-react';
+import { Mic, Send, Square, Volume2, VolumeX } from 'lucide-react';
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { apiUrl } from '@/lib/api';
 import {
@@ -15,12 +15,15 @@ import {
   getSessionId,
   greeting,
   loadLeadProfile,
-  saveMessages
+  loadVoiceOutput,
+  saveMessages,
+  saveVoiceOutput
 } from '@/lib/chat/storage';
 import { readChatEvents } from '@/lib/chat/stream';
 import type { ChatMessage } from '@/lib/chat/types';
 import { MessageBubble } from './MessageBubble';
 import { audioFileName, useAudioRecorder } from './useAudioRecorder';
+import { useSpeechPlayer } from './useSpeechPlayer';
 
 const HISTORY_TURNS = 8;
 
@@ -46,6 +49,11 @@ export function ChatBotBox({ messages, setMessages }: Props) {
   const busy = loading || streaming;
   const recorder = useAudioRecorder();
   const [transcribing, setTranscribing] = useState(false);
+  const speech = useSpeechPlayer();
+  // Voice output is a mode: while on, every finished reply is spoken. The ref
+  // is what runChat reads, so a toggle mid-reply applies to that reply.
+  const [voiceOutput, setVoiceOutput] = useState(loadVoiceOutput);
+  const voiceOutputRef = useRef(voiceOutput);
 
   const abortRef = useRef<AbortController | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -153,6 +161,8 @@ export function ChatBotBox({ messages, setMessages }: Props) {
       }
       // Citations arrive before the reply, so they attach once it exists.
       if (started && sources?.length) patchLast({ sources });
+      // Only a reply that finished: a failed or stopped one never gets here.
+      if (voiceOutputRef.current && reply.trim()) void speech.speak(reply);
     } catch (err) {
       if ((err as Error).name === 'AbortError') {
         // Reset clears abortRef before aborting; its fresh transcript is not ours to mark.
@@ -187,6 +197,8 @@ export function ChatBotBox({ messages, setMessages }: Props) {
   /** Record a question, transcribe it, and send it as a normal turn. */
   const toggleRecording = async () => {
     if (!recorder.recording) {
+      // Don't let the assistant talk into the open mic.
+      speech.stop();
       await recorder.start();
       return;
     }
@@ -206,6 +218,16 @@ export function ChatBotBox({ messages, setMessages }: Props) {
     } finally {
       setTranscribing(false);
     }
+  };
+
+  /** Turning it off silences anything already playing. */
+  const toggleVoiceOutput = () => {
+    const on = !voiceOutput;
+    setVoiceOutput(on);
+    voiceOutputRef.current = on;
+    saveVoiceOutput(on);
+    speech.setError(null);
+    if (!on) speech.stop();
   };
 
   /** Drop the failed turn and resend the message behind it. */
@@ -228,6 +250,7 @@ export function ChatBotBox({ messages, setMessages }: Props) {
     abortRef.current = null;
     controller?.abort();
     recorder.cancel();
+    speech.stop();
     clearChat();
     setMessages(greeting());
     scrolledUp.current = false;
@@ -279,6 +302,11 @@ export function ChatBotBox({ messages, setMessages }: Props) {
             ))}
           </div>
         )}
+        {speech.error && (
+          <p role="alert" className="text-xs text-danger">
+            {speech.error}
+          </p>
+        )}
         {recorder.error && (
           <p role="alert" className="text-xs text-danger">
             {recorder.error}
@@ -321,6 +349,25 @@ export function ChatBotBox({ messages, setMessages }: Props) {
               )}
             </button>
           )}
+          {/* aria-pressed tells a screen reader this is a mode that stays on,
+              not a one-shot play button. */}
+          <button
+            type="button"
+            onClick={toggleVoiceOutput}
+            aria-pressed={voiceOutput}
+            aria-label={voiceOutput ? 'Turn off spoken replies' : 'Turn on spoken replies'}
+            title={voiceOutput ? 'Spoken replies on' : 'Spoken replies off'}
+            className={`btn btn-square ${voiceOutput ? 'btn-primary' : 'btn-outline'}`}
+          >
+            {voiceOutput ? (
+              <Volume2
+                className={`size-4 ${speech.speaking || speech.loading ? 'animate-pulse' : ''}`}
+                aria-hidden="true"
+              />
+            ) : (
+              <VolumeX className="size-4" aria-hidden="true" />
+            )}
+          </button>
           {busy ? (
             <button
               type="button"
