@@ -2,7 +2,7 @@
  * Analytics consent. Stored in localStorage only, under the same key the
  * SvelteKit app uses, so a visitor's choice survives the cutover.
  *
- * Umami and CallSafe are not gated by this. GA and PostHog are.
+ * Umami and CallSafe are not gated by this. GA and PostHog are (lib/analytics.ts).
  */
 export const CONSENT_KEY = 'analytics_consent';
 
