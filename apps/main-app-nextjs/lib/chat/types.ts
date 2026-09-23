@@ -10,4 +10,7 @@ export type ChatMessage = {
   stopped?: boolean;
   /** Citations from retrieval, attached once the reply ends. */
   sources?: { title: string; url: string }[];
+  /** A tool the agent ran for this reply, and its payload for the card. */
+  toolExecuted?: string;
+  toolResult?: Record<string, unknown>;
 };

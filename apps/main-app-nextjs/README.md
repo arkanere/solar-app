@@ -108,7 +108,7 @@ record of how it got this way.
 
 What is left before the domain moves here and the SvelteKit app is retired.
 One step per commit, in order. Tick each off as it lands. Next session starts
-at step 12.
+at step 13.
 
 1. **Umami.** Done. Script on every page, not gated (cookieless). Plus the `engaged`
    event (10s visible + one interaction).
@@ -134,8 +134,8 @@ at step 12.
    regenerate, copy conversation, the Umami `chatbot-*` events.
 10. **Chatbot — voice input.** Done. `audioRecorder` + `/api/transcribe`.
 11. **Chatbot — voice output.** Done. `speechPlayer` + `/api/speak`, and the toggle.
-12. **Chatbot — result cards.** `ToolResultDisplay`, `WidgetShell`, `StatTile`,
-    `StatRow`, and the eight display cards.
+12. **Chatbot — result cards.** Done. `ToolResultDisplay`, `WidgetShell`, `StatTile`,
+    `StatRow`, and the seven display cards.
 13. **Chatbot — lead form.** `LeadFormCard` posting to `/{cc}/api/submitLead`.
 14. **PostHog custom events.** SvelteKit sends them from `LeadForm`, `SiteHeader`,
    `InstallerCard`, the three tools and `businessTracking.ts`. Only pageviews and

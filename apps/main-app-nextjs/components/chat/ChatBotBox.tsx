@@ -134,6 +134,7 @@ export function ChatBotBox({ messages, setMessages }: Props) {
 
       let reply = '';
       let sources: ChatMessage['sources'];
+      let tool: Pick<ChatMessage, 'toolExecuted' | 'toolResult'> | undefined;
       for await (const event of readChatEvents(response.body)) {
         if (event.type === 'delta' && typeof event.text === 'string') {
           reply += event.text;
@@ -150,6 +151,11 @@ export function ChatBotBox({ messages, setMessages }: Props) {
           }
         } else if (event.type === 'sources' && Array.isArray(event.items)) {
           sources = event.items;
+        } else if (event.type === 'tool' && typeof event.name === 'string') {
+          tool = {
+            toolExecuted: event.name,
+            toolResult: event.result as ChatMessage['toolResult']
+          };
         } else if (event.type === 'context') {
           applyContextUpdates(event.updates);
         } else if (event.type === 'error') {
@@ -159,8 +165,9 @@ export function ChatBotBox({ messages, setMessages }: Props) {
         }
         // Other event types land in later steps; ignoring them is deliberate.
       }
-      // Citations arrive before the reply, so they attach once it exists.
-      if (started && sources?.length) patchLast({ sources });
+      // Citations and tool results can arrive before the reply exists, so they
+      // attach once it has ended.
+      if (started && (sources?.length || tool)) patchLast({ ...tool, sources });
       // Only a reply that finished: a failed or stopped one never gets here.
       if (voiceOutputRef.current && reply.trim()) void speech.speak(reply);
     } catch (err) {

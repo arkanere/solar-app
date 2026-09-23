@@ -12,6 +12,7 @@ import { useState } from 'react';
 import { formatTime } from '@/lib/chat/format';
 import { renderMarkdown } from '@/lib/chat/markdown';
 import type { ChatMessage } from '@/lib/chat/types';
+import { hasToolCard, ToolResultDisplay } from './widgets/ToolResultDisplay';
 
 type Props = {
   message: ChatMessage;
@@ -37,7 +38,8 @@ export function MessageBubble({ message, onRetry, onRegenerate }: Props) {
 
   return (
     <div
-      className={`group flex max-w-[85%] flex-col gap-2xs ${isAssistant ? 'self-start' : 'self-end'}`}
+      // A tool card needs the full width; text alone sizes to its content.
+      className={`group flex max-w-[85%] flex-col gap-2xs ${isAssistant ? 'self-start' : 'self-end'} ${hasToolCard(message.toolExecuted) ? 'w-full' : ''}`}
     >
       <div
         className={
@@ -60,6 +62,10 @@ export function MessageBubble({ message, onRetry, onRegenerate }: Props) {
             <RotateCcw className="size-4" aria-hidden="true" />
             Retry
           </button>
+        )}
+
+        {isAssistant && message.toolExecuted && message.toolResult && (
+          <ToolResultDisplay tool={message.toolExecuted} result={message.toolResult} />
         )}
 
         {isAssistant && message.sources?.length ? (
