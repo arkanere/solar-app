@@ -28,6 +28,7 @@
  * state would be the same bytes over the wire in a shape only this file uses.
  */
 import { useState } from 'react';
+import { capture } from '@/lib/analytics';
 import Link from 'next/link';
 import { ArrowRight, Clock, IndianRupee, Sun, Zap } from 'lucide-react';
 import { BreakdownRow, Panel, StatTile, ToolLinks } from './Panel';
@@ -83,6 +84,18 @@ export function SolarCalculator({
   const annualSavings = Math.round(annualGeneration * ratePerUnit);
   const paybackYears = annualSavings > 0 ? Number((netCost / annualSavings).toFixed(1)) : 0;
   const savings25Years = Math.round(annualSavings * 25 - netCost);
+
+  const calculate = () => {
+    setRevealed(true);
+    capture('solar_calculator_used', {
+      monthly_bill: monthlyBill,
+      system_size_kw: systemSizeKw,
+      net_cost: netCost,
+      payback_years: paybackYears,
+      state,
+      district
+    });
+  };
 
   return (
     <>
@@ -141,7 +154,7 @@ export function SolarCalculator({
           />
         </div>
 
-        <button type="button" onClick={() => setRevealed(true)} className="btn btn-primary mt-lg w-full">
+        <button type="button" onClick={calculate} className="btn btn-primary mt-lg w-full">
           Calculate
         </button>
       </Panel>

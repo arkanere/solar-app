@@ -30,6 +30,11 @@ export function loadAnalytics() {
   void loadPosthog();
 }
 
+/** A PostHog custom event. A no-op until PostHog has loaded, so without consent. */
+export function capture(event: string, properties?: Record<string, unknown>) {
+  posthog?.capture(event, properties);
+}
+
 /** PostHog pageview. A no-op until PostHog has loaded. */
 export function capturePageview() {
   posthog?.capture('$pageview', { $current_url: window.location.href });

@@ -19,6 +19,7 @@
  * having been picked, which is also the only case where it says anything.
  */
 import { useState } from 'react';
+import { capture } from '@/lib/analytics';
 import Link from 'next/link';
 import { ArrowRight, CircleCheck, CircleX, Info } from 'lucide-react';
 import { BreakdownRow, Panel, ToolLinks } from './Panel';
@@ -59,6 +60,17 @@ export function SubsidyChecker({
   const eligible = connectionType === 'residential' && gridConnection === 'yes';
   const subsidy = centralSubsidy(systemSizeKw, eligible);
   const cost = grossCost(systemSizeKw);
+
+  const check = () => {
+    setRevealed(true);
+    capture('subsidy_checked', {
+      system_size_kw: systemSizeKw,
+      eligible,
+      subsidy_amount: subsidy,
+      net_cost: cost - subsidy,
+      state
+    });
+  };
 
   /** Both conditions are reported, not just the first — a commercial off-grid
       system fails on two counts and fixing one of them does not help. */
@@ -119,7 +131,7 @@ export function SubsidyChecker({
           </div>
         </div>
 
-        <button type="button" onClick={() => setRevealed(true)} className="btn btn-primary mt-lg w-full">
+        <button type="button" onClick={check} className="btn btn-primary mt-lg w-full">
           Check Subsidy
         </button>
       </Panel>

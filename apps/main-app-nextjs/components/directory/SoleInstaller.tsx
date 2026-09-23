@@ -14,6 +14,7 @@
 import { SERVICE_NAMES } from '@/lib/directory/services';
 import { geoUrl, installerUrl } from '@/lib/directory/urls';
 import type { InstallerRowData } from '@/lib/directory/types';
+import { trackAttrs } from '@/lib/track';
 import { CallButton, WhatsAppButton } from './ContactButtons';
 import { WorkThumb } from './WorkThumb';
 
@@ -48,7 +49,12 @@ export function SoleInstaller({
         <WorkThumb b={b} size={72} />
         <div className="min-w-0">
           <h2 className="text-lg leading-tight">
-            <a href={href}>{b.name.trim()}</a>
+            <a
+              href={href}
+              {...trackAttrs('installer_card_clicked', { business_slug: b.slug, city: b.city })}
+            >
+              {b.name.trim()}
+            </a>
           </h2>
           <p className="mt-2xs text-sm text-ink-muted">{b.address?.trim() || b.city}</p>
           {services ? <p className="mt-2xs text-xs text-ink-subtle">{services}</p> : null}
@@ -57,8 +63,8 @@ export function SoleInstaller({
 
       {b.phone ? (
         <div className="mt-lg flex gap-xs">
-          <CallButton phone={b.phone} wide />
-          <WhatsAppButton phone={b.phone} wide />
+          <CallButton phone={b.phone} slug={b.slug} city={b.city} wide />
+          <WhatsAppButton phone={b.phone} slug={b.slug} city={b.city} wide />
         </div>
       ) : null}
 

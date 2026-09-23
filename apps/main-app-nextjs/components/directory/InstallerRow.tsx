@@ -21,6 +21,7 @@
 import { SERVICE_NAMES } from '@/lib/directory/services';
 import { installerUrl } from '@/lib/directory/urls';
 import type { InstallerRowData } from '@/lib/directory/types';
+import { trackAttrs } from '@/lib/track';
 import { CallButton, WhatsAppButton } from './ContactButtons';
 import { WorkThumb } from './WorkThumb';
 
@@ -38,7 +39,12 @@ export function InstallerRow({ b, country }: { b: InstallerRowData; country: str
 
       <div className="min-w-0 flex-1 basis-64">
         <h3 className="text-base leading-snug">
-          <a href={href}>{b.name.trim()}</a>
+          <a
+            href={href}
+            {...trackAttrs('installer_card_clicked', { business_slug: b.slug, city: b.city })}
+          >
+            {b.name.trim()}
+          </a>
         </h3>
         <p className="mt-2xs truncate text-sm text-ink-muted">{b.address?.trim() || b.city}</p>
         {services ? <p className="mt-2xs truncate text-xs text-ink-subtle">{services}</p> : null}
@@ -54,8 +60,8 @@ export function InstallerRow({ b, country }: { b: InstallerRowData; country: str
 
         {b.phone ? (
           <div className="flex gap-xs">
-            <CallButton phone={b.phone} />
-            <WhatsAppButton phone={b.phone} />
+            <CallButton phone={b.phone} slug={b.slug} city={b.city} />
+            <WhatsAppButton phone={b.phone} slug={b.slug} city={b.city} />
           </div>
         ) : (
           <a href={href} className="text-sm">

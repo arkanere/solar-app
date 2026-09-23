@@ -73,8 +73,8 @@ export function ContactPanel({ business }: { business: InstallerProfile }) {
 
       {phone ? (
         <div className="mt-md hidden flex-col gap-xs lg:flex">
-          <CallButton phone={phone} wide />
-          <WhatsAppButton phone={phone} wide />
+          <CallButton phone={phone} slug={business.slug} city={city} wide />
+          <WhatsAppButton phone={phone} slug={business.slug} city={city} wide />
         </div>
       ) : null}
 

@@ -220,8 +220,18 @@ export default async function Page({
                       holds the desktop one; see its header for why both. */}
                   {business.phone ? (
                     <div className="mt-lg flex gap-xs lg:hidden">
-                      <CallButton phone={business.phone} wide />
-                      <WhatsAppButton phone={business.phone} wide />
+                      <CallButton
+                        phone={business.phone}
+                        slug={business.slug}
+                        city={business.city}
+                        wide
+                      />
+                      <WhatsAppButton
+                        phone={business.phone}
+                        slug={business.slug}
+                        city={business.city}
+                        wide
+                      />
                     </div>
                   ) : null}
                 </header>

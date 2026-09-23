@@ -10,16 +10,26 @@
  *
  * These stay server components. They are anchors with `tel:` and `wa.me`
  * hrefs — nothing here needs JavaScript, so nothing here needs 'use client'.
+ * The click events are data attributes (lib/track.ts). The Umami names are
+ * SvelteKit's, city and slug as stored, so the dashboards carry over.
  */
 import { MessageCircle, Phone } from 'lucide-react';
+import { trackAttrs } from '@/lib/track';
+
+type Props = { phone: string; slug: string; city: string; wide?: boolean };
 
 const BASE =
   'inline-flex items-center justify-center gap-xs rounded-md px-md py-xs text-sm font-semibold no-underline transition-colors duration-fast ease-standard';
 
-export function CallButton({ phone, wide }: { phone: string; wide?: boolean }) {
+export function CallButton({ phone, slug, city, wide }: Props) {
   return (
     <a
       href={`tel:${phone}`}
+      {...trackAttrs(
+        'call_initiated',
+        { business_slug: slug, city },
+        `${city}-call-now-button-${slug}`
+      )}
       className={`${BASE} bg-action text-action-ink hover:bg-action-hover ${wide ? 'flex-1' : ''}`}
     >
       <Phone aria-hidden className="size-4" />
@@ -28,10 +38,15 @@ export function CallButton({ phone, wide }: { phone: string; wide?: boolean }) {
   );
 }
 
-export function WhatsAppButton({ phone, wide }: { phone: string; wide?: boolean }) {
+export function WhatsAppButton({ phone, slug, city, wide }: Props) {
   return (
     <a
       href={`https://wa.me/${phone.replace(/\D/g, '')}`}
+      {...trackAttrs(
+        'whatsapp_initiated',
+        { business_slug: slug, city },
+        `${city}-whatsapp-button-${slug}`
+      )}
       className={`${BASE} border border-action text-action hover:bg-accent-surface ${
         wide ? 'flex-1' : ''
       }`}

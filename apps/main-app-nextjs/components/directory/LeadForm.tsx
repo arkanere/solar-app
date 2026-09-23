@@ -39,6 +39,7 @@
  */
 import { useId, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { capture } from '@/lib/analytics';
 import type { CountryConfig } from '@/lib/countries';
 import { validateLead, type LeadErrors, type LeadFields } from '@/lib/directory/leadValidation';
 
@@ -98,6 +99,7 @@ export function LeadForm({
 
     setSubmitting(true);
     setSubmitError('');
+    const source = urlParam ?? pathname;
 
     try {
       const response = await fetch(`/${country.code}/api/submitLead`, {
@@ -112,7 +114,7 @@ export function LeadForm({
           // `urlParam` is the page the lead came from — the pathname only,
           // matching the SvelteKit form. It is what tells a claimed lead which
           // district page produced it.
-          urlParam: urlParam ?? pathname,
+          urlParam: source,
           marketing_consent: consent
         })
       });
@@ -123,6 +125,7 @@ export function LeadForm({
         throw new Error(body?.error ?? `submitLead returned ${response.status}`);
       }
 
+      capture('quote_submitted', { source_url: source });
       setSubmitted(true);
     } catch (error) {
       console.error('Error submitting form:', error);

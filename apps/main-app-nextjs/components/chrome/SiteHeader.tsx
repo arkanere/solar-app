@@ -24,6 +24,7 @@
  */
 import type { CountryConfig } from '@/lib/countries';
 import { contentUrl } from '@/lib/directory/urls';
+import { trackAttrs } from '@/lib/track';
 import Link from 'next/link';
 import { Container } from '@/components/layout';
 import { NavMenu, type NavGroup } from './NavMenu';
@@ -113,7 +114,11 @@ export function SiteHeader({ country }: { country?: CountryConfig }) {
                 lead funnel live, so its one CTA is the business listing. */}
             {country && cc === 'in' ? (
               <>
-                <a href={`/${cc}/get-quotes`} className={CTA}>
+                <a
+                  href={`/${cc}/get-quotes`}
+                  className={CTA}
+                  {...trackAttrs('get_quotes_cta_clicked', { source: 'nav' })}
+                >
                   Get Quotes
                 </a>
                 <a href={`/${cc}/partners`} className={NAV_LINK}>
