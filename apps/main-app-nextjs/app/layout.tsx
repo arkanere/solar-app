@@ -4,6 +4,7 @@ import { BASE_URL } from '@/lib/directory/structuredData';
 import { OG_IMAGE, SITE_NAME } from '@/lib/metadata';
 import { Analytics } from '@/components/analytics/Analytics';
 import { CallSafe } from '@/components/analytics/CallSafe';
+import { ChatDock } from '@/components/chat/ChatDock';
 import { CookieConsent } from '@/components/analytics/CookieConsent';
 import { Umami } from '@/components/analytics/Umami';
 import './globals.css';
@@ -64,6 +65,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <Umami />
         <CallSafe />
+        <ChatDock />
         <CookieConsent />
         <Analytics />
       </body>

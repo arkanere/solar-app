@@ -108,7 +108,7 @@ record of how it got this way.
 
 What is left before the domain moves here and the SvelteKit app is retired.
 One step per commit, in order. Tick each off as it lands. Next session starts
-at step 6.
+at step 7.
 
 1. **Umami.** Done. Script on every page, not gated (cookieless). Plus the `engaged`
    event (10s visible + one interaction).
@@ -122,7 +122,7 @@ at step 6.
 5. **Chatbot — API seam.** Done. `lib/api.ts` `apiUrl()` reading
    `NEXT_PUBLIC_API_BASE_URL`. In dev, a `next.config.ts` rewrite sends
    `/api/chatbot`, `/api/transcribe`, `/api/speak` to FastAPI on `localhost:8000`.
-6. **Chatbot — shell.** `ChatDock` (launcher, lazy popup, 75% scroll auto-open),
+6. **Chatbot — shell.** Done. `ChatDock` (launcher, lazy popup, 75% scroll auto-open),
    `ChatLauncher` above CallSafe, `ChatbotPopup` as a dialog with an empty body.
    Mounted in the root layout.
 7. **Chatbot — text chat.** `ChatBotBox`: input, send, NDJSON stream reader
