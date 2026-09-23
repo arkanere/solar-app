@@ -117,12 +117,23 @@ at step 5.
 4. **GA + PostHog, behind consent.** Done. Load only after Accept. PostHog also records
    a pageview on each client navigation. Hotjar, Twitter and the Meta Pixel are
    not ported.
-5. **Chatbot — shell.** `ChatDock`, launcher, popup, scroll auto-open. Next
-   rewrite to the FastAPI backend for local dev; `NEXT_PUBLIC_API_BASE_URL` in prod.
-6. **Chatbot — messages.** `ChatBotBox`, `MessageBubble`, text chat over `/api/chatbot`.
-7. **Chatbot — voice.** `/api/transcribe` and `/api/speak`.
-8. **Chatbot — widgets.** The tool-result cards, and `LeadFormCard` posting to
-   `/{cc}/api/submitLead`.
-9. **PostHog custom events.** SvelteKit sends them from `LeadForm`, `SiteHeader`,
+5. **Chatbot — API seam.** `lib/api.ts` `apiUrl()` reading
+   `NEXT_PUBLIC_API_BASE_URL`. In dev, a `next.config.ts` rewrite sends
+   `/api/chatbot`, `/api/transcribe`, `/api/speak` to FastAPI on `localhost:8000`.
+6. **Chatbot — shell.** `ChatDock` (launcher, lazy popup, 75% scroll auto-open),
+   `ChatLauncher` above CallSafe, `ChatbotPopup` as a dialog with an empty body.
+   Mounted in the root layout.
+7. **Chatbot — text chat.** `ChatBotBox`: input, send, NDJSON stream reader
+   (`delta`, `done`, `error`), stop button. Plain-text bubbles.
+8. **Chatbot — state.** localStorage `chatMessages`, `chatSessionId`, `leadProfile`
+   (same keys as SvelteKit). `history`, `pagePath`, `context` events, greet, reset.
+9. **Chatbot — message UI.** `MessageBubble`, markdown, `sources`, copy, retry,
+   regenerate, copy conversation, the Umami `chatbot-*` events.
+10. **Chatbot — voice input.** `audioRecorder` + `/api/transcribe`.
+11. **Chatbot — voice output.** `speechPlayer` + `/api/speak`, and the toggle.
+12. **Chatbot — result cards.** `ToolResultDisplay`, `WidgetShell`, `StatTile`,
+    `StatRow`, and the eight display cards.
+13. **Chatbot — lead form.** `LeadFormCard` posting to `/{cc}/api/submitLead`.
+14. **PostHog custom events.** SvelteKit sends them from `LeadForm`, `SiteHeader`,
    `InstallerCard`, the three tools and `businessTracking.ts`. Only pageviews and
    autocapture are ported so far.
