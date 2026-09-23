@@ -8,4 +8,6 @@ export type ChatMessage = {
   userMessage?: string;
   /** The visitor pressed stop; `content` is the partial reply. */
   stopped?: boolean;
+  /** Citations from retrieval, attached once the reply ends. */
+  sources?: { title: string; url: string }[];
 };

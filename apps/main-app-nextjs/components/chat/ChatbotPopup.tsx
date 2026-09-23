@@ -12,8 +12,8 @@
  * Two things native <dialog> does not do, added by hand: page scroll lock,
  * and closing on a backdrop click.
  */
-import { X } from 'lucide-react';
-import { useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
+import { Check, Copy, X } from 'lucide-react';
+import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import type { ChatMessage } from '@/lib/chat/types';
 import { ChatBotBox } from './ChatBotBox';
 
@@ -23,8 +23,34 @@ type Props = {
   onClose: () => void;
 };
 
+/** The conversation as plain text, citations under each reply. */
+function buildTranscript(messages: ChatMessage[]): string {
+  return messages
+    .filter((m) => m.content.trim())
+    .map((m) => {
+      let block = `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`;
+      if (m.sources?.length) {
+        block += '\n' + m.sources.map((s) => `  - ${s.title}: ${s.url}`).join('\n');
+      }
+      return block;
+    })
+    .join('\n\n');
+}
+
 export default function ChatbotPopup({ messages, setMessages, onClose }: Props) {
   const ref = useRef<HTMLDialogElement>(null);
+  const [copied, setCopied] = useState(false);
+
+  const copyConversation = async () => {
+    try {
+      await navigator.clipboard.writeText(buildTranscript(messages));
+      setCopied(true);
+      window.umami?.track('chatbot-conversation-copied');
+      setTimeout(() => setCopied(false), 1500);
+    } catch (err) {
+      console.error('Failed to copy conversation:', err);
+    }
+  };
 
   useEffect(() => {
     const dialog = ref.current;
@@ -57,14 +83,29 @@ export default function ChatbotPopup({ messages, setMessages, onClose }: Props) 
       <div className="flex h-full flex-col">
         <header className="flex items-center justify-between border-b border-line px-md py-sm">
           <h2 className="text-base font-semibold">Solar Expert Agent</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close chat"
-            className="btn btn-ghost btn-sm btn-square"
-          >
-            <X className="size-5" aria-hidden="true" />
-          </button>
+          <div className="flex items-center gap-2xs">
+            <button
+              type="button"
+              onClick={copyConversation}
+              aria-label="Copy conversation"
+              title={copied ? 'Copied!' : 'Copy conversation'}
+              className="btn btn-ghost btn-sm btn-square"
+            >
+              {copied ? (
+                <Check className="size-5" aria-hidden="true" />
+              ) : (
+                <Copy className="size-5" aria-hidden="true" />
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close chat"
+              className="btn btn-ghost btn-sm btn-square"
+            >
+              <X className="size-5" aria-hidden="true" />
+            </button>
+          </div>
         </header>
         <ChatBotBox messages={messages} setMessages={setMessages} />
       </div>

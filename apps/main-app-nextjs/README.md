@@ -108,7 +108,7 @@ record of how it got this way.
 
 What is left before the domain moves here and the SvelteKit app is retired.
 One step per commit, in order. Tick each off as it lands. Next session starts
-at step 9.
+at step 10.
 
 1. **Umami.** Done. Script on every page, not gated (cookieless). Plus the `engaged`
    event (10s visible + one interaction).
@@ -130,7 +130,7 @@ at step 9.
 8. **Chatbot — state.** Done. localStorage `chatMessages`, `chatSessionId`, `leadProfile`
    (same keys as SvelteKit), sent every turn. `context` events, welcome message,
    starter prompts, reset.
-9. **Chatbot — message UI.** `MessageBubble`, markdown, `sources`, copy, retry,
+9. **Chatbot — message UI.** Done. `MessageBubble`, markdown, `sources`, copy, retry,
    regenerate, copy conversation, the Umami `chatbot-*` events.
 10. **Chatbot — voice input.** `audioRecorder` + `/api/transcribe`.
 11. **Chatbot — voice output.** `speechPlayer` + `/api/speak`, and the toggle.

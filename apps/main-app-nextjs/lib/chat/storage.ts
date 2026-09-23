@@ -16,10 +16,13 @@ const MESSAGES_KEY = 'chatMessages';
 const SESSION_KEY = 'chatSessionId';
 const PROFILE_KEY = 'leadProfile';
 
-// SvelteKit's copy is wrapped in <p>; saved transcripts still hold that one,
-// and the markdown renderer (step 9) passes HTML through, so both render.
 const WELCOME_MESSAGE =
   "Hi! I'm the Solar Vipani expert agent. Ask me anything about going solar — costs, subsidies, system sizing, or brands.";
+
+// SvelteKit saved its welcome wrapped in <p>. The markdown renderer escapes
+// HTML, so a carried-over transcript would show the tags; loadMessages swaps
+// this one message for the plain copy.
+const LEGACY_WELCOME = `<p>${WELCOME_MESSAGE}</p>`;
 
 export type LeadProfile = Record<string, unknown>;
 
@@ -56,7 +59,10 @@ export function greeting(): ChatMessage[] {
 /** The saved transcript, or the greeting for a first visit. */
 export function loadMessages(): ChatMessage[] {
   const saved = readJson(MESSAGES_KEY);
-  return Array.isArray(saved) && saved.length ? (saved as ChatMessage[]) : greeting();
+  if (!Array.isArray(saved) || !saved.length) return greeting();
+  return (saved as ChatMessage[]).map((m) =>
+    m.content === LEGACY_WELCOME ? { ...m, content: WELCOME_MESSAGE } : m
+  );
 }
 
 export function saveMessages(messages: ChatMessage[]): void {

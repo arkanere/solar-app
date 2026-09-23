@@ -19,6 +19,7 @@ import {
 } from '@/lib/chat/storage';
 import { readChatEvents } from '@/lib/chat/stream';
 import type { ChatMessage } from '@/lib/chat/types';
+import { MessageBubble } from './MessageBubble';
 
 const HISTORY_TURNS = 8;
 
@@ -80,14 +81,23 @@ export function ChatBotBox({ messages, setMessages }: Props) {
   const patchLast = (patch: Partial<ChatMessage>) =>
     setMessages((m) => [...m.slice(0, -1), { ...m[m.length - 1], ...patch }]);
 
-  async function runChat(text: string) {
-    // Prior turns, taken before this message is appended.
-    const history = messages
-      .filter((m) => m.content.trim() && !m.error)
-      .slice(-HISTORY_TURNS)
-      .map(({ role, content }) => ({ role, content }));
+  /**
+   * One turn. `base` is the transcript to answer from. Retry and regenerate
+   * pass a trimmed copy with the question already in it, and `appendUser`
+   * false; the question then leaves `history`, since it goes up as
+   * `userMessage`.
+   */
+  async function runChat(text: string, base = messages, appendUser = true) {
+    window.umami?.track('chatbot-message');
 
-    setMessages((m) => [...m, { role: 'user', content: text, timestamp: Date.now() }]);
+    // Prior turns, taken before this message is appended.
+    const prior = base.filter((m) => m.content.trim() && !m.error);
+    if (!appendUser && prior.at(-1)?.role === 'user') prior.pop();
+    const history = prior.slice(-HISTORY_TURNS).map(({ role, content }) => ({ role, content }));
+
+    setMessages(
+      appendUser ? [...base, { role: 'user', content: text, timestamp: Date.now() }] : base
+    );
     setLoading(true);
     scrolledUp.current = false;
     const controller = new AbortController();
@@ -112,6 +122,7 @@ export function ChatBotBox({ messages, setMessages }: Props) {
       if (!response.ok || !response.body) throw new Error('Chatbot request failed');
 
       let reply = '';
+      let sources: ChatMessage['sources'];
       for await (const event of readChatEvents(response.body)) {
         if (event.type === 'delta' && typeof event.text === 'string') {
           reply += event.text;
@@ -126,6 +137,8 @@ export function ChatBotBox({ messages, setMessages }: Props) {
           } else {
             patchLast({ content: reply });
           }
+        } else if (event.type === 'sources' && Array.isArray(event.items)) {
+          sources = event.items;
         } else if (event.type === 'context') {
           applyContextUpdates(event.updates);
         } else if (event.type === 'error') {
@@ -135,6 +148,8 @@ export function ChatBotBox({ messages, setMessages }: Props) {
         }
         // Other event types land in later steps; ignoring them is deliberate.
       }
+      // Citations arrive before the reply, so they attach once it exists.
+      if (started && sources?.length) patchLast({ sources });
     } catch (err) {
       if ((err as Error).name === 'AbortError') {
         // Reset clears abortRef before aborting; its fresh transcript is not ours to mark.
@@ -166,7 +181,21 @@ export function ChatBotBox({ messages, setMessages }: Props) {
     void runChat(text);
   };
 
+  /** Drop the failed turn and resend the message behind it. */
+  const retry = (index: number) => {
+    const text = messages[index].userMessage;
+    if (text) void runChat(text, messages.toSpliced(index, 1), false);
+  };
+
+  /** Replace the last reply with a fresh answer to the same question. */
+  const regenerate = () => {
+    const last = messages.length - 1;
+    const question = messages.findLast((m) => m.role === 'user');
+    if (question) void runChat(question.content, messages.slice(0, last), false);
+  };
+
   const reset = () => {
+    window.umami?.track('chatbot-reset');
     // Abort first, so a late chunk cannot write into the fresh conversation.
     const controller = abortRef.current;
     abortRef.current = null;
@@ -190,16 +219,14 @@ export function ChatBotBox({ messages, setMessages }: Props) {
         className="flex min-h-0 flex-1 flex-col gap-sm overflow-y-auto bg-canvas p-md"
       >
         {messages.map((message, i) => (
-          <p
+          <MessageBubble
             key={i}
-            className={
-              message.role === 'user'
-                ? 'max-w-[85%] self-end rounded-lg bg-action px-md py-xs whitespace-pre-wrap text-action-ink'
-                : `max-w-[85%] self-start rounded-lg border border-line bg-surface px-md py-xs whitespace-pre-wrap ${message.error ? 'text-danger' : ''}`
+            message={message}
+            onRetry={() => retry(i)}
+            onRegenerate={
+              i === messages.length - 1 && i > 0 && !busy && !message.error ? regenerate : undefined
             }
-          >
-            {message.content}
-          </p>
+          />
         ))}
         {loading && (
           <span
