@@ -19,7 +19,9 @@ npm run dev        # http://localhost:7124
 
 `.env.local` needs `BREVO_API_KEY` and `INTERNAL_API_SECRET` for the server
 modules in `lib/server/`. `USER_APP_URL` is optional. Database access comes from
-`@solar/db`.
+`@solar/db`. `NEXT_PUBLIC_POSTHOG_KEY` is optional: without it PostHog does not
+load. It is a public project key, so on the host it is config, not a secret —
+and it is baked in at build time, so changing it needs a redeploy.
 
 | Script | Does |
 | --- | --- |
@@ -103,7 +105,8 @@ record of how it got this way.
 ## Next steps
 
 What is left before the domain moves here and the SvelteKit app is retired.
-One step per commit, in order. Tick each off as it lands.
+One step per commit, in order. Tick each off as it lands. Next session starts
+at step 5.
 
 1. **Umami.** Done. Script on every page, not gated (cookieless). Plus the `engaged`
    event (10s visible + one interaction).
