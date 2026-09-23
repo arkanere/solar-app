@@ -99,3 +99,24 @@ Every file below has a header that says more than this table does.
 
 Reasoning lives in the spec docs and the file headers, not here. `git log` is the
 record of how it got this way.
+
+## Next steps
+
+What is left before the domain moves here and the SvelteKit app is retired.
+One step per commit, in order. Tick each off as it lands.
+
+1. **Umami.** Script on every page, not gated (cookieless). Plus the `engaged`
+   event (10s visible + one interaction).
+2. **CallSafe.** `callsafe.online/embed.js` after `load`, on every page. Umami
+   events `callsafe-widget-clicked`, `callsafe-mute-clicked`, `callsafe-call-ended`.
+3. **Cookie consent banner.** Same `analytics_consent` localStorage key as
+   SvelteKit, so a visitor's choice carries over. On every page.
+4. **GA + PostHog, behind consent.** Load only after Accept. PostHog also records
+   a pageview on each client navigation. Hotjar, Twitter and the Meta Pixel are
+   not ported.
+5. **Chatbot — shell.** `ChatDock`, launcher, popup, scroll auto-open. Next
+   rewrite to the FastAPI backend for local dev; `NEXT_PUBLIC_API_BASE_URL` in prod.
+6. **Chatbot — messages.** `ChatBotBox`, `MessageBubble`, text chat over `/api/chatbot`.
+7. **Chatbot — voice.** `/api/transcribe` and `/api/speak`.
+8. **Chatbot — widgets.** The tool-result cards, and `LeadFormCard` posting to
+   `/{cc}/api/submitLead`.

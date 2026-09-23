@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { BASE_URL } from '@/lib/directory/structuredData';
 import { OG_IMAGE, SITE_NAME } from '@/lib/metadata';
+import { Umami } from '@/components/analytics/Umami';
 import './globals.css';
 
 // Sans carries the directory surface — 90% of URLs — and every UI affordance.
@@ -56,7 +57,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={inter.variable}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Umami />
+      </body>
     </html>
   );
 }
