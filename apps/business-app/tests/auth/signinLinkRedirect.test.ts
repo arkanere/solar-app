@@ -11,7 +11,7 @@
 // `reason` that /login turns into a notice.
 
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createBusiness, resetDatabase } from '../helpers/fixtures';
+import { createBusiness, createUsBusiness, resetDatabase } from '../helpers/fixtures';
 import { createCookies } from '../helpers/request';
 import { mintBusinessTokenById } from '$lib/server/magicLink';
 
@@ -100,6 +100,23 @@ describe('an invalid sign-in link redirects instead of rendering in the dashboar
 
 		expect(status).toBe(302);
 		expect(location).toBe('/valid-solar');
+	});
+
+	it('signs a US business in too, not only an Indian one', async () => {
+		// The route was bound to 'in', so a valid US token was reported expired.
+		const businessId = await createUsBusiness({ slug: 'chester-solar' });
+		const token = await mintBusinessTokenById(businessId);
+
+		const { status, location } = await loadRedirect('chester-solar', token!);
+
+		expect(status).toBe(302);
+		expect(location).toBe('/chester-solar');
+	});
+
+	it('redirects an unknown slug as an invalid link', async () => {
+		const { location } = await loadRedirect('no-such-business', 'not-a-real-token');
+
+		expect(location).toBe('/login?reason=expired-link');
 	});
 });
 
