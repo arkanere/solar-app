@@ -1,7 +1,8 @@
 export const prerender = false;
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import { BusinessAuthService } from '$lib/in/auth/business';
+import { BusinessAuthService, SessionManager } from '$lib/auth/business';
+import { countryForLoginEmail } from '$lib/server/resolveCountry';
 
 /**
  * Why the visitor was sent here, when something sent them. Keyed rather than
@@ -14,11 +15,10 @@ const NOTICES: Record<string, string> = {
 };
 
 export const load: PageServerLoad = async ({ cookies, url }) => {
-	const authService = new BusinessAuthService();
-
-	// Check if already logged in
-	if (authService.isAuthenticated(cookies)) {
-		const sessionResult = authService.validateSession(cookies);
+	// Check if already logged in. Sessions carry no country, so no auth service
+	// (which is bound to one) is needed to read them.
+	if (SessionManager.isSessionValid(cookies)) {
+		const sessionResult = SessionManager.validateSession(cookies);
 		if (sessionResult.success && sessionResult.session) {
 			// If already logged in, redirect to the business dashboard
 			throw redirect(302, `/${sessionResult.session.businessSlug}`);
@@ -40,7 +40,15 @@ export const actions: Actions = {
 		}
 
 		try {
-			const authService = new BusinessAuthService();
+			// /login has no slug, so the country comes from the account holding
+			// this email — the same lookup /api/forgotPassword uses. This used the
+			// India-bound service, so no US business could sign in with a password.
+			// An unknown email gets the same answer as a wrong password.
+			const country = await countryForLoginEmail(email as string);
+			if (!country) {
+				return fail(401, { errors: { message: 'Invalid email or password' } });
+			}
+			const authService = new BusinessAuthService(country);
 
 			// First, get the business by email to find their slug
 			const businessResult = await authService.getBusinessByEmail(email as string);
