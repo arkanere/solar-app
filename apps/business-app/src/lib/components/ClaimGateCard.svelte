@@ -67,8 +67,10 @@
 		}
 	]);
 
+	// Only what still blocks claiming is shown
 	let requirements = $derived(
-		claimGate.gateApplies ? [contactRequirement, ...gateRequirements] : [contactRequirement]
+		(claimGate.gateApplies ? [contactRequirement, ...gateRequirements] : [contactRequirement])
+			.filter((req) => !req.met)
 	);
 
 	function handleAction(action: string) {
