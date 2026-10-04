@@ -11,6 +11,8 @@
 		projectsCount: number;
 		recentProjectExists: boolean;
 		profileComplete: boolean;
+		missingContact: string[];
+		gateApplies: boolean;
 		isBlocked: boolean;
 		reasons: string[];
 	};
@@ -23,7 +25,18 @@
 
 	let { claimGate, businessSlug, onOpenEditProfile = () => {} }: Props = $props();
 
-	let requirements = $derived([
+	let contactRequirement = $derived({
+		label: 'Add phone and email',
+		detail: claimGate.missingContact.length > 0
+			? `Missing ${claimGate.missingContact.join(' and ')}`
+			: 'Done',
+		met: claimGate.missingContact.length === 0,
+		action: 'openEditProfile',
+		actionLabel: 'Edit Profile'
+	});
+
+	// The other requirements only apply from 10 claimed leads; contact always does
+	let gateRequirements = $derived([
 		{
 			label: 'Update your leads',
 			detail: `${claimGate.staleLeadsCount} of ${claimGate.totalClaimedLeads} stuck at "Claimed"`,
@@ -53,6 +66,10 @@
 			actionLabel: 'Edit Profile'
 		}
 	]);
+
+	let requirements = $derived(
+		claimGate.gateApplies ? [contactRequirement, ...gateRequirements] : [contactRequirement]
+	);
 
 	function handleAction(action: string) {
 		if (action === 'openEditProfile') {

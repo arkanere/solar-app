@@ -35,6 +35,14 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			business_slug // identifies the business to update
 		} = parsed.data;
 
+		// Customers are sent these when a lead is claimed, so they cannot be cleared
+		if (!phonenumber?.trim() || !email?.trim()) {
+			return json(
+				{ success: false, error: 'Phone number and email are required' },
+				{ status: 400 }
+			);
+		}
+
 		// Verify the logged-in business owns the resource, and resolve *which row*
 		// the write targets. `slug` is not unique (next-steps.md item 1), so the
 		// authorization branch has to hand down an id — matching the UPDATE on the

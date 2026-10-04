@@ -18,7 +18,7 @@
 	};
 
 	export type SetupProgressCardProps = {
-		business?: { description?: string; website?: string; google_maps_link?: string; brands?: number[] };
+		business?: { phonenumber?: string; email?: string; description?: string; website?: string; google_maps_link?: string; brands?: number[] };
 		businessSlug?: string;
 		projectsCount?: number;
 		claimedLeadsCount?: number;
@@ -52,6 +52,15 @@
 	}
 
 	let tasks = $derived([
+		{
+			id: 'add-contact',
+			title: 'Add Phone & Email',
+			description: 'Required to claim leads — customers use these to contact you',
+			completed: !!business.phonenumber?.trim() && !!business.email?.trim(),
+			action: 'openEditProfile',
+			actionLabel: 'Add Contact',
+			priority: 10
+		},
 		{
 			id: 'add-brands',
 			title: 'Add Brands You Work With',

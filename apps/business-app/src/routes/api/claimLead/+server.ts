@@ -126,6 +126,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				),
 			db
 				.select({
+					phonenumber: businessProfiles.phonenumber,
+					email: businessProfiles.email,
 					description: businessProfiles.description,
 					brands: businessProfiles.brands,
 					googleMapsLink: businessProfiles.googleMapsLink
@@ -133,6 +135,16 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				.from(businessProfiles)
 				.where(eq(businessProfiles.businessId, business_id))
 		]);
+
+		// Customers are sent the business's phone and email on claim, so both are
+		// required from the first lead, not only once the 10-lead gate applies.
+		const gateContact = gateBizRes[0];
+		if (!gateContact?.phonenumber?.trim() || !gateContact?.email?.trim()) {
+			return json(
+				{ success: false, error: 'Add your phone number and email in Edit Profile to claim leads' },
+				{ status: 403 }
+			);
+		}
 
 		const gateTotalClaimed = gateClaimedRes[0]?.count ?? 0;
 		if (gateTotalClaimed >= 10) {

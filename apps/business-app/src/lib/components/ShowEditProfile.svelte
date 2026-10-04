@@ -148,7 +148,7 @@
 				show = false;
 				onClose();
 			} else {
-				throw new Error('Failed to update profile');
+				toast.error(result.error || 'Failed to update profile');
 			}
 		} catch (error) {
 			console.error('Error updating profile:', error);
@@ -203,13 +203,19 @@
 			</div>
 
 			<Label for="phonenumber" class="font-bold">Phone Number:</Label>
-			<Input id="phonenumber" bind:value={formData.phonenumber} />
+			<Input id="phonenumber" bind:value={formData.phonenumber} required />
+			{#if !formData.phonenumber.trim()}
+				<p class="text-xs text-destructive m-0">Required to claim leads</p>
+			{/if}
 
 			<Label for="whatsapp" class="font-bold">WhatsApp Number:</Label>
 			<Input id="whatsapp" bind:value={formData.whatsapp} placeholder="e.g., +919876543210" />
 
 			<Label for="email" class="font-bold">Business Email:</Label>
-			<Input id="email" type="email" bind:value={formData.email} />
+			<Input id="email" type="email" bind:value={formData.email} required />
+			{#if !formData.email.trim()}
+				<p class="text-xs text-destructive m-0">Required to claim leads</p>
+			{/if}
 
 			<Label for="address" class="font-bold">Address:</Label>
 			<Input id="address" bind:value={formData.address} />

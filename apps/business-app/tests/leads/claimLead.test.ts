@@ -104,6 +104,24 @@ describe('authorization', () => {
 	});
 });
 
+describe('contact gate', () => {
+	it.each([
+		['phone number', { phonenumber: null }],
+		['email', { email: '' }]
+	])('403s without a %s, before any claim is written', async (_, missing) => {
+		const businessId = await createBusiness({ slug: 'acme-solar', district: 'Pune', ...missing });
+		await seedLeadDataPolicy(businessId);
+		const leadId = await createLead({ district: 'Pune' });
+		const session = { id: businessId, slug: 'acme-solar', businessname: 'Test Business' };
+
+		const { status, body } = await claim(session, { lead_id: leadId, business_id: businessId });
+
+		expect(status).toBe(403);
+		expect(body.error).toMatch(/phone number and email/i);
+		expect(await claimCount(leadId)).toBe(0);
+	});
+});
+
 describe('compliance gate', () => {
 	it('403s with compliance_required when the policy was never accepted', async () => {
 		const businessId = await createBusiness({ slug: 'acme-solar', district: 'Pune' });

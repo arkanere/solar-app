@@ -14,6 +14,11 @@ interface BusinessRow {
 	businessname: string | null;
 	slug: string | null;
 	email: string | null;
+	phonenumber?: string | null;
+	whatsapp?: string | null;
+	address?: string | null;
+	instagram_id?: string | null;
+	services?: number[] | null;
 	description?: string | null;
 	website?: string | null;
 	google_maps_link?: string | null;
@@ -27,6 +32,8 @@ export interface ClaimGateStatus {
 	projectsCount: number;
 	recentProjectExists: boolean;
 	profileComplete: boolean;
+	missingContact: string[];
+	gateApplies: boolean;
 	isBlocked: boolean;
 	reasons: string[];
 }
@@ -102,6 +109,13 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 						businessname: businessProfiles.businessname,
 						slug: businessProfiles.slug,
 						email: businessProfiles.email,
+						// The layout's Edit Profile modal saves every field it is given,
+						// so anything left out here is wiped on save.
+						phonenumber: businessProfiles.phonenumber,
+						whatsapp: businessProfiles.whatsapp,
+						address: businessProfiles.address,
+						instagram_id: businessProfiles.instagramId,
+						services: businessProfiles.services,
 						description: businessProfiles.description,
 						website: businessProfiles.website,
 						google_maps_link: businessProfiles.googleMapsLink,
@@ -174,8 +188,14 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 						&& Array.isArray(business.brands) && business.brands.length > 0
 						&& !!business.google_maps_link;
 
+					// Customers are sent these on claim, so they are required from the first lead
+					const missingContact: string[] = [];
+					if (!business.phonenumber?.trim()) missingContact.push('phone number');
+					if (!business.email?.trim()) missingContact.push('email');
+
 					const gateApplies = totalClaimed >= 10;
 					const reasons: string[] = [];
+					if (missingContact.length > 0) reasons.push(`Add your ${missingContact.join(' and ')}`);
 
 					if (gateApplies) {
 						if (stalePercent > 50) reasons.push(`${staleClaimed} of ${totalClaimed} leads still at "Claimed" — update at least half to keep claiming`);
@@ -205,7 +225,9 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 							projectsCount,
 							recentProjectExists,
 							profileComplete,
-							isBlocked: gateApplies && reasons.length > 0,
+							missingContact,
+							gateApplies,
+							isBlocked: missingContact.length > 0 || (gateApplies && reasons.length > 0),
 							reasons
 						}
 					};

@@ -63,6 +63,8 @@ export interface BusinessOptions {
 	slug?: string;
 	loginEmail?: string;
 	loginPassword?: string | null;
+	email?: string | null;
+	phonenumber?: string | null;
 	district?: string | null;
 	state?: string | null;
 	city?: string | null;
@@ -93,6 +95,8 @@ export async function createBusiness(options: BusinessOptions = {}): Promise<num
 		businessname = `Test Business ${businessSeq}`,
 		loginEmail = `${slug}@example.test`,
 		loginPassword = null,
+		email = `contact-${slug}@example.test`,
+		phonenumber = '+91-90000-00000',
 		district = 'Pune',
 		state = 'Maharashtra',
 		city = 'Pune',
@@ -112,10 +116,10 @@ export async function createBusiness(options: BusinessOptions = {}): Promise<num
 	const { rows } = await pool.query<{ business_id: number }>(
 		`INSERT INTO business_profiles
 		   (businessname, slug, level2, level1, city,
-		    isvisible, description, google_maps_link, brands, account_business_id)
-		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9, 0)
+		    isvisible, description, google_maps_link, brands, email, phonenumber, account_business_id)
+		 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11, 0)
 		 RETURNING business_id`,
-		[businessname, slug, district, state, city, isvisible, description, googleMapsLink, brands]
+		[businessname, slug, district, state, city, isvisible, description, googleMapsLink, brands, email, phonenumber]
 	);
 	const id = rows[0].business_id;
 	await pool.query(

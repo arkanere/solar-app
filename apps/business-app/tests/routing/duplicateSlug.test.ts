@@ -320,4 +320,17 @@ describe('saving a profile writes one row, resolved by session', () => {
 		expect(status).toBe(403);
 		expect(await nameOf(branch)).toBe('Branch');
 	});
+
+	it.each([['phonenumber'], ['email']])('refuses to clear %s', async (field) => {
+		const main = await createBusiness({ slug: 'main-business', businessname: 'Main Business' });
+
+		const response = await updateBusinessDetails({
+			request: jsonRequest({ ...updateBody('main-business', 'Renamed'), [field]: '  ' }),
+			cookies: createSessionCookies({ id: main, slug: 'main-business', businessname: 'Main Business' })
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		} as any);
+
+		expect(response.status).toBe(400);
+		expect(await nameOf(main)).toBe('Main Business');
+	});
 });
