@@ -28,6 +28,8 @@
 		isClaiming?: boolean;
 		isDemo?: boolean;
 		claimBlocked?: boolean;
+		// Opens the details, scrolls to and briefly highlights the tile
+		focused?: boolean;
 	};
 
 	let {
@@ -35,7 +37,8 @@
 		businessInfo,
 		isClaiming = false,
 		isDemo = false,
-		claimBlocked = false
+		claimBlocked = false,
+		focused = false
 	}: LeadTileProps = $props();
 
 	const dispatch = createEventDispatcher();
@@ -54,6 +57,18 @@
 	let isAdvancing = $state(false);
 	let showDeactivateConfirm = $state(false);
 	let isDeactivating = $state(false);
+
+	let tileEl: HTMLElement | null = $state(null);
+	let isHighlighted = $state(false);
+
+	$effect(() => {
+		if (!focused || !tileEl) return;
+		isExpanded = true;
+		isHighlighted = true;
+		tileEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		const timer = setTimeout(() => (isHighlighted = false), 2500);
+		return () => clearTimeout(timer);
+	});
 
 	function toggleLeadDetails() {
 		isExpanded = !isExpanded;
@@ -139,9 +154,11 @@
 </script>
 
 <Card.Root
+	bind:ref={tileEl}
 	class={cn(
-		'p-0 break-words transition-all duration-200 overflow-hidden list-none hover:shadow-md',
-		isDemo && 'border-2 border-dashed opacity-70'
+		'p-0 break-words transition-all duration-200 overflow-hidden list-none hover:shadow-md scroll-mt-4',
+		isDemo && 'border-2 border-dashed opacity-70',
+		isHighlighted && 'ring-2 ring-primary'
 	)}
 >
 	<!-- HEADER SECTION - Identity & Status -->

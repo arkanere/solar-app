@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { onMount } from 'svelte';
+	import { replaceState } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 	import CustomerInquiry from '$lib/components/CustomerInquiry.svelte';
 
@@ -8,6 +10,18 @@
 	let leads = $state($page.data.leads || []);
 	let errorMessage = $derived($page.data.errorMessage);
 	let claimGate = $derived($page.data.claimGate);
+
+	// Set by a dashboard claim, so the claimed lead opens at the top of My Leads
+	let focusLeadId = $state<number | null>(Number($page.url.searchParams.get('claimed')) || null);
+
+	onMount(() => {
+		// Drop the param so a reload does not jump to the lead again
+		if ($page.url.searchParams.has('claimed')) {
+			const url = new URL($page.url);
+			url.searchParams.delete('claimed');
+			replaceState(url, $page.state);
+		}
+	});
 
 	// Computed business info
 	let businessInfo = $derived(
@@ -56,6 +70,7 @@
 		{businessInfo}
 		{errorMessage}
 		claimBlocked={claimGate?.isBlocked ?? false}
+		bind:focusLeadId
 		onClaimSuccess={handleClaimSuccess}
 	/>
 </div>

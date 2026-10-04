@@ -24,10 +24,12 @@
 			: {}
 	);
 
-	function handleClaimSuccess({ leadId }: { leadId: number; result: any }) {
+	function handleClaimSuccess({ leadId, result }: { leadId: number; result: any }) {
 		leads = leads.filter((lead: any) => lead.id !== leadId);
 		toast.success('Lead claimed! Opening CRM...');
-		goto(`/${businessSlug}/crm`);
+		// The CRM opens the claimed copy's details at the top of My Leads
+		const claimedId = result?.newLead?.id;
+		goto(`/${businessSlug}/crm${claimedId ? `?claimed=${claimedId}` : ''}`);
 	}
 </script>
 

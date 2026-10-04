@@ -24,6 +24,8 @@
 		onClaimSuccess?: (data: { leadId: number; result: any }) => void;
 		mode?: 'full' | 'dashboard';
 		claimBlocked?: boolean;
+		// A just-claimed lead to show open at the top of My Leads
+		focusLeadId?: number | null;
 	};
 </script>
 
@@ -47,7 +49,8 @@
 		errorMessage = null,
 		onClaimSuccess = () => {},
 		mode = 'full',
-		claimBlocked = false
+		claimBlocked = false,
+		focusLeadId = $bindable(null)
 	}: CustomerInquiryProps = $props();
 
 	let isDashboard = $derived(mode === 'dashboard');
@@ -155,6 +158,13 @@
 			}
 
 			if (result.success) {
+				// Show the claimed copy open at the top of My Leads
+				if (result.newLead?.id) {
+					focusLeadId = result.newLead.id;
+					selectedStage = 'all';
+					selectedStatus = 'all';
+					activeTab = 'my-leads';
+				}
 				onClaimSuccess({ leadId, result });
 			} else {
 				toast.error(result.error);
@@ -388,6 +398,7 @@
 							{lead}
 							{businessInfo}
 							{isClaiming}
+							{claimBlocked}
 							on:update={handleLeadUpdate}
 							on:claim={handleLeadClaim}
 							on:proposal={handleProposalOpen}
@@ -450,11 +461,12 @@
 				{/if}
 
 				<ul class="list-none p-0 w-full max-w-xl space-y-4">
-					{#each filteredMyLeads as lead}
+					{#each filteredMyLeads as lead (lead.id)}
 						<LeadTile
 							{lead}
 							{businessInfo}
 							{isClaiming}
+							focused={lead.id === focusLeadId}
 							on:update={handleLeadUpdate}
 							on:claim={handleLeadClaim}
 							on:proposal={handleProposalOpen}
