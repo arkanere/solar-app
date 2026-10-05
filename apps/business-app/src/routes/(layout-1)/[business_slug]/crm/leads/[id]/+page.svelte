@@ -3,21 +3,17 @@
 	import { invalidateAll } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 	import * as Card from '$lib/components/ui/card';
-	import * as Dialog from '$lib/components/ui/dialog';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import LeadProgressBar from '$lib/components/LeadProgressBar.svelte';
 	import { ArrowLeft, ArrowRight, Trophy } from '@lucide/svelte';
-	import { getStageLabel } from '$lib/constants/lead';
+	import { getStageLabel, type LeadStage } from '$lib/constants/lead';
 	import { getRelativeTime } from '$lib/in/utils/lead-helpers';
 	import { updateLeadAPI } from '$lib/in/actions/lead-api';
 
 	let lead = $derived($page.data.lead as any);
 	let backHref = $derived(`/${$page.params.business_slug}/crm`);
-	let status = $derived(
-		lead.category === 1 ? 'Available' : !lead.status ? 'Inactive' : getStageLabel(lead.stage, lead.category)
-	);
 
 	let nextStageLabel = $derived.by(() => {
 		if (lead.stage >= 3 || !lead.status) return null;
@@ -25,7 +21,14 @@
 		return labels[lead.stage] ?? null;
 	});
 
+	// Lets a mistaken stage change be undone. Won is excluded since it creates a project.
+	let prevStageLabel = $derived(
+		lead.status && lead.stage > 0 && lead.stage < 3 ? getStageLabel((lead.stage - 1) as LeadStage, lead.category) : null
+	);
+
 	let isSaving = $state(false);
+	// Which stage button is saving, so only that one shows "Updating..."
+	let savingDirection = $state<'forward' | 'back' | null>(null);
 	let notes = $state('');
 	let isSavingNotes = $state(false);
 
@@ -50,7 +53,7 @@
 		}
 		isSavingNotes = false;
 	}
-	let showDeactivateConfirm = $state(false);
+
 
 	async function updateLead(updates: { stage?: number; status?: boolean }) {
 		isSaving = true;
@@ -68,9 +71,10 @@
 		isSaving = false;
 	}
 
-	async function confirmDeactivate() {
-		await updateLead({ status: false });
-		showDeactivateConfirm = false;
+	async function moveStage(direction: 'forward' | 'back') {
+		savingDirection = direction;
+		await updateLead({ stage: lead.stage + (direction === 'forward' ? 1 : -1) });
+		savingDirection = null;
 	}
 </script>
 
@@ -84,13 +88,16 @@
 		Leads
 	</a>
 
-	<Card.Root>
-		<Card.Header class="flex-row items-center justify-between">
-			<Card.Title class="text-xl font-bold">{lead.name}</Card.Title>
-			<Badge variant="secondary">{status}</Badge>
-		</Card.Header>
+	<div class="flex items-center gap-3">
+		<h1 class="min-w-0 truncate text-2xl font-semibold text-foreground">{lead.name}</h1>
+		{#if lead.category === 1}
+			<Badge variant="secondary">Available</Badge>
+		{/if}
+	</div>
 
-		<Card.Content>
+	<Card.Root class="gap-0 py-0 divide-y">
+		<section class="p-6">
+			<h2 class="mb-4 text-sm font-semibold text-foreground">Details</h2>
 			<dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 text-sm">
 				<dt class="text-muted-foreground">Phone</dt>
 				<dd class="text-foreground">{lead.phone ?? '-'}</dd>
@@ -126,80 +133,46 @@
 					<dd class="text-foreground">{lead.sv_comment_for_businesses}</dd>
 				{/if}
 			</dl>
-		</Card.Content>
-	</Card.Root>
+		</section>
 
-	{#if lead.category !== 1}
-		<Card.Root>
-			<Card.Header>
-				<Card.Title class="text-base font-semibold">Stage</Card.Title>
-			</Card.Header>
-			<Card.Content class="space-y-4">
+		{#if lead.category !== 1}
+			<section class="p-6 space-y-4">
+				<h2 class="text-sm font-semibold text-foreground">Stage</h2>
 				<LeadProgressBar currentStage={lead.stage} leadCategory={lead.category} isActive={lead.status} />
 
 				{#if lead.status}
-					<div class="flex flex-col gap-2 sm:flex-row">
+					<div class="flex flex-wrap gap-2">
 						{#if nextStageLabel}
-							<Button class="flex-1" onclick={() => updateLead({ stage: lead.stage + 1 })} disabled={isSaving}>
+							<Button onclick={() => moveStage('forward')} disabled={isSaving}>
 								{#if lead.stage === 2}
 									<Trophy size={16} />
 								{:else}
 									<ArrowRight size={16} />
 								{/if}
-								{isSaving ? 'Updating...' : nextStageLabel}
+								{savingDirection === 'forward' ? 'Updating...' : nextStageLabel}
 							</Button>
 						{/if}
-						<Button
-							variant="outline"
-							class="text-destructive hover:text-destructive"
-							onclick={() => (showDeactivateConfirm = true)}
-							disabled={isSaving}
-						>
-							Mark Inactive
-						</Button>
+						{#if prevStageLabel}
+							<Button variant="outline" onclick={() => moveStage('back')} disabled={isSaving}>
+								<ArrowLeft size={16} />
+								{savingDirection === 'back' ? 'Updating...' : `Back to ${prevStageLabel}`}
+							</Button>
+						{/if}
 					</div>
 				{:else}
 					<Button variant="outline" onclick={() => updateLead({ status: true })} disabled={isSaving}>
 						{isSaving ? 'Updating...' : 'Mark Active'}
 					</Button>
 				{/if}
-			</Card.Content>
-		</Card.Root>
+			</section>
 
-		<Card.Root>
-			<Card.Header>
-				<Card.Title class="text-base font-semibold">Internal Notes</Card.Title>
-			</Card.Header>
-			<Card.Content class="space-y-3">
+			<section class="p-6 space-y-3">
+				<h2 class="text-sm font-semibold text-foreground">Internal Notes</h2>
 				<Textarea bind:value={notes} placeholder="Add your private notes about this lead..." rows={4} />
 				<Button onclick={saveNotes} disabled={isSavingNotes || notes === (lead.business_notes ?? '')}>
 					{isSavingNotes ? 'Saving...' : 'Save Notes'}
 				</Button>
-			</Card.Content>
-		</Card.Root>
-	{/if}
+			</section>
+		{/if}
+	</Card.Root>
 </div>
-
-<Dialog.Root bind:open={showDeactivateConfirm}>
-	<Dialog.Content class="max-w-[480px]">
-		<Dialog.Header>
-			<Dialog.Title>Mark as Inactive?</Dialog.Title>
-		</Dialog.Header>
-		<p class="m-0 leading-relaxed text-foreground">
-			This will remove <strong>{lead.name}</strong>'s inquiry from your active leads.
-		</p>
-		<Dialog.Footer class="max-sm:flex-col">
-			<Button
-				variant="secondary"
-				onclick={() => (showDeactivateConfirm = false)}
-				disabled={isSaving}
-				class="max-sm:w-full"
-			>
-				Cancel
-			</Button>
-			<Button variant="destructive" onclick={confirmDeactivate} disabled={isSaving} class="max-sm:w-full">
-				{isSaving ? 'Deactivating...' : 'Yes, Mark Inactive'}
-			</Button>
-		</Dialog.Footer>
-	</Dialog.Content>
-</Dialog.Root>
