@@ -9,10 +9,13 @@
 		Phone,
 		ArrowRight,
 		Pencil,
-		Trash2
+		Trash2,
+		Undo2
 	} from '@lucide/svelte';
 	import { getCategoryLabel, getStageLabel } from '$lib/constants/lead';
 	import { getRelativeTime, formatLeadForProposal, trackCallEvent } from '$lib/in/utils/lead-helpers';
+	import { updateLeadAPI } from '$lib/in/actions/lead-api';
+	import { toast } from 'svelte-sonner';
 
 	type LeadTileProps = {
 		lead: any;
@@ -48,6 +51,37 @@
 		return () => clearTimeout(timer);
 	});
 
+	// Short "time since", e.g. "5m ago", "3d ago", "8mo ago", "1y ago"
+	function timeSince(date: string) {
+		const mins = Math.floor((Date.now() - new Date(date).getTime()) / 60000);
+		if (mins < 1) return 'just now';
+		if (mins < 60) return `${mins}m ago`;
+		const hours = Math.floor(mins / 60);
+		if (hours < 24) return `${hours}h ago`;
+		const days = Math.floor(hours / 24);
+		if (days < 30) return `${days}d ago`;
+		if (days < 365) return `${Math.floor(days / 30)}mo ago`;
+		return `${Math.floor(days / 365)}y ago`;
+	}
+
+	// Suggested next action for a claimed lead, from its stage and how long it has sat there
+	let nextStep = $derived.by(() => {
+		if (!lead.status || lead.category === 1) return null;
+		const days = lead.updated_at
+			? Math.floor((Date.now() - new Date(lead.updated_at).getTime()) / 86400000)
+			: 0;
+		switch (lead.stage) {
+			case 0:
+				return days >= 1 ? 'Call the customer today — they are waiting' : 'Call the customer';
+			case 1:
+				return days >= 3 ? 'Call again and send a proposal' : 'Send a proposal';
+			case 2:
+				return days >= 3 ? 'Call to follow up on the proposal' : 'Wait for a reply, follow up in a few days';
+			default:
+				return null;
+		}
+	});
+
 	let leadHref = $derived(`/${$page.params.business_slug}/crm/leads/${lead.id}`);
 
 	function makeCall() {
@@ -62,6 +96,26 @@
 			return;
 		}
 		dispatch('claim', { leadId: lead.id, businessId: businessInfo.id });
+	}
+
+	let isMovingBack = $state(false);
+
+	// Undo a Won by mistake. The project it created stays in project management,
+	// and marking Won again reuses it.
+	async function moveBackToProposalSent() {
+		isMovingBack = true;
+		const result = await updateLeadAPI({
+			id: lead.id,
+			stage: 2,
+			status: lead.status,
+			business_notes: lead.business_notes
+		});
+		if (result.success) {
+			dispatch('update', { leadId: lead.id, lead: result.lead ?? { stage: 2 } });
+		} else {
+			toast.error(result.error || 'Failed to update lead');
+		}
+		isMovingBack = false;
 	}
 
 	function handleGenerateProposal() {
@@ -96,6 +150,14 @@
 	<!-- COMPACT INFO - Always Visible -->
 	<Card.Content class="p-0">
 		<div class="px-6 py-4 space-y-3">
+			<!-- Next Step (claimed leads) -->
+			{#if nextStep}
+				<div class="flex items-center gap-2 rounded-md bg-primary/10 px-3 py-2 text-sm">
+					<span class="font-semibold text-primary">Next:</span>
+					<span class="font-medium text-foreground">{nextStep}</span>
+				</div>
+			{/if}
+
 			<!-- Received Time (above the fold for available leads) -->
 			{#if lead.category === 1}
 				<div class="flex items-center gap-2 text-sm">
@@ -183,19 +245,31 @@
 					<div class="flex items-center gap-2 text-sm">
 						<span class="font-semibold text-muted-foreground">Stage:</span>
 						<span class="font-medium text-foreground">{stageLabel}</span>
+						{#if lead.updated_at}
+							<span class="text-muted-foreground" title={new Date(lead.updated_at).toLocaleString()}>
+								· {timeSince(lead.updated_at)}
+							</span>
+						{/if}
 					</div>
 
 					<div class="flex flex-wrap items-center gap-2">
-						{#if lead.status}
-							<Button size="sm" onclick={makeCall} title="Call {lead.name}" disabled={isDemo}>
-								<Phone size={16} />
-								Call
+						{#if lead.stage === 3}
+							<Button size="sm" variant="outline" onclick={moveBackToProposalSent} disabled={isDemo || isMovingBack}>
+								<Undo2 size={16} />
+								{isMovingBack ? 'Updating...' : `Back to ${getStageLabel(2, lead.category)}`}
+							</Button>
+						{:else}
+							{#if lead.status}
+								<Button size="sm" onclick={makeCall} title="Call {lead.name}" disabled={isDemo}>
+									<Phone size={16} />
+									Call
+								</Button>
+							{/if}
+							<Button size="sm" variant="outline" href={leadHref} disabled={isDemo}>
+								<Pencil size={16} />
+								Update
 							</Button>
 						{/if}
-						<Button size="sm" variant="outline" href={leadHref} disabled={isDemo}>
-							<Pencil size={16} />
-							Update
-						</Button>
 						{#if lead.status && lead.stage === 1}
 							<Button size="sm" variant="outline" onclick={handleGenerateProposal} disabled={isDemo}>
 								Generate Proposal

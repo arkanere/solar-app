@@ -19,6 +19,7 @@ export const IN_LEAD_RETURNING = {
 	type: leaddata.type,
 	comment: leaddata.comment,
 	created_at: leaddata.createdAt,
+	updated_at: leaddata.updatedAt,
 	svnotes: leaddata.svnotes,
 	urlparams: leaddata.urlparams,
 	isvisible: leaddata.isvisible,

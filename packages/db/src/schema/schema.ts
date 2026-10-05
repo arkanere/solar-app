@@ -75,6 +75,7 @@ export const leaddata = pgTable("leaddata", {
 	billUploadedAt: timestamp("bill_uploaded_at", { withTimezone: true, mode: 'string' }),
 	marketingConsent: boolean("marketing_consent").default(false).notNull(),
 	countryCode: char("country_code", { length: 2 }).default('in').notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
 }, (table) => [
 	index("leaddata_country_created_idx").using("btree", table.countryCode.asc().nullsLast().op("bpchar_ops"), table.createdAt.desc().nullsFirst().op("bpchar_ops")),
 	foreignKey({

@@ -7,7 +7,7 @@ import type { RequestHandler } from './$types';
 import type { LeadUpdatePayload } from '$lib/types/lead';
 import { IN_LEAD_RETURNING } from '$lib/server/leads';
 import { businessProfiles, leaddata, projectManagement } from '@solar/db/schema';
-import { and, eq, ne } from 'drizzle-orm';
+import { and, eq, ne, sql } from 'drizzle-orm';
 
 /**
  * Updates lead fields (stage, status, business_notes) for a business's lead
@@ -100,7 +100,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 		const result = await db
 			.update(leaddata)
-			.set(updates)
+			.set({ ...updates, updatedAt: sql`NOW()` })
 			.where(eq(leaddata.id, id))
 			.returning(IN_LEAD_RETURNING);
 
