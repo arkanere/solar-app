@@ -70,7 +70,7 @@
 	let isDeleting = $state(false);
 
 	// Tab state: derived initial value from whether claimed leads exist
-	let activeTab = $state<'available' | 'my-leads'>('available');
+	let activeTab = $state<'available' | 'my-leads' | 'won'>('available');
 
 	// Stage/status filter state (only applies to My Leads tab)
 	let selectedStage = $state('all');
@@ -78,7 +78,10 @@
 
 	// Derive available (category 1) and my leads (category 2, 3, null/undefined)
 	let availableLeads = $derived(leads.filter((l) => l.category === 1));
-	let myLeads = $derived(leads.filter((l) => l.category !== 1 && l.status !== false));
+	let claimedLeads = $derived(leads.filter((l) => l.category !== 1 && l.status !== false));
+	// Won leads get their own tab, so My Leads holds only the ones still in progress
+	let myLeads = $derived(claimedLeads.filter((l) => l.stage < 3));
+	let wonLeads = $derived(claimedLeads.filter((l) => l.stage >= 3));
 
 	// Set default tab based on claimed leads on first load
 	$effect(() => {
@@ -321,6 +324,24 @@
 						</span>
 					{/if}
 				</button>
+				<button
+					class={cn(
+						'flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors',
+						activeTab === 'won'
+							? 'bg-background shadow-sm text-foreground'
+							: 'text-muted-foreground hover:text-foreground'
+					)}
+					onclick={() => (activeTab = 'won')}
+				>
+					Won Leads
+					{#if wonLeads.length > 0}
+						<span
+							class="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-xs font-semibold bg-muted-foreground/20 text-muted-foreground"
+						>
+							{wonLeads.length}
+						</span>
+					{/if}
+				</button>
 			</div>
 
 			{#if activeTab === 'my-leads' && myLeads.length > 0}
@@ -419,6 +440,33 @@
 						<p class="font-semibold text-lg text-muted-foreground mb-2">No claimed leads yet.</p>
 						<p class="text-sm text-muted-foreground italic">
 							Claim leads from the Available Leads tab to start managing them.
+						</p>
+					</Card.Content>
+				</Card.Root>
+			{/if}
+		{/if}
+
+		<!-- Won Leads tab -->
+		{#if activeTab === 'won'}
+			{#if wonLeads.length > 0}
+				<ul class="list-none p-0 m-0 grid gap-4 lg:grid-cols-2 items-start">
+					{#each wonLeads as lead (lead.id)}
+						<LeadTile
+							{lead}
+							{businessInfo}
+							focused={lead.id === focusLeadId}
+							on:update={handleLeadUpdate}
+							on:proposal={handleProposalOpen}
+							on:delete={handleDeleteRequest}
+						/>
+					{/each}
+				</ul>
+			{:else}
+				<Card.Root class="border-2 border-dashed my-4 max-w-xl">
+					<Card.Content class="text-center p-8">
+						<p class="font-semibold text-lg text-muted-foreground mb-2">No won leads yet.</p>
+						<p class="text-sm text-muted-foreground italic">
+							Leads you mark as Won will appear here.
 						</p>
 					</Card.Content>
 				</Card.Root>

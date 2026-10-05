@@ -16,8 +16,9 @@
 		onFilterChange = () => {}
 	}: LeadStageFilterProps = $props();
 
-	// My Leads mixes category 2 + 3; use generic STAGES_MAP
-	const stagesMap = STAGES_MAP;
+	// My Leads mixes category 2 + 3; use generic STAGES_MAP. Won leads have
+	// their own tab, so Won is not offered here.
+	const { 3: _won, ...stagesMap } = STAGES_MAP;
 
 	function handleStageChange(value: string | undefined) {
 		if (!value) return;
