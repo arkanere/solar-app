@@ -9,7 +9,6 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import { cn } from '$lib/utils';
 	import {
-		LayoutDashboard,
 		Users,
 		Building2,
 		FolderKanban,
@@ -77,13 +76,6 @@
 		  };
 
 	let navSections: NavSection[] = $derived([
-		{
-			type: 'standalone',
-			label: 'Dashboard',
-			icon: LayoutDashboard,
-			href: `/${businessSlug}`,
-			itemType: 'link'
-		},
 		{
 			type: 'standalone',
 			label: 'CRM',
@@ -155,9 +147,6 @@
 
 	function isActive(href?: string) {
 		if (!href) return false;
-		// Every page sits under the dashboard's /{slug}, so the dashboard only
-		// matches exactly — a prefix match would light it up everywhere.
-		if (href === `/${businessSlug}`) return currentPath === href;
 		return currentPath === href || currentPath.startsWith(href + '/');
 	}
 
