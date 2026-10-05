@@ -18,8 +18,7 @@ export default async function setup() {
 	} catch (error) {
 		throw new Error(
 			`Cannot reach the test database at ${TEST_POSTGRES_URL}.\n` +
-				'Start it first:  docker compose -f docker-compose.test.yml up -d\n' +
-				'or point TEST_POSTGRES_URL at a scratch database of your own.\n' +
+				'Point TEST_POSTGRES_URL at a scratch database of your own.\n' +
 				`Underlying error: ${(error as Error).message}`
 		);
 	}

@@ -1,5 +1,13 @@
 import { defineConfig, type Plugin } from 'vitest/config';
+import { loadEnv } from 'vite';
 import { fileURLToPath } from 'node:url';
+
+// Vitest does not load .env into process.env. Pull TEST_POSTGRES_URL from it so
+// globalSetup and the forked workers both see it. A shell export still wins.
+const fileEnv = loadEnv('test', process.cwd(), 'TEST_');
+if (!process.env.TEST_POSTGRES_URL && fileEnv.TEST_POSTGRES_URL) {
+	process.env.TEST_POSTGRES_URL = fileEnv.TEST_POSTGRES_URL;
+}
 
 // Loads every .svelte import as an empty module.
 //

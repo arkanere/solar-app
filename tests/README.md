@@ -11,21 +11,13 @@ this exists to catch.
 
 ## Running them
 
-Start a database:
-
-```sh
-docker compose -f docker-compose.test.yml up -d
-```
-
-Then:
-
 ```sh
 npm test -w solarvipani-business
 ```
 
-The suite defaults to `postgres://solar:solar@localhost:5433/solar_test`, which is
-what the compose file serves. To point it somewhere else — a local Postgres
-install, a scratch cloud database — set `TEST_POSTGRES_URL`:
+The suite defaults to `postgres://solar:solar@localhost:5433/solar_test`. To point
+it somewhere else — a local Postgres install, a scratch cloud database — set
+`TEST_POSTGRES_URL`:
 
 ```sh
 TEST_POSTGRES_URL=postgres://user@localhost:5432/solar_test npm test -w solarvipani-business
