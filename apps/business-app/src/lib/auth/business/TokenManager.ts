@@ -76,10 +76,14 @@ export class TokenManager {
 			if (!business.isActive || !business.profileIsvisible) {
 				return ERROR_RESPONSE('Business account is not active', AUTH_ERRORS.INVALID_BUSINESS);
 			}
+			// The columns are nullable; a login needs both.
+			if (!business.slug || !business.login_email) {
+				return ERROR_RESPONSE('Business not found', AUTH_ERRORS.BUSINESS_NOT_FOUND);
+			}
 			return SUCCESS_RESPONSE({
 				business: {
 					id: business.id,
-					businessname: business.businessname,
+					businessname: business.businessname ?? '',
 					slug: business.slug,
 					login_email: business.login_email,
 					isActive: business.isActive
@@ -134,10 +138,14 @@ export class TokenManager {
 
 			const business = rows[0];
 
+			// The columns are nullable; a login needs both.
+			if (!business.slug || !business.login_email) {
+				return ERROR_RESPONSE('Business not found', AUTH_ERRORS.BUSINESS_NOT_FOUND);
+			}
 			return SUCCESS_RESPONSE({
 				business: {
 					id: business.id,
-					businessname: business.businessname,
+					businessname: business.businessname ?? '',
 					slug: business.slug,
 					login_email: business.login_email,
 					isActive: business.isActive
@@ -185,10 +193,14 @@ export class TokenManager {
 
 			const business = rows[0];
 
+			// The columns are nullable; a login needs both.
+			if (!business.slug || !business.login_email) {
+				return ERROR_RESPONSE('Business not found', AUTH_ERRORS.BUSINESS_NOT_FOUND);
+			}
 			return SUCCESS_RESPONSE({
 				business: {
 					id: business.id,
-					businessname: business.businessname,
+					businessname: business.businessname ?? '',
 					slug: business.slug,
 					login_email: business.login_email,
 					isActive: business.isActive

@@ -23,8 +23,12 @@ export const config = { maxDuration: 60 };
 // Row shapes are inferred from the Drizzle schema; the claimed copy returned to
 // the client keeps the legacy snake_case names via IN_LEAD_RETURNING.
 type NewLeadRow = {
-	[K in keyof typeof IN_LEAD_RETURNING]: (typeof IN_LEAD_RETURNING)[K]['_']['data'];
+	[K in keyof typeof IN_LEAD_RETURNING]: (typeof IN_LEAD_RETURNING)[K]['_']['notNull'] extends true
+		? (typeof IN_LEAD_RETURNING)[K]['_']['data']
+		: (typeof IN_LEAD_RETURNING)[K]['_']['data'] | null;
 };
+
+type EarlyExit = { status: number; body: Record<string, unknown> };
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
 
@@ -173,7 +177,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		let newLead: NewLeadRow | null = null;
 		// Set by the branches that used to ROLLBACK and return a specific
 		// response; tx.rollback() throws, so the response is carried out here.
-		let earlyExit: { status: number; body: Record<string, unknown> } | null = null;
+		let earlyExit: EarlyExit | null = null;
 
 		try {
 			await db.transaction(async (tx) => {
@@ -431,8 +435,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			});
 		} catch (error) {
 			// tx.rollback() throws, so the deliberate early exits land here first.
-			if (earlyExit) {
-				return json(earlyExit.body, { status: earlyExit.status });
+			// TS narrows earlyExit to null: it can't see the assignments in the callback.
+			const exit = earlyExit as EarlyExit | null;
+			if (exit) {
+				return json(exit.body, { status: exit.status });
 			}
 			console.error('❌ Error claiming lead:', error);
 			const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';

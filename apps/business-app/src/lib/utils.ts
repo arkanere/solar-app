@@ -67,6 +67,6 @@ export const flyAndScale = (
 	};
 };
 
-export type WithoutChild<T> = Omit<T, 'child' | 'children'>;
-export type WithoutChildren<T> = Omit<T, 'children'>;
-export type WithoutChildrenOrChild<T> = Omit<T, 'children' | 'child'>;
+export type WithoutChild<T> = T extends { child?: unknown } ? Omit<T, 'child'> : T;
+export type WithoutChildren<T> = T extends { children?: unknown } ? Omit<T, 'children'> : T;
+export type WithoutChildrenOrChild<T> = WithoutChildren<WithoutChild<T>>;

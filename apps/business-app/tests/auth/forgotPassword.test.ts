@@ -24,7 +24,7 @@ const sendEmail = vi.fn(async (_to: string, _subject: string, _message: string, 
 }));
 
 vi.mock('$lib/in/sendEmail', () => ({
-	sendEmail: (...args: unknown[]) => sendEmail(...(args as [])),
+	sendEmail: (...args: unknown[]) => sendEmail(...(args as Parameters<typeof sendEmail>)),
 	sendEmailIndividually: vi.fn(async () => ({ success: true })),
 	sendTemplatedEmail: vi.fn(async () => ({ success: true }))
 }));

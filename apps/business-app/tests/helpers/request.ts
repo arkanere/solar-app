@@ -38,8 +38,6 @@ export function createSessionCookies(business: {
 			id: business.id,
 			slug: business.slug,
 			businessname: business.businessname,
-			login_email: `${business.slug}@example.test`,
-			isvisible: true
 		},
 		'password'
 	);
