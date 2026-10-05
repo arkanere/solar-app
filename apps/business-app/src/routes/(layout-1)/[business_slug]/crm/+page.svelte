@@ -56,14 +56,7 @@
 </svelte:head>
 
 <div>
-	<header class="mb-6">
-			<h1 class="text-2xl font-semibold text-foreground">
-				Customer Relationship Management
-			</h1>
-			<p class="mt-1 text-sm text-muted-foreground">
-				Manage your customer inquiries and leads for {business?.businessname || 'your business'}
-			</p>
-		</header>
+	<h1 class="text-2xl font-semibold text-foreground mb-4">Leads</h1>
 
 	<CustomerInquiry
 		bind:leads

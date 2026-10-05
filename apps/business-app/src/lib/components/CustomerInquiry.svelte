@@ -266,8 +266,6 @@
 
 <!-- LEAD DATA SECTION -->
 <section id="lead-data">
-	<h2 class="text-2xl font-semibold text-foreground text-left mb-4">Customer Inquiry</h2>
-
 	{#if errorMessage}
 		<Alert.Root variant="destructive" class="mb-4">
 			<Alert.Title>Error</Alert.Title>
