@@ -223,13 +223,6 @@
 							Claim Now (Free)
 						</Button>
 					{:else}
-					{#if lead.claim_count > 0}
-						<p class="text-xs text-muted-foreground mb-2">
-							Claimed by {lead.claim_count} other {lead.claim_count === 1 ? 'business' : 'businesses'} in {lead.district}
-						</p>
-					{:else}
-						<p class="text-xs text-muted-foreground mb-2">Be the first one to claim this inquiry</p>
-					{/if}
 						<Button
 							class="w-full"
 							onclick={handleClaim}
