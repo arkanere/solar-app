@@ -275,6 +275,7 @@ CREATE TABLE "leaddata" (
 	"bill_uploaded_at" timestamp with time zone,
 	"marketing_consent" boolean DEFAULT false NOT NULL,
 	"country_code" char(2) DEFAULT 'in' NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT "check_claim_count_limit" CHECK ((claim_count >= 0) AND (claim_count <= 5))
 );
 
