@@ -42,9 +42,6 @@ const { POST: updateBusinessDetails } = await import(
 const { load: layoutLoad } = await import(
 	'../../src/routes/(layout-1)/[business_slug]/+layout.server'
 );
-const { load: dashboardLoad } = await import(
-	'../../src/routes/(layout-1)/[business_slug]/+page.server'
-);
 const { load: crmLoad } = await import(
 	'../../src/routes/(layout-1)/[business_slug]/crm/+page.server'
 );
@@ -117,16 +114,6 @@ describe('a slug shared by two businesses resolves by session, not by slug', () 
 		expect(data.business?.id).toBe(second);
 		expect(data.business?.id).not.toBe(first);
 		expect(data.setupProgress?.claimedLeadsCount).toBe(1);
-	});
-
-	it('the dashboard loads the session holder', async () => {
-		const { first, second } = await createTwinsOnOneSlug();
-
-		const data = await dashboardLoad(context(second));
-
-		expect(data.errorMessage).toBeUndefined();
-		expect(data.business?.id).toBe(second);
-		expect(data.business?.id).not.toBe(first);
 	});
 
 	it('/crm loads the session holder', async () => {

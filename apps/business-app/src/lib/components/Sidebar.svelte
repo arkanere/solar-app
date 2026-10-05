@@ -11,15 +11,14 @@
 	import {
 		LayoutDashboard,
 		Users,
-		UserPlus,
 		Building2,
 		FolderKanban,
 		FileText,
 		Settings,
 		MessageCircle,
 		ScrollText,
-		Calculator,
 		ShieldCheck,
+		BadgeIndianRupee,
 		Trash2,
 		LogOut,
 		X,
@@ -30,9 +29,6 @@
 		businessSlug?: string;
 		businessName?: string;
 		businessEmail?: string;
-		onAddLead?: () => void;
-		onAddBranch?: () => void;
-		onPostProject?: () => void;
 		onPolicy?: () => void;
 		onSupport?: () => void;
 		onDeleteAccount?: () => void;
@@ -42,9 +38,6 @@
 		businessSlug = '',
 		businessName = '',
 		businessEmail = '',
-		onAddLead = () => {},
-		onAddBranch = () => {},
-		onPostProject = () => {},
 		onPolicy = () => {},
 		onSupport = () => {},
 		onDeleteAccount = () => {}
@@ -56,7 +49,7 @@
 	let sections = $derived(expandedSections.sections);
 
 	type NavIcon = typeof Users;
-	type NavAction = 'addLead' | 'addBranch' | 'postProject' | 'policy' | 'support' | 'deleteAccount';
+	type NavAction = 'policy' | 'support' | 'deleteAccount';
 
 	type NavItem = {
 		label: string;
@@ -92,53 +85,45 @@
 			itemType: 'link'
 		},
 		{
-			type: 'collapsible',
-			id: 'leads',
-			title: 'Leads',
+			type: 'standalone',
+			label: 'CRM',
 			icon: Users,
-			items: [
-				{ label: 'Add Lead', icon: UserPlus, action: 'addLead', type: 'modal' },
-				{ label: 'CRM', icon: Users, href: `/${businessSlug}/crm`, type: 'link' }
-			]
+			href: `/${businessSlug}/crm`,
+			itemType: 'link'
 		},
 		{
-			type: 'collapsible',
-			id: 'branches',
-			title: 'Branches',
+			type: 'standalone',
+			label: 'Branches',
 			icon: Building2,
-			items: [
-				{ label: 'Manage Branches', icon: Building2, href: `/${businessSlug}/branch`, type: 'link' }
-			]
-		},
-		{
-			type: 'collapsible',
-			id: 'projects',
-			title: 'Projects',
-			icon: FolderKanban,
-			items: [
-				{ label: 'Recent Projects', icon: FileText, href: `/${businessSlug}/recent-projects`, type: 'link' },
-				{ label: 'Project Management', icon: FolderKanban, href: `/${businessSlug}/project-management`, type: 'link' }
-			]
+			href: `/${businessSlug}/branch`,
+			itemType: 'link'
 		},
 		{
 			type: 'standalone',
-			label: 'Proposals',
+			label: 'Recent Work',
 			icon: FileText,
-			href: `/${businessSlug}/proposal`,
+			href: `/${businessSlug}/recent-projects`,
 			itemType: 'link'
 		},
 		{
 			type: 'standalone',
-			label: 'Quotation Maker',
-			icon: Calculator,
-			href: `/${businessSlug}/quotation`,
+			label: 'Project Management',
+			icon: FolderKanban,
+			href: `/${businessSlug}/project-management`,
 			itemType: 'link'
 		},
 		{
 			type: 'standalone',
-			label: 'Compliance',
+			label: 'PII Compliance',
 			icon: ShieldCheck,
 			href: `/${businessSlug}/compliance`,
+			itemType: 'link'
+		},
+		{
+			type: 'standalone',
+			label: 'Paid Services',
+			icon: BadgeIndianRupee,
+			href: `/${businessSlug}/paid-services`,
 			itemType: 'link'
 		},
 		{
@@ -155,7 +140,7 @@
 	]);
 
 	function handleItemClick(item: { action?: NavAction }) {
-		const callbacks = { addLead: onAddLead, addBranch: onAddBranch, postProject: onPostProject, policy: onPolicy, support: onSupport, deleteAccount: onDeleteAccount };
+		const callbacks = { policy: onPolicy, support: onSupport, deleteAccount: onDeleteAccount };
 		if (item.action) callbacks[item.action]?.();
 		if (window.innerWidth < 768) isMobileMenuOpen.set(false);
 	}
@@ -170,6 +155,9 @@
 
 	function isActive(href?: string) {
 		if (!href) return false;
+		// Every page sits under the dashboard's /{slug}, so the dashboard only
+		// matches exactly — a prefix match would light it up everywhere.
+		if (href === `/${businessSlug}`) return currentPath === href;
 		return currentPath === href || currentPath.startsWith(href + '/');
 	}
 

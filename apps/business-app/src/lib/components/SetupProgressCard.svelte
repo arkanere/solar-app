@@ -3,7 +3,6 @@
 	import { browser } from '$app/environment';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
-	import { Progress } from '$lib/components/ui/progress';
 	import { cn } from '$lib/utils';
 	import { Target, AlertCircle, ChevronDown } from '@lucide/svelte';
 
@@ -142,17 +141,8 @@
 				<Target class="shrink-0 text-accent-strong" size={24} strokeWidth={2} />
 				<div class="flex-1 min-w-0">
 					<Card.Title class="text-lg font-semibold text-foreground max-sm:text-base"
-						>Setup Your Business Account</Card.Title
+						>Pending Tasks</Card.Title
 					>
-					<div class="flex items-center gap-3 mt-1.5">
-						<Progress
-							value={(completedCount / totalCount) * 100}
-							class="h-1.5 w-32 max-sm:w-20 [&>[data-slot=progress-indicator]]:bg-success"
-						/>
-						<span class="text-sm text-muted-foreground whitespace-nowrap">
-							{completedCount} of {totalCount} completed
-						</span>
-					</div>
 				</div>
 			</div>
 			<ChevronDown

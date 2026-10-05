@@ -139,12 +139,3 @@ export interface BusinessApiResponse {
 	error?: string;
 	business?: BusinessProfile | BusinessLookup;
 }
-
-/**
- * Setup progress data
- * Tracks business account setup completion
- */
-export interface SetupProgress {
-	projectsCount: number;
-	proposalsCount: number;
-}

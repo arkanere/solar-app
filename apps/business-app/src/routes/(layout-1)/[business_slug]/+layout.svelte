@@ -5,12 +5,9 @@
 	import SetupProgressCard from '$lib/components/SetupProgressCard.svelte';
 	import ClaimGateCard from '$lib/components/ClaimGateCard.svelte';
 	import ShowEditProfile from '$lib/components/ShowEditProfile.svelte';
-	import PostRecentProject from '$lib/components/PostRecentProject.svelte';
-	import AddBranch from '$lib/components/AddBranch.svelte';
 	import ShowSupport from '$lib/components/ShowSupport.svelte';
 	import ShowDeleteAccount from '$lib/components/ShowDeleteAccount.svelte';
 	import ShowRankingPolicy from '$lib/components/ShowRankingPolicy.svelte';
-	import LeadFormModalBusiness from '$lib/components/LeadFormModalBusiness.svelte';
 	import type { Snippet } from 'svelte';
 
 	export type LayoutProps = {
@@ -32,22 +29,6 @@
 	let showSupport = $state(false);
 	let showDeleteAccount = $state(false);
 	let showRankingPolicy = $state(false);
-	let showPostRecentProject = $state(false);
-	let showAddBranch = $state(false);
-	let showAddLead = $state(false);
-
-	// Computed business info
-	let businessInfo = $derived(business
-		? {
-				id: business.id,
-				businessname: business.businessname,
-				description: business.description,
-				phonenumber: business.phonenumber,
-				email: business.email,
-				address: business.address,
-				website: business.website
-			}
-		: {});
 
 	let businessEmail = $derived(business?.email || '');
 
@@ -68,18 +49,6 @@
 	}
 
 	// Sidebar action handlers
-	function handleAddLead() {
-		showAddLead = true;
-	}
-
-	function handleAddBranch() {
-		showAddBranch = true;
-	}
-
-	function handlePostProject() {
-		showPostRecentProject = true;
-	}
-
 	function handlePolicy() {
 		showRankingPolicy = true;
 	}
@@ -90,20 +59,6 @@
 
 	function handleDeleteAccount() {
 		showDeleteAccount = true;
-	}
-
-	// Handle events from modals
-	function handleBranchAdded() {
-		window.location.reload();
-	}
-
-	function handleProjectPosted() {
-		window.location.reload();
-	}
-
-	function handleLeadAdded() {
-		showAddLead = false;
-		window.location.reload();
 	}
 
 	// Toggle mobile menu
@@ -133,11 +88,8 @@
 <!-- Sidebar -->
 <Sidebar
 	{businessSlug}
-	businessName={businessInfo.businessname || ''}
+	businessName={business?.businessname || ''}
 	{businessEmail}
-	onAddLead={handleAddLead}
-	onAddBranch={handleAddBranch}
-	onPostProject={handlePostProject}
 	onPolicy={handlePolicy}
 	onSupport={handleSupport}
 	onDeleteAccount={handleDeleteAccount}
@@ -171,38 +123,6 @@
 </div>
 
 <!-- Modals -->
-{#if showAddLead}
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div
-		class="modal-overlay"
-		onclick={(e) => {
-			if (e.target === e.currentTarget) {
-				showAddLead = false;
-			}
-		}}
-	>
-		<div class="modal-content bg-card text-card-foreground" role="dialog" aria-modal="true">
-			<button class="close-btn text-foreground-muted hover:text-foreground" onclick={() => (showAddLead = false)}>&times;</button>
-			<h2 class="text-lg font-semibold text-foreground">Add Lead</h2>
-			<LeadFormModalBusiness
-				businessName={business?.businessname || ''}
-				{businessSlug}
-				onLeadAdded={handleLeadAdded}
-			/>
-		</div>
-	</div>
-{/if}
-
-{#if showPostRecentProject}
-	<PostRecentProject
-		bind:show={showPostRecentProject}
-		{businessSlug}
-		onClose={() => (showPostRecentProject = false)}
-		onPosted={handleProjectPosted}
-	/>
-{/if}
-
 {#if showDeleteAccount}
 	<ShowDeleteAccount
 		bind:show={showDeleteAccount}
@@ -225,16 +145,6 @@
 		{businessSlug}
 		onClose={() => (showEditProfile = false)}
 		onUpdated={handleProfileUpdated}
-	/>
-{/if}
-
-{#if showAddBranch}
-	<AddBranch
-		bind:show={showAddBranch}
-		businessId={businessInfo.id}
-		{businessSlug}
-		onClose={() => (showAddBranch = false)}
-		onBranchAdded={handleBranchAdded}
 	/>
 {/if}
 
@@ -298,53 +208,5 @@
 		.layout-container.sidebar-collapsed {
 			margin-left: 0;
 		}
-	}
-
-	/* Modal Styles */
-	.modal-overlay {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: color-mix(in oklch, var(--color-modal-backdrop) 50%, transparent);
-		display: flex;
-		justify-content: center;
-		align-items: flex-start;
-		z-index: var(--z-modal-backdrop);
-		overflow-y: auto;
-		padding: 20px 0;
-		pointer-events: none;
-	}
-
-	.modal-content {
-		position: relative;
-		padding: 20px;
-		border-radius: var(--radius-lg);
-		max-width: 500px;
-		width: 100%;
-		margin: auto 20px;
-		max-height: calc(100vh - 40px);
-		overflow-y: auto;
-		border: 1px solid var(--color-border);
-		box-shadow: var(--shadow-lg);
-		pointer-events: auto;
-	}
-
-	.close-btn {
-		position: absolute;
-		top: 10px;
-		right: 10px;
-		background: none;
-		border: none;
-		font-size: 1.5rem;
-		cursor: pointer;
-		z-index: var(--z-modal);
-		transition: color 0.15s ease;
-	}
-
-	h2 {
-		margin-top: 0;
-		margin-bottom: 1rem;
 	}
 </style>

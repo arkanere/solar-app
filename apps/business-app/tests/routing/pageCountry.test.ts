@@ -25,9 +25,6 @@ import {
 const { load: branchLoad } = await import(
 	'../../src/routes/(layout-1)/[business_slug]/branch/+page.server'
 );
-const { load: dashboardLoad } = await import(
-	'../../src/routes/(layout-1)/[business_slug]/+page.server'
-);
 const { load: crmLoad } = await import(
 	'../../src/routes/(layout-1)/[business_slug]/crm/+page.server'
 );
@@ -124,118 +121,9 @@ describe('country resolution in the /branch load', () => {
 
 });
 
-// The dashboard is the page a login actually lands on, and it carried the same
-// literal 'in' on five reads — the business lookup, the branch join and three
-// lead queries. A US login therefore reached its own dashboard and was told the
-// business did not exist.
-describe('country resolution in the dashboard load', () => {
-	beforeEach(async () => {
-		await resetDatabase();
-	});
-
-	it('loads a US business, its branches and its claimed leads', async () => {
-		const mainId = await createUsBusiness({ slug: 'oakland-solar' });
-		const branchId = await createUsBusiness({ slug: 'oakland-solar-berkeley' });
-		await createBranch(mainId, branchId);
-		await createUsLead({ businessId: mainId, category: 2 });
-
-		const data = await dashboardLoad(context('oakland-solar', 'us', mainId));
-
-		// Before the fix: 'Business not found'.
-		expect(data.errorMessage).toBeUndefined();
-		expect(data.business?.slug).toBe('oakland-solar');
-		expect(data.branches?.map((b) => b.slug)).toEqual(['oakland-solar-berkeley']);
-		// Guards the lead reads specifically: with the literal left on the
-		// category-2 query the business loads but this list comes back empty.
-		expect(data.leads).toHaveLength(1);
-	});
-
-	it('finds a US business’s exclusive leads by urlparams', async () => {
-		const mainId = await createUsBusiness({ slug: 'oakland-solar' });
-		await createUsLead({ urlparams: '/us/installer/oakland-solar?utm_source=test' });
-
-		const data = await dashboardLoad(context('oakland-solar', 'us', mainId));
-
-		expect(mainId).toBeGreaterThan(0);
-		expect(data.leads).toHaveLength(1);
-	});
-
-	// The third lead read — category 1, matched by state rather than by
-	// business_id or urlparams. It was the one read no US case reached, because
-	// createUsLead had no way to set a state.
-	it('finds a US business’s non-exclusive leads by state, masked', async () => {
-		const mainId = await createUsBusiness({ slug: 'oakland-solar', state: 'California' });
-		await createUsLead({ category: 1, state: 'California' });
-
-		const data = await dashboardLoad(context('oakland-solar', 'us', mainId));
-
-		expect(data.leads).toHaveLength(1);
-		// Masking is what distinguishes this read from the other two: only the
-		// non-exclusive list gets it, so an unmasked address would mean the lead
-		// arrived by some other branch.
-		expect(data.leads?.[0].email).toContain('*');
-		expect(data.leads?.[0].phone).toContain('*');
-	});
-
-	it('does not match a US lead from another state', async () => {
-		const mainId = await createUsBusiness({ slug: 'oakland-solar', state: 'California' });
-		await createUsLead({ category: 1, state: 'Texas' });
-
-		const data = await dashboardLoad(context('oakland-solar', 'us', mainId));
-
-		expect(data.leads).toEqual([]);
-	});
-
-	// Documents the production gap rather than hiding it: no US write path sets
-	// leaddata.level1 (pincode_mapping is IN-only), so every live US lead has a
-	// null level1 and this read returns nothing for any US business. The test
-	// above passes only because its fixture sets a state by hand. See
-	// next-steps.md — closing the gap needs a US postal-code-to-state source.
-	it('matches no US lead when state is null, as every live US lead is', async () => {
-		const mainId = await createUsBusiness({ slug: 'oakland-solar', state: 'California' });
-		await createUsLead({ category: 1 });
-
-		const data = await dashboardLoad(context('oakland-solar', 'us', mainId));
-
-		expect(data.leads).toEqual([]);
-	});
-
-	it('still loads an IN business and its claimed leads', async () => {
-		const mainId = await createBusiness({ slug: 'pune-solar' });
-		await createLead({ businessId: mainId, category: 2 });
-
-		const data = await dashboardLoad(context('pune-solar', 'in', mainId));
-
-		expect(data.business?.slug).toBe('pune-solar');
-		expect(data.leads).toHaveLength(1);
-	});
-
-	it('keeps the country filter beside the id, for a slug in both countries', async () => {
-		const inId = await createBusiness({ slug: 'shared-slug' });
-		const usId = await createUsBusiness({ slug: 'shared-slug' });
-
-		const asUs = await dashboardLoad(context('shared-slug', 'us', usId));
-		const asIn = await dashboardLoad(context('shared-slug', 'in', inId));
-		const mismatched = await dashboardLoad(context('shared-slug', 'in', usId));
-
-		expect(asUs.business?.id).toBe(usId);
-		expect(asIn.business?.id).toBe(inId);
-		expect(mismatched.errorMessage).toBe('Business not found');
-	});
-
-	it('reports not-found rather than guessing when the layout has no country', async () => {
-		const mainId = await createBusiness({ slug: 'pune-solar' });
-
-		const data = await dashboardLoad(context('pune-solar', undefined, mainId));
-
-		expect(data.errorMessage).toBe('Business not found');
-		expect(data.business).toBeUndefined();
-	});
-});
-
-// /crm repeats the dashboard's five reads almost verbatim — same business
-// lookup, same branch join, same three lead queries — so it failed for a US
-// business the same way.
+// /crm makes five reads — the business lookup, the branch join and three lead
+// queries — and each carried a literal 'in', so a US business was told it did
+// not exist.
 describe('country resolution in the /crm load', () => {
 	beforeEach(async () => {
 		await resetDatabase();
@@ -252,16 +140,16 @@ describe('country resolution in the /crm load', () => {
 
 		const data = await crmLoad(context('oakland-solar', 'us', mainId));
 
-		// This load's business selection has no `slug` column, unlike the
-		// dashboard's — assert on the id the fixture returned instead.
+		// This load's business selection has no `slug` column — assert on the id
+		// the fixture returned instead.
 		expect(data.errorMessage).toBeUndefined();
 		expect(data.business?.id).toBe(mainId);
 		expect(data.branches?.map((b) => b.slug)).toEqual(['oakland-solar-berkeley']);
 		expect(data.leads).toHaveLength(2);
 	});
 
-	// /crm's category-1 read is the dashboard's verbatim, down to the 15-day
-	// window, so it carried the same untested US path.
+	// /crm's category-1 read matches by state within a 15-day window, a US path
+	// no other case reached.
 	it('finds a US business’s non-exclusive leads by state, masked', async () => {
 		const mainId = await createUsBusiness({ slug: 'oakland-solar', state: 'California' });
 		await createUsLead({ category: 1, state: 'California' });

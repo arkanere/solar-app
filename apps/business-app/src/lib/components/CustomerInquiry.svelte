@@ -19,10 +19,8 @@
 	export type CustomerInquiryProps = {
 		leads?: Lead[];
 		businessInfo?: Record<string, any>;
-		businessSlug?: string;
 		errorMessage?: string | null;
 		onClaimSuccess?: (data: { leadId: number; result: any }) => void;
-		mode?: 'full' | 'dashboard';
 		claimBlocked?: boolean;
 		// A just-claimed lead to show open at the top of My Leads
 		focusLeadId?: number | null;
@@ -45,15 +43,11 @@
 	let {
 		leads = $bindable([]),
 		businessInfo = {},
-		businessSlug = '',
 		errorMessage = null,
 		onClaimSuccess = () => {},
-		mode = 'full',
 		claimBlocked = false,
 		focusLeadId = $bindable(null)
 	}: CustomerInquiryProps = $props();
-
-	let isDashboard = $derived(mode === 'dashboard');
 
 	// Claim state
 	let isClaiming = $state(false);
@@ -85,7 +79,6 @@
 	// Derive available (category 1) and my leads (category 2, 3, null/undefined)
 	let availableLeads = $derived(leads.filter((l) => l.category === 1));
 	let myLeads = $derived(leads.filter((l) => l.category !== 1 && l.status !== false));
-	let dashboardLeads = $derived([...availableLeads, ...myLeads].slice(0, 5));
 
 	// Set default tab based on claimed leads on first load
 	$effect(() => {
@@ -272,73 +265,15 @@
 </script>
 
 <!-- LEAD DATA SECTION -->
-<section id="lead-data" class={isDashboard ? 'space-y-4' : ''}>
-	<h2 class="text-2xl font-semibold text-foreground {isDashboard ? '' : 'text-left mb-4'}">Customer Inquiry</h2>
+<section id="lead-data">
+	<h2 class="text-2xl font-semibold text-foreground text-left mb-4">Customer Inquiry</h2>
 
 	{#if errorMessage}
-		{#if isDashboard}
-			<p class="text-destructive font-semibold p-4">{errorMessage}</p>
-		{:else}
-			<Alert.Root variant="destructive" class="mb-4">
-				<Alert.Title>Error</Alert.Title>
-				<Alert.Description>{errorMessage}</Alert.Description>
-			</Alert.Root>
-		{/if}
-	{:else if isDashboard}
-		<!-- Dashboard mode: available leads to claim, limited to 5 -->
-		<div class="w-full max-w-xl space-y-4">
-			{#if leads.length > 0}
-				{#each dashboardLeads as lead}
-					<LeadTile
-						{lead}
-						{businessInfo}
-						{isClaiming}
-						{claimBlocked}
-						on:update={handleLeadUpdate}
-						on:claim={handleLeadClaim}
-						on:proposal={handleProposalOpen}
-						on:delete={handleDeleteRequest}
-					/>
-				{/each}
-				{#if leads.length > 5}
-					<Card.Root class="border-accent/20 bg-accent-muted">
-						<Card.Content class="pt-6 text-center">
-							<p class="text-sm text-foreground-secondary">
-								<strong>Showing 5 of {leads.length} leads.</strong>
-								<a
-									href="/{businessSlug}/crm"
-									class="text-accent-strong underline font-semibold hover:opacity-80 ml-1"
-								>
-									View all in CRM
-								</a>
-							</p>
-						</Card.Content>
-					</Card.Root>
-				{/if}
-			{:else}
-				<LeadTile
-					lead={{
-						id: 0,
-						name: 'John Doe',
-						phone: '+91 0123456789',
-						email: 'dummy@email.com',
-						stage: 0,
-						status: true,
-						category: 1,
-						business_notes: '',
-						received_at: new Date().toISOString(),
-						pin_code: '110001',
-						type: 'Residential - Independent Home',
-						comment: 'I want to install 3kW at my home. Please call me!'
-					}}
-					businessInfo={{}}
-					isDemo={true}
-				/>
-			{/if}
-		</div>
-
+		<Alert.Root variant="destructive" class="mb-4">
+			<Alert.Title>Error</Alert.Title>
+			<Alert.Description>{errorMessage}</Alert.Description>
+		</Alert.Root>
 	{:else}
-		<!-- Full CRM mode: tabs + filters -->
 		<!-- Tab toggle -->
 		<div class="flex gap-1 p-1 bg-muted rounded-lg mb-6 max-w-xl">
 			<button

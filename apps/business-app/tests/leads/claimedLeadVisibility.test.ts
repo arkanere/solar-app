@@ -17,9 +17,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createBusiness, createLead, resetDatabase } from '../helpers/fixtures';
 
-const { load: dashboardLoad } = await import(
-	'../../src/routes/(layout-1)/[business_slug]/+page.server'
-);
 const { load: crmLoad } = await import(
 	'../../src/routes/(layout-1)/[business_slug]/crm/+page.server'
 );
@@ -75,14 +72,6 @@ describe('a claimed lead is listed once and cannot be claimed again', () => {
 		});
 	});
 
-	it('does not re-offer the claimed original on the dashboard', async () => {
-		const data = await dashboardLoad(context(slug, businessId));
-		const ids = (data.leads ?? []).map((lead) => lead.id);
-
-		expect(ids).not.toContain(originalId);
-		expect(ids.filter((id) => id === claimedId)).toHaveLength(1);
-	});
-
 	it('does not re-offer the claimed original in the CRM', async () => {
 		const data = await crmLoad(context(slug, businessId));
 		const ids = (data.leads ?? []).map((lead) => lead.id);
@@ -99,7 +88,7 @@ describe('a claimed lead is listed once and cannot be claimed again', () => {
 			urlparams: `/in/installer/${slug}`
 		});
 
-		const data = await dashboardLoad(context(slug, businessId));
+		const data = await crmLoad(context(slug, businessId));
 		const ids = (data.leads ?? []).map((lead) => lead.id);
 
 		expect(ids.filter((id) => id === unclaimedId)).toHaveLength(1);
