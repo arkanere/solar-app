@@ -69,8 +69,8 @@
 	let leadToDelete: Lead | null = $state(null);
 	let isDeleting = $state(false);
 
-	// Tab state: derived initial value from whether claimed leads exist
-	let activeTab = $state<'available' | 'my-leads' | 'won'>('available');
+	// Opens on Available Leads, or on My Leads when arriving from a dashboard claim
+	let activeTab = $state<'available' | 'my-leads' | 'won'>(focusLeadId ? 'my-leads' : 'available');
 
 	// Stage filter state (only applies to My Leads tab)
 	let selectedStage = $state('all');
@@ -81,13 +81,6 @@
 	// Won leads get their own tab, so My Leads holds only the ones still in progress
 	let myLeads = $derived(claimedLeads.filter((l) => l.stage < 3));
 	let wonLeads = $derived(claimedLeads.filter((l) => l.stage >= 3));
-
-	// Set default tab based on claimed leads on first load
-	$effect(() => {
-		if (leads.length > 0 && myLeads.length > 0) {
-			activeTab = 'my-leads';
-		}
-	});
 
 	// Filtered my leads — applies stage only
 	let filteredMyLeads = $derived(
