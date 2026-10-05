@@ -2,9 +2,8 @@
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { Button } from '$lib/components/ui/button';
-	import * as Card from '$lib/components/ui/card';
 	import { cn } from '$lib/utils';
-	import { Target, AlertCircle, ChevronDown } from '@lucide/svelte';
+	import { AlertCircle, ChevronDown } from '@lucide/svelte';
 
 	type Task = {
 		id: string;
@@ -129,65 +128,52 @@
 </script>
 
 {#if completedCount < totalCount}
-<Card.Root class="mb-4 overflow-hidden py-0 gap-0 transition-shadow hover:shadow-md">
-	<Card.Header class="p-0">
-		<Button
-			variant="ghost"
-			class="flex justify-between items-center gap-4 p-5 rounded-none w-full text-left h-auto hover:bg-transparent dark:hover:bg-transparent hover:text-foreground"
+	<div class="rounded-lg border">
+		<button
+			type="button"
+			class="flex w-full items-center gap-3 px-4 py-3 text-left"
 			onclick={toggleExpanded}
 			aria-expanded={isExpanded}
 		>
-			<div class="flex items-center gap-4 flex-1 min-w-0">
-				<Target class="shrink-0 text-accent-strong" size={24} strokeWidth={2} />
-				<div class="flex-1 min-w-0">
-					<Card.Title class="text-lg font-semibold text-foreground max-sm:text-base"
-						>Pending Tasks</Card.Title
-					>
-				</div>
-			</div>
+			<AlertCircle class="shrink-0 text-warning" size={18} strokeWidth={2} />
+			<span class="flex-1 text-sm font-medium text-foreground">
+				Pending tasks
+				<span class="ml-1 text-muted-foreground">· {totalCount - completedCount} left</span>
+			</span>
 			<ChevronDown
-				size={18}
+				size={16}
 				class={cn(
 					'shrink-0 text-muted-foreground transition-transform duration-200',
 					isExpanded && 'rotate-180'
 				)}
 			/>
-		</Button>
-	</Card.Header>
+		</button>
 
-	{#if isExpanded}
-		<Card.Content class="border-t px-5 pt-4 pb-5">
-			<ul class="list-none p-0 m-0">
+		{#if isExpanded}
+			<ul class="list-none p-0 m-0 border-t divide-y">
 				{#each visibleTasks as task}
 					<li
-						class={cn(
-							'flex justify-between items-start gap-4 p-4 mb-3 rounded-lg transition-colors',
-							'max-sm:flex-col max-sm:items-stretch',
-							'bg-warning-muted border-l-[3px] border-l-warning'
-						)}
+						class="flex justify-between items-center gap-4 px-4 py-3 max-sm:flex-col max-sm:items-stretch"
 					>
-						<div class="flex items-start gap-3 flex-1">
-							<div class="shrink-0">
-								<AlertCircle size={20} strokeWidth={2} class="text-warning" />
-							</div>
-							<div class="flex-1">
-								<h4 class="m-0 mb-1 text-base font-semibold text-foreground">{task.title}</h4>
-								{#if task.description}
-									<p class="m-0 text-sm text-muted-foreground leading-relaxed">
-										{task.description}
-									</p>
-								{/if}
-							</div>
+						<div class="flex-1">
+							<p class="m-0 text-sm font-medium text-foreground">{task.title}</p>
+							{#if task.description}
+								<p class="m-0 text-sm text-muted-foreground">{task.description}</p>
+							{/if}
 						</div>
 						{#if task.action}
-							<Button size="sm" class="shrink-0 max-sm:w-full" onclick={() => handleAction(task)}>
-								{task.actionLabel} →
+							<Button
+								size="sm"
+								variant="outline"
+								class="shrink-0 max-sm:w-full"
+								onclick={() => handleAction(task)}
+							>
+								{task.actionLabel}
 							</Button>
 						{/if}
 					</li>
 				{/each}
 			</ul>
-		</Card.Content>
-	{/if}
-</Card.Root>
+		{/if}
+	</div>
 {/if}

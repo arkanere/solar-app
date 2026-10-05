@@ -272,59 +272,69 @@
 			<Alert.Description>{errorMessage}</Alert.Description>
 		</Alert.Root>
 	{:else}
-		<!-- Tab toggle -->
-		<div class="flex gap-1 p-1 bg-muted rounded-lg mb-6 max-w-xl">
-			<button
-				class={cn(
-					'flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors',
-					activeTab === 'available'
-						? 'bg-background shadow-sm text-foreground'
-						: 'text-muted-foreground hover:text-foreground'
-				)}
-				onclick={() => (activeTab = 'available')}
-			>
-				Available Leads
-				{#if availableCount > 0}
-					<span
-						class={cn(
-							'inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-xs font-semibold',
-							activeTab === 'available'
-								? 'bg-primary text-primary-foreground'
-								: 'bg-muted-foreground/20 text-muted-foreground'
-						)}
-					>
-						{availableCount}
-					</span>
-				{/if}
-			</button>
-			<button
-				class={cn(
-					'flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors',
-					activeTab === 'my-leads'
-						? 'bg-background shadow-sm text-foreground'
-						: 'text-muted-foreground hover:text-foreground'
-				)}
-				onclick={() => (activeTab = 'my-leads')}
-			>
-				My Leads
-				{#if myLeadsActionableCount > 0}
-					<span
-						class={cn(
-							'inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-xs font-semibold',
-							activeTab === 'my-leads'
-								? 'bg-primary text-primary-foreground'
-								: 'bg-muted-foreground/20 text-muted-foreground'
-						)}
-					>
-						{myLeadsActionableCount}
-					</span>
-				{/if}
-			</button>
+		<div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+			<!-- Tab toggle -->
+			<div class="flex gap-1 p-1 bg-muted rounded-lg w-full sm:w-auto">
+				<button
+					class={cn(
+						'flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors',
+						activeTab === 'available'
+							? 'bg-background shadow-sm text-foreground'
+							: 'text-muted-foreground hover:text-foreground'
+					)}
+					onclick={() => (activeTab = 'available')}
+				>
+					Available Leads
+					{#if availableCount > 0}
+						<span
+							class={cn(
+								'inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-xs font-semibold',
+								activeTab === 'available'
+									? 'bg-primary text-primary-foreground'
+									: 'bg-muted-foreground/20 text-muted-foreground'
+							)}
+						>
+							{availableCount}
+						</span>
+					{/if}
+				</button>
+				<button
+					class={cn(
+						'flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors',
+						activeTab === 'my-leads'
+							? 'bg-background shadow-sm text-foreground'
+							: 'text-muted-foreground hover:text-foreground'
+					)}
+					onclick={() => (activeTab = 'my-leads')}
+				>
+					My Leads
+					{#if myLeadsActionableCount > 0}
+						<span
+							class={cn(
+								'inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-xs font-semibold',
+								activeTab === 'my-leads'
+									? 'bg-primary text-primary-foreground'
+									: 'bg-muted-foreground/20 text-muted-foreground'
+							)}
+						>
+							{myLeadsActionableCount}
+						</span>
+					{/if}
+				</button>
+			</div>
+
+			{#if activeTab === 'my-leads' && myLeads.length > 0}
+				<LeadStageFilter
+					bind:selectedStage
+					bind:selectedStatus
+					onFilterChange={handleFilterChange}
+				/>
+			{/if}
 		</div>
 
 		<!-- Available Leads tab -->
 		{#if activeTab === 'available'}
-			<ul class="list-none p-0 w-full max-w-xl space-y-4">
+			<ul class="list-none p-0 m-0 grid gap-4 lg:grid-cols-2 items-start">
 				{#if availableLeads.length > 0}
 					{#each availableLeads as lead}
 						<LeadTile
@@ -361,7 +371,9 @@
 				{:else}
 					<Card.Root class="border-2 border-dashed my-4">
 						<Card.Content class="text-center p-8">
-							<p class="font-semibold text-lg text-muted-foreground mb-2">No available leads right now.</p>
+							<p class="font-semibold text-lg text-muted-foreground mb-2">
+								No available leads right now.
+							</p>
 							<p class="text-sm text-muted-foreground italic">
 								New leads will appear here as they come in.
 							</p>
@@ -374,12 +386,6 @@
 		<!-- My Leads tab -->
 		{#if activeTab === 'my-leads'}
 			{#if myLeads.length > 0}
-				<LeadStageFilter
-					bind:selectedStage
-					bind:selectedStatus
-					onFilterChange={handleFilterChange}
-				/>
-
 				{#if filteredMyLeads.length === 0}
 					<Card.Root class="border-2 border-dashed my-4 max-w-xl">
 						<Card.Content class="text-center p-8">
@@ -393,7 +399,7 @@
 					</Card.Root>
 				{/if}
 
-				<ul class="list-none p-0 w-full max-w-xl space-y-4">
+				<ul class="list-none p-0 m-0 grid gap-4 lg:grid-cols-2 items-start">
 					{#each filteredMyLeads as lead (lead.id)}
 						<LeadTile
 							{lead}
@@ -460,7 +466,8 @@
 			<Dialog.Title>New Branch Required</Dialog.Title>
 		</Dialog.Header>
 		<p class="m-0 leading-relaxed text-foreground">
-			This lead is from <strong>{branchConfirmDistrict}</strong> where you don't have a branch. Add a branch in <strong>{branchConfirmDistrict}</strong>?
+			This lead is from <strong>{branchConfirmDistrict}</strong> where you don't have a branch. Add
+			a branch in <strong>{branchConfirmDistrict}</strong>?
 		</p>
 		<Dialog.Footer class="max-sm:flex-col">
 			<Button
@@ -471,11 +478,7 @@
 			>
 				Cancel
 			</Button>
-			<Button
-				onclick={confirmBranchCreation}
-				disabled={isClaiming}
-				class="max-sm:w-full"
-			>
+			<Button onclick={confirmBranchCreation} disabled={isClaiming} class="max-sm:w-full">
 				{isClaiming ? 'Creating...' : 'Add Branch & Claim'}
 			</Button>
 		</Dialog.Footer>
