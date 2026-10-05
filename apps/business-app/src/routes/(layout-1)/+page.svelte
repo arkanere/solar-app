@@ -7,6 +7,8 @@
 	import { Button } from '$lib/components/ui/button';
 	import PublicNavbar from '$lib/components/PublicNavbar.svelte';
 
+	let { data } = $props();
+
 	const benefits = [
 		{
 			icon: '🔍',
@@ -73,7 +75,7 @@
 		</p>
 		<div class="flex flex-col sm:flex-row gap-3 justify-center">
 			<Button href="/login" size="lg">Login</Button>
-			<Button href="https://solarvipani.com/in/business-form" variant="outline" size="lg">List My Business</Button>
+			<Button href="https://solarvipani.com" variant="outline" size="lg">List My Business</Button>
 		</div>
 	</section>
 
@@ -95,12 +97,12 @@
 	<section class="px-4 py-12 bg-primary text-primary-foreground">
 		<div class="max-w-3xl mx-auto flex flex-col sm:flex-row justify-center gap-8 sm:gap-16 text-center">
 			<div>
-				<div class="text-3xl md:text-4xl font-bold">500+</div>
-				<div class="text-sm opacity-90 mt-1">Businesses Listed</div>
+				<div class="text-3xl md:text-4xl font-bold tabular-nums">{data.installerCount.toLocaleString('en-IN')}+</div>
+				<div class="text-sm opacity-90 mt-1">Verified Installers</div>
 			</div>
 			<div>
-				<div class="text-3xl md:text-4xl font-bold">5,000+</div>
-				<div class="text-sm opacity-90 mt-1">Cities & Towns</div>
+				<div class="text-3xl md:text-4xl font-bold tabular-nums">{data.citiesServed.toLocaleString('en-IN')}+</div>
+				<div class="text-sm opacity-90 mt-1">Cities Served</div>
 			</div>
 		</div>
 	</section>
@@ -141,7 +143,7 @@
 		<p class="text-muted-foreground mb-6">Join hundreds of solar businesses already on Solar Vipani.</p>
 		<div class="flex flex-col sm:flex-row gap-3 justify-center mb-8">
 			<Button href="/login" size="lg">Login</Button>
-			<Button href="https://solarvipani.com/in/business-form" variant="outline" size="lg">List My Business</Button>
+			<Button href="https://solarvipani.com" variant="outline" size="lg">List My Business</Button>
 		</div>
 		<div class="text-sm text-muted-foreground space-y-1">
 			<p>admin@solarvipani.com</p>
