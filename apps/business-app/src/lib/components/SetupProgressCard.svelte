@@ -133,7 +133,7 @@
 	<Card.Header class="p-0">
 		<Button
 			variant="ghost"
-			class="flex justify-between items-center gap-4 p-5 rounded-none w-full text-left h-auto hover:bg-transparent"
+			class="flex justify-between items-center gap-4 p-5 rounded-none w-full text-left h-auto hover:bg-transparent dark:hover:bg-transparent hover:text-foreground"
 			onclick={toggleExpanded}
 			aria-expanded={isExpanded}
 		>
