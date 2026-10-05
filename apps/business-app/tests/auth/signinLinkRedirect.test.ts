@@ -26,7 +26,6 @@ async function loadRedirect(slug: string, token: string) {
 		const returned = await signinLinkLoad({
 			params: { business_slug: slug, token },
 			cookies: createCookies()
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} as any);
 		throw new Error(`expected a redirect, got: ${JSON.stringify(returned)}`);
 	} catch (thrown) {
@@ -39,7 +38,6 @@ async function loadRedirect(slug: string, token: string) {
 /** The notice /login shows for a given ?reason=, or null. */
 async function loginNotice(reason?: string) {
 	const url = new URL(`http://localhost/login${reason ? `?reason=${reason}` : ''}`);
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const data = (await loginLoad({ cookies: createCookies(), url } as any)) as {
 		notice: string | null;
 	};

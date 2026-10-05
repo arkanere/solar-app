@@ -31,7 +31,6 @@ async function update(
 	const response = await POST({
 		request: jsonRequest(body),
 		cookies
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} as any);
 	return { status: response.status, body: (await response.json()) as UpdateResponse };
 }

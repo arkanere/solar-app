@@ -55,7 +55,6 @@ function context(business_slug: string, country: 'in' | 'us' | undefined, busine
 			business_session: { businessSlug: business_slug, businessId },
 			country
 		})
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} as any;
 }
 

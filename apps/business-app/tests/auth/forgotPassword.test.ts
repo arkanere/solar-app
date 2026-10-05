@@ -38,7 +38,6 @@ async function forgot(body: Record<string, unknown>) {
 	const response = await forgotPassword({
 		request: jsonRequest(body),
 		getClientAddress: () => clientIp
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} as any);
 	return { status: response.status, body: await response.json() };
 }
@@ -47,7 +46,6 @@ async function reset(body: Record<string, unknown>) {
 	const response = await resetPassword({
 		request: jsonRequest(body),
 		getClientAddress: () => clientIp
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} as any);
 	return { status: response.status, body: await response.json() };
 }

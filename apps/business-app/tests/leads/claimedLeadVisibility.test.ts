@@ -28,7 +28,6 @@ function context(business_slug: string, businessId: number) {
 			business_session: { businessSlug: business_slug, businessId },
 			country: 'in'
 		})
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} as any;
 }
 

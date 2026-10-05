@@ -18,7 +18,6 @@ async function login(email: string, password: string) {
 	body.set('password', password);
 	const request = new Request('http://localhost/login', { method: 'POST', body });
 	try {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const returned = (await actions.default({ request, cookies: createCookies() } as any)) as {
 			status: number;
 		};

@@ -54,7 +54,6 @@ async function claim(
 	const response = await POST({
 		request: jsonRequest(body),
 		cookies: createSessionCookies(session)
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} as any);
 	return { status: response.status, body: await response.json() };
 }

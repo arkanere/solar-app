@@ -17,7 +17,6 @@ import { createSessionCookies, jsonRequest } from '../helpers/request';
 
 const { POST: addBranch } = await import('../../src/routes/api/addBranch/+server');
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function event(body: unknown, cookies: ReturnType<typeof createSessionCookies>): any {
 	return { request: jsonRequest(body), cookies };
 }

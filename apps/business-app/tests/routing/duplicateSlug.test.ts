@@ -82,7 +82,6 @@ function context(businessId: number) {
 			business_session: { businessSlug: SLUG, businessId },
 			country: 'in' as const
 		})
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} as any;
 }
 
@@ -108,7 +107,6 @@ describe('a slug shared by two businesses resolves by session, not by slug', () 
 			cookies,
 			params: { business_slug: SLUG },
 			url: new URL(`http://localhost/${SLUG}`)
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} as any);
 
 		expect(data.business?.id).toBe(second);
@@ -219,7 +217,6 @@ async function saveProfile(
 	const response = await updateBusinessDetails({
 		request: jsonRequest(updateBody(slug, businessname)),
 		cookies: createSessionCookies(session)
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} as any);
 	return { status: response.status, body: (await response.json()) as UpdateResponse };
 }
@@ -314,7 +311,6 @@ describe('saving a profile writes one row, resolved by session', () => {
 		const response = await updateBusinessDetails({
 			request: jsonRequest({ ...updateBody('main-business', 'Renamed'), [field]: '  ' }),
 			cookies: createSessionCookies({ id: main, slug: 'main-business', businessname: 'Main Business' })
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} as any);
 
 		expect(response.status).toBe(400);

@@ -22,7 +22,6 @@ async function submit(body: Record<string, unknown>, fetchImpl = recordingFetch(
 	const response = await POST({
 		request: jsonRequest(body),
 		fetch: fetchImpl
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	} as any);
 	return {
 		status: response.status,

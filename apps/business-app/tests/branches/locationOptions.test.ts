@@ -16,7 +16,6 @@ import { jsonRequest } from '../helpers/request';
 const { POST: getDistricts } = await import('../../src/routes/api/getDistricts/+server');
 const { POST: getCities } = await import('../../src/routes/api/getCities/+server');
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function event(body: unknown): any {
 	return { request: jsonRequest(body) };
 }
