@@ -69,14 +69,6 @@ export const NON_EXCLUSIVE_CLAIMED_STAGES_MAP = {
 	3: 'Won'
 } as const;
 
-// ===== STATUS CONSTANTS =====
-
-export const STATUS_OPTIONS = {
-	all: 'All Status',
-	true: 'Active',
-	false: 'Inactive'
-} as const;
-
 // ===== UTILITY FUNCTIONS =====
 
 /**

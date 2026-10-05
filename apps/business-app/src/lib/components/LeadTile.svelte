@@ -72,17 +72,17 @@
 <Card.Root
 	bind:ref={tileEl}
 	class={cn(
-		'p-0 break-words transition-all duration-200 overflow-hidden list-none hover:shadow-md scroll-mt-4',
+		'p-0 gap-0 break-words transition-all duration-200 overflow-hidden list-none hover:shadow-md scroll-mt-4',
 		isDemo && 'border-2 border-dashed opacity-70',
 		isHighlighted && 'ring-2 ring-primary'
 	)}
 >
 	<!-- HEADER SECTION - Identity & Status -->
 	<Card.Header
-		class="flex-row justify-between items-center py-5 pb-0 max-[480px]:flex-col max-[480px]:items-start max-[480px]:gap-3"
+		class="flex flex-row justify-between items-center gap-3 py-5 pb-0"
 	>
-		<Card.Title class="text-lg font-bold text-foreground leading-tight">{lead.name}</Card.Title>
-		<div class="flex items-center gap-2 max-[480px]:self-start">
+		<Card.Title class="min-w-0 truncate text-lg font-bold text-foreground leading-tight">{lead.name}</Card.Title>
+		<div class="flex shrink-0 items-center gap-2">
 			{#if isDemo}
 				<Badge variant="outline" class="bg-warning-muted text-warning">Test Lead</Badge>
 			{:else if lead.category !== 2}
@@ -110,10 +110,29 @@
 				<span class="font-medium text-foreground">{lead.pin_code}{lead.district ? ` (${lead.district})` : ''}</span>
 			</div>
 
+			<!-- Contact (only after the lead is claimed) -->
+			{#if lead.category !== 1}
+				{#if lead.phone}
+					<div class="flex items-center gap-2 text-sm">
+						<span class="font-semibold text-muted-foreground">Phone:</span>
+						<a href="tel:{lead.phone}" class="font-medium text-foreground hover:underline">{lead.phone}</a>
+					</div>
+				{/if}
+				{#if lead.email}
+					<div class="flex items-center gap-2 text-sm min-w-0">
+						<span class="font-semibold text-muted-foreground shrink-0">Email:</span>
+						<a href="mailto:{lead.email}" class="font-medium text-foreground hover:underline truncate">{lead.email}</a>
+					</div>
+				{/if}
+			{/if}
+
 			<!-- Customer Comment -->
-			<div class="text-sm">
-				<p class="text-foreground leading-relaxed italic">"{lead.comment}"</p>
-			</div>
+			{#if lead.comment}
+				<div class="flex items-start gap-2 text-sm">
+					<span class="font-semibold text-muted-foreground shrink-0">Customer comment:</span>
+					<span class="font-medium text-foreground">{lead.comment}</span>
+				</div>
+			{/if}
 
 			<!-- Internal Notes (edited on the lead page) -->
 			{#if lead.category !== 1 && lead.business_notes}
@@ -160,47 +179,39 @@
 				</div>
 			{:else}
 				<!-- Claimed Lead: Stage + Actions -->
-				<div class="pt-2 space-y-3">
+				<div class="space-y-5">
 					<div class="flex items-center gap-2 text-sm">
 						<span class="font-semibold text-muted-foreground">Stage:</span>
-						<Badge variant="secondary">{stageLabel}</Badge>
+						<span class="font-medium text-foreground">{stageLabel}</span>
 					</div>
 
-					{#if lead.status}
-						<Button
-							class="w-full"
-							onclick={makeCall}
-							title="Call {lead.name}"
-							disabled={isDemo}
-						>
-							<Phone size={16} />
-							Call Now
+					<div class="flex flex-wrap items-center gap-2">
+						{#if lead.status}
+							<Button size="sm" onclick={makeCall} title="Call {lead.name}" disabled={isDemo}>
+								<Phone size={16} />
+								Call
+							</Button>
+						{/if}
+						<Button size="sm" variant="outline" href={leadHref} disabled={isDemo}>
+							<Pencil size={16} />
+							Update
 						</Button>
-						{#if lead.stage === 1}
-							<Button
-								variant="outline"
-								class="w-full"
-								onclick={handleGenerateProposal}
-								disabled={isDemo}
-							>
+						{#if lead.status && lead.stage === 1}
+							<Button size="sm" variant="outline" onclick={handleGenerateProposal} disabled={isDemo}>
 								Generate Proposal
 								<ArrowRight size={16} />
 							</Button>
 						{/if}
-					{/if}
-					<div class="flex gap-2">
-						<Button variant="outline" class="flex-1" href={leadHref} disabled={isDemo}>
-							<Pencil size={16} />
-							Update
-						</Button>
 						<Button
-							variant="outline"
-							class="flex-1 text-destructive hover:bg-destructive/10 hover:text-destructive"
+							size="icon-sm"
+							variant="ghost"
+							class="ml-auto text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
 							onclick={() => dispatch('delete', { leadId: lead.id })}
+							title="Delete lead"
+							aria-label="Delete lead"
 							disabled={isDemo}
 						>
 							<Trash2 size={16} />
-							Delete
 						</Button>
 					</div>
 				</div>

@@ -72,9 +72,8 @@
 	// Tab state: derived initial value from whether claimed leads exist
 	let activeTab = $state<'available' | 'my-leads' | 'won'>('available');
 
-	// Stage/status filter state (only applies to My Leads tab)
+	// Stage filter state (only applies to My Leads tab)
 	let selectedStage = $state('all');
-	let selectedStatus = $state('all');
 
 	// Derive available (category 1) and my leads (category 2, 3, null/undefined)
 	let availableLeads = $derived(leads.filter((l) => l.category === 1));
@@ -90,11 +89,10 @@
 		}
 	});
 
-	// Filtered my leads — applies stage/status only
+	// Filtered my leads — applies stage only
 	let filteredMyLeads = $derived(
 		myLeads.filter((lead) => {
 			if (selectedStage !== 'all' && lead.stage !== parseInt(selectedStage)) return false;
-			if (selectedStatus !== 'all' && lead.status !== (selectedStatus === 'true')) return false;
 			return true;
 		})
 	);
@@ -106,9 +104,8 @@
 		myLeads.filter((l) => l.status === true && l.stage < 3).length
 	);
 
-	function handleFilterChange(filters: { selectedStage: string; selectedStatus: string }) {
+	function handleFilterChange(filters: { selectedStage: string }) {
 		selectedStage = filters.selectedStage;
-		selectedStatus = filters.selectedStatus;
 	}
 
 	// Event handlers
@@ -158,7 +155,6 @@
 				if (result.newLead?.id) {
 					focusLeadId = result.newLead.id;
 					selectedStage = 'all';
-					selectedStatus = 'all';
 					activeTab = 'my-leads';
 				}
 				onClaimSuccess({ leadId, result });
@@ -347,7 +343,6 @@
 			{#if activeTab === 'my-leads' && myLeads.length > 0}
 				<LeadStageFilter
 					bind:selectedStage
-					bind:selectedStatus
 					onFilterChange={handleFilterChange}
 				/>
 			{/if}
