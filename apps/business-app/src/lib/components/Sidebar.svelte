@@ -4,6 +4,7 @@
 	import { onMount } from 'svelte';
 	import { afterNavigate } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
+	import { Badge } from '$lib/components/ui/badge';
 	import * as Collapsible from '$lib/components/ui/collapsible';
 	import * as Sheet from '$lib/components/ui/sheet';
 	import { Separator } from '$lib/components/ui/separator';
@@ -66,6 +67,7 @@
 				itemType: 'link' | 'modal';
 				href?: string;
 				action?: NavAction;
+				isNew?: boolean;
 		  }
 		| {
 				type: 'collapsible';
@@ -116,7 +118,8 @@
 			label: 'Paid Services',
 			icon: BadgeIndianRupee,
 			href: `/${businessSlug}/paid-services`,
-			itemType: 'link'
+			itemType: 'link',
+			isNew: true
 		},
 		{
 			type: 'collapsible',
@@ -215,6 +218,9 @@
 										>
 											<section.icon class="shrink-0" size={20} strokeWidth={2} />
 											<span class="truncate">{section.label}</span>
+											{#if section.isNew}
+												<Badge class="ml-auto">New</Badge>
+											{/if}
 										</a>
 									{:else if section.itemType === 'modal'}
 										<button
@@ -368,6 +374,9 @@
 									<section.icon class="shrink-0" size={20} strokeWidth={2} />
 									{#if expanded}
 										<span class="truncate">{section.label}</span>
+										{#if section.isNew}
+											<Badge class="ml-auto">New</Badge>
+										{/if}
 									{/if}
 								</a>
 							{:else if section.itemType === 'modal'}
