@@ -5,6 +5,8 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
 	import { toast } from 'svelte-sonner';
+	import DeleteButton from '$lib/components/DeleteButton.svelte';
+	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 
 	// Access page data
 	let businessSlug = $derived($page.params.business_slug ?? '');
@@ -30,8 +32,10 @@
 		});
 	}
 
-	// State for delete - track which project is being deleted
-	let deletingProjectId = $state(null);
+	// State for delete confirmation
+	let showDeleteConfirm = $state(false);
+	let projectToDelete: any = $state(null);
+	let deleting = $state(false);
 
 	// State for post project modal. editingProject is null when posting a new
 	// project and holds the row being edited otherwise; the same modal serves both.
@@ -61,16 +65,12 @@
 	}
 
 	// Handle project deletion
-	async function handleDeleteProject(project: any) {
-		if (deletingProjectId !== null) return;
-
-		const confirmed = confirm(
-			`Are you sure you want to delete "${project.title}"? This action cannot be undone.`
-		);
-		if (!confirmed) return;
+	async function deleteProject() {
+		if (!projectToDelete || deleting) return;
+		const project = projectToDelete;
 
 		try {
-			deletingProjectId = project.id;
+			deleting = true;
 
 			const response = await fetch('/api/deleteRecentProject', {
 				method: 'DELETE',
@@ -84,6 +84,8 @@
 			const result = await response.json();
 
 			if (result.success) {
+				showDeleteConfirm = false;
+				projectToDelete = null;
 				toast.success('Project deleted successfully');
 				window.location.reload();
 			} else {
@@ -93,7 +95,7 @@
 			console.error('Delete Project Error:', error);
 			toast.error('An error occurred while deleting the project');
 		} finally {
-			deletingProjectId = null;
+			deleting = false;
 		}
 	}
 </script>
@@ -161,19 +163,16 @@
 									size="sm"
 									class="flex-1"
 									onclick={() => openEditProject(project)}
-									disabled={deletingProjectId === project.id}
 								>
 									Edit
 								</Button>
-								<Button
-									variant="destructive"
-									size="sm"
-									class="flex-1"
-									onclick={() => handleDeleteProject(project)}
-									disabled={deletingProjectId === project.id}
-								>
-									{deletingProjectId === project.id ? 'Deleting...' : 'Delete'}
-								</Button>
+								<DeleteButton
+									label="Delete project"
+									onclick={() => {
+										projectToDelete = project;
+										showDeleteConfirm = true;
+									}}
+								/>
 							</div>
 						</div>
 					</div>
@@ -195,3 +194,13 @@
 		/>
 	{/key}
 {/if}
+
+<ConfirmDeleteDialog
+	bind:open={showDeleteConfirm}
+	title="Delete project?"
+	loading={deleting}
+	onConfirm={deleteProject}
+	onCancel={() => (projectToDelete = null)}
+>
+	Delete <strong>{projectToDelete?.title}</strong>?
+</ConfirmDeleteDialog>

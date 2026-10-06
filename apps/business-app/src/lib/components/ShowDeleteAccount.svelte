@@ -77,13 +77,6 @@
 
 		<Dialog.Footer class="mt-4">
 			<Button
-				variant="destructive"
-				disabled={confirmText !== 'DELETE' || isDeleting}
-				onclick={deleteAccount}
-			>
-				{isDeleting ? 'Deleting…' : 'Permanently delete'}
-			</Button>
-			<Button
 				variant="outline"
 				onclick={() => {
 					show = false;
@@ -91,6 +84,13 @@
 				}}
 			>
 				Cancel
+			</Button>
+			<Button
+				variant="destructive"
+				disabled={confirmText !== 'DELETE' || isDeleting}
+				onclick={deleteAccount}
+			>
+				{isDeleting ? 'Deleting…' : 'Delete account'}
 			</Button>
 		</Dialog.Footer>
 	</Dialog.Content>

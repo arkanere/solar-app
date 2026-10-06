@@ -4,6 +4,8 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell } from '$lib/components/ui/table';
 	import { toast } from 'svelte-sonner';
+	import DeleteButton from '$lib/components/DeleteButton.svelte';
+	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 
 	// Access page data
 	let businessSlug = $derived($page.params.business_slug);
@@ -28,11 +30,16 @@
 		window.location.reload();
 	}
 
+	// State for delete confirmation
+	let showDeleteConfirm = $state(false);
+	let proposalToDelete: any = $state(null);
+	let deleting = $state(false);
+
 	// Function to delete proposal
-	async function deleteProposal(proposalId: number, customerName: string) {
-		if (!confirm(`Are you sure you want to delete proposal for "${customerName}"? This action cannot be undone.`)) {
-			return;
-		}
+	async function deleteProposal() {
+		if (!proposalToDelete || deleting) return;
+		const proposalId = proposalToDelete.id;
+		deleting = true;
 
 		try {
 			const response = await fetch('/api/deleteProposal', {
@@ -47,6 +54,8 @@
 			const result = await response.json();
 
 			if (result.success) {
+				showDeleteConfirm = false;
+				proposalToDelete = null;
 				toast.success('Proposal deleted successfully!');
 				window.location.reload();
 			} else {
@@ -55,6 +64,8 @@
 		} catch (error) {
 			console.error('Error deleting proposal:', error);
 			toast.error('An error occurred while deleting the proposal');
+		} finally {
+			deleting = false;
 		}
 	}
 </script>
@@ -95,13 +106,13 @@
 									>
 										Update Proposal
 									</Button>
-									<Button
-										variant="destructive"
-										size="sm"
-										onclick={() => deleteProposal(proposal.id, proposal.customer_name)}
-									>
-										Delete
-									</Button>
+									<DeleteButton
+										label="Delete proposal"
+										onclick={() => {
+											proposalToDelete = proposal;
+											showDeleteConfirm = true;
+										}}
+									/>
 								</div>
 							</TableCell>
 						</TableRow>
@@ -126,3 +137,12 @@
 	/>
 {/if}
 
+<ConfirmDeleteDialog
+	bind:open={showDeleteConfirm}
+	title="Delete proposal?"
+	loading={deleting}
+	onConfirm={deleteProposal}
+	onCancel={() => (proposalToDelete = null)}
+>
+	Delete the proposal for <strong>{proposalToDelete?.customer_name}</strong>?
+</ConfirmDeleteDialog>

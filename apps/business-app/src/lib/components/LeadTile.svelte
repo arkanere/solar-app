@@ -2,6 +2,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import { page } from '$app/stores';
 	import { Button } from '$lib/components/ui/button';
+	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import * as Card from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import { cn } from '$lib/utils';
@@ -9,7 +10,6 @@
 		Phone,
 		ArrowRight,
 		Pencil,
-		Trash2,
 		Undo2
 	} from '@lucide/svelte';
 	import { getCategoryLabel, getStageLabel } from '$lib/constants/lead';
@@ -269,17 +269,12 @@
 								<ArrowRight size={16} />
 							</Button>
 						{/if}
-						<Button
-							size="icon-sm"
-							variant="ghost"
-							class="ml-auto text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+						<DeleteButton
+							label="Delete lead"
+							class="ml-auto"
 							onclick={() => dispatch('delete', { leadId: lead.id })}
-							title="Delete lead"
-							aria-label="Delete lead"
 							disabled={isDemo}
-						>
-							<Trash2 size={16} />
-						</Button>
+						/>
 					</div>
 				</div>
 			{/if}

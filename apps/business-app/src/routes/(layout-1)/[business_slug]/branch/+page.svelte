@@ -4,8 +4,9 @@
 	import AddBranch from '$lib/components/AddBranch.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
-	import * as Dialog from '$lib/components/ui/dialog';
-	import { Trash2 } from '@lucide/svelte';
+	import DeleteButton from '$lib/components/DeleteButton.svelte';
+	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
+	import { toast } from 'svelte-sonner';
 	import { installerProfileUrl } from '$lib/mainAppUrls';
 
 	// Access page data
@@ -44,10 +45,10 @@
 				branchToDelete = null;
 				window.location.reload();
 			} else {
-				alert(data.error || 'Failed to delete branch');
+				toast.error(data.error || 'Failed to delete branch');
 			}
 		} catch {
-			alert('Failed to delete branch');
+			toast.error('Failed to delete branch');
 		} finally {
 			deleting = false;
 		}
@@ -198,19 +199,13 @@
 								>
 									Edit Details
 								</Button>
-								<Button
-									variant="ghost"
-									size="icon"
-									class="text-destructive hover:bg-destructive/10 hover:text-destructive"
-									aria-label="Delete branch"
-									title="Delete branch"
+								<DeleteButton
+									label="Delete branch"
 									onclick={() => {
 										branchToDelete = branch;
 										showDeleteConfirm = true;
 									}}
-								>
-									<Trash2 size={16} />
-								</Button>
+								/>
 							</div>
 						</div>
 					{/if}
@@ -251,21 +246,12 @@
 {/if}
 
 <!-- Delete Confirmation Dialog -->
-<Dialog.Root bind:open={showDeleteConfirm}>
-	<Dialog.Content class="sm:max-w-md">
-		<Dialog.Header>
-			<Dialog.Title>Delete Branch</Dialog.Title>
-			<Dialog.Description>
-				Are you sure you want to delete the <strong>{branchToDelete?.city}</strong> branch? This action cannot be undone.
-			</Dialog.Description>
-		</Dialog.Header>
-		<Dialog.Footer class="gap-2">
-			<Button variant="outline" onclick={() => (showDeleteConfirm = false)} disabled={deleting}>
-				Cancel
-			</Button>
-			<Button variant="destructive" onclick={deleteBranch} disabled={deleting}>
-				{deleting ? 'Deleting...' : 'Delete'}
-			</Button>
-		</Dialog.Footer>
-	</Dialog.Content>
-</Dialog.Root>
+<ConfirmDeleteDialog
+	bind:open={showDeleteConfirm}
+	title="Delete branch?"
+	loading={deleting}
+	onConfirm={deleteBranch}
+	onCancel={() => (branchToDelete = null)}
+>
+	Delete the <strong>{branchToDelete?.city}</strong> branch?
+</ConfirmDeleteDialog>

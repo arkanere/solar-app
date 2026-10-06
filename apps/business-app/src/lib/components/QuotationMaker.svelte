@@ -13,7 +13,8 @@
 	} from '$lib/components/ui/table';
 	import { toast } from 'svelte-sonner';
 	import { jsPDF } from 'jspdf';
-	import { Plus, Trash2, Download } from '@lucide/svelte';
+	import { Plus, Download } from '@lucide/svelte';
+	import DeleteButton from '$lib/components/DeleteButton.svelte';
 	import {
 		defaultLineItems,
 		lineTotal,
@@ -326,9 +327,7 @@
 								<TableCell><Input type="number" min="0" bind:value={item.rate} /></TableCell>
 								<TableCell class="text-right tabular-nums">{formatINR(lineTotal(item))}</TableCell>
 								<TableCell>
-									<Button variant="ghost" size="icon-sm" onclick={() => removeItem(i)} aria-label="Remove item">
-										<Trash2 size={16} class="text-destructive" />
-									</Button>
+									<DeleteButton label="Remove item" onclick={() => removeItem(i)} />
 								</TableCell>
 							</TableRow>
 						{/each}

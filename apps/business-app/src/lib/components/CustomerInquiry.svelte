@@ -34,6 +34,7 @@
 	import LeadTile from './LeadTile.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
+	import ConfirmDeleteDialog from '$lib/components/ConfirmDeleteDialog.svelte';
 	import * as Card from '$lib/components/ui/card';
 	import * as Alert from '$lib/components/ui/alert';
 	import { cn } from '$lib/utils';
@@ -463,37 +464,15 @@
 	{/if}
 </section>
 
-<!-- Delete Confirmation Modal -->
-<Dialog.Root bind:open={showDeleteConfirm}>
-	<Dialog.Content class="max-w-[400px]">
-		<Dialog.Header>
-			<Dialog.Title>Confirm Delete</Dialog.Title>
-		</Dialog.Header>
-		{#if leadToDelete}
-			<p class="m-0 leading-relaxed text-foreground">
-				Are you sure you want to delete the lead for <strong>{leadToDelete.name}</strong>?
-			</p>
-		{/if}
-		<Dialog.Footer class="max-sm:flex-col">
-			<Button
-				variant="secondary"
-				onclick={cancelDelete}
-				disabled={isDeleting}
-				class="max-sm:w-full"
-			>
-				Cancel
-			</Button>
-			<Button
-				variant="destructive"
-				onclick={confirmDelete}
-				disabled={isDeleting}
-				class="max-sm:w-full"
-			>
-				{isDeleting ? 'Deleting...' : 'Delete Lead'}
-			</Button>
-		</Dialog.Footer>
-	</Dialog.Content>
-</Dialog.Root>
+<ConfirmDeleteDialog
+	bind:open={showDeleteConfirm}
+	title="Delete lead?"
+	loading={isDeleting}
+	onConfirm={confirmDelete}
+	onCancel={cancelDelete}
+>
+	Delete the lead for <strong>{leadToDelete?.name}</strong>?
+</ConfirmDeleteDialog>
 
 <!-- Branch Confirmation Dialog -->
 <Dialog.Root bind:open={showBranchConfirm}>
