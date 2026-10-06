@@ -2,7 +2,7 @@
 	import { page } from '$app/stores';
 	import { isSidebarExpanded, isMobileMenuOpen } from '$lib/in/sidebarStore.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
-	import SetupProgressCard from '$lib/components/SetupProgressCard.svelte';
+	import NotificationsCard from '$lib/components/NotificationsCard.svelte';
 	import ClaimGateCard from '$lib/components/ClaimGateCard.svelte';
 	import ShowEditProfile from '$lib/components/ShowEditProfile.svelte';
 	import ShowSupport from '$lib/components/ShowSupport.svelte';
@@ -36,7 +36,7 @@
 	let setupProgress = $derived(data.setupProgress);
 	let claimGate = $derived(data.claimGate);
 
-	// Edit profile modal (needed by SetupProgressCard and ClaimGateCard)
+	// Edit profile modal (needed by NotificationsCard and ClaimGateCard)
 	let showEditProfile = $state(false);
 
 	function openEditProfile() {
@@ -101,7 +101,7 @@
 		<div class="w-full max-w-5xl mx-auto px-4 py-6 md:px-6 md:py-8 max-[480px]:px-3">
 			{#if business && setupProgress}
 				<div class="*:mb-6">
-					<SetupProgressCard
+					<NotificationsCard
 						{business}
 						{businessSlug}
 						projectsCount={setupProgress.projectsCount}

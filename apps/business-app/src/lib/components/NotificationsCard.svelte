@@ -1,23 +1,31 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
+	import { Badge } from '$lib/components/ui/badge';
 	import { cn } from '$lib/utils';
-	import { AlertCircle, ChevronDown } from '@lucide/svelte';
+	import { Bell, ChevronDown } from '@lucide/svelte';
 
-	type Task = {
+	type NotificationKind = 'task';
+
+	export type Notification = {
 		id: string;
+		kind: NotificationKind;
 		title: string;
-		description: string;
-		completed: boolean;
+		description?: string;
 		action: string | null;
 		actionLabel: string;
 		priority: number;
 	};
 
-	export type SetupProgressCardProps = {
+	const kindLabels: Record<NotificationKind, string> = {
+		task: 'Pending task'
+	};
+
+	export type NotificationsCardProps = {
 		business?: { phonenumber?: string; email?: string; description?: string; website?: string; google_maps_link?: string; brands?: number[] };
 		businessSlug?: string;
 		projectsCount?: number;
 		claimedLeadsCount?: number;
+		notifications?: Notification[];
 		onOpenEditProfile?: () => void;
 	};
 
@@ -26,8 +34,9 @@
 		businessSlug = '',
 		projectsCount = 0,
 		claimedLeadsCount = 0,
+		notifications = [],
 		onOpenEditProfile = () => {}
-	}: SetupProgressCardProps = $props();
+	}: NotificationsCardProps = $props();
 
 	let isExpanded = $state(true);
 
@@ -92,28 +101,28 @@
 		}
 	]);
 
-	let completedCount = $derived(tasks.filter((t) => t.completed).length);
-	let totalCount = $derived(tasks.length);
-
-	let visibleTasks = $derived(
+	let taskNotifications = $derived<Notification[]>(
 		tasks
 			.filter((t) => !t.completed)
-			.sort((a, b) => b.priority - a.priority)
-			.slice(0, 6)
+			.map(({ completed, ...t }) => ({ ...t, kind: 'task' }))
 	);
 
-	function handleAction(task: Task) {
-		if (!task.action) return;
+	let allNotifications = $derived(
+		[...taskNotifications, ...notifications].sort((a, b) => b.priority - a.priority)
+	);
 
-		if (task.action === 'openEditProfile') {
+	function handleAction(notification: Notification) {
+		if (!notification.action) return;
+
+		if (notification.action === 'openEditProfile') {
 			onOpenEditProfile();
 		} else {
-			window.location.href = task.action;
+			window.location.href = notification.action;
 		}
 	}
 </script>
 
-{#if completedCount < totalCount}
+{#if allNotifications.length > 0}
 	<div class="rounded-lg border">
 		<button
 			type="button"
@@ -121,10 +130,10 @@
 			onclick={toggleExpanded}
 			aria-expanded={isExpanded}
 		>
-			<AlertCircle class="shrink-0 text-warning" size={18} strokeWidth={2} />
+			<Bell class="shrink-0 text-warning" size={18} strokeWidth={2} />
 			<span class="flex-1 text-sm font-medium text-foreground">
-				Pending tasks
-				<span class="ml-1 text-muted-foreground">· {totalCount - completedCount} left</span>
+				Notifications
+				<span class="ml-1 text-muted-foreground">· {allNotifications.length}</span>
 			</span>
 			<ChevronDown
 				size={16}
@@ -137,24 +146,27 @@
 
 		{#if isExpanded}
 			<ul class="list-none p-0 m-0 border-t divide-y">
-				{#each visibleTasks as task}
+				{#each allNotifications as notification (notification.id)}
 					<li
 						class="flex justify-between items-center gap-4 px-4 py-3 max-sm:flex-col max-sm:items-stretch"
 					>
 						<div class="flex-1">
-							<p class="m-0 text-sm font-medium text-foreground">{task.title}</p>
-							{#if task.description}
-								<p class="m-0 text-sm text-muted-foreground">{task.description}</p>
+							<div class="flex items-center gap-2">
+								<Badge variant="secondary">{kindLabels[notification.kind]}</Badge>
+								<p class="m-0 text-sm font-medium text-foreground">{notification.title}</p>
+							</div>
+							{#if notification.description}
+								<p class="m-0 mt-1 text-sm text-muted-foreground">{notification.description}</p>
 							{/if}
 						</div>
-						{#if task.action}
+						{#if notification.action}
 							<Button
 								size="sm"
 								variant="outline"
 								class="shrink-0 max-sm:w-full"
-								onclick={() => handleAction(task)}
+								onclick={() => handleAction(notification)}
 							>
-								{task.actionLabel}
+								{notification.actionLabel}
 							</Button>
 						{/if}
 					</li>
