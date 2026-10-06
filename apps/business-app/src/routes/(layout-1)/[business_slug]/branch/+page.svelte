@@ -13,6 +13,12 @@
 	let businessSlug = $derived($page.params.business_slug ?? '');
 	let mainBusiness = $derived($page.data.mainBusiness);
 	let branches = $derived($page.data.branches || []);
+	// Branch cards are titled by city (or name), so sort on the same value.
+	let sortedBranches = $derived(
+		[...branches].sort((a: any, b: any) =>
+			(a.city || a.businessname || '').localeCompare(b.city || b.businessname || '')
+		)
+	);
 	let errorMessage = $derived($page.data.errorMessage);
 	// main-app still carries a [country] segment, so profile links below take
 	// the business's resolved country rather than a literal. See $lib/mainAppUrls.
@@ -90,7 +96,7 @@
 <div>
 	<header class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
 		<div>
-			<h1 class="text-2xl font-semibold text-foreground">Branch Offices</h1>
+			<h1 class="text-2xl font-semibold text-foreground">Locations</h1>
 			<p class="mt-1 text-sm text-muted-foreground">Manage your business branches across different locations</p>
 		</div>
 		<Button onclick={() => (showAddBranch = true)} class="whitespace-nowrap w-full md:w-auto">
@@ -107,9 +113,10 @@
 				{errorMessage}
 			</div>
 		{:else}
-			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-				<!-- Main Branch Tile -->
-				{#if mainBusiness}
+			<!-- Main Office -->
+			{#if mainBusiness}
+				<h2 class="text-sm font-medium text-muted-foreground mb-3">Main Office</h2>
+				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
 					<div
 						class="bg-card rounded-lg p-6 border border-border shadow-card hover:shadow-card-hover transition-shadow duration-300 flex flex-col gap-4"
 					>
@@ -153,10 +160,13 @@
 							</Button>
 						</div>
 					</div>
-				{/if}
+				</div>
+			{/if}
 
-				<!-- Branch Offices Tiles -->
-				{#each branches as branch}
+			<!-- Branch Offices -->
+			<h2 class="text-sm font-medium text-muted-foreground mb-3">Branch Offices</h2>
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+				{#each sortedBranches as branch}
 					{#if !isMainBranch(branch)}
 						<div
 							class="bg-card rounded-lg p-6 border border-border shadow-card hover:shadow-card-hover transition-shadow duration-300 flex flex-col gap-4"

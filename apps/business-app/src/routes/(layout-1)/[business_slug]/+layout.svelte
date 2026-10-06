@@ -100,7 +100,7 @@
 	<main class="min-h-screen bg-background text-foreground transition-colors duration-300">
 		<div class="w-full max-w-5xl mx-auto px-4 py-6 md:px-6 md:py-8 max-[480px]:px-3">
 			{#if business && setupProgress}
-				<div class="mb-6">
+				<div class="*:mb-6">
 					<SetupProgressCard
 						{business}
 						{businessSlug}

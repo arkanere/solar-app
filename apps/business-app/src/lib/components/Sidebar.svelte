@@ -87,7 +87,7 @@
 		},
 		{
 			type: 'standalone',
-			label: 'Branches',
+			label: 'Locations',
 			icon: Building2,
 			href: `/${businessSlug}/branch`,
 			itemType: 'link'
