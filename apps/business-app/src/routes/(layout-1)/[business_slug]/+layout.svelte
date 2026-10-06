@@ -36,6 +36,9 @@
 	let setupProgress = $derived(data.setupProgress);
 	let claimGate = $derived(data.claimGate);
 
+	// Notifications card is hidden on the paid services page
+	let isPaidServicesPage = $derived($page.route.id?.endsWith('/paid-services') ?? false);
+
 	// Edit profile modal (needed by NotificationsCard and ClaimGateCard)
 	let showEditProfile = $state(false);
 
@@ -101,13 +104,15 @@
 		<div class="w-full max-w-5xl mx-auto px-4 py-6 md:px-6 md:py-8 max-[480px]:px-3">
 			{#if business && setupProgress}
 				<div class="*:mb-6">
-					<NotificationsCard
-						{business}
-						{businessSlug}
-						projectsCount={setupProgress.projectsCount}
-						claimedLeadsCount={setupProgress.claimedLeadsCount}
-						onOpenEditProfile={openEditProfile}
-					/>
+					{#if !isPaidServicesPage}
+						<NotificationsCard
+							{business}
+							{businessSlug}
+							projectsCount={setupProgress.projectsCount}
+							claimedLeadsCount={setupProgress.claimedLeadsCount}
+							onOpenEditProfile={openEditProfile}
+						/>
+					{/if}
 					{#if claimGate}
 						<ClaimGateCard
 							{claimGate}
