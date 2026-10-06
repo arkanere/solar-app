@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { browser } from '$app/environment';
 	import { Button } from '$lib/components/ui/button';
 	import { cn } from '$lib/utils';
 	import { AlertCircle, ChevronDown } from '@lucide/svelte';
@@ -31,22 +29,10 @@
 		onOpenEditProfile = () => {}
 	}: SetupProgressCardProps = $props();
 
-	let isExpanded = $state(false);
-
-	onMount(() => {
-		if (browser) {
-			const stored = localStorage.getItem('setupProgressExpanded');
-			if (stored !== null) {
-				isExpanded = JSON.parse(stored);
-			}
-		}
-	});
+	let isExpanded = $state(true);
 
 	function toggleExpanded() {
 		isExpanded = !isExpanded;
-		if (browser) {
-			localStorage.setItem('setupProgressExpanded', JSON.stringify(isExpanded));
-		}
 	}
 
 	let tasks = $derived([
