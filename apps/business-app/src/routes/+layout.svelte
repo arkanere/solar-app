@@ -8,14 +8,42 @@
 
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { afterNavigate } from '$app/navigation';
 	import { theme } from '$lib/stores/theme.svelte';
 	import { Toaster } from '$lib/components/ui/sonner';
+	import { capture, capturePageview, loadAnalytics } from '$lib/analytics';
 	import '../app.css';
 
 	let { children }: LayoutProps = $props();
 
+	// PostHog loads 3s after mount to stay off the critical path.
+	const ANALYTICS_DEFER_MS = 3000;
+
 	onMount(() => {
 		theme.initialize();
+
+		const timer = setTimeout(loadAnalytics, ANALYTICS_DEFER_MS);
+
+		// Sends the click events declared with `trackAttrs` (lib/track.ts).
+		const onClick = (event: MouseEvent) => {
+			if (!(event.target instanceof Element)) return;
+			const el = event.target.closest<HTMLElement>('[data-track], [data-umami]');
+			if (!el) return;
+			const { track, trackProps, umami } = el.dataset;
+			if (track) capture(track, trackProps ? JSON.parse(trackProps) : undefined);
+			if (umami) window.umami?.track(umami);
+		};
+		document.addEventListener('click', onClick);
+
+		return () => {
+			clearTimeout(timer);
+			document.removeEventListener('click', onClick);
+		};
+	});
+
+	// Pageview per client navigation. The first one is sent by the loader.
+	afterNavigate(({ type }) => {
+		if (type !== 'enter') capturePageview();
 	});
 </script>
 

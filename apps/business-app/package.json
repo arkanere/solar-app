@@ -48,6 +48,7 @@
 		"cloudinary": "^2.6.0",
 		"clsx": "^2.1.1",
 		"jspdf": "^3.0.4",
+		"posthog-js": "^1.436.1",
 		"svelte-sonner": "^1.0.7",
 		"svg2pdf.js": "^2.6.0",
 		"tailwind-merge": "^3.4.0",
