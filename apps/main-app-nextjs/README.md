@@ -81,3 +81,9 @@ Every file has a header that says more than this table.
 | `routes.md` | Every route. |
 | `design-foundation.md` | Type, spacing, colour, radius, elevation, motion. |
 | `archetype.md`, `archetype/` | The four page archetypes and `/`. |
+
+## Next steps (not in order)
+
+- lead for submission in the chat has some bug. remove it.
+- The content on the main-app maybe using the word lead instead of the appropriate work inquiry.
+- compare multiple quotes, compare multi brands quotes
