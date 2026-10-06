@@ -4,8 +4,15 @@ import type { PageServerLoad } from './$types';
 import { BusinessAuthService } from '$lib/auth/business';
 import { countryForSlug } from '$lib/server/resolveCountry';
 
-export const load: PageServerLoad = async ({ params, cookies }) => {
+// Pages a sign-in link may land on, under the business's own slug. An
+// allowlist rather than a free path, so `?next=` cannot be used as an open
+// redirect. Anything else lands on the dashboard.
+const NEXT_PAGES = new Set(['paid-services']);
+
+export const load: PageServerLoad = async ({ params, cookies, url }) => {
 	const { business_slug, token } = params;
+	const next = url.searchParams.get('next');
+	const landing = next && NEXT_PAGES.has(next) ? `/${business_slug}/${next}` : `/${business_slug}`;
 
 	// Every path out of here is a redirect, so the page component never renders.
 	// It used to return an error for the page to display, which put a
@@ -32,7 +39,7 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 		// Redirect on success is thrown below rather than here: `redirect()`
 		// works by throwing, so thrown inside this try it would land in the catch
 		// and rely on it being recognised and re-thrown.
-		if (result.success) throw redirect(302, `/${business_slug}`);
+		if (result.success) throw redirect(302, landing);
 
 		reason = 'expired-link';
 	} catch (error) {
