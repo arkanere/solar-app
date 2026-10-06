@@ -110,6 +110,17 @@
 							{businessSlug}
 							projectsCount={setupProgress.projectsCount}
 							claimedLeadsCount={setupProgress.claimedLeadsCount}
+							notifications={[
+								{
+									id: 'service-plant-design',
+									kind: 'service',
+									title: 'Complete Solar Plant Design for ₹500',
+									description: 'Get a professional design for up to 3 projects',
+									action: `/${businessSlug}/paid-services`,
+									actionLabel: 'View Offer',
+									priority: 4
+								}
+							]}
 							onOpenEditProfile={openEditProfile}
 						/>
 					{/if}

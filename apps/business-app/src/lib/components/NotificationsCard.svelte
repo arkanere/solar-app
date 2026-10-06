@@ -4,7 +4,7 @@
 	import { cn } from '$lib/utils';
 	import { Bell, ChevronDown } from '@lucide/svelte';
 
-	type NotificationKind = 'task';
+	type NotificationKind = 'task' | 'service';
 
 	export type Notification = {
 		id: string;
@@ -17,7 +17,8 @@
 	};
 
 	const kindLabels: Record<NotificationKind, string> = {
-		task: 'Pending task'
+		task: 'Pending task',
+		service: 'New service'
 	};
 
 	export type NotificationsCardProps = {
@@ -152,7 +153,9 @@
 					>
 						<div class="flex-1">
 							<div class="flex items-center gap-2">
-								<Badge variant="secondary">{kindLabels[notification.kind]}</Badge>
+								<Badge variant={notification.kind === 'service' ? 'default' : 'secondary'}>
+									{kindLabels[notification.kind]}
+								</Badge>
 								<p class="m-0 text-sm font-medium text-foreground">{notification.title}</p>
 							</div>
 							{#if notification.description}
