@@ -51,7 +51,7 @@
 	}: CustomerInquiryProps = $props();
 
 	// Claim state
-	let isClaiming = $state(false);
+	let claimingLeadId: number | null = $state(null);
 	let showBranchConfirm = $state(false);
 	let branchConfirmDistrict = $state('');
 	let pendingClaimLeadId: number | null = $state(null);
@@ -110,12 +110,12 @@
 
 	async function handleLeadClaim(event: CustomEvent) {
 		const { leadId, businessId } = event.detail;
-		if (isClaiming) return;
+		if (claimingLeadId !== null) return;
 		await claimLead(leadId, businessId, false);
 	}
 
 	async function claimLead(leadId: number, businessId: number, confirmBranch: boolean) {
-		isClaiming = true;
+		claimingLeadId = leadId;
 		try {
 			const response = await fetch('/api/claimLead', {
 				method: 'POST',
@@ -159,7 +159,7 @@
 			console.error('Claim Lead Error:', error);
 			toast.error('An error occurred while claiming the lead');
 		} finally {
-			isClaiming = false;
+			claimingLeadId = null;
 		}
 	}
 
@@ -211,7 +211,7 @@
 		pendingClaimLeadId = null;
 		pendingClaimBusinessId = null;
 		branchConfirmDistrict = '';
-		isClaiming = false;
+		claimingLeadId = null;
 	}
 
 	function handleProposalOpen(event: CustomEvent) {
@@ -350,7 +350,7 @@
 						<LeadTile
 							{lead}
 							{businessInfo}
-							{isClaiming}
+							isClaiming={claimingLeadId === lead.id}
 							{claimBlocked}
 							on:update={handleLeadUpdate}
 							on:claim={handleLeadClaim}
@@ -414,7 +414,7 @@
 						<LeadTile
 							{lead}
 							{businessInfo}
-							{isClaiming}
+							isClaiming={claimingLeadId === lead.id}
 							focused={lead.id === focusLeadId}
 							on:update={handleLeadUpdate}
 							on:claim={handleLeadClaim}
@@ -488,13 +488,13 @@
 			<Button
 				variant="secondary"
 				onclick={cancelBranchConfirm}
-				disabled={isClaiming}
+				disabled={claimingLeadId !== null}
 				class="max-sm:w-full"
 			>
 				Cancel
 			</Button>
-			<Button onclick={confirmBranchCreation} disabled={isClaiming} class="max-sm:w-full">
-				{isClaiming ? 'Creating...' : 'Add Branch & Claim'}
+			<Button onclick={confirmBranchCreation} disabled={claimingLeadId !== null} class="max-sm:w-full">
+				{claimingLeadId !== null ? 'Creating...' : 'Add Branch & Claim'}
 			</Button>
 		</Dialog.Footer>
 	</Dialog.Content>
