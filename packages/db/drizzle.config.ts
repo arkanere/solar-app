@@ -2,7 +2,7 @@ import { defineConfig } from 'drizzle-kit';
 
 // Introspection-only config.
 //
-// The numbered SQL files in apps/business-app/migrations/ remain the
+// The numbered SQL files in solar-app-internal/admin-app-nextjs/migrations/ remain the
 // source of truth for schema changes. drizzle-kit is used for `pull` (read-only
 // introspection into src/schema) and never for `generate` or `push` — running
 // those would fork schema ownership away from the SQL migrations.

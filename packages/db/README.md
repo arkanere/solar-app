@@ -8,7 +8,7 @@ workspace dependency (`"@solar/db": "*"`).
 **The database is the source of truth. This package is generated from it.**
 
 Schema changes are still made the way they always were: a new numbered SQL file in
-`apps/business-app/migrations/`, applied to the database. Afterwards you
+`solar-app-internal/admin-app-nextjs/migrations/` (a separate repo), applied to the database. Afterwards you
 re-generate this package:
 
 ```sh

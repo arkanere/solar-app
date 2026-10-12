@@ -3,7 +3,7 @@
 -- ** APPLIED to live 2026-10-12. ** BEGIN, CREATE FUNCTION, DROP TRIGGER (skipped), CREATE TRIGGER, COMMIT.
 --
 -- leaddata_claimrequests is the claim history. Since this change the 10-claim
--- quality gate in business-app (src/lib/server/claimGate.ts) counts claims
+-- quality gate in solar-app business-app (src/lib/server/claimGate.ts) counts claims
 -- from it rather than from the claimed copies in leaddata, which a business can
 -- hide. If a claim row could be deleted, the gate could be reset the same way,
 -- so deletes are refused at the database rather than by convention in app code.
@@ -22,9 +22,9 @@
 -- Nothing deletes claim rows today: no app code does, and the purge-old-leads
 -- cron deletes only category 1 leads, leaving their claim rows (see 082).
 --
--- Rollback: 084-claimrequests-append-only.rollback.sql
+-- Rollback: 085-claimrequests-append-only.rollback.sql
 --
--- Run manually: psql "$POSTGRES_URL_NON_POOLING" < 084-claimrequests-append-only.sql
+-- Run manually: psql "$POSTGRES_URL_NON_POOLING" < 085-claimrequests-append-only.sql
 
 BEGIN;
 

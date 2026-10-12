@@ -33,7 +33,10 @@ import { fileURLToPath } from 'node:url';
 import pg from 'pg';
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
-const MIGRATIONS_DIR = join(ROOT, 'apps/business-app/migrations');
+// The migrations live in the solar-app-internal repo
+// (admin-app-nextjs/migrations/). tests/migrations holds copies of just the
+// files listed below, so the suite does not depend on a second checkout.
+const MIGRATIONS_DIR = join(ROOT, 'tests/migrations');
 const BASELINE = join(ROOT, 'tests/schema/000-baseline.sql');
 
 // Ordered. Each entry is idempotent over the baseline — CREATE TABLE IF NOT
@@ -128,7 +131,7 @@ const POST_BASELINE_MIGRATIONS = [
 	// An introspected schema cannot express a trigger, so it has to be replayed.
 	// Idempotent (CREATE OR REPLACE, DROP TRIGGER IF EXISTS), and TRUNCATE does
 	// not fire it, so resetDatabase still clears the table between tests.
-	'084-claimrequests-append-only.sql'
+	'085-claimrequests-append-only.sql'
 ];
 
 // The baseline is the *end state*; the files above are *history*. Where a
