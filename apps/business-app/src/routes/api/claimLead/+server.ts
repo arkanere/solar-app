@@ -7,6 +7,7 @@ import { mintBusinessTokenById, mintUserToken } from '$lib/server/magicLink';
 import { checkLeadDataPolicy } from '$lib/compliance';
 import type { ClaimRequestPayload } from '$lib/types/lead';
 import { IN_LEAD_RETURNING } from '$lib/server/leads';
+import { getClaimCounts } from '$lib/server/claimGate';
 import {
 	businessAccounts,
 	businessProfiles,
@@ -14,7 +15,7 @@ import {
 	leaddataClaimrequests,
 	projects
 } from '@solar/db/schema';
-import { and, count, eq, inArray, ne, or, sql } from 'drizzle-orm';
+import { and, count, eq, or, sql } from 'drizzle-orm';
 
 // Allow time for the full claim pipeline including Brevo calls — the default
 // limit kills the function mid-run and silently drops the notification emails
@@ -73,46 +74,11 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			return json({ success: false, error: 'compliance_required' }, { status: 403 });
 		}
 
-		// Claim gate: businesses with 10+ claimed leads must meet requirements
-		// Since 078 a branch is a profile naming this business in
-		// account_business_id, with the old branches.isactive read off the branch
-		// profile's own isvisible. The `ne` drops the main, which names itself.
-		const gateBranchesRes = await db
-			.select({ branchId: businessProfiles.businessId })
-			.from(businessProfiles)
-			.where(
-				and(
-					eq(businessProfiles.accountBusinessId, business_id),
-					ne(businessProfiles.businessId, business_id),
-					eq(businessProfiles.isvisible, true)
-				)
-			);
-		const gateAllIds = [business_id, ...gateBranchesRes.map((r) => r.branchId)];
-
+		// Claim gate: businesses with 10+ claimed leads must meet requirements.
+		// Counts come from the claim history, not the editable lead copies.
 		const gateSlug = sessionResult.session.businessSlug;
-		const [gateClaimedRes, gateStaleRes, gateProjectsRes, gateRecentRes, gateBizRes] = await Promise.all([
-			db
-				.select({ count: count() })
-				.from(leaddata)
-				.where(
-					and(
-						inArray(leaddata.businessId, gateAllIds),
-						eq(leaddata.category, 2),
-						eq(leaddata.isvisible, true)
-					)
-				),
-			db
-				.select({ count: count() })
-				.from(leaddata)
-				.where(
-					and(
-						inArray(leaddata.businessId, gateAllIds),
-						eq(leaddata.category, 2),
-						eq(leaddata.isvisible, true),
-						eq(leaddata.stage, 0),
-						eq(leaddata.status, true)
-					)
-				),
+		const [gateCounts, gateProjectsRes, gateRecentRes, gateBizRes] = await Promise.all([
+			getClaimCounts(business_id),
 			db
 				.select({ count: count() })
 				.from(projects)
@@ -150,9 +116,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			);
 		}
 
-		const gateTotalClaimed = gateClaimedRes[0]?.count ?? 0;
+		const gateTotalClaimed = gateCounts.totalClaimed;
 		if (gateTotalClaimed >= 10) {
-			const gateStaleClaimed = gateStaleRes[0]?.count ?? 0;
+			const gateStaleClaimed = gateCounts.staleClaimed;
 			const gateProjectsCount = gateProjectsRes[0]?.count ?? 0;
 			const gateRecentProject = (gateRecentRes[0]?.count ?? 0) > 0;
 			const biz = gateBizRes[0];

@@ -447,19 +447,52 @@ describe('branch auto-creation', () => {
 });
 
 describe('the 10-claim quality gate', () => {
-	/** Give `businessId` `count` claimed leads, `stale` of them untouched. */
+	/**
+	 * Give `businessId` `count` claimed leads, `stale` of them untouched. Each
+	 * one is what claimLead writes: the original lead, an allotted claim row and
+	 * the business's category 2 copy. Returns the copies' ids.
+	 */
 	async function giveClaimedLeads(businessId: number, count: number, stale: number) {
+		const copyIds: number[] = [];
 		for (let i = 0; i < count; i++) {
-			await createLead({
-				district: 'Pune',
-				category: 2,
-				isvisible: true,
-				businessId,
-				// stage 0 + status true is what the gate counts as stale.
-				stage: i < stale ? 0 : 1,
-				status: true
-			});
+			const originalId = await createLead({ district: 'Pune' });
+			await pool.query(
+				`INSERT INTO leaddata_claimrequests (lead_id, claim_id, business_id, isallotted, isresolved)
+				 VALUES ($1, 0, $2, true, true)`,
+				[originalId, businessId]
+			);
+			copyIds.push(
+				await createLead({
+					district: 'Pune',
+					category: 2,
+					isvisible: true,
+					businessId,
+					originalId,
+					// stage 0 + status true is what the gate counts as stale.
+					stage: i < stale ? 0 : 1,
+					status: true
+				})
+			);
 		}
+		return copyIds;
+	}
+
+	/** A business that meets every requirement except, possibly, the stale ratio. */
+	async function createQualifiedBusiness() {
+		const businessId = await createBusiness({
+			slug: 'acme-solar',
+			district: 'Pune',
+			description: 'We install solar',
+			brands: [1],
+			googleMapsLink: 'https://maps.example/acme'
+		});
+		await seedLeadDataPolicy(businessId);
+		for (let i = 0; i < 6; i++) await createProject('acme-solar');
+		return businessId;
+	}
+
+	async function hideLeads(ids: number[]) {
+		await pool.query('UPDATE leaddata SET isvisible = false WHERE id = ANY($1)', [ids]);
 	}
 
 	it('lets a business under 10 claimed leads through regardless of profile', async () => {
@@ -575,5 +608,71 @@ describe('the 10-claim quality gate', () => {
 		const { status } = await claim(session, { lead_id: leadId, business_id: mainId });
 
 		expect(status).toBe(403);
+	});
+	it('still counts claimed leads the business has deleted', async () => {
+		// Incomplete profile, so reaching 10 claims blocks.
+		const businessId = await createBusiness({
+			slug: 'acme-solar',
+			district: 'Pune',
+			description: null,
+			brands: null,
+			googleMapsLink: null
+		});
+		await seedLeadDataPolicy(businessId);
+		const copies = await giveClaimedLeads(businessId, 10, 0);
+		await hideLeads(copies.slice(0, 5));
+		const leadId = await createLead({ district: 'Pune' });
+		const session = { id: businessId, slug: 'acme-solar', businessname: 'Test Business' };
+
+		const { status } = await claim(session, { lead_id: leadId, business_id: businessId });
+
+		expect(status).toBe(403);
+	});
+
+	it('counts deleted claimed leads as stale', async () => {
+		const businessId = await createQualifiedBusiness();
+		// 4 stale + 2 progressed-but-deleted = 6 of 10 stale.
+		const copies = await giveClaimedLeads(businessId, 10, 4);
+		await hideLeads(copies.slice(4, 6));
+		const leadId = await createLead({ district: 'Pune' });
+		const session = { id: businessId, slug: 'acme-solar', businessname: 'Test Business' };
+
+		const { status } = await claim(session, { lead_id: leadId, business_id: businessId });
+
+		expect(status).toBe(403);
+	});
+
+	it('cannot lower the stale ratio by deleting untouched leads', async () => {
+		const businessId = await createQualifiedBusiness();
+		const copies = await giveClaimedLeads(businessId, 10, 6);
+		await hideLeads(copies.slice(0, 6));
+		const leadId = await createLead({ district: 'Pune' });
+		const session = { id: businessId, slug: 'acme-solar', businessname: 'Test Business' };
+
+		const { status } = await claim(session, { lead_id: leadId, business_id: businessId });
+
+		expect(status).toBe(403);
+	});
+
+	it('counts claims made by a branch that is now hidden', async () => {
+		const mainId = await createBusiness({ slug: 'acme-solar', district: 'Pune' });
+		const branchId = await createBusiness({ slug: 'acme-solar-nashik', district: 'Nashik' });
+		await createBranch(mainId, branchId, false);
+		await seedLeadDataPolicy(mainId);
+		await giveClaimedLeads(mainId, 5, 5);
+		await giveClaimedLeads(branchId, 5, 5);
+		const leadId = await createLead({ district: 'Pune' });
+		const session = { id: mainId, slug: 'acme-solar', businessname: 'Test Business' };
+
+		const { status } = await claim(session, { lead_id: leadId, business_id: mainId });
+
+		expect(status).toBe(403);
+	});
+
+	it('refuses to delete claim history at the database', async () => {
+		const businessId = await createBusiness({ slug: 'acme-solar', district: 'Pune' });
+		await giveClaimedLeads(businessId, 1, 0);
+
+		await expect(pool.query('DELETE FROM leaddata_claimrequests')).rejects.toThrow(/append-only/);
 	});
 });

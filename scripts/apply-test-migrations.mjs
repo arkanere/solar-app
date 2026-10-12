@@ -33,7 +33,7 @@ import { fileURLToPath } from 'node:url';
 import pg from 'pg';
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
-const MIGRATIONS_DIR = join(ROOT, 'apps/main-app/src/lib/server/migrations');
+const MIGRATIONS_DIR = join(ROOT, 'apps/business-app/migrations');
 const BASELINE = join(ROOT, 'tests/schema/000-baseline.sql');
 
 // Ordered. Each entry is idempotent over the baseline — CREATE TABLE IF NOT
@@ -123,7 +123,12 @@ const POST_BASELINE_MIGRATIONS = [
 	// 077/078/080 are deliberately NOT here. 078's table and 080's column simply
 	// stop being created once the regenerated baseline drops them, and nothing on
 	// this list references either outside a plpgsql body whose function 062 drops.
-	'079-drop-profile-country-code.sql'
+	'079-drop-profile-country-code.sql',
+	// The BEFORE DELETE trigger that makes leaddata_claimrequests append-only.
+	// An introspected schema cannot express a trigger, so it has to be replayed.
+	// Idempotent (CREATE OR REPLACE, DROP TRIGGER IF EXISTS), and TRUNCATE does
+	// not fire it, so resetDatabase still clears the table between tests.
+	'084-claimrequests-append-only.sql'
 ];
 
 // The baseline is the *end state*; the files above are *history*. Where a

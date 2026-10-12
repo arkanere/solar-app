@@ -94,8 +94,15 @@ describe('a slug shared by two businesses resolves by session, not by slug', () 
 		const { first, second } = await createTwinsOnOneSlug();
 
 		// Only the session holder has a claimed lead, so the counts the layout
-		// computes are enough to tell the two apart on their own.
-		await createLead({ businessId: second, category: 2, district: 'Pune' });
+		// computes are enough to tell the two apart on their own. The count reads
+		// the claim history, so the claim row is what matters here.
+		const originalId = await createLead({ district: 'Pune' });
+		await pool.query(
+			`INSERT INTO leaddata_claimrequests (lead_id, claim_id, business_id, isallotted, isresolved)
+			 VALUES ($1, 0, $2, true, true)`,
+			[originalId, second]
+		);
+		await createLead({ businessId: second, category: 2, district: 'Pune', originalId });
 
 		const cookies = createSessionCookies({
 			id: second,

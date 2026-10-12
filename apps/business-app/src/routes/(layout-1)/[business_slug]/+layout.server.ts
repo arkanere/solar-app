@@ -1,11 +1,12 @@
 import { error, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { businessAccounts, businessProfiles, leaddata } from '@solar/db/schema';
-import { and, count, eq, gt, inArray, ne, sql } from 'drizzle-orm';
+import { businessAccounts, businessProfiles } from '@solar/db/schema';
+import { and, count, eq, gt, sql } from 'drizzle-orm';
 import type { LayoutServerLoad } from './$types';
 import type { SessionData } from '$lib/types/auth';
 import { SessionManager } from '$lib/auth/business';
 import { countryForSlug } from '$lib/server/resolveCountry';
+import { getClaimCounts } from '$lib/server/claimGate';
 import type { AuthCountry } from '$lib/auth/business/countryTables';
 import { accountOfProfile, businessInCountry, projectTable } from '$lib/server/writeTargets';
 
@@ -84,10 +85,10 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 			}
 
 			// The route no longer carries an /in or /us segment, so the country comes
-			// from the business itself. The leaddata reads below are filtered by it;
-			// the profile reads are not, because business ids are globally unique.
-			// Since 054 projects has been a single table for every country for the
-			// same reason (branches was too, until 078 dropped it).
+			// from the business itself. It is returned for descendants and scopes the
+			// profile read below. Since 054 projects has been a single table for every
+			// country, because business ids are globally unique (branches was too, until
+			// 078 dropped it).
 			const country = await countryForSlug(business_slug);
 			if (!country) {
 				throw error(404, 'Business not found');
@@ -134,35 +135,10 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 					const business: BusinessRow = businessRows[0];
 					const businessId = business.id as number;
 
-					// Get all branch IDs so lead counts include branch-assigned leads.
-					// Since 078 the branches are the profiles naming this business in
-					// account_business_id, minus the business itself, and the old
-					// branches.isactive is each branch profile's own isvisible.
-					const branchRows = await db
-						.select({ branch_id: businessProfiles.businessId })
-						.from(businessProfiles)
-						.where(
-							and(
-								eq(businessProfiles.accountBusinessId, businessId),
-								ne(businessProfiles.businessId, businessId),
-								eq(businessProfiles.isvisible, true)
-							)
-						);
-					const allBusinessIds = [businessId, ...branchRows.map((r) => r.branch_id)];
-
-					const claimedLeadWhere = and(
-						eq(leaddata.countryCode, country),
-						inArray(leaddata.businessId, allBusinessIds),
-						eq(leaddata.category, 2),
-						eq(leaddata.isvisible, true)
-					);
-
-					const [claimedRes, staleRes, projectsRes, recentProjectRes] = await Promise.all([
-						db.select({ count: count() }).from(leaddata).where(claimedLeadWhere),
-						db
-							.select({ count: count() })
-							.from(leaddata)
-							.where(and(claimedLeadWhere, eq(leaddata.stage, 0), eq(leaddata.status, true))),
+					// Claim counts come from the claim history, not the editable lead
+					// copies — see getClaimCounts.
+					const [claimCounts, projectsRes, recentProjectRes] = await Promise.all([
+						getClaimCounts(businessId),
 						db
 							.select({ count: count() })
 							.from(projects)
@@ -179,8 +155,7 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 							)
 					]);
 
-					const totalClaimed = claimedRes[0]?.count ?? 0;
-					const staleClaimed = staleRes[0]?.count ?? 0;
+					const { totalClaimed, staleClaimed } = claimCounts;
 					const projectsCount = projectsRes[0]?.count ?? 0;
 					const recentProjectExists = (recentProjectRes[0]?.count ?? 0) > 0;
 					const stalePercent = totalClaimed > 0 ? Math.round((staleClaimed / totalClaimed) * 100) : 0;
