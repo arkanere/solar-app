@@ -8,11 +8,11 @@ workspace dependency (`"@solar/db": "*"`).
 **The database is the source of truth. This package is generated from it.**
 
 Schema changes are still made the way they always were: a new numbered SQL file in
-`apps/main-app/src/lib/server/migrations/`, applied to the database. Afterwards you
+`apps/business-app/migrations/`, applied to the database. Afterwards you
 re-generate this package:
 
 ```sh
-set -a && . apps/main-app/.env.local && set +a   # provides POSTGRES_URL
+set -a && . apps/business-app/.env && set +a   # provides POSTGRES_URL
 npm run pull -w @solar/db
 ```
 

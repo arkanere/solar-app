@@ -2,7 +2,7 @@
 // starts from.
 //
 // Why a baseline exists at all: the numbered SQL migrations in
-// apps/main-app/src/lib/server/migrations/ only go back as far as the migrations
+// apps/business-app/migrations/ only go back as far as the migrations
 // convention does. 36 of the 55 tables — including leaddata, businesses_1,
 // business_profiles and leaddata_claimrequests — were created before that and
 // have no CREATE TABLE anywhere in the repo (`branches` was one of them until

@@ -2,7 +2,7 @@ import { defineConfig } from 'drizzle-kit';
 
 // Introspection-only config.
 //
-// The numbered SQL files in apps/main-app/src/lib/server/migrations/ remain the
+// The numbered SQL files in apps/business-app/migrations/ remain the
 // source of truth for schema changes. drizzle-kit is used for `pull` (read-only
 // introspection into src/schema) and never for `generate` or `push` — running
 // those would fork schema ownership away from the SQL migrations.
@@ -11,8 +11,8 @@ const connectionString = process.env.POSTGRES_URL;
 
 if (!connectionString) {
 	throw new Error(
-		'POSTGRES_URL is not set. Run with the main-app env, e.g.\n' +
-			'  set -a && . apps/main-app/.env.local && set +a && npm run pull -w @solar/db'
+		'POSTGRES_URL is not set. Run with the business-app env, e.g.\n' +
+			'  set -a && . apps/business-app/.env && set +a && npm run pull -w @solar/db'
 	);
 }
 

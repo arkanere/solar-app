@@ -1,0 +1,87 @@
+-- Rename in_user -> sv_user, in_user_feedback -> sv_user_feedback,
+-- in_proposals -> sv_proposals (2026-08-10).
+--
+-- ** NOT YET APPLIED. ** Run this at deploy time, together with the deploy of
+-- BOTH repos — see the gate below. It is reversible from its rollback script.
+--
+-- The `in_` prefix is wrong on all three for the reason it was wrong on
+-- in_business_profiles in 061: it was minted when the schema was a per-country
+-- pair, and there is no us_ counterpart left anywhere. Unlike 061 these three
+-- are not united tables — they are genuinely IN-only *features* (customer
+-- accounts, the feedback campaign, installer proposals) — but the prefix still
+-- reads as "the IN half of a pair", which is what it no longer is. `sv_` says
+-- what they actually are: SolarVipani's own tables.
+--
+-- Nothing about the shape or contents changes. Row counts at the time of
+-- writing: sv_user 341, sv_user_feedback 2, sv_proposals 2.
+--
+-- Verified on live before writing this migration:
+--   - no views or matviews exist in `public` at all;
+--   - no function body mentions any of the three (checked pg_proc.prosrc across
+--     the whole schema — the only functions left are sv_slugify, loc_key,
+--     sync_business_profile, sync_business_account and the three
+--     update_*_blogs_updated_at orphans, none of which reference these tables);
+--   - no triggers on any of the three;
+--   - the only inbound foreign key is in_user_feedback -> in_user, which is
+--     internal to this rename and follows its tables automatically;
+--   - in_proposals -> leaddata is outbound and is likewise unaffected.
+--
+-- ** Constraints, indexes and sequences are deliberately NOT renamed. ** This
+-- differs from 061, which renamed them to match, and the reason is that here
+-- they already do not match and never have: in_user carries `users_pkey`,
+-- `users_email_key` and `users_id_seq`, and in_proposals carries
+-- `proposals_pkey` and `proposals_id_seq` — both sets predate an earlier rename
+-- in the other direction and have been mismatched for their whole life without
+-- consequence. Renaming them would be tidiness with a real cost: the column
+-- DEFAULTs point at the sequences by name, and every extra ALTER is another
+-- thing the rollback has to get exactly right. Postgres does not care, and
+-- neither does drizzle — `pull` reads the constraint's real name and writes it
+-- into schema.ts, which is why schema.ts already says `unique("users_email_key")`
+-- on a table called in_user.
+--
+-- One consequence worth naming, because it is pre-existing and this migration
+-- does not fix it: schema.ts declares `id: serial()`, so the generated test
+-- baseline emits `sv_user_id_seq` while live keeps `users_id_seq`. That
+-- divergence exists today (`in_user_id_seq` vs `users_id_seq`) and is harmless —
+-- the baseline creates its own sequence and nothing asserts the name.
+--
+-- ** THE GATE: this is a lockstep deploy across TWO repos. ** Unlike 061-067,
+-- the blast radius here is mostly *outside* this repo. Call sites:
+--
+--   solar-app (this repo), all Drizzle, all renamed in the same commit:
+--     - business-app: magicLink.ts, api/claimLead, proposals.ts, unifiedRead.ts,
+--       api/deleteProposal, [business_slug]/proposal/+page.server.ts
+--     - main-app: api/generateUserMagicLink
+--     - user-app: AuthTypes.ts (comment only)
+--     - packages/db schema.ts, tests/helpers/fixtures.ts TRUNCATE list
+--
+--   solar-app-internal, raw SQL and Python — none of it reachable by a grep of
+--   this repo, and none of it type-checked (see next-steps.md):
+--     - admin-app: lib/server/magicLink.js (3 statements), routes/users,
+--       routes/feedback (joins both renamed tables), lib/server/db/schema.ts
+--     - automation-scripts/3.Send_feedback_mail_to_users: database.py (a SELECT
+--       and an UPDATE on in_user) and migration.sql
+--
+-- If this runs before solar-app-internal deploys, admin-app's customer login,
+-- /users and /feedback all 500, and the feedback campaign cron fails on its next
+-- run. Both are survivable (sole user, no external consumer) but there is no
+-- reason to accept them: the fix is written and deploying it first costs
+-- nothing. There is no counter to watch here and no way to detect the old code
+-- from the database — only a deploy to confirm.
+--
+-- Deploy order:
+--   1. deploy solar-app-internal  (admin-app + automation-scripts on sv_*)
+--   2. deploy solar-app           (all three apps on sv_*)
+--   3. run this migration
+-- Steps 1 and 2 both break against the *current* schema, so the window between
+-- 2 and 3 is the outage, not the window between 1 and 2. Keep 3 immediately
+-- after 2. If it goes wrong, the rollback script puts the names back and the
+-- previous deploy works again unchanged.
+
+BEGIN;
+
+ALTER TABLE in_user          RENAME TO sv_user;
+ALTER TABLE in_user_feedback RENAME TO sv_user_feedback;
+ALTER TABLE in_proposals     RENAME TO sv_proposals;
+
+COMMIT;
