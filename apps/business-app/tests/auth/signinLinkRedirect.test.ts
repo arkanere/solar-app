@@ -21,11 +21,14 @@ const { load: signinLinkLoad } = await import(
 const { load: loginLoad } = await import('../../src/routes/(layout-1)/login/+page.server');
 
 /** Run the load and return the redirect it threw, failing if it returned instead. */
-async function loadRedirect(slug: string, token: string) {
+async function loadRedirect(slug: string, token: string, next?: string) {
+	const url = new URL(`http://localhost/${slug}/signin-link/${token}`);
+	if (next) url.searchParams.set('next', next);
 	try {
 		const returned = await signinLinkLoad({
 			params: { business_slug: slug, token },
-			cookies: createCookies()
+			cookies: createCookies(),
+			url
 		} as any);
 		throw new Error(`expected a redirect, got: ${JSON.stringify(returned)}`);
 	} catch (thrown) {
@@ -109,6 +112,30 @@ describe('an invalid sign-in link redirects instead of rendering in the dashboar
 
 		expect(status).toBe(302);
 		expect(location).toBe('/chester-solar');
+	});
+
+	it('lands a valid link on an allowed ?next= page', async () => {
+		const businessId = await createBusiness({
+			slug: 'valid-solar',
+			loginEmail: 'owner@valid.test'
+		});
+		const token = await mintBusinessTokenById(businessId);
+
+		const { location } = await loadRedirect('valid-solar', token!, 'paid-services');
+
+		expect(location).toBe('/valid-solar/paid-services');
+	});
+
+	it('ignores a ?next= outside the allowlist, so it is not an open redirect', async () => {
+		const businessId = await createBusiness({
+			slug: 'valid-solar',
+			loginEmail: 'owner@valid.test'
+		});
+		const token = await mintBusinessTokenById(businessId);
+
+		const { location } = await loadRedirect('valid-solar', token!, '//evil.example');
+
+		expect(location).toBe('/valid-solar');
 	});
 
 	it('redirects an unknown slug as an invalid link', async () => {
