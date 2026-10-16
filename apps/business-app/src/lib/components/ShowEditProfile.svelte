@@ -25,12 +25,15 @@
 
 	// Service mappings
 	const SERVICE_OPTIONS = [
-		{ id: 1, name: 'Solar Panel Installation' },
+		{ id: 1, name: 'Residential Solar Installation' },
+		{ id: 9, name: 'Commercial Solar Installation' },
 		{ id: 2, name: 'Net Metering' },
 		{ id: 3, name: 'Subsidy Documentation' },
 		{ id: 4, name: 'Financing' },
 		{ id: 5, name: 'Cleaning of Solar Panels' },
-		{ id: 6, name: 'Agricultural Solar Installation' }
+		{ id: 6, name: 'Agricultural Solar Installation' },
+		{ id: 7, name: 'Solar Lights' },
+		{ id: 8, name: 'Solar Water Heaters' }
 	];
 
 	// Brand mappings

@@ -4,10 +4,13 @@
  * same names, so it lives here rather than beside the sample rows.
  */
 export const SERVICE_NAMES: Record<number, string> = {
-  1: 'Panel installation',
+  1: 'Residential solar',
+  9: 'Commercial solar',
   2: 'Net metering',
   3: 'Subsidy paperwork',
   4: 'Financing',
   5: 'Panel cleaning',
-  6: 'Agricultural solar'
+  6: 'Agricultural solar',
+  7: 'Solar lights',
+  8: 'Solar water heaters'
 };
