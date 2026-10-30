@@ -147,7 +147,7 @@
 		</div>
 		<p class="text-sm text-muted-foreground mb-6">
 			Need more leads faster? Our official partner
-			<a href="https://qualityclickss.com" target="_blank" rel="noopener" class="underline font-medium text-foreground">Quality Clicks</a>
+			<a href="https://qualityclickss.com" target="_blank" rel="noopener" class="underline font-medium text-foreground">Quality Clickss</a>
 			runs Google & Meta ad campaigns for solar businesses.
 		</p>
 		<div class="text-sm text-muted-foreground space-y-1">
