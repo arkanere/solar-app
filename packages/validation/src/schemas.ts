@@ -43,7 +43,8 @@ export const leadSchema = (country: 'in' | 'us') =>
 			comment: optionalText(),
 			urlParam: optionalText(),
 			email: optionalEmail,
-			marketing_consent: z.boolean().optional()
+			marketing_consent: z.boolean().optional(),
+			design_consent: z.boolean().optional()
 		})
 		// The endpoint coalesces the three postal aliases before inserting;
 		// validate whichever one actually arrived.

@@ -66,6 +66,7 @@ export function LeadForm({
   const [values, setValues] = useState<LeadFields>({ ...EMPTY, ...prefill });
   const [errors, setErrors] = useState<LeadErrors>({});
   const [consent, setConsent] = useState(false);
+  const [designConsent, setDesignConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -115,7 +116,8 @@ export function LeadForm({
           // matching the SvelteKit form. It is what tells a claimed lead which
           // district page produced it.
           urlParam: source,
-          marketing_consent: consent
+          marketing_consent: consent,
+          design_consent: designConsent
         })
       });
 
@@ -177,6 +179,7 @@ export function LeadForm({
   }
 
   const consentId = `${formId}-consent`;
+  const designConsentId = `${formId}-design-consent`;
 
   // The form is replaced rather than hidden, so there is nothing left to
   // resubmit and no second row from a double click.
@@ -253,6 +256,22 @@ export function LeadForm({
         <span className="text-ink-muted">
           I consent to Solar Vipani sharing my contact details with solar installers in my area to
           follow up on my enquiry.
+        </span>
+      </label>
+
+      {/* Optional, so it does not gate the submit. Solar Vipani calls the
+          visitor for the site details a design needs. */}
+      <label htmlFor={designConsentId} className="flex cursor-pointer items-start gap-xs text-sm">
+        <input
+          id={designConsentId}
+          type="checkbox"
+          checked={designConsent}
+          disabled={submitting}
+          onChange={(e) => setDesignConsent(e.target.checked)}
+          className="mt-2xs size-4 shrink-0 accent-[var(--color-action)]"
+        />
+        <span className="text-ink-muted">
+          Solar Vipani may contact me to prepare a free solar design for my site.
         </span>
       </label>
 

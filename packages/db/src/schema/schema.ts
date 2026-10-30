@@ -74,6 +74,7 @@ export const leaddata = pgTable("leaddata", {
 	billFormat: text("bill_format"),
 	billUploadedAt: timestamp("bill_uploaded_at", { withTimezone: true, mode: 'string' }),
 	marketingConsent: boolean("marketing_consent").default(false).notNull(),
+	designConsent: boolean("design_consent").default(false).notNull(),
 	countryCode: char("country_code", { length: 2 }).default('in').notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`),
 }, (table) => [

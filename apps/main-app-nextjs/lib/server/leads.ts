@@ -21,6 +21,7 @@ export type LeadPayload = {
   urlParams?: string | null;
   email?: string | null;
   marketingConsent?: boolean;
+  designConsent?: boolean;
 };
 
 export type InsertedLead = {
@@ -36,7 +37,8 @@ export async function insertLead(
   country: CountryCode,
   payload: LeadPayload
 ): Promise<InsertedLead> {
-  const { name, phone, postalCode, type, comment, urlParams, email, marketingConsent } = payload;
+  const { name, phone, postalCode, type, comment, urlParams, email, marketingConsent, designConsent } =
+    payload;
 
   // IN resolves district/state from the pincode; `pincode_mapping` is IN-only.
   // A failed lookup must not lose the lead, so it is caught and the row goes
@@ -75,7 +77,8 @@ export async function insertLead(
       email: email || null,
       level2,
       level1,
-      marketingConsent: marketingConsent === true
+      marketingConsent: marketingConsent === true,
+      designConsent: designConsent === true
     })
     .returning({ id: leaddata.id, referenceUuid: leaddata.referenceUuid });
 

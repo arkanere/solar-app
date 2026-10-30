@@ -73,7 +73,8 @@ export async function POST(
       comment: data.comment,
       urlParams: data.urlParam,
       email: data.email,
-      marketingConsent: data.marketing_consent === true
+      marketingConsent: data.marketing_consent === true,
+      designConsent: data.design_consent === true
     });
 
     // The row is already committed, so a mail failure must not turn a captured
