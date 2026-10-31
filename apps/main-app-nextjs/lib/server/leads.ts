@@ -78,7 +78,10 @@ export async function insertLead(
       level2,
       level1,
       marketingConsent: marketingConsent === true,
-      designConsent: designConsent === true
+      designConsent: designConsent === true,
+      // Design-consented leads are categorised here, not by the qualification
+      // script, which skips category 4.
+      category: designConsent === true ? 4 : null
     })
     .returning({ id: leaddata.id, referenceUuid: leaddata.referenceUuid });
 
