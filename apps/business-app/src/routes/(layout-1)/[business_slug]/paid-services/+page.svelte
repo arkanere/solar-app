@@ -5,23 +5,24 @@
 	const phoneDisplay = '+91 89830 66701';
 	const phoneHref = 'tel:+918983066701';
 	const whatsappHref = `https://wa.me/918983066701?text=${encodeURIComponent(
-		'Hi, I want to book a solar plant design for ₹500.'
+		'Hi, I want to book a solar plant design (starting at ₹1,000).'
 	)}`;
 
 	const deliverables = [
-		'Panel layout and row spacing',
-		'String design',
-		'Cable sizing and protection',
-		'Single line diagram',
-		'Earthing and lightning arrester',
-		'Bill of materials',
+		'General plan view',
+		'3D view',
+		'Single line diagram (SLD)',
+		'Shadow analysis',
+		'Yield report',
+		'3D marketing video',
+		'Detailed project report',
 		'AutoCAD-ready drawings (DXF + PDF)'
 	];
 
 	const steps = [
 		{ title: 'Call us', text: 'Tell us the site location, roof or land size and the plant capacity in kW.' },
-		{ title: 'We design', text: 'Our team prepares the layout, electrical design and bill of materials.' },
-		{ title: 'You get the files', text: 'Receive AutoCAD-ready drawings, single line diagram and BOM as PDF and DXF.' }
+		{ title: 'We design', text: 'Our team prepares the plan view, 3D view, SLD, shadow analysis and yield report.' },
+		{ title: 'You get the files', text: 'Receive AutoCAD-ready drawings, 3D marketing video and detailed project report.' }
 	];
 </script>
 
@@ -36,12 +37,12 @@
 			<div class="flex flex-col md:flex-row justify-between items-start gap-4">
 				<div class="flex flex-col gap-2">
 					<Badge class="w-fit">Introductory price</Badge>
-					<h2 class="text-xl font-semibold">Complete solar plant design for ₹500</h2>
-					<p class="text-sm text-muted-foreground">Rooftop and ground-mount plants, 1 kW to 125 kW</p>
+					<h2 class="text-xl font-semibold">Complete solar plant design from ₹1,000</h2>
+					<p class="text-sm text-muted-foreground">Rooftop and ground-mount plants above 10 kW</p>
 				</div>
 				<div class="flex flex-col items-start md:items-end gap-1">
-					<p class="text-2xl font-semibold">₹500 <span class="text-sm font-normal text-muted-foreground">per project</span></p>
-					<p class="text-sm text-muted-foreground">Up to 3 projects per account</p>
+					<p class="text-2xl font-semibold"><span class="text-sm font-normal text-muted-foreground">Starting at</span> ₹1,000</p>
+					<p class="text-sm text-muted-foreground">For projects above 10 kW</p>
 				</div>
 			</div>
 

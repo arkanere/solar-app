@@ -114,8 +114,8 @@
 								{
 									id: 'service-plant-design',
 									kind: 'service',
-									title: 'Complete Solar Plant Design for ₹500',
-									description: 'Get a professional design for up to 3 projects',
+									title: 'Complete Solar Plant Design from ₹1,000',
+									description: 'Rooftop and ground-mount plants above 10 kW',
 									action: `/${businessSlug}/paid-services`,
 									actionLabel: 'View Offer',
 									priority: 4
