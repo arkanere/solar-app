@@ -26,6 +26,16 @@
 		lead.status && lead.stage > 0 && lead.stage < 3 ? getStageLabel((lead.stage - 1) as LeadStage, lead.category) : null
 	);
 
+	// Set by the claim gate's "Update lead" button: highlights the stage button
+	// until the business moves this lead forward once.
+	let guideDismissed = $state(false);
+	let showGuide = $derived(
+		$page.url.searchParams.get('guide') === 'stage' &&
+			!guideDismissed &&
+			lead.status &&
+			lead.stage === 0
+	);
+
 	let isSaving = $state(false);
 	// Which stage button is saving, so only that one shows "Updating..."
 	let savingDirection = $state<'forward' | 'back' | null>(null);
@@ -72,6 +82,7 @@
 	}
 
 	async function moveStage(direction: 'forward' | 'back') {
+		guideDismissed = true;
 		savingDirection = direction;
 		await updateLead({ stage: lead.stage + (direction === 'forward' ? 1 : -1) });
 		savingDirection = null;
@@ -141,16 +152,26 @@
 				<LeadProgressBar currentStage={lead.stage} leadCategory={lead.category} isActive={lead.status} />
 
 				{#if lead.status}
+					{#if showGuide}
+						<p class="text-sm font-medium text-primary">
+							Called this customer? Mark it contacted to resume claiming leads.
+						</p>
+					{/if}
 					<div class="flex flex-wrap gap-2">
 						{#if nextStageLabel}
-							<Button onclick={() => moveStage('forward')} disabled={isSaving}>
-								{#if lead.stage === 2}
-									<Trophy size={16} />
-								{:else}
-									<ArrowRight size={16} />
+							<span class="relative inline-flex">
+								{#if showGuide}
+									<span class="absolute inset-0 rounded-md bg-primary/60 animate-ping" aria-hidden="true"></span>
 								{/if}
-								{savingDirection === 'forward' ? 'Updating...' : nextStageLabel}
-							</Button>
+								<Button class="relative" onclick={() => moveStage('forward')} disabled={isSaving}>
+									{#if lead.stage === 2}
+										<Trophy size={16} />
+									{:else}
+										<ArrowRight size={16} />
+									{/if}
+									{savingDirection === 'forward' ? 'Updating...' : nextStageLabel}
+								</Button>
+							</span>
 						{/if}
 						{#if prevStageLabel}
 							<Button variant="outline" onclick={() => moveStage('back')} disabled={isSaving}>

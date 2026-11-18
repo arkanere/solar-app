@@ -629,9 +629,9 @@ describe('the 10-claim quality gate', () => {
 		expect(status).toBe(403);
 	});
 
-	it('counts deleted claimed leads as stale', async () => {
+	it('keeps deleted leads that were already updated as progressed', async () => {
 		const businessId = await createQualifiedBusiness();
-		// 4 stale + 2 progressed-but-deleted = 6 of 10 stale.
+		// 4 stale + 2 progressed-but-deleted: still 4 of 10 stale.
 		const copies = await giveClaimedLeads(businessId, 10, 4);
 		await hideLeads(copies.slice(4, 6));
 		const leadId = await createLead({ district: 'Pune' });
@@ -639,7 +639,7 @@ describe('the 10-claim quality gate', () => {
 
 		const { status } = await claim(session, { lead_id: leadId, business_id: businessId });
 
-		expect(status).toBe(403);
+		expect(status).toBe(200);
 	});
 
 	it('cannot lower the stale ratio by deleting untouched leads', async () => {

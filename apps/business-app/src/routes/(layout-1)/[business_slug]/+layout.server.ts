@@ -6,7 +6,7 @@ import type { LayoutServerLoad } from './$types';
 import type { SessionData } from '$lib/types/auth';
 import { SessionManager } from '$lib/auth/business';
 import { countryForSlug } from '$lib/server/resolveCountry';
-import { getClaimCounts } from '$lib/server/claimGate';
+import { getClaimCounts, getOldestStaleLeadId } from '$lib/server/claimGate';
 import type { AuthCountry } from '$lib/auth/business/countryTables';
 import { accountOfProfile, businessInCountry, projectTable } from '$lib/server/writeTargets';
 
@@ -30,6 +30,10 @@ export interface ClaimGateStatus {
 	totalClaimedLeads: number;
 	staleLeadsCount: number;
 	staleLeadsPercent: number;
+	/** Stale leads still to update before the stale rule is met (0 when met). */
+	staleLeadsToUpdate: number;
+	/** Oldest visible lead at "Claimed", for the "Update lead" button. */
+	staleLeadId: number | null;
 	projectsCount: number;
 	recentProjectExists: boolean;
 	profileComplete: boolean;
@@ -137,8 +141,9 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 
 					// Claim counts come from the claim history, not the editable lead
 					// copies — see getClaimCounts.
-					const [claimCounts, projectsRes, recentProjectRes] = await Promise.all([
+					const [claimCounts, staleLeadId, projectsRes, recentProjectRes] = await Promise.all([
 						getClaimCounts(businessId),
+						getOldestStaleLeadId(businessId),
 						db
 							.select({ count: count() })
 							.from(projects)
@@ -159,6 +164,8 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 					const projectsCount = projectsRes[0]?.count ?? 0;
 					const recentProjectExists = (recentProjectRes[0]?.count ?? 0) > 0;
 					const stalePercent = totalClaimed > 0 ? Math.round((staleClaimed / totalClaimed) * 100) : 0;
+					// Met when stale <= 50% of total, the same rule as claimLead
+					const staleLeadsToUpdate = Math.max(0, staleClaimed - Math.floor(totalClaimed / 2));
 					const profileComplete = !!business.description
 						&& Array.isArray(business.brands) && business.brands.length > 0
 						&& !!business.google_maps_link;
@@ -173,7 +180,7 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 					if (missingContact.length > 0) reasons.push(`Add your ${missingContact.join(' and ')}`);
 
 					if (gateApplies) {
-						if (stalePercent > 50) reasons.push(`${staleClaimed} of ${totalClaimed} leads still at "Claimed" — update at least half to keep claiming`);
+						if (staleLeadsToUpdate > 0) reasons.push(`${staleClaimed} of ${totalClaimed} leads still at "Claimed" — update at least half to keep claiming`);
 						if (projectsCount < 6) reasons.push(`${projectsCount}/6 projects posted — add ${6 - projectsCount} more`);
 						if (!recentProjectExists) reasons.push('No project posted in the last 60 days');
 						if (!profileComplete) {
@@ -197,6 +204,8 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 							totalClaimedLeads: totalClaimed,
 							staleLeadsCount: staleClaimed,
 							staleLeadsPercent: stalePercent,
+							staleLeadsToUpdate,
+							staleLeadId,
 							projectsCount,
 							recentProjectExists,
 							profileComplete,

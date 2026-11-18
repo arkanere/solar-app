@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db';
 import { businessProfiles, leaddata, leaddataClaimrequests } from '@solar/db/schema';
-import { and, countDistinct, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, countDistinct, eq, inArray, ne, sql } from 'drizzle-orm';
 
 /**
  * Claim counts for the 10-claim quality gate.
@@ -14,9 +14,10 @@ import { and, countDistinct, eq, inArray, sql } from 'drizzle-orm';
  * account_business_id, hidden branches included, so hiding a branch does not
  * drop its claims either.
  *
- * A claim is stale unless the business's copy of the lead is still visible and
- * has moved past "Claimed" (stage 0, status true). A hidden copy counts as
- * stale, so deleting untouched leads cannot improve the stale ratio.
+ * A claim is stale while the business's copy of the lead is at "Claimed"
+ * (stage 0, status true). Hidden ("deleted") copies count by the stage they
+ * were hidden at: deleting an untouched lead keeps it stale, and deleting an
+ * updated lead does not make it stale again.
  */
 export async function getClaimCounts(
 	businessId: number
@@ -61,7 +62,6 @@ export async function getClaimCounts(
 			.where(
 				and(
 					claimWhere,
-					eq(leaddata.isvisible, true),
 					// IS NOT TRUE so a null stage/status counts as progressed, as before.
 					sql`(${leaddata.stage} = 0 AND ${leaddata.status}) IS NOT TRUE`
 				)
@@ -71,4 +71,39 @@ export async function getClaimCounts(
 	const totalClaimed = totalRes[0]?.count ?? 0;
 	const progressed = progressedRes[0]?.count ?? 0;
 	return { totalClaimed, staleClaimed: totalClaimed - progressed };
+}
+
+/**
+ * The oldest lead still at "Claimed" that the business can open in its CRM,
+ * for the claim gate's "Update lead" button. Uses the CRM's own scope: the
+ * business plus its visible branches, visible category 2 copies only.
+ */
+export async function getOldestStaleLeadId(businessId: number): Promise<number | null> {
+	const branchRes = await db
+		.select({ id: businessProfiles.businessId })
+		.from(businessProfiles)
+		.where(
+			and(
+				eq(businessProfiles.accountBusinessId, businessId),
+				ne(businessProfiles.businessId, businessId),
+				eq(businessProfiles.isvisible, true)
+			)
+		);
+	const ids = [businessId, ...branchRes.map((r) => r.id)];
+
+	const res = await db
+		.select({ id: leaddata.id })
+		.from(leaddata)
+		.where(
+			and(
+				inArray(leaddata.businessId, ids),
+				eq(leaddata.category, 2),
+				eq(leaddata.isvisible, true),
+				eq(leaddata.stage, 0),
+				eq(leaddata.status, true)
+			)
+		)
+		.orderBy(asc(leaddata.id))
+		.limit(1);
+	return res[0]?.id ?? null;
 }

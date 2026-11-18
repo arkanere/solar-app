@@ -8,6 +8,8 @@
 		totalClaimedLeads: number;
 		staleLeadsCount: number;
 		staleLeadsPercent: number;
+		staleLeadsToUpdate: number;
+		staleLeadId: number | null;
 		projectsCount: number;
 		recentProjectExists: boolean;
 		profileComplete: boolean;
@@ -39,10 +41,13 @@
 	let gateRequirements = $derived([
 		{
 			label: 'Update your leads',
-			detail: `${claimGate.staleLeadsCount} of ${claimGate.totalClaimedLeads} stuck at "Claimed"`,
-			met: claimGate.staleLeadsPercent <= 50,
-			action: `/${businessSlug}/crm`,
-			actionLabel: 'Open CRM'
+			detail: `${claimGate.staleLeadsCount} of ${claimGate.totalClaimedLeads} stuck at "Claimed" — update ${claimGate.staleLeadsToUpdate} more`,
+			met: claimGate.staleLeadsToUpdate === 0,
+			// Opens one stuck lead with its stage button highlighted
+			action: claimGate.staleLeadId != null
+				? `/${businessSlug}/crm/leads/${claimGate.staleLeadId}?guide=stage`
+				: `/${businessSlug}/crm`,
+			actionLabel: claimGate.staleLeadId != null ? 'Update lead' : 'Open CRM'
 		},
 		{
 			label: 'Post 6+ projects',
