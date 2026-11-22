@@ -34,12 +34,17 @@ export const load: PageServerLoad = async ({ params, cookies, url }) => {
 					business_slug,
 					cookies
 				)
-			: { success: false };
+			: null;
 
 		// Redirect on success is thrown below rather than here: `redirect()`
 		// works by throwing, so thrown inside this try it would land in the catch
 		// and rely on it being recognised and re-thrown.
-		if (result.success) throw redirect(302, landing);
+		// A link sent about a lead lands on that lead, unless it names a page.
+		if (result?.success) {
+			const leadLanding =
+				!next && result.leadId ? `/${business_slug}/crm?lead=${result.leadId}` : landing;
+			throw redirect(302, leadLanding);
+		}
 
 		reason = 'expired-link';
 	} catch (error) {

@@ -131,7 +131,10 @@ const POST_BASELINE_MIGRATIONS = [
 	// An introspected schema cannot express a trigger, so it has to be replayed.
 	// Idempotent (CREATE OR REPLACE, DROP TRIGGER IF EXISTS), and TRUNCATE does
 	// not fire it, so resetDatabase still clears the table between tests.
-	'085-claimrequests-append-only.sql'
+	'085-claimrequests-append-only.sql',
+	// One row per magic link sent to a business. A new table, so it is not in
+	// the baseline until the baseline is regenerated.
+	'088-business-magic-links.sql'
 ];
 
 // The baseline is the *end state*; the files above are *history*. Where a

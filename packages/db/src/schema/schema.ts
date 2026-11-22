@@ -656,6 +656,26 @@ export const businessAccounts = pgTable("business_accounts", {
 	unique("business_accounts_source_id_key").on(table.sourceId),
 ]);
 
+export const businessMagicLinks = pgTable("business_magic_links", {
+	id: serial().primaryKey().notNull(),
+	accountBusinessId: integer("account_business_id").notNull(),
+	tokenHash: text("token_hash").notNull(),
+	purpose: text().notNull(),
+	leadId: integer("lead_id"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	expiresAt: timestamp("expires_at", { withTimezone: true, mode: 'string' }).notNull(),
+	lastUsedAt: timestamp("last_used_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	index("business_magic_links_account_idx").using("btree", table.accountBusinessId.asc().nullsLast().op("int4_ops")),
+	index("business_magic_links_expires_at_idx").using("btree", table.expiresAt.asc().nullsLast().op("timestamptz_ops")),
+	foreignKey({
+			columns: [table.accountBusinessId],
+			foreignColumns: [businessAccounts.sourceId],
+			name: "business_magic_links_account_business_id_fkey"
+		}).onDelete("cascade"),
+	unique("business_magic_links_token_hash_key").on(table.tokenHash),
+]);
+
 export const chatbotmessagesstore = pgTable("chatbotmessagesstore", {
 	id: serial().primaryKey().notNull(),
 	ip: varchar({ length: 45 }).notNull(),

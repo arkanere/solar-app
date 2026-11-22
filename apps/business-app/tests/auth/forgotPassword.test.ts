@@ -67,13 +67,19 @@ function signInTokenFromEmail(): string {
 	return match[1];
 }
 
-async function storedMagic(businessId: number, country = 'in') {
+/** The newest sign-in link row on the account (088), or undefined. */
+async function storedMagic(businessId: number) {
 	const { rows } = await pool.query<{
-		magic_link_token: string | null;
-		magic_link_token_expires_at: Date | null;
+		token_hash: string;
+		purpose: string;
+		expires_at: Date;
+		link_count: number;
 	}>(
-		'SELECT magic_link_token, magic_link_token_expires_at FROM business_accounts WHERE source_id = $1 AND country_code = $2',
-		[businessId, country]
+		`SELECT token_hash, purpose, expires_at,
+		        (COUNT(*) OVER ())::int AS link_count
+		   FROM business_magic_links WHERE account_business_id = $1
+		  ORDER BY id DESC LIMIT 1`,
+		[businessId]
 	);
 	return rows[0];
 }
@@ -290,9 +296,13 @@ describe('POST /api/forgotPassword', () => {
 		expect(message).toContain('business.solarvipani.com/pune-solar/signin-link/');
 
 		const stored = await storedMagic(businessId);
-		expect(stored.magic_link_token).toBeTruthy();
-		expect(stored.magic_link_token_expires_at!.getTime()).toBeGreaterThan(Date.now());
-		expect(stored.magic_link_token).not.toBe(signInTokenFromEmail());
+		expect(stored.token_hash).toBeTruthy();
+		expect(stored.purpose).toBe('forgot_password');
+		expect(stored.token_hash).not.toBe(signInTokenFromEmail());
+		// Short-lived: it gets in without a password.
+		expect(stored.expires_at.getTime()).toBeGreaterThan(Date.now());
+		expect(stored.expires_at.getTime() - Date.now()).toBeLessThanOrEqual(60 * 60 * 1000);
+		expect(message).toContain('expires in 1 hour');
 	});
 
 	it('does not promise a password change the dashboard cannot do', async () => {
@@ -328,7 +338,7 @@ describe('POST /api/forgotPassword', () => {
 		expect(sendEmail.mock.calls[0][2]).toContain(
 			'business.solarvipani.com/oakland-solar/signin-link/'
 		);
-		expect((await storedMagic(usBusinessId, 'us')).magic_link_token).toBeTruthy();
+		expect((await storedMagic(usBusinessId)).token_hash).toBeTruthy();
 
 		const result = await new TokenManager('us').validateMagicLinkToken(
 			signInTokenFromEmail(),
@@ -341,7 +351,7 @@ describe('POST /api/forgotPassword', () => {
 		await forgot({ email: 'nobody@example.test' });
 
 		expect(sendEmail).not.toHaveBeenCalled();
-		expect((await storedMagic(businessId)).magic_link_token).toBeNull();
+		expect(await storedMagic(businessId)).toBeUndefined();
 	});
 
 	it('rate limits after 5 requests from one IP', async () => {
@@ -358,7 +368,7 @@ describe('POST /api/forgotPassword', () => {
 		// The sign-in link is minted on the same endpoint, after the same check,
 		// so there is no second door to walk through once the bucket is spent.
 		for (let i = 0; i < 5; i++) await forgot({ email: loginEmail });
-		const lastIssued = (await storedMagic(businessId)).magic_link_token;
+		const issued = (await storedMagic(businessId)).link_count;
 		sendEmail.mockClear();
 
 		const sixth = await forgot({ email: loginEmail });
@@ -366,7 +376,7 @@ describe('POST /api/forgotPassword', () => {
 		expect(sixth.status).toBe(429);
 		expect(sendEmail).not.toHaveBeenCalled();
 		// Unchanged: no fresh token, so no new link exists to have been emailed.
-		expect((await storedMagic(businessId)).magic_link_token).toBe(lastIssued);
+		expect((await storedMagic(businessId)).link_count).toBe(issued);
 	});
 });
 

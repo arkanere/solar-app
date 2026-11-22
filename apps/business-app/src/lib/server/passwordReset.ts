@@ -14,7 +14,7 @@ import { db } from '$lib/server/db';
 import { businessAccounts, businessProfiles } from '@solar/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { TokenSecurity } from '$lib/auth/business';
-import { MAGIC_LINK_TTL_DAYS } from '$lib/server/magicLink';
+import { FORGOT_PASSWORD_LINK_TTL_MS } from '$lib/server/magicLink';
 import type { AuthCountry } from '$lib/auth/business/countryTables';
 
 /** How long a reset link stays valid. */
@@ -155,7 +155,7 @@ export function resetPasswordEmail(
         <a href="${signInUrl}" style="color: blue; text-decoration: underline;">Sign in to Solar Vipani</a>
     </p>
 
-    <p>The sign-in link expires in ${MAGIC_LINK_TTL_DAYS} days and does not change your password. If you want a new password, use the reset link above while it is still valid — you can always request a fresh one.</p>
+    <p>The sign-in link expires in ${FORGOT_PASSWORD_LINK_TTL_MS / (60 * 60 * 1000)} hour and does not change your password. If you want a new password, use the reset link above while it is still valid — you can always request a fresh one.</p>
 `
 		: '';
 

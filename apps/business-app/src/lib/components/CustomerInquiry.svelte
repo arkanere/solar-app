@@ -70,8 +70,14 @@
 	let leadToDelete: Lead | null = $state(null);
 	let isDeleting = $state(false);
 
-	// Opens on Available Leads, or on My Leads when arriving from a dashboard claim
-	let activeTab = $state<'available' | 'my-leads' | 'won'>(focusLeadId ? 'my-leads' : 'available');
+	// Opens on the tab holding the focused lead (a dashboard claim, or a sign-in
+	// link sent about a lead); otherwise on Available Leads.
+	function tabFor(leadId: number | null): 'available' | 'my-leads' | 'won' {
+		const lead = leadId ? leads.find((l) => l.id === leadId) : undefined;
+		if (!lead || lead.category === 1) return 'available';
+		return lead.stage >= 3 ? 'won' : 'my-leads';
+	}
+	let activeTab = $state<'available' | 'my-leads' | 'won'>(tabFor(focusLeadId));
 
 	// Stage filter state (only applies to My Leads tab)
 	let selectedStage = $state('all');
@@ -352,6 +358,7 @@
 							{businessInfo}
 							isClaiming={claimingLeadId === lead.id}
 							{claimBlocked}
+							focused={lead.id === focusLeadId}
 							on:update={handleLeadUpdate}
 							on:claim={handleLeadClaim}
 							on:proposal={handleProposalOpen}

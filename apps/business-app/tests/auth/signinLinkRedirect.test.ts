@@ -20,6 +20,8 @@ const { load: signinLinkLoad } = await import(
 );
 const { load: loginLoad } = await import('../../src/routes/(layout-1)/login/+page.server');
 
+const LINK = { purpose: 'lead_allotted' } as const;
+
 /** Run the load and return the redirect it threw, failing if it returned instead. */
 async function loadRedirect(slug: string, token: string, next?: string) {
 	const url = new URL(`http://localhost/${slug}/signin-link/${token}`);
@@ -83,7 +85,7 @@ describe('an invalid sign-in link redirects instead of rendering in the dashboar
 			slug: 'other-solar',
 			loginEmail: 'owner@other.test'
 		});
-		const otherToken = await mintBusinessTokenById(otherId);
+		const otherToken = await mintBusinessTokenById(otherId, LINK);
 
 		const { location } = await loadRedirect(slug, otherToken!);
 
@@ -95,7 +97,7 @@ describe('an invalid sign-in link redirects instead of rendering in the dashboar
 			slug: 'valid-solar',
 			loginEmail: 'owner@valid.test'
 		});
-		const token = await mintBusinessTokenById(businessId);
+		const token = await mintBusinessTokenById(businessId, LINK);
 
 		const { status, location } = await loadRedirect('valid-solar', token!);
 
@@ -106,7 +108,7 @@ describe('an invalid sign-in link redirects instead of rendering in the dashboar
 	it('signs a US business in too, not only an Indian one', async () => {
 		// The route was bound to 'in', so a valid US token was reported expired.
 		const businessId = await createUsBusiness({ slug: 'chester-solar' });
-		const token = await mintBusinessTokenById(businessId);
+		const token = await mintBusinessTokenById(businessId, LINK);
 
 		const { status, location } = await loadRedirect('chester-solar', token!);
 
@@ -119,7 +121,31 @@ describe('an invalid sign-in link redirects instead of rendering in the dashboar
 			slug: 'valid-solar',
 			loginEmail: 'owner@valid.test'
 		});
-		const token = await mintBusinessTokenById(businessId);
+		const token = await mintBusinessTokenById(businessId, LINK);
+
+		const { location } = await loadRedirect('valid-solar', token!, 'paid-services');
+
+		expect(location).toBe('/valid-solar/paid-services');
+	});
+
+	it('lands a link sent about a lead on that lead', async () => {
+		const businessId = await createBusiness({
+			slug: 'valid-solar',
+			loginEmail: 'owner@valid.test'
+		});
+		const token = await mintBusinessTokenById(businessId, { purpose: 'lead_allotted', leadId: 42 });
+
+		const { location } = await loadRedirect('valid-solar', token!);
+
+		expect(location).toBe('/valid-solar/crm?lead=42');
+	});
+
+	it('an explicit ?next= wins over the link’s lead', async () => {
+		const businessId = await createBusiness({
+			slug: 'valid-solar',
+			loginEmail: 'owner@valid.test'
+		});
+		const token = await mintBusinessTokenById(businessId, { purpose: 'lead_allotted', leadId: 42 });
 
 		const { location } = await loadRedirect('valid-solar', token!, 'paid-services');
 
@@ -131,7 +157,7 @@ describe('an invalid sign-in link redirects instead of rendering in the dashboar
 			slug: 'valid-solar',
 			loginEmail: 'owner@valid.test'
 		});
-		const token = await mintBusinessTokenById(businessId);
+		const token = await mintBusinessTokenById(businessId, LINK);
 
 		const { location } = await loadRedirect('valid-solar', token!, '//evil.example');
 

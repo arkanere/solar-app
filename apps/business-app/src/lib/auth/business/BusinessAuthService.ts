@@ -46,7 +46,7 @@ export class BusinessAuthService {
 				return tokenResult;
 			}
 
-			const { business } = tokenResult;
+			const { business, leadId } = tokenResult;
 
 			// Update last login
 			const loginResult = await this.logins.updateLastLogin(business.id);
@@ -57,6 +57,7 @@ export class BusinessAuthService {
 
 			return SUCCESS_RESPONSE({
 				business,
+				leadId,
 				session: sessionData,
 				isNewLogin: loginResult.updated,
 				lastLogin: loginResult.lastLogin

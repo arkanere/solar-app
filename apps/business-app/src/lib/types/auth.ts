@@ -50,7 +50,7 @@ export interface AuthConfig {
 }
 
 export const AUTH_CONFIG: AuthConfig = {
-	SESSION_EXPIRY_DAYS: 30,
+	SESSION_EXPIRY_DAYS: 60,
 	TOKEN_EXPIRY_HOURS: 24,
 	LAST_LOGIN_THROTTLE_HOURS: 48,
 	COOKIE_NAME: 'business-session',
@@ -59,7 +59,7 @@ export const AUTH_CONFIG: AuthConfig = {
 		secure: true,
 		sameSite: 'lax',
 		path: '/',
-		maxAge: 60 * 60 * 24 * 30 // 30 days in seconds
+		maxAge: 60 * 60 * 24 * 60 // 60 days in seconds
 	}
 };
 
@@ -116,6 +116,8 @@ export type AuthResponse<T = Record<string, unknown>> =
 export interface TokenValidationSuccess {
 	success: true;
 	business: Business;
+	/** The lead the link was sent about, if any. Sign-in lands on it. */
+	leadId: number | null;
 }
 
 export interface BusinessLookupSuccess {
@@ -132,6 +134,8 @@ export interface SessionValidationSuccess {
 export interface MagicLinkAuthSuccess {
 	success: true;
 	business: Business;
+	/** The lead the link was sent about, if any. */
+	leadId: number | null;
 	session: SessionData;
 	isNewLogin: boolean;
 	lastLogin: Date | null;

@@ -452,8 +452,12 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 					console.error('❌ Allotment email skipped: no login email', allotmentBusinessId);
 					return;
 				}
-				// Mint a fresh token (stored hashed); email the raw token.
-				const rawToken = await mintBusinessTokenById(allotmentBusinessId);
+				// Mint a fresh token (stored hashed); email the raw token. The link
+				// lands on the claimed copy of the lead.
+				const rawToken = await mintBusinessTokenById(allotmentBusinessId, {
+					purpose: 'lead_allotted',
+					leadId: newLead?.id ?? null
+				});
 				const magicLink = `https://business.solarvipani.com/${slug}/signin-link/${rawToken}`;
 
 				const subject = 'New Lead Allotted - Solar Vipani';

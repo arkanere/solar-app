@@ -151,23 +151,23 @@ describe('POST /api/claimLead — a US business — emails', () => {
 			{ lead_id: leadId, business_id: businessId }
 		);
 
-		// The token is stored hashed in business_accounts — written directly since
-		// migration 062, rather than staged in businesses_1 and projected. That
-		// table holds both countries, so this asserts on source_id AND
+		// The token is stored hashed, one business_magic_links row per link
+		// (088), on the US account. Joined to business_accounts on source_id AND
 		// country_code: matching on the id alone would still pass if the row had
-		// been written as an IN row.
-		const { rows } = await pool.query<{ magic_link_token: string | null }>(
-			"SELECT magic_link_token FROM business_accounts WHERE source_id = $1 AND country_code = 'us'",
+		// been written against an IN account.
+		const { rows } = await pool.query<{ token_hash: string; purpose: string; lead_id: number | null }>(
+			`SELECT l.token_hash, l.purpose, l.lead_id
+			   FROM business_magic_links l
+			   JOIN business_accounts a ON a.source_id = l.account_business_id
+			  WHERE a.source_id = $1 AND a.country_code = 'us'`,
 			[businessId]
 		);
 		expect(rows).toHaveLength(1);
-		expect(rows[0].magic_link_token).toBeTruthy();
-
-		const projected = await pool.query<{ magic_link_token: string | null }>(
-			"SELECT magic_link_token FROM business_accounts WHERE country_code = 'us' AND source_id = $1",
-			[businessId]
-		);
-		expect(projected.rows[0].magic_link_token).toBe(rows[0].magic_link_token);
+		expect(rows[0].token_hash).toBeTruthy();
+		expect(rows[0].purpose).toBe('lead_allotted');
+		// The link lands on the claimed copy, not the original.
+		expect(rows[0].lead_id).not.toBeNull();
+		expect(rows[0].lead_id).not.toBe(leadId);
 
 		// business-app's own URL: the country segment is gone in Phase 7. Unlike
 		// the profile link above, this one is *not* country-branched — the slug

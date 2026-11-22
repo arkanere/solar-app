@@ -11,14 +11,28 @@
 	let errorMessage = $derived($page.data.errorMessage);
 	let claimGate = $derived($page.data.claimGate);
 
-	// Set by a dashboard claim, so the claimed lead opens at the top of My Leads
-	let focusLeadId = $state<number | null>(Number($page.url.searchParams.get('claimed')) || null);
+	// `claimed` is set by a dashboard claim; `lead` by a sign-in link sent about
+	// a lead. A link about a lead this business has since claimed names the
+	// original, so it resolves to the claimed copy.
+	function initialFocus(): number | null {
+		const params = $page.url.searchParams;
+		const claimed = Number(params.get('claimed'));
+		if (claimed) return claimed;
+		const linked = Number(params.get('lead'));
+		if (!linked) return null;
+		const lead =
+			leads.find((l: any) => l.id === linked) ?? leads.find((l: any) => l.original_id === linked);
+		return lead?.id ?? null;
+	}
+	let focusLeadId = $state<number | null>(initialFocus());
 
 	onMount(() => {
-		// Drop the param so a reload does not jump to the lead again
-		if ($page.url.searchParams.has('claimed')) {
+		// Drop the params so a reload does not jump to the lead again
+		const params = $page.url.searchParams;
+		if (params.has('claimed') || params.has('lead')) {
 			const url = new URL($page.url);
 			url.searchParams.delete('claimed');
+			url.searchParams.delete('lead');
 			replaceState(url, $page.state);
 		}
 	});

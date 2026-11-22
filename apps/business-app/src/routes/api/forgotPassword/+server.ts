@@ -18,7 +18,11 @@ import {
 	resetPasswordEmail,
 	resetPasswordUrl
 } from '$lib/server/passwordReset';
-import { mintBusinessTokenById, signInLinkUrl } from '$lib/server/magicLink';
+import {
+	FORGOT_PASSWORD_LINK_TTL_MS,
+	mintBusinessTokenById,
+	signInLinkUrl
+} from '$lib/server/magicLink';
 import { countryForLoginEmail } from '$lib/server/resolveCountry';
 import { forgotPasswordSchema, parseBody } from '@solar/validation';
 
@@ -82,7 +86,13 @@ export const POST: RequestHandler = async ({ request, getClientAddress }) => {
 		// Null when the mint matched no row (a profile whose account is missing).
 		// That is not a reason to withhold the reset link, so the email drops the
 		// sign-in section and goes out anyway.
-		const signInToken = await mintBusinessTokenById(target.businessId);
+		//
+		// Short-lived (1 hour), like the reset link: it was asked for just now, and
+		// it gets in without a password.
+		const signInToken = await mintBusinessTokenById(target.businessId, {
+			purpose: 'forgot_password',
+			ttlMs: FORGOT_PASSWORD_LINK_TTL_MS
+		});
 		const signInUrl = signInToken ? signInLinkUrl(target.slug, signInToken) : null;
 
 		const { subject, message } = resetPasswordEmail(target.businessname, url, signInUrl);

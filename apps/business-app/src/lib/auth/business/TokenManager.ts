@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db';
-import { businessAccounts, businessProfiles } from '@solar/db/schema';
-import { and, eq, isNotNull } from 'drizzle-orm';
+import { businessAccounts, businessMagicLinks, businessProfiles } from '@solar/db/schema';
+import { and, eq, isNotNull, sql } from 'drizzle-orm';
 import { AUTH_ERRORS, SUCCESS_RESPONSE, ERROR_RESPONSE } from './AuthTypes';
 import { TokenSecurity } from './TokenSecurity';
 import type { AuthCountry } from './countryTables';
@@ -10,6 +10,19 @@ import type {
 	BusinessLookupSuccess
 } from '$lib/types/auth';
 
+/** A token matched at a slug, from either the link table or the legacy column. */
+interface MatchedToken {
+	id: number;
+	businessname: string | null;
+	slug: string | null;
+	login_email: string | null;
+	isActive: boolean;
+	profileIsvisible: boolean | null;
+	expires_at: string | null;
+	/** business_magic_links.id; null for a legacy token. */
+	linkId: number | null;
+	leadId: number | null;
+}
 
 export class TokenManager {
 	constructor(private readonly country: AuthCountry) {}
@@ -22,49 +35,23 @@ export class TokenManager {
 			// Tokens are stored hashed at rest; match against the hash of the
 			// incoming raw token.
 			const tokenHash = TokenSecurity.hashToken(token);
-			// 075: the slug names the profile, the profile names the account. For a
-			// main those are the same row and this is unchanged; for a branch the
-			// token lives on its main's account, which is where the link was minted.
-			// `id` is the profile matched by the slug, not the account's own — a
-			// branch link goes on identifying the branch, exactly as it did when the
-			// branch had a duplicate account of its own.
-			const rows = await db
-				.select({
-					id: businessProfiles.businessId,
-					businessname: businessProfiles.businessname,
-					slug: businessProfiles.slug,
-					login_email: businessAccounts.loginEmail,
-					magic_link_token: businessAccounts.magicLinkToken,
-					isActive: businessAccounts.isActive,
-					profileIsvisible: businessProfiles.isvisible,
-					magic_link_token_expires_at: businessAccounts.magicLinkTokenExpiresAt
-				})
-				.from(businessAccounts)
-				// 079 took country_code off business_profiles, so the join is the
-				// account link alone and the country filter applies once, on the
-				// account. The profile's country IS the account's now, so the pair of
-				// conditions this replaces could no longer disagree even in principle.
-				.innerJoin(
-					businessProfiles,
-					eq(businessProfiles.accountBusinessId, businessAccounts.sourceId)
-				)
-				.where(
-					and(
-						eq(businessAccounts.countryCode, this.country),
-						eq(businessProfiles.slug, businessSlug),
-						eq(businessAccounts.magicLinkToken, tokenHash),
-						isNotNull(businessAccounts.magicLinkToken)
-					)
-				);
 
-			if (rows.length === 0) {
+			// Since 088 every link is its own business_magic_links row, so links
+			// sent by mail, WhatsApp and the next mail all work side by side. Links
+			// sent before 088 live on business_accounts.magic_link_token; that
+			// column is still checked so they keep working until they expire.
+			const match =
+				(await this.findLinkRow(tokenHash, businessSlug)) ??
+				(await this.findLegacyToken(tokenHash, businessSlug));
+
+			if (!match) {
 				return ERROR_RESPONSE('Invalid or expired magic link', AUTH_ERRORS.INVALID_TOKEN);
 			}
 
-			const business = rows[0];
+			const business = match;
 
 			// Reject expired tokens (a NULL expiry is treated as expired).
-			if (TokenSecurity.isTokenExpired(business.magic_link_token_expires_at)) {
+			if (TokenSecurity.isTokenExpired(business.expires_at)) {
 				return ERROR_RESPONSE('Invalid or expired magic link', AUTH_ERRORS.INVALID_TOKEN);
 			}
 
@@ -80,6 +67,17 @@ export class TokenManager {
 			if (!business.slug || !business.login_email) {
 				return ERROR_RESPONSE('Business not found', AUTH_ERRORS.BUSINESS_NOT_FOUND);
 			}
+
+			if (business.linkId !== null) {
+				// Audit only: when a link was last used. A failed write must not
+				// block the sign-in.
+				await db
+					.update(businessMagicLinks)
+					.set({ lastUsedAt: sql`now()` })
+					.where(eq(businessMagicLinks.id, business.linkId))
+					.catch((error) => console.error('❌ Could not record magic link use:', error));
+			}
+
 			return SUCCESS_RESPONSE({
 				business: {
 					id: business.id,
@@ -87,12 +85,83 @@ export class TokenManager {
 					slug: business.slug,
 					login_email: business.login_email,
 					isActive: business.isActive
-				}
+				},
+				leadId: business.leadId
 			});
 		} catch (error) {
 			console.error('❌ Error validating magic link token:', error);
 			return ERROR_RESPONSE('Database error during token validation', AUTH_ERRORS.DATABASE_ERROR);
 		}
+	}
+
+	/**
+	 * The business_magic_links row for this token, at this slug.
+	 *
+	 * 075: the slug names the profile, the profile names the account. For a main
+	 * those are the same row; for a branch the link lives on its main's account.
+	 * `id` is the profile matched by the slug, not the account's own — a branch
+	 * link goes on identifying the branch.
+	 */
+	private async findLinkRow(tokenHash: string, businessSlug: string): Promise<MatchedToken | null> {
+		const rows = await db
+			.select({
+				id: businessProfiles.businessId,
+				businessname: businessProfiles.businessname,
+				slug: businessProfiles.slug,
+				login_email: businessAccounts.loginEmail,
+				isActive: businessAccounts.isActive,
+				profileIsvisible: businessProfiles.isvisible,
+				expires_at: businessMagicLinks.expiresAt,
+				linkId: businessMagicLinks.id,
+				leadId: businessMagicLinks.leadId
+			})
+			.from(businessMagicLinks)
+			.innerJoin(businessAccounts, eq(businessAccounts.sourceId, businessMagicLinks.accountBusinessId))
+			.innerJoin(
+				businessProfiles,
+				eq(businessProfiles.accountBusinessId, businessMagicLinks.accountBusinessId)
+			)
+			.where(
+				and(
+					eq(businessAccounts.countryCode, this.country),
+					eq(businessProfiles.slug, businessSlug),
+					eq(businessMagicLinks.tokenHash, tokenHash)
+				)
+			);
+
+		return rows[0] ?? null;
+	}
+
+	/** A pre-088 token on business_accounts.magic_link_token. */
+	private async findLegacyToken(
+		tokenHash: string,
+		businessSlug: string
+	): Promise<MatchedToken | null> {
+		const rows = await db
+			.select({
+				id: businessProfiles.businessId,
+				businessname: businessProfiles.businessname,
+				slug: businessProfiles.slug,
+				login_email: businessAccounts.loginEmail,
+				isActive: businessAccounts.isActive,
+				profileIsvisible: businessProfiles.isvisible,
+				expires_at: businessAccounts.magicLinkTokenExpiresAt
+			})
+			.from(businessAccounts)
+			// 079 took country_code off business_profiles, so the join is the
+			// account link alone and the country filter applies once, on the
+			// account.
+			.innerJoin(businessProfiles, eq(businessProfiles.accountBusinessId, businessAccounts.sourceId))
+			.where(
+				and(
+					eq(businessAccounts.countryCode, this.country),
+					eq(businessProfiles.slug, businessSlug),
+					eq(businessAccounts.magicLinkToken, tokenHash),
+					isNotNull(businessAccounts.magicLinkToken)
+				)
+			);
+
+		return rows[0] ? { ...rows[0], linkId: null, leadId: null } : null;
 	}
 
 	async getBusinessByEmail(email: string): Promise<BusinessLookupSuccess | AuthErrorResponse> {
