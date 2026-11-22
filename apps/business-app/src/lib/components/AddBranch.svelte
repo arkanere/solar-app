@@ -118,7 +118,7 @@
 				onBranchAdded(result.branch);
 
 				setTimeout(() => {
-					window.location.href = `/business/${businessSlug}/branch`;
+					window.location.href = `/${businessSlug}/branch`;
 				}, 2000);
 			} else {
 				errorMessage = result.error || 'Failed to add branch';
