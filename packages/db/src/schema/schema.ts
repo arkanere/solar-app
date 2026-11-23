@@ -48,6 +48,25 @@ export const partnerWhatsappLog = pgTable("partner_whatsapp_log", {
 	index("partner_whatsapp_log_sent_at_idx").using("btree", table.sentAt.asc().nullsLast().op("timestamptz_ops")),
 ]);
 
+export const designLeads = pgTable("design_leads", {
+	id: serial().primaryKey().notNull(),
+	name: text().notNull(),
+	company: text().notNull(),
+	phone: text().notNull(),
+	state: text().notNull(),
+	nextProjectKwp: numeric("next_project_kwp", { precision: 10, scale:  2 }),
+	projectsPerMonth: text("projects_per_month"),
+	wantsSample: boolean("wants_sample").default(false).notNull(),
+	source: text(),
+	urlParams: text("url_params"),
+	referrer: text(),
+	userAgent: text("user_agent"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("design_leads_created_at_idx").using("btree", table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
+	index("design_leads_phone_idx").using("btree", table.phone.asc().nullsLast().op("text_ops")),
+]);
+
 export const claimdata = pgTable("claimdata", {
 	id: serial().primaryKey().notNull(),
 	name: varchar({ length: 255 }).notNull(),
