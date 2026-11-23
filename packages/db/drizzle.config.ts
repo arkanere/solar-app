@@ -27,6 +27,15 @@ export default defineConfig({
 	//    it emits `unknown("search_vector")`, which does not compile. No app
 	//    references this table. If it is ever needed, the fix is a customType
 	//    for tsvector applied to a hand-maintained copy of that table.
-	tablesFilter: ['*', '!*_bak_*', '!*_prebackfill', '!personal_website_blogs'],
+	//  - personal_website_series: has a foreign key to personal_website_blogs, so
+	//    with that table excluded the generated FK names a missing symbol and the
+	//    package does not compile. Same site, same reason: no app references it.
+	tablesFilter: [
+		'*',
+		'!*_bak_*',
+		'!*_prebackfill',
+		'!personal_website_blogs',
+		'!personal_website_series'
+	],
 	dbCredentials: { url: connectionString }
 });
