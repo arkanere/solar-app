@@ -121,6 +121,21 @@ describe('contact gate', () => {
 	});
 });
 
+describe('contact person gate', () => {
+	it('403s without a contact person, before any claim is written', async () => {
+		const businessId = await createBusiness({ slug: 'acme-solar', district: 'Pune', contactPerson: false });
+		await seedLeadDataPolicy(businessId);
+		const leadId = await createLead({ district: 'Pune' });
+		const session = { id: businessId, slug: 'acme-solar', businessname: 'Test Business' };
+
+		const { status, body } = await claim(session, { lead_id: leadId, business_id: businessId });
+
+		expect(status).toBe(403);
+		expect(body.error).toMatch(/contact person/i);
+		expect(await claimCount(leadId)).toBe(0);
+	});
+});
+
 describe('compliance gate', () => {
 	it('403s with compliance_required when the policy was never accepted', async () => {
 		const businessId = await createBusiness({ slug: 'acme-solar', district: 'Pune' });

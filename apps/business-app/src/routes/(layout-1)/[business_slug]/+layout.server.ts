@@ -7,6 +7,7 @@ import type { SessionData } from '$lib/types/auth';
 import { SessionManager } from '$lib/auth/business';
 import { countryForSlug } from '$lib/server/resolveCountry';
 import { getClaimCounts, getOldestStaleLeadId } from '$lib/server/claimGate';
+import { getContactPerson, type ContactPerson } from '$lib/server/contactPerson';
 import type { AuthCountry } from '$lib/auth/business/countryTables';
 import { accountOfProfile, businessInCountry, projectTable } from '$lib/server/writeTargets';
 
@@ -38,6 +39,8 @@ export interface ClaimGateStatus {
 	recentProjectExists: boolean;
 	profileComplete: boolean;
 	missingContact: string[];
+	/** The account's contact person, or null until added. Required to claim. */
+	contactPerson: ContactPerson | null;
 	gateApplies: boolean;
 	isBlocked: boolean;
 	reasons: string[];
@@ -141,9 +144,10 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 
 					// Claim counts come from the claim history, not the editable lead
 					// copies — see getClaimCounts.
-					const [claimCounts, staleLeadId, projectsRes, recentProjectRes] = await Promise.all([
+					const [claimCounts, staleLeadId, contactPerson, projectsRes, recentProjectRes] = await Promise.all([
 						getClaimCounts(businessId),
 						getOldestStaleLeadId(businessId),
+						getContactPerson(businessId),
 						db
 							.select({ count: count() })
 							.from(projects)
@@ -178,6 +182,7 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 					const gateApplies = totalClaimed >= 10;
 					const reasons: string[] = [];
 					if (missingContact.length > 0) reasons.push(`Add your ${missingContact.join(' and ')}`);
+					if (!contactPerson) reasons.push('Add your contact person details');
 
 					if (gateApplies) {
 						if (staleLeadsToUpdate > 0) reasons.push(`${staleClaimed} of ${totalClaimed} leads still at "Claimed" — update at least half to keep claiming`);
@@ -210,8 +215,10 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 							recentProjectExists,
 							profileComplete,
 							missingContact,
+							contactPerson,
 							gateApplies,
-							isBlocked: missingContact.length > 0 || (gateApplies && reasons.length > 0),
+							isBlocked:
+								missingContact.length > 0 || !contactPerson || (gateApplies && reasons.length > 0),
 							reasons
 						}
 					};

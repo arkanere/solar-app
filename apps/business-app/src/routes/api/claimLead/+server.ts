@@ -8,6 +8,7 @@ import { checkLeadDataPolicy } from '$lib/compliance';
 import type { ClaimRequestPayload } from '$lib/types/lead';
 import { IN_LEAD_RETURNING } from '$lib/server/leads';
 import { getClaimCounts } from '$lib/server/claimGate';
+import { getContactPerson } from '$lib/server/contactPerson';
 import {
 	businessAccounts,
 	businessProfiles,
@@ -77,7 +78,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		// Claim gate: businesses with 10+ claimed leads must meet requirements.
 		// Counts come from the claim history, not the editable lead copies.
 		const gateSlug = sessionResult.session.businessSlug;
-		const [gateCounts, gateProjectsRes, gateRecentRes, gateBizRes] = await Promise.all([
+		const [gateCounts, gateProjectsRes, gateRecentRes, gateBizRes, gatePerson] = await Promise.all([
 			getClaimCounts(business_id),
 			db
 				.select({ count: count() })
@@ -103,7 +104,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 					googleMapsLink: businessProfiles.googleMapsLink
 				})
 				.from(businessProfiles)
-				.where(eq(businessProfiles.businessId, business_id))
+				.where(eq(businessProfiles.businessId, business_id)),
+			getContactPerson(business_id)
 		]);
 
 		// Customers are sent the business's phone and email on claim, so both are
@@ -112,6 +114,14 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		if (!gateContact?.phonenumber?.trim() || !gateContact?.email?.trim()) {
 			return json(
 				{ success: false, error: 'Add your phone number and email in Edit Profile to claim leads' },
+				{ status: 403 }
+			);
+		}
+
+		// The person behind the account is required from the first lead too.
+		if (!gatePerson) {
+			return json(
+				{ success: false, error: 'Add your contact person details to claim leads' },
 				{ status: 403 }
 			);
 		}

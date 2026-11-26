@@ -73,6 +73,8 @@ export interface BusinessOptions {
 	googleMapsLink?: string | null;
 	brands?: number[] | null;
 	lastLogin?: string | null;
+	/** Seed the account's contact person (claim gate). Default true. */
+	contactPerson?: boolean;
 }
 
 let businessSeq = 0;
@@ -133,6 +135,14 @@ export async function createBusiness(options: BusinessOptions = {}): Promise<num
 		 VALUES ('in',$1,$2,$3,$4,$5)`,
 		[id, loginEmail, loginPassword, isvisible, lastLogin]
 	);
+
+	if (options.contactPerson ?? true) {
+		await pool.query(
+			`INSERT INTO business_contact_persons (account_business_id, full_name, role)
+			 VALUES ($1, 'Test Person', 'proprietor')`,
+			[id]
+		);
+	}
 
 	return id;
 }
@@ -198,6 +208,12 @@ export async function createUsBusiness(options: UsBusinessOptions = {}): Promise
 		   (country_code, source_id, login_email, is_active)
 		 VALUES ('us',$1,$2,$3)`,
 		[id, loginEmail, isvisible]
+	);
+
+	await pool.query(
+		`INSERT INTO business_contact_persons (account_business_id, full_name, role)
+		 VALUES ($1, 'Test Person', 'proprietor')`,
+		[id]
 	);
 
 	return id;

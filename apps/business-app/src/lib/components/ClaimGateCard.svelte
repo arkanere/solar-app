@@ -14,6 +14,7 @@
 		recentProjectExists: boolean;
 		profileComplete: boolean;
 		missingContact: string[];
+		contactPerson: { full_name: string; role: string; description: string | null } | null;
 		gateApplies: boolean;
 		isBlocked: boolean;
 		reasons: string[];
@@ -23,9 +24,15 @@
 		claimGate: ClaimGateStatus;
 		businessSlug: string;
 		onOpenEditProfile?: () => void;
+		onOpenContactPerson?: () => void;
 	};
 
-	let { claimGate, businessSlug, onOpenEditProfile = () => {} }: Props = $props();
+	let {
+		claimGate,
+		businessSlug,
+		onOpenEditProfile = () => {},
+		onOpenContactPerson = () => {}
+	}: Props = $props();
 
 	let contactRequirement = $derived({
 		label: 'Add phone and email',
@@ -35,6 +42,14 @@
 		met: claimGate.missingContact.length === 0,
 		action: 'openEditProfile',
 		actionLabel: 'Edit Profile'
+	});
+
+	let contactPersonRequirement = $derived({
+		label: 'Add contact person',
+		detail: claimGate.contactPerson ? 'Done' : 'Who is responsible for this account',
+		met: !!claimGate.contactPerson,
+		action: 'openContactPerson',
+		actionLabel: 'Add Details'
 	});
 
 	// The other requirements only apply from 10 claimed leads; contact always does
@@ -74,13 +89,15 @@
 
 	// Only what still blocks claiming is shown
 	let requirements = $derived(
-		(claimGate.gateApplies ? [contactRequirement, ...gateRequirements] : [contactRequirement])
+		[contactRequirement, contactPersonRequirement, ...(claimGate.gateApplies ? gateRequirements : [])]
 			.filter((req) => !req.met)
 	);
 
 	function handleAction(action: string) {
 		if (action === 'openEditProfile') {
 			onOpenEditProfile();
+		} else if (action === 'openContactPerson') {
+			onOpenContactPerson();
 		} else {
 			window.location.href = action;
 		}

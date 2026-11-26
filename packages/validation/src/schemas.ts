@@ -118,6 +118,19 @@ export const updateBusinessDetailsSchema = z.object({
 });
 
 /**
+ * business-app /api/contactPerson
+ *
+ * The one person behind a business account. Required before claiming leads.
+ */
+export const CONTACT_PERSON_ROLES = ['proprietor', 'employee', 'third_party'] as const;
+
+export const contactPersonSchema = z.object({
+	full_name: requiredText('Name'),
+	role: z.enum(CONTACT_PERSON_ROLES, 'Please choose a position'),
+	description: optionalText(1000)
+});
+
+/**
  * business-app /us/api/updateBusinessDetails
  *
  * The same form minus services/brands, which the US table doesn't carry.

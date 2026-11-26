@@ -5,6 +5,7 @@
 	import NotificationsCard from '$lib/components/NotificationsCard.svelte';
 	import ClaimGateCard from '$lib/components/ClaimGateCard.svelte';
 	import ShowEditProfile from '$lib/components/ShowEditProfile.svelte';
+	import ShowContactPerson from '$lib/components/ShowContactPerson.svelte';
 	import ShowSupport from '$lib/components/ShowSupport.svelte';
 	import ShowDeleteAccount from '$lib/components/ShowDeleteAccount.svelte';
 	import ShowRankingPolicy from '$lib/components/ShowRankingPolicy.svelte';
@@ -44,6 +45,14 @@
 
 	function openEditProfile() {
 		showEditProfile = true;
+	}
+
+	// Contact person modal (opened from ClaimGateCard)
+	let showContactPerson = $state(false);
+
+	function handleContactPersonUpdated() {
+		showContactPerson = false;
+		window.location.reload();
 	}
 
 	function handleProfileUpdated() {
@@ -129,6 +138,7 @@
 							{claimGate}
 							{businessSlug}
 							onOpenEditProfile={openEditProfile}
+							onOpenContactPerson={() => (showContactPerson = true)}
 						/>
 					{/if}
 				</div>
@@ -139,6 +149,15 @@
 </div>
 
 <!-- Modals -->
+{#if showContactPerson}
+	<ShowContactPerson
+		bind:show={showContactPerson}
+		contactPerson={claimGate?.contactPerson ?? null}
+		onClose={() => (showContactPerson = false)}
+		onUpdated={handleContactPersonUpdated}
+	/>
+{/if}
+
 {#if showDeleteAccount}
 	<ShowDeleteAccount
 		bind:show={showDeleteAccount}

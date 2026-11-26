@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { countries, leaddata, callsafeusers, callsafehandles, svProposals, projectManagement, solarBrands, solarProducts, stateSubsidies, discoms, svUser, svUserFeedback, legalPolicies, legalAcceptances, businessAccounts, geoLocations } from "./schema";
+import { countries, leaddata, businessAccounts, businessMagicLinks, callsafeusers, callsafehandles, svProposals, projectManagement, businessContactPersons, solarBrands, solarProducts, stateSubsidies, discoms, svUser, svUserFeedback, legalPolicies, legalAcceptances, geoLocations } from "./schema";
 
 export const leaddataRelations = relations(leaddata, ({one, many}) => ({
 	country: one(countries, {
@@ -15,6 +15,23 @@ export const countriesRelations = relations(countries, ({many}) => ({
 	legalAcceptances: many(legalAcceptances),
 	businessAccounts: many(businessAccounts),
 	geoLocations: many(geoLocations),
+}));
+
+export const businessMagicLinksRelations = relations(businessMagicLinks, ({one}) => ({
+	businessAccount: one(businessAccounts, {
+		fields: [businessMagicLinks.accountBusinessId],
+		references: [businessAccounts.sourceId]
+	}),
+}));
+
+export const businessAccountsRelations = relations(businessAccounts, ({one, many}) => ({
+	businessMagicLinks: many(businessMagicLinks),
+	businessContactPersons: many(businessContactPersons),
+	legalAcceptances: many(legalAcceptances),
+	country: one(countries, {
+		fields: [businessAccounts.countryCode],
+		references: [countries.code]
+	}),
 }));
 
 export const callsafehandlesRelations = relations(callsafehandles, ({one}) => ({
@@ -39,6 +56,13 @@ export const projectManagementRelations = relations(projectManagement, ({one}) =
 	leaddatum: one(leaddata, {
 		fields: [projectManagement.leadId],
 		references: [leaddata.id]
+	}),
+}));
+
+export const businessContactPersonsRelations = relations(businessContactPersons, ({one}) => ({
+	businessAccount: one(businessAccounts, {
+		fields: [businessContactPersons.accountBusinessId],
+		references: [businessAccounts.sourceId]
 	}),
 }));
 
@@ -92,14 +116,6 @@ export const legalAcceptancesRelations = relations(legalAcceptances, ({one}) => 
 
 export const legalPoliciesRelations = relations(legalPolicies, ({many}) => ({
 	legalAcceptances: many(legalAcceptances),
-}));
-
-export const businessAccountsRelations = relations(businessAccounts, ({one, many}) => ({
-	legalAcceptances: many(legalAcceptances),
-	country: one(countries, {
-		fields: [businessAccounts.countryCode],
-		references: [countries.code]
-	}),
 }));
 
 export const geoLocationsRelations = relations(geoLocations, ({one}) => ({

@@ -134,7 +134,10 @@ const POST_BASELINE_MIGRATIONS = [
 	'085-claimrequests-append-only.sql',
 	// One row per magic link sent to a business. A new table, so it is not in
 	// the baseline until the baseline is regenerated.
-	'088-business-magic-links.sql'
+	'088-business-magic-links.sql',
+	// The one person behind each business account. A new table, so it is not
+	// in the baseline until the baseline is regenerated.
+	'090-business-contact-persons.sql'
 ];
 
 // The baseline is the *end state*; the files above are *history*. Where a

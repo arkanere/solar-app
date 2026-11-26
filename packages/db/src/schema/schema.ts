@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, text, timestamp, integer, doublePrecision, index, boolean, unique, smallint, foreignKey, check, uuid, char, date, numeric, uniqueIndex, jsonb, primaryKey, pgView, pgSequence } from "drizzle-orm/pg-core"
+import { pgTable, serial, varchar, text, timestamp, integer, doublePrecision, index, jsonb, boolean, unique, smallint, foreignKey, check, uuid, char, date, numeric, uniqueIndex, primaryKey, pgView, pgSequence } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 
@@ -48,24 +48,13 @@ export const partnerWhatsappLog = pgTable("partner_whatsapp_log", {
 	index("partner_whatsapp_log_sent_at_idx").using("btree", table.sentAt.asc().nullsLast().op("timestamptz_ops")),
 ]);
 
-export const designLeads = pgTable("design_leads", {
-	id: serial().primaryKey().notNull(),
-	name: text().notNull(),
-	company: text().notNull(),
-	phone: text().notNull(),
-	state: text().notNull(),
-	nextProjectKwp: numeric("next_project_kwp", { precision: 10, scale:  2 }),
-	projectsPerMonth: text("projects_per_month"),
-	wantsSample: boolean("wants_sample").default(false).notNull(),
-	source: text(),
-	urlParams: text("url_params"),
-	referrer: text(),
-	userAgent: text("user_agent"),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("design_leads_created_at_idx").using("btree", table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
-	index("design_leads_phone_idx").using("btree", table.phone.asc().nullsLast().op("text_ops")),
-]);
+export const chatbotSessions = pgTable("chatbot_sessions", {
+	sessionId: varchar("session_id", { length: 100 }).primaryKey().notNull(),
+	leadProfile: jsonb("lead_profile").default({}).notNull(),
+	history: jsonb().default([]).notNull(),
+	objective: text(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+});
 
 export const claimdata = pgTable("claimdata", {
 	id: serial().primaryKey().notNull(),
@@ -131,6 +120,26 @@ export const leaddata = pgTable("leaddata", {
 			name: "leaddata_country_code_fkey"
 		}),
 	check("check_claim_count_limit", sql`(claim_count >= 0) AND (claim_count <= 5)`),
+]);
+
+export const businessMagicLinks = pgTable("business_magic_links", {
+	id: serial().primaryKey().notNull(),
+	accountBusinessId: integer("account_business_id").notNull(),
+	tokenHash: text("token_hash").notNull(),
+	purpose: text().notNull(),
+	leadId: integer("lead_id"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	expiresAt: timestamp("expires_at", { withTimezone: true, mode: 'string' }).notNull(),
+	lastUsedAt: timestamp("last_used_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	index("business_magic_links_account_idx").using("btree", table.accountBusinessId.asc().nullsLast().op("int4_ops")),
+	index("business_magic_links_expires_at_idx").using("btree", table.expiresAt.asc().nullsLast().op("timestamptz_ops")),
+	foreignKey({
+			columns: [table.accountBusinessId],
+			foreignColumns: [businessAccounts.sourceId],
+			name: "business_magic_links_account_business_id_fkey"
+		}).onDelete("cascade"),
+	unique("business_magic_links_token_hash_key").on(table.tokenHash),
 ]);
 
 export const projects = pgTable("projects", {
@@ -253,6 +262,25 @@ export const callsafehandles = pgTable("callsafehandles", {
 		}).onDelete("cascade"),
 ]);
 
+export const designLeads = pgTable("design_leads", {
+	id: serial().primaryKey().notNull(),
+	name: text().notNull(),
+	company: text().notNull(),
+	phone: text().notNull(),
+	state: text().notNull(),
+	nextProjectKwp: numeric("next_project_kwp", { precision: 10, scale:  2 }),
+	projectsPerMonth: text("projects_per_month"),
+	wantsSample: boolean("wants_sample").default(false).notNull(),
+	source: text(),
+	urlParams: text("url_params"),
+	referrer: text(),
+	userAgent: text("user_agent"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("design_leads_created_at_idx").using("btree", table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
+	index("design_leads_phone_idx").using("btree", table.phone.asc().nullsLast().op("text_ops")),
+]);
+
 export const svProposals = pgTable("sv_proposals", {
 	id: serial().primaryKey().notNull(),
 	customerName: varchar("customer_name", { length: 255 }).notNull(),
@@ -348,6 +376,24 @@ export const seoPages = pgTable("seo_pages", {
 	index("idx_seo_pages_pillar").using("btree", table.pillarSlug.asc().nullsLast().op("text_ops")),
 	index("idx_seo_pages_type").using("btree", table.pageType.asc().nullsLast().op("text_ops")),
 	unique("seo_pages_slug_pillar_unique").on(table.slug, table.pillarSlug),
+]);
+
+export const businessContactPersons = pgTable("business_contact_persons", {
+	id: serial().primaryKey().notNull(),
+	accountBusinessId: integer("account_business_id").notNull(),
+	fullName: varchar("full_name", { length: 255 }).notNull(),
+	role: text().notNull(),
+	description: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.accountBusinessId],
+			foreignColumns: [businessAccounts.sourceId],
+			name: "business_contact_persons_account_business_id_fkey"
+		}).onDelete("cascade"),
+	unique("business_contact_persons_account_business_id_key").on(table.accountBusinessId),
+	check("business_contact_persons_role_check", sql`role = ANY (ARRAY['proprietor'::text, 'employee'::text, 'third_party'::text])`),
 ]);
 
 export const solarBrands = pgTable("solar_brands", {
@@ -677,26 +723,6 @@ export const businessAccounts = pgTable("business_accounts", {
 		}),
 	unique("business_accounts_country_code_source_id_key").on(table.countryCode, table.sourceId),
 	unique("business_accounts_source_id_key").on(table.sourceId),
-]);
-
-export const businessMagicLinks = pgTable("business_magic_links", {
-	id: serial().primaryKey().notNull(),
-	accountBusinessId: integer("account_business_id").notNull(),
-	tokenHash: text("token_hash").notNull(),
-	purpose: text().notNull(),
-	leadId: integer("lead_id"),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	expiresAt: timestamp("expires_at", { withTimezone: true, mode: 'string' }).notNull(),
-	lastUsedAt: timestamp("last_used_at", { withTimezone: true, mode: 'string' }),
-}, (table) => [
-	index("business_magic_links_account_idx").using("btree", table.accountBusinessId.asc().nullsLast().op("int4_ops")),
-	index("business_magic_links_expires_at_idx").using("btree", table.expiresAt.asc().nullsLast().op("timestamptz_ops")),
-	foreignKey({
-			columns: [table.accountBusinessId],
-			foreignColumns: [businessAccounts.sourceId],
-			name: "business_magic_links_account_business_id_fkey"
-		}).onDelete("cascade"),
-	unique("business_magic_links_token_hash_key").on(table.tokenHash),
 ]);
 
 export const countries = pgTable("countries", {
