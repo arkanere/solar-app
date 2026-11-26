@@ -2,8 +2,11 @@ import { db } from '$lib/server/db';
 import { businessProfiles, leaddata, leaddataClaimrequests } from '@solar/db/schema';
 import { and, asc, countDistinct, eq, inArray, ne, sql } from 'drizzle-orm';
 
+/** Claimed leads an account gets before the quality gate applies. */
+export const CLAIM_GATE_MIN_CLAIMS = 3;
+
 /**
- * Claim counts for the 10-claim quality gate.
+ * Claim counts for the claim quality gate.
  *
  * `leaddata_claimrequests` is the claim history and the source of truth: one
  * row per claim, never deleted. The claimed copies in `leaddata` are the

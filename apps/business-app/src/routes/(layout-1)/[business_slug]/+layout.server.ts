@@ -6,7 +6,7 @@ import type { LayoutServerLoad } from './$types';
 import type { SessionData } from '$lib/types/auth';
 import { SessionManager } from '$lib/auth/business';
 import { countryForSlug } from '$lib/server/resolveCountry';
-import { getClaimCounts, getOldestStaleLeadId } from '$lib/server/claimGate';
+import { CLAIM_GATE_MIN_CLAIMS, getClaimCounts, getOldestStaleLeadId } from '$lib/server/claimGate';
 import { getContactPerson, type ContactPerson } from '$lib/server/contactPerson';
 import type { AuthCountry } from '$lib/auth/business/countryTables';
 import { accountOfProfile, businessInCountry, projectTable } from '$lib/server/writeTargets';
@@ -179,7 +179,7 @@ export const load: LayoutServerLoad<LayoutServerData> = async ({ cookies, params
 					if (!business.phonenumber?.trim()) missingContact.push('phone number');
 					if (!business.email?.trim()) missingContact.push('email');
 
-					const gateApplies = totalClaimed >= 10;
+					const gateApplies = totalClaimed >= CLAIM_GATE_MIN_CLAIMS;
 					const reasons: string[] = [];
 					if (missingContact.length > 0) reasons.push(`Add your ${missingContact.join(' and ')}`);
 					if (!contactPerson) reasons.push('Add your contact person details');

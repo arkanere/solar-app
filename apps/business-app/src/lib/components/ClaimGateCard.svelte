@@ -52,7 +52,7 @@
 		actionLabel: 'Add Details'
 	});
 
-	// The other requirements only apply from 10 claimed leads; contact always does
+	// The other requirements only apply from 3 claimed leads (CLAIM_GATE_MIN_CLAIMS); contact always does
 	let gateRequirements = $derived([
 		{
 			label: 'Update your leads',

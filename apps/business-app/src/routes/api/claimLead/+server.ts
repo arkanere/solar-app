@@ -7,7 +7,7 @@ import { mintBusinessTokenById, mintUserToken } from '$lib/server/magicLink';
 import { checkLeadDataPolicy } from '$lib/compliance';
 import type { ClaimRequestPayload } from '$lib/types/lead';
 import { IN_LEAD_RETURNING } from '$lib/server/leads';
-import { getClaimCounts } from '$lib/server/claimGate';
+import { CLAIM_GATE_MIN_CLAIMS, getClaimCounts } from '$lib/server/claimGate';
 import { getContactPerson } from '$lib/server/contactPerson';
 import {
 	businessAccounts,
@@ -75,7 +75,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			return json({ success: false, error: 'compliance_required' }, { status: 403 });
 		}
 
-		// Claim gate: businesses with 10+ claimed leads must meet requirements.
+		// Claim gate: businesses with CLAIM_GATE_MIN_CLAIMS+ claimed leads must meet requirements.
 		// Counts come from the claim history, not the editable lead copies.
 		const gateSlug = sessionResult.session.businessSlug;
 		const [gateCounts, gateProjectsRes, gateRecentRes, gateBizRes, gatePerson] = await Promise.all([
@@ -109,7 +109,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		]);
 
 		// Customers are sent the business's phone and email on claim, so both are
-		// required from the first lead, not only once the 10-lead gate applies.
+		// required from the first lead, not only once the claim gate applies.
 		const gateContact = gateBizRes[0];
 		if (!gateContact?.phonenumber?.trim() || !gateContact?.email?.trim()) {
 			return json(
@@ -127,7 +127,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		}
 
 		const gateTotalClaimed = gateCounts.totalClaimed;
-		if (gateTotalClaimed >= 10) {
+		if (gateTotalClaimed >= CLAIM_GATE_MIN_CLAIMS) {
 			const gateStaleClaimed = gateCounts.staleClaimed;
 			const gateProjectsCount = gateProjectsRes[0]?.count ?? 0;
 			const gateRecentProject = (gateRecentRes[0]?.count ?? 0) > 0;

@@ -461,7 +461,7 @@ describe('branch auto-creation', () => {
 	});
 });
 
-describe('the 10-claim quality gate', () => {
+describe('the 3-claim quality gate', () => {
 	/**
 	 * Give `businessId` `count` claimed leads, `stale` of them untouched. Each
 	 * one is what claimLead writes: the original lead, an allotted claim row and
@@ -510,10 +510,10 @@ describe('the 10-claim quality gate', () => {
 		await pool.query('UPDATE leaddata SET isvisible = false WHERE id = ANY($1)', [ids]);
 	}
 
-	it('lets a business under 10 claimed leads through regardless of profile', async () => {
+	it('lets a business under 3 claimed leads through regardless of profile', async () => {
 		const businessId = await createBusiness({ slug: 'acme-solar', district: 'Pune' });
 		await seedLeadDataPolicy(businessId);
-		await giveClaimedLeads(businessId, 9, 9);
+		await giveClaimedLeads(businessId, 2, 2);
 		const leadId = await createLead({ district: 'Pune' });
 		const session = { id: businessId, slug: 'acme-solar', businessname: 'Test Business' };
 
@@ -522,7 +522,7 @@ describe('the 10-claim quality gate', () => {
 		expect(body.success).toBe(true);
 	});
 
-	it('blocks at 10+ claimed leads when more than half are stale', async () => {
+	it('blocks at 3+ claimed leads when more than half are stale', async () => {
 		const businessId = await createBusiness({ slug: 'acme-solar', district: 'Pune' });
 		await seedLeadDataPolicy(businessId);
 		await giveClaimedLeads(businessId, 10, 9);
@@ -535,7 +535,7 @@ describe('the 10-claim quality gate', () => {
 		expect(body.error).toMatch(/claiming paused/i);
 	});
 
-	it('blocks at 10+ claimed leads when the profile is incomplete', async () => {
+	it('blocks at 3+ claimed leads when the profile is incomplete', async () => {
 		// Not stale, 6 projects, one recent — but no description/brands/maps link.
 		const businessId = await createBusiness({
 			slug: 'acme-solar',
@@ -555,7 +555,7 @@ describe('the 10-claim quality gate', () => {
 		expect(status).toBe(403);
 	});
 
-	it('blocks at 10+ claimed leads with fewer than 6 projects', async () => {
+	it('blocks at 3+ claimed leads with fewer than 6 projects', async () => {
 		const businessId = await createBusiness({
 			slug: 'acme-solar',
 			district: 'Pune',
@@ -572,7 +572,7 @@ describe('the 10-claim quality gate', () => {
 		expect((await claim(session, { lead_id: leadId, business_id: businessId })).status).toBe(403);
 	});
 
-	it('blocks at 10+ claimed leads when no project is newer than 60 days', async () => {
+	it('blocks at 3+ claimed leads when no project is newer than 60 days', async () => {
 		const businessId = await createBusiness({
 			slug: 'acme-solar',
 			district: 'Pune',
@@ -590,7 +590,7 @@ describe('the 10-claim quality gate', () => {
 		expect((await claim(session, { lead_id: leadId, business_id: businessId })).status).toBe(403);
 	});
 
-	it('lets a business through at 10+ claimed leads when every requirement is met', async () => {
+	it('lets a business through at 3+ claimed leads when every requirement is met', async () => {
 		const businessId = await createBusiness({
 			slug: 'acme-solar',
 			district: 'Pune',
@@ -614,9 +614,9 @@ describe('the 10-claim quality gate', () => {
 		const branchId = await createBusiness({ slug: 'acme-solar-nashik', district: 'Nashik' });
 		await createBranch(mainId, branchId);
 		await seedLeadDataPolicy(mainId);
-		// Split across main and branch: neither alone reaches 10, together they do.
-		await giveClaimedLeads(mainId, 5, 5);
-		await giveClaimedLeads(branchId, 5, 5);
+		// Split across main and branch: neither alone reaches 3, together they do.
+		await giveClaimedLeads(mainId, 2, 2);
+		await giveClaimedLeads(branchId, 2, 2);
 		const leadId = await createLead({ district: 'Pune' });
 		const session = { id: mainId, slug: 'acme-solar', businessname: 'Test Business' };
 
@@ -625,7 +625,7 @@ describe('the 10-claim quality gate', () => {
 		expect(status).toBe(403);
 	});
 	it('still counts claimed leads the business has deleted', async () => {
-		// Incomplete profile, so reaching 10 claims blocks.
+		// Incomplete profile, so reaching 3 claims blocks.
 		const businessId = await createBusiness({
 			slug: 'acme-solar',
 			district: 'Pune',
@@ -674,8 +674,8 @@ describe('the 10-claim quality gate', () => {
 		const branchId = await createBusiness({ slug: 'acme-solar-nashik', district: 'Nashik' });
 		await createBranch(mainId, branchId, false);
 		await seedLeadDataPolicy(mainId);
-		await giveClaimedLeads(mainId, 5, 5);
-		await giveClaimedLeads(branchId, 5, 5);
+		await giveClaimedLeads(mainId, 2, 2);
+		await giveClaimedLeads(branchId, 2, 2);
 		const leadId = await createLead({ district: 'Pune' });
 		const session = { id: mainId, slug: 'acme-solar', businessname: 'Test Business' };
 
